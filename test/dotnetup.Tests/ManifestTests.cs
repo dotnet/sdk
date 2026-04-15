@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using FluentAssertions;
@@ -123,7 +125,7 @@ public class ManifestTests
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
         var spec = new InstallSpec
         {
@@ -149,7 +151,7 @@ public class ManifestTests
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
         var installation = new Installation
         {
@@ -157,6 +159,9 @@ public class ManifestTests
             Version = "10.0.103",
             Subcomponents = ["sdk/10.0.103", "shared/Microsoft.NETCore.App/10.0.3"]
         };
+
+        // Create the component directory so ReadManifest() pruning doesn't discard it.
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "10.0.103"));
 
         manifest.AddInstallation(installRoot, installation);
         var installations = manifest.GetInstallations(installRoot).ToList();
@@ -179,11 +184,20 @@ public class ManifestTests
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
 
-        var root1 = new DotnetInstallRoot(@"C:\dotnet-x64", InstallArchitecture.x64);
-        var root2 = new DotnetInstallRoot(@"C:\dotnet-arm64", InstallArchitecture.arm64);
+        // Use real temp directories so pruning doesn't discard them.
+        var root1Path = Path.Combine(testEnv.TempRoot, "dotnet-x64");
+        var root2Path = Path.Combine(testEnv.TempRoot, "dotnet-arm64");
+        var root1 = new DotnetInstallRoot(root1Path, InstallArchitecture.x64);
+        var root2 = new DotnetInstallRoot(root2Path, InstallArchitecture.arm64);
 
-        manifest.AddInstallation(root1, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
-        manifest.AddInstallation(root2, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        testEnv.StubComponentDirectories(root1Path, (InstallComponent.SDK, "10.0.100"));
+        testEnv.StubComponentDirectories(root2Path, (InstallComponent.SDK, "10.0.100"));
+
+        var sdk1 = new Installation { Component = InstallComponent.SDK, Version = "10.0.100" };
+        var sdk2 = new Installation { Component = InstallComponent.SDK, Version = "10.0.100" };
+
+        manifest.AddInstallation(root1, sdk1);
+        manifest.AddInstallation(root2, sdk2);
 
         manifest.GetInstallations(root1).Should().ContainSingle();
         manifest.GetInstallations(root2).Should().ContainSingle();
@@ -200,7 +214,7 @@ public class ManifestTests
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
         var spec = new InstallSpec
         {
@@ -226,7 +240,7 @@ public class ManifestTests
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
 
         // Original spec from GlobalJson
         manifest.AddInstallSpec(installRoot, new InstallSpec
@@ -258,7 +272,13 @@ public class ManifestTests
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        var install100 = new Installation { Component = InstallComponent.SDK, Version = "9.0.100", Subcomponents = ["sdk/9.0.100"] };
+        var install200 = new Installation { Component = InstallComponent.SDK, Version = "9.0.200", Subcomponents = ["sdk/9.0.200"] };
+
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "9.0.100"), (InstallComponent.SDK, "9.0.200"));
 
         // Initial state: GlobalJson spec + installation at 9.0.100
         manifest.AddInstallSpec(installRoot, new InstallSpec
@@ -268,20 +288,10 @@ public class ManifestTests
             InstallSource = InstallSource.GlobalJson,
             GlobalJsonPath = @"C:\Projects\myapp\global.json"
         });
-        manifest.AddInstallation(installRoot, new Installation
-        {
-            Component = InstallComponent.SDK,
-            Version = "9.0.100",
-            Subcomponents = ["sdk/9.0.100"]
-        });
+        manifest.AddInstallation(installRoot, install100);
 
         // Simulate update: only add the new installation (no AddInstallSpec call)
-        manifest.AddInstallation(installRoot, new Installation
-        {
-            Component = InstallComponent.SDK,
-            Version = "9.0.200",
-            Subcomponents = ["sdk/9.0.200"]
-        });
+        manifest.AddInstallation(installRoot, install200);
 
         // Should still have exactly 1 install spec (the original GlobalJson one)
         var specs = manifest.GetInstallSpecs(installRoot).ToList();
@@ -299,7 +309,13 @@ public class ManifestTests
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
-        var installRoot = new DotnetInstallRoot(@"C:\dotnet", InstallArchitecture.x64);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        var install100 = new Installation { Component = InstallComponent.SDK, Version = "9.0.100", Subcomponents = ["sdk/9.0.100"] };
+        var install200 = new Installation { Component = InstallComponent.SDK, Version = "9.0.200", Subcomponents = ["sdk/9.0.200"] };
+
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "9.0.100"), (InstallComponent.SDK, "9.0.200"));
 
         // Initial state: Explicit spec + installation at 9.0.100
         manifest.AddInstallSpec(installRoot, new InstallSpec
@@ -308,20 +324,10 @@ public class ManifestTests
             VersionOrChannel = "9.0",
             InstallSource = InstallSource.Explicit
         });
-        manifest.AddInstallation(installRoot, new Installation
-        {
-            Component = InstallComponent.SDK,
-            Version = "9.0.100",
-            Subcomponents = ["sdk/9.0.100"]
-        });
+        manifest.AddInstallation(installRoot, install100);
 
         // Simulate update: only add the new installation (SkipInstallSpecRecording)
-        manifest.AddInstallation(installRoot, new Installation
-        {
-            Component = InstallComponent.SDK,
-            Version = "9.0.200",
-            Subcomponents = ["sdk/9.0.200"]
-        });
+        manifest.AddInstallation(installRoot, install200);
 
         // Should still have exactly 1 install spec
         manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
@@ -477,7 +483,7 @@ public class ManifestTests
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
         // Should NOT throw — checksum matches so validation is skipped
-        var result = manifest.ReadManifest();
+        var result = manifest.ReadManifestWithoutPruning();
         result.DotnetRoots.Should().HaveCount(1);
         result.DotnetRoots[0].Installations.Should().HaveCount(1);
     }
@@ -532,7 +538,7 @@ public class ManifestTests
         DotnetupManifestData result;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            result = manifest.ReadManifest();
+            result = manifest.ReadManifestWithoutPruning();
         }
 
         result.DotnetRoots.Should().HaveCount(1);
@@ -615,12 +621,22 @@ public class ManifestTests
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
         var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
+        var sdk = new Installation { Component = InstallComponent.SDK, Version = "9.0.100" };
+        var runtime = new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" };
+        var aspnet = new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" };
+
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null,
+            (InstallComponent.SDK, "9.0.100"),
+            (InstallComponent.Runtime, "9.0.0"),
+            (InstallComponent.ASPNETCore, "9.0.0"));
+
         // Add SDK, Runtime, ASPNETCore
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "9.0.100" });
-            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
-            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" });
+            manifest.AddInstallation(installRoot, sdk);
+            manifest.AddInstallation(installRoot, runtime);
+            manifest.AddInstallation(installRoot, aspnet);
         }
 
         IEnumerable<Installation> installs;
@@ -642,10 +658,18 @@ public class ManifestTests
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
         var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
+        var runtime = new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" };
+        var aspnet = new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" };
+
+        // Create component directories so ReadManifest() pruning keeps them.
+        testEnv.StubComponentDirectories(null,
+            (InstallComponent.Runtime, "9.0.0"),
+            (InstallComponent.ASPNETCore, "9.0.0"));
+
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.Runtime, Version = "9.0.0" });
-            manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.ASPNETCore, Version = "9.0.0" });
+            manifest.AddInstallation(installRoot, runtime);
+            manifest.AddInstallation(installRoot, aspnet);
         }
 
         IEnumerable<Installation> installs;
@@ -655,6 +679,229 @@ public class ManifestTests
         }
 
         installs.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region PruneStaleInstallations
+
+    [Fact]
+    public void ReadManifest_PrunesInstallationWhenComponentDirectoryDeleted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the SDK directory so AddInstallation succeeds through ReadManifest
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        }
+
+        // Delete the SDK directory to simulate manual deletion
+        Directory.Delete(sdkDir, recursive: true);
+
+        // ReadManifest should prune the stale entry
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().BeEmpty("the SDK directory was deleted");
+        }
+    }
+
+    [Fact]
+    public void ReadManifest_KeepsInstallationWhenComponentDirectoryExists()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the SDK directory
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        }
+
+        // ReadManifest should keep the entry since the directory still exists
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().ContainSingle()
+                .Which.Version.Should().Be("10.0.100");
+        }
+    }
+
+    [Fact]
+    public void ReadManifest_PrunesEntireRootWhenDirectoryDeleted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+
+        // Use a subdirectory that we can delete independently
+        var customRoot = Path.Combine(testEnv.TempRoot, "custom-dotnet");
+        Directory.CreateDirectory(customRoot);
+        var sdkDir = Path.Combine(customRoot, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        var root = new DotnetInstallRoot(customRoot, InstallArchitecture.x64);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        }
+
+        // Delete the entire root directory
+        Directory.Delete(customRoot, recursive: true);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            data.DotnetRoots.Should().NotContain(r => DotnetupUtilities.PathsEqual(r.Path, customRoot),
+                "the entire root directory was deleted");
+        }
+    }
+
+    [Fact]
+    public void ReadManifest_PrunesRuntimeInstallationWhenDeleted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the runtime directory
+        var runtimeDir = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "10.0.0");
+        Directory.CreateDirectory(runtimeDir);
+        File.WriteAllText(Path.Combine(runtimeDir, "System.Runtime.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.Runtime, Version = "10.0.0" });
+        }
+
+        // Delete the runtime directory
+        Directory.Delete(runtimeDir, recursive: true);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().BeEmpty("the runtime directory was deleted");
+        }
+    }
+
+    [Fact]
+    public void ReadManifest_PrunesAspNetInstallationWhenDeleted()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the ASP.NET Core directory
+        var aspnetDir = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.AspNetCore.App", "10.0.0");
+        Directory.CreateDirectory(aspnetDir);
+        File.WriteAllText(Path.Combine(aspnetDir, "Microsoft.AspNetCore.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.ASPNETCore, Version = "10.0.0" });
+        }
+
+        // Delete the ASP.NET Core directory
+        Directory.Delete(aspnetDir, recursive: true);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().BeEmpty("the ASP.NET Core directory was deleted");
+        }
+    }
+
+    [Fact]
+    public void ReadManifest_PrunesOnlyDeletedInstallationsKeepsOthers()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create SDK and runtime directories
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        var runtimeDir = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "10.0.0");
+        Directory.CreateDirectory(runtimeDir);
+        File.WriteAllText(Path.Combine(runtimeDir, "System.Runtime.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.Runtime, Version = "10.0.0" });
+        }
+
+        // Delete only the SDK directory
+        Directory.Delete(sdkDir, recursive: true);
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest.ReadManifest();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().ContainSingle()
+                .Which.Component.Should().Be(InstallComponent.Runtime);
+        }
+    }
+
+    [Fact]
+    public void ReadManifest_PrunePersistsToManifestFile()
+    {
+        using var testEnv = new TestEnvironment();
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        // Create the SDK directory
+        var sdkDir = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Combine(sdkDir, "dotnet.dll"), "fake");
+
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        }
+
+        // Delete it, read once to trigger pruning
+        Directory.Delete(sdkDir, recursive: true);
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            manifest.ReadManifest();
+        }
+
+        // Read again with a fresh manifest instance — should still be pruned (persisted).
+        // Use ReadManifestWithoutPruning so we verify the prune was actually written to disk
+        // and not just re-pruned on the second read.
+        var manifest2 = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var data = manifest2.ReadManifestWithoutPruning();
+            var rootEntry = data.DotnetRoots.FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath));
+            rootEntry.Should().NotBeNull();
+            rootEntry!.Installations.Should().BeEmpty("prune should have been persisted to disk");
+        }
     }
 
     #endregion

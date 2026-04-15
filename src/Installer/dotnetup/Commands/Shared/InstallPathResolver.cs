@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Spectre.Console;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 /// <summary>
@@ -12,11 +9,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// </summary>
 internal class InstallPathResolver
 {
-    private readonly IDotnetInstallManager _dotnetInstaller;
+    private readonly IDotnetEnvironmentManager _dotnetEnvironment;
 
-    public InstallPathResolver(IDotnetInstallManager dotnetInstaller)
+    public InstallPathResolver(IDotnetEnvironmentManager dotnetEnvironment)
     {
-        _dotnetInstaller = dotnetInstaller;
+        _dotnetEnvironment = dotnetEnvironment;
     }
 
     /// <summary>
@@ -33,28 +30,21 @@ internal class InstallPathResolver
 
     /// <summary>
     /// Resolves the install path using the following precedence:
-    /// 1. Path from global.json (if available)
-    /// 2. Explicitly provided install path
+    /// 1. Explicitly provided install path
+    /// 2. Path from global.json (if available)
     /// 3. Current user installation path (if exists)
-    /// 4. Interactive prompt (if interactive mode)
-    /// 5. Default install path
+    /// 4. Default install path
     /// </summary>
     /// <param name="explicitInstallPath">The install path explicitly provided by the user (e.g., --install-path option).</param>
     /// <param name="globalJsonInfo">Information from global.json, if available.</param>
     /// <param name="currentDotnetInstallRoot">Current .NET installation configuration, if any.</param>
-    /// <param name="interactive">Whether to prompt the user for input.</param>
-    /// <param name="componentDescription">Description of the component being installed (e.g., ".NET SDK", ".NET Runtime").</param>
-    /// <param name="error">Output parameter for any error message.</param>
-    /// <returns>The resolution result, or null if an error occurred.</returns>
-    public InstallPathResolutionResult? Resolve(
+    /// <returns>The resolution result.</returns>
+    /// <exception cref="DotnetInstallException">Thrown when the install path cannot be resolved.</exception>
+    public InstallPathResolutionResult Resolve(
         string? explicitInstallPath,
         GlobalJsonInfo? globalJsonInfo,
-        DotnetInstallRootConfiguration? currentDotnetInstallRoot,
-        bool interactive,
-        string componentDescription,
-        out string? error)
+        DotnetInstallRootConfiguration? currentDotnetInstallRoot)
     {
-        error = null;
         string? installPathFromGlobalJson = globalJsonInfo?.GlobalJsonPath is not null
             ? globalJsonInfo.SdkPath
             : null;
@@ -63,8 +53,7 @@ internal class InstallPathResolver
         // 1. Explicit --install-path always wins
         // 2. global.json sdk-path
         // 3. Existing user installation
-        // 4. Interactive prompt
-        // 5. Default install path
+        // 4. Default install path
 
         if (explicitInstallPath is not null)
         {
@@ -78,16 +67,9 @@ internal class InstallPathResolver
         {
             return new InstallPathResolutionResult(currentDotnetInstallRoot.Path, installPathFromGlobalJson, PathSource.ExistingUserInstall);
         }
-        else if (interactive)
-        {
-            var prompted = SpectreAnsiConsole.Prompt(
-                new TextPrompt<string>($"Where should we install the {componentDescription} to?")
-                    .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
-            return new InstallPathResolutionResult(prompted, installPathFromGlobalJson, PathSource.InteractivePrompt);
-        }
         else
         {
-            return new InstallPathResolutionResult(_dotnetInstaller.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, PathSource.Default);
+            return new InstallPathResolutionResult(_dotnetEnvironment.GetDefaultDotnetInstallPath(), installPathFromGlobalJson, PathSource.Default);
         }
     }
 }

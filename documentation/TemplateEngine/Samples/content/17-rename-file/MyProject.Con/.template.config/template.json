@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Contoso",
+  "classifications": [
+    "Console"
+  ],
+  "name": "Contoso Sample 17",
+  "identity": "MyProject.17.Sample.CSharp",
+  "groupIdentity": "MyProject.17.Sample",
+  "shortName": "sample17",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "symbols": {
+    "renameFileParameter": {
+      "type": "parameter",
+      "displayName": "File name",
+      "description": "Renames the default FileToRename.cs to the value provided.",
+      "datatype": "text",
+      "defaultValue": "FileToRename",
+      "replaces": "FileToRename",
+      "fileRename": "FileToRename"
+    }
+  },
+  "sourceName": "MyProject.Con",
+  "preferNameDirectory": true
+}

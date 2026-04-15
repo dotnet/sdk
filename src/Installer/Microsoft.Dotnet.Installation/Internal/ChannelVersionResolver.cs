@@ -24,14 +24,9 @@ internal class ChannelVersionResolver
     public const string LtsChannel = "lts";
 
     /// <summary>
-    /// Channel keyword for the latest Standard Term Support (STS) release.
-    /// </summary>
-    public const string StsChannel = "sts";
-
-    /// <summary>
     /// Known channel keywords that are always valid.
     /// </summary>
-    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel, StsChannel];
+    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel];
 
     /// <summary>
     /// Maximum reasonable major version number. .NET versions are currently single-digit;
@@ -132,41 +127,35 @@ internal class ChannelVersionResolver
             }
         }
 
-        if (parts.Length >= 3)
+        if (parts.Length >= 3 && !IsValidPatchPart(parts[2], hasPrerelease))
         {
-            var patch = parts[2];
-            if (string.IsNullOrEmpty(patch))
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsValidPatchPart(string patch, bool hasPrerelease)
+    {
+        if (string.IsNullOrEmpty(patch))
+        {
+            return false;
+        }
+
+        // Allow feature band pattern (e.g., "1xx", "101xx"), but NOT with a prerelease suffix.
+        if (patch.EndsWith("xx", StringComparison.OrdinalIgnoreCase))
+        {
+            if (hasPrerelease)
             {
                 return false;
             }
 
-            // Allow either:
-            //  - a fully specified numeric patch (e.g., "103"), optionally with a prerelease suffix, or
-            //  - a feature band pattern with a numeric prefix and "xx" suffix (e.g., "1xx", "101xx"),
-            //    but NOT with a prerelease suffix (wildcards with prerelease not supported).
-            if (patch.EndsWith("xx", StringComparison.OrdinalIgnoreCase))
-            {
-                if (hasPrerelease)
-                {
-                    return false;
-                }
-
-                var prefix = patch.Substring(0, patch.Length - 2);
-                if (prefix.Length == 0 || !int.TryParse(prefix, out _))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (!int.TryParse(patch, out var numericPatch) || numericPatch < 0)
-                {
-                    return false;
-                }
-            }
+            var prefix = patch.Substring(0, patch.Length - 2);
+            return prefix.Length > 0 && int.TryParse(prefix, out _);
         }
 
-        return true;
+        // Allow fully specified numeric patch (e.g., "103"), optionally with a prerelease suffix.
+        return int.TryParse(patch, out var numericPatch) && numericPatch >= 0;
     }
 
     /// <summary>
@@ -186,7 +175,7 @@ internal class ChannelVersionResolver
 
         if (parts.Length >= 3)
         {
-            if (parts[2].EndsWith("xx"))
+            if (parts[2].EndsWith("xx", StringComparison.OrdinalIgnoreCase))
             {
                 // Feature band pattern (e.g., "1xx")
                 featureBand = parts[2].Substring(0, parts[2].Length - 2);
@@ -204,16 +193,15 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
-    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "sts", "preview")</param>
+    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "preview")</param>
     /// <param name="component">The component to check (ie SDK or runtime)</param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
     {
-        if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase) || string.Equals(channel.Name, StsChannel, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var releaseType = string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase) ? ReleaseType.LTS : ReleaseType.STS;
             var productIndex = _releaseManifest.GetReleasesIndex();
-            return GetLatestVersionByReleaseType(productIndex, releaseType, component);
+            return GetLatestVersionByReleaseType(productIndex, ReleaseType.LTS, component);
         }
         else if (string.Equals(channel.Name, PreviewChannel, StringComparison.OrdinalIgnoreCase))
         {
@@ -260,7 +248,7 @@ internal class ChannelVersionResolver
 
     private static IEnumerable<Product> GetProductsInMajorOrMajorMinor(IEnumerable<Product> index, int major, int? minor = null)
     {
-        var validProducts = index.Where(p => minor is not null ? p.ProductVersion.Equals($"{major}.{minor}") : p.ProductVersion.StartsWith($"{major}."));
+        var validProducts = index.Where(p => minor is not null ? p.ProductVersion.Equals($"{major}.{minor}") : p.ProductVersion.StartsWith($"{major}.", StringComparison.Ordinal));
         return validProducts;
     }
 

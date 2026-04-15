@@ -12,14 +12,19 @@ public class ScopedMutex : IDisposable
     private static readonly AsyncLocal<Dictionary<string, MutexState>> s_heldMutexCounts = new();
 
     /// <summary>
-    /// Timeout in seconds for mutex acquisition. Default is 5 minutes.
+    /// Timeout in seconds for mutex acquisition. Default is 10 minutes.
+    /// CI agents (especially Helix) can be very slow, so this must be generous.
     /// </summary>
-    public static int TimeoutSeconds { get; set; } = 300;
+    public static int TimeoutSeconds { get; set; } = 600;
 
     /// <summary>
     /// Optional callback invoked when we need to wait for the mutex (another process holds it).
     /// </summary>
     public static Action? OnWaitingForMutex { get; set; }
+
+    // Process-wide count of non-reentrant mutex holds across all async contexts.
+    // Used to suppress the "waiting" callback when the holder is within this same process.
+    private static int s_processActiveHolds;
 
     public ScopedMutex(string name)
     {
@@ -32,7 +37,7 @@ public class ScopedMutex : IDisposable
             // Re-entrant: this thread already holds this mutex
             ++state.HoldCount;
             _isReentrant = true;
-            _mutex = null!;
+            _mutex = null!; // null! needed: _mutex is non-nullable Mutex but unused in re-entrant path
             return;
         }
 
@@ -41,27 +46,41 @@ public class ScopedMutex : IDisposable
 
         // On Linux and Mac, "Global\" prefix doesn't work - strip it if present
         string mutexName = name;
-        if (Environment.OSVersion.Platform != PlatformID.Win32NT && mutexName.StartsWith("Global\\"))
+        if (Environment.OSVersion.Platform != PlatformID.Win32NT && mutexName.StartsWith("Global\\", StringComparison.Ordinal))
         {
             mutexName = mutexName.Substring(7);
         }
 
         _mutex = new Mutex(false, mutexName);
 
-        // First try immediate acquisition to see if we need to wait
-        if (!_mutex.WaitOne(0, false))
+        try
         {
-            // Another process holds the mutex - notify caller before blocking
-            OnWaitingForMutex?.Invoke();
-
-            // Now wait for the full timeout
-            if (!_mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false))
+            // First try immediate acquisition to see if we need to wait
+            if (!_mutex.WaitOne(0, false))
             {
-                _mutex.Dispose();
-                throw new TimeoutException($"Could not acquire mutex '{name}' within {TimeoutSeconds} seconds.");
+                // Another process holds the mutex — only invoke the callback when an
+                // *external* process holds the mutex. Suppress when another task within
+                // this process holds it so we don't show misleading "waiting" text.
+                if (Volatile.Read(ref s_processActiveHolds) == 0)
+                {
+                    OnWaitingForMutex?.Invoke();
+                }
+
+                // Now wait for the full timeout
+                if (!_mutex.WaitOne(TimeSpan.FromSeconds(TimeoutSeconds), false))
+                {
+                    _mutex.Dispose();
+                    throw new TimeoutException($"Could not acquire mutex '{name}' within {TimeoutSeconds} seconds.");
+                }
             }
         }
+        catch (AbandonedMutexException)
+        {
+            // A previous process holding the mutex exited without releasing it.
+            // The OS still grants ownership to this thread, so we can proceed safely.
+        }
 
+        Interlocked.Increment(ref s_processActiveHolds);
         held[name] = new MutexState { Mutex = _mutex, HoldCount = 1 };
     }
 
@@ -84,6 +103,10 @@ public class ScopedMutex : IDisposable
                     // This shouldn't normally happen (it means too many Disposes),
                     // but clean up anyway
                     held.Remove(Name);
+                    if (held.Count == 0)
+                    {
+                        s_heldMutexCounts.Value = null!;
+                    }
                 }
             }
             return;
@@ -91,11 +114,18 @@ public class ScopedMutex : IDisposable
 
         try
         {
+            Interlocked.Decrement(ref s_processActiveHolds);
             _mutex.ReleaseMutex();
         }
         finally
         {
-            s_heldMutexCounts.Value?.Remove(Name);
+            var held = s_heldMutexCounts.Value;
+            held?.Remove(Name);
+            if (held is not null && held.Count == 0)
+            {
+                s_heldMutexCounts.Value = null!;
+            }
+
             _mutex.Dispose();
         }
     }

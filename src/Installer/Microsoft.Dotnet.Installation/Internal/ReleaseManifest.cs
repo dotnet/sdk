@@ -36,7 +36,7 @@ internal class ReleaseManifest
             var release = FindRelease(product, resolvedVersion, installRequest.Component)
                 ?? throw new DotnetInstallException(
                     DotnetInstallErrorCode.ReleaseNotFound,
-                    $"No release found for version {resolvedVersion}",
+                    $"No release found for version {resolvedVersion}. Daily build versions are not yet supported.",
                     version: resolvedVersion.ToString(),
                     component: installRequest.Component.ToString());
             return FindMatchingFile(release, installRequest);

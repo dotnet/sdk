@@ -8,7 +8,6 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -17,7 +16,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// </summary>
 public class InstallPathResolverTests(ITestOutputHelper output)
 {
-    private readonly InstallPathResolver _resolver = new(new DotnetInstallManager());
+    private readonly InstallPathResolver _resolver = new(new DotnetEnvironmentManager());
 
     // Use platform-appropriate temp paths for test data
     private static readonly string TempDir = Path.GetTempPath();
@@ -37,14 +36,10 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var result = _resolver.Resolve(
             explicitInstallPath: ExplicitPath,
             globalJsonInfo: globalJsonInfo,
-            currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: null);
 
-        output.WriteLine($"Error: {error ?? "(none)"}, Result: {result?.ResolvedInstallPath ?? "(null)"}");
+        output.WriteLine($"Result: {result?.ResolvedInstallPath ?? "(null)"}");
 
-        error.Should().BeNull("explicit install path should override global.json without error");
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(ExplicitPath);
         result.PathSource.Should().Be(PathSource.Explicit);
@@ -58,12 +53,8 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var result = _resolver.Resolve(
             explicitInstallPath: null,
             globalJsonInfo: globalJsonInfo,
-            currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: null);
 
-        error.Should().BeNull();
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(GlobalJsonPath);
         result.PathSource.Should().Be(PathSource.GlobalJson);
@@ -77,12 +68,8 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var result = _resolver.Resolve(
             explicitInstallPath: SamePath,
             globalJsonInfo: globalJsonInfo,
-            currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: null);
 
-        error.Should().BeNull();
         result!.ResolvedInstallPath.Should().Be(SamePath);
         result.PathSource.Should().Be(PathSource.Explicit);
     }
@@ -93,12 +80,8 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var result = _resolver.Resolve(
             explicitInstallPath: ExplicitPath,
             globalJsonInfo: null,
-            currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: null);
 
-        error.Should().BeNull();
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(ExplicitPath);
         result.PathSource.Should().Be(PathSource.Explicit);
@@ -107,16 +90,12 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     [Fact]
     public void Resolve_UsesDefaultPath_WhenNothingSpecified()
     {
-        var installManager = new DotnetInstallManager();
+        var installManager = new DotnetEnvironmentManager();
         var result = _resolver.Resolve(
             explicitInstallPath: null,
             globalJsonInfo: null,
-            currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: null);
 
-        error.Should().BeNull();
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(installManager.GetDefaultDotnetInstallPath());
         result.PathSource.Should().Be(PathSource.Default);
@@ -131,12 +110,8 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var result = _resolver.Resolve(
             explicitInstallPath: null,
             globalJsonInfo: null,
-            currentDotnetInstallRoot: currentInstall,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: currentInstall);
 
-        error.Should().BeNull();
         result!.ResolvedInstallPath.Should().Be("/user/dotnet");
         result.PathSource.Should().Be(PathSource.ExistingUserInstall);
     }
@@ -151,12 +126,8 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var result = _resolver.Resolve(
             explicitInstallPath: ExplicitPath,
             globalJsonInfo: null,
-            currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: null);
 
-        error.Should().BeNull();
         result.Should().NotBeNull("explicit path must work even without global.json");
         result!.ResolvedInstallPath.Should().Be(ExplicitPath);
         result.PathSource.Should().Be(PathSource.Explicit);
@@ -175,12 +146,8 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var result = _resolver.Resolve(
             explicitInstallPath: ExplicitPath,
             globalJsonInfo: null,
-            currentDotnetInstallRoot: currentInstall,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: currentInstall);
 
-        error.Should().BeNull();
         result!.ResolvedInstallPath.Should().Be(ExplicitPath, "explicit path should win over existing user install");
         result.PathSource.Should().Be(PathSource.Explicit);
     }
@@ -198,12 +165,8 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var result = _resolver.Resolve(
             explicitInstallPath: null,
             globalJsonInfo: globalJsonInfo,
-            currentDotnetInstallRoot: currentInstall,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: currentInstall);
 
-        error.Should().BeNull();
         result!.ResolvedInstallPath.Should().Be(GlobalJsonPath, "global.json should win over existing user install");
         result.PathSource.Should().Be(PathSource.GlobalJson);
     }
@@ -217,12 +180,8 @@ public class InstallPathResolverTests(ITestOutputHelper output)
         var result = _resolver.Resolve(
             explicitInstallPath: null,
             globalJsonInfo: null,
-            currentDotnetInstallRoot: null,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: null);
 
-        error.Should().BeNull();
         result.Should().NotBeNull("default path fallback must always produce a result");
         result!.ResolvedInstallPath.Should().NotBeNullOrEmpty();
         result.PathSource.Should().Be(PathSource.Default);
@@ -235,17 +194,13 @@ public class InstallPathResolverTests(ITestOutputHelper output)
     public void Resolve_AdminInstall_FallsToDefault_NotExistingInstall()
     {
         var installRoot = new DotnetInstallRoot("/admin/dotnet", InstallerUtilities.GetDefaultInstallArchitecture());
-        var currentInstall = new DotnetInstallRootConfiguration(installRoot, InstallType.Admin, IsFullyConfigured: true);
+        var currentInstall = new DotnetInstallRootConfiguration(installRoot, InstallType.System, IsFullyConfigured: true);
 
         var result = _resolver.Resolve(
             explicitInstallPath: null,
             globalJsonInfo: null,
-            currentDotnetInstallRoot: currentInstall,
-            interactive: false,
-            componentDescription: ".NET SDK",
-            out string? error);
+            currentDotnetInstallRoot: currentInstall);
 
-        error.Should().BeNull();
         result!.ResolvedInstallPath.Should().NotBe("/admin/dotnet", "admin installs should not be used as fallback");
         result.PathSource.Should().Be(PathSource.Default);
     }

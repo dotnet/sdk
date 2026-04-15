@@ -15,21 +15,36 @@ internal record DotnetInstall(
     InstallComponent Component);
 
 /// <summary>
-/// Represents a request for a .NET installation with a channel version that will get resolved into a fully specified version.
+/// A lightweight specification for an install request before path resolution and
+/// version resolution have occurred. Holds only the component type and an optional
+/// version/channel string as provided by the user (e.g. "10.0", "latest", or null).
+/// </summary>
+internal record MinimalInstallSpec(
+    InstallComponent Component,
+    string? VersionOrChannel);
+
+/// <summary>
+/// Represents a request for a .NET installation.
+/// <see cref="Channel"/> is the unresolved version channel string provided by the user
+/// (e.g. "latest", "10.0", "9.0.3xx", or a specific version like "9.0.304").
+/// It has NOT been resolved to a concrete <see cref="ReleaseVersion"/>.
+/// To obtain a resolved version, create a <see cref="ResolvedInstallRequest"/>
+/// by resolving this request through a <c>ChannelVersionResolver</c>.
 /// </summary>
 internal record DotnetInstallRequest(
     DotnetInstallRoot InstallRoot,
     UpdateChannel Channel,
     InstallComponent Component,
-    InstallRequestOptions Options)
-{
-    /// <summary>
-    /// Optional pre-resolved version. When set, the orchestrator uses this directly
-    /// instead of resolving the channel again. The Channel is still needed for
-    /// recording the install spec in the manifest.
-    /// </summary>
-    public ReleaseVersion? ResolvedVersion { get; init; }
-}
+    InstallRequestOptions Options);
+
+/// <summary>
+/// An install request whose <see cref="DotnetInstallRequest.Channel"/> has been resolved to a concrete
+/// <see cref="ResolvedVersion"/>. Created by the install workflow after version
+/// resolution succeeds. The <see cref="ResolvedVersion"/> is guaranteed non-null.
+/// </summary>
+internal record ResolvedInstallRequest(
+    DotnetInstallRequest Request,
+    ReleaseVersion ResolvedVersion);
 
 internal record InstallRequestOptions()
 {
@@ -65,6 +80,26 @@ internal record InstallRequestOptions()
     /// already exists (e.g., during updates) to avoid creating duplicates.
     /// </summary>
     public bool SkipInstallSpecRecording { get; init; }
+
+    /// <summary>
+    /// Controls the level of diagnostic output during installation.
+    /// Corresponds to the <c>--verbosity</c> CLI option.
+    /// </summary>
+    public Verbosity Verbosity { get; init; }
+}
+
+/// <summary>
+/// Controls the amount of output produced during installation operations.
+/// Currently only <see cref="Normal"/> (default) and <see cref="Detailed"/> are
+/// implemented. Future levels such as Quiet and Diagnostic can be added between
+/// or after the existing values when needed.
+/// </summary>
+internal enum Verbosity
+{
+    // Future: Quiet = 0,
+    Normal = 1,
+    Detailed = 2,
+    // Future: Diagnostic = 3,
 }
 
 /// <summary>

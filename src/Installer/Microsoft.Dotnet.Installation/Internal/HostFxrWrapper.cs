@@ -39,10 +39,11 @@ internal partial class HostFxrWrapper
 
         foreach (var runtime in environmentInfo.RuntimeInfo.ToList())
         {
+            var component = InstallComponentExtensions.FromFrameworkName(runtime.Name) ?? InstallComponent.Runtime;
             installs.Add(new DotnetInstall(
                 new DotnetInstallRoot(installRoot, InstallerUtilities.GetDefaultInstallArchitecture()),
                 runtime.Version,
-                InstallComponent.Runtime)); // TODO: Determine the correct InstallComponent based on runtime.Name like release manifest does
+                component));
         }
 
         return installs;
@@ -52,6 +53,7 @@ internal partial class HostFxrWrapper
     private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
 
     [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvStdcall)])]
     private static partial IntPtr LoadLibraryExW(string lpFileName, IntPtr hFile, int dwFlags);
 
     private static void PreloadHostFxrLibrary(string dotnetExeDirectory)

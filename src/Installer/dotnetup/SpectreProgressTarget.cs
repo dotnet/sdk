@@ -13,11 +13,28 @@ public class SpectreProgressTarget : IProgressTarget
     {
         private readonly TaskCompletionSource _overallTask = new();
         private readonly ProgressContext _progressContext;
+        private readonly List<ProgressTaskImpl> _tasks = [];
 
         public Reporter()
         {
             TaskCompletionSource<ProgressContext> tcs = new();
-            var progressTask = AnsiConsole.Progress().StartAsync(async ctx =>
+            var progress = AnsiConsole.Progress();
+            var successAltStyle = Style.Parse(DotnetupTheme.Current.SuccessAlt);
+            progress.Columns(
+                new SpinnerColumn(Spinner.Known.Line) { Style = Style.Parse(DotnetupTheme.Current.Brand) },
+                new TaskDescriptionColumn { Alignment = Justify.Left },
+                new ProgressBarColumn
+                {
+                    CompletedStyle = Style.Parse(DotnetupTheme.Current.Brand),
+                    FinishedStyle = successAltStyle,
+                    RemainingStyle = new Style(Color.Grey),
+                },
+                new PercentageColumn
+                {
+                    CompletedStyle = successAltStyle,
+                });
+
+            var progressTask = progress.StartAsync(async ctx =>
             {
                 tcs.SetResult(ctx);
                 await _overallTask.Task.ConfigureAwait(false);
@@ -28,28 +45,112 @@ public class SpectreProgressTarget : IProgressTarget
 
         public IProgressTask AddTask(string description, double maxValue)
         {
-            return new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue));
+            var task = new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue));
+            _tasks.Add(task);
+            return task;
         }
 
         public void Dispose()
         {
+            foreach (var task in _tasks)
+            {
+                task.StopShimmer();
+            }
+
             _overallTask.TrySetResult();
         }
     }
 
-    private sealed class ProgressTaskImpl : IProgressTask
+    private sealed class ProgressTaskImpl : IProgressTask, IDisposable
     {
         private readonly Spectre.Console.ProgressTask _task;
+        private readonly string _baseDescription;
+        private readonly string? _shimmerWord;
+        private readonly string? _restEscaped;
+        private readonly Timer? _shimmerTimer;
+        private int _shimmerTick;
+        private volatile bool _shimmerStopped;
 
         public ProgressTaskImpl(Spectre.Console.ProgressTask task)
         {
             _task = task;
+            _baseDescription = task.Description;
+
+            int spaceIndex = _baseDescription.IndexOf(' ');
+            if (spaceIndex > 0 && _baseDescription.StartsWith("Installing", StringComparison.Ordinal))
+            {
+                _shimmerWord = _baseDescription[..spaceIndex];
+                _restEscaped = _baseDescription[spaceIndex..].EscapeMarkup();
+                _shimmerTimer = new Timer(OnShimmerTick, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(80));
+            }
         }
+
+        /// <summary>
+        /// Timer callback that creates a "shimmer" wave effect on the status word (e.g. "Installing").
+        /// A bright highlight sweeps left-to-right across the characters, fading from bold white at
+        /// the center to grey at the edges, then briefly exits before re-entering.
+        /// </summary>
+        private void OnShimmerTick(object? state)
+        {
+            if (_shimmerStopped)
+            {
+                return;
+            }
+
+            try
+            {
+                int tick = Interlocked.Increment(ref _shimmerTick);
+                int wordLen = _shimmerWord!.Length;
+                // Wave sweeps across the word then briefly exits before re-entering.
+                int totalPositions = wordLen + 6;
+                // Offset by -3 so the shimmer wave starts off-screen (left of the word)
+                // and sweeps across naturally before exiting on the right.
+                int center = (tick % totalPositions) - 3;
+
+                var sb = new StringBuilder();
+                for (int i = 0; i < wordLen; i++)
+                {
+                    int distance = Math.Abs(i - center);
+                    string ch = _shimmerWord[i].ToString().EscapeMarkup();
+
+                    sb.Append(distance switch
+                    {
+                        0 => $"[white bold]{ch}[/]",
+                        1 => $"[grey85]{ch}[/]",
+                        _ => $"[grey]{ch}[/]",
+                    });
+                }
+
+                sb.Append(_restEscaped);
+                _task.Description = sb.ToString();
+            }
+            catch
+            {
+                // Shimmer is cosmetic — swallow any rendering errors silently.
+            }
+        }
+
+        public void StopShimmer()
+        {
+            _shimmerStopped = true;
+            _shimmerTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            _shimmerTimer?.Dispose();
+            _task.Description = _baseDescription;
+        }
+
+        public void Dispose() => StopShimmer();
 
         public double Value
         {
             get => _task.Value;
-            set => _task.Value = value;
+            set
+            {
+                _task.Value = value;
+                if (value >= _task.MaxValue && _shimmerTimer is not null && !_shimmerStopped)
+                {
+                    StopShimmer();
+                }
+            }
         }
 
         public string Description

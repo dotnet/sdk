@@ -7,42 +7,24 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
-internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
+internal class SdkInstallCommand(ParseResult result) : InstallCommand(result)
 {
-    private readonly string? _versionOrChannel = result.GetValue(SdkInstallCommandParser.ChannelArgument);
-    private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
-    private readonly bool? _setDefaultInstall = result.GetValue(CommonOptions.SetDefaultInstallOption);
-    private readonly bool? _updateGlobalJson = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption);
-    private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
-    private readonly bool _interactive = result.GetValue(CommonOptions.InteractiveOption);
-    private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
-    private readonly bool _requireMuxerUpdate = result.GetValue(CommonOptions.RequireMuxerUpdateOption);
-    private readonly bool _untracked = result.GetValue(CommonOptions.UntrackedOption);
+    private readonly string[] _channels = result.GetValue(SdkInstallCommandParser.ChannelArguments) ?? [];
 
-    private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
-    private readonly ChannelVersionResolver _channelVersionResolver = new();
+    public override bool UpdateGlobalJson { get; } = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption) ?? false;
 
     protected override string GetCommandName() => "sdk/install";
 
     protected override int ExecuteCore()
     {
-        var workflow = new InstallWorkflow(_dotnetInstaller, _channelVersionResolver);
+        // Map each channel to a MinimalInstallSpec. If none provided, a single null-channel
+        // entry lets the workflow fall back to global.json or "latest".
+        var specs = _channels.Length > 0
+            ? _channels.Select(c => new MinimalInstallSpec(InstallComponent.SDK, c)).ToArray()
+            : [new MinimalInstallSpec(InstallComponent.SDK, null)];
 
-        var options = new InstallWorkflow.InstallWorkflowOptions(
-            _versionOrChannel,
-            _installPath,
-            _setDefaultInstall,
-            _manifestPath,
-            _interactive,
-            _noProgress,
-            InstallComponent.SDK,
-            ".NET SDK",
-            _updateGlobalJson,
-            GlobalJsonChannelResolver.ResolveChannel,
-            _requireMuxerUpdate,
-            _untracked);
-
-        workflow.Execute(options);
+        var workflow = new InstallWorkflow(this);
+        workflow.Execute(specs);
         return 0;
     }
 }

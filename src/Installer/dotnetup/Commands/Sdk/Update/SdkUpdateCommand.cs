@@ -12,6 +12,7 @@ internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = fal
     private readonly bool _updateAll = updateAllOverride || result.GetValue(SdkUpdateCommandParser.UpdateAllOption);
     private readonly bool _updateGlobalJson = result.GetValue(SdkUpdateCommandParser.UpdateGlobalJsonOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
+    private readonly Verbosity _verbosity = result.GetValue(CommonOptions.VerbosityOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
 
@@ -25,6 +26,7 @@ internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = fal
             _installPath,
             _updateAll ? null : InstallComponent.SDK,
             _noProgress,
-            _updateGlobalJson);
+            _updateGlobalJson,
+            _verbosity);
     }
 }

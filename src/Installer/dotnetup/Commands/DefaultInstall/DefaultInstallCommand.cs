@@ -10,10 +10,10 @@ internal class DefaultInstallCommand : CommandBase
     private readonly string _installType;
     private readonly InstallRootManager _installRootManager;
 
-    public DefaultInstallCommand(ParseResult result, IDotnetInstallManager? dotnetInstaller = null) : base(result)
+    public DefaultInstallCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
     {
         _installType = result.GetValue(DefaultInstallCommandParser.InstallTypeArgument)!;
-        _installRootManager = new InstallRootManager(dotnetInstaller);
+        _installRootManager = new InstallRootManager(dotnetEnvironment);
     }
 
     protected override string GetCommandName() => "defaultinstall";
@@ -23,7 +23,7 @@ internal class DefaultInstallCommand : CommandBase
         return _installType.ToLowerInvariant() switch
         {
             DefaultInstallCommandParser.UserInstallType => SetUserInstallRoot(),
-            DefaultInstallCommandParser.AdminInstallType => SetAdminInstallRoot(),
+            DefaultInstallCommandParser.SystemInstallType => SetSystemInstallRoot(),
             _ => throw new InvalidOperationException($"Unknown install type: {_installType}")
         };
     }
@@ -60,18 +60,18 @@ internal class DefaultInstallCommand : CommandBase
         return 0;
     }
 
-    private int SetAdminInstallRoot()
+    private int SetSystemInstallRoot()
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, "Configuring the admin install root is only supported on Windows.");
+            throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, "Configuring the system install root is only supported on Windows.");
         }
 
         var changes = _installRootManager.GetAdminInstallRootChanges();
 
         if (!changes.NeedsChange())
         {
-            Console.WriteLine("Admin install root already configured.");
+            Console.WriteLine("System install root already configured.");
             return 0;
         }
 

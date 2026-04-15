@@ -152,7 +152,6 @@ public class VersionSanitizerTelemetryTests
     [InlineData("latest", "latest")]
     [InlineData("preview", "preview")]
     [InlineData("lts", "lts")]
-    [InlineData("sts", "sts")]
     public void Sanitize_ValidVersions_PassThrough(string input, string expected)
     {
         var result = VersionSanitizer.Sanitize(input);
@@ -517,28 +516,25 @@ public class DotnetupTelemetryTests : IDisposable
     }
 }
 
+[Collection("DotnetupEnvironmentMutationTests")]
 public class FirstRunNoticeTests : IDisposable
 {
     private const string NoLogoEnvVar = "DOTNET_NOLOGO";
-    private const string DataDirEnvVar = "DOTNET_DOTNETUP_DATA_DIR";
 
     private readonly string _tempDir;
-    private readonly string? _originalDataDir;
 
     public FirstRunNoticeTests()
     {
         _tempDir = Path.Combine(Path.GetTempPath(), $"dotnetup-test-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDir);
 
-        // Redirect DotnetupPaths.DataDirectory to the temp dir so tests
-        // never touch the real user profile.
-        _originalDataDir = Environment.GetEnvironmentVariable(DataDirEnvVar);
-        Environment.SetEnvironmentVariable(DataDirEnvVar, _tempDir);
+        // Thread-local override — safe for parallel test execution.
+        DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
     }
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable(DataDirEnvVar, _originalDataDir);
+        DotnetupPaths.ClearTestDataDirectoryOverride();
 
         try { Directory.Delete(_tempDir, recursive: true); }
         catch { /* best-effort cleanup */ }

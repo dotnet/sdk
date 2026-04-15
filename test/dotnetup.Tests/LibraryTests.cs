@@ -26,7 +26,6 @@ public class LibraryTests
     [Theory]
     [InlineData("9", InstallComponent.SDK)]
     [InlineData("latest", InstallComponent.SDK)]
-    [InlineData("sts", InstallComponent.SDK)]
     [InlineData("lts", InstallComponent.SDK)]
     [InlineData("preview", InstallComponent.SDK)]
     [InlineData("9", InstallComponent.Runtime)]
@@ -58,7 +57,8 @@ public class LibraryTests
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
         var channels = releaseInfoProvider.GetSupportedChannels();
 
-        channels.Should().Contain(new[] { "latest", "lts", "sts", "preview" });
+        channels.Should().Contain(new[] { "latest", "lts", "preview" });
+        channels.Should().NotContain("sts");
 
         //  This will need to be updated every few years as versions go out of support
         channels.Should().Contain(new[] { "10.0", "10.0.1xx" });

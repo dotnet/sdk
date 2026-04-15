@@ -3,6 +3,8 @@
 
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 
@@ -16,6 +18,11 @@ internal class DotnetupProgram
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
+        // Capture current console encoding so it can be restored on exit.
+        // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.
+        using AutomaticEncodingRestorer encodingRestorer = new();
+        ConfigureConsoleEncoding();
+
         // Disable Spectre.Console line wrapping when output is redirected (piped),
         // since wrapping is not useful for non-interactive consumers.
         if (Console.IsOutputRedirected)
@@ -23,10 +30,11 @@ internal class DotnetupProgram
             AnsiConsole.Profile.Width = int.MaxValue;
         }
 
-        // Set up callback to notify user when waiting for another dotnetup process
+        // Set up callback to notify user when waiting for another dotnetup process.
+        // Write to stderr so piped stdout (e.g., print-env-script) is not corrupted.
         ScopedMutex.OnWaitingForMutex = () =>
         {
-            Console.WriteLine("Another dotnetup process is running. Waiting for it to finish...");
+            Console.Error.WriteLine("Another dotnetup process is running. Waiting for it to finish...");
         };
 
         // Show first-run telemetry notice if needed
@@ -39,11 +47,9 @@ internal class DotnetupProgram
 
         try
         {
-            var result = Parser.Invoke(args);
-            rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
-            rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            var exitCode = InvokeParser(args, rootActivity);
 
-            return result;
+            return exitCode;
         }
         catch (Exception ex)
         {
@@ -64,22 +70,53 @@ internal class DotnetupProgram
             // exporters see it.  The 'using' dispose that follows is a no-op on
             // an already-stopped Activity.
             rootActivity?.Stop();
+            DisposeTelemetry();
+        }
+    }
 
-            // The Azure Monitor exporter has built-in offline storage
-            // (%LOCALAPPDATA%\Microsoft\AzureMonitor) so unsent telemetry
-            // survives process exit and is retried on the next run.
-            // Dispose on a background thread with a short timeout so we
-            // never block the user waiting for a network round-trip.
-            // This mirrors the pattern used by the .NET CLI, which writes
-            // telemetry to disk and sends it asynchronously.
-            try
-            {
-                Task.Run(DotnetupTelemetry.Instance.Dispose).Wait(TimeSpan.FromMilliseconds(100));
-            }
-            catch
-            {
-                // Telemetry should never delay or crash the process exit.
-            }
+    private static int InvokeParser(string[] args, Activity? rootActivity)
+    {
+        var result = Parser.Invoke(args);
+        rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
+        rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+        return result;
+    }
+
+    private static void DisposeTelemetry()
+    {
+        // Best-effort flush with a short timeout. The Azure Monitor exporter
+        // has built-in offline storage (%LOCALAPPDATA%\Microsoft\AzureMonitor)
+        // so unsent spans survive process exit and are retried on the next run.
+        //
+        // We intentionally skip Dispose(): TracerProvider.Dispose() internally
+        // calls Shutdown() with its own (potentially long) timeout, which would
+        // block the user noticeably. Since ThreadPool threads are background
+        // threads, any remaining exporter work is terminated when Main returns.
+        try
+        {
+            DotnetupTelemetry.Instance.Flush(timeoutMilliseconds: 100);
+        }
+        catch
+        {
+            // Telemetry should never delay or crash the process exit.
+        }
+    }
+
+    /// <summary>
+    /// Sets the console output encoding to UTF-8 so Unicode glyphs render correctly.
+    /// Uses UILanguageOverride.OperatingSystemSupportsUtf8() from the .NET SDK CLI.
+    /// </summary>
+    private static void ConfigureConsoleEncoding()
+    {
+        if (Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1"
+            && UILanguageOverride.OperatingSystemSupportsUtf8())
+        {
+            // Use UTF-8 without BOM to prevent corrupting piped output.
+            // Encoding.UTF8 has encoderShouldEmitUTF8Identifier=true, which causes the
+            // runtime to write a 3-byte BOM (0xEF 0xBB 0xBF) to stdout when the encoding
+            // is first applied. This corrupts scripts generated by print-env-script when
+            // output is redirected to a file (e.g., `dotnetup print-env-script > env.sh`).
+            Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         }
     }
 }

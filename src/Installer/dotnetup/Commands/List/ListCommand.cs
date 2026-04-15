@@ -53,9 +53,6 @@ internal static class InstallationLister
     /// </summary>
     public static ListData GetListData(bool verify = false, string? manifestPath = null, string? installPath = null)
     {
-        var installSpecs = new List<InstallSpecInfo>();
-        var installations = new List<InstallationInfo>();
-
         DotnetupManifestData manifestData;
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
@@ -70,52 +67,59 @@ internal static class InstallationLister
                 Path.GetFullPath(r.Path), Path.GetFullPath(installPath), StringComparison.OrdinalIgnoreCase))
             : manifestData.DotnetRoots;
 
-        foreach (var root in roots)
+        var allData = roots.Select(r => CollectRootData(r, verify, validator)).ToList();
+
+        return new ListData
         {
-            var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
+            InstallSpecs = [.. allData.SelectMany(d => d.Specs)],
+            Installations = [.. allData.SelectMany(d => d.Installations)]
+        };
+    }
 
-            // Collect install specs
-            foreach (var spec in root.InstallSpecs)
+    private static (List<InstallSpecInfo> Specs, List<InstallationInfo> Installations) CollectRootData(
+        DotnetRootEntry root,
+        bool verify,
+        ArchiveInstallationValidator validator)
+    {
+        var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
+
+        var specs = root.InstallSpecs.Select(spec => new InstallSpecInfo
+        {
+            Component = spec.Component,
+            VersionOrChannel = spec.VersionOrChannel,
+            Source = spec.InstallSource,
+            GlobalJsonPath = spec.GlobalJsonPath,
+            InstallRoot = root.Path,
+            Architecture = root.Architecture
+        }).ToList();
+
+        var installations = new List<InstallationInfo>();
+        foreach (var installation in root.Installations)
+        {
+            bool? isValid = null;
+            string? validationFailure = null;
+
+            if (verify)
             {
-                installSpecs.Add(new InstallSpecInfo
-                {
-                    Component = spec.Component,
-                    VersionOrChannel = spec.VersionOrChannel,
-                    Source = spec.InstallSource,
-                    GlobalJsonPath = spec.GlobalJsonPath,
-                    InstallRoot = root.Path,
-                    Architecture = root.Architecture
-                });
+                var dotnetInstall = new DotnetInstall(
+                    installRoot,
+                    new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
+                    installation.Component);
+                isValid = validator.Validate(dotnetInstall, out validationFailure);
             }
 
-            // Collect installations
-            foreach (var installation in root.Installations)
+            installations.Add(new InstallationInfo
             {
-                bool? isValid = null;
-                string? validationFailure = null;
-
-                if (verify)
-                {
-                    var dotnetInstall = new DotnetInstall(
-                        installRoot,
-                        new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
-                        installation.Component);
-                    isValid = validator.Validate(dotnetInstall, out validationFailure);
-                }
-
-                installations.Add(new InstallationInfo
-                {
-                    Component = installation.Component,
-                    Version = installation.Version,
-                    InstallRoot = root.Path,
-                    Architecture = root.Architecture,
-                    IsValid = isValid,
-                    ValidationFailure = validationFailure
-                });
-            }
+                Component = installation.Component,
+                Version = installation.Version,
+                InstallRoot = root.Path,
+                Architecture = root.Architecture,
+                IsValid = isValid,
+                ValidationFailure = validationFailure
+            });
         }
 
-        return new ListData { InstallSpecs = installSpecs, Installations = installations };
+        return (specs, installations);
     }
 
     private const int IndentSize = 2;
@@ -124,8 +128,14 @@ internal static class InstallationLister
 
     public static void WriteHumanReadable(TextWriter writer, ListData listData)
     {
+        // Create an AnsiConsole that writes to our TextWriter
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(writer)
+        });
+
         writer.WriteLine();
-        writer.WriteLine(Strings.ListHeader);
+        console.MarkupLine($"{Strings.ListHeaderTitle} [{DotnetupTheme.Current.Dim}]{Strings.ListHeaderSubtitle}[/]:");
         writer.WriteLine();
 
         if (listData.InstallSpecs.Count == 0 && listData.Installations.Count == 0)
@@ -134,11 +144,6 @@ internal static class InstallationLister
         }
         else
         {
-            // Create an AnsiConsole that writes to our TextWriter
-            var console = AnsiConsole.Create(new AnsiConsoleSettings
-            {
-                Out = new AnsiConsoleOutput(writer)
-            });
 
             // Group by install root for cleaner display
             var allRoots = listData.InstallSpecs.Select(s => s.InstallRoot)
@@ -178,9 +183,8 @@ internal static class InstallationLister
                     : spec.Source.ToString().ToLowerInvariant();
 
                 specGrid.AddRow(
-                    spec.Component.GetDisplayName(),
-                    spec.VersionOrChannel,
-                    $"[dim](source: {sourceDisplay})[/]"
+                    $"{spec.Component.GetDisplayName()} {spec.VersionOrChannel}",
+                    $"[{DotnetupTheme.Current.Dim}](source: {sourceDisplay.EscapeMarkup()})[/]"
                 );
             }
 
@@ -200,12 +204,11 @@ internal static class InstallationLister
             foreach (var install in installs.OrderBy(i => i.Component).ThenBy(i => i.Version))
             {
                 string status = install.IsValid == false
-                    ? $"[red]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
+                    ? $"[{DotnetupTheme.Current.Error}]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
                     : $"({install.Architecture})";
 
                 installGrid.AddRow(
-                    install.Component.GetDisplayName(),
-                    install.Version,
+                    $"{install.Component.GetDisplayName()} {install.Version}",
                     status
                 );
             }
@@ -218,7 +221,6 @@ internal static class InstallationLister
     {
         var grid = new Grid();
         grid.AddColumn(new GridColumn().PadLeft(3 * IndentSize).PadRight(IndentSize).NoWrap());
-        grid.AddColumn(new GridColumn().PadRight(IndentSize).NoWrap());
         grid.AddColumn(new GridColumn().NoWrap());
         return grid;
     }

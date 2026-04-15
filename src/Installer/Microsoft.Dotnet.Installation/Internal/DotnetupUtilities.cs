@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -104,5 +105,21 @@ internal static class DotnetupUtilities
         {
             return string.Empty;
         }
+    }
+
+    /// <summary>
+    /// Converts a fully specified version to a channel string that allows patch roll-forward.
+    /// SDK versions (patch >= 100) map to feature bands (e.g. 10.0.203 → 10.0.2xx).
+    /// Runtime versions (patch &lt; 100) map to major.minor channels (e.g. 10.0.4 → 10.0).
+    /// </summary>
+    public static string VersionToPatchBasedChannel(ReleaseVersion version, InstallComponent component)
+    {
+        if (component == InstallComponent.SDK && version.Patch >= 100)
+        {
+            int band = version.Patch / 100;
+            return $"{version.Major}.{version.Minor}.{band}xx";
+        }
+
+        return $"{version.Major}.{version.Minor}";
     }
 }

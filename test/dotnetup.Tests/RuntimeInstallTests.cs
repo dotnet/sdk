@@ -7,7 +7,6 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -79,8 +78,12 @@ public class RuntimeInstallTests
     [InlineData("aspnetcore@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
     [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore, "9.0")]
     [InlineData("ASPNETCORE@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [InlineData("aspnet@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [InlineData("aspnet@9.0", InstallComponent.ASPNETCore, "9.0")]
     [InlineData("windowsdesktop@10.0.1", InstallComponent.WindowsDesktop, "10.0.1")]
     [InlineData("WindowsDesktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
+    [InlineData("desktop@10.0.1", InstallComponent.WindowsDesktop, "10.0.1")]
+    [InlineData("desktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
     public void ComponentSpecParsing_ValidSpecs(string? spec, InstallComponent expectedComponent, string? expectedVersion)
     {
         var (component, version) = RuntimeInstallCommand.ParseComponentSpec(spec);
@@ -136,6 +139,21 @@ public class RuntimeInstallTests
     {
         var parseResult = Parser.Parse(["runtime", "install", componentSpec]);
         parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("aspnetcore@9.0", "runtime@10.0")]
+    [InlineData("runtime@9.0", "aspnetcore@9.0", "windowsdesktop@9.0")]
+    [InlineData("9.0", "aspnetcore@10.0")]
+    public void Parser_RuntimeInstallWithMultipleSpecs_NoErrors(params string[] componentSpecs)
+    {
+        var args = new List<string> { "runtime", "install" };
+        args.AddRange(componentSpecs);
+        var parseResult = Parser.Parse(args.ToArray());
+        parseResult.Errors.Should().BeEmpty();
+        var parsed = parseResult.GetValue(RuntimeInstallCommandParser.ComponentSpecsArgument);
+        parsed.Should().NotBeNull();
+        parsed!.Length.Should().Be(componentSpecs.Length);
     }
 
     #endregion

@@ -15,6 +15,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
 public class ResolveCompressedAssetsTest
 {
+    private readonly List<string> _errorMessages;
+    private readonly Mock<IBuildEngine> _buildEngine;
+
     public string ItemSpec { get; }
 
     public string OriginalItemSpec { get; }
@@ -26,33 +29,17 @@ public class ResolveCompressedAssetsTest
         OutputBasePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(ResolveCompressedAssetsTest));
         ItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".tmp");
         OriginalItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".tmp");
+        _errorMessages = new List<string>();
+        _buildEngine = new Mock<IBuildEngine>();
+        _buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => _errorMessages.Add(args.Message));
     }
 
     [Fact]
     public void ResolvesExplicitlyProvidedAssets()
     {
         // Arrange
-        var errorMessages = new List<string>();
-        var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        var asset = new StaticWebAsset()
-        {
-            Identity = ItemSpec,
-            OriginalItemSpec = OriginalItemSpec,
-            RelativePath = Path.GetFileName(ItemSpec),
-            ContentRoot = Path.GetDirectoryName(ItemSpec),
-            SourceType = StaticWebAsset.SourceTypes.Discovered,
-            SourceId = "App",
-            AssetKind = StaticWebAsset.AssetKinds.All,
-            AssetMode = StaticWebAsset.AssetModes.All,
-            AssetRole = StaticWebAsset.AssetRoles.Primary,
-            Fingerprint = "v1",
-            Integrity = "abc",
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow
-        }.ToTaskItem();
+        var asset = CreatePrimaryAsset();
 
         var gzipExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
         var brotliExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
@@ -60,7 +47,7 @@ public class ResolveCompressedAssetsTest
         var task = new ResolveCompressedAssets()
         {
             OutputPath = OutputBasePath,
-            BuildEngine = buildEngine.Object,
+            BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             Formats = "gzip;brotli",
             ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
@@ -79,10 +66,6 @@ public class ResolveCompressedAssetsTest
     [Fact]
     public void InfersPreCompressedAssetsCorrectly()
     {
-        var errorMessages = new List<string>();
-        var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
         var uncompressedCandidate = new StaticWebAsset
         {
@@ -139,7 +122,7 @@ public class ResolveCompressedAssetsTest
             OutputPath = OutputBasePath,
             CandidateAssets = [uncompressedCandidate.ToTaskItem(), compressedCandidate.ToTaskItem()],
             Formats = "gzip",
-            BuildEngine = buildEngine.Object
+            BuildEngine = _buildEngine.Object
         };
 
         var result = task.Execute();
@@ -152,32 +135,12 @@ public class ResolveCompressedAssetsTest
     public void ResolvesAssetsMatchingIncludePattern()
     {
         // Arrange
-        var errorMessages = new List<string>();
-        var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        var asset = new StaticWebAsset()
-        {
-            Identity = ItemSpec,
-            OriginalItemSpec = OriginalItemSpec,
-            RelativePath = Path.GetFileName(ItemSpec),
-            ContentRoot = Path.GetDirectoryName(ItemSpec),
-            SourceType = StaticWebAsset.SourceTypes.Discovered,
-            SourceId = "App",
-            AssetKind = StaticWebAsset.AssetKinds.All,
-            AssetMode = StaticWebAsset.AssetModes.All,
-            AssetRole = StaticWebAsset.AssetRoles.Primary,
-            Fingerprint = "v1",
-            Integrity = "abc",
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow
-        }.ToTaskItem();
+        var asset = CreatePrimaryAsset();
 
         var task = new ResolveCompressedAssets()
         {
             OutputPath = OutputBasePath,
-            BuildEngine = buildEngine.Object,
+            BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
             Formats = "gzip;brotli",
@@ -197,32 +160,13 @@ public class ResolveCompressedAssetsTest
     public void ResolvesAssets_WithFingerprint_MatchingIncludePattern()
     {
         // Arrange
-        var errorMessages = new List<string>();
-        var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        var asset = new StaticWebAsset()
-        {
-            Identity = ItemSpec,
-            OriginalItemSpec = OriginalItemSpec,
-            RelativePath = Path.GetFileNameWithoutExtension(ItemSpec)+"#[.{fingerprint}]" + Path.GetExtension(ItemSpec),
-            ContentRoot = Path.GetDirectoryName(ItemSpec),
-            SourceType = StaticWebAsset.SourceTypes.Discovered,
-            SourceId = "App",
-            AssetKind = StaticWebAsset.AssetKinds.All,
-            AssetMode = StaticWebAsset.AssetModes.All,
-            AssetRole = StaticWebAsset.AssetRoles.Primary,
-            Fingerprint = "v1",
-            Integrity = "abc",
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow
-        }.ToTaskItem();
+        var asset = CreatePrimaryAsset(
+            Path.GetFileNameWithoutExtension(ItemSpec) + "#[.{fingerprint}]" + Path.GetExtension(ItemSpec));
 
         var task = new ResolveCompressedAssets()
         {
             OutputPath = OutputBasePath,
-            BuildEngine = buildEngine.Object,
+            BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
             Formats = "gzip;brotli",
@@ -254,32 +198,12 @@ public class ResolveCompressedAssetsTest
     public void ExcludesAssetsMatchingExcludePattern()
     {
         // Arrange
-        var errorMessages = new List<string>();
-        var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        var asset = new StaticWebAsset()
-        {
-            Identity = ItemSpec,
-            OriginalItemSpec = OriginalItemSpec,
-            RelativePath = Path.GetFileName(ItemSpec),
-            ContentRoot = Path.GetDirectoryName(ItemSpec),
-            SourceType = StaticWebAsset.SourceTypes.Discovered,
-            SourceId = "App",
-            AssetKind = StaticWebAsset.AssetKinds.All,
-            AssetMode = StaticWebAsset.AssetModes.All,
-            AssetRole = StaticWebAsset.AssetRoles.Primary,
-            Fingerprint = "v1",
-            Integrity = "abc",
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow
-        }.ToTaskItem();
+        var asset = CreatePrimaryAsset();
 
         var task = new ResolveCompressedAssets()
         {
             OutputPath = OutputBasePath,
-            BuildEngine = buildEngine.Object,
+            BuildEngine = _buildEngine.Object,
             IncludePatterns = "**\\*",
             ExcludePatterns = "**\\*.tmp",
             CandidateAssets = new[] { asset },
@@ -298,27 +222,7 @@ public class ResolveCompressedAssetsTest
     public void DeduplicatesAssetsResolvedBothExplicitlyAndFromPattern()
     {
         // Arrange
-        var errorMessages = new List<string>();
-        var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        var asset = new StaticWebAsset()
-        {
-            Identity = ItemSpec,
-            OriginalItemSpec = OriginalItemSpec,
-            RelativePath = Path.GetFileName(ItemSpec),
-            ContentRoot = Path.GetDirectoryName(ItemSpec),
-            SourceType = StaticWebAsset.SourceTypes.Discovered,
-            SourceId = "App",
-            AssetKind = StaticWebAsset.AssetKinds.All,
-            AssetMode = StaticWebAsset.AssetModes.All,
-            AssetRole = StaticWebAsset.AssetRoles.Primary,
-            Fingerprint = "v1",
-            Integrity = "abc",
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow
-        }.ToTaskItem();
+        var asset = CreatePrimaryAsset();
 
         var gzipExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
         var brotliExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
@@ -326,7 +230,7 @@ public class ResolveCompressedAssetsTest
         var buildTask = new ResolveCompressedAssets()
         {
             OutputPath = OutputBasePath,
-            BuildEngine = buildEngine.Object,
+            BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
             ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
@@ -343,61 +247,44 @@ public class ResolveCompressedAssetsTest
         buildTask.AssetsToCompress[1].ItemSpec.Should().EndWith(".br");
     }
 
-    [Fact]
-    public void IgnoresAssetsCompressedInPreviousTaskRun_Gzip()
+    [Theory]
+    [InlineData("gzip", ".gz", "brotli", ".br")]
+    [InlineData("brotli", ".br", "gzip", ".gz")]
+    public void IgnoresAssetsCompressedInPreviousTaskRun(
+        string phase1Format, string phase1Ext, string _, string phase2Ext)
     {
         // Arrange
-        var errorMessages = new List<string>();
-        var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        var asset = new StaticWebAsset()
-        {
-            Identity = ItemSpec,
-            OriginalItemSpec = OriginalItemSpec,
-            RelativePath = Path.GetFileName(ItemSpec),
-            ContentRoot = Path.GetDirectoryName(ItemSpec),
-            SourceType = StaticWebAsset.SourceTypes.Discovered,
-            SourceId = "App",
-            AssetKind = StaticWebAsset.AssetKinds.All,
-            AssetMode = StaticWebAsset.AssetModes.All,
-            AssetRole = StaticWebAsset.AssetRoles.Primary,
-            Fingerprint = "v1",
-            Integrity = "abc",
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow
-        }.ToTaskItem();
+        var asset = CreatePrimaryAsset();
 
         // Act/Assert
         var task1 = new ResolveCompressedAssets()
         {
             OutputPath = OutputBasePath,
-            BuildEngine = buildEngine.Object,
+            BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset },
             IncludePatterns = "**\\*.tmp",
-            Formats = "gzip",
+            Formats = phase1Format,
         };
 
         var result1 = task1.Execute();
 
         result1.Should().BeTrue();
         task1.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(1);
-        task1.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
-        task1.AssetsToCompress[0].SetMetadata("Fingerprint", "v1gz");
-        task1.AssetsToCompress[0].SetMetadata("Integrity", "abcgz");
+        task1.AssetsToCompress[0].ItemSpec.Should().EndWith(phase1Ext);
+        task1.AssetsToCompress[0].SetMetadata("Fingerprint", "v1" + phase1Ext.TrimStart('.'));
+        task1.AssetsToCompress[0].SetMetadata("Integrity", "abc" + phase1Ext.TrimStart('.'));
 
-        var brotliExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
-        brotliExplicitAsset.SetMetadata("Fingerprint", "v2");
-        brotliExplicitAsset.SetMetadata("Integrity", "def");
+        var explicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
+        explicitAsset.SetMetadata("Fingerprint", "v2");
+        explicitAsset.SetMetadata("Integrity", "def");
 
         var task2 = new ResolveCompressedAssets()
         {
             OutputPath = OutputBasePath,
-            BuildEngine = buildEngine.Object,
+            BuildEngine = _buildEngine.Object,
             CandidateAssets = new[] { asset, task1.AssetsToCompress[0] },
             IncludePatterns = "**\\*.tmp",
-            ExplicitAssets = new[] { brotliExplicitAsset },
+            ExplicitAssets = new[] { explicitAsset },
             Formats = "gzip;brotli"
         };
 
@@ -405,23 +292,89 @@ public class ResolveCompressedAssetsTest
 
         result2.Should().BeTrue();
         task2.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(1);
-        task2.AssetsToCompress[0].ItemSpec.Should().EndWith(".br");
+        task2.AssetsToCompress[0].ItemSpec.Should().EndWith(phase2Ext);
     }
 
     [Fact]
-    public void IgnoresAssetsCompressedInPreviousTaskRun_Brotli()
+    public void ProducesDistinctIdentities_ForGroupVariantsWithIdenticalContent()
     {
-        // Arrange
-        var errorMessages = new List<string>();
-        var buildEngine = new Mock<IBuildEngine>();
-        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+        // Arrange — two assets that differ only in AssetGroups but have the same
+        // SourceId, BasePath, AssetKind, RelativePath (after token stripping) and
+        // Fingerprint (identical file content). Before the fix, these would produce
+        // the same compressed asset Identity and crash in ToAssetDictionary.
+        var v4ItemSpec = Path.Combine(OutputBasePath, "staticwebassets", "V4", "css", "site.css");
+        var v5ItemSpec = Path.Combine(OutputBasePath, "staticwebassets", "V5", "css", "site.css");
 
-        var asset = new StaticWebAsset()
+        var v4Asset = new StaticWebAsset()
+        {
+            Identity = v4ItemSpec,
+            OriginalItemSpec = v4ItemSpec,
+            RelativePath = "#[{BootstrapVersion}/]~css/site#[.{fingerprint}]?.css",
+            ContentRoot = Path.Combine(OutputBasePath, "staticwebassets"),
+            SourceType = StaticWebAsset.SourceTypes.Package,
+            SourceId = "Microsoft.AspNetCore.Identity.UI",
+            BasePath = "_content/Microsoft.AspNetCore.Identity.UI",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            AssetGroups = "BootstrapVersion=V4",
+            Fingerprint = "samehash123",
+            Integrity = "sameintegrity",
+            FileLength = 42,
+            LastWriteTime = DateTime.UtcNow
+        }.ToTaskItem();
+
+        var v5Asset = new StaticWebAsset()
+        {
+            Identity = v5ItemSpec,
+            OriginalItemSpec = v5ItemSpec,
+            RelativePath = "#[{BootstrapVersion}/]~css/site#[.{fingerprint}]?.css",
+            ContentRoot = Path.Combine(OutputBasePath, "staticwebassets"),
+            SourceType = StaticWebAsset.SourceTypes.Package,
+            SourceId = "Microsoft.AspNetCore.Identity.UI",
+            BasePath = "_content/Microsoft.AspNetCore.Identity.UI",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            AssetGroups = "BootstrapVersion=V5",
+            Fingerprint = "samehash123",
+            Integrity = "sameintegrity",
+            FileLength = 42,
+            LastWriteTime = DateTime.UtcNow
+        }.ToTaskItem();
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { v4Asset, v5Asset },
+            IncludePatterns = "**/*.css",
+            Formats = "gzip",
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        var compressed = task.AssetsToCompress.TakeWhile(a => a != null).ToArray();
+        compressed.Should().HaveCount(2);
+        compressed[0].ItemSpec.Should().EndWith(".gz");
+        compressed[1].ItemSpec.Should().EndWith(".gz");
+
+        // The critical assertion: the two compressed assets must have different Identities
+        // so they don't collide when added to a dictionary keyed by Identity.
+        compressed[0].ItemSpec.Should().NotBe(compressed[1].ItemSpec,
+            "group variants with identical content must produce distinct compressed asset identities");
+    }
+
+    private ITaskItem CreatePrimaryAsset(string relativePath = null)
+    {
+        return new StaticWebAsset()
         {
             Identity = ItemSpec,
             OriginalItemSpec = OriginalItemSpec,
-            RelativePath = Path.GetFileName(ItemSpec),
+            RelativePath = relativePath ?? Path.GetFileName(ItemSpec),
             ContentRoot = Path.GetDirectoryName(ItemSpec),
             SourceType = StaticWebAsset.SourceTypes.Discovered,
             SourceId = "App",
@@ -433,43 +386,5 @@ public class ResolveCompressedAssetsTest
             FileLength = 10,
             LastWriteTime = DateTime.UtcNow
         }.ToTaskItem();
-
-        // Act/Assert
-        var task1 = new ResolveCompressedAssets()
-        {
-            OutputPath = OutputBasePath,
-            BuildEngine = buildEngine.Object,
-            CandidateAssets = new[] { asset },
-            IncludePatterns = "**\\*.tmp",
-            Formats = "brotli",
-        };
-
-        var result1 = task1.Execute();
-
-        result1.Should().BeTrue();
-        task1.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(1);
-        task1.AssetsToCompress[0].ItemSpec.Should().EndWith(".br");
-        task1.AssetsToCompress[0].SetMetadata("Fingerprint", "v1br");
-        task1.AssetsToCompress[0].SetMetadata("Integrity", "abcbr");
-
-        var gzipExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
-        gzipExplicitAsset.SetMetadata("Fingerprint", "v2");
-        gzipExplicitAsset.SetMetadata("Integrity", "def");
-
-        var task2 = new ResolveCompressedAssets()
-        {
-            OutputPath = OutputBasePath,
-            BuildEngine = buildEngine.Object,
-            CandidateAssets = new[] { asset, task1.AssetsToCompress[0] },
-            IncludePatterns = "**\\*.tmp",
-            ExplicitAssets = new[] { gzipExplicitAsset },
-            Formats = "gzip;brotli"
-        };
-
-        var result2 = task2.Execute();
-
-        result2.Should().BeTrue();
-        task2.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(1);
-        task2.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
     }
 }

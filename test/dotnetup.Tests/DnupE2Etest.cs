@@ -37,7 +37,6 @@ public class InstallEndToEndTests
         new object[] { "9.0.1xx" },
         new object[] { "latest" },
         new object[] { "preview" },
-        new object[] { "sts" },
         new object[] { "lts" },
     };
 
@@ -266,10 +265,10 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         // Suppress .NET welcome message / first-run experience in test output
         process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
 
-        // output which is a framework-dependent AppHost. Ensure DOTNET_ROOT is set so
-        // the AppHost can locate the runtime. On CI each script step gets a fresh shell,
-        // so DOTNET_ROOT from the restore step isn't inherited. The env script sourced
-        // later in the test will overwrite DOTNET_ROOT with the test install path.
+        // When running the managed (non-AOT) dotnetup AppHost, DOTNET_ROOT must be set
+        // so it can locate the runtime. When running the native AOT binary this is
+        // unnecessary but harmless. The env script sourced later in the test will
+        // overwrite DOTNET_ROOT with the test install path.
         string? currentDotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT")
             ?? (Environment.ProcessPath is string processPath ? Path.GetDirectoryName(processPath) : null);
         if (currentDotnetRoot != null)
@@ -453,6 +452,77 @@ public class ConcurrentInstallationTests
 }
 
 /// <summary>
+/// Tests for multi-channel SDK install support (concurrent downloads, single invocation).
+/// </summary>
+[Collection("DotnetupMultiSdkInstallCollection")]
+public class MultiChannelSdkInstallTests
+{
+    [Fact]
+    public void SdkInstall_MultipleChannels_BothSucceed()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var args = DotnetupTestUtilities.BuildMultiSdkArguments(["9.0", "10"], testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Multi-channel SDK install failed. Output:\n{output}");
+
+        // Verify both SDKs are in the manifest
+        List<Installation> installs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.Installations)
+                .ToList();
+        }
+
+        installs.Should().HaveCount(2, "both SDK channels should produce separate manifest entries");
+        installs.Should().OnlyContain(i => i.Component == InstallComponent.SDK);
+
+        // Verify the two installed versions are distinct
+        installs.Select(i => i.Version).Distinct().Should().HaveCount(2,
+            "each channel should resolve to a different SDK version");
+    }
+
+    [Fact]
+    public void SdkInstall_MultipleChannels_OutputNotCorrupted()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var args = DotnetupTestUtilities.BuildMultiSdkArguments(["9.0", "10"], testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"Multi-channel SDK install failed. Output:\n{output}");
+
+        // The completion message should appear exactly once (not duplicated per channel)
+        int installedCount = CountOccurrences(output, "Installed");
+        int alreadyInstalledCount = CountOccurrences(output, "lready installed");
+        (installedCount + alreadyInstalledCount).Should().BeLessThanOrEqualTo(2,
+            "There should be at most one 'Installed' line and one 'already installed' line, not one per channel. Output:\n" + output);
+
+        // Output should not contain garbled/interleaved progress bar artifacts.
+        // Progress bars use CR (\r) to overwrite lines. In captured output (redirected stdout),
+        // these should not appear because --no-progress is set.
+        output.Should().NotContain("\r\n\r\n\r\n",
+            "Output should not contain excessive blank lines from corrupted progress bars");
+    }
+    
+    private static int CountOccurrences(string text, string pattern)
+    {
+        int count = 0;
+        int index = 0;
+        while ((index = text.IndexOf(pattern, index, StringComparison.OrdinalIgnoreCase)) != -1)
+        {
+            count++;
+            index += pattern.Length;
+        }
+
+        return count;
+    }
+}
+
+/// <summary>
 /// Tests that verify reuse behavior and error handling for dotnetup installations.
 /// </summary>
 [Collection("DotnetupReuseCollection")]
@@ -537,8 +607,8 @@ public class ReuseAndErrorTests
         installsAfterSdk.Should().NotContain(i => i.Component == expectedComponent,
             $"{expectedComponent} should not be in manifest before explicit runtime install");
 
-        // Step 2: Install runtime for same major.minor using component@version syntax
-        var runtimeArgs = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(componentSpec, testEnv.InstallPath, testEnv.ManifestPath);
+        // Step 2: Install runtime for same major.minor using component@version syntax, with detailed verbosity to see skip messages
+        var runtimeArgs = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(componentSpec, testEnv.InstallPath, testEnv.ManifestPath, detailed: true);
         (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(runtimeArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"Runtime installation failed. Output:\n{output}");
 
@@ -580,7 +650,7 @@ public class ReuseAndErrorTests
         // Step 2: Same install again - should be short-circuited via manifest
         (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(firstArgs, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"Second install failed. Output:\n{output}");
-        output.Should().Contain("is already installed",
+        output.Should().Contain("lready installed",
             "Re-installing the same component should detect it is already installed and skip the download");
 
         // Step 3: Verify the install spec is still recorded despite the install being short-circuited.

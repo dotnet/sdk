@@ -1050,6 +1050,44 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             }
         }
 
+        [WindowsOnlyFact]
+        public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibrary()
+        {
+            // Reproduces https://github.com/dotnet/sdk/issues/53488 with explicit --framework:
+            // dotnet run -f <platform-specific-TFM> fails with NETSDK1005 when
+            // the project references a library that targets only the base TFM.
+            var testInstance = TestAssetsManager.CopyTestAsset("RunWindowsAppWithLibRef")
+                .WithSource();
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(Path.Combine(testInstance.Path, "App"))
+                .Execute("--framework", $"{ToolsetInfo.CurrentTargetFramework}-windows")
+                .Should().Pass()
+                .And.HaveStdOutContaining("This string came from the test library!");
+        }
+
+        [WindowsOnlyFact]
+        public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibraryWithoutExplicitFramework()
+        {
+            // Same scenario as above but without --framework: exercises the
+            // auto-selected TFM path (saved pre-TF project reuse).
+            var testInstance = TestAssetsManager.CopyTestAsset("RunWindowsAppWithLibRef")
+                .WithSource();
+
+            // Reduce to a single-entry TargetFrameworks so the framework is auto-selected.
+            var appCsproj = Path.Combine(testInstance.Path, "App", "App.csproj");
+            File.WriteAllText(appCsproj, File.ReadAllText(appCsproj)
+                .Replace(
+                    $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}-windows;{ToolsetInfo.CurrentTargetFramework}</TargetFrameworks>",
+                    $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}-windows</TargetFrameworks>"));
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(Path.Combine(testInstance.Path, "App"))
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("This string came from the test library!");
+        }
+
         [Fact]
         public void ItCanRunWithExecutableLaunchProfile()
         {

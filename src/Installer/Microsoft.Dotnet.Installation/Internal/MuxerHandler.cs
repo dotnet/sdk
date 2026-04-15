@@ -124,23 +124,10 @@ internal class MuxerHandler
             return;
         }
 
-        // Determine if we should update the muxer
-        bool shouldUpdateMuxer;
-        if (_preExtractionHighestRuntimeVersion == null)
-        {
-            // No runtime existed before - we need the muxer
-            shouldUpdateMuxer = true;
-        }
-        else if (postExtractionHighestRuntimeVersion > _preExtractionHighestRuntimeVersion)
-        {
-            // A higher runtime version was installed - update the muxer
-            shouldUpdateMuxer = true;
-        }
-        else
-        {
-            // Existing runtime is same or higher - keep existing muxer
-            shouldUpdateMuxer = false;
-        }
+        // Update the muxer if no runtime existed before (new install) or a higher version was installed.
+        // Keep the existing muxer if the installed runtime is the same version or older.
+        bool shouldUpdateMuxer = _preExtractionHighestRuntimeVersion == null ||
+                                  postExtractionHighestRuntimeVersion > _preExtractionHighestRuntimeVersion;
 
         if (!shouldUpdateMuxer)
         {
@@ -151,6 +138,11 @@ internal class MuxerHandler
             return;
         }
 
+        ApplyMuxerReplacement(postExtractionHighestRuntimeVersion);
+    }
+
+    private void ApplyMuxerReplacement(ReleaseVersion postVersion)
+    {
         // Move the existing muxer out of the way if it exists
         if (_hadExistingMuxer)
         {
@@ -187,7 +179,7 @@ internal class MuxerHandler
 
             Activity.Current?.SetTag("muxer.action", "updated");
             Activity.Current?.SetTag("muxer.previous_version", VersionSanitizer.Sanitize(_preExtractionHighestRuntimeVersion?.ToString()));
-            Activity.Current?.SetTag("muxer.new_version", VersionSanitizer.Sanitize(postExtractionHighestRuntimeVersion?.ToString()));
+            Activity.Current?.SetTag("muxer.new_version", VersionSanitizer.Sanitize(postVersion?.ToString()));
 
             // Clean up the backup
             if (_movedExistingMuxer && File.Exists(_existingMuxerBackupPath))
@@ -220,7 +212,7 @@ internal class MuxerHandler
     /// </summary>
     internal static ReleaseVersion? GetLatestRuntimeVersionFromInstallRoot(string installRoot)
     {
-        var runtimePath = Path.Combine(installRoot, "shared", "Microsoft.NETCore.App");
+        var runtimePath = Path.Combine(installRoot, "shared", InstallComponentExtensions.RuntimeFrameworkName);
         if (!Directory.Exists(runtimePath))
         {
             return null;

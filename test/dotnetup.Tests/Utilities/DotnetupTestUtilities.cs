@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
@@ -32,11 +33,21 @@ internal static class DotnetupTestUtilities
         => BuildArguments(InstallComponent.SDK, channel, installPath, manifestPath, disableProgress, runtimeType: null);
 
     /// <summary>
+    /// Builds command line arguments for SDK install with multiple channels.
+    /// </summary>
+    public static string[] BuildMultiSdkArguments(string[] channels, string installPath, string? manifestPath = null, bool disableProgress = true)
+    {
+        var commandArgs = new List<string>(["sdk", "install"]);
+        commandArgs.AddRange(channels);
+        return BuildArgumentsCore(commandArgs, installPath, manifestPath, disableProgress);
+    }
+
+    /// <summary>
     /// Builds command line arguments for runtime install using the new component@version syntax.
     /// This delegates to BuildArguments with the componentSpec pre-formatted.
     /// </summary>
-    public static string[] BuildRuntimeArgumentsWithSpec(string componentSpec, string installPath, string? manifestPath = null, bool disableProgress = true)
-        => BuildArgumentsCore(["runtime", "install", componentSpec], installPath, manifestPath, disableProgress);
+    public static string[] BuildRuntimeArgumentsWithSpec(string componentSpec, string installPath, string? manifestPath = null, bool disableProgress = true, bool detailed = false)
+        => BuildArgumentsCore(["runtime", "install", componentSpec], installPath, manifestPath, disableProgress, detailed);
 
     /// <summary>
     /// Builds command line arguments for runtime install
@@ -182,7 +193,7 @@ internal static class DotnetupTestUtilities
     /// <summary>
     /// Core method that appends common options to command arguments.
     /// </summary>
-    private static string[] BuildArgumentsCore(List<string> commandArgs, string installPath, string? manifestPath, bool disableProgress)
+    private static string[] BuildArgumentsCore(List<string> commandArgs, string installPath, string? manifestPath, bool disableProgress, bool detailed = false)
     {
         commandArgs.AddRange(["--install-path", installPath, "--interactive", "false"]);
 
@@ -197,36 +208,109 @@ internal static class DotnetupTestUtilities
             commandArgs.Add("--no-progress");
         }
 
+        if (detailed)
+        {
+            commandArgs.AddRange(["--verbosity", "detailed"]);
+        }
+
         return [.. commandArgs];
     }
 
     /// <summary>
-    /// Gets the path to the dotnetup executable for the current build configuration
+    /// Gets the path to the dotnetup executable for the current build configuration.
+    /// Prefers the AOT-published native binary if available, otherwise falls back to the managed build output.
     /// </summary>
     /// <returns>Full path to dotnetup executable</returns>
     public static string GetDotnetupExecutablePath()
     {
 #if DEBUG
         string configuration = "Debug";
+        string fallbackConfiguration = "Release";
 #else
         string configuration = "Release";
+        string fallbackConfiguration = "Debug";
 #endif
 
         string repoRoot = GetRepositoryRoot();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
-        string tfm = Path.GetFileName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
-        string dotnetupPath = Path.Combine(
-            repoRoot,
-            "artifacts", "bin", "dotnetup", configuration, tfm, executableName);
 
-        // Ensure path is normalized and exists
-        dotnetupPath = Path.GetFullPath(dotnetupPath);
-        if (!File.Exists(dotnetupPath))
+        // Since .NET 8, RuntimeInformation.RuntimeIdentifier returns the portable RID
+        // the runtime was built with (e.g. "win-x64", "linux-musl-arm64"), which matches
+        // the RID used by `dotnet publish -r` output directories.
+        string rid = RuntimeInformation.RuntimeIdentifier;
+
+        // Try matching configuration first, then fall back to the other.
+        // This handles the common case where publish is done in Release but tests are built in Debug (or vice versa).
+        string[] configurationsToSearch = [configuration, fallbackConfiguration];
+
+        foreach (string config in configurationsToSearch)
         {
-            throw new FileNotFoundException($"dotnetup executable not found at: {dotnetupPath}");
+            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
+
+            if (!Directory.Exists(configDir))
+            {
+                continue;
+            }
+
+            // Look for the AOT-published native binary under artifacts/bin/dotnetup/{config}/{tfm}/{rid}/publish/
+            // The TFM folder name varies (net10.0, net11.0, etc.) so we search for it.
+            string[] tfmDirs = Directory.GetDirectories(configDir);
+            if (tfmDirs.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", tfmDirs.Select(Path.GetFileName))}. " +
+                    $"Delete the stale TFM directory and rebuild. Paths:\n{string.Join("\n", tfmDirs)}");
+            }
+
+            foreach (string tfmDir in tfmDirs)
+            {
+                string publishedPath = Path.Combine(tfmDir, rid, "publish", executableName);
+                if (File.Exists(publishedPath))
+                {
+                    if (config != configuration)
+                    {
+                        Console.WriteLine($"Note: Using AOT binary from '{config}' configuration (no '{configuration}' AOT binary found).");
+                    }
+
+                    return Path.GetFullPath(publishedPath);
+                }
+            }
         }
 
-        return dotnetupPath;
+        // Fall back to managed build output (same search order)
+        foreach (string config in configurationsToSearch)
+        {
+            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
+
+            if (!Directory.Exists(configDir))
+            {
+                continue;
+            }
+
+            string[] fallbackTfmDirs = Directory.GetDirectories(configDir);
+            if (fallbackTfmDirs.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", fallbackTfmDirs.Select(Path.GetFileName))}. " +
+                    $"Delete the stale TFM directory and rebuild. Paths:\n{string.Join("\n", fallbackTfmDirs)}");
+            }
+
+            foreach (string tfmDir in fallbackTfmDirs)
+            {
+                string managedPath = Path.Combine(tfmDir, executableName);
+                if (File.Exists(managedPath))
+                {
+                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to managed build output at '{managedPath}'.");
+                    return Path.GetFullPath(managedPath);
+                }
+            }
+        }
+
+        string primaryDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", configuration);
+        throw new FileNotFoundException(
+            $"dotnetup executable not found under '{primaryDir}'. " +
+            $"Run 'dotnet publish src/Installer/dotnetup/dotnetup.csproj -c {configuration} --self-contained' to produce the AOT binary, " +
+            $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
     }
 
     /// <summary>

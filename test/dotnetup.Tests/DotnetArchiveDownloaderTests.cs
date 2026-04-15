@@ -13,7 +13,6 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 

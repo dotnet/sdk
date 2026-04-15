@@ -173,6 +173,7 @@ file_header_template = Licensed to the .NET Foundation under one or more agreeme
 dotnet_code_quality.ca1802.api_surface = private, internal
 dotnet_code_quality.ca1822.api_surface = private, internal
 dotnet_code_quality.ca2208.api_surface = public
+dotnet_public_api_analyzer.require_api_files = true
 # Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 # Properties should not be write only
@@ -535,3 +536,15 @@ indent_style = unset
 insert_final_newline = false
 tab_width = unset
 trim_trailing_whitespace = false
+
+# Meziantou.Analyzer suppressions for shared src/Cli code linked into dotnetup.
+# These rules do not apply to code owned by other teams.
+[{src/Cli/**/*.cs,src/Resolvers/**/*.cs}]
+dotnet_diagnostic.MA0006.severity = none
+dotnet_diagnostic.MA0008.severity = none
+dotnet_diagnostic.MA0011.severity = none
+dotnet_diagnostic.MA0016.severity = none
+dotnet_diagnostic.MA0048.severity = none
+dotnet_diagnostic.MA0084.severity = none
+dotnet_diagnostic.MA0099.severity = none
+dotnet_diagnostic.MA0144.severity = none
