@@ -214,11 +214,18 @@ public class Program_GetProjectOptionsTests(ITestOutputHelper output)
         File.WriteAllText(filePath, "#!");
 
         // dotnet watch App.txt
-        var options = ParseOptions([filePath]);
-        var result = Program.GetMainProjectOptions(options, tempDir, _testLogger);
+        var options1 = ParseOptions([filePath]);
+        var result1 = Program.GetMainProjectOptions(options1, tempDir, _testLogger);
 
-        Assert.NotNull(result);
-        Assert.Equal(filePath, result.Representation.EntryPointFilePath);
+        Assert.NotNull(result1);
+        Assert.Equal(filePath, result1.Representation.EntryPointFilePath);
+
+        // dotnet watch -bl -e X=1 App.txt
+        var options2 = ParseOptions(["-bl", "-e", "X=1", filePath]);
+        var result2 = Program.GetMainProjectOptions(options2, tempDir, _testLogger);
+
+        Assert.NotNull(result2);
+        Assert.Equal(filePath, result2.Representation.EntryPointFilePath);
     }
 
     [Fact]
