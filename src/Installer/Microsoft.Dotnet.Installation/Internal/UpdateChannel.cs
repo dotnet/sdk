@@ -9,6 +9,8 @@ internal class UpdateChannel
 {
     public string Name { get; }
 
+    private static bool IsStableRelease(ReleaseVersion version) => string.IsNullOrEmpty(version.Prerelease);
+
     public UpdateChannel(string name)
     {
         Name = name;
@@ -78,14 +80,19 @@ internal class UpdateChannel
         // Named channels
         if (Name.Equals("lts", StringComparison.OrdinalIgnoreCase))
         {
-            // LTS releases are even major versions
-            return version.Major % 2 == 0;
+            // LTS releases are even major versions and must be stable releases.
+            return version.Major % 2 == 0 && IsStableRelease(version);
         }
 
-        // These channels match any version. The "preview" channel may resolve to a stable version
-        // when no preview exists yet (e.g., after a major release before the next preview).
-        if (Name.Equals("latest", StringComparison.OrdinalIgnoreCase) ||
-            Name.Equals("preview", StringComparison.OrdinalIgnoreCase))
+        // "latest" should only match stable releases so a preview SDK doesn't satisfy the
+        // stable channel during garbage collection. "preview" continues to allow stable
+        // matches so existing preview specs can keep a GA SDK when no preview exists yet.
+        if (Name.Equals("latest", StringComparison.OrdinalIgnoreCase))
+        {
+            return IsStableRelease(version);
+        }
+
+        if (Name.Equals("preview", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
