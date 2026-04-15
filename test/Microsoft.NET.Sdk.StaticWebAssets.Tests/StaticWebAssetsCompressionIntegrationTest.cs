@@ -512,6 +512,15 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 .ToArray();
             unchangedDczEndpoints.Should().BeEmpty(
                 "because unchanged files should not get dcz endpoints (same integrity means dictionary is pointless)");
+
+            // Verify unchanged file still has its normal endpoints (identity, gzip, br, zstd)
+            var unchangedEndpoints = v2Manifest.Endpoints
+                .Where(e => e.Route.Contains("project-transitive-dep.v4"))
+                .ToArray();
+            unchangedEndpoints.Should().NotBeEmpty(
+                "because the unchanged file should still be present in the manifest with its normal endpoints");
+            unchangedEndpoints.Should().Contain(e => e.Selectors == null || e.Selectors.Length == 0,
+                "because the unchanged file should have an identity endpoint");
         }
     }
 }

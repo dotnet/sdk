@@ -103,8 +103,9 @@ public partial class StaticWebAssetsBaselineFactory
 
                 // Avoid duplicating basePath when the directory already ends with it
                 // (e.g., Identity dir = ".../obj/_framework", basePath = "_framework").
+                // Use segment-aware matching to avoid false positives like "my_framework" matching "_framework".
                 if (!string.IsNullOrEmpty(basePath) &&
-                    identityDir.EndsWith(basePath, StringComparison.OrdinalIgnoreCase))
+                    EndsWithPathSegment(identityDir, basePath))
                 {
                     asset.Identity = Path.Combine(identityDir, relativePath);
                 }
@@ -120,7 +121,7 @@ public partial class StaticWebAssetsBaselineFactory
                 }
 
                 if (!string.IsNullOrEmpty(basePath) &&
-                    originalDir.EndsWith(basePath, StringComparison.OrdinalIgnoreCase))
+                    EndsWithPathSegment(originalDir, basePath))
                 {
                     asset.OriginalItemSpec = Path.Combine(originalDir, relativePath);
                 }
@@ -514,5 +515,16 @@ public partial class StaticWebAssetsBaselineFactory
         }
 
         return fileNameAndExtension;
+    }
+
+    private static bool EndsWithPathSegment(string directory, string segment)
+    {
+        if (string.Equals(directory, segment, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var separatorPlusSegment = Path.DirectorySeparatorChar + segment;
+        return directory.EndsWith(separatorPlusSegment, StringComparison.OrdinalIgnoreCase);
     }
 }

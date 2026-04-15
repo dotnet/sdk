@@ -110,18 +110,9 @@ public class GeneratePublishAssetPack : Task
                 ? "assets/" + relativePath.Replace('\\', '/')
                 : "assets/" + basePath.Replace('\\', '/') + "/" + relativePath.Replace('\\', '/');
 
-            // Resolve the actual file path (handles OriginalItemSpec fallback)
             var fileInfo = asset.ResolveFile();
-            if (!fileInfo.Exists)
-            {
-                Log.LogMessage(
-                    MessageImportance.Low,
-                    "Asset file '{0}' does not exist on disk. Skipping.",
-                    fileInfo.FullName);
-                continue;
-            }
 
-            // Avoid duplicate entries — check after file existence validation
+            // Avoid duplicate entries
             if (!addedPaths.Add(entryPath))
             {
                 Log.LogMessage(
