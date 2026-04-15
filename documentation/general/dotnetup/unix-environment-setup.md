@@ -12,14 +12,9 @@ There are two primary ways the environment is configured:
 
 ### 1. During `dotnetup sdk install` / `dotnetup runtime install`
 
-When running interactively (the default in a terminal), the install command prompts the user to set the default install if one is not already configured:
+When running interactively (the default in a terminal) **and no explicit `--install-path` is provided**, the install commands flow through the walkthrough. The walkthrough asks how the user wants to use dotnetup (for example, keeping it isolated vs. configuring the shell profile so `dotnet` works directly in new terminals).
 
-```
-Do you want to set the install path (~/.local/share/dotnet) as the default dotnet install?
-This will update the PATH and DOTNET_ROOT environment variables. [Y/n]
-```
-
-If the user confirms (or passes `--set-default-install` explicitly):
+Choosing the shell-profile option in the walkthrough is what corresponds to making the dotnetup-managed user install the default:
 
 - **On Windows**: Environment variables are set in the registry and updated for the current process.
 - **On Unix**: Shell profile files are modified so .NET is available in future terminal sessions. Since profile changes only take effect in new shells, dotnetup also prints an activation command for the current terminal:
@@ -29,7 +24,7 @@ If the user confirms (or passes `--set-default-install` explicitly):
     eval "$('/home/user/.local/share/dotnetup/dotnetup' print-env-script --shell bash)"
   ```
 
-If the default install is already fully configured and matches the install path, the prompt is skipped entirely.
+If the user already has a saved path preference, or if the command is non-interactive / uses an explicit `--install-path`, the walkthrough prompt is skipped and dotnetup uses the existing configuration or the explicit path directly.
 
 ### 2. `dotnetup defaultinstall`
 

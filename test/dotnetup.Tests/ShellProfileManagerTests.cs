@@ -138,22 +138,6 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
-    public void HasProfileEntry_ReturnsFalseForMissingFile()
-    {
-        ShellProfileManager.HasProfileEntry(Path.Combine(_tempDir, "missing.sh")).Should().BeFalse();
-    }
-
-    [Fact]
-    public void HasProfileEntry_ReturnsTrueWhenEntryPresent()
-    {
-        var profilePath = Path.Combine(_tempDir, "has.sh");
-        var provider = new TestShellProvider(_tempDir, "has.sh");
-        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
-
-        ShellProfileManager.HasProfileEntry(profilePath).Should().BeTrue();
-    }
-
-    [Fact]
     public void AddProfileEntries_ModifiesMultipleFiles()
     {
         var provider = new TestShellProvider(_tempDir, "file1.sh", "file2.sh");

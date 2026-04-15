@@ -63,20 +63,6 @@ public class ShellProfileManager
     }
 
     /// <summary>
-    /// Checks whether a profile file already contains a dotnetup entry.
-    /// </summary>
-    public static bool HasProfileEntry(string profilePath)
-    {
-        if (!File.Exists(profilePath))
-        {
-            return false;
-        }
-
-        var content = File.ReadAllText(profilePath);
-        return content.Contains(MarkerComment, StringComparison.Ordinal);
-    }
-
-    /// <summary>
     /// Ensures the given entry is present in the file. If an existing dotnetup entry is found,
     /// it is replaced in-place to preserve the user's ordering. Otherwise the entry is appended.
     /// Returns true if the file was modified, false if the entry was already correct.
