@@ -22,8 +22,8 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
         var projectOptions = TestOptions.GetProjectOptions(cmdOptions);
         var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory);
 
-        var factory = new ProjectGraphFactory([hostProjectRepr], virtualProjectTargetFramework: null, buildProperties: [], NullLogger.Instance, cmdOptions.GlobalOptions, environmentOptions);
-        var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false, CancellationToken.None);
+        var factory = new ProjectGraphFactory([hostProjectRepr], buildProperties: [], NullLogger.Instance, cmdOptions.GlobalOptions, environmentOptions);
+        var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false, virtualProjectTargetFramework: null, CancellationToken.None);
         Assert.NotNull(projectGraph);
 
         var processOutputReporter = new TestProcessOutputReporter();

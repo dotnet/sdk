@@ -116,6 +116,20 @@ public sealed class VirtualProjectBuilder
     }
 
     /// <summary>
+    /// Parses a source file to extract property value from directives.
+    /// </summary>
+    /// <returns>Array of frameworks if TargetFrameworks is specified, or empty otherwise</returns>
+    public static string? GetPropertyFromSourceFile(string sourceFilePath, string propertyName)
+    {
+        var sourceFile = SourceFile.Load(sourceFilePath);
+        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
+
+        // Return the first value. Duplicate directives are not supported.
+        return directives.OfType<CSharpDirective.Property>()
+            .FirstOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.OrdinalIgnoreCase))?.Value;
+    }
+
+    /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
     /// </summary>
     internal static string GetTempSubdirectory()
@@ -185,7 +199,7 @@ public sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
-        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude))
+        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude or CSharpDirective.Ref))
         {
             return directives;
         }
@@ -203,6 +217,13 @@ public sealed class VirtualProjectBuilder
                     projectDirective = projectDirective.EnsureProjectFilePath(reportError);
 
                     builder.Add(projectDirective);
+                    break;
+
+                case CSharpDirective.Ref refDirective:
+                    refDirective = refDirective.WithName(project.ExpandString(refDirective.Name), CSharpDirective.Ref.NameKind.Expanded);
+                    refDirective = refDirective.EnsureResolvedPath(reportError);
+
+                    builder.Add(refDirective);
                     break;
 
                 case CSharpDirective.IncludeOrExclude includeOrExcludeDirective:
@@ -417,12 +438,18 @@ public sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
+        bool? refEnabled = null;
         bool? includeEnabled = null;
         bool? excludeEnabled = null;
         bool? transitiveEnabled = null;
 
         foreach (var directive in directives)
         {
+            if (directive is CSharpDirective.Ref)
+            {
+                CheckFlagEnabled(ref refEnabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, directive);
+            }
+
             if (directive is CSharpDirective.IncludeOrExclude includeOrExcludeDirective)
             {
                 if (includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Include)
@@ -475,6 +502,7 @@ public sealed class VirtualProjectBuilder
         var propertyDirectives = directives.OfType<CSharpDirective.Property>();
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
+        var refDirectives = directives.OfType<CSharpDirective.Ref>();
         var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>();
 
         const string defaultSdkName = "Microsoft.NET.Sdk";
@@ -722,7 +750,7 @@ public sealed class VirtualProjectBuilder
                 """);
         }
 
-        if (projectDirectives.Any())
+        if (projectDirectives.Any() || refDirectives.Any())
         {
             writer.WriteLine("""
                   <ItemGroup>
@@ -733,6 +761,19 @@ public sealed class VirtualProjectBuilder
                 writer.WriteLine($"""
                         <ProjectReference Include="{EscapeValue(projectReference.Name)}" />
                     """);
+
+                processedDirectives++;
+            }
+
+            foreach (var refDirective in refDirectives)
+            {
+                if (refDirective.ResolvedPath is not null)
+                {
+                    var virtualProjectPath = GetVirtualProjectPath(refDirective.ResolvedPath);
+                    writer.WriteLine($"""
+                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" />
+                        """);
+                }
 
                 processedDirectives++;
             }
