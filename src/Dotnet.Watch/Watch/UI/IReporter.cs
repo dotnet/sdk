@@ -209,6 +209,8 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<(int, string)> UpdateBatchFailedWithError = Create(LogEvents.UpdateBatchFailedWithError, Emoji.HotReload);
     public static readonly MessageDescriptor<(int, string)> UpdateBatchExceptionStackTrace = Create(LogEvents.UpdateBatchExceptionStackTrace, Emoji.HotReload);
     public static readonly MessageDescriptor<string> Capabilities = Create(LogEvents.Capabilities, Emoji.HotReload);
+    public static readonly MessageDescriptor<string> ProjectSpecifiesCapabilities = Create(LogEvents.ProjectSpecifiesCapabilities, Emoji.HotReload);
+    public static readonly MessageDescriptor<(Version, string)> UsingCapabilitiesBasedOnTargetFrameworkVersion = Create(LogEvents.UsingCapabilitiesBasedOnTargetFrameworkVersion, Emoji.HotReload);
     public static readonly MessageDescriptor<None> WaitingForFileChangeBeforeRestarting = Create("Waiting for a file to change before restarting ...", Emoji.Wait, LogLevel.Warning);
     public static readonly MessageDescriptor<None> WatchingWithHotReload = Create("Watching with Hot Reload.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<None> RestartInProgress = Create("Restart in progress.", Emoji.Restart, LogLevel.Information);
@@ -220,8 +222,8 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<string> ApplyUpdate_Verbose = Create<string>("{0}", Emoji.Default, LogLevel.Debug);
     public static readonly MessageDescriptor<string> ApplyUpdate_AutoVerbose = Create<string>("{0}", Emoji.Default, LogLevel.Debug);
     public static readonly MessageDescriptor<string> ApplyUpdate_ChangingEntryPoint = Create<string>("{0} Press \"Ctrl + R\" to restart.", Emoji.Warning, LogLevel.Warning);
-    public static readonly MessageDescriptor<None> ConfiguredToLaunchBrowser = Create("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, LogLevel.Debug);
-    public static readonly MessageDescriptor<None> ConfiguredToUseBrowserRefresh = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
+    public static readonly MessageDescriptor<None> ConfiguredToLaunchBrowser = Create("Configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, LogLevel.Debug);
+    public static readonly MessageDescriptor<None> UsingBrowserRefreshMiddleware = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ManualRefreshRequired = Create<string>("Browser refresh is suppressed via environment variable '{0}'. To reload static assets after an update refresh browser manually.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ApplicationWillBeRestarted = Create<string>("Browser refresh is suppressed via environment variable '{0}'. Application will be restarted when updated.", Emoji.Watch, LogLevel.Warning);
     public static readonly MessageDescriptor<None> BrowserRefreshNotSupportedByProjectTargetFramework_ManualRefreshRequired = Create("Browser refresh is not supported by the project target framework. To reload static assets after an update refresh browser manually. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);
