@@ -7,6 +7,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -204,6 +205,54 @@ public class InstallPathResolverTests(ITestOutputHelper output)
 
         result!.ResolvedInstallPath.Should().NotBe("/admin/dotnet", "admin installs should not be used as fallback");
         result.PathSource.Should().Be(PathSource.Default);
+    }
+
+    [Fact]
+    public void ResolveCurrentInstallRootPath_UsesSymlinkTargetDirectory()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        using var testEnvironment = new TestEnvironment();
+        string actualRoot = Path.Combine(testEnvironment.TempRoot, "usr", "lib", "dotnet");
+        string binDir = Path.Combine(testEnvironment.TempRoot, "usr", "bin");
+        Directory.CreateDirectory(actualRoot);
+        Directory.CreateDirectory(binDir);
+
+        string targetPath = Path.Combine(actualRoot, "dotnet");
+        File.WriteAllText(targetPath, string.Empty);
+
+        string linkPath = Path.Combine(binDir, "dotnet");
+        File.CreateSymbolicLink(linkPath, targetPath);
+
+        string resolvedRoot = DotnetEnvironmentManager.ResolveCurrentInstallRootPath(linkPath);
+
+        resolvedRoot.Should().Be(actualRoot);
+    }
+
+    [Fact]
+    public void ResolveCurrentInstallRootPath_UsesRealDirectoryWhenParentDirectoryIsSymlinked()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        using var testEnvironment = new TestEnvironment();
+        string actualRoot = Path.Combine(testEnvironment.TempRoot, "usr", "lib", "dotnet");
+        Directory.CreateDirectory(actualRoot);
+
+        string targetPath = Path.Combine(actualRoot, "dotnet");
+        File.WriteAllText(targetPath, string.Empty);
+
+        string symlinkedRoot = Path.Combine(testEnvironment.TempRoot, "current-dotnet");
+        Directory.CreateSymbolicLink(symlinkedRoot, actualRoot);
+
+        string resolvedRoot = DotnetEnvironmentManager.ResolveCurrentInstallRootPath(Path.Combine(symlinkedRoot, "dotnet"));
+
+        resolvedRoot.Should().Be(actualRoot);
     }
 
     private static GlobalJsonInfo CreateGlobalJsonInfo(string sdkPath)

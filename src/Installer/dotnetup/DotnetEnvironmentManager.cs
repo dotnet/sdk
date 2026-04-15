@@ -3,11 +3,11 @@
 
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
+using CliEnvironmentProvider = Microsoft.DotNet.Cli.Utils.EnvironmentProvider;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -29,14 +29,20 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 
     public DotnetInstallRootConfiguration? GetCurrentPathConfiguration()
     {
-        var environmentProvider = new EnvironmentProvider();
+        var environmentProvider = new CliEnvironmentProvider();
         string? foundDotnet = environmentProvider.GetCommandPath("dotnet");
         if (string.IsNullOrEmpty(foundDotnet))
         {
             return null;
         }
 
-        var currentInstallRoot = new DotnetInstallRoot(Path.GetDirectoryName(foundDotnet)!, InstallerUtilities.GetDefaultInstallArchitecture());
+        // On Linux/WSL, `dotnet` on PATH is often exposed through a symlink such
+        // as /usr/bin/dotnet -> /usr/lib/dotnet/dotnet. We need to classify the
+        // real install root, not the shim location, or dotnetup can mistake
+        // /usr/bin for the install directory.
+        var currentInstallRoot = new DotnetInstallRoot(
+            ResolveCurrentInstallRootPath(foundDotnet),
+            InstallerUtilities.GetDefaultInstallArchitecture());
 
         // Use InstallRootManager to determine if the install is fully configured
         if (OperatingSystem.IsWindows())
@@ -78,6 +84,14 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     public string GetDefaultDotnetInstallPath()
     {
         return DotnetupPaths.DefaultDotnetInstallPath;
+    }
+
+    internal static string ResolveCurrentInstallRootPath(string dotnetExecutablePath)
+    {
+        string fullPath = Path.GetFullPath(dotnetExecutablePath);
+        string resolvedExecutablePath = Microsoft.DotNet.NativeWrapper.FileInterop.ResolveRealPath(fullPath) ?? fullPath;
+        return Path.GetDirectoryName(resolvedExecutablePath)
+            ?? throw new InvalidOperationException($"Unable to determine the install root for '{dotnetExecutablePath}'.");
     }
 
     public string? GetLatestInstalledSystemVersion()

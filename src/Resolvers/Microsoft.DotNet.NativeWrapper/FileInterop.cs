@@ -7,6 +7,11 @@ namespace Microsoft.DotNet.NativeWrapper
     {
         public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
+        public static string? ResolveRealPath(string path)
+        {
+            return RunningOnWindows ? null : Unix.realpath(path);
+        }
+
         internal static class Unix
         {
             // Ansi marshaling on Unix is actually UTF8
