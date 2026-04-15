@@ -307,6 +307,8 @@ public sealed class VirtualProjectBuilder
                 evaluatedDirectives,
                 addGlobalProperties);
 
+            CheckDirectives(project, evaluatedDirectives, reportError);
+
             return;
         }
 
@@ -353,6 +355,8 @@ public sealed class VirtualProjectBuilder
 
         evaluatedDirectives = evaluatedDirectiveBuilder.ToImmutable();
         _evaluatedDirectives = (directivesOriginal, evaluatedDirectives);
+
+        CheckDirectives(project, evaluatedDirectives, reportError);
 
         bool TryGetNextFileToProcess()
         {
