@@ -105,8 +105,8 @@ internal class Parser
         [
             (Strings.HelpInstallCommandsTitle, ["sdk", "runtime", "install", "update", "uninstall"]),
             (Strings.HelpQueryCommandsTitle, ["list"]),
-            (Strings.HelpConfigCommandsTitle, ["print-env-script", "defaultinstall"]),
-            (Strings.HelpUtilityCommandsTitle, ["dotnet", "walkthrough"]),
+            (Strings.HelpConfigCommandsTitle, ["print-env-script", "defaultinstall", "init"]),
+            (Strings.HelpUtilityCommandsTitle, ["dotnet"]),
         ];
 
         public override int Invoke(ParseResult parseResult)

@@ -63,6 +63,19 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("init")]
+    [InlineData("walkthrough")]
+    public void Parser_ShouldParseInitAndWalkthroughAlias(string commandName)
+    {
+        var args = new[] { commandName, "--help" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
     [Fact]
     public void Parser_ShouldParseElevatedAdminPathCommand()
     {
@@ -190,6 +203,19 @@ public class ParserTests
 
         // Output should match Parser.Version
         output.Trim().Should().Be(Parser.Version);
+    }
+
+    [Fact]
+    public void DotnetupProcess_RootHelp_ShouldListInitCommand()
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("init");
+        output.Should().NotContain("walkthrough");
     }
 
     #region Runtime Command Parser Tests

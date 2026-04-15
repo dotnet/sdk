@@ -7,12 +7,12 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
 
 /// <summary>
-/// Runs the interactive walkthrough that installs the .NET SDK with defaults
+/// Runs the interactive initialization flow that installs the .NET SDK with defaults
 /// and records the user's path replacement preference to <c>dotnetup.config.json</c>.
 /// </summary>
 internal class WalkthroughCommand(ParseResult result) : InstallCommand(result)
 {
-    protected override string GetCommandName() => "walkthrough";
+    protected override string GetCommandName() => "init";
 
     protected override int ExecuteCore()
     {

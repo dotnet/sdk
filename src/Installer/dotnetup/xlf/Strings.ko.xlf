@@ -208,8 +208,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WalkthroughCommandDescription">
-        <source>Run the interactive setup walkthrough to install .NET and configure PATH settings.</source>
-        <target state="new">Run the interactive setup walkthrough to install .NET and configure PATH settings.</target>
+        <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
+        <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
         <note />
       </trans-unit>
     </body>

@@ -433,7 +433,7 @@ internal class WalkthroughWorkflows
         }
         else
         {
-            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can run the walkthrough again to reconfigure.[/]");
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can run 'dotnetup init' again to reconfigure.[/]");
         }
     }
 

@@ -13,7 +13,8 @@ internal static class WalkthroughCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("walkthrough", Strings.WalkthroughCommandDescription);
+        Command command = new("init", Strings.WalkthroughCommandDescription);
+        command.Aliases.Add("walkthrough");
 
         command.Options.Add(CommonOptions.InstallPathOption);
         command.Options.Add(CommonOptions.ManifestPathOption);

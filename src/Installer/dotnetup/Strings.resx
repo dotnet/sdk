@@ -175,7 +175,7 @@
     <value>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</value>
   </data>
   <data name="WalkthroughCommandDescription" xml:space="preserve">
-    <value>Run the interactive setup walkthrough to install .NET and configure PATH settings.</value>
+    <value>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</value>
   </data>
   <data name="PathPreferenceDotnetupDotnet" xml:space="preserve">
     <value>Isolation Mode</value>
