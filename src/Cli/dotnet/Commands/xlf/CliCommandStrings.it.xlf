@@ -378,12 +378,6 @@ Per altre informazioni, vedere https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Consente di creare e gestire i certificati di sviluppo.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectivesRemoved">
-        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
-        <target state="translated">Sono state rimosse le direttive '{0}' ({1}) per '{2}' da: {3}</target>
-        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
-    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
-      </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">La directory di destinazione esiste già: '{0}'</target>
@@ -1261,6 +1255,11 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <source>Deleted source file: {0}</source>
         <target state="translated">File di origine eliminato: {0}</target>
         <note>{0} is the source file path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDuplicateRefFolderName">
+        <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
+        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>

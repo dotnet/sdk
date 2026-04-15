@@ -352,7 +352,7 @@ public class RunCommand
 
         // Get frameworks from source file directives
         var frameworks = GetTargetFrameworksFromSourceFile(EntryPointFileFullPath);
-        if (frameworks is null || frameworks.Length == 0)
+        if (frameworks is [])
         {
             return true; // Not multi-targeted
         }
@@ -370,21 +370,11 @@ public class RunCommand
     /// <summary>
     /// Parses a source file to extract target frameworks from directives.
     /// </summary>
-    /// <returns>Array of frameworks if TargetFrameworks is specified, null otherwise</returns>
-    private static string[]? GetTargetFrameworksFromSourceFile(string sourceFilePath)
+    /// <returns>Array of frameworks if TargetFrameworks is specified, empty array otherwise</returns>
+    private static string[] GetTargetFrameworksFromSourceFile(string sourceFilePath)
     {
-        var sourceFile = SourceFile.Load(sourceFilePath);
-        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
-        
-        var targetFrameworksDirective = directives.OfType<CSharpDirective.Property>()
-            .FirstOrDefault(p => string.Equals(p.Name, "TargetFrameworks", StringComparison.OrdinalIgnoreCase));
-        
-        if (targetFrameworksDirective is null)
-        {
-            return null;
-        }
-
-        return targetFrameworksDirective.Value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var value = VirtualProjectBuilder.GetPropertyFromSourceFile(sourceFilePath, "TargetFrameworks");
+        return value?.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
     }
 
     /// <summary>

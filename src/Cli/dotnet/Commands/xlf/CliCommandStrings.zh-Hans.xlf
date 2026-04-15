@@ -378,12 +378,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">创建和管理开发证书。</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectivesRemoved">
-        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
-        <target state="translated">已从 {3} 移除“{2}”的“{0}”指令({1})</target>
-        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
-    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
-      </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">目标目录已存在: '{0}'</target>
@@ -1261,6 +1255,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Deleted source file: {0}</source>
         <target state="translated">已删除的源文件: {0}</target>
         <note>{0} is the source file path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDuplicateRefFolderName">
+        <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
+        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>

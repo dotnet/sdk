@@ -378,12 +378,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">Geliştirme sertifikaları oluşturun ve yönetin.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DirectivesRemoved">
-        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
-        <target state="translated">‘{2}’ için ‘{0}’ yönergeleri ({1}) şuradan kaldırıldı: {3}</target>
-        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
-    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
-      </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">Hedef dizin zaten mevcut: '{0}'</target>
@@ -1261,6 +1255,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Deleted source file: {0}</source>
         <target state="translated">Kaynak dosya silindi: {0}</target>
         <note>{0} is the source file path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDuplicateRefFolderName">
+        <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
+        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
