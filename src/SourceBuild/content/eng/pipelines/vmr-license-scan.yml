@@ -51,7 +51,7 @@ extends:
     containers:
       licenseScanContainer:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-source-build-test-amd64
-        options: '--memory=12g'
+        options: '--memory=20g'
     pool:
       name: NetCore1ESPool-Svc-Internal
       image: 1es-ubuntu-2204
