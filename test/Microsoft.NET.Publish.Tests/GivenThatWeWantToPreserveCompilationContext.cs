@@ -14,8 +14,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
-        // Skip = "https://github.com/dotnet/sdk/issues/53796"
-        //[InlineData("net46", "netstandard1.3", false)]
+        [InlineData("net46", "netstandard1.3", false)]
         [InlineData("netcoreapp2.0", "netstandard2.0", false)]
         [InlineData("netcoreapp2.0", "netstandard2.0", true)]
         [InlineData("netcoreapp3.0", "netstandard2.0", false)]
