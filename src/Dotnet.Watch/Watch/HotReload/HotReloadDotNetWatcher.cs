@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -51,7 +52,6 @@ internal sealed class HotReloadDotNetWatcher
 
         _designTimeBuildGraphFactory = new ProjectGraphFactory(
             context.RootProjects,
-            context.MainProjectOptions?.TargetFramework,
             buildProperties: EvaluationResult.GetGlobalBuildProperties(
                 context.BuildArguments,
                 context.EnvironmentOptions),
@@ -109,7 +109,7 @@ internal sealed class HotReloadDotNetWatcher
                 // Try load project graph and perform design-time build even if the build failed.
                 // This allows us to watch the project and source files for changes that will trigger restart.
 
-                projectGraph = rootProjectsBuildResult.ProjectGraph ?? TryLoadProjectGraph(iterationCancellationToken);
+                projectGraph = rootProjectsBuildResult.ProjectGraph ?? TryLoadProjectGraph(rootProjectsBuildResult.MainProjectTargetFramework, iterationCancellationToken);
                 if (projectGraph == null)
                 {
                     continue;
@@ -364,16 +364,18 @@ internal sealed class HotReloadDotNetWatcher
                         {
                             // TODO: consider reloading/reevaluating only affected projects instead of the whole graph.
 
+                            var targetFramework = mainProjectOptions?.TargetFramework;
+
                             while (true)
                             {
                                 iterationCancellationToken.ThrowIfCancellationRequested();
 
-                                projectGraph = TryLoadProjectGraph(iterationCancellationToken);
+                                projectGraph = TryLoadProjectGraph(targetFramework, iterationCancellationToken);
                                 if (projectGraph != null)
                                 {
                                     fileWatcher.WatchFiles(projectGraph.BuildFiles);
 
-                                    evaluationResult = await TryEvaluateProjectGraphAsync(projectGraph, mainProjectOptions?.TargetFramework, restore: true, iterationCancellationToken);
+                                    evaluationResult = await TryEvaluateProjectGraphAsync(projectGraph, targetFramework, restore: true, iterationCancellationToken);
                                     if (evaluationResult != null)
                                     {
                                         break;
@@ -932,8 +934,8 @@ internal sealed class HotReloadDotNetWatcher
             };
     }
 
-    private LoadedProjectGraph? TryLoadProjectGraph(CancellationToken cancellationToken)
-        => _designTimeBuildGraphFactory.TryLoadProjectGraph(projectGraphRequired: true, cancellationToken);
+    private LoadedProjectGraph? TryLoadProjectGraph(string? virtualProjectTargetFramework, CancellationToken cancellationToken)
+        => _designTimeBuildGraphFactory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework, cancellationToken);
 
     private ValueTask<EvaluationResult?> TryEvaluateProjectGraphAsync(LoadedProjectGraph projectGraph, string? mainProjectTargetFramework, bool restore, CancellationToken cancellationToken)
         => EvaluationResult.TryCreateAsync(
@@ -995,12 +997,44 @@ internal sealed class HotReloadDotNetWatcher
 
         async ValueTask<bool> BuildWithFrameworkAndDeviceSelectionAsync()
         {
-            var needsFrameworkSelection = targetFramework == null && frameworkSelector != null;
+            // Framework selection for file-based programs:
+            // If framework is specified on command line use it to create the virtual project.
+            // Otherwise, use TargetFramework/TargetFrameworks property specified in the source file, if any.
+            //
+            // Device selection not applicable to file based apps.
+            if (mainProjectOptions?.Representation.EntryPointFilePath is { } sourcePath)
+            {
+                if (targetFramework == null)
+                {
+                    if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFramework) is { } framework and not "")
+                    {
+                        targetFramework = framework;
+                    }
+                    else if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFrameworks) is { } frameworks and not "")
+                    {
+                        var frameworkList = frameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                        if (frameworkSelector != null)
+                        {
+                            targetFramework = await frameworkSelector(frameworkList, cancellationToken);
+                        }
+                        else
+                        {
+                            _context.BuildLogger.Log(MessageDescriptor.FileSpecifiesMultipleTargetFrameworks, sourcePath, string.Join("', '", frameworkList));
+
+                            return false;
+                        }
+                    }
+                }
+
+                return await BuildAsync(BuildAction.RestoreAndBuild, targetFramework);
+            }
+
             var needsDeviceSelection = selectedDevice == null && deviceSelector != null;
+            var needsFrameworkSelection = targetFramework == null && frameworkSelector != null;
 
             if (mainProjectOptions == null ||
-                (!needsFrameworkSelection && !needsDeviceSelection) ||
-                !mainProjectOptions.Representation.IsProjectFile)
+                (!needsFrameworkSelection && !needsDeviceSelection))
             {
                 return await BuildAsync(BuildAction.RestoreAndBuild, targetFramework);
             }
@@ -1011,7 +1045,7 @@ internal sealed class HotReloadDotNetWatcher
             }
 
             // load project graph after restore so that props and targets files from packages are imported:
-            projectGraph = TryLoadProjectGraph(cancellationToken);
+            projectGraph = TryLoadProjectGraph(targetFramework, cancellationToken);
             if (projectGraph == null)
             {
                 return false;
@@ -1022,7 +1056,7 @@ internal sealed class HotReloadDotNetWatcher
             // Select target framework if needed:
             if (needsFrameworkSelection)
             {
-                Debug.Assert(frameworkSelector is not null);
+                Debug.Assert(frameworkSelector != null);
 
                 if (rootProject.GetTargetFramework() is var framework and not "")
                 {
@@ -1043,7 +1077,7 @@ internal sealed class HotReloadDotNetWatcher
             if (needsDeviceSelection
                 && rootProject.Targets.ContainsKey(TargetNames.ComputeAvailableDevices))
             {
-                Debug.Assert(deviceSelector is not null);
+                Debug.Assert(deviceSelector != null);
 
                 var deviceInfo = await TrySelectDeviceAsync(projectGraph, rootProject, targetFramework, deviceSelector, cancellationToken);
                 if (deviceInfo == null)

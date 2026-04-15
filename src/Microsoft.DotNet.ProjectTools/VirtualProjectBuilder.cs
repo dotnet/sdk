@@ -116,6 +116,20 @@ public sealed class VirtualProjectBuilder
     }
 
     /// <summary>
+    /// Parses a source file to extract property value from directives.
+    /// </summary>
+    /// <returns>Array of frameworks if TargetFrameworks is specified, or empty otherwise</returns>
+    public static string? GetPropertyFromSourceFile(string sourceFilePath, string propertyName)
+    {
+        var sourceFile = SourceFile.Load(sourceFilePath);
+        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
+
+        // Return the first value. Duplicate directives are not supported.
+        return directives.OfType<CSharpDirective.Property>()
+            .FirstOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.OrdinalIgnoreCase))?.Value;
+    }
+
+    /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
     /// </summary>
     internal static string GetTempSubdirectory()
