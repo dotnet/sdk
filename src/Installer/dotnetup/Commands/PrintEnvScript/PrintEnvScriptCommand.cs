@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
@@ -49,8 +50,7 @@ internal class PrintEnvScriptCommand : CommandBase
             // Generate the shell script
             string script = _shellProvider.GenerateEnvScript(installPath);
 
-            // Output the script to stdout
-            Console.WriteLine(script);
+            WriteScriptToStandardOutput(script);
 
             return 0;
         }
@@ -59,5 +59,20 @@ internal class PrintEnvScriptCommand : CommandBase
             Console.Error.WriteLine($"Error generating environment script: {ex.Message}");
             return 1;
         }
+    }
+
+    internal static void WriteScriptToStandardOutput(string script)
+    {
+        using Stream standardOutput = Console.OpenStandardOutput();
+        WriteScript(standardOutput, script);
+    }
+
+    internal static void WriteScript(Stream output, string script)
+    {
+        // Emit machine-readable script output directly to the stdout stream so
+        // console formatting state cannot rewrite or decorate the content.
+        using var writer = new StreamWriter(output, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), leaveOpen: true);
+        writer.Write(script);
+        writer.Flush();
     }
 }
