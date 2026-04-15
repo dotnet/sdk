@@ -3647,7 +3647,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
               </PropertyGroup>
             </Project>
             """);
@@ -3827,8 +3826,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
             </Project>
             """);
@@ -3886,8 +3883,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
             </Project>
             """);
@@ -3952,8 +3947,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
             </Project>
             """);
