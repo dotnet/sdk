@@ -1835,22 +1835,22 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
         <source>Add '#!' (shebang)</source>
-        <target state="new">Add '#!' (shebang)</target>
+        <target state="translated">'#!' の追加(シバン)</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramDescription">
         <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
-        <target state="new">When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</target>
+        <target state="translated">ファイルベースのプログラムが複数のファイルで構成されている場合、エントリ ポイントのファイルは、他のインクルード ファイルと明確に区別するために、シバン ('#!') 行で始める必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramMessage">
         <source>File-based program entry point should start with '#!'</source>
-        <target state="new">File-based program entry point should start with '#!'</target>
+        <target state="translated">ファイルベースのプログラムのエントリ ポイントは '#!' で始まる必要があります</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramTitle">
         <source>File-based program entry point should start with '#!'</source>
-        <target state="new">File-based program entry point should start with '#!'</target>
+        <target state="translated">ファイルベースのプログラムのエントリ ポイントは '#!' で始まる必要があります</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
