@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And
                 .HaveStdOutContaining("Second")
                 .And
-                .NotHaveStdErr();
+                .HaveStdErrContaining("Using launch settings from");
         }
 
         [Fact]
@@ -106,10 +106,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute();
 
             cmd.Should().Pass()
-                .And.NotHaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.NotHaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
-
-            cmd.StdErr.Should().BeEmpty();
         }
 
         [Fact]
@@ -126,10 +124,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("-v:m");
 
             cmd.Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
-
-            cmd.StdErr.Should().BeEmpty();
         }
 
         [Fact]
