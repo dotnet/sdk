@@ -856,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: Não é possível otimizar assemblies para desempenho: um pacote de tempo de execução válido não foi encontrado. Defina a propriedade PublishReadyToRun como false ou use um identificador de tempo de execução com suporte ao publicar. Ao direcionar o .NET 6 ou superior, certifique-se de restaurar os pacotes com a propriedade PublishReadyToRun definida como true.</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: não há suporte para otimizar assemblies para desempenho na arquitetura ou plataforma de destino selecionada. Verifique se você está usando um identificador de tempo de execução com suporte ou defina a propriedade PublishReadyToRun como false.</target>
