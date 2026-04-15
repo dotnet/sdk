@@ -141,6 +141,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ResolveTargetingPackAssets
             {
                 BuildEngine = buildEngine,
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 FrameworkReferences = DefaultFrameworkReferences(),
                 ResolvedTargetingPacks = DefaultTargetingPacks(mockPackageDirectory),
                 ProjectLanguage = "C#"
@@ -230,7 +231,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             inputProperties = typeof(ResolveTargetingPackAssets)
                 .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)
                 .Where(p => !p.IsDefined(typeof(OutputAttribute)) &&
-                            p.Name != nameof(ResolvePackageAssets.DesignTimeBuild))
+                            p.Name != nameof(ResolvePackageAssets.DesignTimeBuild) &&
+                            p.Name != "TaskEnvironment")
                 .OrderBy(p => p.Name, StringComparer.Ordinal);
 
             var requiredProperties = inputProperties
