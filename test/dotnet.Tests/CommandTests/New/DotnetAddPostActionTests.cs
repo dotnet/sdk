@@ -247,6 +247,59 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.Equal(referencedProjectFileFullPath, callback.Reference);
         }
 
+        [Fact(DisplayName = nameof(AddRefWithTargetFilesIgnoresParentDirectoryProjects))]
+        public void AddRefWithTargetFilesIgnoresParentDirectoryProjects()
+        {
+            // Regression test: when targetFiles is specified pointing to a pre-existing project,
+            // the processor should find it on disk and NOT walk up the directory tree to find
+            // a different .csproj in a parent directory.
+            var callback = new MockAddProjectReferenceCallback();
+            DotnetAddPostActionProcessor actionProcessor = new(callback.AddPackageReference, callback.AddProjectReference);
+
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
+
+            // Create existing target project in a subdirectory (the correct target)
+            const string existingProjectFolder = "ExistingProject";
+            string existingProjectPath = Path.Combine(targetBasePath, existingProjectFolder);
+            const string existingProjectFile = "ExistingProject.csproj";
+            string existingProjectFileFullPath = Path.Combine(existingProjectPath, existingProjectFile);
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(existingProjectFileFullPath, TestCsprojFile);
+
+            // Create a conflicting .csproj in the output directory itself (simulates stale file pollution)
+            string conflictingProjFile = Path.Combine(targetBasePath, "Conflicting.csproj");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(conflictingProjFile, TestCsprojFile);
+
+            string referencedProjectFileFullPath = Path.Combine(targetBasePath, "Reference.csproj");
+
+            var args = new Dictionary<string, string>()
+            {
+                { "targetFiles", $"[\"{existingProjectFolder}/{existingProjectFile}\"]" },
+                { "referenceType", "project" },
+                { "reference", "Reference.csproj" }
+            };
+            var postAction =
+                new MockPostAction(default, default, default, default, default!)
+                {
+                    ActionId = DotnetAddPostActionProcessor.ActionProcessorId, Args = args
+                };
+
+            // Empty creation effects — the existing project was NOT created by the template
+            MockCreationEffects creationEffects = new MockCreationEffects();
+
+            actionProcessor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                creationEffects,
+                new MockCreationResult(),
+                targetBasePath);
+
+            // The callback should receive the explicitly configured target file,
+            // NOT the conflicting .csproj from the parent/output directory
+            Assert.Equal(existingProjectFileFullPath, callback.Target);
+            Assert.Equal(referencedProjectFileFullPath, callback.Reference);
+        }
+
         [Fact(DisplayName = nameof(AddRefCanTargetASingleProjectWithAJsonArray))]
         public void AddRefCanTargetASingleProjectWithAJsonArray()
         {

@@ -34,11 +34,23 @@ internal class DotnetAddPostActionProcessor(
 
     protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
     {
+        bool hasConfiguredTargetFiles =
+            action.Args.TryGetValue("targetFiles", out string? targetFilesArg) &&
+            !string.IsNullOrWhiteSpace(targetFilesArg);
+
         IReadOnlyList<string>? projectsToProcess = GetConfiguredFiles(action.Args, creationEffects, "targetFiles", outputBasePath);
 
-        if (!projectsToProcess.Any())
+        if (!projectsToProcess.Any() && hasConfiguredTargetFiles)
         {
-            //If the author didn't opt in to the new behavior by specifying "targetFiles", search for project file in current output directory or above.
+            // targetFiles was specified but none matched in creationEffects (e.g., pre-existing project files).
+            // Try to resolve them directly from disk before falling back to directory search.
+            projectsToProcess = FindExistingTargetFiles(environment.Host.FileSystem, action.Args, outputBasePath);
+        }
+
+        if (!projectsToProcess.Any() && !hasConfiguredTargetFiles)
+        {
+            // The author didn't opt in to the new behavior by specifying "targetFiles",
+            // search for project file in current output directory or above.
             HashSet<string> extensionLimiters = new(StringComparer.Ordinal);
             if (action.Args.TryGetValue("projectFileExtensions", out string? projectFileExtensions))
             {
@@ -63,11 +75,6 @@ internal class DotnetAddPostActionProcessor(
                 }
                 return false;
             }
-        }
-
-        if (!projectsToProcess.Any())
-        {
-            projectsToProcess = FindExistingTargetFiles(environment.Host.FileSystem, action.Args, outputBasePath);
         }
 
         if (!projectsToProcess.Any())

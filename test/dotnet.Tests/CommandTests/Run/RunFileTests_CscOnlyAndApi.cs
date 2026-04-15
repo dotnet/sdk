@@ -402,11 +402,10 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             Console.WriteLine("ran" + x);
             """);
 
-        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+        new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc)
             // warning CS8600: Converting null literal or possible null value to non-nullable type.
             .And.HaveStdOutContaining("warning CS8600")
             .And.HaveStdOutContaining("ran");
@@ -415,11 +414,10 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             Console.Write
             """);
 
-        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+        new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdOutContaining(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc)
             // error CS1002: ; expected
             .And.HaveStdOutContaining("error CS1002")
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
