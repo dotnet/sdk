@@ -34,6 +34,22 @@ public class WalkthroughWorkflowTests : IDisposable
     // ── ShouldPromptToConvertSystemInstalls ──
 
     [Fact]
+    public void ShouldReplaceSystemConfiguration_ReturnsFalse_ForDotnetupDotnet()
+    {
+        WalkthroughWorkflows.ShouldReplaceSystemConfiguration(PathPreference.DotnetupDotnet)
+            .Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(PathPreference.ShellProfile)]
+    [InlineData(PathPreference.FullPathReplacement)]
+    internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(PathPreference preference)
+    {
+        WalkthroughWorkflows.ShouldReplaceSystemConfiguration(preference)
+            .Should().BeTrue();
+    }
+
+    [Fact]
     public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_ForDotnetupDotnet()
     {
         WalkthroughWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.DotnetupDotnet)

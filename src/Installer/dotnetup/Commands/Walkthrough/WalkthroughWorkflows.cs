@@ -41,7 +41,7 @@ internal class WalkthroughWorkflows
     /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
     /// </summary>
     public static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
-        preference == PathPreference.FullPathReplacement;
+        preference is PathPreference.FullPathReplacement or PathPreference.ShellProfile;
 
     /// <summary>
     /// Returns true when the user chose to convert existing system-level .NET installs
