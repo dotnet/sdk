@@ -551,6 +551,34 @@ public class CreateNewImageToolTaskTests
             .And.NotHaveStdOutContaining("Trace logging: enabled.");
     }
 
+    [Fact]
+    public void GenerateCommandLineCommands_LabelGeneration()
+    {
+        CreateNewImage task = new();
+
+        List<string?> warnings = new();
+        IBuildEngine buildEngine = A.Fake<IBuildEngine>();
+
+        task.BuildEngine = buildEngine;
+
+        DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
+        task.PublishDirectory = publishDir.FullName;
+        task.BaseRegistry = "MyBaseRegistry";
+        task.BaseImageName = "MyBaseImageName";
+        task.Repository = "MyImageName";
+        task.WorkingDirectory = "MyWorkingDirectory";
+        task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
+        task.GenerateLabels = true;
+        task.GenerateDigestLabel = true;
+
+        string args = task.GenerateCommandLineCommandsInt();
+
+        Assert.Contains("--generate-labels", args);
+        Assert.Contains("--generate-digest-label", args);
+    }
+
+
+
     private static string GetPathToContainerize()
     {
         return Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "containerize");

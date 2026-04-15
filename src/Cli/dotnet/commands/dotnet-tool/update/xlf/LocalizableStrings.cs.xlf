@@ -37,14 +37,14 @@
         <target state="translated">Zadejte jedno ID balíčku nástroje, který se má aktualizovat.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateAllOptionDescription">
+        <source>Update all tools.</source>
+        <target state="translated">Aktualizuje všechny nástroje.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateLocaToolSucceededVersionNoChange">
         <source>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</source>
         <target state="translated">Nástroj {0} je aktuální (verze {1}, soubor manifestu {2}).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">Požadovaná verze {0} je nižší než stávající verze {1} (soubor manifestu {2}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
@@ -52,19 +52,34 @@
         <target state="translated">Nástroj {0} byl úspěšně aktualizován z verze {1} na verzi {2} (soubor manifestu {3}).</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
+        <target state="translated">Požadovaná verze {0} je nižší než stávající verze {1} (soubor manifestu {2}). Pokud chcete povolit tuto aktualizaci, použijte možnost --allow-downgrade.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest prerelease version (version '{1}').</source>
-        <target state="translated">Nástroj{0}byl znovu nainstalován s nejnovější předběžnou verzí (verze{1}).</target>
+        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
+        <target state="translated">Nástroj {0} se přeinstaloval na předběžnou verzi (verze {1}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">Nástroj {0} byl přeinstalován nejnovější stabilní verzí (verze {1}).</target>
+        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
+        <target state="translated">Nástroj {0} se přeinstaloval na stabilní verzi (verze {1}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">Požadovaná verze {0} je nižší než stávající verze {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndPackageId">
+        <source>One must specify either package ID or use the update all option (--all).</source>
+        <target state="translated">Jeden musí určovat buď ID balíčku, nebo použít možnost aktualizovat vše (--all).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndVersion">
+        <source>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</source>
+        <target state="translated">Možnost verze (--version) a možnost aktualizovat vše (--all) nejde použít naráz. Zadejte pouze jednu z možností: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToolCommandInvalidGlobalAndLocalAndToolPath">
