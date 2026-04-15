@@ -113,7 +113,7 @@ public class ReferencedExeProgram
 
         private void RunTest(string buildFailureCode = null, [CallerMemberName] string callingMethod = null)
         {
-            var testProjectInstance = _testAssetsManager.CreateTestProject(MainProject, callingMethod: callingMethod, identifier: MainSelfContained.ToString() + "_" + ReferencedSelfContained.ToString());
+            var testProjectInstance = TestAssetsManager.CreateTestProject(MainProject, callingMethod: callingMethod, identifier: MainSelfContained.ToString() + "_" + ReferencedSelfContained.ToString());
 
             string outputDirectory;
 
@@ -341,7 +341,7 @@ public class ReferencedExeProgram
                 testConsoleProject.SelfContained = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
+            var testAsset = TestAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
 
             var testProjectDirectory = Path.Combine(testAsset.TestRoot, "TestProject");
             Directory.CreateDirectory(testProjectDirectory);
@@ -397,7 +397,7 @@ public class ReferencedExeProgram
 
             mtpNotSelfContained.ReferencedProjects.Add(testConsoleProjectSelfContained);
 
-            var testAssetMTP = _testAssetsManager.CreateTestProject(mtpNotSelfContained);
+            var testAssetMTP = TestAssetsManager.CreateTestProject(mtpNotSelfContained);
 
             var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, "MTPTestProject");
             
@@ -446,7 +446,7 @@ public class ReferencedExeProgram
 
             testConsoleProjectSelfContained.ReferencedProjects.Add(mtpNotSelfContained);
 
-            var testAssetSelfContained = _testAssetsManager.CreateTestProject(testConsoleProjectSelfContained);
+            var testAssetSelfContained = TestAssetsManager.CreateTestProject(testConsoleProjectSelfContained);
             
             if (!setIsTestingPlatformApplicationEarly)
             {
@@ -485,7 +485,7 @@ public class ReferencedExeProgram
                 testConsoleProject.SelfContained = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
+            var testAsset = TestAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
 
             var testProjectDirectory = Path.Combine(testAsset.TestRoot, "TestProject");
             Directory.CreateDirectory(testProjectDirectory);
@@ -530,7 +530,7 @@ public class ReferencedExeProgram
                 mtpSelfContained.AdditionalProperties["IsTestingPlatformApplication"] = "true";
             }
 
-            var testAssetMTP = _testAssetsManager.CreateTestProject(mtpSelfContained);
+            var testAssetMTP = TestAssetsManager.CreateTestProject(mtpSelfContained);
 
             var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, mtpSelfContained.Name);
 

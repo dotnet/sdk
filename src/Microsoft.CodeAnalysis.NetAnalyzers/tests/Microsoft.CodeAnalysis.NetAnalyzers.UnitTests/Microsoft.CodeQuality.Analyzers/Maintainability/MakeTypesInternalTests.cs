@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -753,6 +754,31 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                     End Sub
                 End Class
                 """);
+        }
+
+        [Theory]
+        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        public Task ExtensionMembers_NoDiagnostic(OutputKind outputKind)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                           internal static class E
+                           {
+                               public static void Main() {}
+
+                               extension(int x)
+                               {
+                                   public int M() => x + 1;
+                               }
+                           }
+                           """,
+                TestState =
+                {
+                    OutputKind = outputKind,
+                },
+                LanguageVersion = LanguageVersion.CSharp14
+            }.RunAsync();
         }
 
         private Task VerifyCsAsync(OutputKind outputKind, string testCode, string fixedCode = null)

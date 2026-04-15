@@ -144,8 +144,8 @@ This file should be imported by eng/Versions.props
     <SystemTextJsonPackageVersion>11.0.0-preview.4.26208.110</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>11.0.0-preview.4.26208.110</SystemWindowsExtensionsPackageVersion>
     <!-- microsoft-testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>2.3.0-preview.26203.3</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>4.3.0-preview.26203.3</MSTestPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>2.3.0-preview.26211.1</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>4.3.0-preview.26211.1</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>

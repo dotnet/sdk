@@ -203,7 +203,6 @@
   </Folder>
   <Folder Name="/src/Tasks/">
     <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj" />
-    <Project Path="src/Tasks/Microsoft.NET.Build.Tasks.UnitTests/Microsoft.NET.Build.Tasks.UnitTests.csproj" />
     <Project Path="src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj" />
     <Project Path="src/Tasks/sdk-tasks/sdk-tasks.csproj" />
   </Folder>
@@ -315,10 +314,14 @@
   </Folder>
   <Folder Name="/template_feed/">
     <Project Path="template_feed/Microsoft.DotNet.Common.ItemTemplates/Microsoft.DotNet.Common.ItemTemplates.csproj" />
-    <Project Path="template_feed/Microsoft.DotNet.Common.ProjectTemplates.10.0/Microsoft.DotNet.Common.ProjectTemplates.10.0.csproj" />
+    <Project Path="template_feed/Microsoft.DotNet.Common.ProjectTemplates.11.0/Microsoft.DotNet.Common.ProjectTemplates.11.0.csproj" />
+  </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/MicroBenchmark/MicroBenchmark.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks.UnitTests/Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj" />
+    <Project Path="test/Microsoft.NET.Build.Extensions.Tasks.Tests/Microsoft.NET.Build.Extensions.Tasks.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Build.Tasks.Tests/Microsoft.NET.Build.Tasks.Tests.csproj" />
     <Project Path="test/ArgumentForwarding.Tests/ArgumentForwarding.Tests.csproj" />
     <Project Path="test/ArgumentsReflector/ArgumentsReflector.csproj" />
     <Project Path="test/containerize.UnitTests/containerize.UnitTests.csproj" />

@@ -317,7 +317,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void ItRestoresMultipleTools()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
 
             string configContents = """
                 {
@@ -390,7 +390,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void ItRestoresCorrectToolVersion()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
 
             string configContents = """
                 {

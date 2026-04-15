@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestsFromAGivenContainerShouldRunWithExpectedOutput()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItSetsDotnetRootToTheLocationOfDotnetExecutableWhenRunningDotnetTestWithDll()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestsFromAGivenContainerAndArchSwitchShouldFlowToVsTestConsole()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void MissingOutputDllAndArgumentsEndWithDllOrExeShouldFailInMSBuild(string arg)
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
