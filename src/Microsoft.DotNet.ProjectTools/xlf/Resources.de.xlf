@@ -26,6 +26,11 @@ Erstellen Sie eindeutige Profilnamen.</target>
         <target state="translated">Ein temporärer Verzeichnispfad kann nicht ermittelt werden. Erwägen Sie, die TEMP-Umgebungsvariable unter Windows oder den lokalen App-Datenordner unter Unix zu konfigurieren.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExperimentalFeatureDisabled">
+        <source>This is an experimental feature, set MSBuild property '{0}' to 'true' to enable it.</source>
+        <target state="translated">Dies ist eine experimentelle Funktion. Legen Sie die MSBuild-Eigenschaft „{0}“ auf „true“ fest, um sie zu aktivieren.</target>
+        <note>{Locked="MSBuild"}{Locked="true"}. {0} is MSBuild property name.</note>
+      </trans-unit>
       <trans-unit id="IncludedFileNotFound">
         <source>File included via #:include directive (or Compile item) not found: {0}</source>
         <target state="translated">Die über die #:include-Anweisung (oder das Compile-Element) eingebundene Datei wurde nicht gefunden: {0}</target>

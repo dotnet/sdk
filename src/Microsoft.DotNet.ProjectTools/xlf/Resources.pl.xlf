@@ -26,6 +26,11 @@ Rozróżnij nazwy profilów.</target>
         <target state="translated">Nie można określić tymczasowej ścieżki katalogu. Rozważ skonfigurowanie zmiennej środowiskowej TEMP w systemie Windows lub folderze danych aplikacji lokalnej w systemie Unix.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExperimentalFeatureDisabled">
+        <source>This is an experimental feature, set MSBuild property '{0}' to 'true' to enable it.</source>
+        <target state="translated">To funkcja eksperymentalna, ustaw właściwość MSBuild „{0}” na wartość „true”, aby ją włączyć.</target>
+        <note>{Locked="MSBuild"}{Locked="true"}. {0} is MSBuild property name.</note>
+      </trans-unit>
       <trans-unit id="IncludedFileNotFound">
         <source>File included via #:include directive (or Compile item) not found: {0}</source>
         <target state="translated">Nie znaleziono pliku dołączonego za pomocą dyrektywy #:include (lub elementu Compile): {0}</target>

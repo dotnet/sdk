@@ -26,6 +26,11 @@ Nastavte odlišné názvy profilů.</target>
         <target state="translated">Nelze určit cestu k dočasnému adresáři. Zvažte konfiguraci proměnné prostředí TEMP v systému Windows nebo místní datové složky aplikace v systému Unix.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExperimentalFeatureDisabled">
+        <source>This is an experimental feature, set MSBuild property '{0}' to 'true' to enable it.</source>
+        <target state="translated">Toto je experimentální funkce. Pokud ji chcete povolit, nastavte vlastnost MSBuild {0} na hodnotu true.</target>
+        <note>{Locked="MSBuild"}{Locked="true"}. {0} is MSBuild property name.</note>
+      </trans-unit>
       <trans-unit id="IncludedFileNotFound">
         <source>File included via #:include directive (or Compile item) not found: {0}</source>
         <target state="translated">Soubor zahrnutý prostřednictvím direktivy #:include (nebo položky Compile) nebyl nalezen: {0}</target>
