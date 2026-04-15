@@ -243,12 +243,11 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 
         private static string GetTestTemplateJsonContent()
         {
-            string templateJsonPath = Path.GetFullPath(Path.Combine(
-                AppContext.BaseDirectory,
-                "test_templates",
+            string templateJsonPath = Path.Combine(
+                TestTemplatesLocation,
                 "TemplateWithLocalization",
                 ".template.config",
-                "template.json"));
+                "template.json");
 
             return File.ReadAllText(templateJsonPath);
         }
