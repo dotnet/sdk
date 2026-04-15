@@ -803,7 +803,7 @@ For a resource with CDT support, the endpoint structure is:
 | Gzip | `/resource` | `Content-Encoding: gzip`, `Use-As-Dictionary`, `Vary: Available-Dictionary` | Client decompresses, stores raw as dict |
 | Brotli | `/resource` | `Content-Encoding: br`, `Use-As-Dictionary`, `Vary: Available-Dictionary` | Same as gzip |
 | Zstd | `/resource` | `Content-Encoding: zstd`, `Use-As-Dictionary`, `Vary: Available-Dictionary` | Same as gzip |
-| DCZ | `/resource` | `Content-Encoding: dcz`, `Available-Dictionary` selector | Delta-compressed with dictionary |
+| DCZ | `/resource` | `Content-Encoding: dcz`, `Dictionary-Hash` property, `Vary: Available-Dictionary` | Delta-compressed with dictionary |
 | Direct .gz | `/resource.gz` | `Content-Encoding: gzip` | Direct access, no CDT |
 | Direct .br | `/resource.br` | `Content-Encoding: br` | Direct access, no CDT |
 | Direct .zst | `/resource.zst` | `Content-Encoding: zstd` | Direct access, no CDT |
@@ -1270,9 +1270,11 @@ A possible optimization for first-visit downloads:
 - After first visit, serve zstd (enables CDT for future updates)
 - The `Use-As-Dictionary` header on the first response seeds the CDT mechanism
 
-This is already naturally supported by the implementation — the server serves both brotli and zstd
-variants, and the client's `Accept-Encoding` determines which is used. Once CDT is established,
-the `Available-Dictionary` header triggers delta compression.
+This is naturally supported by the implementation — the server exposes brotli, zstd, and dcz
+variants in parallel. The client's `Accept-Encoding` and `Available-Dictionary` headers determine
+which variant is served. Quality-based content negotiation selects the most efficient encoding
+the client supports, and when a dictionary is available, the dcz variant provides the smallest
+possible delta download.
 
 ### Assembly-Level Pre-computed Dictionaries
 

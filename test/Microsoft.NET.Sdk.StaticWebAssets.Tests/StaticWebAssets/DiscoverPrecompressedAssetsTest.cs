@@ -18,19 +18,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 [TestClass]
 public class DiscoverPrecompressedAssetsTest
 {
-    public string ItemSpec { get; }
-
-    public string OriginalItemSpec { get; }
-
-    public string OutputBasePath { get; }
-
-    public DiscoverPrecompressedAssetsTest()
-    {
-        OutputBasePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(ResolveCompressedAssetsTest));
-        ItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".tmp");
-        OriginalItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".tmp");
-    }
-
     [TestMethod]
     public void DiscoversPrecompressedAssetsCorrectly()
     {

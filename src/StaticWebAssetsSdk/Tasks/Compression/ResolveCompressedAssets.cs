@@ -364,7 +364,7 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
             .Select(s => s.Trim())
             .ToArray();
 
-    private bool TryCreateCompressedAsset(
+    private static bool TryCreateCompressedAsset(
         StaticWebAsset asset,
         string outputPath,
         string fileExtension,
@@ -428,7 +428,7 @@ public class ResolveCompressedAssets : Task, IMultiThreadableTask
         return true;
     }
 
-    internal readonly struct CompressionFormatInfo
+    private readonly struct CompressionFormatInfo
     {
         public CompressionFormatInfo(string extension, string contentEncoding, bool usesDictionary)
         {

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // MSBuild Remove operations match by ItemSpec, so removing an endpoint for one
 // asset can accidentally remove endpoints for other assets with the same Route.
 // This grouping enables correct filtering by tracking which endpoints share a route.
-// TState allows tasks to attach per-group state (e.g., compression metadata, linked groups).
+// TState allows tasks to attach per-group state (e.g., compression metadata).
 internal class StaticWebAssetEndpointGroup<TState> where TState : class
 {
     public string Route { get; set; }

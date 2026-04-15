@@ -16,7 +16,6 @@ public class GeneratePublishAssetPackTest : IDisposable
 {
     private readonly string _testDir;
     private readonly List<string> _errorMessages;
-    private readonly List<string> _messages;
     private readonly Mock<IBuildEngine> _buildEngine;
 
     public GeneratePublishAssetPackTest()
@@ -28,12 +27,9 @@ public class GeneratePublishAssetPackTest : IDisposable
         Directory.CreateDirectory(_testDir);
 
         _errorMessages = new List<string>();
-        _messages = new List<string>();
         _buildEngine = new Mock<IBuildEngine>();
         _buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
             .Callback<BuildErrorEventArgs>(args => _errorMessages.Add(args.Message));
-        _buildEngine.Setup(e => e.LogMessageEvent(It.IsAny<BuildMessageEventArgs>()))
-            .Callback<BuildMessageEventArgs>(args => _messages.Add(args.Message));
     }
 
     [Fact]

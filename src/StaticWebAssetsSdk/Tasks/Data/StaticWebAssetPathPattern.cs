@@ -441,6 +441,11 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         var result = new StringBuilder();
         foreach (var segment in Segments)
         {
+            if (segment.IsPackOnly)
+            {
+                continue;
+            }
+
             if (IsLiteralSegment(segment))
             {
                 result.Append(segment.Parts[0].Name);

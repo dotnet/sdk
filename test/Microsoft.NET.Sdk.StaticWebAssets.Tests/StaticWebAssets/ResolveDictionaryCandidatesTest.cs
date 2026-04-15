@@ -80,17 +80,22 @@ public class ResolveDictionaryCandidatesTest : IDisposable
     [Fact]
     public void MatchesCurrentAssetToPreviousVersion()
     {
-        var packPath = CreateTestPack(new[]
-        {
-            CreateManifestAsset("js/site.js", "hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo="),
-        }, new Dictionary<string, string> { ["js/site.js"] = "old content" });
+        var oldAsset = CreateManifestAsset("js/site.js", "hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo=");
+        var oldEndpoint = CreateEndpoint("js/site.js", oldAsset.Identity);
+
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["js/site.js"] = "old content" },
+            new[] { oldEndpoint });
 
         var currentAsset = CreateAssetItem("js/site.js", "newHash");
+        var currentEndpoint = CreateEndpointItem("js/site.js", currentAsset.ItemSpec);
         var task = new ResolveDictionaryCandidates
         {
             BuildEngine = _buildEngine.Object,
             AssetPackPath = packPath,
             CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
             OutputPath = Path.Combine(_testDir, "output"),
         };
 
@@ -112,17 +117,22 @@ public class ResolveDictionaryCandidatesTest : IDisposable
     public void ExtractsCorrectPreviousFileContent()
     {
         var expectedContent = "previous version content for dictionary";
-        var packPath = CreateTestPack(new[]
-        {
-            CreateManifestAsset("css/app.css", "integrityValue"),
-        }, new Dictionary<string, string> { ["css/app.css"] = expectedContent });
+        var oldAsset = CreateManifestAsset("css/app.css", "integrityValue");
+        var oldEndpoint = CreateEndpoint("css/app.css", oldAsset.Identity);
+
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["css/app.css"] = expectedContent },
+            new[] { oldEndpoint });
 
         var currentAsset = CreateAssetItem("css/app.css", "newHash");
+        var currentEndpoint = CreateEndpointItem("css/app.css", currentAsset.ItemSpec);
         var task = new ResolveDictionaryCandidates
         {
             BuildEngine = _buildEngine.Object,
             AssetPackPath = packPath,
             CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
             OutputPath = Path.Combine(_testDir, "output"),
         };
 
@@ -136,18 +146,23 @@ public class ResolveDictionaryCandidatesTest : IDisposable
     [Fact]
     public void SkipsNewAssetsWithNoPreviousVersion()
     {
-        var packPath = CreateTestPack(new[]
-        {
-            CreateManifestAsset("js/old.js", "hash1"),
-        }, new Dictionary<string, string> { ["js/old.js"] = "old content" });
+        var oldAsset = CreateManifestAsset("js/old.js", "hash1");
+        var oldEndpoint = CreateEndpoint("js/old.js", oldAsset.Identity);
 
-        // Current asset has a different RelativePath than what's in the pack
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["js/old.js"] = "old content" },
+            new[] { oldEndpoint });
+
+        // Current asset has a different route than what's in the pack
         var currentAsset = CreateAssetItem("js/brand-new.js", "hash2");
+        var currentEndpoint = CreateEndpointItem("js/brand-new.js", currentAsset.ItemSpec);
         var task = new ResolveDictionaryCandidates
         {
             BuildEngine = _buildEngine.Object,
             AssetPackPath = packPath,
             CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
             OutputPath = Path.Combine(_testDir, "output"),
         };
 
@@ -161,22 +176,28 @@ public class ResolveDictionaryCandidatesTest : IDisposable
     public void SkipsRemovedAssetsNoLongerInCurrent()
     {
         // Pack has two assets but only one exists in current
-        var packPath = CreateTestPack(new[]
-        {
-            CreateManifestAsset("js/kept.js", "hash1"),
-            CreateManifestAsset("js/removed.js", "hash2"),
-        }, new Dictionary<string, string>
-        {
-            ["js/kept.js"] = "kept",
-            ["js/removed.js"] = "removed"
-        });
+        var keptAsset = CreateManifestAsset("js/kept.js", "hash1");
+        var removedAsset = CreateManifestAsset("js/removed.js", "hash2");
+        var keptEndpoint = CreateEndpoint("js/kept.js", keptAsset.Identity);
+        var removedEndpoint = CreateEndpoint("js/removed.js", removedAsset.Identity);
+
+        var packPath = CreateTestPack(
+            new[] { keptAsset, removedAsset },
+            new Dictionary<string, string>
+            {
+                ["js/kept.js"] = "kept",
+                ["js/removed.js"] = "removed"
+            },
+            new[] { keptEndpoint, removedEndpoint });
 
         var currentAsset = CreateAssetItem("js/kept.js", "newHash");
+        var currentEndpoint = CreateEndpointItem("js/kept.js", currentAsset.ItemSpec);
         var task = new ResolveDictionaryCandidates
         {
             BuildEngine = _buildEngine.Object,
             AssetPackPath = packPath,
             CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
             OutputPath = Path.Combine(_testDir, "output"),
         };
 
@@ -190,27 +211,39 @@ public class ResolveDictionaryCandidatesTest : IDisposable
     [Fact]
     public void MatchesMultipleAssets()
     {
-        var packPath = CreateTestPack(new[]
-        {
-            CreateManifestAsset("js/site.js", "hashA"),
-            CreateManifestAsset("css/app.css", "hashB"),
-            CreateManifestAsset("lib/jquery.js", "hashC"),
-        }, new Dictionary<string, string>
-        {
-            ["js/site.js"] = "js old",
-            ["css/app.css"] = "css old",
-            ["lib/jquery.js"] = "jquery old"
-        });
+        var assetA = CreateManifestAsset("js/site.js", "hashA");
+        var assetB = CreateManifestAsset("css/app.css", "hashB");
+        var assetC = CreateManifestAsset("lib/jquery.js", "hashC");
+
+        var packPath = CreateTestPack(
+            new[] { assetA, assetB, assetC },
+            new Dictionary<string, string>
+            {
+                ["js/site.js"] = "js old",
+                ["css/app.css"] = "css old",
+                ["lib/jquery.js"] = "jquery old"
+            },
+            new[]
+            {
+                CreateEndpoint("js/site.js", assetA.Identity),
+                CreateEndpoint("css/app.css", assetB.Identity),
+                CreateEndpoint("lib/jquery.js", assetC.Identity),
+            });
+
+        var currentA = CreateAssetItem("js/site.js", "new1");
+        var currentB = CreateAssetItem("css/app.css", "new2");
+        var currentC = CreateAssetItem("lib/jquery.js", "new3");
 
         var task = new ResolveDictionaryCandidates
         {
             BuildEngine = _buildEngine.Object,
             AssetPackPath = packPath,
-            CurrentAssets = new[]
+            CurrentAssets = new[] { currentA, currentB, currentC },
+            CurrentEndpoints = new ITaskItem[]
             {
-                CreateAssetItem("js/site.js", "new1"),
-                CreateAssetItem("css/app.css", "new2"),
-                CreateAssetItem("lib/jquery.js", "new3"),
+                CreateEndpointItem("js/site.js", currentA.ItemSpec),
+                CreateEndpointItem("css/app.css", currentB.ItemSpec),
+                CreateEndpointItem("lib/jquery.js", currentC.ItemSpec),
             },
             OutputPath = Path.Combine(_testDir, "output"),
         };
@@ -231,22 +264,26 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         compressedAsset.AssetTraitName = "Content-Encoding";
         compressedAsset.AssetTraitValue = "gzip";
 
-        var packPath = CreateTestPack(new[]
-        {
-            CreateManifestAsset("js/site.js", "origHash"),
-            compressedAsset,
-        }, new Dictionary<string, string>
-        {
-            ["js/site.js"] = "original"
-            // No file for the compressed asset
-        });
+        var primaryAsset = CreateManifestAsset("js/site.js", "origHash");
+        var oldEndpoint = CreateEndpoint("js/site.js", primaryAsset.Identity);
+
+        var packPath = CreateTestPack(
+            new[] { primaryAsset, compressedAsset },
+            new Dictionary<string, string>
+            {
+                ["js/site.js"] = "original"
+                // No file for the compressed asset
+            },
+            new[] { oldEndpoint });
 
         var currentAsset = CreateAssetItem("js/site.js", "newHash");
+        var currentEndpoint = CreateEndpointItem("js/site.js", currentAsset.ItemSpec);
         var task = new ResolveDictionaryCandidates
         {
             BuildEngine = _buildEngine.Object,
             AssetPackPath = packPath,
             CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
             OutputPath = Path.Combine(_testDir, "output"),
         };
 
@@ -260,10 +297,13 @@ public class ResolveDictionaryCandidatesTest : IDisposable
     [Fact]
     public void SkipsCompressedAssetsInCurrentAssets()
     {
-        var packPath = CreateTestPack(new[]
-        {
-            CreateManifestAsset("js/site.js", "origHash"),
-        }, new Dictionary<string, string> { ["js/site.js"] = "original" });
+        var oldAsset = CreateManifestAsset("js/site.js", "origHash");
+        var oldEndpoint = CreateEndpoint("js/site.js", oldAsset.Identity);
+
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["js/site.js"] = "original" },
+            new[] { oldEndpoint });
 
         // Create a compressed current asset — should be skipped
         var compressedAsset = CreateAssetItem("js/site.js.gz", "gzHash");
@@ -271,12 +311,14 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         compressedAsset.SetMetadata(nameof(StaticWebAsset.AssetTraitValue), "gzip");
 
         var uncompressedAsset = CreateAssetItem("js/site.js", "newHash");
+        var currentEndpoint = CreateEndpointItem("js/site.js", uncompressedAsset.ItemSpec);
 
         var task = new ResolveDictionaryCandidates
         {
             BuildEngine = _buildEngine.Object,
             AssetPackPath = packPath,
             CurrentAssets = new[] { uncompressedAsset, compressedAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
             OutputPath = Path.Combine(_testDir, "output"),
         };
 
@@ -319,17 +361,21 @@ public class ResolveDictionaryCandidatesTest : IDisposable
     public void SkipsAssetWhenPreviousHasNoIntegrity()
     {
         var assetWithNoIntegrity = CreateManifestAsset("js/site.js", "");
+        var oldEndpoint = CreateEndpoint("js/site.js", assetWithNoIntegrity.Identity);
 
-        var packPath = CreateTestPack(new[]
-        {
-            assetWithNoIntegrity,
-        }, new Dictionary<string, string> { ["js/site.js"] = "content" });
+        var packPath = CreateTestPack(
+            new[] { assetWithNoIntegrity },
+            new Dictionary<string, string> { ["js/site.js"] = "content" },
+            new[] { oldEndpoint });
 
+        var currentAsset = CreateAssetItem("js/site.js", "hash");
+        var currentEndpoint = CreateEndpointItem("js/site.js", currentAsset.ItemSpec);
         var task = new ResolveDictionaryCandidates
         {
             BuildEngine = _buildEngine.Object,
             AssetPackPath = packPath,
-            CurrentAssets = new[] { CreateAssetItem("js/site.js", "hash") },
+            CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
             OutputPath = Path.Combine(_testDir, "output"),
         };
 
@@ -343,17 +389,23 @@ public class ResolveDictionaryCandidatesTest : IDisposable
     public void SkipsAssetWhenIntegrityMatchesCurrent()
     {
         var sameIntegrity = "sameHashValue";
-        var packPath = CreateTestPack(new[]
-        {
-            CreateManifestAsset("js/site.js", sameIntegrity),
-        }, new Dictionary<string, string> { ["js/site.js"] = "content" });
+        var oldAsset = CreateManifestAsset("js/site.js", sameIntegrity);
+        var oldEndpoint = CreateEndpoint("js/site.js", oldAsset.Identity);
+
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["js/site.js"] = "content" },
+            new[] { oldEndpoint });
 
         // Current asset has the same integrity — dictionary would be pointless
+        var currentAsset = CreateAssetItem("js/site.js", sameIntegrity);
+        var currentEndpoint = CreateEndpointItem("js/site.js", currentAsset.ItemSpec);
         var task = new ResolveDictionaryCandidates
         {
             BuildEngine = _buildEngine.Object,
             AssetPackPath = packPath,
-            CurrentAssets = new[] { CreateAssetItem("js/site.js", sameIntegrity) },
+            CurrentAssets = new[] { currentAsset },
+            CurrentEndpoints = new ITaskItem[] { currentEndpoint },
             OutputPath = Path.Combine(_testDir, "output"),
         };
 
@@ -432,13 +484,14 @@ public class ResolveDictionaryCandidatesTest : IDisposable
     }
 
     [Fact]
-    public void RouteBasedMatching_FallsBackToRelativePathWithoutEndpoints()
+    public void ReturnsEmptyWhenNoEndpointsProvided()
     {
-        // When no CurrentEndpoints are provided, falls back to RelativePath matching
-        var packPath = CreateTestPack(new[]
-        {
-            CreateManifestAsset("js/site.js", "fallbackHash"),
-        }, new Dictionary<string, string> { ["js/site.js"] = "old content" });
+        // Route-based matching requires endpoints; without them, no candidates are produced
+        var oldAsset = CreateManifestAsset("js/site.js", "someHash");
+        var packPath = CreateTestPack(
+            new[] { oldAsset },
+            new Dictionary<string, string> { ["js/site.js"] = "old content" },
+            new[] { CreateEndpoint("js/site.js", oldAsset.Identity) });
 
         var currentAsset = CreateAssetItem("js/site.js", "newHash");
         var task = new ResolveDictionaryCandidates
@@ -453,8 +506,7 @@ public class ResolveDictionaryCandidatesTest : IDisposable
         var result = task.Execute();
 
         result.Should().BeTrue();
-        task.DictionaryCandidates.Should().HaveCount(1);
-        task.DictionaryCandidates[0].GetMetadata("Hash").Should().Be(":fallbackHash:");
+        task.DictionaryCandidates.Should().BeEmpty();
     }
 
     [Fact]
