@@ -6,19 +6,19 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
-public class WalkthroughWorkflowTests : IDisposable
+public class InitWorkflowTests : IDisposable
 {
     private readonly string _tempDir;
 
-    public WalkthroughWorkflowTests()
+    public InitWorkflowTests()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-walkthrough-tests", Guid.NewGuid().ToString("N"));
+        _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-init-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDir);
 
         // Thread-local override — safe for parallel test execution.
@@ -36,7 +36,7 @@ public class WalkthroughWorkflowTests : IDisposable
     [Fact]
     public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_ForDotnetupDotnet()
     {
-        WalkthroughWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.DotnetupDotnet)
+        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.DotnetupDotnet)
             .Should().BeFalse();
     }
 
@@ -45,7 +45,7 @@ public class WalkthroughWorkflowTests : IDisposable
     [InlineData(PathPreference.FullPathReplacement)]
     internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(PathPreference preference)
     {
-        WalkthroughWorkflows.ShouldPromptToConvertSystemInstalls(preference)
+        InitWorkflows.ShouldPromptToConvertSystemInstalls(preference)
             .Should().BeTrue();
     }
 
@@ -54,7 +54,7 @@ public class WalkthroughWorkflowTests : IDisposable
     {
         DotnetupConfig.Write(new DotnetupConfigData { DisableInstallConversion = true });
 
-        WalkthroughWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.ShellProfile)
+        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.ShellProfile)
             .Should().BeFalse();
     }
 
@@ -63,7 +63,7 @@ public class WalkthroughWorkflowTests : IDisposable
     {
         DotnetupConfig.Write(new DotnetupConfigData { DisableInstallConversion = true });
 
-        WalkthroughWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.ShellProfile, ignoreConfig: true)
+        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.ShellProfile, ignoreConfig: true)
             .Should().BeTrue();
     }
 
@@ -81,7 +81,7 @@ public class WalkthroughWorkflowTests : IDisposable
                 new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
             ]);
 
-        var result = WalkthroughWorkflows.PromptInstallsToMigrateIfDesired(
+        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
             mock, PathPreference.DotnetupDotnet, installRoot);
 
         result.Should().BeEmpty();
@@ -99,7 +99,7 @@ public class WalkthroughWorkflowTests : IDisposable
             existingSystemInstalls: []);
 
         string manifestPath = Path.Combine(_tempDir, "manifest.json");
-        var result = WalkthroughWorkflows.PromptInstallsToMigrateIfDesired(
+        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
             mock, PathPreference.ShellProfile, installRoot, manifestPath);
 
         result.Should().BeEmpty();
@@ -150,7 +150,7 @@ public class WalkthroughWorkflowTests : IDisposable
                 new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
             ]);
 
-        var result = WalkthroughWorkflows.PromptInstallsToMigrateIfDesired(
+        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
             mock, PathPreference.ShellProfile, installRoot);
 
         result.Should().BeEmpty();
@@ -169,7 +169,7 @@ public class WalkthroughWorkflowTests : IDisposable
             existingSystemInstalls: []);
 
         string manifestPath = Path.Combine(_tempDir, "manifest.json");
-        var result = WalkthroughWorkflows.PromptInstallsToMigrateIfDesired(
+        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
             mock, PathPreference.ShellProfile, installRoot, manifestPath, askEvenIfConfigured: true);
 
         result.Should().BeEmpty();

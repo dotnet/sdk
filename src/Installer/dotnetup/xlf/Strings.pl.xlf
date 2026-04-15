@@ -92,6 +92,11 @@
         <target state="new">Display dotnetup information.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitCommandDescription">
+        <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
+        <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListCommandDescription">
         <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
         <target state="new">List installed .NET SDKs and runtimes managed by dotnetup.</target>
@@ -205,11 +210,6 @@
       <trans-unit id="TelemetryNotice">
         <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>
         <target state="new">dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WalkthroughCommandDescription">
-        <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
-        <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
         <note />
       </trans-unit>
     </body>

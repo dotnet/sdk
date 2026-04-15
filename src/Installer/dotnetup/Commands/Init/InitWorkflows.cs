@@ -8,10 +8,10 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
-/// Orchestrates the interactive walkthrough that configures the user's environment
+/// Orchestrates the interactive init flow that configures the user's environment
 /// and records the path replacement preference to <c>dotnetup.config.json</c>.
 /// Has two modes:
 /// <list type="bullet">
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
 /// <item><see cref="BaseConfigurationWalkthrough"/> — minimal setup, wraps an install action</item>
 /// </list>
 /// </summary>
-internal class WalkthroughWorkflows
+internal class InitWorkflows
 {
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly ChannelVersionResolver _channelVersionResolver;
@@ -29,7 +29,7 @@ internal class WalkthroughWorkflows
 
     private sealed record ChannelExample(string Channel, string Description, string? ResolvedVersion);
 
-    public WalkthroughWorkflows(IDotnetEnvironmentManager dotnetEnvironment, ChannelVersionResolver channelVersionResolver)
+    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment, ChannelVersionResolver channelVersionResolver)
     {
         _dotnetEnvironment = dotnetEnvironment;
         _channelVersionResolver = channelVersionResolver;
@@ -66,10 +66,10 @@ internal class WalkthroughWorkflows
         return true;
     }
 
-    // ── Walkthrough Orchestrators ──
+    // ── Init Flow Orchestrators ──
 
     /// <summary>
-    /// Full first-run walkthrough: shows banner, prompts for channel, generates
+    /// Full first-run init flow: shows banner, prompts for channel, generates
     /// install request, then delegates to <see cref="BaseConfigurationWalkthrough"/>
     /// for environment setup and installation.
     /// </summary>
@@ -102,7 +102,7 @@ internal class WalkthroughWorkflows
     }
 
     /// <summary>
-    /// Minimal walkthrough: prompts for path preference and admin migration (if needed),
+    /// Minimal init flow: prompts for path preference and admin migration (if needed),
     /// then runs the provided action, saves config, applies system configuration, and
     /// batch-installs any migrated system installs.
     /// Called by <see cref="FullIntroductionWalkthrough"/> and by <see cref="InstallWorkflow"/>
@@ -159,7 +159,7 @@ internal class WalkthroughWorkflows
 
         // Step 4: Prompt migrating admin installs now that the environment is configured (if deferred).
         // NOTE: Global.json modification is intentionally NOT done here.
-        // The walkthrough does not own global.json updates — that responsibility
+        // The init flow does not own global.json updates — that responsibility
         // belongs to InstallWorkflow, gated on the --update-global-json flag
         // which only the SDK install command exposes.
         if (deferAdminMigrationUntilEnd)
@@ -194,7 +194,7 @@ internal class WalkthroughWorkflows
 
     private static PathPreference GetPathPreference(bool interactive, bool askEvenIfConfigured)
     {
-        // If the user already configured their preference (e.g. prior walkthrough), reuse it.
+        // If the user already configured their preference (e.g. prior init), reuse it.
         // In non-interactive mode, use the existing config or default to ShellProfile.
         PathPreference? existingPreference = DotnetupConfig.ReadPathPreference();
         if (existingPreference is not null && !askEvenIfConfigured)
