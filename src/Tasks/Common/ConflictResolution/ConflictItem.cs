@@ -37,10 +37,13 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     // Wraps an ITask item and adds lazy evaluated properties used by Conflict resolution.
     internal class ConflictItem : IConflictItem
     {
-        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType)
+        private readonly Func<string, string>? _pathResolver;
+
+        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType, Func<string, string>? pathResolver = null)
         {
             OriginalItem = originalItem;
             ItemType = itemType;
+            _pathResolver = pathResolver;
         }
 
         public ConflictItem(string fileName, string packageId, Version? assemblyVersion, Version? fileVersion)
@@ -72,7 +75,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePath ?? string.Empty);
+                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(ResolvedSourcePath ?? string.Empty);
                     }
 
                     // assemblyVersion may be null but don't try to recalculate it
@@ -90,6 +93,11 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
         public ConflictItemType ItemType { get; }
 
+        /// <summary>
+        /// Returns the absolute source path for file I/O operations, applying the path resolver if available.
+        /// </summary>
+        private string? ResolvedSourcePath => _pathResolver != null && SourcePath != null ? _pathResolver(SourcePath) : SourcePath;
+
         private bool? _exists;
         public bool Exists
         {
@@ -97,7 +105,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 if (_exists == null)
                 {
-                    _exists = ItemType == ConflictItemType.Platform || File.Exists(SourcePath);
+                    _exists = ItemType == ConflictItemType.Platform || File.Exists(ResolvedSourcePath);
                 }
 
                 return _exists.Value;
@@ -136,7 +144,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _fileVersion = FileUtilities.GetFileVersion(SourcePath);
+                        _fileVersion = FileUtilities.GetFileVersion(ResolvedSourcePath);
                     }
 
                     // fileVersion may be null but don't try to recalculate it
