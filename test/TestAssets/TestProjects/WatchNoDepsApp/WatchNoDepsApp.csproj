@@ -13,10 +13,16 @@
       actually an important failure, so don't error out here.
     -->
     <WarningsNotAsErrors>CS9057</WarningsNotAsErrors>
+
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <Target Name="TestTarget">
     <Warning Text="The value of property is '$(TestProperty)'" />
   </Target>
+
+  <ItemGroup>
+    <!-- add item -->
+  </ItemGroup>
 
 </Project>

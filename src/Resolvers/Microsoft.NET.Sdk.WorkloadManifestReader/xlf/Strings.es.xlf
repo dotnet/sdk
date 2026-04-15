@@ -117,11 +117,6 @@
         <target state="translated">La carga de trabajo de redireccionamiento '{0}' tiene claves distintas que las de 'redirect-to'</target>
         <note />
       </trans-unit>
-      <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">Las cargas de trabajo están configuradas para instalarse y actualizarse con versiones de carga de trabajo, pero no se encontró ninguna. Ejecute "dotnet workload restore" para instalar una versión de carga de trabajo.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnexpectedTokenAtOffset">
         <source>Unexpected token '{0}' at offset {1}</source>
         <target state="translated">Token "{0}" inesperado en el desplazamiento {1}</target>

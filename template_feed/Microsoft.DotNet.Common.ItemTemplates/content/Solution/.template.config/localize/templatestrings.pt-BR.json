@@ -1,5 +1,11 @@
 ﻿{
   "author": "Microsoft",
   "name": "Arquivo de Solução",
-  "description": "Uma solução vazia sem projetos"
+  "description": "Uma solução vazia sem projetos",
+  "symbols/Format/description": "Escolha o formato do arquivo de solução: sln ou slnx.",
+  "symbols/Format/displayName": "Formato do arquivo de solução",
+  "symbols/Format/choices/sln/description": "Arquivo de solução",
+  "symbols/Format/choices/sln/displayName": "Formato .sln",
+  "symbols/Format/choices/slnx/description": "Arquivo de Solução XML",
+  "symbols/Format/choices/slnx/displayName": "Formato .slnx"
 }

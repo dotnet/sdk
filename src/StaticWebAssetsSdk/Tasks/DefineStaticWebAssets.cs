@@ -1,18 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq.Expressions;
-using System.Net.Http.Headers;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.FileSystemGlobbing.Internal;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -28,10 +17,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
     // There is also a RelativePathPattern that is used to automatically transform the relative path of the candidates to match
     // the expected path of the final asset. This is typically use to remove a common path prefix, like `wwwroot` from the target
     // path of the assets and so on.
-    public class DefineStaticWebAssets : Task
+    public partial class DefineStaticWebAssets : Task
     {
-        private const string DefaultFingerprintExpression = "#[.{fingerprint}]?";
-
         [Required]
         public ITaskItem[] CandidateAssets { get; set; }
 
@@ -73,29 +60,46 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public string CopyToPublishDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.PreserveNewest;
 
+        public string CacheManifestPath { get; set; }
+
         [Output]
         public ITaskItem[] Assets { get; set; }
 
         [Output]
         public ITaskItem[] CopyCandidates { get; set; }
 
+        public Func<string, string, (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc)> TestResolveFileDetails { get; set; }
+
         public override bool Execute()
         {
+            var assetsCache = GetOrCreateAssetsCache();
+
+            if (assetsCache.IsUpToDate())
+            {
+                var outputs = assetsCache.GetComputedOutputs();
+                Assets = [.. outputs.Assets];
+                CopyCandidates = [.. outputs.CopyCandidates];
+
+                return !Log.HasLoggedErrors;
+            }
+
             try
             {
-                var results = new List<ITaskItem>();
-                var copyCandidates = new List<ITaskItem>();
+                var matcher = !string.IsNullOrEmpty(RelativePathPattern) ?
+                    new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathPattern).Build() :
+                    null;
 
-                var matcher = !string.IsNullOrEmpty(RelativePathPattern) ? new Matcher().AddInclude(RelativePathPattern) : null;
-                var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
+                var filter = !string.IsNullOrEmpty(RelativePathFilter) ?
+                    new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathFilter).Build() :
+                    null;
+
                 var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
-                var fingerprintPatterns = (FingerprintPatterns ?? []).Select(p => new FingerprintPattern(p)).ToArray();
-                var tokensByPattern = fingerprintPatterns.Where(p => !string.IsNullOrEmpty(p.Expression)).ToDictionary(p => p.Pattern.Substring(1), p => p.Expression);
-                Array.Sort(fingerprintPatterns, (a, b) => a.Pattern.Count(c => c == '.').CompareTo(b.Pattern.Count(c => c == '.')));
-
-                for (var i = 0; i < CandidateAssets.Length; i++)
+                var fingerprintPatternMatcher = new FingerprintPatternMatcher(Log, FingerprintCandidates ? (FingerprintPatterns ?? []) : []);
+                var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
+                foreach (var kvp in assetsCache.OutOfDateInputs())
                 {
-                    var candidate = CandidateAssets[i];
+                    var hash = kvp.Key;
+                    var candidate = kvp.Value;
                     var relativePathCandidate = string.Empty;
                     if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                     {
@@ -103,16 +107,17 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         relativePathCandidate = candidateMatchPath;
                         if (matcher != null && string.IsNullOrEmpty(candidate.GetMetadata("RelativePath")))
                         {
-                            var match = matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(candidateMatchPath));
-                            if (!match.HasMatches)
+                            matchContext.SetPathAndReinitialize(StaticWebAssetPathPattern.PathWithoutTokens(candidateMatchPath));
+                            var match = matcher.Match(matchContext);
+                            if (!match.IsMatch)
                             {
                                 Log.LogMessage(MessageImportance.Low, "Rejected asset '{0}' for pattern '{1}'", candidateMatchPath, RelativePathPattern);
                                 continue;
                             }
 
-                            Log.LogMessage(MessageImportance.Low, "Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, RelativePathPattern, match.Files.Single().Stem);
+                            Log.LogMessage(MessageImportance.Low, "Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, RelativePathPattern, match.Stem);
 
-                            relativePathCandidate = StaticWebAsset.Normalize(match.Files.Single().Stem);
+                            relativePathCandidate = StaticWebAsset.Normalize(match.Stem);
                         }
                     }
                     else
@@ -120,10 +125,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         relativePathCandidate = GetCandidateMatchPath(candidate);
                         if (matcher != null)
                         {
-                            var match = matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate));
-                            if (match.HasMatches)
+                            matchContext.SetPathAndReinitialize(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate));
+                            var match = matcher.Match(matchContext);
+                            if (match.IsMatch)
                             {
-                                var newRelativePathCandidate = match.Files.Single().Stem;
+                                var newRelativePathCandidate = match.Stem;
                                 Log.LogMessage(
                                     MessageImportance.Low,
                                     "The relative path '{0}' matched the pattern '{1}'. Replacing relative path with '{2}'.",
@@ -135,16 +141,20 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                             }
                         }
 
-                        if (filter != null && !filter.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate)).HasMatches)
+                        if (filter != null)
                         {
-                            Log.LogMessage(
-                                MessageImportance.Low,
-                                "Skipping '{0}' because the relative path '{1}' did not match the filter '{2}'.",
-                                candidate.ItemSpec,
-                                relativePathCandidate,
-                                RelativePathFilter);
+                            matchContext.SetPathAndReinitialize(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate));
+                            if (!filter.Match(matchContext).IsMatch)
+                            {
+                                Log.LogMessage(
+                                    MessageImportance.Low,
+                                    "Skipping '{0}' because the relative path '{1}' did not match the filter '{2}'.",
+                                    candidate.ItemSpec,
+                                    relativePathCandidate,
+                                    RelativePathFilter);
 
-                            continue;
+                                continue;
+                            }
                         }
                     }
 
@@ -176,11 +186,15 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     // the asset.
                     var fingerprint = ComputePropertyValue(candidate, nameof(StaticWebAsset.Fingerprint), null, false);
                     var integrity = ComputePropertyValue(candidate, nameof(StaticWebAsset.Integrity), null, false);
+
+                    var identity = Path.GetFullPath(candidate.GetMetadata("FullPath"));
+                    var (file, fileLength, lastWriteTimeUtc) = ResolveFileDetails(originalItemSpec, identity);
+
                     switch ((fingerprint, integrity))
                     {
                         case (null, null):
                             Log.LogMessage(MessageImportance.Low, "Computing fingerprint and integrity for asset '{0}'", candidate.ItemSpec);
-                            (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(candidate.ItemSpec, originalItemSpec));
+                            (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(file));
                             break;
                         case (null, not null):
                             Log.LogMessage(MessageImportance.Low, "Computing fingerprint for asset '{0}'", candidate.ItemSpec);
@@ -188,7 +202,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                             break;
                         case (not null, null):
                             Log.LogMessage(MessageImportance.Low, "Computing integrity for asset '{0}'", candidate.ItemSpec);
-                            integrity = StaticWebAsset.ComputeIntegrity(candidate.ItemSpec, originalItemSpec);
+                            integrity = StaticWebAsset.ComputeIntegrity(file);
                             break;
                     }
 
@@ -198,25 +212,23 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         break;
                     }
 
-                    var identity = Path.GetFullPath(candidate.GetMetadata("FullPath"));
                     if (!string.Equals(SourceType, StaticWebAsset.SourceTypes.Discovered, StringComparison.OrdinalIgnoreCase))
                     {
                         // We ignore the content root for publish only assets since it doesn't matter.
                         var contentRootPrefix = StaticWebAsset.AssetKinds.IsPublish(assetKind) ? null : contentRoot;
-                        (identity, var computed) = ComputeCandidateIdentity(candidate, contentRootPrefix, relativePathCandidate, matcher);
+                        (identity, var computed) = ComputeCandidateIdentity(candidate, contentRootPrefix, relativePathCandidate, matcher, matchContext);
 
                         if (computed)
                         {
-                            copyCandidates.Add(new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
-                            {
-                                ["TargetPath"] = identity
-                            }));
+                            assetsCache.AppendCopyCandidate(hash, candidate.ItemSpec, identity);
                         }
                     }
 
-                    relativePathCandidate = FingerprintCandidates ?
-                        StaticWebAsset.Normalize(AppendFingerprintPattern(relativePathCandidate, identity, fingerprintPatterns, tokensByPattern)) :
-                        relativePathCandidate;
+                    if (FingerprintCandidates)
+                    {
+                        matchContext.SetPathAndReinitialize(relativePathCandidate);
+                        relativePathCandidate = StaticWebAsset.Normalize(fingerprintPatternMatcher.AppendFingerprintPattern(matchContext, identity));
+                    }
 
                     var asset = StaticWebAsset.FromProperties(
                         identity,
@@ -236,9 +248,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         integrity,
                         copyToOutputDirectory,
                         copyToPublishDirectory,
-                        originalItemSpec);
+                        originalItemSpec,
+                        fileLength,
+                        lastWriteTimeUtc);
 
-                    asset.Normalize();
                     var item = asset.ToTaskItem();
                     if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                     {
@@ -246,11 +259,16 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
                     }
 
-                    results.Add(item);
+                    assetsCache.AppendAsset(hash, asset, item);
                 }
 
-                Assets = [.. results];
-                CopyCandidates = [.. copyCandidates];
+                var outputs = assetsCache.GetComputedOutputs();
+                var results = outputs.Assets;
+
+                assetsCache.WriteCacheManifest();
+
+                Assets = [.. outputs.Assets];
+                CopyCandidates = [.. outputs.CopyCandidates];
             }
             catch (Exception ex)
             {
@@ -260,98 +278,26 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private string AppendFingerprintPattern(
-            string relativePathCandidate,
-            string identity,
-            FingerprintPattern[] fingerprintPatterns,
-            IDictionary<string, string> tokensByPattern)
+        private (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc) ResolveFileDetails(
+            string originalItemSpec,
+            string identity)
         {
-            if (relativePathCandidate.Contains("#["))
+            if (TestResolveFileDetails != null)
             {
-                var pattern = StaticWebAssetPathPattern.Parse(relativePathCandidate, identity);
-                foreach (var segment in pattern.Segments)
-                {
-                    foreach (var part in segment.Parts)
-                    {
-                        foreach (var name in segment.GetTokenNames())
-                        {
-                            if (string.Equals(name, "fingerprint", StringComparison.OrdinalIgnoreCase))
-                            {
-                                return relativePathCandidate;
-                            }
-                        }
-                    }
-                }
+                return TestResolveFileDetails(identity, originalItemSpec);
             }
-
-            // Fingerprinting patterns for content.By default(most common case), we check for a single extension, like.js or.css.
-            // In that situation we apply the fingerprint expression directly to the file name, like app.js->app#[.{fingerprint}].js.
-            // If we detect more than one extension, for example, Rcl.lib.module.js or Rcl.Razor.js, we retrieve the last extension and
-            // check for a mapping in the list below.If we find a match, we apply the fingerprint expression to the file name, like
-            // Rcl.lib.module.js->Rcl#[.{fingerprint}].lib.module.js. If we don't find a match, we add the extension to the name and
-            // continue matching against the next segment, like Rcl.Razor.js->Rcl.Razor#[.{fingerprint}].js.
-            // If we don't find a match, we apply the fingerprint before the first extension, like Rcl.Razor.js -> Rcl.Razor#[.{fingerprint}].js.
-            var directoryName = Path.GetDirectoryName(relativePathCandidate);
-            relativePathCandidate = Path.GetFileName(relativePathCandidate);
-            var extensionCount = 0;
-            var stem = relativePathCandidate;
-            var extension = Path.GetExtension(relativePathCandidate);
-            while (!string.IsNullOrEmpty(extension) || extensionCount < 2)
-            {
-                extensionCount++;
-                stem = stem.Substring(0, stem.Length - extension.Length);
-                extension = Path.GetExtension(stem);
-            }
-
-            // Simple case, single extension or no extension
-            // For example:
-            // app.js->app#[.{fingerprint}]?.js
-            // app->README#[.{fingerprint}]?
-            if (extensionCount < 2)
-            {
-                if (!tokensByPattern.TryGetValue(extension, out var expression))
-                {
-                    expression = DefaultFingerprintExpression;
-                }
-
-                var simpleExtensionResult = Path.Combine(directoryName, $"{stem}{expression}{extension}");
-                Log.LogMessage(MessageImportance.Low, "Fingerprinting asset '{0}' as '{1}'", relativePathCandidate, simpleExtensionResult);
-                return simpleExtensionResult;
-            }
-
-            // Complex case, multiple extensions, try matching against known patterns
-            // For example:
-            // Rcl.lib.module.js->Rcl#[.{fingerprint}].lib.module.js
-            // Rcl.Razor.js->Rcl.Razor#[.{fingerprint}].js
-            foreach (var pattern in fingerprintPatterns)
-            {
-                var matchResult = pattern.Matcher.Match(StaticWebAssetPathPattern.PathWithoutTokens(relativePathCandidate));
-                if (matchResult.HasMatches)
-                {
-                    stem = relativePathCandidate.Substring(0, (1 + relativePathCandidate.Length - pattern.Pattern.Length));
-                    extension = relativePathCandidate.Substring(stem.Length);
-                    if (!tokensByPattern.TryGetValue(extension, out var expression))
-                    {
-                        expression = DefaultFingerprintExpression;
-                    }
-                    var patternResult = Path.Combine(directoryName, $"{stem}{expression}{extension}");
-                    Log.LogMessage(MessageImportance.Low, "Fingerprinting asset '{0}' as '{1}' because it matched pattern '{2}'", relativePathCandidate, patternResult, pattern.Pattern);
-                    return patternResult;
-                }
-            }
-
-            // Multiple extensions and no match, apply the fingerprint before the first extension
-            // For example:
-            // Rcl.Razor.js->Rcl.Razor#[.{fingerprint}].js
-            stem = Path.GetFileNameWithoutExtension(relativePathCandidate);
-            extension = Path.GetExtension(relativePathCandidate);
-            var result = Path.Combine(directoryName, $"{stem}{DefaultFingerprintExpression}{extension}");
-            Log.LogMessage(MessageImportance.Low, "Fingerprinting asset '{0}' as '{1}' because it didn't match any pattern", relativePathCandidate, result);
-
-            return result;
+            var file = StaticWebAsset.ResolveFile(identity, originalItemSpec);
+            var fileLength = file.Length;
+            var lastWriteTimeUtc = file.LastWriteTimeUtc;
+            return (file, fileLength, lastWriteTimeUtc);
         }
 
-        private (string identity, bool computed) ComputeCandidateIdentity(ITaskItem candidate, string contentRoot, string relativePath, Matcher matcher)
+        private (string identity, bool computed) ComputeCandidateIdentity(
+            ITaskItem candidate,
+            string contentRoot,
+            string relativePath,
+            StaticWebAssetGlobMatcher matcher,
+            StaticWebAssetGlobMatcher.MatchContext matchContext)
         {
             var candidateFullPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
             if (contentRoot == null)
@@ -372,8 +318,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 // publish processes, so we want to allow defining these assets by setting up a different content root path from their
                 // original location in the project. For example the asset can be wwwroot\my-prod-asset.js, the content root can be
                 // obj\transform and the final asset identity can be <<FullPathTo>>\obj\transform\my-prod-asset.js
-
-                var matchResult = matcher?.Match(StaticWebAssetPathPattern.PathWithoutTokens(candidate.ItemSpec));
+                GlobMatch matchResult = default;
+                if (matcher != null)
+                {
+                    matchContext.SetPathAndReinitialize(StaticWebAssetPathPattern.PathWithoutTokens(candidate.ItemSpec));
+                    matchResult = matcher.Match(matchContext);
+                }
                 if (matcher == null)
                 {
                     // If no relative path pattern was specified, we are going to suggest that the identity is `%(ContentRoot)\RelativePath\OriginalFileName`
@@ -385,14 +335,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it did not start with the content root '{2}'", candidate.ItemSpec, finalIdentity, normalizedContentRoot);
                     return (finalIdentity, true);
                 }
-                else if (!matchResult.HasMatches)
+                else if (!matchResult.IsMatch)
                 {
                     Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it didn't match the relative path pattern", candidate.ItemSpec, candidateFullPath);
                     return (candidateFullPath, false);
                 }
                 else
                 {
-                    var stem = matchResult.Files.Single().Stem;
+                    var stem = matchResult.Stem;
                     var assetIdentity = Path.GetFullPath(Path.Combine(normalizedContentRoot, stem));
                     Log.LogMessage(MessageImportance.Low, "Computed identity '{0}' for candidate '{1}'", assetIdentity, candidate.ItemSpec);
 
@@ -588,18 +538,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
 
             return computedPath;
-        }
-
-        private class FingerprintPattern(ITaskItem pattern)
-        {
-            Matcher _matcher;
-            public string Name { get; set; } = pattern.ItemSpec;
-
-            public string Pattern { get; set; } = pattern.GetMetadata(nameof(Pattern));
-
-            public string Expression { get; set; } = pattern.GetMetadata(nameof(Expression));
-
-            public Matcher Matcher => _matcher ??= new Matcher().AddInclude(Pattern);
         }
     }
 }
