@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli.Commands;
@@ -185,9 +186,17 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
             command = customizeCommand(command);
         }
 
-        command.Execute()
-            .Should().Pass()
-            .And.HaveStdOut(prefix + expectedOutput);
+        var result = command.Execute();
+
+        var fullExpectedOutput = prefix + expectedOutput;
+        if (result.ExitCode != 0 || result.StdOut != fullExpectedOutput)
+        {
+            // Re-run with verbose logging for easier debugging of test failures.
+            command.WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString).Execute();
+
+            result.Should().Pass().And.HaveStdOut(fullExpectedOutput);
+            throw new UnreachableException();
+        }
 
         var binlogs = new DirectoryInfo(workDir ?? testInstance.Path)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);
