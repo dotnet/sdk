@@ -63,17 +63,26 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData("init")]
-    [InlineData("walkthrough")]
-    public void Parser_ShouldParseInitAndWalkthroughAlias(string commandName)
+    [Fact]
+    public void Parser_ShouldParseInitCommand()
     {
-        var args = new[] { commandName, "--help" };
+        var args = new[] { "init", "--help" };
 
         var parseResult = Parser.Parse(args);
 
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldRejectWalkthroughCommand()
+    {
+        var args = new[] { "walkthrough", "--help" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
     }
 
     [Fact]
