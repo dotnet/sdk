@@ -40,11 +40,14 @@ Use `dnceng-azure-devop-repo_search_commits` with:
 - `repository`: the AzDo repo name (e.g., `dotnet-sdk` or `dotnet-installer`)
 - `version`: the AzDo branch name (e.g., `internal/release/8.0.1xx`)
 - `versionType`: `Branch`
-- `top`: 1
+- `searchText`: the GitHub commit SHA from Step 1
+- `top`: 5
 
-Do **not** use `commitIds` — that searches the entire repo regardless of branch. Instead, get the latest commit on the specific AzDo branch and compare its commit message or SHA to the GitHub commit. The mirroring service creates merge commits with messages like `Merge commit '<GitHub SHA>'`, so check whether the AzDo head commit references the expected GitHub SHA.
+This searches the branch history for commits whose message contains the GitHub SHA. The mirroring service creates merge commits with messages like `Merge commit '<GitHub SHA>'`, so a match confirms the commit was mirrored to the correct branch.
 
-If the AzDo branch head references the GitHub commit SHA, the mirror is **up to date**. If it references an older commit, the mirror is **behind**.
+**Important:** Do **not** use `commitIds` without `version`/`versionType` — that searches the entire repo and does not confirm the commit is on the target branch.
+
+If the search returns a matching commit, the mirror is **up to date**. If it returns no results, the mirror is **behind**.
 
 ### Step 3: Present results
 
