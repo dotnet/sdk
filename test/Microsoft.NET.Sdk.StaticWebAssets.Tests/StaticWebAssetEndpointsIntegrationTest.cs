@@ -326,7 +326,6 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                             new XAttribute("Update", "wwwroot/app.publish.js"),
                             new XAttribute("TargetPath", "wwwroot/app.js"),
                             new XAttribute("CopyToPublishDirectory", "PreserveNewest"))));
-                var doc2 = document;
             });
         var root = ProjectDirectory.TestRoot;
 
@@ -338,7 +337,6 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         ExecuteCommand(publish).Should().Pass();
 
         var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-        var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
         // GenerateStaticWebAssetsManifest should generate the manifest file.
         var path = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");

@@ -104,25 +104,19 @@ public class ZstdCompress : ToolTask
             {
                 Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because compressed file '{1}' does not exist.", inputFullPath, outputRelativePath);
             }
-            else if (File.GetLastWriteTimeUtc(inputFullPath) < File.GetLastWriteTimeUtc(outputRelativePath))
+            else if (File.GetLastWriteTimeUtc(inputFullPath) >= File.GetLastWriteTimeUtc(outputRelativePath))
             {
-                // Also check if a dictionary is specified and has been updated
+                Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because file is newer than '{1}'.", inputFullPath, outputRelativePath);
+            }
+            else if (IsDictionaryNewer(file, outputRelativePath))
+            {
                 var dictionaryPath = file.GetMetadata("DictionaryPath");
-                if (!string.IsNullOrEmpty(dictionaryPath) && File.Exists(dictionaryPath) &&
-                    File.GetLastWriteTimeUtc(dictionaryPath) >= File.GetLastWriteTimeUtc(outputRelativePath))
-                {
-                    Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because dictionary '{1}' is newer than '{2}'.", inputFullPath, dictionaryPath, outputRelativePath);
-                }
-                else
-                {
-                    // Incrementalism: input and dictionary are not newer than the output — skip.
-                    Log.LogMessage(MessageImportance.Low, "Skipping '{0}' because '{1}' is newer than '{2}'.", inputFullPath, outputRelativePath, inputFullPath);
-                    continue;
-                }
+                Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because dictionary '{1}' is newer than '{2}'.", inputFullPath, dictionaryPath, outputRelativePath);
             }
             else
             {
-                Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because file is newer than '{1}'.", inputFullPath, outputRelativePath);
+                Log.LogMessage(MessageImportance.Low, "Skipping '{0}' because '{1}' is newer than '{2}'.", inputFullPath, outputRelativePath, inputFullPath);
+                continue;
             }
 
             builder.AppendLine("-s");
@@ -131,7 +125,6 @@ public class ZstdCompress : ToolTask
             builder.AppendLine("-o");
             builder.AppendLine(Quote(outputFullPath));
 
-            // Pass dictionary path if available (for dcz / dictionary-compressed items)
             var dictPath = file.GetMetadata("DictionaryPath");
             builder.AppendLine("-d");
             if (!string.IsNullOrEmpty(dictPath))
@@ -145,6 +138,14 @@ public class ZstdCompress : ToolTask
         }
 
         return builder.ToString();
+    }
+
+    private static bool IsDictionaryNewer(ITaskItem file, string outputPath)
+    {
+        var dictionaryPath = file.GetMetadata("DictionaryPath");
+        return !string.IsNullOrEmpty(dictionaryPath) &&
+               File.Exists(dictionaryPath) &&
+               File.GetLastWriteTimeUtc(dictionaryPath) >= File.GetLastWriteTimeUtc(outputPath);
     }
 
     protected override string GenerateFullPathToTool() => DotNetPath;

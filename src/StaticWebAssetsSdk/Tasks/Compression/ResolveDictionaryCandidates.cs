@@ -70,19 +70,10 @@ public class ResolveDictionaryCandidates : Task
         using var zipStream = File.OpenRead(AssetPackPath);
         using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
 
-        var manifestEntry = archive.GetEntry("manifest.json");
-        if (manifestEntry == null)
+        var manifest = LoadManifest(archive);
+        if (manifest == null)
         {
-            Log.LogError("Asset pack '{0}' does not contain a manifest.json entry.", AssetPackPath);
-            return false;
-        }
-
-        StaticWebAssetsManifest manifest;
-        using (var manifestStream = manifestEntry.Open())
-        using (var memoryStream = new MemoryStream())
-        {
-            manifestStream.CopyTo(memoryStream);
-            manifest = StaticWebAssetsManifest.FromJsonBytes(memoryStream.ToArray());
+            return !Log.HasLoggedErrors;
         }
 
         if (manifest.Assets == null || manifest.Assets.Length == 0)
@@ -92,6 +83,55 @@ public class ResolveDictionaryCandidates : Task
             return true;
         }
 
+        if (CurrentEndpoints == null || CurrentEndpoints.Length == 0)
+        {
+            Log.LogMessage(MessageImportance.Low, "No current endpoints provided. Skipping dictionary candidate resolution.");
+            DictionaryCandidates = Array.Empty<ITaskItem>();
+            return true;
+        }
+
+        var oldEndpointsByRoute = BuildPreviousAssetLookups(manifest);
+        if (oldEndpointsByRoute.Count == 0)
+        {
+            Log.LogMessage(MessageImportance.Low, "No previous endpoints found in asset pack. Skipping dictionary candidate resolution.");
+            DictionaryCandidates = Array.Empty<ITaskItem>();
+            return true;
+        }
+
+        var currentAssetsById = BuildCurrentAssetsLookup();
+
+        var outputPath = Path.GetFullPath(OutputPath);
+        Directory.CreateDirectory(outputPath);
+
+        var candidates = MatchByRoute(archive, currentAssetsById, oldEndpointsByRoute, outputPath);
+
+        DictionaryCandidates = candidates.ToArray();
+
+        Log.LogMessage(
+            "Resolved {0} dictionary candidates from {1} current assets.",
+            candidates.Count,
+            currentAssetsById.Count);
+
+        return !Log.HasLoggedErrors;
+    }
+
+    private StaticWebAssetsManifest LoadManifest(ZipArchive archive)
+    {
+        var manifestEntry = archive.GetEntry("manifest.json");
+        if (manifestEntry == null)
+        {
+            Log.LogError("Asset pack '{0}' does not contain a manifest.json entry.", AssetPackPath);
+            return null;
+        }
+
+        using var manifestStream = manifestEntry.Open();
+        using var memoryStream = new MemoryStream();
+        manifestStream.CopyTo(memoryStream);
+        return StaticWebAssetsManifest.FromJsonBytes(memoryStream.ToArray());
+    }
+
+    private static Dictionary<string, PreviousRouteMatch> BuildPreviousAssetLookups(StaticWebAssetsManifest manifest)
+    {
         var previousAssetsById = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
         foreach (var prevAsset in manifest.Assets)
         {
@@ -107,13 +147,11 @@ public class ResolveDictionaryCandidates : Task
             }
         }
 
-        // Route → (old endpoint, old asset) lookup from the pack manifest
         var oldEndpointsByRoute = new Dictionary<string, PreviousRouteMatch>(StringComparer.OrdinalIgnoreCase);
         if (manifest.Endpoints != null)
         {
             foreach (var oldEndpoint in manifest.Endpoints)
             {
-                // Only consider endpoints for uncompressed assets (no Content-Encoding selector)
                 if (HasContentEncodingSelector(oldEndpoint))
                 {
                     continue;
@@ -130,6 +168,11 @@ public class ResolveDictionaryCandidates : Task
             }
         }
 
+        return oldEndpointsByRoute;
+    }
+
+    private Dictionary<string, StaticWebAsset> BuildCurrentAssetsLookup()
+    {
         var currentAssets = StaticWebAsset.FromTaskItemGroup(CurrentAssets);
         var currentAssetsById = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
         foreach (var asset in currentAssets)
@@ -139,95 +182,62 @@ public class ResolveDictionaryCandidates : Task
             {
                 continue;
             }
-            // Build-only assets are not in the pack and not served at runtime
+
             if (string.Equals(asset.AssetKind, "Build", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
+
             if (!currentAssetsById.ContainsKey(asset.Identity))
             {
                 currentAssetsById[asset.Identity] = asset;
             }
         }
 
-        // Match by route: current endpoints → old endpoints
-        var outputPath = Path.GetFullPath(OutputPath);
-        Directory.CreateDirectory(outputPath);
+        return currentAssetsById;
+    }
 
+    private List<ITaskItem> MatchByRoute(
+        ZipArchive archive,
+        Dictionary<string, StaticWebAsset> currentAssetsById,
+        Dictionary<string, PreviousRouteMatch> oldEndpointsByRoute,
+        string outputPath)
+    {
         var candidates = new List<ITaskItem>();
         var matchedNewAssets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        if (CurrentEndpoints != null && CurrentEndpoints.Length > 0 && oldEndpointsByRoute.Count > 0)
+        foreach (var endpointItem in CurrentEndpoints)
         {
-            foreach (var endpointItem in CurrentEndpoints)
+            var newEndpoint = StaticWebAssetEndpoint.FromTaskItem(endpointItem);
+
+            if (HasContentEncodingSelector(newEndpoint))
             {
-                var newEndpoint = StaticWebAssetEndpoint.FromTaskItem(endpointItem);
-
-                if (HasContentEncodingSelector(newEndpoint))
-                {
-                    continue;
-                }
-
-                if (!oldEndpointsByRoute.TryGetValue(newEndpoint.Route, out var oldMatch))
-                {
-                    continue;
-                }
-
-                if (!currentAssetsById.TryGetValue(newEndpoint.AssetFile, out var newAsset))
-                {
-                    continue;
-                }
-
-                if (!matchedNewAssets.Add(newAsset.Identity))
-                {
-                    continue; // Already matched via another route
-                }
-
-                var oldAsset = oldMatch.Asset;
-                var candidate = TryCreateCandidate(archive, oldAsset, newAsset, outputPath);
-                if (candidate != null)
-                {
-                    candidates.Add(candidate);
-                }
-            }
-        }
-        else
-        {
-            // Fallback: match by RelativePath when endpoints are not available
-            var previousByRelativePath = new Dictionary<string, StaticWebAsset>(StringComparer.OrdinalIgnoreCase);
-            foreach (var prevAsset in previousAssetsById.Values)
-            {
-                var relativePath = prevAsset.ComputePathWithoutTokens(prevAsset.RelativePath);
-                if (!string.IsNullOrEmpty(relativePath) && !previousByRelativePath.ContainsKey(relativePath))
-                {
-                    previousByRelativePath[relativePath] = prevAsset;
-                }
+                continue;
             }
 
-            foreach (var newAsset in currentAssetsById.Values)
+            if (!oldEndpointsByRoute.TryGetValue(newEndpoint.Route, out var oldMatch))
             {
-                var relativePath = newAsset.ComputePathWithoutTokens(newAsset.RelativePath);
-                if (string.IsNullOrEmpty(relativePath) || !previousByRelativePath.TryGetValue(relativePath, out var oldAsset))
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                var candidate = TryCreateCandidate(archive, oldAsset, newAsset, outputPath);
-                if (candidate != null)
-                {
-                    candidates.Add(candidate);
-                }
+            if (!currentAssetsById.TryGetValue(newEndpoint.AssetFile, out var newAsset))
+            {
+                continue;
+            }
+
+            if (!matchedNewAssets.Add(newAsset.Identity))
+            {
+                continue;
+            }
+
+            var candidate = TryCreateCandidate(archive, oldMatch.Asset, newAsset, outputPath);
+            if (candidate != null)
+            {
+                candidates.Add(candidate);
             }
         }
 
-        DictionaryCandidates = candidates.ToArray();
-
-        Log.LogMessage(
-            "Resolved {0} dictionary candidates from {1} current assets.",
-            candidates.Count,
-            currentAssets.Length);
-
-        return !Log.HasLoggedErrors;
+        return candidates;
     }
 
     private ITaskItem TryCreateCandidate(ZipArchive archive, StaticWebAsset oldAsset, StaticWebAsset newAsset, string outputPath)
@@ -349,7 +359,7 @@ public class ResolveDictionaryCandidates : Task
         return false;
     }
 
-    internal readonly struct PreviousRouteMatch
+    private readonly struct PreviousRouteMatch
     {
         public PreviousRouteMatch(StaticWebAssetEndpoint endpoint, StaticWebAsset asset)
         {

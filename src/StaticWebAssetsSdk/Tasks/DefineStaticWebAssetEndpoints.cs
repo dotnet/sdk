@@ -20,11 +20,6 @@ public class DefineStaticWebAssetEndpoints : Task
 
     public ITaskItem[] AdditionalEndpointDefinitions { get; set; }
 
-    /// <summary>
-    /// Known compression formats. Each item's Identity is the format name.
-    /// Required metadata: FileExtension (e.g., ".gz"), ContentEncoding (e.g., "gzip").
-    /// Used to strip compressed extensions when resolving content types.
-    /// </summary>
     public ITaskItem[] CompressionFormats { get; set; }
 
     [Output]

@@ -275,8 +275,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             // === Collect all endpoints for the modified file across both manifests ===
             var modifiedRoute = "_content/ClassLibrary/js/project-transitive-dep.js";
-            var modifiedFileRouteFilter = new Func<StaticWebAssetEndpoint, bool>(e =>
-                e.Route.Contains("project-transitive-dep") && !e.Route.Contains(".v4"));
+            Func<StaticWebAssetEndpoint, bool> modifiedFileRouteFilter = e =>
+                e.Route.Contains("project-transitive-dep") && !e.Route.Contains(".v4");
 
             var v1EndpointsForFile = v1Manifest.Endpoints.Where(modifiedFileRouteFilter).ToArray();
             var v2EndpointsForFile = v2Manifest.Endpoints.Where(modifiedFileRouteFilter).ToArray();
@@ -360,8 +360,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // CDT-specific: identity endpoint gets Use-As-Dictionary and Vary: Available-Dictionary
             HasHeader(identityEp, "Use-As-Dictionary").Should().BeTrue(
                 "because the identity endpoint should advertise dictionary availability");
-            GetHeaderValue(identityEp, "Use-As-Dictionary").Should().Contain("match=",
-                "because Use-As-Dictionary must specify a match pattern");
+            GetHeaderValue(identityEp, "Use-As-Dictionary").Should().Contain(
+                "match=\"/_content/ClassLibrary/js/project-transitive-dep",
+                "because Use-As-Dictionary must specify a match pattern scoped to the resource path");
             HasHeader(identityEp, "Vary", "Available-Dictionary").Should().BeTrue(
                 "because the identity endpoint must vary on Available-Dictionary when dcz variants exist");
             HasProperty(identityEp, "integrity").Should().BeTrue();
@@ -384,7 +385,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // so the client stores the decompressed body as a dictionary regardless of encoding
             HasHeader(gzipEp, "Use-As-Dictionary").Should().BeTrue(
                 "because the gzip response, once decompressed, can be stored as a dictionary");
-            GetHeaderValue(gzipEp, "Use-As-Dictionary").Should().Contain("match=");
+            GetHeaderValue(gzipEp, "Use-As-Dictionary").Should().Contain(
+                "match=\"/_content/ClassLibrary/js/project-transitive-dep");
             HasHeader(gzipEp, "Vary", "Available-Dictionary").Should().BeTrue(
                 "because endpoints with Use-As-Dictionary must vary on Available-Dictionary");
 
@@ -402,7 +404,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             HasProperty(brEp, "original-resource").Should().BeTrue();
             HasHeader(brEp, "Use-As-Dictionary").Should().BeTrue(
                 "because the brotli response, once decompressed, can be stored as a dictionary");
-            GetHeaderValue(brEp, "Use-As-Dictionary").Should().Contain("match=");
+            GetHeaderValue(brEp, "Use-As-Dictionary").Should().Contain(
+                "match=\"/_content/ClassLibrary/js/project-transitive-dep");
             HasHeader(brEp, "Vary", "Available-Dictionary").Should().BeTrue(
                 "because endpoints with Use-As-Dictionary must vary on Available-Dictionary");
 
@@ -420,7 +423,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             HasProperty(zstdEp, "original-resource").Should().BeTrue();
             HasHeader(zstdEp, "Use-As-Dictionary").Should().BeTrue(
                 "because the zstd response, once decompressed, can be stored as a dictionary");
-            GetHeaderValue(zstdEp, "Use-As-Dictionary").Should().Contain("match=");
+            GetHeaderValue(zstdEp, "Use-As-Dictionary").Should().Contain(
+                "match=\"/_content/ClassLibrary/js/project-transitive-dep");
             HasHeader(zstdEp, "Vary", "Available-Dictionary").Should().BeTrue(
                 "because endpoints with Use-As-Dictionary must vary on Available-Dictionary");
 

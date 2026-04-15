@@ -62,7 +62,7 @@ public class ApplyCompressionNegotiation : Task
         var (compressedByRelated, qualityMap) = ComputeQualityRankings(assets, formatPriority);
 
         // === Phase 3: Process compressed assets — update headers, create synthetics, link groups ===
-        ProcessCompressedVariants(
+        ApplyNegotiationToCompressedVariants(
             compressedByRelated, qualityMap, endpointsByAsset, routeGroups,
             formatUsesDictionary, dictionaryHashByAsset, dictionaryMatchPatternByAsset);
 
@@ -178,7 +178,7 @@ public class ApplyCompressionNegotiation : Task
         });
     }
 
-    private void ProcessCompressedVariants(
+    private void ApplyNegotiationToCompressedVariants(
         Dictionary<string, List<StaticWebAsset>> compressedByRelated,
         Dictionary<string, string> qualityMap,
         Dictionary<string, List<StaticWebAssetEndpoint>> endpointsByAsset,

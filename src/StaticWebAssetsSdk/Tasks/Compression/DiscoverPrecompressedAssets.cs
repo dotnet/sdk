@@ -45,34 +45,38 @@ public class DiscoverPrecompressedAssets : Task
 
         foreach (var candidate in candidates)
         {
-            if (TryGetCompressionExtension(candidate.RelativePath, formatsByExtension, out var matchedExtension, out var contentEncoding) &&
-                // We only care about assets that are not already considered compressed
-                !IsCompressedAsset(candidate) &&
-                // The candidate doesn't already have a related asset
-                string.IsNullOrEmpty(candidate.RelatedAsset))
+            if (IsCompressedAsset(candidate) || !string.IsNullOrEmpty(candidate.RelatedAsset))
+            {
+                continue;
+            }
+
+            if (!TryGetCompressionExtension(candidate.RelativePath, formatsByExtension, out var matchedExtension, out var contentEncoding))
+            {
+                continue;
+            }
+
+            Log.LogMessage(
+                MessageImportance.Low,
+                "The asset '{0}' was detected as compressed but it didn't specify a related asset.",
+                candidate.Identity);
+
+            var relatedAsset = FindRelatedAsset(candidate, candidatesByIdentity, matchedExtension);
+            if (relatedAsset is null)
             {
                 Log.LogMessage(
                     MessageImportance.Low,
-                    "The asset '{0}' was detected as compressed but it didn't specify a related asset.",
-                    candidate.Identity);
-                var relatedAsset = FindRelatedAsset(candidate, candidatesByIdentity, matchedExtension);
-                if (relatedAsset is null)
-                {
-                    Log.LogMessage(
-                        MessageImportance.Low,
-                        "The asset '{0}' was detected as compressed but the related asset with relative path '{1}' was not found.",
-                        candidate.Identity,
-                        Path.GetFileNameWithoutExtension(candidate.RelativePath));
-                    continue;
-                }
-
-                Log.LogMessage(
-                    "The asset '{0}' was detected as compressed and the related asset '{1}' was found.",
+                    "The asset '{0}' was detected as compressed but the related asset with relative path '{1}' was not found.",
                     candidate.Identity,
-                    relatedAsset.Identity);
-                UpdateCompressedAsset(candidate, relatedAsset, matchedExtension, contentEncoding);
-                assetsToUpdate.Add(candidate.ToTaskItem());
+                    Path.GetFileNameWithoutExtension(candidate.RelativePath));
+                continue;
             }
+
+            Log.LogMessage(
+                "The asset '{0}' was detected as compressed and the related asset '{1}' was found.",
+                candidate.Identity,
+                relatedAsset.Identity);
+            UpdateCompressedAsset(candidate, relatedAsset, matchedExtension, contentEncoding);
+            assetsToUpdate.Add(candidate.ToTaskItem());
         }
 
         DiscoveredCompressedAssets = [.. assetsToUpdate];
@@ -93,6 +97,11 @@ public class DiscoverPrecompressedAssets : Task
         {
             var extension = format.GetMetadata("FileExtension");
             var contentEncoding = format.GetMetadata("ContentEncoding");
+
+            if (string.Equals(format.GetMetadata("UsesDictionary"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
 
             if (string.IsNullOrEmpty(extension) || string.IsNullOrEmpty(contentEncoding))
             {

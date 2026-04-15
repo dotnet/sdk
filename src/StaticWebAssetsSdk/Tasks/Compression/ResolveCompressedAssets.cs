@@ -360,7 +360,7 @@ public class ResolveCompressedAssets : Task
             .Select(s => s.Trim())
             .ToArray();
 
-    private bool TryCreateCompressedAsset(
+    private static bool TryCreateCompressedAsset(
         StaticWebAsset asset,
         string outputPath,
         string fileExtension,
@@ -382,7 +382,7 @@ public class ResolveCompressedAssets : Task
         // different dictionaries for the same asset produce distinct output files.
         var dictSuffix = dictionaryId != null ? $"-{FileHasher.HashString(dictionaryId)}" : "";
         var fileName = $"{pathTemplate}-{asset.Fingerprint}{dictSuffix}{fileExtension}";
-        var itemSpec = Path.GetFullPath(Path.Combine(OutputPath, fileName));
+        var itemSpec = Path.GetFullPath(Path.Combine(outputPath, fileName));
 
         // For dictionary-compressed formats, embed the old file's fingerprint in the RelativePath
         // so that multiple dictionaries for the same asset produce distinct served URLs.
@@ -423,7 +423,7 @@ public class ResolveCompressedAssets : Task
         return true;
     }
 
-    internal readonly struct CompressionFormatInfo
+    private readonly struct CompressionFormatInfo
     {
         public CompressionFormatInfo(string extension, string contentEncoding, bool usesDictionary)
         {
