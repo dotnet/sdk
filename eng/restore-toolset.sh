@@ -37,15 +37,68 @@ function InitializeCustomSDKToolset {
   CreateBuildEnvScript
 }
 
-# Builds dotnetup if the executable doesn't exist
+# Gets a file's last-modified time as a Unix timestamp.
+function GetFileTimestamp {
+  local path="$1"
+  if [[ "$(uname)" == "Darwin" ]]; then
+    stat -f "%m" "$path"
+  else
+    stat -c "%Y" "$path"
+  fi
+}
+
+# Builds dotnetup if the executable is missing or stale
 function EnsureDotnetupBuilt {
   local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local dotnetup_dir="$script_dir/dotnetup"
   local dotnetup_exe="$dotnetup_dir/dotnetup"
+  local should_build=false
 
   if [[ ! -f "$dotnetup_exe" ]]; then
+    should_build=true
+  else
+    # eng/dotnetup is an ignored bootstrap artifact, so it can survive branch
+    # switches and fall behind the current checkout. Rebuild it if either:
+    # 1. the current HEAD commit is newer than the bootstrap executable, or
+    # 2. there are local uncommitted changes with newer timestamps.
+    local bootstrap_ts
+    bootstrap_ts=$(GetFileTimestamp "$dotnetup_exe")
+    local latest_repo_change_ts=0
+
+    if command -v git &> /dev/null && git -C "$repo_root" rev-parse --is-inside-work-tree &> /dev/null; then
+      local head_commit_ts
+      head_commit_ts=$(git -C "$repo_root" log -1 --format=%ct HEAD 2>/dev/null || echo 0)
+      if [[ "$head_commit_ts" =~ ^[0-9]+$ ]]; then
+        latest_repo_change_ts=$head_commit_ts
+      fi
+
+      while IFS= read -r relative_path; do
+        [[ -z "$relative_path" ]] && continue
+        local full_path="$repo_root/$relative_path"
+        if [[ -f "$full_path" ]]; then
+          local file_ts
+          file_ts=$(GetFileTimestamp "$full_path")
+          if (( file_ts > latest_repo_change_ts )); then
+            latest_repo_change_ts=$file_ts
+          fi
+        fi
+      done < <(
+        {
+          git -C "$repo_root" diff --name-only --relative HEAD 2>/dev/null
+          git -C "$repo_root" ls-files --others --exclude-standard 2>/dev/null
+        } | sort -u
+      )
+    fi
+
+    if (( latest_repo_change_ts > bootstrap_ts )); then
+      should_build=true
+    fi
+  fi
+
+  if [[ "$should_build" == true ]]; then
     echo "Building dotnetup..."
     local dotnetup_project="$repo_root/src/Installer/dotnetup/dotnetup.csproj"
+    mkdir -p "$dotnetup_dir"
 
     # Determine RID based on OS
     local rid

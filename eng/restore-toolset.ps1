@@ -37,8 +37,47 @@ function InitializeCustomSDKToolset {
 
 function EnsureDotnetupBuilt {
     $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
+    $shouldBuild = !(Test-Path $dotnetupExe)
 
-    if (!(Test-Path $dotnetupExe)) {
+    if (-not $shouldBuild) {
+        # eng\dotnetup is an ignored bootstrap artifact, so it can survive branch
+        # switches and fall behind the current checkout. Rebuild it if either:
+        # 1. the current HEAD commit is newer than the bootstrap executable, or
+        # 2. there are local uncommitted changes with newer timestamps.
+        $bootstrapWriteTime = (Get-Item $dotnetupExe).LastWriteTimeUtc
+        $latestRepoChangeTime = [DateTime]::MinValue
+
+        if (Get-Command git -ErrorAction SilentlyContinue) {
+            try {
+                $headCommitTimestamp = (& git -C $RepoRoot log -1 --format=%ct HEAD 2>$null).Trim()
+                if ($LASTEXITCODE -eq 0 -and $headCommitTimestamp -match '^\d+$') {
+                    $latestRepoChangeTime = [DateTimeOffset]::FromUnixTimeSeconds([int64]$headCommitTimestamp).UtcDateTime
+                }
+
+                $changedFiles = @()
+                $changedFiles += (& git -C $RepoRoot diff --name-only --relative HEAD 2>$null)
+                $changedFiles += (& git -C $RepoRoot ls-files --others --exclude-standard 2>$null)
+
+                foreach ($relativePath in ($changedFiles | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)) {
+                    $fullPath = Join-Path $RepoRoot $relativePath
+                    if (Test-Path $fullPath -PathType Leaf) {
+                        $writeTime = (Get-Item $fullPath).LastWriteTimeUtc
+                        if ($writeTime -gt $latestRepoChangeTime) {
+                            $latestRepoChangeTime = $writeTime
+                        }
+                    }
+                }
+            }
+            catch {
+                # Best-effort freshness check — if git metadata is unavailable,
+                # fall back to using the existing bootstrap binary.
+            }
+        }
+
+        $shouldBuild = $latestRepoChangeTime -gt $bootstrapWriteTime
+    }
+
+    if ($shouldBuild) {
         Write-Host "Building dotnetup..."
         $dotnetupProject = Join-Path $RepoRoot "src\Installer\dotnetup\dotnetup.csproj"
         $dotnetupOutDir = Join-Path $PSScriptRoot "dotnetup"
