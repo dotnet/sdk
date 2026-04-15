@@ -12,6 +12,7 @@ namespace Microsoft.NET.TestFramework
         /// <remarks>Keep in sync with <see cref="Product.TargetFrameworkVersion"/>.</remarks>
         public const string CurrentTargetFrameworkVersion = "11.0";
         public const string CurrentTargetFrameworkMoniker = ".NETCoreApp,Version=v" + CurrentTargetFrameworkVersion;
+        
         public const string NextTargetFramework = "net12.0";
         public const string NextTargetFrameworkVersion = "12.0";
 
