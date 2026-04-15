@@ -16,7 +16,7 @@ public class Reporter : IReporter
 
     private static IReporter s_errorReporter = s_consoleErrReporter;
     private static IReporter s_outputReporter = s_consoleOutReporter;
-    private static IReporter s_verboseReporter = s_consoleOutReporter;
+    private static IReporter s_verboseReporter = s_consoleErrReporter;
 
     private readonly AnsiConsole? _console;
 

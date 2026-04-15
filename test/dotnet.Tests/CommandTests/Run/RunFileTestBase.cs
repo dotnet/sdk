@@ -178,7 +178,8 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
         };
 
         var command = new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(workDir ?? testInstance.Path);
+            .WithWorkingDirectory(workDir ?? testInstance.Path)
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
 
         if (customizeCommand != null)
         {
