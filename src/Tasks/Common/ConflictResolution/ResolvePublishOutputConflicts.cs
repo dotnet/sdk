@@ -5,8 +5,11 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
-    public class ResolveOverlappingItemGroupConflicts : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolveOverlappingItemGroupConflicts : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+
         [Required]
         public ITaskItem[]? ItemGroup1 { get; set; }
 
