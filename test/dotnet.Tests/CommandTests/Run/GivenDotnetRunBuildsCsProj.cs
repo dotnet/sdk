@@ -418,8 +418,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute();
 
             cmd.Should().Pass()
-                .And.NotHaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
+
+            cmd.StdErr.Should().BeEmpty();
         }
 
         [Fact]
