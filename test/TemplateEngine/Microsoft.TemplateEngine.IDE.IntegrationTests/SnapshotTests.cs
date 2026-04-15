@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithPreferDefaultName")
                 {
                     TemplatePath = templateLocation,
-                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals"),
+                    SnapshotsDirectory = ApprovalsDirectory,
                     DoNotPrependTemplateNameToScenarioName = true,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     ScenarioName = "Basic"
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithOnlyIfStatement")
                 {
                     TemplatePath = templateLocation,
-                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals"),
+                    SnapshotsDirectory = ApprovalsDirectory,
                     DoNotPrependTemplateNameToScenarioName = true,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     ScenarioName = "Basic"
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithOnlyIfForLocalhost")
                 {
                     TemplatePath = templateLocation,
-                    SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals"),
+                    SnapshotsDirectory = ApprovalsDirectory,
                     DoNotPrependTemplateNameToScenarioName = true,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     ScenarioName = "Basic"
@@ -99,7 +99,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals"),
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDirectory,
                 DoNotPrependTemplateNameToScenarioName = true,
                 DoNotAppendTemplateArgsToScenarioName = true,
@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals"),
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDirectory,
                 DoNotPrependTemplateNameToScenarioName = true,
                 DoNotAppendTemplateArgsToScenarioName = false,
@@ -169,7 +169,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithPortsAndCoalesce")
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Approvals"),
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDirectory,
                 DoNotPrependTemplateNameToScenarioName = true,
                 DoNotAppendTemplateArgsToScenarioName = false,

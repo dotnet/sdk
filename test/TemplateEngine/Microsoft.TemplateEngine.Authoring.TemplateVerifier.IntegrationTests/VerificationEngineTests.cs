@@ -150,7 +150,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
                 TemplateSpecificArgs = new[] { "--empty" },
-                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
+                SnapshotsDirectory = SnapshotsDirectory,
                 VerifyCommandOutput = true,
             };
 
@@ -166,7 +166,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
                 TemplateSpecificArgs = new[] { "--empty" },
-                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
+                SnapshotsDirectory = SnapshotsDirectory,
                 VerifyCommandOutput = false,
                 SettingsDirectory = settingsPath
             };

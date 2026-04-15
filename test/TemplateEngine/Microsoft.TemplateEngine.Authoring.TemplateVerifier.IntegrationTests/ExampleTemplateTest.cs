@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             {
                 TemplateSpecificArgs = new string[] { "--paramB", "true" },
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
                 DoNotPrependCallerMethodNameToScenarioName = true,
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
                 DoNotPrependCallerMethodNameToScenarioName = true,

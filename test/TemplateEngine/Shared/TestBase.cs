@@ -37,6 +37,10 @@ namespace Microsoft.TemplateEngine.Tests
 
         internal static string TemplateFeedLocation { get; } = SdkTestContext.Current.RepoTemplatePackages;
 
+        internal static string ApprovalsDirectory { get; } = Path.Combine(AppContext.BaseDirectory, "Approvals");
+
+        internal static string SnapshotsDirectory { get; } = Path.Combine(AppContext.BaseDirectory, "Snapshots");
+
         internal static string TestTemplatesLocation { get; } =
             Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "TestPackages", "TemplateEngine", "test_templates");
 

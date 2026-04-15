@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: shortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = Path.Combine(AppContext.BaseDirectory, "Snapshots"),
+                SnapshotsDirectory = SnapshotsDirectory,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = $"{folderName.Substring(folderName.IndexOf('-') + 1)}{argsScenarioName}"
             }
