@@ -6,8 +6,20 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
-    public class ResolvePackageFileConflicts : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolvePackageFileConflicts : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment? _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Environment.CurrentDirectory));
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
+
         private HashSet<ITaskItem?> referenceConflicts = new();
         private HashSet<ITaskItem?> analyzerConflicts = new();
         private HashSet<ITaskItem?> copyLocalConflicts = new();
@@ -69,7 +81,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
                 compilePlatformItems = TargetFrameworkDirectories.SelectMany(tfd =>
                 {
-                    return frameworkListReader.GetConflictItems(Path.Combine(tfd.ItemSpec, "RedistList", "FrameworkList.xml"), log);
+                    var tfdPath = Path.IsPathRooted(tfd.ItemSpec) ? tfd.ItemSpec : (string)TaskEnvironment.GetAbsolutePath(tfd.ItemSpec);
+                    return frameworkListReader.GetConflictItems(Path.Combine(tfdPath, "RedistList", "FrameworkList.xml"), log);
                 }).ToArray();
             }
 
@@ -128,7 +141,11 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             // we only commit the platform items since its not a conflict if other items share the same filename.
             using (var platformConflictScope = new ConflictResolver<ConflictItem>(packageRanks, packageOverrides, log))
             {
-                var platformItems = PlatformManifests?.SelectMany(pm => PlatformManifestReader.LoadConflictItems(pm.ItemSpec, log)) ?? Enumerable.Empty<ConflictItem>();
+                var platformItems = PlatformManifests?.SelectMany(pm =>
+                {
+                    var manifestPath = Path.IsPathRooted(pm.ItemSpec) ? pm.ItemSpec : (string)TaskEnvironment.GetAbsolutePath(pm.ItemSpec);
+                    return PlatformManifestReader.LoadConflictItems(manifestPath, log);
+                }) ?? Enumerable.Empty<ConflictItem>();
 
                 if (compilePlatformItems != null)
                 {
@@ -227,7 +244,17 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
         private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[]? items, ConflictItemType itemType)
         {
-            return (items != null) ? items.Select(i => new ConflictItem(i, itemType)) : Enumerable.Empty<ConflictItem>();
+            return (items != null) ? items.Select(i => new ConflictItem(i, itemType, ResolvePath)) : Enumerable.Empty<ConflictItem>();
+        }
+
+        private string ResolvePath(string path)
+        {
+            if (Path.IsPathRooted(path))
+            {
+                return path;
+            }
+
+            return (string)TaskEnvironment.GetAbsolutePath(path);
         }
 
         private void HandleCompileConflict(ConflictItem winner, ConflictItem loser)
