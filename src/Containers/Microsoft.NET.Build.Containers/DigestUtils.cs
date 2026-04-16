@@ -15,25 +15,37 @@ internal sealed class DigestUtils
     /// <see href="https://github.com/opencontainers/image-spec/blob/a4c6ade7bb82b316d45391f572727a63e268b252/descriptor.md#registered-algorithms">
     /// Registered Algorithms
     /// </see>
+    ///
+    /// The OCI specification also defines sha512 and blake3 as optional
+    /// registered algorithms. They are not included here because the rest of
+    /// the containers pipeline (blob storage paths, digest creation, content
+    /// verification) is currently SHA-256 only. Supporting additional
+    /// algorithms requires changes across ContentStore, Layer, ImageBuilder,
+    /// and the registry push/pull paths.
     /// </summary>
     private static readonly Dictionary<string, Regex> s_registeredAlgorithms = new(StringComparer.Ordinal)
     {
         ["sha256"] = new Regex(@"^[a-f0-9]{64}$"),
-        ["sha512"] = new Regex(@"^[a-f0-9]{128}$"),
-        ["blake3"] = new Regex(@"^[a-f0-9]{64}$")
     };
 
     /// <summary>
-    /// Gets digest for string <paramref name="str"/>.
+    /// Computes the SHA-256 digest of <paramref name="content"/> and returns
+    /// the full digest string (e.g. "sha256:abcdef...").
     /// </summary>
-    internal static string GetDigest(string str) => GetDigestFromSha(GetSha(str));
+    internal static string ComputeSha256Digest(string content) => FormatSha256Digest(ComputeSha256(content));
 
     /// <summary>
-    /// Formats digest based on ready SHA <paramref name="sha"/>.
+    /// Formats a SHA-256 digest string from an already-computed encoded hash
+    /// value.
     /// </summary>
-    internal static string GetDigestFromSha(string sha) => $"sha256:{sha}";
+    internal static string FormatSha256Digest(string encoded) => $"sha256:{encoded}";
 
-    internal static string GetShaFromDigest(string digest)
+    /// <summary>
+    /// Validates a digest string against the OCI grammar and registered
+    /// algorithms, then returns the encoded portion. The algorithm identifier
+    /// is returned via <paramref name="algorithm"/>.
+    /// </summary>
+    internal static string GetEncoded(string digest)
     {
         Match match = ReferenceParser.AnchoredDigestRegexp.Match(digest);
 
@@ -61,13 +73,13 @@ internal sealed class DigestUtils
     }
 
     /// <summary>
-    /// Gets the SHA of <paramref name="str"/>.
+    /// Computes the SHA-256 hash of <paramref name="content"/> and returns it
+    /// as a lowercase hex string.
     /// </summary>
-    internal static string GetSha(string str)
+    internal static string ComputeSha256(string content)
     {
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
-        SHA256.HashData(Encoding.UTF8.GetBytes(str), hash);
-
+        SHA256.HashData(Encoding.UTF8.GetBytes(content), hash);
         return Convert.ToHexStringLower(hash);
     }
 }

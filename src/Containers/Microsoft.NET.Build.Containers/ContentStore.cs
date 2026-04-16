@@ -35,13 +35,7 @@ internal static class ContentStore
     public static string PathForDescriptor(Descriptor descriptor)
     {
         string digestString = descriptor.Digest;
-        var match = ReferenceParser.AnchoredDigestRegexp.Match(digestString);
-        if (!match.Success)
-        {
-            throw new ArgumentException($"Invalid digest: {digestString}", nameof(descriptor.Digest));
-        }
-        string algorithm = match.Groups[1].Value;
-        string digestValue = match.Groups[2].Value;
+        string digestValue = DigestUtils.GetEncoded(digestString);
 
         string extension = descriptor.MediaType switch
         {
