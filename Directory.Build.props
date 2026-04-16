@@ -39,17 +39,17 @@
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+
+    <!-- Enable NuGet Audit to check for security vulnerabilities -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateProgramFile>false</GenerateProgramFile>
     <!-- <TestRunnerAdditionalArguments>-parallel none</TestRunnerAdditionalArguments> -->
-  </PropertyGroup>
-
-  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51465 -->
-  <PropertyGroup>
-    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <PropertyGroup>
