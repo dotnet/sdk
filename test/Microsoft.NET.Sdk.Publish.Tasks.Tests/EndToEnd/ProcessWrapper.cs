@@ -74,7 +74,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
             try
             {
                 Process proc = Process.GetProcessById(pid);
+#if NET472
                 proc.Kill();
+#else
+                proc.Kill(entireProcessTree: true);
+#endif
             }
             catch (ArgumentException)
             {
