@@ -48,6 +48,17 @@ public static class CommandLoggingContext
     }
 
     /// <summary>
+    /// Sets or resets the verbose-to-stderr output.
+    /// </summary>
+    /// <remarks>
+    /// After calling, consider calling <see cref="Reporter.Reset()"/> to apply change to reporter.
+    /// </remarks>
+    public static void SetVerboseToStdErr(bool value)
+    {
+        s_verboseToStdErr = new Lazy<bool>(() => value);
+    }
+
+    /// <summary>
     /// Sets or resets the normal output.
     /// </summary>
     /// <remarks>
