@@ -1,0 +1,43 @@
+<!--
+  Helix Work Item Scheduling Configuration
+  =========================================
+  Generated from analysis of build 1382230 (TestBuild: linux x64, ubuntu.2204.amd64.open).
+
+  MethodLimitMultiplier: Adjusts the assembly partitioning chunk size relative to the base
+    method limit (16 normal, 32 for TestFullMSBuild). Higher values produce fewer, larger
+    work items; lower values produce more, finer-grained work items.
+
+  EstimatedSecondsPerMethod: Used to estimate each work item's duration for longest-first
+    (LPT) scheduling. Items with the highest estimated cost are submitted first so Helix
+    machines pick them up before short items. Assemblies not listed use a default of 2.0.
+
+  To regenerate: run a CI build, query Helix for per-work-item durations, and compute
+  avg_duration / base_method_limit for each assembly.
+-->
+<HelixSchedulingConfig>
+  <!-- Heavy assemblies: long per-method cost, need finer splitting or prioritization -->
+  <Assembly Name="Microsoft.NET.Publish.Tests.dll"                  EstimatedSecondsPerMethod="22.0" />
+  <Assembly Name="dotnet-new.IntegrationTests.dll"                  EstimatedSecondsPerMethod="14.0" />
+  <Assembly Name="EndToEnd.Tests.dll"                               EstimatedSecondsPerMethod="12.0" />
+  <Assembly Name="Microsoft.NET.Sdk.BlazorWebAssembly.Tests.dll"    EstimatedSecondsPerMethod="10.0" />
+  <Assembly Name="dotnet-watch.Tests.dll"                           EstimatedSecondsPerMethod="9.5" />
+  <Assembly Name="Microsoft.NET.Sdk.Razor.Tests.dll"                EstimatedSecondsPerMethod="8.0" />
+  <Assembly Name="Microsoft.NET.Restore.Tests.dll"                  EstimatedSecondsPerMethod="8.0" />
+  <Assembly Name="Microsoft.NET.Sdk.Web.Tests.dll"                  EstimatedSecondsPerMethod="7.5" />
+  <Assembly Name="dotnet.Tests.dll"                MethodLimitMultiplier="2"   EstimatedSecondsPerMethod="7.0" />
+  <Assembly Name="Microsoft.NET.Build.Tests.dll"   MethodLimitMultiplier="2"   EstimatedSecondsPerMethod="7.0" />
+  <Assembly Name="Microsoft.WebTools.AspireService.Tests.dll"       EstimatedSecondsPerMethod="7.0" />
+  <Assembly Name="Microsoft.NET.ToolPack.Tests.dll"                 EstimatedSecondsPerMethod="6.5" />
+  <Assembly Name="Microsoft.NET.Pack.Tests.dll"                     EstimatedSecondsPerMethod="5.5" />
+  <Assembly Name="Microsoft.NET.Build.Containers.UnitTests.dll"     EstimatedSecondsPerMethod="5.0" />
+  <Assembly Name="ArgumentForwarding.Tests.dll"                     EstimatedSecondsPerMethod="4.5" />
+
+  <!-- Oversharded assemblies: many tiny items, consolidate into fewer chunks -->
+  <Assembly Name="Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.dll"  MethodLimitMultiplier="5"   EstimatedSecondsPerMethod="2.5" />
+  <Assembly Name="Microsoft.NET.Sdk.StaticWebAssets.Tests.dll"        MethodLimitMultiplier="4"   EstimatedSecondsPerMethod="3.5" />
+  <Assembly Name="Microsoft.TemplateEngine.Cli.UnitTests.dll"         MethodLimitMultiplier="11"  EstimatedSecondsPerMethod="1.0" />
+  <Assembly Name="Microsoft.NET.Build.Tasks.Tests.dll"                MethodLimitMultiplier="11"  EstimatedSecondsPerMethod="1.0" />
+  <Assembly Name="Microsoft.DotNet.ApiDiff.Tests.dll"                 MethodLimitMultiplier="8"   EstimatedSecondsPerMethod="1.0" />
+  <Assembly Name="Microsoft.DotNet.ApiCompatibility.Tests.dll"        MethodLimitMultiplier="9"   EstimatedSecondsPerMethod="1.0" />
+  <Assembly Name="Microsoft.NET.Sdk.Razor.Tool.Tests.dll"             MethodLimitMultiplier="4"   EstimatedSecondsPerMethod="1.0" />
+</HelixSchedulingConfig>

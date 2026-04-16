@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="HelixSchedulingConfig.xml" LogicalName="HelixSchedulingConfig.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime;buildTransitive" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime;buildTransitive" />
     <PackageReference Include="Newtonsoft.Json" />

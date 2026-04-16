@@ -13,6 +13,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
     /// </summary>
     public class SDKCustomCreateXUnitWorkItemsWithTestExclusion : Build.Utilities.Task
     {
+        private HelixSchedulingConfig _schedulingConfig = null!;
+
         /// <summary>
         /// An array of XUnit project workitems containing the following metadata:
         /// - [Required] PublishDirectory: the publish output directory of the XUnit project
@@ -81,10 +83,24 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 return;
             }
 
-            XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
+            _schedulingConfig = HelixSchedulingConfig.Load();
+
+            var workItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
                 .SelectMany(i => i ?? new())
                 .Where(wi => wi != null)
-                .ToArray();
+                .ToList();
+
+            // Sort by estimated duration descending (longest-first / LPT scheduling).
+            // This ensures Helix machines pick up the heaviest items first, reducing
+            // the chance of long items stacking on the same machine late in the run.
+            workItems.Sort((a, b) =>
+            {
+                var durA = double.TryParse(a.GetMetadata("EstimatedDurationSeconds"), out var da) ? da : 0;
+                var durB = double.TryParse(b.GetMetadata("EstimatedDurationSeconds"), out var db) ? db : 0;
+                return durB.CompareTo(durA);
+            });
+
+            XUnitWorkItems = workItems.ToArray();
             return;
         }
 
@@ -152,14 +168,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 msbuildAdditionalSdkResolverFolder = "";
             }
 
-            int methodLimit = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16;
-
-            // NetAnalyzer tests produce many tiny work items (~197 at methodLimit 16).
-            // Use a larger limit to reduce Helix scheduling overhead.
-            if (assemblyName.Contains("NetAnalyzers", StringComparison.OrdinalIgnoreCase))
-            {
-                methodLimit *= 5;
-            }
+            int baseMethodLimit = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16;
+            double multiplier = _schedulingConfig.GetMethodLimitMultiplier(assemblyName);
+            int methodLimit = Math.Max(1, (int)(baseMethodLimit * multiplier));
 
             var scheduler = new AssemblyScheduler(methodLimit: methodLimit);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
@@ -185,12 +196,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
+                double estimatedDuration = _schedulingConfig.EstimateDuration(assemblyName, methodLimit);
                 partitionedWorkItem.Add(new Microsoft.Build.Utilities.TaskItem(assemblyPartitionInfo.DisplayName + testIdentityDifferentiator, new Dictionary<string, string>()
                 {
                     { "Identity", assemblyPartitionInfo.DisplayName + testIdentityDifferentiator},
                     { "PayloadDirectory", publishDirectory },
                     { "Command", command },
                     { "Timeout", timeout.ToString() },
+                    { "EstimatedDurationSeconds", estimatedDuration.ToString("F1") },
                 }));
             }
 
