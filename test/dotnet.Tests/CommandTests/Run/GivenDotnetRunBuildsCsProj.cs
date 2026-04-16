@@ -392,6 +392,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -400,7 +401,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("Second");
 
-            cmd.StdErr.Should().Contain("Using launch settings from");
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -431,6 +432,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -439,7 +441,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<First>>>");
 
-            cmd.StdErr.Should().Contain("Using launch settings from");
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -450,6 +452,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -458,7 +461,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<Second>>>");
 
-            cmd.StdErr.Should().Contain("Using launch settings from");
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -527,6 +530,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -535,7 +539,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("http://localhost:12345/");
 
-            cmd.StdErr.Should().Contain("Using launch settings from");
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -546,6 +550,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -554,7 +559,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("http://localhost:54321/");
 
-            cmd.StdErr.Should().Contain("Using launch settings from");
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]

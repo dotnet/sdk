@@ -68,7 +68,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("TEST_VAR1=<<<VALUE1>>>")
             .And.HaveStdOutContaining("ARGS=arg1,arg2,arg3");
 
-        cmd.StdErr.Should().Contain("Using launch settings from");
+        cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
     }
 
     [Fact]
