@@ -995,10 +995,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 public static string M() => "String from Util";
             }
             """);
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
             <Project>
               <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
               <ItemGroup>
                 <Compile Include="B.cs" />
