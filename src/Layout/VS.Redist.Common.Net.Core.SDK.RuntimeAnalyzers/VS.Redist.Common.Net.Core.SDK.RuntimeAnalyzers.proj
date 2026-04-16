@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <IsPackable Condition="'$(OS)' == 'Windows_NT' and '$(TargetArchitecture)' == 'x64' and '$(PgoInstrument)' != 'true'">true</IsPackable>
+    <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
+    <PackageDescription>Analyzers and generators from the runtime and SDK for VS insertion</PackageDescription>
+    <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
+    <ProjectReference Include="..\redist\redist.csproj" />
+  </ItemGroup>
+
+  <!-- Shared infra to build and use the sdk-tasks -->
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
+
+  <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
+    <PropertyGroup>
+      <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
+      <SdkRuntimeAnalyzersMetadataFile>$(OutputPath)\metadata.json</SdkRuntimeAnalyzersMetadataFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.NetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="NetCoreAnalyzers" />
+      <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.WindowsDesktop.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="WindowsDesktopAnalyzers" />
+      <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.AspNetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="AspNetCoreAnalyzers" />
+      <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk\analyzers\**\*.*" DeploymentSubpath="SDKAnalyzers" />
+      <RedistRuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk.Web\analyzers\**\*.*" DeploymentSubpath="WebSDKAnalyzers" />
+      <RedirectingRuntimeAnalyzersContent Include="$(ArtifactsBinDir)Microsoft.Net.Sdk.AnalyzerRedirecting\$(Configuration)\net472\**\*.*" DeploymentSubpath="AnalyzerRedirecting" />
+    </ItemGroup>
+
+    <Error Condition="'@(RedistRuntimeAnalyzersContent)' == ''" Text="The 'RedistRuntimeAnalyzersContent' items are empty. This shouldn't happen!" />
+    <Error Condition="'@(RedirectingRuntimeAnalyzersContent)' == ''" Text="The 'RedirectingRuntimeAnalyzersContent' items are empty. This shouldn't happen!" />
+
+    <!-- The custom task cannot access %(RecursiveDir) without this. -->
+    <ItemGroup>
+      <RedistRuntimeAnalyzersContent Update="@(RedistRuntimeAnalyzersContent)">
+        <CustomRecursiveDir>%(RecursiveDir)</CustomRecursiveDir>      
+      </RedistRuntimeAnalyzersContent>
+      <RedirectingRuntimeAnalyzersContent Update="@(RedirectingRuntimeAnalyzersContent)">
+        <CustomRecursiveDir>%(RecursiveDir)</CustomRecursiveDir>
+      </RedirectingRuntimeAnalyzersContent>
+    </ItemGroup>
+
+    <ProcessRuntimeAnalyzerVersions Inputs="@(RedistRuntimeAnalyzersContent)" MetadataFilePath="$(SdkRuntimeAnalyzersMetadataFile)">
+      <Output TaskParameter="Outputs" ItemName="ProcessedRedistRuntimeAnalyzersContent" />
+    </ProcessRuntimeAnalyzerVersions>
+
+    <ItemGroup>
+      <RuntimeAnalyzersContent Include="@(ProcessedRedistRuntimeAnalyzersContent);@(RedirectingRuntimeAnalyzersContent)" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(RuntimeAnalyzersContent)"
+          DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)\%(DeploymentSubpath)\%(CustomRecursiveDir)%(Filename)%(Extension)')"
+          UseHardlinksIfPossible="true" />
+
+    <!-- Replace Experimental=true with SystemComponent=true in the VS extension manifest. -->
+    <PropertyGroup>
+      <_VsixNamespace>
+        <Namespace Prefix="pm" Uri="http://schemas.microsoft.com/developer/vsx-schema/2011" />
+      </_VsixNamespace>
+    </PropertyGroup>
+    <XmlPoke XmlInputPath="$(OutputPath)\AnalyzerRedirecting\extension.vsixmanifest"
+             Namespaces="$(_VsixNamespace)"
+             Query="/pm:PackageManifest/pm:Installation/@Experimental"
+             Value="false" />
+    <XmlPoke XmlInputPath="$(OutputPath)\AnalyzerRedirecting\extension.vsixmanifest"
+             Namespaces="$(_VsixNamespace)"
+             Query="/pm:PackageManifest/pm:Installation/@SystemComponent"
+             Value="true" />
+
+    <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(OutputPath)"
+                                 OutputFile="$(SdkRuntimeAnalyzersSwrFile)" />
+
+    <ItemGroup>
+      <!-- Include the swr file in the nuget package for VS authoring -->
+      <Content Include="$(SdkRuntimeAnalyzersSwrFile)" PackagePath="/" />
+      <Content Include="$(SdkRuntimeAnalyzersMetadataFile)" PackagePath="/" />
+      <Content Include="@(RuntimeAnalyzersContent)" PackagePath="/%(RuntimeAnalyzersContent.DeploymentSubpath)/%(RuntimeAnalyzersContent.CustomRecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

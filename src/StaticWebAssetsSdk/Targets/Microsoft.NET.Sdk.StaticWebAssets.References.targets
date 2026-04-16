@@ -234,7 +234,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ComputeReferenceStaticWebAssetItems>
 
       <ComputeEndpointsForReferenceStaticWebAssets
-        Assets="@(_CachedPublishStaticWebAssets)"
+        Assets="@(_CachedPublishReferencedStaticWebAsset)"
         CandidateEndpoints="@(_CachedPublishStaticWebAssetEndpoints)"
       >
         <Output TaskParameter="Endpoints" ItemName="_CachedPublishReferencedStaticWebAssetEndpoints" />

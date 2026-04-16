@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.DependencyModel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,6 +25,13 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net7.0-windows10.0.17763", "false")]
         public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework, string isSelfContained)
         {
+            if (targetFramework == "netcoreapp3.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
+                return;
+            }
+
             if ((targetFramework == "net6.0-windows" || targetFramework == "net7.0-windows10.0.17763")
                 && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

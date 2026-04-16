@@ -21,11 +21,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
         {
             get
             {
-                return string.Format(ConnectionInfo.DestinationUrl, ConnectionInfo.SiteName, "zip/site/wwwroot/");
+                return ConnectionInfo.DestinationUrl is null
+                    ? string.Empty : string.Format(ConnectionInfo.DestinationUrl, ConnectionInfo.SiteName, "zip/site/wwwroot/");
             }
         }
 
-        public async System.Threading.Tasks.Task<bool> DeployAsync(string zipFileFullPath)
+        public async Task<bool> DeployAsync(string? zipFileFullPath)
         {
 
             if (!File.Exists(zipFileFullPath))
@@ -39,7 +40,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             return success;
         }
 
-        private async System.Threading.Tasks.Task<bool> PostZipAsync(string zipFilePath)
+        private async Task<bool> PostZipAsync(string? zipFilePath)
         {
             if (string.IsNullOrEmpty(zipFilePath))
             {

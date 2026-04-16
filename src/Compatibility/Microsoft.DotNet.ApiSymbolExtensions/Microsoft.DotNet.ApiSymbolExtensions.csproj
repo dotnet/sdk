@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <!-- Disable transitive pinning, we shouldn't upgrade dependencies that are excluded for runtime and provided externally. -->
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
   <!-- Exclude files that depend on Microsoft.Build.Framework and Microsoft.Build.Utilities.Core. These should be manually included by other projects. -->
@@ -19,6 +21,7 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <Reference Include="System.IO.Compression" />
+    <Compile Include="$(RepoRoot)src\Common\NullableAttributes.cs" LinkBase="Common" />
   </ItemGroup>
 
 </Project>

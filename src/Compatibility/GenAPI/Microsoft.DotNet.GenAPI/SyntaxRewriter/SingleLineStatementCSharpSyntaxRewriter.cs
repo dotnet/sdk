@@ -17,6 +17,13 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// </summary>
     public class SingleLineStatementCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
+        // Use the singleton instead.
+        private SingleLineStatementCSharpSyntaxRewriter()
+        {
+        }
+
+        public static readonly SingleLineStatementCSharpSyntaxRewriter Singleton = new();
+
         /// <inheritdoc />
         public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
             => VisitBaseMethodDeclarationSyntax(node);
