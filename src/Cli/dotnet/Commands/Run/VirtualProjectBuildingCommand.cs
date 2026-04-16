@@ -118,6 +118,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public VirtualProjectBuilder Builder { get; }
     public MSBuildArgs MSBuildArgs { get; }
 
+    /// <summary>
+    /// Keeps strong references to <see cref="VirtualProjectBuilder"/>s created for <c>#:ref</c> directives,
+    /// preventing their <see cref="ProjectRootElement"/>s from being garbage collected
+    /// (same reason as <c>VirtualProjectBuilder._projectRootElement</c>).
+    /// </summary>
+    private readonly List<VirtualProjectBuilder> _referencedBuilders = [];
+
     public ImmutableArray<CSharpDirective> Directives
     {
         get
@@ -526,6 +533,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 return false;
             }
 
+            if (EvaluatedDirectives.Any(static d => d is CSharpDirective.Ref))
+            {
+                Reporter.Verbose.WriteLine("Not saving cache because there is a ref directive.");
+                return false;
+            }
+
             if (EvaluatedDirectives.Any(static d =>
                     d is CSharpDirective.IncludeOrExclude { Kind: CSharpDirective.IncludeOrExcludeKind.Include } includeDirective &&
                     includeDirective.Name.AsSpan().ContainsAny('*', '?')))
@@ -756,9 +769,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     private CacheInfo? ComputeCacheEntry()
     {
-        if (Directives.Any(static d => d is CSharpDirective.Project))
+        if (Directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.Ref))
         {
-            Reporter.Verbose.WriteLine("Skipping computing cache because there are project directives.");
+            Reporter.Verbose.WriteLine("Skipping computing cache because there are project or ref directives.");
             return null;
         }
 
@@ -1177,7 +1190,66 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         EvaluatedDirectives = evaluatedDirectives;
 
+        // Create virtual ProjectRootElements for all #:ref directives so MSBuild can resolve them.
+        CreateReferencedVirtualProjects(projectCollection, evaluatedDirectives);
+
         return project;
+    }
+
+    /// <summary>
+    /// Recursively creates virtual <see cref="ProjectRootElement"/>s for all <c>#:ref</c> directives
+    /// in the given <paramref name="directives"/> (and transitively in referenced files).
+    /// The <see cref="ProjectRootElement"/>s are registered in the <paramref name="projectCollection"/>'s
+    /// <c>ProjectRootElementCache</c> so MSBuild can resolve <c>&lt;ProjectReference&gt;</c> items to them.
+    /// </summary>
+    private void CreateReferencedVirtualProjects(
+        ProjectCollection projectCollection,
+        ImmutableArray<CSharpDirective> directives)
+    {
+        var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Builder.EntryPointFileFullPath };
+        CreateReferencedVirtualProjectsCore(projectCollection, directives, processedFiles, _referencedBuilders);
+
+        static void CreateReferencedVirtualProjectsCore(
+            ProjectCollection projectCollection,
+            ImmutableArray<CSharpDirective> directives,
+            HashSet<string> processedFiles,
+            List<VirtualProjectBuilder> referencedBuilders)
+        {
+            foreach (var refDirective in directives.OfType<CSharpDirective.Ref>())
+            {
+                // ResolvedPath is always set when using ThrowingReporter (EnsureResolvedPath throws on error).
+                Debug.Assert(refDirective.ResolvedPath is not null);
+
+                if (refDirective.ResolvedPath is not { } resolvedPath)
+                {
+                    continue;
+                }
+
+                if (!processedFiles.Add(resolvedPath))
+                {
+                    // Already processed or cycle detected.
+                    continue;
+                }
+
+                var refBuilder = new VirtualProjectBuilder(
+                    resolvedPath,
+                    TargetFramework);
+
+                refBuilder.CreateProjectInstance(
+                    projectCollection,
+                    ThrowingReporter,
+                    project: out _,
+                    projectRootElement: out _,
+                    out var refEvaluatedDirectives);
+
+                // Keep a strong reference to prevent GC from collecting the ProjectRootElement
+                // after MSBuild's ProjectRootElementCache demotes it to a weak reference.
+                referencedBuilders.Add(refBuilder);
+
+                // Recursively create virtual projects for any #:ref in the referenced file.
+                CreateReferencedVirtualProjectsCore(projectCollection, refEvaluatedDirectives, processedFiles, referencedBuilders);
+            }
+        }
     }
 
     /// <summary>

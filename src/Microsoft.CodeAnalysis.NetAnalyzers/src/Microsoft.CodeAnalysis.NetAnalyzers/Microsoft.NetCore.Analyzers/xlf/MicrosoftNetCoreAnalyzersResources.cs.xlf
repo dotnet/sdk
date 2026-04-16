@@ -1835,22 +1835,22 @@ Rozšíření a uživatelem definované převody se u obecných typů nepodporuj
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
         <source>Add '#!' (shebang)</source>
-        <target state="new">Add '#!' (shebang)</target>
+        <target state="translated">Přidat '#!' (shebang)</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramDescription">
         <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
-        <target state="new">When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</target>
+        <target state="translated">Pokud se program založený na souborech skládá z více souborů, měl by soubor vstupního bodu začínat řádkem shebang ('#!'), aby byl jasně odlišen od ostatních zahrnutých souborů.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramMessage">
         <source>File-based program entry point should start with '#!'</source>
-        <target state="new">File-based program entry point should start with '#!'</target>
+        <target state="translated">Vstupní bod programu založeného na souborech by měl začínat znaky '#!'.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingShebangInFileBasedProgramTitle">
         <source>File-based program entry point should start with '#!'</source>
-        <target state="new">File-based program entry point should start with '#!'</target>
+        <target state="translated">Vstupní bod programu založeného na souborech by měl začínat znaky '#!'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
