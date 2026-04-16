@@ -41,7 +41,7 @@ After building, run individual test projects:
 ./.dotnet/dotnet test test/<ProjectName>.Tests --filter "ClassName=Microsoft.DotNet.Cli.SomeTests"
 ```
 
-Test projects live in `test/<ProjectName>.Tests` and `<ProjectName>.IntegrationTests` (with one exception: `NetAnalyzers` tests live in `src/Microsoft.CodeAnalysis.NetAnalyzers/tests`).
+Test projects live in `test/<ProjectName>.Tests` and `test/<ProjectName>.IntegrationTests` (with one exception: `NetAnalyzers` tests live in `src/Microsoft.CodeAnalysis.NetAnalyzers/tests`).
 
 ## Project Layout
 
