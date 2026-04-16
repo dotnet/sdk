@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Globalization;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -75,7 +76,7 @@ public class ApplyCompressionNegotiation : Task
 
     private static Dictionary<string, List<StaticWebAssetEndpoint>> BuildEndpointsByAsset(StaticWebAssetEndpoint[] allEndpoints)
     {
-        var endpointsByAsset = new Dictionary<string, List<StaticWebAssetEndpoint>>(allEndpoints.Length / 2, StringComparer.Ordinal);
+        var endpointsByAsset = new Dictionary<string, List<StaticWebAssetEndpoint>>(allEndpoints.Length / 2, OSPath.PathComparer);
         foreach (var endpoint in allEndpoints)
         {
             if (!endpointsByAsset.TryGetValue(endpoint.AssetFile, out var eps))
@@ -91,8 +92,8 @@ public class ApplyCompressionNegotiation : Task
     private static (Dictionary<string, string> HashByAsset, Dictionary<string, string> MatchPatternByAsset)
         BuildDictionaryLookups(ITaskItem[] dictionaryCandidates)
     {
-        var hashByAsset = new Dictionary<string, string>(StringComparer.Ordinal);
-        var matchPatternByAsset = new Dictionary<string, string>(StringComparer.Ordinal);
+        var hashByAsset = new Dictionary<string, string>(OSPath.PathComparer);
+        var matchPatternByAsset = new Dictionary<string, string>(OSPath.PathComparer);
         if (dictionaryCandidates != null)
         {
             foreach (var candidate in dictionaryCandidates)
@@ -116,8 +117,8 @@ public class ApplyCompressionNegotiation : Task
     private static (Dictionary<string, List<StaticWebAsset>> CompressedByRelated, Dictionary<string, string> QualityMap)
         ComputeQualityRankings(StaticWebAsset[] assets, Dictionary<string, int> formatPriority)
     {
-        var compressedByRelated = new Dictionary<string, List<StaticWebAsset>>(StringComparer.Ordinal);
-        var qualityMap = new Dictionary<string, string>(StringComparer.Ordinal);
+        var compressedByRelated = new Dictionary<string, List<StaticWebAsset>>(OSPath.PathComparer);
+        var qualityMap = new Dictionary<string, string>(OSPath.PathComparer);
 
         for (var i = assets.Length - 1; i >= 0; i--)
         {

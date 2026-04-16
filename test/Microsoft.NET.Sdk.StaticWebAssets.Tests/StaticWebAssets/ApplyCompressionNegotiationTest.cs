@@ -6,6 +6,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
@@ -1419,6 +1420,97 @@ public class ApplyCompressionNegotiationTest
                 Selectors = [],
             }
         ]);
+    }
+
+    [Fact]
+    public void DictionaryFormat_UsesOSPathSemanticsForPathKeyedLookups()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var primaryPath = Path.Combine("wwwroot", "candidate.js");
+        var primaryPathCaseVariant = primaryPath.ToUpperInvariant();
+        var primaryFullPath = Path.GetFullPath(primaryPath);
+        var primaryCaseVariantFullPath = Path.GetFullPath(primaryPathCaseVariant);
+        var dczPath = Path.Combine("compressed", "candidate.js.dcz");
+        var dczFullPath = Path.GetFullPath(dczPath);
+
+        var dictionaryCandidate = new TaskItem(Path.Combine("dicts", "candidate.dict"));
+        dictionaryCandidate.SetMetadata("Hash", ":testhash:");
+        dictionaryCandidate.SetMetadata("TargetAsset", primaryFullPath);
+        dictionaryCandidate.SetMetadata("MatchPattern", "/js/site.js");
+
+        var task = new ApplyCompressionNegotiation
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets =
+            [
+                CreateCandidate(
+                    primaryPath,
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "original-fingerprint",
+                    "original",
+                    fileLength: 20
+                ),
+                CreateCandidate(
+                    dczPath,
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "dcz-fingerprint",
+                    "compressed-dcz",
+                    primaryPathCaseVariant,
+                    "Content-Encoding",
+                    "dcz",
+                    fileLength: 9
+                )
+            ],
+            CandidateEndpoints =
+            [
+                CreateCandidateEndpoint(
+                    "candidate.js",
+                    primaryPath,
+                    CreateHeaders("text/javascript", [("Content-Length", "20")])),
+                CreateCandidateEndpoint(
+                    "candidate.js.dcz",
+                    dczPath,
+                    CreateHeaders("text/javascript", [("Content-Length", "9")]))
+            ],
+            CompressionFormats = CreateCompressionFormats("dcz"),
+            DictionaryCandidates = [dictionaryCandidate]
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.UpdatedEndpoints);
+
+        if (OSPath.PathComparer.Equals(primaryFullPath, primaryCaseVariantFullPath))
+        {
+            var syntheticDcz = endpoints.Should().ContainSingle(
+                e => e.Route == "candidate.js" && e.AssetFile == dczFullPath).Subject;
+            syntheticDcz.EndpointProperties.Should().Contain(
+                p => p.Name == "Dictionary-Hash" && p.Value == ":testhash:");
+
+            var originalEndpoint = endpoints.Should().ContainSingle(
+                e => e.Route == "candidate.js" && e.AssetFile == primaryFullPath).Subject;
+            originalEndpoint.ResponseHeaders.Should().Contain(
+                h => h.Name == "Use-As-Dictionary" && h.Value == "match=\"/js/site.js\"");
+            originalEndpoint.ResponseHeaders.Should().Contain(
+                h => h.Name == "Vary" && h.Value == "Available-Dictionary");
+        }
+        else
+        {
+            endpoints.Should().BeEmpty();
+        }
     }
 
     private static StaticWebAssetEndpointResponseHeader[] CreateHeaders(string contentType, params (string name, string value)[] AdditionalHeaders)
