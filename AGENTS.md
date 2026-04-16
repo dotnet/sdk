@@ -15,10 +15,11 @@ Do not modify the SDK version specified in `global.json`.
 - Linux/macOS: `./build.sh`
 - Windows: `build.cmd`
 
-Key flags:
-- `-bl` - Generate MSBuild binary log (useful for diagnosing build issues)
-- `-v <level>` - MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], diag[nostic]
-- Extra MSBuild properties can be passed directly with `/p:SomeProperty=value`
+Useful flags:
+
+- `-bl` - Generate binlog
+- `-v <level>` - verbosity: q[uiet], m[inimal], n[ormal], d[etailed], diag[nostic]
+- `/p:SomeProperty=value` - Set MSBuild property
 
 The newly built .NET CLI is output to `artifacts/bin/redist/Debug/dotnet/dotnet`.
 It can be used to sanity check local changes in a temp directory.
