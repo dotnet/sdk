@@ -77,6 +77,14 @@ internal class FileWatcher(ILogger logger, EnvironmentOptions environmentOptions
             into g
             select (g.Key, containingDirectories ? [] : g.Select(Path.GetFileName).ToImmutableHashSet(PathUtilities.OSSpecificPathComparer));
 
+        // Consolidate sibling directories to reduce the number of FileSystemWatcher instances.
+        if (containingDirectories && includeSubdirectories && OperatingSystem.IsMacOS())
+        {
+            var directories = filesByDirectory.Select(d => d.Key).ToList();
+            var consolidated = ConsolidateDirectories(directories);
+            filesByDirectory = consolidated.Select(d => (d, ImmutableHashSet<string>.Empty)).ToList();
+        }
+
         foreach (var (directory, fileNames) in filesByDirectory)
         {
             // the directory is watched by active directory watcher:
@@ -149,6 +157,67 @@ internal class FileWatcher(ILogger logger, EnvironmentOptions environmentOptions
                 _directoryWatchers.Add(directory, newWatcher);
             }
         }
+    }
+
+    /// <summary>
+    /// Reduces the number of watched directories by finding the longest common path prefix.
+    /// This minimizes the number of FileSystemWatcher instances to a single watcher on the
+    /// common ancestor directory with includeSubdirectories. Extra file change events from
+    /// unwatched sibling directories are filtered by DirectoryWatcher's filename matching.
+    /// </summary>
+    internal static List<string> ConsolidateDirectories(List<string> directories)
+    {
+        if (directories.Count <= 1)
+        {
+            return directories;
+        }
+
+        var commonRoot = GetLongestCommonPath(directories);
+        return commonRoot != null ? [commonRoot] : directories;
+    }
+
+    internal static string? GetLongestCommonPath(List<string> paths)
+    {
+        if (paths.Count == 0)
+        {
+            return null;
+        }
+
+        // Split first path into segments as reference.
+        var referencePath = paths[0].TrimEnd(Path.DirectorySeparatorChar);
+        var segments = referencePath.Split(Path.DirectorySeparatorChar);
+
+        var commonLength = segments.Length;
+
+        for (var i = 1; i < paths.Count; i++)
+        {
+            var other = paths[i].TrimEnd(Path.DirectorySeparatorChar);
+            var otherSegments = other.Split(Path.DirectorySeparatorChar);
+            var limit = Math.Min(commonLength, otherSegments.Length);
+            var matched = 0;
+
+            for (var j = 0; j < limit; j++)
+            {
+                if (string.Equals(segments[j], otherSegments[j], PathUtilities.OSSpecificPathComparison))
+                {
+                    matched++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            commonLength = matched;
+
+            if (commonLength == 0)
+            {
+                return null;
+            }
+        }
+
+        var common = string.Join(Path.DirectorySeparatorChar, segments, 0, commonLength);
+        return PathUtilities.EnsureTrailingSlash(common);
     }
 
     private void WatcherErrorHandler(object? sender, Exception error)

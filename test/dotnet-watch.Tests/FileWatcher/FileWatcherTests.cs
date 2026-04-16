@@ -155,6 +155,73 @@ public class FileWatcherTests(ITestOutputHelper output)
         AssertEx.SequenceEqual([$"{dirA}: []"], Inspect(watcher.DirectoryWatchers));
     }
 
+    [Fact]
+    public void ConsolidateDirectories_FindsCommonAncestor()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>
+        {
+            Path.Join(root, "src", "A") + Path.DirectorySeparatorChar,
+            Path.Join(root, "src", "A", "sub") + Path.DirectorySeparatorChar,
+        };
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        AssertEx.SequenceEqual([Path.Join(root, "src", "A") + Path.DirectorySeparatorChar], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_ConsolidatesSiblingsToParent()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>
+        {
+            Path.Join(root, "src", "A") + Path.DirectorySeparatorChar,
+            Path.Join(root, "src", "B") + Path.DirectorySeparatorChar,
+            Path.Join(root, "src", "C") + Path.DirectorySeparatorChar,
+        };
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        AssertEx.SequenceEqual([Path.Join(root, "src") + Path.DirectorySeparatorChar], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_LargeProjectStructure()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>();
+
+        for (int i = 0; i < 200; i++)
+        {
+            dirs.Add(Path.Join(root, "Submodule", $"Project{i}") + Path.DirectorySeparatorChar);
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            dirs.Add(Path.Join(root, $"Service{i}") + Path.DirectorySeparatorChar);
+        }
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        AssertEx.SequenceEqual([root], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_SingleDirectory()
+    {
+        var dirs = new List<string> { "/some/path/" };
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_Empty()
+    {
+        var result = FileWatcher.ConsolidateDirectories([]);
+        Assert.Empty(result);
+    }
+
     [Theory]
     [CombinatorialData]
     public async Task NewFile(bool usePolling)
