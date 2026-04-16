@@ -160,11 +160,14 @@ internal class FileWatcher(ILogger logger, EnvironmentOptions environmentOptions
     }
 
     /// <summary>
-    /// Reduces the number of watched directories by finding the longest common path prefix.
-    /// This minimizes the number of FileSystemWatcher instances to a single watcher on the
-    /// common ancestor directory with includeSubdirectories. Extra file change events from
-    /// unwatched sibling directories are filtered by DirectoryWatcher's filename matching.
+    /// Reduces the number of watched directories by finding the longest common path prefix
+    /// and grouping by immediate children under that ancestor. If the ancestor has few children
+    /// (≤ <see cref="MaxChildWatchers"/>), we create one watcher per child to avoid watching
+    /// unrelated sibling directories (e.g. artifacts/, .packages/). Otherwise, we fall back
+    /// to a single watcher on the ancestor.
     /// </summary>
+    internal const int MaxChildWatchers = 5;
+
     internal static List<string> ConsolidateDirectories(List<string> directories)
     {
         if (directories.Count <= 1)
@@ -173,7 +176,33 @@ internal class FileWatcher(ILogger logger, EnvironmentOptions environmentOptions
         }
 
         var commonRoot = GetLongestCommonPath(directories);
-        return commonRoot != null ? [commonRoot] : directories;
+        if (commonRoot == null)
+        {
+            return directories;
+        }
+
+        // Group directories by their immediate child under the common ancestor.
+        var children = new HashSet<string>(PathUtilities.OSSpecificPathComparer);
+        foreach (var dir in directories)
+        {
+            var relative = dir.Substring(commonRoot.Length).TrimEnd(Path.DirectorySeparatorChar);
+            if (relative.Length == 0)
+            {
+                // One of the directories IS the common ancestor - just watch it.
+                return [commonRoot];
+            }
+
+            var separatorIndex = relative.IndexOf(Path.DirectorySeparatorChar);
+            var immediateChild = separatorIndex >= 0 ? relative.Substring(0, separatorIndex) : relative;
+            children.Add(PathUtilities.EnsureTrailingSlash(Path.Join(commonRoot, immediateChild)));
+        }
+
+        if (children.Count <= MaxChildWatchers)
+        {
+            return children.ToList();
+        }
+
+        return [commonRoot];
     }
 
     internal static string? GetLongestCommonPath(List<string> paths)

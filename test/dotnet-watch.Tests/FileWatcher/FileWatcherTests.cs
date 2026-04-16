@@ -167,23 +167,47 @@ public class FileWatcherTests(ITestOutputHelper output)
 
         var result = FileWatcher.ConsolidateDirectories(dirs);
 
+        // Both are under src/A, which is a single immediate child under src/ — returns src/A/
         AssertEx.SequenceEqual([Path.Join(root, "src", "A") + Path.DirectorySeparatorChar], result);
     }
 
     [Fact]
-    public void ConsolidateDirectories_ConsolidatesSiblingsToParent()
+    public void ConsolidateDirectories_FewChildrenWatchesPerChild()
     {
         string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
         var dirs = new List<string>
         {
             Path.Join(root, "src", "A") + Path.DirectorySeparatorChar,
             Path.Join(root, "src", "B") + Path.DirectorySeparatorChar,
-            Path.Join(root, "src", "C") + Path.DirectorySeparatorChar,
+            Path.Join(root, "test", "C") + Path.DirectorySeparatorChar,
         };
 
         var result = FileWatcher.ConsolidateDirectories(dirs);
 
-        AssertEx.SequenceEqual([Path.Join(root, "src") + Path.DirectorySeparatorChar], result);
+        // Common ancestor is root. 2 immediate children (src/, test/) ≤ 5 — watch per child.
+        result.Sort(StringComparer.Ordinal);
+        AssertEx.SequenceEqual(
+        [
+            Path.Join(root, "src") + Path.DirectorySeparatorChar,
+            Path.Join(root, "test") + Path.DirectorySeparatorChar,
+        ], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_ManyChildrenWatchesAncestor()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>();
+
+        for (int i = 0; i < 10; i++)
+        {
+            dirs.Add(Path.Join(root, $"Service{i}") + Path.DirectorySeparatorChar);
+        }
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        // 10 immediate children > 5 - falls back to ancestor.
+        AssertEx.SequenceEqual([root], result);
     }
 
     [Fact]
@@ -204,6 +228,23 @@ public class FileWatcherTests(ITestOutputHelper output)
 
         var result = FileWatcher.ConsolidateDirectories(dirs);
 
+        // 11 immediate children (Submodule/ + Service0-9) > 5 - falls back to ancestor.
+        AssertEx.SequenceEqual([root], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_DirectoryIsAncestor()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>
+        {
+            root,
+            Path.Join(root, "src", "A") + Path.DirectorySeparatorChar,
+        };
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        // One directory IS the ancestor - just watch it.
         AssertEx.SequenceEqual([root], result);
     }
 
