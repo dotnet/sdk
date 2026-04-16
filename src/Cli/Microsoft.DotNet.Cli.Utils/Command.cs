@@ -27,7 +27,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
     }
     public CommandResult Execute(Action<Process>? processStarted)
     {
-        Reporter.Verbose.WriteLine(string.Format(
+        Reporter.VerboseStderr.WriteLine(string.Format(
             LocalizableStrings.RunningFileNameArguments,
             _process.StartInfo.FileName,
             _process.StartInfo.Arguments));
@@ -43,7 +43,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
         {
             sw = Stopwatch.StartNew();
 
-            Reporter.Verbose.WriteLine($"> {Command.FormatProcessInfo(_process.StartInfo)}".White());
+            Reporter.VerboseStderr.WriteLine($"> {Command.FormatProcessInfo(_process.StartInfo)}".White());
         }
 
         using (var reaper = ProcessReaper.Create(_process))
@@ -52,7 +52,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             processStarted?.Invoke(_process);
             reaper.NotifyProcessStarted();
 
-            Reporter.Verbose.WriteLine(string.Format(
+            Reporter.VerboseStderr.WriteLine(string.Format(
                 LocalizableStrings.ProcessId,
                 _process.Id));
 
@@ -76,11 +76,11 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
                 sw.ElapsedMilliseconds);
             if (exitCode == 0)
             {
-                Reporter.Verbose.WriteLine(message.Green());
+                Reporter.VerboseStderr.WriteLine(message.Green());
             }
             else
             {
-                Reporter.Verbose.WriteLine(message.Red().Bold());
+                Reporter.VerboseStderr.WriteLine(message.Red().Bold());
             }
         }
 
