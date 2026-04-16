@@ -52,14 +52,23 @@ Additionally, the implicit project file has the following customizations:
     string? directoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
     ```
 
+  - `EntryPointFilePath` property is set to the entry-point file path and is made visible to analyzers via `CompilerVisibleProperty`.
+
   - `FileBasedProgram` property is set to `true` and can be used by SDK targets to detect file-based apps.
 
   - `DisableDefaultItemsInProjectFolder` property is set to `true` which results in `EnableDefaultItems=false` by default
     in case there is a project or solution in the same directory as the file-based app.
     This ensures that items from nested projects and artifacts are not included by the app.
 
+  - `EnableDefaultCompileItems` property is set to `false` and there is a special `Compile` item for the entry-point file instead.
+    See [multiple files](#multiple-files) for more details.
+
   - `EnableDefaultEmbeddedResourceItems` and `EnableDefaultNoneItems` properties are set to `false` if the default SDK (`Microsoft.NET.Sdk`) is being used.
     This avoids including files like `./**/*.resx` in simple file-based apps where users usually don't expect that.
+    See [multiple files](#multiple-files) for more details.
+
+  - `AssemblyName` and `RootNamespace` are set to the entry-point file name without extension (e.g., `Program` for `Program.cs`)
+    to ensure the binary name and generated code namespaces are not affected by the virtual project file name (which includes the `.cs` extension).
 
 ## Grow up
 
@@ -72,16 +81,13 @@ This action should not change the behavior of the target program.
 dotnet project convert file.cs
 ```
 
-The command takes a path which can be either
-- path to the entry-point file in case of single entry-point programs, or
-- path to the target directory (then all entry points are converted;
-  it is not possible to convert just a single entry point in multi-entry-point program).
+The command takes a path to the entry-point file.
 
 ## Target path
 
 The path passed to `dotnet run ./some/path.cs` is called *the target path*.
-The target path must be a file which either has the `.cs` file extension,
-or a file whose contents start with `#!`.
+The target path must point to *the entry-point file* which
+either has the `.cs` file extension, or whose contents start with `#!`.
 *The target directory* is the directory of the target file.
 
 ## Integration into the existing `dotnet run` command
@@ -95,6 +101,7 @@ The file-based build and run kicks in only when:
 
 Otherwise, project-based `dotnet run` fallback is used and you might get an error like "Couldn't find a project to run."
 You can explicitly use the `--file` option to avoid the fallback behavior.
+However, it is discouraged to put file-based apps in the same directory as a `.csproj` file (such file-based apps might not be properly recognized by tooling).
 
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
@@ -105,8 +112,8 @@ If a dash (`-`) is given instead of the target path (i.e., `dotnet run -`), the 
 In this case, the current working directory is not used to search for other files (launch profiles, other sources in case of multi-file apps);
 the compilation consists solely of the single file read from the standard input.
 However, the current working directory is still used as the working directory for building and executing the program.
-To reference projects relative to the current working directory (instead of relative to the temporary directory the file is isolated in),
-you can use something like `#:project $(MSBuildStartupDirectory)/relative/path`.
+To reference projects or files relative to the current working directory (instead of relative to the temporary directory the file is isolated in),
+you can use something like `#:project $(MSBuildStartupDirectory)/relative/path` or `#:ref $(MSBuildStartupDirectory)/relative/lib.cs`.
 
 `dotnet path.cs` is a shortcut for `dotnet run --file path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported)
 and it is not a DLL path, built-in command, or a NuGet tool (e.g., `dotnet watch` invokes the `dotnet-watch` tool
@@ -128,81 +135,24 @@ Command `dotnet clean file.cs` can be used to clean build artifacts of the file-
 Commands `dotnet package add PackageName --file app.cs` and `dotnet package remove PackageName --file app.cs`
 can be used to manipulate `#:package` directives in the C# files, similarly to what the commands do for project-based apps.
 
-## Entry points
+## Multiple files
 
-If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
-We want to report an error for non-entry-point files to avoid the confusion of being able to `dotnet run util.cs`.
+By default, the app only includes the entry-point file (plus any implicit build files like `Directory.Build.props` are considered).
+This is achieved by having property `EnableDefaultCompileItems=false` and entry-point file `Compile` item in the virtual project.
+(The `Compile` item has `Exclude="@(Compile)"` to avoid duplicate `Compile` items when using e.g., `#:include *.cs` directive).
 
-Internally, the SDK CLI detects entry points by parsing all `.cs` files in the directory tree of the entry point file with default parsing options (in particular, no `<DefineConstants>`)
-and checking which ones contain top-level statements (`Main` methods are not supported for now as that would require full semantic analysis, not just parsing).
-Results of this detection are used to exclude other entry points from [builds](#multiple-entry-points) and [file-level directive collection](#directives-for-project-metadata).
-This means the CLI might consider a file to be an entry point which later the compiler doesn't
-(for example because its top-level statements are under `#if !SYMBOL` and the build has `DefineConstants=SYMBOL`).
-However such inconsistencies should be rare and hence that is a better trade off than letting the compiler decide which files are entry points
-because that could require multiple builds (first determine entry points and then re-build with file-level directives except those from other entry points).
-To avoid parsing all C# files twice (in CLI and in the compiler), the CLI could use the compiler server for parsing so the trees are reused
-(unless the parse options change via the directives), and also [cache](#optimizations) the results to avoid parsing on subsequent runs.
+Thanks to this, it is possible to have multiple file-based apps in a single directory.
 
-## Multiple C# files
+Default items like `.resx` are included in the build only if an `#:sdk` other than `Microsoft.NET.Sdk` is used (to improve performance for simple file-based apps).
+Again, this is achieved by setting `EnableDefaultNoneItems=false` and `EnableDefaultEmbeddedResourceItems=false` in the virtual project.
 
-Because of the [implicit project file](#implicit-project-file),
-other files in the target directory or its subdirectories are included in the compilation.
-For example, other `.cs` files but also `.resx` (embedded resources).
-Similarly, implicit build files like `Directory.Build.props` or `Directory.Packages.props` are used during the build.
+To customize this default behavior, you can use the `#:include`/`#:exclude` [directives](#directives-for-project-metadata)
+or use some custom MSBuild code like `#:property EnableDefaultCompileItems=true`.
 
-> [!CAUTION]
-> Multi-file support is postponed for .NET 11.
-> In .NET 10, only the single file passed as the command-line argument to `dotnet run` is part of the compilation.
-> Specifically, the virtual project has property `EnableDefaultCompileItems=false`
-> (which can be customized via `#:property` directive), and a `Compile` item for the entry point file.
-> During [conversion](#grow-up), any `Content`, `None`, `Compile`, and `EmbeddedResource` items that do not have metadata `ExcludeFromFileBasedAppConversion=true`
-> and that are files inside the entry point file's directory tree are copied to the converted directory.
-
-### Nested files
-
-If there are nested project files like
-```
-App/File.cs
-App/Nested/Nested.csproj
-App/Nested/File.cs
-```
-executing `dotnet run app/file.cs` includes the nested `.cs` file in the compilation.
-That is consistent with normal builds with explicit project files
-and usually the build fails because there are multiple entry points or other clashes.
-
-For `.csproj` files inside the target directory and its parent directories, we do not report any errors/warnings.
-That's because it might be perfectly reasonable to have file-based programs nested in another project-based program
-(most likely excluded from that project's compilation via something like `<Compile Exclude="./my-scripts/**" />`).
-
-### Multiple entry points
-
-If there are multiple entry-point files in the target directory, the build ignores other entry-point files.
-It is an error to have an entry-point file in a subdirectory of the target directory
-(because it is unclear how such program should be converted to a project-based one).
-
-Thanks to this, it is possible to have a structure like
-```
-App/Util.cs
-App/Program1.cs
-App/Program2.cs
-```
-where either `Program1.cs` or `Program2.cs` can be run and both of them have access to `Util.cs`.
-
-Behind the scenes, there are multiple implicit projects
-(and during [grow up](#grow-up), multiple project files are materialized
-and the original C# files are moved to the corresponding project subdirectories):
-```
-App/Shared/Util.cs
-App/Program1/Program1.cs
-App/Program1/Program1.csproj
-App/Program2/Program2.cs
-App/Program2/Program2.csproj
-```
-
-The generated folders might need to be named differently to avoid clashes with existing folders.
-
-The entry-point projects (`Program1` and `Program2` in our example)
-have the shared `.cs` files source-included via `<Compile Include="../Shared/**/*.cs" />`.
+During [conversion](#grow-up), any `Content`, `None`, `Compile`, and `EmbeddedResource` items that do not have metadata `ExcludeFromFileBasedAppConversion=true` are copied into the output directory.
+The implicit `EnableDefault*Items` properties and `Compile` item are not preserved in the converted project,
+because the constructed project will have the same behavior even if all default items are included thanks to the output directory being isolated
+and the conversion process only copying the items that were included in the original virtual project.
 
 ## Build outputs
 
@@ -217,15 +167,12 @@ removes current user's `dotnet run` build outputs that haven't been used in 30 d
 They are not cleaned immediately because they can be re-used on subsequent runs for better performance.
 The automatic cleanup can be disabled by environment variable `DOTNET_CLI_DISABLE_FILE_BASED_APP_ARTIFACTS_AUTOMATIC_CLEANUP=true`,
 but other parameters of the automatic cleanup are currently not configurable.
-The same cleanup can be performed manually via command `dotnet clean-file-based-app-artifacts`.
+The same cleanup can be performed manually via command `dotnet clean file-based-apps`.
 
 ## Directives for project metadata
 
 It is possible to specify some project metadata via *file-level directives*
 which are [ignored][ignored-directives] by the C# language but recognized by the SDK CLI.
-Directives `sdk`, `package`, `property`, and `project` are translated into
-`<Project Sdk="...">`, `<PackageReference>`, `<PropertyGroup>`, and `<ProjectReference>` project elements, respectively.
-Other directives result in an error, reserving them for future use.
 
 ```cs
 #:sdk Microsoft.NET.Sdk.Web
@@ -233,12 +180,14 @@ Other directives result in an error, reserving them for future use.
 #:property LangVersion=preview
 #:package System.CommandLine@2.0.0-*
 #:project ../MyLibrary
+#:ref ../lib/lib.cs
+#:include ./**/*.cs
 ```
 
 Each directive has a kind (e.g., `package`), a name (e.g., `System.CommandLine`), a separator (e.g., `@`), and a value (e.g., the package version).
-The value is required for `#:property`, optional for `#:package`/`#:sdk`, and disallowed for `#:project`.  
+The value is required for `#:property`, optional for `#:package`/`#:sdk`, and disallowed for `#:project`/`#:ref`/`#:include`.  
 
-The name must be separated from the kind (`package`/`sdk`/`property`) of the directive by whitespace
+The name must be separated from the kind of the directive by whitespace
 and any leading and trailing white space is not considered part of the name and value.
 
 The directives are processed as follows:
@@ -247,21 +196,64 @@ The directives are processed as follows:
   and the subsequent `#:sdk` directive names and values are injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if it has no value).
   It is an error if the name is empty (the version is allowed to be empty, but that results in empty `Version=""`).
 
-- A `#:property` is injected as `<{0}>{1}</{0}>` in a `<PropertyGroup>`.
+- Each `#:property` is injected as `<{0}>{1}</{0}>` in a `<PropertyGroup>`.
   It is an error if property does not have a value or if its name is empty (the value is allowed to be empty) or contains invalid characters.
 
-- A `#:package` is injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if it has no value) in an `<ItemGroup>`.
+- Each `#:package` is injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if it has no value) in an `<ItemGroup>`.
   It is an error if its name is empty (the value, i.e., package version, is allowed to be empty, but that results in empty `Version=""`).
 
-- A `#:project` is injected as `<ProjectReference Include="{0}" />` in an `<ItemGroup>`.
+  It is valid to have a `#:package` directive without a version.
+  That's useful when central package management (CPM) is used.
+  NuGet will report an appropriate error if the version is missing and CPM is not enabled.
+
+- Each `#:project` is injected as `<ProjectReference Include="{0}" />` in an `<ItemGroup>`.
+  It is an error if the value is empty.
   If the path points to an existing directory, a project file is found inside that directory and its path is used instead
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
 
+- Each `#:ref` references another `.cs` file as a separate project reference.
+  A virtual project is created for the referenced file (e.g., `lib.cs` produces a virtual `lib.cs.csproj`),
+  and a `<ProjectReference Include="lib.cs.csproj" />` is injected in an `<ItemGroup>`.
+  It is an error if the name is empty or if the referenced file does not exist.
+  Unlike `#:project`, `#:ref` points to a `.cs` file (not a `.csproj` file or directory).
+
+  The referenced file is itself a file-based program with its own virtual project (defaulting to `OutputType=Exe`).
+  Library files without an entry point should use `#:property OutputType=Library` to avoid compilation errors.
+  Because the referenced file is compiled as a separate assembly, internal members of the referenced file are not accessible from the referencing file.
+  The `#:ref` directive is transitive: a referenced file can itself contain `#:ref` directives (or any other directives).
+
+  Relative paths are resolved relative to the file containing the directive.
+  MSBuild variables (like `$(MSBuildProjectDirectory)`) can be used in the path.
+
+  During [conversion](#grow-up), each `#:ref` directive creates a separate library project in a sibling directory
+  and a corresponding `<ProjectReference>` entry is added to the converted project.
+  The conversion is recursive: any `#:ref` directives in the referenced files are also converted in the same way.
+
+  This directive is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableRefDirective=true`.
+
+- Each `#:include` is injected as `<{1} Include="{0}" />` in an `<ItemGroup>`
+  where `{0}` is the directive's value and `{1}` is determined by its extension.
+  The mapping can be customized by setting the MSBuild property `FileBasedProgramsItemMapping`
+  which is by default set to `.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content`.
+  (The mapping customization is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableItemMapping=true`.)
+
+  It is an error if the value is empty.
+
+  Relative paths are resolved relative to the file containing the directive.
+
+  This directive is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableIncludeDirective=true`.
+
+- Each `#:exclude` is injected similarly to `#:include` but with `Remove="{0}"` instead of `Include="{0}"`.
+
+  This directive is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableExcludeDirective=true`.
+
+- Other directive kinds result in an error, reserving them for future use.
+
 Directive values support MSBuild variables (like `$(..)`) normally as they are translated literally and left to MSBuild engine to process.
-However, in `#:project` directives, variables might not be preserved during [grow up](#grow-up),
+However, in `#:project` and `#:ref` directives, variables might not be preserved during [grow up](#grow-up),
 because there is additional processing of those directives that makes it technically challenging to preserve variables in all cases
-(project directive values need to be resolved to be relative to the target directory
+(project and ref directive values need to be resolved to be relative to the target directory
 and also to point to a project file rather than a directory).
 Note that it is not expected that variables inside the path change their meaning during the conversion,
 so for example `#:project ../$(LibName)` is translated to `<ProjectReference Include="../../$(LibName)/Lib.csproj" />` (i.e., the variable is preserved).
@@ -272,7 +264,9 @@ Because these directives are limited by the C# language to only appear before th
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
 and can do that efficiently by stopping the search when it sees the first "C# token".
 
-For a given `dotnet run file.cs`, we include directives from the current entry point file (`file.cs`) and all other non-entry-point files.
+For a given `dotnet run file.cs`, we include directives from the current entry point file (`file.cs`) and all other non-entry-point C# files,
+specifically from all `Compile` items included in the project, no matter whether the `Compile` items are specified in some MSBuild code or inferred from `#:include`.
+(Processing directives from other files is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableTransitiveDirectives=true`.)
 The order in which other files are processed is currently unspecified (can change across SDK versions) but deterministic (stable in a given SDK version).
 We do not limit these directives to appear only in entry point files because it allows:
 - a non-entry-point file like `Util.cs` to be self-contained and have all the `#:package`s it needs specified in it,
@@ -285,11 +279,7 @@ Later with deduplication, separate "self-contained" utilities could reference ov
 even if they end up in the same compilation.
 For example, properties could be concatenated via `;`, more specific package versions could override less specific ones.
 
-It is valid to have a `#:package` directive without a version.
-That's useful when central package management (CPM) is used.
-NuGet will report an appropriate error if the version is missing and CPM is not enabled.
-
-During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the corresponding `.csproj` files.
+During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the converted `.csproj` file.
 For project-based programs, `#:` directives are an error (reported by Roslyn when it's told it is in "project-based" mode).
 `#!` directives are also removed during grow up, although we could consider to have an option to preserve them
 (since they might still be valid after grow up, depending on which program they are actually specifying to "interpret" the file, i.e., it might not be `dotnet run` at all).
@@ -302,6 +292,11 @@ Along with `#:`, the language also ignores `#!` which could be then used for [sh
 #!/usr/bin/dotnet run
 Console.WriteLine("Hello");
 ```
+
+When a file-based program uses [`#:include`](#multiple-files) directives to include additional files,
+the entry point file should start with `#!` to clearly distinguish it from included files.
+This helps IDEs to properly handle multi-file scenarios and discover entry points.
+The analyzer **CA2266** reports a warning if the entry point file is missing the shebang line in this scenario.
 
 ## Implementation
 
@@ -346,39 +341,17 @@ would need to search for a file-based program in the current directory instead o
 We could add a universal option that works with both project-based and file-based programs,
 like `dotnet run --directory ./dir/`. For inspiration, `dotnet test` also has a `--directory` option.
 We already have a `--file` option. Both could be unified as `--path`.
-
-If we want to also support [multi-entry-point scenarios](#multiple-entry-points),
-we might need an option like `dotnet run --entry ./dir/name` which would work for both `./dir/name.cs` and `./dir/name/name.csproj`.
+Since there can be multiple entry points in a single directory, it would be useful to have
+an option like `dotnet run --entry ./dir/name` which would work for both `./dir/name.cs` and `./dir/name/name.csproj`.
 
 ### Nested files errors
 
-Performance issues might arise if there are many [nested files](#nested-files) (possibly unintentionally),
-and it might not be clear to users that `dotnet run file.cs` will include other `.cs` files in the compilation.
-Therefore, we could consider some switch (a command-line option and/or a `#` language directive) to enable/disable this behavior.
-When disabled, [grow up](#grow-up) would generate projects in subdirectories
-similarly to [multi-entry-point scenarios](#multiple-entry-points) to preserve the program's behavior.
-
-Including `.cs` files from nested folders which contain `.csproj`s might be unexpected,
-hence we could consider excluding items from nested project folders.
-
-Similarly, we could report an error if there are many nested directories and files,
-so for example, if someone puts a C# file into `C:/sources` and executes `dotnet run C:/sources/file.cs` or opens that in the IDE,
-we do not walk all user's sources. Again, this problem exists with project-based programs as well.
-Note that having a project-based or file-based program in the drive root would result in
+We could report an error if there are many nested directories and files,
+so for example, if someone puts a C# file with `#:include **.cs` into `C:/sources`
+and executes `dotnet run C:/sources/file.cs` or opens that in the IDE,
+we do not walk all user's sources. Note that this problem exists with project-based programs as well.
+Also, having a project-based or file-based program in the drive root would result in
 [error MSB5029](https://learn.microsoft.com/visualstudio/msbuild/errors/msb5029).
-
-### Multiple entry points implementation
-
-We could consider using `InternalsVisibleTo` attribute but that might result in slight differences between single- and multi-entry-point programs
-(if not now then perhaps in the future if [some "more internal" accessibility](https://github.com/dotnet/csharplang/issues/6794) is added to C# which doesn't respect `InternalsVisibleTo`)
-which would be undesirable when users start with a single entry point and later add another.
-Also, `InternalsVisibleTo` needs to be added into a C# file as an attribute, or via a complex-looking `AssemblyAttribute` item group into the `.csproj` like:
-
-```xml
-<ItemGroup>
-  <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute" _Parameter1="App.Shared" />
-</ItemGroup>
-```
 
 ### Shebang support
 

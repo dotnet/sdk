@@ -85,7 +85,7 @@ namespace Microsoft.NET.Publish.Tests
                 new RunExeCommand(Log, Path.Combine(publishDirectory.FullName, appHostName))
                     .WithEnvironmentVariable(
                         Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)",
-                        Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath))
+                        Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath))
                     .Execute()
                     .Should()
                     .Pass()
