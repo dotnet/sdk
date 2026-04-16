@@ -18,9 +18,12 @@ safe-outputs:
 if: !github.event.repository.fork
 
 on:
+  roles: write
   slash_command:
     name: tactics
     events: [pull_request_comment]
+  reaction: "+1"
+  status-comment: false
 
 # ###############################################################
 # Override the COPILOT_GITHUB_TOKEN secret usage for the workflow
