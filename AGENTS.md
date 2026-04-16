@@ -48,29 +48,8 @@ Test projects live in `test/<ProjectName>.Tests` and `test/<ProjectName>.Integra
 | Feature | Location |
 |---|---|
 | `dotnet` CLI (entry point & commands) | `src/Cli/` |
-| MSBuild tasks & targets | `src/Tasks/` |
-| `dotnet watch` tool | `src/Dotnet.Watch/` |
-| `dotnet format` tool | `src/Dotnet.Format/` |
-| SDK container builds | `src/Containers/` |
-| Static web assets pipeline | `src/StaticWebAssetsSdk/` |
-| Blazor WebAssembly SDK | `src/BlazorWasmSdk/` |
-| Razor SDK | `src/RazorSdk/` |
-| Web publish SDK | `src/WebSdk/` |
-| WebAssembly SDK (non-Blazor) | `src/WasmSdk/` |
-| API compatibility tools (ApiCompat, GenAPI, PackageValidation) | `src/Compatibility/` |
-| .NET code analyzers | `src/Microsoft.CodeAnalysis.NetAnalyzers/` |
-| Workload management | `src/Workloads/` |
-| SDK resolvers | `src/Resolvers/` |
-| Template locator | `src/Microsoft.DotNet.TemplateLocator/` |
-| CLI tab completions | `src/System.CommandLine.StaticCompletions/` |
-| Compilers toolset | `src/Microsoft.Net.Sdk.Compilers.Toolset/` |
-| MSI installer support | `src/Microsoft.Win32.Msi/` |
-| SDK layout & redistribution | `src/Layout/` |
 | Template content | `template_feed/` |
-
-### Meta
-
-| Build infrastructure (Arcade, pipelines, dogfood) | `eng/` |
-| Developer documentation | `documentation/` |
-| Tests & test assets | `test/` |
+| Build infrastructure | `eng/` |
+| Arcade infrastructure (do not edit) | `eng/common` |
 | Distributed test orchestration via Helix | `test/UnitTests.proj` |
+| Developer documentation | `documentation/` |
