@@ -2715,6 +2715,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
+              </PropertyGroup>
+            </Project>
+            """);
+
         // Create entry point file with #:include directive
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:include Util.cs
