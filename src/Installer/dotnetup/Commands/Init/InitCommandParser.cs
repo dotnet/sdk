@@ -3,9 +3,9 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
-internal static class WalkthroughCommandParser
+internal static class InitCommandParser
 {
     private static readonly Command s_command = ConstructCommand();
 
@@ -13,7 +13,7 @@ internal static class WalkthroughCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("walkthrough", Strings.WalkthroughCommandDescription);
+        Command command = new("init", Strings.InitCommandDescription);
 
         command.Options.Add(CommonOptions.InstallPathOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
@@ -21,7 +21,7 @@ internal static class WalkthroughCommandParser
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
 
-        command.SetAction(parseResult => new WalkthroughCommand(parseResult).Execute());
+        command.SetAction(parseResult => new InitCommand(parseResult).Execute());
 
         return command;
     }

@@ -7,7 +7,7 @@ using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// <summary>
 /// Shared installation workflow that handles the common installation logic for SDK and Runtime commands.
 /// Generates install requests, validates paths, and either executes directly or delegates to the
-/// walkthrough for environment configuration.
+/// init flow for environment configuration.
 /// </summary>
 internal class InstallWorkflow
 {
@@ -34,7 +34,7 @@ internal class InstallWorkflow
     /// Executes the install workflow for the given component specifications.
     /// Each spec is a (component, channel) pair where channel may be null (defaults to global.json or "latest").
     /// When an explicit install path is provided, installs directly.
-    /// When interactive and no explicit path, wraps execution in the walkthrough
+    /// When interactive and no explicit path, wraps execution in the init flow
     /// for environment configuration (path preference, admin migration, etc.).
     /// Otherwise, installs to the default/resolved path without prompting.
     /// </summary>
@@ -44,13 +44,13 @@ internal class InstallWorkflow
 
         if (_command.InstallPath is not null || !_command.Interactive)
         {
-            // Explicit path or non-interactive — skip walkthrough entirely
+            // Explicit path or non-interactive — skip the init flow entirely
             ExecuteInstallRequests(requests);
         }
         else
         {
-            // Interactive with no explicit path — walkthrough for path preference, admin migration, etc.
-            var workflows = new WalkthroughWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
+            // Interactive with no explicit path — init flow for path preference, admin migration, etc.
+            var workflows = new InitWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
             workflows.BaseConfigurationWalkthrough(
                 requests,
                 () => ExecuteInstallRequests(requests),
@@ -62,7 +62,7 @@ internal class InstallWorkflow
 
         // Global.json update runs after install in all code paths, but only when
         // the command opted in (e.g. `sdk install --update-global-json`).
-        // The walkthrough intentionally does NOT own this — only command-level
+        // The init flow intentionally does NOT own this — only command-level
         // flags control whether the global.json file is mutated.
         if (_command.UpdateGlobalJson)
         {

@@ -5,7 +5,7 @@ using System.Globalization;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
 /// Represents an option in the interactive selector with a title, description, and hover tooltip.

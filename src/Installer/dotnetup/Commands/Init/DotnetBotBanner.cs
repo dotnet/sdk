@@ -3,7 +3,7 @@
 
 using Spectre.Console;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
 /// Builds the banner panel for the dotnetup first-run screen.
