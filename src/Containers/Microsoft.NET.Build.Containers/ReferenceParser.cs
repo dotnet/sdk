@@ -126,12 +126,6 @@ internal static class ReferenceParser
     public static readonly Regex anchoredTagRegexp = new(anchoredTag);
 
     /// <summary>
-    /// needed because the original golang used `[[:xdigit:]]` which .Net doesn't support.
-    /// `[[:xdigit:]]` is the set of valid hex digits, which is 0-9, a-f, and A-F.
-    /// </summary>
-    private static readonly string hexDigit = "[0-9A-Fa-f]";
-
-    /// <summary>
     /// This is a custom addition - <see cref="digestPat"/> was decomposed into
     /// its algorithm and encoded components to allow for capturing group
     /// variants. These components follow the OCI image-spec digest grammar

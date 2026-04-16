@@ -35,11 +35,13 @@ internal static class ContentStore
     public static string PathForDescriptor(Descriptor descriptor)
     {
         string digestString = descriptor.Digest;
-        if (!ReferenceParser.DigestRegexp.IsMatch(digestString))
+        var match = ReferenceParser.AnchoredDigestRegexp.Match(digestString);
+        if (!match.Success)
         {
             throw new ArgumentException($"Invalid digest: {digestString}", nameof(descriptor.Digest));
         }
-        string digestValue = digestString.Substring("sha256:".Length);
+        string algorithm = match.Groups[1].Value;
+        string digestValue = match.Groups[2].Value;
 
         string extension = descriptor.MediaType switch
         {
