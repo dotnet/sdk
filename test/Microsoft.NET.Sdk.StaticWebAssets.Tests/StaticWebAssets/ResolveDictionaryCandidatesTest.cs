@@ -136,7 +136,9 @@ public class ResolveDictionaryCandidatesTest : IDisposable
             OutputPath = Path.Combine(_testDir, "output"),
         };
 
-        task.Execute();
+        var result = task.Execute();
+
+        result.Should().BeTrue();
 
         // ItemSpec IS the extracted dictionary path
         var extractedPath = task.DictionaryCandidates[0].ItemSpec;
