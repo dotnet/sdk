@@ -6,7 +6,7 @@
     <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">true</PublicSign>
+    <PublicSign Condition="'$([MSBuild]::IsOSPlatform(`Windows`))' == 'false'">true</PublicSign>
     <AssetTargetFallback>dotnet5.4</AssetTargetFallback>
     <RootNamespace>Microsoft.DotNet.Cli</RootNamespace>
     <DefineConstants Condition="'$(IncludeAspNetCoreRuntime)' == 'false'">$(DefineConstants);EXCLUDE_ASPNETCORE</DefineConstants>
@@ -46,16 +46,13 @@
     <Compile Remove="Microsoft\VisualStudio\**" />
     <Compile Remove="Installer\Windows\**" />
     <Compile Remove="Commands\Workload\Install\MsiInstallerBase.cs" />
+    <Compile Remove="Commands\Workload\Install\MsiPackageCache.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.InstallRecords.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.PackGroup.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerServer.cs" />
     <Compile Remove="Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs" />
     <Compile Remove="Commands\Workload\SignCheck_Windows.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-    <Compile Remove="Commands\Workload\SignCheck_Unix.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -84,7 +81,6 @@
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.CommandLine.XPlat" />
-    <PackageReference Include="Microsoft.ApplicationInsights" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />
     <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
@@ -100,7 +96,15 @@
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">
     <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
   </ItemGroup>
 

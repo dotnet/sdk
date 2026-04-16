@@ -397,6 +397,10 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ReadFromStdin_ProjectReference()
     {
+        // Ensure the runfile directory has a NuGet.config so the virtual project created by
+        // `dotnet run -` can resolve packages from test feeds during restore.
+        CopyNuGetConfigToRunfileDirectory();
+
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libDir = Path.Join(testInstance.Path, "lib");
