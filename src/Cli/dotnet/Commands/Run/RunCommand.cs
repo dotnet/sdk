@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -578,7 +578,7 @@ public class RunCommand
         {
             // We can skip project evaluation if we already evaluated the project during virtual build
             // or we have cached run properties in previous run (and this is a --no-build or skip-msbuild run).
-            Reporter.Verbose.WriteLine("Getting target command: from cache.");
+            Reporter.VerboseStderr.WriteLine("Getting target command: from cache.");
             command = CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
         }
         else if (projectFactory is null && ProjectFileFullPath is null)
@@ -586,12 +586,12 @@ public class RunCommand
             // If we are running a file-based app and projectFactory is null, it means csc was used instead of full msbuild.
             // So we can skip project evaluation to continue the optimized path.
             Debug.Assert(EntryPointFileFullPath is not null);
-            Reporter.Verbose.WriteLine("Getting target command: for csc-built program.");
+            Reporter.VerboseStderr.WriteLine("Getting target command: for csc-built program.");
             command = CreateCommandForCscBuiltProgram(EntryPointFileFullPath, ApplicationArgs);
         }
         else
         {
-            Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
+            Reporter.VerboseStderr.WriteLine("Getting target command: evaluating project.");
     
             ProjectInstance project;
             try
@@ -1026,7 +1026,7 @@ public class RunCommand
             // Silently ignore telemetry errors to not affect the run operation
             if (CommandLoggingContext.IsVerbose)
             {
-                Reporter.Verbose.WriteLine($"Failed to send run telemetry: {ex}");
+                Reporter.VerboseStderr.WriteLine($"Failed to send run telemetry: {ex}");
             }
         }
     }

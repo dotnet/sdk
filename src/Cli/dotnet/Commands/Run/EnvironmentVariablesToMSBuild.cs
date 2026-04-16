@@ -89,7 +89,7 @@ internal static class EnvironmentVariablesToMSBuild
             catch (Exception ex)
             {
                 // Best effort cleanup - don't fail the build if we can't delete the temp file
-                Reporter.Verbose.WriteLine($"Failed to delete temporary props file '{propsFilePath}': {ex.Message}");
+                Reporter.VerboseStderr.WriteLine($"Failed to delete temporary props file '{propsFilePath}': {ex.Message}");
             }
         }
     }

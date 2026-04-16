@@ -16,7 +16,7 @@ public class Reporter : IReporter
 
     private static IReporter s_errorReporter = s_consoleErrReporter;
     private static IReporter s_outputReporter = s_consoleOutReporter;
-    private static IReporter s_verboseReporter = s_consoleErrReporter;
+    private static IReporter s_verboseReporter = s_consoleOutReporter;
 
     private readonly AnsiConsole? _console;
 
@@ -39,6 +39,12 @@ public class Reporter : IReporter
     public static IReporter Verbose { get; private set; } = NullReporter;
 
     /// <summary>
+    /// Like <see cref="Verbose"/> but writes to stderr. Useful for verbose diagnostics
+    /// in scenarios where stdout carries user-visible program output (e.g., <c>dotnet run</c>).
+    /// </summary>
+    public static IReporter VerboseStderr { get; private set; } = NullReporter;
+
+    /// <summary>
     /// Resets the reporters to write to the current reporters based on <see cref="CommandLoggingContext"/> settings.
     /// </summary>
     public static void Reset()
@@ -48,6 +54,7 @@ public class Reporter : IReporter
             ResetOutput();
             ResetError();
             ResetVerbose();
+            ResetVerboseStderr();
         });
     }
 
@@ -104,6 +111,11 @@ public class Reporter : IReporter
     private static void ResetVerbose()
     {
         Verbose = CommandLoggingContext.IsVerbose ? s_verboseReporter : NullReporter;
+    }
+
+    private static void ResetVerboseStderr()
+    {
+        VerboseStderr = CommandLoggingContext.IsVerbose ? s_consoleErrReporter : NullReporter;
     }
 
     public void WriteLine(string message)
