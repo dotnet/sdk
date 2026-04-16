@@ -12,13 +12,12 @@ safe-outputs:
     body: true
     title: false
     footer: false
-    target: "triggering"
+    target: "${{ github.event.issue.number }}"
   noop:
     report-as-issue: false
-if: !github.event.repository.fork
-
+if: "!github.event.repository.fork"
 on:
-  roles: write
+  roles: all
   slash_command:
     name: tactics
     events: [pull_request_comment]
