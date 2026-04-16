@@ -12,9 +12,6 @@
     <!-- TemplateEngine assembly signing for InternalsVisibleTo -->
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
-    <!-- TemplateEngine test projects use a different test runner setup than the SDK -->
-    <GenerateProgramFile>true</GenerateProgramFile>
-
     <NoWarn>$(NoWarn);IDE0005;0649;CA2016;CA5394;CA1802</NoWarn>
   </PropertyGroup>
 
