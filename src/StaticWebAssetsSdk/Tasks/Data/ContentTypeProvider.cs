@@ -414,7 +414,7 @@ internal sealed class ContentTypeProvider
             _customMappings[mapping.Pattern] = mapping;
         }
 
-        _compressedExtensions = compressedExtensions is { Length: > 0 } ? compressedExtensions : [".gz", ".br"];
+        _compressedExtensions = compressedExtensions ?? [".gz", ".br"];
 
         _matcher = new StaticWebAssetGlobMatcherBuilder()
             .AddIncludePatternsList(_builtInMappings.Keys)
@@ -444,7 +444,7 @@ internal sealed class ContentTypeProvider
         else if (hasCompressedExtension)
         {
             context.SetPathAndReinitialize(fileName);
-            if (hasCompressedExtension && TryGetMapping(context, log, relativePath, out mapping))
+            if (TryGetMapping(context, log, relativePath, out mapping))
             {
                 return mapping;
             }

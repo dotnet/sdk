@@ -10,6 +10,7 @@ using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
@@ -128,6 +129,34 @@ public class ResolveCompressedAssetsTest
         {
             OutputPath = OutputBasePath,
             CandidateAssets = [uncompressedCandidate.ToTaskItem(), compressedCandidate.ToTaskItem()],
+            CompressionFormats = CreateCompressionFormats("gzip"),
+            Formats = "gzip",
+            BuildEngine = _buildEngine.Object
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue();
+        task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(0);
+    }
+
+    [TestMethod]
+    public void IgnoresPrecompressedAssetsWhenRelatedAssetDiffersOnlyByPathCasing()
+    {
+        var asset = CreatePrimaryAsset();
+        var relatedAssetPath = OSPath.PathComparer.Equals(asset.ItemSpec, asset.ItemSpec.ToUpperInvariant())
+            ? asset.ItemSpec.ToUpperInvariant()
+            : asset.ItemSpec;
+
+        var compressedAsset = new TaskItem(Path.ChangeExtension(asset.ItemSpec, ".gz"), asset.CloneCustomMetadata());
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.AssetTraitName), "Content-Encoding");
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.AssetTraitValue), "gzip");
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.RelatedAsset), relatedAssetPath);
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            CandidateAssets = [asset, compressedAsset],
             CompressionFormats = CreateCompressionFormats("gzip"),
             Formats = "gzip",
             BuildEngine = _buildEngine.Object
@@ -530,6 +559,30 @@ public class ResolveCompressedAssetsTest
         compressed.Should().HaveCount(2);
         compressed[0].ItemSpec.Should().EndWith(".gz");
         compressed[1].ItemSpec.Should().EndWith(".br");
+    }
+
+    [Fact]
+    public void LogsErrorForCompressedAssetWithoutContentEncoding()
+    {
+        var asset = CreatePrimaryAsset();
+        var compressedAsset = new TaskItem(Path.ChangeExtension(asset.ItemSpec, ".gz"), asset.CloneCustomMetadata());
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.AssetTraitName), "Content-Encoding");
+        compressedAsset.SetMetadata(nameof(StaticWebAsset.RelatedAsset), asset.ItemSpec);
+
+        var task = new ResolveCompressedAssets()
+        {
+            OutputPath = OutputBasePath,
+            BuildEngine = _buildEngine.Object,
+            CandidateAssets = new[] { asset, compressedAsset },
+            IncludePatterns = "**\\*",
+            CompressionFormats = CreateCompressionFormats("gzip"),
+            Formats = "gzip",
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeFalse();
+        _errorMessages.Should().ContainSingle(m => m.Contains("does not match any configured compression format"));
     }
 
     [Fact]

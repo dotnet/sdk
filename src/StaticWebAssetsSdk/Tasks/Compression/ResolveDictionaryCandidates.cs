@@ -162,7 +162,7 @@ public class ResolveDictionaryCandidates : Task
                 {
                     if (!oldEndpointsByRoute.ContainsKey(oldEndpoint.Route))
                     {
-                        oldEndpointsByRoute[oldEndpoint.Route] = new PreviousRouteMatch(oldEndpoint, oldAsset);
+                        oldEndpointsByRoute[oldEndpoint.Route] = new PreviousRouteMatch(oldAsset);
                     }
                 }
             }
@@ -361,13 +361,11 @@ public class ResolveDictionaryCandidates : Task
 
     private readonly struct PreviousRouteMatch
     {
-        public PreviousRouteMatch(StaticWebAssetEndpoint endpoint, StaticWebAsset asset)
+        public PreviousRouteMatch(StaticWebAsset asset)
         {
-            Endpoint = endpoint;
             Asset = asset;
         }
 
-        public StaticWebAssetEndpoint Endpoint { get; }
         public StaticWebAsset Asset { get; }
     }
 }
