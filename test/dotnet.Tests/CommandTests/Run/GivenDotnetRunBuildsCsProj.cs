@@ -412,7 +412,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
-            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run", "--verbosity", "quiet")
                 .WithWorkingDirectory(testProjectDirectory)
