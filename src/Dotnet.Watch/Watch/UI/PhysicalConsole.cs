@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.DotNet.Watch;
 
 internal sealed class PhysicalConsole : IConsole
@@ -55,7 +57,8 @@ internal sealed class PhysicalConsole : IConsole
                     else
                     {
                         Console.WriteLine($"Sending SIGTERM to {processId}");
-                        error = ProcessUtilities.SendPosixSignal(processId, ProcessUtilities.SIGTERM);
+                        using var process = Process.GetProcessById(processId);
+                        error = process.SafeHandle.Signal(PosixSignal.SIGTERM) ? null : $"Failed to send SIGTERM to process {processId}";
                     }
 
                     if (error != null)

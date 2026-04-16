@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -328,7 +329,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
                 }
                 else
                 {
-                    TerminateUnixProcess(state, logger, force);
+                    TerminateUnixProcess(process, state, logger, force);
                 }
             }
         }
@@ -364,15 +365,16 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         }
     }
 
-    private static void TerminateUnixProcess(ProcessState state, ILogger logger, bool force)
+    [UnsupportedOSPlatform("windows")]
+    private static void TerminateUnixProcess(Process process, ProcessState state, ILogger logger, bool force)
     {
+        var signal = force ? PosixSignal.SIGKILL : PosixSignal.SIGTERM;
         var signalName = force ? "SIGKILL" : "SIGTERM";
         logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
 
-        var error = ProcessUtilities.SendPosixSignal(state.ProcessId, signal: force ? ProcessUtilities.SIGKILL : ProcessUtilities.SIGTERM);
-        if (error != null)
+        if (!process.SafeHandle.Signal(signal))
         {
-            logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);
+            logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, "signal returned failure");
         }
     }
 }
