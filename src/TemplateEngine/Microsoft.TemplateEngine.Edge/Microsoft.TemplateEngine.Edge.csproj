@@ -30,6 +30,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <!--
+      This project targets netstandard2.0, but the latest NuGet packages used by the rest of the SDK
+      have dropped netstandard support. VersionOverride pins these to an older netstandard-compatible version.
+    -->
     <PackageReference Include="NuGet.Configuration" VersionOverride="$(NugetNetStandardCompatibleVersion)" />
     <PackageReference Include="NuGet.Credentials" VersionOverride="$(NugetNetStandardCompatibleVersion)" />
     <PackageReference Include="NuGet.Protocol" VersionOverride="$(NugetNetStandardCompatibleVersion)" />
