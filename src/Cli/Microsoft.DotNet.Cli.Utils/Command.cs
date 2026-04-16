@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public CommandResult Execute()
         {
-            return Execute(_ => { });
+            return Execute(null);
         }
         public CommandResult Execute(Action<Process> processStarted)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
 #if DEBUG
             var sw = Stopwatch.StartNew();
-            
+
             Reporter.Verbose.WriteLine($"> {FormatProcessInfo(_process.StartInfo)}".White());
 #endif
             using (var reaper = new ProcessReaper(_process))

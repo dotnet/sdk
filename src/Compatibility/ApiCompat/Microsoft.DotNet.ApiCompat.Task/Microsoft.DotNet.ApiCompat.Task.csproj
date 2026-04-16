@@ -1,0 +1,74 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <!-- This package doesn't contain any lib or ref assemblies because it's a tooling package.-->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore;_AddBuildOutputToPackageDesktop</TargetsForTfmSpecificContentInPackage>
+    <PackageDescription>MSBuild tasks and targets to perform api compatibility checks on assemblies and packages.</PackageDescription>
+  </PropertyGroup>
+
+  <!-- SDK's task infrastructure -->
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Tasks\Common\TaskBase.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Tasks\Common\Logger.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Tasks\Common\LogAdapter.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Tasks\Common\BuildErrorException.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Tasks\Common\Message.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Tasks\Common\MessageLevel.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <!-- Include MSBuild logger -->
+  <ItemGroup>
+    <Compile Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Logging\MSBuildLog.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx" GenerateSource="true" SubType="Designer" Generator="MSBuild:_GenerateResxSource" ClassName="Microsoft.DotNet.ApiCompat.Resources" ManifestResourceName="Microsoft.DotNet.ApiCompat.Resources" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <ProjectReference Include="..\Microsoft.DotNet.PackageValidation\Microsoft.DotNet.PackageValidation.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
+    <!-- We carry NuGet as part of the package in case the package is used with an older SDKs or with full framework MSBuild. -->
+    <PackageReference Include="NuGet.Packaging" PrivateAssets="All" Publish="true" />
+    <!-- The ApiCompatibility/PackageValidation stuff depends on CodeAnalysis.CSharp at the version that is
+         currently built into the SDK. That may in turn have transitive dependencies on System.Collections.Immutable
+         and System.Reflection.Metadata, which could bump the versions of those packages past the versions guaranteed
+         by the .NET Framework MSBuild in the minimum supported VS environment. Reference CA.C# here with PrivateAssets
+         to prevent flowing the higher dependencies to the main SDK tasks assembly. This would be unsafe in general,
+         but the only reason that Microsoft.NET.Build.Tasks.csproj references this project is for _deployment_, and
+         it should never share types with this assembly. Within this task, the RoslynResolver should provide a good
+         closure of references. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="Runtime" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="**\*.props;**\*.targets" Pack="true" PackagePath="%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="$(RepoRoot)src\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.ApiCompat.Common.targets" Pack="true" Link="build/Microsoft.NET.ApiCompat.Common.targets" PackagePath="build/%(Filename)%(Extension)" />
+    <None Include="$(RepoRoot)src\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.ApiCompat.ValidatePackage.targets" Pack="true" Link="build/Microsoft.NET.ApiCompat.ValidatePackage.targets" PackagePath="build/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <ItemGroup>
+      <!-- Publish .NET assets and include them in the package under tools directory. -->
+      <TfmSpecificPackageFile Include="$(PublishDir)**" PackagePath="tools/net/%(RecursiveDir)%(FileName)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_AddBuildOutputToPackageDesktop" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+    <ItemGroup>
+      <!-- Include .NET Framework build outputs in the package under tools directory. -->
+      <TfmSpecificPackageFile Include="$(OutputPath)**" PackagePath="tools/netframework/%(RecursiveDir)%(FileName)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="..\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems" Label="Shared" />
+
+</Project>

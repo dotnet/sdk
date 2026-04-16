@@ -16,6 +16,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public ITaskItem[] SatelliteResourceLanguages { get; set; } = Array.Empty<ITaskItem>();
 
+        public ITaskItem[] RuntimeFrameworks { get; set; }        
+
         public bool DesignTimeBuild { get; set; }
 
         public bool DisableTransitiveFrameworkReferenceDownloads { get; set; }
@@ -27,7 +29,18 @@ namespace Microsoft.NET.Build.Tasks
         {
             var runtimePackAssets = new List<ITaskItem>();
 
-            HashSet<string> frameworkReferenceNames = new HashSet<string>(FrameworkReferences.Select(item => item.ItemSpec), StringComparer.OrdinalIgnoreCase);
+            // Find any RuntimeFrameworks that matches with FrameworkReferences, so that we can apply that RuntimeFrameworks profile to the corresponding RuntimePack.
+            // This is done in 2 parts, First part (see comments for 2nd part further below), we match the RuntimeFramework with the FrameworkReference by using the following metadata.
+            // RuntimeFrameworks.GetMetadata("FrameworkName")==FrameworkReferences.ItemSpec
+            // For example, A WinForms app that uses useWindowsForms (and useWPF will be set to false) has the following values that will result in a match of the below RuntimeFramework.
+            // FrameworkReferences with an ItemSpec "Microsoft.WindowsDesktop.App.WindowsForms" will match with 
+            // RuntimeFramework with an ItemSpec => "Microsoft.WindowsDesktop.App", GetMetadata("FrameworkName") => "Microsoft.WindowsDesktop.App.WindowsForms", GetMetadata("Profile") => "WindowsForms"
+            List<ITaskItem> matchingRuntimeFrameworks = RuntimeFrameworks != null ? FrameworkReferences
+                    .SelectMany(fxReference => RuntimeFrameworks.Where(rtFx =>
+                        fxReference.ItemSpec.Equals(rtFx.GetMetadata(MetadataKeys.FrameworkName), StringComparison.OrdinalIgnoreCase)))
+                        .ToList() : null;
+
+            HashSet<string> frameworkReferenceNames = new(FrameworkReferences.Select(item => item.ItemSpec), StringComparer.OrdinalIgnoreCase);
 
             foreach (var unavailableRuntimePack in UnavailableRuntimePacks)
             {
@@ -40,7 +53,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            HashSet<string> processedRuntimePackRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> processedRuntimePackRoots = new(StringComparer.OrdinalIgnoreCase);
 
             foreach (var runtimePack in ResolvedRuntimePacks)
             {
@@ -53,6 +66,37 @@ namespace Microsoft.NET.Build.Tasks
                         //  This is a runtime pack for a shared framework that ultimately wasn't referenced, so don't include its assets
                         continue;
                     }
+                }
+
+                // For any RuntimeFrameworks that matches with FrameworkReferences, we can apply that RuntimeFrameworks profile to the corresponding RuntimePack.
+                // This is done in 2 parts, second part (see comments for 1st part above), Matches the RuntimeFramework with the ResolvedRuntimePacks by comparing the following metadata.
+                // RuntimeFrameworks.ItemSpec == ResolvedRuntimePacks.GetMetadata("FrameworkName")
+                // For example, A WinForms app that uses useWindowsForms (and useWPF will be set to false) has the following values that will result in a match of the below RuntimeFramework
+                // matchingRTReference.GetMetadata("Profile") will be "WindowsForms". 'Profile' will be an empty string if no matching RuntimeFramework is found
+                HashSet<string> profiles = matchingRuntimeFrameworks?
+                    .Where(matchingRTReference => runtimePack.GetMetadata("FrameworkName").Equals(matchingRTReference.ItemSpec))
+                    .Select(matchingRTReference => matchingRTReference.GetMetadata("Profile")).ToHashSet() ?? [];
+
+                // Special case the Windows SDK projections. Normally the Profile information flows through the RuntimeFramework items,
+                // but those aren't created for RuntimePackAlwaysCopyLocal references. This logic could be revisited later to be generalized in some way.
+                if (runtimePack.GetMetadata(MetadataKeys.FrameworkName) == "Microsoft.Windows.SDK.NET.Ref")
+                {
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Windows") == true)
+                    {
+                        profiles.Add("Windows");
+                    }
+                    
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Xaml") == true)
+                    {
+                        profiles.Add("Xaml");
+                    }
+                }
+
+                //  If we have a runtime framework with an empty profile, it means that we should use all of the contents of the runtime pack,
+                //  so we can clear the profile list
+                if (profiles.Contains(string.Empty))
+                {
+                    profiles.Clear();
                 }
 
                 string runtimePackRoot = runtimePack.GetMetadata(MetadataKeys.PackageDirectory);
@@ -91,7 +135,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     var runtimePackAlwaysCopyLocal = runtimePack.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 
-                    AddRuntimePackAssetsFromManifest(runtimePackAssets, runtimePackRoot, runtimeListPath, runtimePack, runtimePackAlwaysCopyLocal);
+                    AddRuntimePackAssetsFromManifest(runtimePackAssets, runtimePackRoot, runtimeListPath, runtimePack, runtimePackAlwaysCopyLocal, profiles);
                 }
                 else
                 {
@@ -103,13 +147,42 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private void AddRuntimePackAssetsFromManifest(List<ITaskItem> runtimePackAssets, string runtimePackRoot,
-            string runtimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal)
+            string runtimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal, HashSet<string> profiles)
         {
             var assetSubPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             XDocument frameworkListDoc = XDocument.Load(runtimeListPath);
+            // profile feature is only supported in net9.0 and later. We would ignore it for previous versions.
+            bool profileSupported = false;
+            string targetFrameworkVersion = frameworkListDoc.Root.Attribute("TargetFrameworkVersion")?.Value;
+            if (!string.IsNullOrEmpty(targetFrameworkVersion))
+            {
+                string[] parts = targetFrameworkVersion.Split('.');
+                if (parts.Length > 0 && int.TryParse(parts[0], out int versionNumber))
+                {
+                    // The Windows SDK projections use profiles and need to be supported on .NET 8 as well.
+                    // No other packages are supported using profiles below .NET 9, so we can special case.
+                    if (versionNumber >= 9 ||
+                        (versionNumber >= 8 && frameworkListDoc.Root.Attribute("FrameworkName")?.Value == "Microsoft.Windows.SDK.NET.Ref"))
+                    {
+                        profileSupported = true;
+                    }
+                }
+            }
             foreach (var fileElement in frameworkListDoc.Root.Elements("File"))
             {
+                if (profileSupported && profiles.Count != 0)
+                {
+                    var profileAttributeValue = fileElement.Attribute("Profile")?.Value;
+
+                    var assemblyProfiles = profileAttributeValue?.Split(';');
+                    if (profileAttributeValue == null || !assemblyProfiles.Any(p => profiles.Contains(p)))
+                    {
+                        //  Assembly wasn't in the profile specified, so don't reference it
+                        continue;
+                    }
+                }
+
                 //  Call GetFullPath to normalize slashes
                 string assetPath = Path.GetFullPath(Path.Combine(runtimePackRoot, fileElement.Attribute("Path").Value));
 
@@ -136,8 +209,8 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         throw new BuildErrorException($"Culture not set in runtime manifest for {assetPath}");
                     }
-                    if (this.SatelliteResourceLanguages.Length >= 1 &&
-                        !this.SatelliteResourceLanguages.Any(lang => string.Equals(lang.ItemSpec, culture, StringComparison.OrdinalIgnoreCase)))
+                    if (SatelliteResourceLanguages.Length >= 1 &&
+                        !SatelliteResourceLanguages.Any(lang => string.Equals(lang.ItemSpec, culture, StringComparison.OrdinalIgnoreCase)))
                     {
                         continue;
                     }

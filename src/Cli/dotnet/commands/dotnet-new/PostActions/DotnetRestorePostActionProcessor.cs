@@ -25,9 +25,9 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
         protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
         {
             bool allSucceeded = true;
-            IEnumerable<string>? targetFiles = GetConfiguredFiles(actionConfig.Args, creationEffects, "files", outputBasePath);
+            IEnumerable<string> targetFiles = GetConfiguredFiles(actionConfig.Args, creationEffects, "files", outputBasePath);
 
-            if (targetFiles is null || !targetFiles.Any())
+            if (!targetFiles.Any())
             {
                 //If the author didn't opt in to the new behavior by specifying "projectFiles", use the old behavior - primary outputs
                 if (templateCreationResult.PrimaryOutputs.Count == 0)
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 targetFiles = templateCreationResult.PrimaryOutputs.Select(output => Path.GetFullPath(output.Path, outputBasePath));
             }
 
-            if (targetFiles is null || !targetFiles.Any())
+            if (!targetFiles.Any())
             {
                 Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_Restore_Error_FailedToDetermineProjectToRestore));
                 return false;

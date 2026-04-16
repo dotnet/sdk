@@ -1,0 +1,48 @@
+stages:
+- stage: Tag_n_Scan
+  displayName: Tag & Scan
+  dependsOn: []
+  jobs:
+  - job: Tag_n_Scan
+    displayName: Tag & Scan
+    pool:
+      name: $(DncEngInternalBuildPool)
+      image: 1es-ubuntu-2204
+      os: linux
+
+    steps:
+    - checkout: self
+
+    - script: |
+        source ./eng/common/tools.sh
+        InitializeDotNetCli true
+        echo "##vso[task.setvariable variable=DotNetPath]$_InitializeDotNetCli"
+      displayName: Initialize .NET CLI
+      workingDirectory: $(Build.SourcesDirectory)
+
+    - script: |
+        $(DotNetPath)/dotnet tool restore
+      displayName: Restore tools
+      workingDirectory: $(Build.SourcesDirectory)/src/sdk
+
+    - script: |
+        set -e
+        sha=`$(DotNetPath)/dotnet darc vmr get-version --vmr "$(Build.SourcesDirectory)" sdk`
+        echo "##vso[build.addbuildtag]$sha"
+      displayName: Tag the build
+      workingDirectory: $(Build.SourcesDirectory)/src/sdk
+
+    - script: |
+        ./eng/detect-binaries.sh --with-sdk $(DotNetPath)
+      displayName: Scan for binaries
+      workingDirectory: $(Build.SourcesDirectory)
+      continueOnError: true
+
+    - script: >
+        $(DotNetPath)/dotnet darc vmr scan-cloaked-files
+        --vmr "$(Build.SourcesDirectory)"
+        --tmp "$(Agent.TempDirectory)"
+        || (echo '##[error]Found cloaked files in the VMR' && exit 1)
+      displayName: Scan for cloaked files
+      workingDirectory: $(Build.SourcesDirectory)/src/sdk
+      continueOnError: true
