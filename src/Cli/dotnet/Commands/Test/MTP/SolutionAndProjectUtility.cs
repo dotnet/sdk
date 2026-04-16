@@ -403,7 +403,7 @@ internal static class SolutionAndProjectUtility
         // If buildOptions.Verbosity is null, we still want to print the message.
         if (buildOptions.Verbosity != VerbosityOptions.quiet)
         {
-            Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         var result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, profileName);
