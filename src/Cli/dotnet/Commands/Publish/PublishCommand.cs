@@ -22,7 +22,7 @@ public class PublishCommand : RestoringCommand
 
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parseResult = Parser.Parse(["dotnet", "publish", ..args]);
+        var parseResult = Parser.Parse(["dotnet", "publish", .. args]);
         return FromParseResult(parseResult);
     }
 
@@ -44,7 +44,7 @@ public class PublishCommand : RestoringCommand
 
         bool noRestore = noBuild || parseResult.HasOption(definition.NoRestoreOption);
 
-        return CommandFactory.CreateVirtualOrPhysicalCommand(
+        return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(

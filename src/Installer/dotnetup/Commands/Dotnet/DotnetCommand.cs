@@ -73,7 +73,7 @@ internal class DotnetCommand : CommandBase
     /// the install path to PATH. Inherits the parent console handles (stdin/stdout/stderr)
     /// so that redirection, piping, and interactive mode work transparently.
     /// </summary>
-    private static int RunDotnet(string dotnetExe, string dotnetRoot, string[] args)
+    protected virtual int RunDotnet(string dotnetExe, string dotnetRoot, string[] args)
     {
         var startInfo = new ProcessStartInfo
         {

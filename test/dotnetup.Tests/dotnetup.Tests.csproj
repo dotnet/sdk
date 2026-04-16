@@ -11,9 +11,14 @@
     <XUnitCoreSettingsFile>$(MSBuildProjectDirectory)\xunit.runner.json</XUnitCoreSettingsFile>
   </PropertyGroup>
 
-  <!-- Exclude demo app from test compilation -->
+  <!-- Exclude test asset apps from test compilation -->
   <ItemGroup>
-    <Compile Remove="TestAssets\TelemetryIntegrationDemo\**\*.cs" />
+    <Compile Remove="TestAssets\**\*.cs" />
+  </ItemGroup>
+
+  <!-- Embed the test assets path so tests can locate assets regardless of output directory -->
+  <ItemGroup>
+    <AssemblyMetadata Include="TestAssetsDir" Value="$(MSBuildProjectDirectory)\TestAssets" />
   </ItemGroup>
 
   <ItemGroup>

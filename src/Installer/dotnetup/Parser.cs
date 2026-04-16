@@ -17,7 +17,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Walkthrough;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -63,13 +63,13 @@ internal class Parser
         rootCommand.Subcommands.Add(PrintEnvScriptCommandParser.GetCommand());
         rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
         rootCommand.Subcommands.Add(DotnetCommandParser.GetCommand());
-        rootCommand.Subcommands.Add(WalkthroughCommandParser.GetCommand());
+        rootCommand.Subcommands.Add(InitCommandParser.GetCommand());
 
         ConfigureHelp(rootCommand);
 
         rootCommand.SetAction(parseResult =>
         {
-            return new WalkthroughCommand(parseResult).Execute();
+            return new InitCommand(parseResult).Execute();
         });
 
         return rootCommand;
@@ -105,8 +105,8 @@ internal class Parser
         [
             (Strings.HelpInstallCommandsTitle, ["sdk", "runtime", "install", "update", "uninstall"]),
             (Strings.HelpQueryCommandsTitle, ["list"]),
-            (Strings.HelpConfigCommandsTitle, ["print-env-script", "defaultinstall"]),
-            (Strings.HelpUtilityCommandsTitle, ["dotnet", "walkthrough"]),
+            (Strings.HelpConfigCommandsTitle, ["print-env-script", "defaultinstall", "init"]),
+            (Strings.HelpUtilityCommandsTitle, ["dotnet"]),
         ];
 
         public override int Invoke(ParseResult parseResult)

@@ -19,7 +19,7 @@ internal class InstallerOrchestratorSingleton
     /// <summary>
     /// Downloads the archive for an already-resolved install request into the download cache
     /// without installing. This allows a background task to warm the cache while the user
-    /// interacts with walkthrough prompts, so the subsequent <see cref="Install"/> call
+    /// interacts with init prompts, so the subsequent <see cref="Install"/> call
     /// finds the archive already cached and skips the download.
     /// </summary>
     /// <remarks>

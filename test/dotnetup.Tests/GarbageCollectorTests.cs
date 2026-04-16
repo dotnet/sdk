@@ -102,6 +102,55 @@ public class GarbageCollectorTests
     }
 
     [Fact]
+    public void KeepsStableAndPreviewInstallationsWhenLatestAndPreviewSpecsExist()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        manifest.AddInstallSpec(installRoot, new InstallSpec
+        {
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "latest",
+            InstallSource = InstallSource.Explicit
+        });
+        manifest.AddInstallSpec(installRoot, new InstallSpec
+        {
+            Component = InstallComponent.SDK,
+            VersionOrChannel = "preview",
+            InstallSource = InstallSource.Explicit
+        });
+
+        manifest.AddInstallation(installRoot, new Installation
+        {
+            Component = InstallComponent.SDK,
+            Version = "10.0.100",
+            Subcomponents = ["sdk/10.0.100"]
+        });
+        manifest.AddInstallation(installRoot, new Installation
+        {
+            Component = InstallComponent.SDK,
+            Version = "11.0.100-preview.1",
+            Subcomponents = ["sdk/11.0.100-preview.1"]
+        });
+
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "10.0.100"));
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100-preview.1"));
+
+        var gc = new GarbageCollector(manifest);
+        var deleted = gc.Collect(installRoot);
+
+        deleted.Should().BeEmpty();
+
+        manifest.GetInstallations(installRoot)
+            .Select(i => i.Version)
+            .Should()
+            .BeEquivalentTo(["10.0.100", "11.0.100-preview.1"]);
+    }
+
+    [Fact]
     public void RemovesStaleGlobalJsonSpecs()
     {
         using var testEnv = new TestEnvironment();

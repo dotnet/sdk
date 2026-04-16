@@ -51,6 +51,12 @@ jobs:
         targetPath: '$(Build.SourcesDirectory)/artifacts/binlogs/'
         artifactName: 'dotnetup-executable-binlogs-${{ parameters.rid }}'
         publishLocation: Container
+      - output: pipelineArtifact
+        displayName: '📦 Publish dotnetup ${{ parameters.rid }} standalone binary'
+        condition: succeeded()
+        targetPath: '$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}/'
+        artifactName: 'dotnetup-standalone-${{ parameters.rid }}'
+        publishLocation: Container
 
     steps:
     # Use shallow checkout to save disk in space-constrained cross-build containers.
@@ -74,6 +80,9 @@ jobs:
           # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
           $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
           Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\*" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup\${{ parameters.rid }}\" -Recurse -Force
+          # Copy just the binary to the standalone artifact staging directory
+          New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}" -Force | Out-Null
+          Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\dotnetup.exe" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}\"
         displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
 
     - ${{ if ne(parameters.pool.os, 'windows') }}:
@@ -104,5 +113,8 @@ jobs:
           # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
           PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
           cp -r "$PUBLISH_DIR/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
+          # Copy just the binary to the standalone artifact staging directory
+          mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"
+          cp "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup" "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}/"
         displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
         retryCountOnTaskFailure: 2

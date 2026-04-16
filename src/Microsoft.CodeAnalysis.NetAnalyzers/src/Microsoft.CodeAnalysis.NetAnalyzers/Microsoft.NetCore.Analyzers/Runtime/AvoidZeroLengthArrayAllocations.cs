@@ -68,12 +68,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, INamedTypeSymbol? linqExpressionType)
         {
-            AnalyzeOperation(context, arrayEmptyMethodSymbol, linqExpressionType, IsAttributeSyntax);
+            AnalyzeOperation(context, arrayEmptyMethodSymbol, linqExpressionType, IsAttributeSyntax, IsCollectionExpressionSyntax);
         }
 
-        private static void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, INamedTypeSymbol? linqExpressionType, Func<SyntaxNode, bool> isAttributeSyntax)
+        private static void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, INamedTypeSymbol? linqExpressionType, Func<SyntaxNode, bool> isAttributeSyntax, Func<SyntaxNode, bool> isCollectionExpressionSyntax)
         {
             IArrayCreationOperation arrayCreationExpression = (IArrayCreationOperation)context.Operation;
+
+            // Bail out for compiler-generated array creations synthesized
+            // during lowering of collection expressions (e.g. `List<int> x = [1, 2, 3]`).
+            if (isCollectionExpressionSyntax(arrayCreationExpression.Syntax))
+            {
+                return;
+            }
 
             // We can't replace array allocations in attributes, as they're persisted to metadata
             // TODO: Once we have operation walkers, we can replace this syntactic check with an operation-based check.
@@ -192,5 +199,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         }
 
         protected abstract bool IsAttributeSyntax(SyntaxNode node);
+
+        /// <summary>
+        /// Checks whether the given syntax node represents a collection expression (e.g. <c>[1, 2, 3]</c> in C#).
+        /// </summary>
+        protected abstract bool IsCollectionExpressionSyntax(SyntaxNode node);
     }
 }

@@ -11,7 +11,7 @@ using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Represents the user's path replacement preference chosen during the walkthrough.
+/// Represents the user's path replacement preference chosen during the init flow.
 /// </summary>
 internal enum PathPreference
 {
@@ -27,7 +27,7 @@ internal enum PathPreference
 
 /// <summary>
 /// Persisted user configuration for dotnetup, stored alongside the manifest.
-/// Records decisions made during the interactive walkthrough.
+/// Records decisions made during the interactive init flow.
 /// </summary>
 internal class DotnetupConfigData
 {
@@ -95,7 +95,7 @@ internal static class DotnetupConfig
     }
 
     /// <summary>
-    /// Returns true if a config file exists, indicating the walkthrough has been completed.
+    /// Returns true if a config file exists, indicating the init flow has been completed.
     /// </summary>
     public static bool Exists() => File.Exists(DotnetupPaths.ConfigPath);
 }

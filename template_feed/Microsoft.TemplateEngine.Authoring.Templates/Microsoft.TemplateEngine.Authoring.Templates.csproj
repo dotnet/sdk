@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <IncludeBuildOutput>False</IncludeBuildOutput>
+    <IncludeSource>False</IncludeSource>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputPath>$(ArtifactsTmpDir)</OutputPath>
+    <EnableDefaultItems>False</EnableDefaultItems>
+    <UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+    <IsShippingPackage>true</IsShippingPackage>
+    <NoWarn>$(NoWarn);2008;NU5105</NoWarn>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <PackageId>Microsoft.TemplateEngine.Authoring.Templates</PackageId>
+    <Authors>Microsoft</Authors>
+    <Description>The templates for useful items and projects for template authoring.</Description>
+    <language>en-US</language>
+    <PackageProjectUrl>https://github.com/dotnet/templating</PackageProjectUrl>
+    <PackageType>Template</PackageType>
+    <SuppressDependenciesWhenPacking>True</SuppressDependenciesWhenPacking>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="content\**">
+      <PackagePath>content</PackagePath>
+    </Content>
+  </ItemGroup>
+
+</Project>

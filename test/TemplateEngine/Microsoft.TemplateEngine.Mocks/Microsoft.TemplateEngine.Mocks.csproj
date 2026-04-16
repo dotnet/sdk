@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="Microsoft.TemplateEngine.Mocks.Shared.props" />
+
+  <ItemGroup>
+    <PackageReference Include="xunit.abstractions" />
+  </ItemGroup>
+
+</Project>

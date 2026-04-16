@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -210,5 +212,23 @@ public class EnvShellProviderTests
         // Assert
         script.Should().Contain("$env:DOTNET_ROOT = '/test/path/with''quote'");
         script.Should().Contain("$env:PATH = '/test/path/with''quote'");
+    }
+
+    [Fact]
+    public void PrintEnvScriptCommand_ShouldWriteLongScriptWithoutBomOrWrapping()
+    {
+        // Arrange
+        var provider = new BashEnvShellProvider();
+        var installPath = $"/tmp/{new string('a', 120)}/dotnet";
+        var script = provider.GenerateEnvScript(installPath);
+        using var output = new MemoryStream();
+
+        // Act
+        PrintEnvScriptCommand.WriteScript(output, script);
+
+        // Assert
+        var bytes = output.ToArray();
+        bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeFalse();
+        Encoding.UTF8.GetString(bytes).Should().Be(script);
     }
 }
