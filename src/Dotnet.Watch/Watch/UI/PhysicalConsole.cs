@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watch;
@@ -57,15 +58,22 @@ internal sealed class PhysicalConsole : IConsole
                     else
                     {
                         Console.WriteLine($"Sending SIGTERM to {processId}");
+                        error = null;
                         try
                         {
                             using var process = Process.GetProcessById(processId);
-                            error = process.SafeHandle.Signal(PosixSignal.SIGTERM) ? null : $"Failed to send SIGTERM to process {processId}";
+                            process.SafeHandle.Signal(PosixSignal.SIGTERM);
+                        }
+                        catch (Win32Exception ex)
+                        {
+                            // Signal returns false when given process has already exited.
+                            // So it can throw only when we try to kill non-child process
+                            // that we don't have permissions to kill.
+                            error = ex.Message;
                         }
                         catch (ArgumentException)
                         {
                             // Process has already exited
-                            error = null;
                         }
                     }
 

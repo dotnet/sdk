@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
@@ -372,9 +373,22 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         var signalName = force ? "SIGKILL" : "SIGTERM";
         logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
 
-        if (!process.SafeHandle.Signal(signal))
+        string? error = null;
+        try
         {
-            logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, "signal returned failure");
+            process.SafeHandle.Signal(signal);
+        }
+        catch (Win32Exception ex)
+        {
+            // Signal returns false when given process has already exited.
+            // So it can throw only when we try to kill non-child process
+            // that we don't have permissions to kill.
+            error = ex.Message;
+        }
+
+        if (error != null)
+        {
+            logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);
         }
     }
 }
