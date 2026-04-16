@@ -400,7 +400,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("Second");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain("Using launch settings from");
         }
 
         [Fact]
@@ -441,7 +441,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<First>>>");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain("Using launch settings from");
         }
 
         [Fact]
@@ -461,7 +461,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<Second>>>");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain("Using launch settings from");
         }
 
         [Fact]
@@ -518,10 +518,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("-v:m");
 
             cmd.Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
-
-            cmd.StdErr.Should().BeEmpty();
         }
 
         [Fact]
@@ -540,7 +538,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("http://localhost:12345/");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain("Using launch settings from");
         }
 
         [Fact]
@@ -559,7 +557,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("http://localhost:54321/");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain("Using launch settings from");
         }
 
         [Fact]
