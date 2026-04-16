@@ -152,7 +152,16 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 msbuildAdditionalSdkResolverFolder = "";
             }
 
-            var scheduler = new AssemblyScheduler(methodLimit: !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16);
+            int methodLimit = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16;
+
+            // NetAnalyzer tests produce many tiny work items (~197 at methodLimit 16).
+            // Use a larger limit to reduce Helix scheduling overhead.
+            if (assemblyName.Contains("NetAnalyzers", StringComparison.OrdinalIgnoreCase))
+            {
+                methodLimit *= 5;
+            }
+
+            var scheduler = new AssemblyScheduler(methodLimit: methodLimit);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
