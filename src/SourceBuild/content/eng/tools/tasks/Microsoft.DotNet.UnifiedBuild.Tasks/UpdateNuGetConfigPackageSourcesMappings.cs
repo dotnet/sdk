@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
             DiscoverPackagesFromAllSourceBuildSources(pkgSourcesElement);
 
-            // Discover all SBRP packages if source-build-reference-package-cache source is present in NuGet.config
+            // Discover all SBRP packages if source-build-assets-cache source is present in NuGet.config
             XElement sbrpCacheSourceElement = GetElement(pkgSourcesElement, "add", SbrpCacheSourceName);
             if (sbrpCacheSourceElement != null)
             {
@@ -326,7 +326,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
         private void DiscoverPackagesFromSbrpCacheSource()
         {
-            // 'source-build-reference-package-cache' is a dynamic source, populated by SBRP build.
+            // 'source-build-assets-cache' is a dynamic source, populated by SBA build.
             // Discover all SBRP packages from checked in nuspec files.
 
             if (!Directory.Exists(SbrpRepoSrcPath))
