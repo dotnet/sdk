@@ -101,23 +101,23 @@ internal static class Program
                 var tempOutput = output + ".tmp";
                 try
                 {
-                    ZstandardCompressionOptions options;
-                    if (!string.IsNullOrEmpty(dictionaryPath))
-                    {
-                        var dictBytes = File.ReadAllBytes(dictionaryPath);
-                        var dictionary = ZstandardDictionary.Create(dictBytes);
-                        options = new ZstandardCompressionOptions { Quality = level, Dictionary = dictionary };
-                    }
-                    else
-                    {
-                        options = new ZstandardCompressionOptions { Quality = level };
-                    }
-
                     using (var sourceStream = File.OpenRead(source))
                     using (var fileStream = new FileStream(tempOutput, FileMode.Create))
-                    using (var stream = new ZstandardStream(fileStream, options))
                     {
-                        sourceStream.CopyTo(stream);
+                        if (!string.IsNullOrEmpty(dictionaryPath))
+                        {
+                            var dictBytes = File.ReadAllBytes(dictionaryPath);
+                            using var dictionary = ZstandardDictionary.Create(dictBytes);
+                            var options = new ZstandardCompressionOptions { Quality = level, Dictionary = dictionary };
+                            using var stream = new ZstandardStream(fileStream, options);
+                            sourceStream.CopyTo(stream);
+                        }
+                        else
+                        {
+                            var options = new ZstandardCompressionOptions { Quality = level };
+                            using var stream = new ZstandardStream(fileStream, options);
+                            sourceStream.CopyTo(stream);
+                        }
                     }
 
                     File.Move(tempOutput, output, overwrite: true);

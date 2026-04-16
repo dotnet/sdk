@@ -144,9 +144,7 @@ public class ResolveCompressedAssetsTest
     public void IgnoresPrecompressedAssetsWhenRelatedAssetDiffersOnlyByPathCasing()
     {
         var asset = CreatePrimaryAsset();
-        var relatedAssetPath = OSPath.PathComparer.Equals(asset.ItemSpec, asset.ItemSpec.ToUpperInvariant())
-            ? asset.ItemSpec.ToUpperInvariant()
-            : asset.ItemSpec;
+        var relatedAssetPath = asset.ItemSpec.ToUpperInvariant();
 
         var compressedAsset = new TaskItem(Path.ChangeExtension(asset.ItemSpec, ".gz"), asset.CloneCustomMetadata());
         compressedAsset.SetMetadata(nameof(StaticWebAsset.AssetTraitName), "Content-Encoding");
@@ -165,7 +163,16 @@ public class ResolveCompressedAssetsTest
         var result = task.Execute();
 
         result.Should().BeTrue();
-        task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(0);
+
+        if (OSPath.PathComparer.Equals(asset.ItemSpec, relatedAssetPath))
+        {
+            task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(0);
+        }
+        else
+        {
+            task.AssetsToCompress.TakeWhile(a => a != null).Should().ContainSingle()
+                .Which.ItemSpec.Should().EndWith(".gz");
+        }
     }
 
     [TestMethod]
