@@ -81,8 +81,9 @@ public class GeneratePublishAssetPackTest : IDisposable
             PackOutputPath = packPath,
         };
 
-        task.Execute();
+        var result = task.Execute();
 
+        result.Should().BeTrue();
         using var archive = ZipFile.OpenRead(task.GeneratedPackPath);
         var entry = archive.GetEntry("manifest.json");
         using var reader = new StreamReader(entry.Open());
@@ -111,8 +112,9 @@ public class GeneratePublishAssetPackTest : IDisposable
             PackOutputPath = packPath,
         };
 
-        task.Execute();
+        var result = task.Execute();
 
+        result.Should().BeTrue();
         using var archive = ZipFile.OpenRead(task.GeneratedPackPath);
         var entry = archive.GetEntry("assets/_content/TestApp/js/site.js");
         using var reader = new StreamReader(entry.Open());
@@ -139,8 +141,9 @@ public class GeneratePublishAssetPackTest : IDisposable
             PackOutputPath = packPath,
         };
 
-        task.Execute();
+        var result = task.Execute();
 
+        result.Should().BeTrue();
         using var archive = ZipFile.OpenRead(task.GeneratedPackPath);
         archive.GetEntry("assets/_content/TestApp/js/site.js").Should().NotBeNull();
         archive.GetEntry("assets/_content/TestApp/js/site.js.gz").Should().BeNull();
@@ -217,7 +220,7 @@ public class GeneratePublishAssetPackTest : IDisposable
     }
 
     [Fact]
-    public void HandlesNestedDirectoryStructure()
+    public void PreservesNestedDirectoryStructureInPack()
     {
         var manifestPath = CreateManifestFile(new[]
         {
@@ -239,8 +242,9 @@ public class GeneratePublishAssetPackTest : IDisposable
             PackOutputPath = packPath,
         };
 
-        task.Execute();
+        var result = task.Execute();
 
+        result.Should().BeTrue();
         using var archive = ZipFile.OpenRead(task.GeneratedPackPath);
         archive.GetEntry("assets/_content/TestApp/lib/deep/nested/file.js").Should().NotBeNull();
         archive.GetEntry("assets/_content/TestApp/css/themes/dark/style.css").Should().NotBeNull();

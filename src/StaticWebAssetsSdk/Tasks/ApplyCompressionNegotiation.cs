@@ -383,7 +383,7 @@ public class ApplyCompressionNegotiation : Task
 
     private static HashSet<string> GetCompressedHeaders(StaticWebAssetEndpoint compressedEndpoint)
     {
-        var result = new HashSet<string>(compressedEndpoint.ResponseHeaders.Length, StringComparer.Ordinal);
+        var result = new HashSet<string>(compressedEndpoint.ResponseHeaders.Length, StringComparer.OrdinalIgnoreCase);
         for (var i = 0; i < compressedEndpoint.ResponseHeaders.Length; i++)
         {
             var responseHeader = compressedEndpoint.ResponseHeaders[i];

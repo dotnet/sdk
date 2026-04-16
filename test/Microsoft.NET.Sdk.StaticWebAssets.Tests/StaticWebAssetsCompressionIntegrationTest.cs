@@ -507,8 +507,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // =====================================================================
             var unchangedDczEndpoints = v2Manifest.Endpoints
                 .Where(e => e.Route.Contains("project-transitive-dep.v4")
-                    && e.Selectors != null
-                    && e.Selectors.Any(s => s.Name == "Content-Encoding" && s.Value == "dcz"))
+                    && ((e.Selectors != null
+                        && e.Selectors.Any(s => s.Name == "Content-Encoding" && s.Value == "dcz"))
+                        || e.Route.EndsWith(".dcz", StringComparison.Ordinal)))
                 .ToArray();
             unchangedDczEndpoints.Should().BeEmpty(
                 "because unchanged files should not get dcz endpoints (same integrity means dictionary is pointless)");

@@ -72,6 +72,18 @@ public class ContentTypeProviderTests
     }
 
     [Fact]
+    public void GetContentType_DoesNotStripCompressedExtensionWhenOverrideIsExplicitlyEmpty()
+    {
+        // Arrange
+        var provider = new ContentTypeProvider([], []);
+
+        // Act
+        var contentType = provider.ResolveContentTypeMapping(CreateContext("wwwroot/exampleJsInterop.js.gz"), _log);
+
+        // Assert
+        Assert.Equal("application/x-gzip", contentType.MimeType);
+    }
+    [Fact]
     public void GetContentType_ReturnsDefaultForUnknownMappings()
     {
         // Arrange

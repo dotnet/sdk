@@ -124,7 +124,7 @@ public class ResolveCompressedAssets : Task
         var existingCompressionFormatsByAssetItemSpec = CollectCompressedAssets(candidates, formatsByContentEncoding);
 
         // Build dictionary candidate lookup: TargetAsset → candidate TaskItem
-        var dictionaryCandidatesByIdentity = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
+        var dictionaryCandidatesByTargetAsset = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
         if (DictionaryCandidates != null)
         {
             foreach (var candidate in DictionaryCandidates)
@@ -132,7 +132,7 @@ public class ResolveCompressedAssets : Task
                 var targetAsset = candidate.GetMetadata("TargetAsset");
                 if (!string.IsNullOrEmpty(targetAsset))
                 {
-                    dictionaryCandidatesByIdentity[targetAsset] = candidate;
+                    dictionaryCandidatesByTargetAsset[targetAsset] = candidate;
                 }
             }
         }
@@ -229,7 +229,7 @@ public class ResolveCompressedAssets : Task
                 ITaskItem dictCandidate = null;
                 if (format.UsesDictionary)
                 {
-                    if (!dictionaryCandidatesByIdentity.TryGetValue(asset.Identity, out dictCandidate))
+                    if (!dictionaryCandidatesByTargetAsset.TryGetValue(asset.Identity, out dictCandidate))
                     {
                         Log.LogMessage(
                             MessageImportance.Low,
@@ -303,7 +303,7 @@ public class ResolveCompressedAssets : Task
         Dictionary<string, string> formatsByContentEncoding)
     {
         // Scan the provided candidate assets and determine which ones have already been detected for compression and in which formats.
-        var existingCompressionFormatsByAssetItemSpec = new Dictionary<string, HashSet<string>>();
+        var existingCompressionFormatsByAssetItemSpec = new Dictionary<string, HashSet<string>>(OSPath.PathComparer);
 
         foreach (var asset in candidates)
         {
@@ -331,7 +331,8 @@ public class ResolveCompressedAssets : Task
                 existingCompressionFormatsByAssetItemSpec.Add(relatedAssetItemSpec, existingFormats);
             }
 
-            if (!formatsByContentEncoding.TryGetValue(asset.AssetTraitValue, out var assetFormat))
+            if (string.IsNullOrEmpty(asset.AssetTraitValue) ||
+                !formatsByContentEncoding.TryGetValue(asset.AssetTraitValue, out var assetFormat))
             {
                 Log.LogError(
                     "The asset '{0}' has content-encoding '{1}' which does not match any configured compression format.",
