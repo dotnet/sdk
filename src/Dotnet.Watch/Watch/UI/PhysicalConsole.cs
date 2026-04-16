@@ -57,8 +57,16 @@ internal sealed class PhysicalConsole : IConsole
                     else
                     {
                         Console.WriteLine($"Sending SIGTERM to {processId}");
-                        using var process = Process.GetProcessById(processId);
-                        error = process.SafeHandle.Signal(PosixSignal.SIGTERM) ? null : $"Failed to send SIGTERM to process {processId}";
+                        try
+                        {
+                            using var process = Process.GetProcessById(processId);
+                            error = process.SafeHandle.Signal(PosixSignal.SIGTERM) ? null : $"Failed to send SIGTERM to process {processId}";
+                        }
+                        catch (ArgumentException)
+                        {
+                            // Process has already exited
+                            error = null;
+                        }
                     }
 
                     if (error != null)
