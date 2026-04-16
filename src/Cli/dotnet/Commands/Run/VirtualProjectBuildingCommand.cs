@@ -452,7 +452,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     EnsurePreviousCacheEntry(cache);
                     cache.CurrentEntry.CscArguments = cache.PreviousEntry?.CscArguments ?? [];
                     cache.CurrentEntry.BuildResultFile = cache.PreviousEntry?.BuildResultFile;
-                    Reporter.VerboseStderr.WriteLine($"Reusing previous CSC arguments ({cache.CurrentEntry.CscArguments.Length}) because none were found in the {Constants.CoreCompile} target.");
+                    Reporter.Verbose.WriteLine($"Reusing previous CSC arguments ({cache.CurrentEntry.CscArguments.Length}) because none were found in the {Constants.CoreCompile} target.");
                 }
                 else
                 {
@@ -462,12 +462,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         .Select(Escape)
                         .ToImmutableArray();
                     cache.CurrentEntry.BuildResultFile = buildResultItem.GetMetadata(Constants.FullPath);
-                    Reporter.VerboseStderr.WriteLine($"Found CSC arguments ({cache.CurrentEntry.CscArguments.Length}) and build result path: {cache.CurrentEntry.BuildResultFile}");
+                    Reporter.Verbose.WriteLine($"Found CSC arguments ({cache.CurrentEntry.CscArguments.Length}) and build result path: {cache.CurrentEntry.BuildResultFile}");
                 }
             }
             else
             {
-                Reporter.VerboseStderr.WriteLine($"No CSC arguments found in targets: {string.Join(", ", result.ResultsByTarget.Keys)}");
+                Reporter.Verbose.WriteLine($"No CSC arguments found in targets: {string.Join(", ", result.ResultsByTarget.Keys)}");
             }
 
             // Arguments coming from CoreCompile are escaped if they are in the form of `/option:"some path"`
@@ -504,20 +504,20 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             string rspPath = CSharpCompilerCommand.WriteCscRspFile(Builder.ArtifactsPath, cache.CurrentEntry.CscArguments);
-            Reporter.VerboseStderr.WriteLine($"Wrote '{rspPath}'.");
+            Reporter.Verbose.WriteLine($"Wrote '{rspPath}'.");
         }
 
         bool CanSaveCache(ProjectInstance projectInstance)
         {
             if (!MSBuildUtilities.ConvertStringToBool(projectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
             {
-                Reporter.VerboseStderr.WriteLine($"Not saving cache because there is an opt-out via MSBuild property {FileBasedProgramCanSkipMSBuild}.");
+                Reporter.Verbose.WriteLine($"Not saving cache because there is an opt-out via MSBuild property {FileBasedProgramCanSkipMSBuild}.");
                 return false;
             }
 
             if (EvaluatedDirectives.Any(static d => d is CSharpDirective.Project))
             {
-                Reporter.VerboseStderr.WriteLine("Not saving cache because there is a project directive.");
+                Reporter.Verbose.WriteLine("Not saving cache because there is a project directive.");
                 return false;
             }
 
@@ -525,7 +525,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     d is CSharpDirective.IncludeOrExclude { Kind: CSharpDirective.IncludeOrExcludeKind.Include } includeDirective &&
                     includeDirective.Name.AsSpan().ContainsAny('*', '?')))
             {
-                Reporter.VerboseStderr.WriteLine("Not saving cache because there is a glob include directive.");
+                Reporter.Verbose.WriteLine("Not saving cache because there is a glob include directive.");
                 return false;
             }
 
@@ -726,18 +726,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             if (!InitialCanReuseAuxiliaryFiles)
             {
-                Reporter.VerboseStderr.WriteLine("CSC auxiliary files can NOT be reused due to the same reason build is needed.");
+                Reporter.Verbose.WriteLine("CSC auxiliary files can NOT be reused due to the same reason build is needed.");
                 return false;
             }
 
             if (PreviousEntry?.BuildLevel != BuildLevel.Csc)
             {
-                Reporter.VerboseStderr.WriteLine("CSC auxiliary files can NOT be reused because previous build level was not CSC " +
+                Reporter.Verbose.WriteLine("CSC auxiliary files can NOT be reused because previous build level was not CSC " +
                     $"(it was {PreviousEntry?.BuildLevel.ToString() ?? "N/A"}).");
                 return false;
             }
 
-            Reporter.VerboseStderr.WriteLine("CSC auxiliary files can be reused.");
+            Reporter.Verbose.WriteLine("CSC auxiliary files can be reused.");
             return true;
         }
     }
@@ -753,7 +753,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         if (Directives.Any(static d => d is CSharpDirective.Project))
         {
-            Reporter.VerboseStderr.WriteLine("Skipping computing cache because there are project directives.");
+            Reporter.Verbose.WriteLine("Skipping computing cache because there are project directives.");
             return null;
         }
 
@@ -820,14 +820,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (!successCacheFile.Exists)
         {
-            Reporter.VerboseStderr.WriteLine("Building because cache file does not exist: " + successCacheFile.FullName);
+            Reporter.Verbose.WriteLine("Building because cache file does not exist: " + successCacheFile.FullName);
             return true;
         }
 
         var startCacheFile = new FileInfo(Path.Join(artifactsDirectory, BuildStartCacheFileName));
         if (!startCacheFile.Exists)
         {
-            Reporter.VerboseStderr.WriteLine("Building because start cache file does not exist: " + startCacheFile.FullName);
+            Reporter.Verbose.WriteLine("Building because start cache file does not exist: " + startCacheFile.FullName);
             return true;
         }
 
@@ -835,7 +835,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (startCacheFile.LastWriteTimeUtc > buildTimeUtc)
         {
-            Reporter.VerboseStderr.WriteLine("Building because start cache file is newer than success cache file (previous build likely failed): " + startCacheFile.FullName);
+            Reporter.Verbose.WriteLine("Building because start cache file is newer than success cache file (previous build likely failed): " + startCacheFile.FullName);
             return true;
         }
 
@@ -845,7 +845,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         if (previousCacheEntry is null)
         {
             cache.InitialCanReuseAuxiliaryFiles = false;
-            Reporter.VerboseStderr.WriteLine("Building because previous cache entry could not be deserialized: " + successCacheFile.FullName);
+            Reporter.Verbose.WriteLine("Building because previous cache entry could not be deserialized: " + successCacheFile.FullName);
             return true;
         }
 
@@ -857,7 +857,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         if (previousCacheEntry.SdkVersion != cacheEntry.SdkVersion)
         {
             cache.InitialCanReuseAuxiliaryFiles = false;
-            Reporter.VerboseStderr.WriteLine($"""
+            Reporter.Verbose.WriteLine($"""
                 Building because previous SDK version ({previousCacheEntry.SdkVersion}) does not match current ({cacheEntry.SdkVersion}): {successCacheFile.FullName}
                 """);
             return true;
@@ -866,7 +866,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         if (previousCacheEntry.RuntimeVersion != cacheEntry.RuntimeVersion)
         {
             cache.InitialCanReuseAuxiliaryFiles = false;
-            Reporter.VerboseStderr.WriteLine($"""
+            Reporter.Verbose.WriteLine($"""
                 Building because previous runtime version ({previousCacheEntry.RuntimeVersion}) does not match current ({cacheEntry.RuntimeVersion}): {successCacheFile.FullName}
                 """);
             return true;
@@ -876,7 +876,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (previousCacheEntry.GlobalProperties.Count != cacheEntry.GlobalProperties.Count)
         {
-            Reporter.VerboseStderr.WriteLine($"""
+            Reporter.Verbose.WriteLine($"""
                 Building because previous global properties count ({previousCacheEntry.GlobalProperties.Count}) does not match current count ({cacheEntry.GlobalProperties.Count}): {successCacheFile.FullName}
                 """);
             return true;
@@ -887,7 +887,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (!previousCacheEntry.GlobalProperties.TryGetValue(key, out var otherValue) ||
                 value != otherValue)
             {
-                Reporter.VerboseStderr.WriteLine($"""
+                Reporter.Verbose.WriteLine($"""
                     Building because previous global property "{key}" ({otherValue}) does not match current ({value}): {successCacheFile.FullName}
                     """);
                 return true;
@@ -899,7 +899,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         // If the source file does not exist, we want to build so proper errors are reported.
         if (!entryPointFile.Exists)
         {
-            Reporter.VerboseStderr.WriteLine("Building because entry point file is missing: " + entryPointFile.FullName);
+            Reporter.Verbose.WriteLine("Building because entry point file is missing: " + entryPointFile.FullName);
             return true;
         }
 
@@ -910,8 +910,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         // Only do this here if we cannot reuse CSC arguments (then checking this first is faster); otherwise we need to check implicit build files anyway.
         if (reasonToNotReuseCscArguments != null && targetFile.LastWriteTimeUtc > buildTimeUtc)
         {
-            Reporter.VerboseStderr.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
-            Reporter.VerboseStderr.WriteLine(reasonToNotReuseCscArguments);
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
+            Reporter.Verbose.WriteLine(reasonToNotReuseCscArguments);
             return true;
         }
 
@@ -921,7 +921,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             var implicitBuildFileInfo = ResolveLinkTargetOrSelf(new FileInfo(implicitBuildFilePath));
             if (!implicitBuildFileInfo.Exists || implicitBuildFileInfo.LastWriteTimeUtc > buildTimeUtc)
             {
-                Reporter.VerboseStderr.WriteLine("Building because implicit build file is missing or modified: " + implicitBuildFileInfo.FullName);
+                Reporter.Verbose.WriteLine("Building because implicit build file is missing or modified: " + implicitBuildFileInfo.FullName);
                 return true;
             }
         }
@@ -931,7 +931,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (!previousCacheEntry.ImplicitBuildFiles.Contains(implicitBuildFilePath))
             {
-                Reporter.VerboseStderr.WriteLine("Building because new implicit build file is present: " + implicitBuildFilePath);
+                Reporter.Verbose.WriteLine("Building because new implicit build file is present: " + implicitBuildFilePath);
                 return true;
             }
         }
@@ -945,7 +945,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             var additionalSourceFileInfo = ResolveLinkTargetOrSelf(new FileInfo(additionalSourcePath));
             if (!additionalSourceFileInfo.Exists || additionalSourceFileInfo.LastWriteTimeUtc > buildTimeUtc)
             {
-                Reporter.VerboseStderr.WriteLine("Building because additional source file is missing or modified: " + additionalSourceFileInfo.FullName);
+                Reporter.Verbose.WriteLine("Building because additional source file is missing or modified: " + additionalSourceFileInfo.FullName);
                 return true;
             }
         }
@@ -955,7 +955,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         if (reasonToNotReuseCscArguments == null && targetFile.LastWriteTimeUtc > buildTimeUtc)
         {
             cache.CanUseCscViaPreviousArguments = true;
-            Reporter.VerboseStderr.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
             return true;
         }
 
@@ -1005,7 +1005,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         catch (Exception e)
         {
-            Reporter.VerboseStderr.WriteLine($"Failed to deserialize cache entry ({path}): {e.GetType().FullName}: {e.Message}");
+            Reporter.Verbose.WriteLine($"Failed to deserialize cache entry ({path}): {e.GetType().FullName}: {e.Message}");
             return null;
         }
     }
@@ -1028,7 +1028,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         if (!NeedsToBuild(out cache))
         {
-            Reporter.VerboseStderr.WriteLine("No need to build, the output is up to date. Cache: " + Builder.ArtifactsPath);
+            Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + Builder.ArtifactsPath);
             return BuildLevel.None;
         }
 
@@ -1039,7 +1039,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (cache.CanUseCscViaPreviousArguments)
         {
-            Reporter.VerboseStderr.WriteLine("We have CSC arguments from previous run. Skipping MSBuild and using CSC only.");
+            Reporter.Verbose.WriteLine("We have CSC arguments from previous run. Skipping MSBuild and using CSC only.");
 
             // Keep the cached info for next time, so we can use CSC again.
             Debug.Assert(cache.PreviousEntry != null);
@@ -1055,7 +1055,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (!cacheEntry.Directives.IsDefaultOrEmpty)
         {
-            Reporter.VerboseStderr.WriteLine("Using MSBuild because there are directives in the source file.");
+            Reporter.Verbose.WriteLine("Using MSBuild because there are directives in the source file.");
             return BuildLevel.All;
         }
 
@@ -1063,14 +1063,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         if (globalProperties.FirstOrDefault() is { } exampleKey)
         {
             var exampleValue = cacheEntry.GlobalProperties[exampleKey];
-            Reporter.VerboseStderr.WriteLine($"Using MSBuild because there are global properties, for example '{exampleKey}={exampleValue}'.");
+            Reporter.Verbose.WriteLine($"Using MSBuild because there are global properties, for example '{exampleKey}={exampleValue}'.");
             return BuildLevel.All;
         }
 
         if (cache.ExampleMSBuildFile is { } exampleMSBuildFile)
         {
             Debug.Assert(cacheEntry.ImplicitBuildFiles.Count != 0);
-            Reporter.VerboseStderr.WriteLine($"Using MSBuild because there are implicit build files, for example '{exampleMSBuildFile}'.");
+            Reporter.Verbose.WriteLine($"Using MSBuild because there are implicit build files, for example '{exampleMSBuildFile}'.");
             return BuildLevel.All;
         }
 
@@ -1078,12 +1078,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (!File.Exists(filePath))
             {
-                Reporter.VerboseStderr.WriteLine($"Using MSBuild because NuGet package file does not exist: {filePath}");
+                Reporter.Verbose.WriteLine($"Using MSBuild because NuGet package file does not exist: {filePath}");
                 return BuildLevel.All;
             }
         }
 
-        Reporter.VerboseStderr.WriteLine("Skipping MSBuild and using CSC only.");
+        Reporter.Verbose.WriteLine("Skipping MSBuild and using CSC only.");
 
         // Don't reuse CSC arguments, this is the "simple" CSC-only build (the one where we use hard-coded CSC arguments).
         if (cache.PreviousEntry != null)
@@ -1122,7 +1122,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         catch (Exception ex)
         {
-            Reporter.VerboseStderr.WriteLine($"Cannot touch folder '{directory}': {ex}");
+            Reporter.Verbose.WriteLine($"Cannot touch folder '{directory}': {ex}");
         }
     }
 

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -27,7 +27,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
     }
     public CommandResult Execute(Action<Process>? processStarted)
     {
-        Reporter.VerboseStderr.WriteLine(string.Format(
+        Reporter.Verbose.WriteLine(string.Format(
             LocalizableStrings.RunningFileNameArguments,
             _process.StartInfo.FileName,
             _process.StartInfo.Arguments));
@@ -43,7 +43,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
         {
             sw = Stopwatch.StartNew();
 
-            Reporter.VerboseStderr.WriteLine($"> {Command.FormatProcessInfo(_process.StartInfo)}".White());
+            Reporter.Verbose.WriteLine($"> {Command.FormatProcessInfo(_process.StartInfo)}".White());
         }
 
         using (var reaper = ProcessReaper.Create(_process))
@@ -52,7 +52,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
             processStarted?.Invoke(_process);
             reaper.NotifyProcessStarted();
 
-            Reporter.VerboseStderr.WriteLine(string.Format(
+            Reporter.Verbose.WriteLine(string.Format(
                 LocalizableStrings.ProcessId,
                 _process.Id));
 
@@ -76,11 +76,11 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
                 sw.ElapsedMilliseconds);
             if (exitCode == 0)
             {
-                Reporter.VerboseStderr.WriteLine(message.Green());
+                Reporter.Verbose.WriteLine(message.Green());
             }
             else
             {
-                Reporter.VerboseStderr.WriteLine(message.Red().Bold());
+                Reporter.Verbose.WriteLine(message.Red().Bold());
             }
         }
 

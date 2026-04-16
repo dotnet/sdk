@@ -126,11 +126,11 @@ internal sealed partial class CSharpCompilerCommand
 
             if (HaveMatchingSizeAndTimeStamp(objFile, binFile))
             {
-                Reporter.VerboseStderr.WriteLine($"Skipping copy of '{objFile}' to '{BuildResultFile}' because the files have matching size and timestamp.");
+                Reporter.Verbose.WriteLine($"Skipping copy of '{objFile}' to '{BuildResultFile}' because the files have matching size and timestamp.");
             }
             else
             {
-                Reporter.VerboseStderr.WriteLine($"Copying '{objFile}' to '{BuildResultFile}'.");
+                Reporter.Verbose.WriteLine($"Copying '{objFile}' to '{BuildResultFile}'.");
                 File.Copy(objFile.FullName, binFile.FullName, overwrite: true);
             }
         }
@@ -152,14 +152,14 @@ internal sealed partial class CSharpCompilerCommand
             switch (response)
             {
                 case CompletedBuildResponse completed:
-                    Reporter.VerboseStderr.WriteLine("Compiler server processed compilation.");
+                    Reporter.Verbose.WriteLine("Compiler server processed compilation.");
 
                     // Check if the compilation failed with CS0006 error (metadata file not found).
                     // This can happen when NuGet cache is cleared and referenced DLLs (e.g., analyzers or libraries) are missing.
                     if (completed.ReturnCode != 0 && completed.Output.Contains("error CS0006:", StringComparison.Ordinal))
                     {
-                        Reporter.VerboseStderr.WriteLine("CS0006 error detected in fast compilation path, falling back to full MSBuild.");
-                        Reporter.VerboseStderr.Write(completed.Output);
+                        Reporter.Verbose.WriteLine("CS0006 error detected in fast compilation path, falling back to full MSBuild.");
+                        Reporter.Verbose.Write(completed.Output);
                         fallbackToNormalBuild = true;
                         return completed.ReturnCode;
                     }
@@ -293,7 +293,7 @@ internal sealed partial class CSharpCompilerCommand
 
             if (!File.Exists(file))
             {
-                Reporter.VerboseStderr.WriteLine($"Generating CSC auxiliary file because it does not exist: {file}");
+                Reporter.Verbose.WriteLine($"Generating CSC auxiliary file because it does not exist: {file}");
                 return true;
             }
 
