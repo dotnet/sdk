@@ -186,7 +186,7 @@ ok "Found build $RUN_ID"
 gray "  ${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId=${RUN_ID}"
 
 # Download the artifact
-ARTIFACT_NAME="dotnetup-executable-${RID}"
+ARTIFACT_NAME="dotnetup-standalone-${RID}"
 info "Downloading artifact '$ARTIFACT_NAME'..."
 
 TEMP_DIR=$(mktemp -d)

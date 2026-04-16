@@ -149,7 +149,7 @@ Write-Host "Found build $runId" -ForegroundColor Green
 Write-Host "  $buildUrl" -ForegroundColor DarkGray
 
 # Download the artifact
-$artifactName = "dotnetup-executable-$rid"
+$artifactName = "dotnetup-standalone-$rid"
 Write-Host "Downloading artifact '$artifactName'..." -ForegroundColor Cyan
 
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "dotnetup-install-$([System.IO.Path]::GetRandomFileName())"
