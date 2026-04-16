@@ -39,7 +39,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          While in most cases PublishDir is contained within BaseOutputPath or BaseIntermediateOutputPath,
          this is by no means required, so we should protect against this happening here.
          Guard against PublishDir being the project directory (e.g. 'dotnet publish -o .') which would exclude all source files. -->
-    <DefaultItemExcludes Condition="'$(PublishDir)' != '' And '$([MSBuild]::NormalizePath($(PublishDir)))' != '$([MSBuild]::NormalizePath($(MSBuildProjectDirectory)))'">$(DefaultItemExcludes);$(PublishDir)/**</DefaultItemExcludes>
+    <DefaultItemExcludes Condition="'$(PublishDir)' != '' And '$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(PublishDir)))' != '$([MSBuild]::NormalizePath($(MSBuildProjectDirectory)))'">$(DefaultItemExcludes);$(PublishDir)/**</DefaultItemExcludes>
 
     <!-- Various files that should generally always be ignored -->
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.user</DefaultItemExcludes>
