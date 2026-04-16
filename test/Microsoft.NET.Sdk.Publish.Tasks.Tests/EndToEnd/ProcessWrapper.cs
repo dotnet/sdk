@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-#if NET472
+#if NETFRAMEWORK
 using System.Management;
 #endif
 
@@ -47,43 +47,52 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
 
         public static void KillProcessTree(int processId)
         {
+            Process process;
             try
             {
-                Process process = Process.GetProcessById(processId);
-                if (process != null && !process.HasExited)
+                process = Process.GetProcessById(processId);
+            }
+            catch (ArgumentException)
+            {
+                // Process might have already exited.
+                return;
+            }
+
+            using (process)
+            {
+                if (!process.HasExited)
                 {
-                    KillProcessTreeInternal(processId);
+#if NETFRAMEWORK
+                    KillProcessTreeInternal(process.Id);
+#else
+                    process.Kill(entireProcessTree: true);
+#endif
                 }
             }
-            catch (Exception)
-            {
-            }
-
         }
 
+#if NETFRAMEWORK
         private static void KillProcessTreeInternal(int pid)
         {
-#if NET472
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid);
             ManagementObjectCollection moc = searcher.Get();
             foreach (ManagementObject mo in moc)
             {
                 KillProcessTreeInternal(Convert.ToInt32(mo["ProcessID"]));
             }
-#endif
+
             try
             {
-                Process proc = Process.GetProcessById(pid);
-#if NET472
-                proc.Kill();
-#else
-                proc.Kill(entireProcessTree: true);
-#endif
+                using (Process proc = Process.GetProcessById(pid))
+                {
+                    proc.Kill();
+                }
             }
             catch (ArgumentException)
             {
-                // vramak: Process might have already exited.
+                // Process might have already exited.
             }
         }
+#endif
     }
 }
