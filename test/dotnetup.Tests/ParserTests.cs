@@ -10,8 +10,6 @@ public class ParserTests
     public static IEnumerable<object[]> ShellOverrideCommandArgs =>
     [
         [new[] { "defaultinstall", "user", "--shell", "bash" }],
-        [new[] { "sdk", "install", "9.0", "--shell", "zsh" }],
-        [new[] { "runtime", "install", "aspnetcore@9.0", "--shell", "pwsh" }],
         [new[] { "init", "--shell", "bash" }]
     ];
 
@@ -129,6 +127,19 @@ public class ParserTests
 
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("sdk", "install", "9.0", "--shell", "zsh")]
+    [InlineData("runtime", "install", "aspnetcore@9.0", "--shell", "pwsh")]
+    public void Parser_ShouldRejectShellOverrideOnInstallCommands(params string[] args)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
+        parseResult.Errors.Select(error => error.Message)
+            .Should().Contain(message => message.Contains("--shell"));
     }
 
     [Theory]

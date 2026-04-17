@@ -209,4 +209,16 @@ internal class CommonOptions
         return _ => ShellDetection.s_supportedShells
             .Select(s => new CompletionItem(s.ArgumentName, documentation: s.HelpDescription));
     }
+
+    internal static Action<System.CommandLine.Parsing.CommandResult> RejectShellOptionOnInstallCommand()
+    {
+        return commandResult =>
+        {
+            if (commandResult.Tokens.Any(token => token.Value is "--shell" or "-s"))
+            {
+                commandResult.AddError(
+                    "The --shell option isn't supported on install commands. If you need to override shell detection, run 'dotnetup init --shell <name>' before installing.");
+            }
+        };
+    }
 }

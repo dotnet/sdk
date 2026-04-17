@@ -24,7 +24,7 @@ Choosing the shell-profile option in the walkthrough is what corresponds to maki
     eval "$('/home/user/.local/share/dotnetup/dotnetup' print-env-script --shell bash)"
   ```
 
-If the user already has a saved path preference, or if the command is non-interactive / uses an explicit `--install-path`, the walkthrough prompt is skipped and dotnetup uses the existing configuration or the explicit path directly. If shell auto-detection is wrong or unavailable, commands that modify the profile also accept `--shell bash|zsh|pwsh`.
+If the user already has a saved path preference, or if the command is non-interactive / uses an explicit `--install-path`, the walkthrough prompt is skipped and dotnetup uses the existing configuration or the explicit path directly. If shell auto-detection is wrong or unavailable, run `dotnetup init --shell bash|zsh|pwsh` (or `defaultinstall` / `print-env-script` with `--shell`) before installing.
 
 ### 2. `dotnetup defaultinstall`
 
