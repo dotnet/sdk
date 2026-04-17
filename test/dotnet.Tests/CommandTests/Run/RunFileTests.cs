@@ -1247,10 +1247,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 public static string M() => "String from Util";
             }
             """);
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
             <Project>
               <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
               <ItemGroup>
                 <Compile Include="B.cs" />
@@ -1979,14 +1979,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-              </PropertyGroup>
-            </Project>
-            """);
-
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"),
             $"""
             #!/usr/bin/env dotnet
@@ -2151,15 +2143,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void MissingShebangWarning()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
-              </PropertyGroup>
-            </Project>
-            """);
 
         // Single-file program without shebang should NOT produce CA2266
         // (the warning only fires when there are multiple files via #:include).
@@ -3919,7 +3902,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
               </PropertyGroup>
             </Project>
             """);
@@ -4099,7 +4081,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
                 <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
             </Project>
@@ -4158,7 +4139,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
                 <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
             </Project>
@@ -4224,7 +4204,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
               <PropertyGroup>
                 <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective}>
                 <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
             </Project>
@@ -4261,15 +4240,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-                <ExperimentalFileBasedProgramEnableExcludeDirective>true</ExperimentalFileBasedProgramEnableExcludeDirective>
-              </PropertyGroup>
-            </Project>
-            """);
-
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             #!/usr/bin/env dotnet
             #:include {includePattern}
@@ -4291,14 +4261,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void IncludeDirective_WorkingDirectory()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-              </PropertyGroup>
-            </Project>
-            """);
 
         var srcDir = Path.Join(testInstance.Path, "src");
         Directory.CreateDirectory(srcDir);
@@ -4335,7 +4297,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DirectoryInfo(testInstance.Path)
             .Should().HaveSubtree("""
-                Directory.Build.props
                 src/
                 src/A.cs
                 src/A/
@@ -4379,11 +4340,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Directory.CreateDirectory(Path.Join(testInstance.Path, "dir1/dir2"));
         Directory.CreateDirectory(Path.Join(testInstance.Path, "dir3"));
 
-        File.WriteAllText(Path.Join(testInstance.Path, "dir1/Directory.Build.props"), """
+        File.WriteAllText(Path.Join(testInstance.Path, "dir1/Directory.Build.props"), $"""
             <Project>
               <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
             </Project>
             """);
@@ -4497,14 +4457,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-              </PropertyGroup>
-            </Project>
-            """);
-
         var programPath = Path.Join(testInstance.Path, "A.cs");
 
         File.WriteAllText(programPath, """
@@ -4529,14 +4481,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void IncludeDirective_UpToDate_Glob(string glob)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-              </PropertyGroup>
-            </Project>
-            """);
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
@@ -4597,14 +4541,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-              </PropertyGroup>
-            </Project>
-            """);
-
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
             #!/usr/bin/env dotnet
@@ -4662,11 +4598,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
             <Project>
               <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
+                <{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>true</{CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives}>
               </PropertyGroup>
             </Project>
             """);
@@ -4730,49 +4665,28 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput, workDir: appDir);
     }
 
+    /// <summary>
+    /// Transitive directives (directives in non-entry-point files) are gated behind a feature flag.
+    /// </summary>
     [Fact]
     public void IncludeDirective_FeatureFlags()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
-        var programPath = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(programPath, $"""
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #!/usr/bin/env dotnet
-            #:include *.cs
-            {s_programDependingOnUtil}
+            #:include Util.cs
+            Console.WriteLine(Util.M());
             """);
 
         var utilPath = Path.Join(testInstance.Path, "Util.cs");
-        File.WriteAllText(utilPath, $"""
-            #:exclude Other.cs
-            {s_util}
+        File.WriteAllText(utilPath, """
+            #:property DefineConstants=MY_CONST
+            static class Util { public static string M() => "Hello from Util"; }
             """);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdErr($"""
-                {DirectiveError(programPath, 2, Resources.ExperimentalFeatureDisabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective)}
-
-                {CliCommandStrings.RunCommandException}
-                """);
-
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdErr($"""
-                {DirectiveError(utilPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective)}
-
-                {CliCommandStrings.RunCommandException}
-                """);
-
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
-            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective, "true")
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
@@ -4783,27 +4697,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
-            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective, "true")
             .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives, "true")
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("Hello, String from Util");
+            .And.HaveStdOut("Hello from Util");
     }
 
     [Fact]
     public void IncludeDirective_CustomMapping()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-                <ExperimentalFileBasedProgramEnableItemMapping>true</ExperimentalFileBasedProgramEnableItemMapping>
-              </PropertyGroup>
-            </Project>
-            """);
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
@@ -4858,15 +4761,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void IncludeDirective_CustomMapping_ParseErrors()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-                <ExperimentalFileBasedProgramEnableItemMapping>true</ExperimentalFileBasedProgramEnableItemMapping>
-              </PropertyGroup>
-            </Project>
-            """);
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
@@ -7028,14 +6922,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void Api_Evaluation()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-              </PropertyGroup>
-            </Project>
-            """);
 
         var programPath = Path.Join(testInstance.Path, "A.cs");
         File.WriteAllText(programPath, """
