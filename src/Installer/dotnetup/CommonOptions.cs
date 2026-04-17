@@ -69,7 +69,7 @@ internal class CommonOptions
             return optionResult.Tokens switch
             {
                 [] => ShellDetection.GetCurrentShellProvider(),
-                [var shellToken] => ShellDetection.GetShellProvider(shellToken.Value),
+                [var shellToken] => ShellDetection.GetShellProviderByName(shellToken.Value),
                 _ => throw new InvalidOperationException("Unexpected number of tokens")
             };
         },

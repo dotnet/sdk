@@ -22,30 +22,44 @@ public static class ShellDetection
         s_supportedShells.ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Looks up a shell provider by its argument name (e.g., "bash", "zsh", "pwsh").
+    /// Looks up a shell provider by its command-line argument name (for example, "bash", "zsh", or "pwsh").
     /// </summary>
-    internal static IEnvShellProvider? GetShellProvider(string shellName)
+    internal static IEnvShellProvider? GetShellProviderByName(string shellName)
     {
         if (string.IsNullOrWhiteSpace(shellName))
         {
             return null;
         }
 
-        if (s_shellMap.TryGetValue(shellName, out var provider))
+        return s_shellMap.GetValueOrDefault(shellName);
+    }
+
+    /// <summary>
+    /// Resolves a shell provider from either a shell name or the path to a shell executable.
+    /// </summary>
+    internal static IEnvShellProvider? ResolveShellProvider(string shellPathOrName)
+    {
+        if (string.IsNullOrWhiteSpace(shellPathOrName))
+        {
+            return null;
+        }
+
+        var provider = GetShellProviderByName(shellPathOrName);
+        if (provider is not null)
         {
             return provider;
         }
 
-        var resolvedShellPath = Microsoft.DotNet.NativeWrapper.FileInterop.ResolveRealPath(shellName) ?? shellName;
+        var resolvedShellPath = Microsoft.DotNet.NativeWrapper.FileInterop.ResolveRealPath(shellPathOrName) ?? shellPathOrName;
         var normalizedShellName = Path.GetFileNameWithoutExtension(resolvedShellPath);
-        return s_shellMap.GetValueOrDefault(normalizedShellName);
+        return GetShellProviderByName(normalizedShellName);
     }
 
     /// <summary>
-    /// Checks whether a shell name is supported.
+    /// Checks whether a shell argument name is supported.
     /// </summary>
     internal static bool IsSupported(string shellName)
-        => GetShellProvider(shellName) is not null;
+        => GetShellProviderByName(shellName) is not null;
 
     /// <summary>
     /// Returns the <see cref="IEnvShellProvider"/> for the user's current shell,
@@ -64,6 +78,6 @@ public static class ShellDetection
             return null;
         }
 
-        return GetShellProvider(shellPath);
+        return ResolveShellProvider(shellPath);
     }
 }

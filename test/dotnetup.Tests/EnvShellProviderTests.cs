@@ -163,7 +163,7 @@ public class EnvShellProviderTests
     [InlineData(@"C:\Program Files\PowerShell\7\pwsh.exe", "pwsh")]
     public void ShellDetection_ShouldResolveProviderFromShellPath(string shellPath, string expectedName)
     {
-        var provider = ShellDetection.GetShellProvider(shellPath);
+        var provider = ShellDetection.ResolveShellProvider(shellPath);
 
         provider.Should().NotBeNull();
         provider!.ArgumentName.Should().Be(expectedName);
