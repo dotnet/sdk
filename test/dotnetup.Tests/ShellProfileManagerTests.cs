@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using System.Text;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -84,6 +85,20 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
+    public void AddProfileEntries_PreservesUtf8BomAndCrLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-add.sh");
+        File.WriteAllText(profilePath, "# existing config\r\nexport FOO=bar\r\n", new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+        var provider = new TestShellProvider(_tempDir, "preserve-add.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeTrue();
+        AssertUsesOnlyCrLfLineEndings(File.ReadAllText(profilePath));
+    }
+
+    [Fact]
     public void AddProfileEntries_CreatesParentDirectories()
     {
         var nestedDir = Path.Combine(_tempDir, "config", "powershell");
@@ -125,6 +140,27 @@ public class ShellProfileManagerTests : IDisposable
         var content = File.ReadAllText(profilePath);
         content.Should().Contain("# my config");
         content.Should().Contain("export FOO=bar");
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_PreservesUtf8BomAndCrLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-remove.sh");
+        var provider = new TestShellProvider(_tempDir, "preserve-remove.sh");
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath).Replace("\n", "\r\n", StringComparison.Ordinal);
+        var originalContent = $"# existing config\r\n{entry}\r\nexport FOO=bar\r\n";
+        File.WriteAllText(profilePath, originalContent, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+        ShellProfileManager.RemoveProfileEntries(provider);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeTrue();
+
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain("# existing config");
+        content.Should().Contain("export FOO=bar");
+        content.Should().NotContain(ShellProfileManager.MarkerComment);
+        AssertUsesOnlyCrLfLineEndings(content);
     }
 
     [Fact]
@@ -374,5 +410,11 @@ public class ShellProfileManagerTests : IDisposable
 
             return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
         }
+    }
+
+    private static void AssertUsesOnlyCrLfLineEndings(string content)
+    {
+        content.Should().Contain("\r\n");
+        content.Replace("\r\n", string.Empty, StringComparison.Ordinal).Should().NotContain("\n");
     }
 }
