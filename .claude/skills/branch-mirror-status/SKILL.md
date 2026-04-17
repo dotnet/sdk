@@ -1,5 +1,8 @@
 ---
+name: branch-mirror-status
 description: "Check if public GitHub release branches have been mirrored to internal Azure DevOps repos for dotnet/sdk and dotnet/installer."
+user-invocable: true
+disable-model-invocation: true
 ---
 
 # Branch Mirror Status Check
