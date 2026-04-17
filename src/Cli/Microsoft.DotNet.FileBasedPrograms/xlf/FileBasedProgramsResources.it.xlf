@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="CouldNotFindRefFile">
         <source>Could not find file '{0}'.</source>
-        <target state="new">Could not find file '{0}'.</target>
+        <target state="translated">Il file '{0}' non è stato trovato. </target>
         <note>{0} is the file path.</note>
       </trans-unit>
       <trans-unit id="DirectiveError">
@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="InvalidRefDirective">
         <source>The '#:ref' directive is invalid: {0}</source>
-        <target state="new">The '#:ref' directive is invalid: {0}</target>
+        <target state="translated">La direttiva "#:ref" non è valida: {0}</target>
         <note>{Locked="#:ref"}{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="MissingDirectiveName">

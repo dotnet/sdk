@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="CouldNotFindRefFile">
         <source>Could not find file '{0}'.</source>
-        <target state="new">Could not find file '{0}'.</target>
+        <target state="translated">No se pudo encontrar el archivo '{0}'.</target>
         <note>{0} is the file path.</note>
       </trans-unit>
       <trans-unit id="DirectiveError">
