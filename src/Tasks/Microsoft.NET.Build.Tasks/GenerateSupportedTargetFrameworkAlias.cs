@@ -10,8 +10,19 @@ using NuGet.Frameworks;
 namespace Microsoft.NET.Build.Tasks
 {
     [MSBuildMultiThreadableTask]
-    public class GenerateSupportedTargetFrameworkAlias : TaskBase
+    public class GenerateSupportedTargetFrameworkAlias : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
+
         [Required]
         public ITaskItem[] SupportedTargetFramework { get; set; }
 
@@ -49,8 +60,8 @@ namespace Microsoft.NET.Build.Tasks
                         targetFrameworkAlias = $"{targetFrameworkAlias}-windows";
                     }
 
-                    var displayName = string.IsNullOrWhiteSpace(tfm.GetMetadata("DisplayName")) ? targetFrameworkAlias : tfm.GetMetadata("DisplayName");
-                    convertedTfms.Add(new TaskItem(targetFrameworkAlias, new Dictionary<string, string>() { { "DisplayName", displayName } }));
+                    var displayName = string.IsNullOrWhiteSpace(tfm.GetMetadata(MetadataKeys.DisplayName)) ? targetFrameworkAlias : tfm.GetMetadata(MetadataKeys.DisplayName);
+                    convertedTfms.Add(new TaskItem(targetFrameworkAlias, new Dictionary<string, string>() { { MetadataKeys.DisplayName, displayName } }));
                 }
             }
 
