@@ -14,6 +14,15 @@ namespace Microsoft.TemplateEngine.TestHelper
 
         public static void SetupNuGetConfigForPackagesLocation(string projectDirectory, string packagesLocation)
         {
+            SetupNuGetConfigForPackagesLocation(projectDirectory, new[] { packagesLocation });
+        }
+
+        public static void SetupNuGetConfigForPackagesLocation(string projectDirectory, IEnumerable<string> packagesLocations)
+        {
+            var sources = string.Join(
+                Environment.NewLine,
+                packagesLocations.Select((loc, i) => $@"    <add key=""testPackages{i}"" value=""{loc}"" />"));
+
             string nugetConfigShim =
 $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -22,7 +31,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
   </config>
   <packageSources>
     <clear />
-    <add key=""testPackages"" value=""{packagesLocation}"" />
+{sources}
   </packageSources>
 </configuration>";
 

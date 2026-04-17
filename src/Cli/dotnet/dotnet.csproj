@@ -83,7 +83,7 @@
     <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />
-    <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />

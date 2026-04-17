@@ -23,6 +23,7 @@ export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory
 export DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=$HELIX_CORRELATION_PAYLOAD/r
 export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/TestAssets
 export DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES=$TestExecutionDirectory/template_feed
+export DOTNET_SDK_TEST_TEMPLATE_SAMPLES_DIR=$TestExecutionDirectory/TemplateSamples
 
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
