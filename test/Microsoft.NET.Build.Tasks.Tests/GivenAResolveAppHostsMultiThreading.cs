@@ -16,14 +16,27 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// Tests for ResolveAppHosts multi-threading support.
     /// These tests verify:
     /// 1. Output path relativity preservation (AR-May finding #2)
-    /// 2. TaskEnvironment-based path resolution
+    /// 2. TaskEnvironment-based path resolution against ProjectDirectory (not process CWD)
+    ///
+    /// Both tests run on .NET Core (the test project's only TFM) using
+    /// TaskEnvironmentHelper.CreateForTest to construct a TaskEnvironment whose
+    /// ProjectDirectory differs from the process's current working directory (decoy CWD pattern).
     /// </summary>
     public class GivenAResolveAppHostsMultiThreading
     {
+        private const string PackName = "Microsoft.NETCore.App.Host.win-x64";
+        private const string PackVersion = "8.0.0";
+
         /// <summary>
-        /// AR-May Finding #2: Verify output path relativity is preserved.
-        /// When TargetingPackRoot is relative, output metadata should remain relative (not absolute).
-        /// This test would FAIL under the PR #52936 implementation without the OriginalValue fix.
+        /// AR-May Finding #2: Output metadata (PackageDirectory, Path) must preserve the
+        /// ORIGINAL (as-input) path form. When TargetingPackRoot is relative, output metadata
+        /// must remain relative even though the task absolutizes the path internally for
+        /// Directory.Exists. The absolutized form must NEVER leak into SetMetadata.
+        ///
+        /// Exercises the fix with a decoy CWD: TaskEnvironment.ProjectDirectory = testDir,
+        /// while the process's Directory.GetCurrentDirectory() is something else. If the
+        /// task accidentally used the process CWD to resolve the relative pack root, or
+        /// leaked the absolutized path into metadata, this test fails.
         /// </summary>
         [Fact]
         public void OutputPathRelativity_PreservesOriginalPaths()
@@ -31,188 +44,153 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string testDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             try
             {
+                // Sanity: the decoy. testDir must differ from process CWD so that a relative
+                // "packs" input can only resolve correctly via TaskEnvironment.ProjectDirectory.
                 Directory.CreateDirectory(testDir);
-                
-                // Create a relative targeting pack structure
+                testDir.Should().NotBe(Directory.GetCurrentDirectory(),
+                    "decoy CWD pattern requires ProjectDirectory != process CWD");
+
                 string relativePackRoot = "packs";
-                string absolutePackRoot = Path.Combine(testDir, relativePackRoot);
-                string packName = "Microsoft.NETCore.App.Host.win-x64";
-                string packVersion = "8.0.0";
-                string packPath = Path.Combine(absolutePackRoot, packName, packVersion);
+                string packPath = Path.Combine(testDir, relativePackRoot, PackName, PackVersion);
                 string nativePath = Path.Combine(packPath, "runtimes", "win-x64", "native");
-                
                 Directory.CreateDirectory(nativePath);
                 File.WriteAllText(Path.Combine(nativePath, "apphost.exe"), "fake apphost");
-                
-                // Create a minimal runtime graph
+                File.WriteAllText(Path.Combine(nativePath, "singlefilehost.exe"), "fake");
+                File.WriteAllText(Path.Combine(nativePath, "comhost.dll"), "fake");
+                File.WriteAllText(Path.Combine(nativePath, "ijwhost.dll"), "fake");
+
                 string runtimeGraphPath = Path.Combine(testDir, "runtime.json");
-                File.WriteAllText(runtimeGraphPath, @"{
-  ""runtimes"": {
-    ""win-x64"": {
-      ""#import"": []
-    }
-  }
-}");
+                File.WriteAllText(runtimeGraphPath,
+                    "{ \"runtimes\": { \"win-x64\": { \"#import\": [] } } }");
 
-                var knownAppHostPacks = new ITaskItem[]
-                {
-                    new TaskItem("Microsoft.NETCore.App.Host", new Dictionary<string, string>
-                    {
-                        { "TargetFramework", "net8.0" },
-                        { "AppHostRuntimeIdentifiers", "win-x64" },
-                        { "AppHostPackNamePattern", "Microsoft.NETCore.App.Host.**RID**" },
-                        { "AppHostPackVersion", packVersion },
-                        { MetadataKeys.ExcludedRuntimeIdentifiers, "" }
-                    })
-                };
-
-                var task = new ResolveAppHosts
-                {
-                    BuildEngine = new MockBuildEngine(),
-                    TargetFrameworkIdentifier = ".NETCoreApp",
-                    TargetFrameworkVersion = "8.0",
-                    TargetingPackRoot = relativePackRoot,  // RELATIVE path
-                    AppHostRuntimeIdentifier = "win-x64",
-                    DotNetAppHostExecutableNameWithoutExtension = "apphost",
-                    DotNetSingleFileHostExecutableNameWithoutExtension = "singlefilehost",
-                    DotNetComHostLibraryNameWithoutExtension = "comhost",
-                    DotNetIjwHostLibraryNameWithoutExtension = "ijwhost",
-                    RuntimeGraphPath = runtimeGraphPath,
-                    KnownAppHostPacks = knownAppHostPacks,
-                    NuGetRestoreSupported = true,
-                    EnableAppHostPackDownload = false
-                };
-
-#if NETFRAMEWORK
-                task.TaskEnvironment = new TaskEnvironment(new ProcessTaskEnvironmentDriver(testDir));
-#else
-                // On .NET Core+, simulate TaskEnvironment by passing absolute path as TargetingPackRoot directly
-                // This test still validates the relativity behavior as we check if the metadata preserves original input
-                // The key fix is in the task itself, not in how TaskEnvironment is set up
-                task.TaskEnvironment = null!;
-#endif
+                var task = CreateTask(
+                    taskEnv: TaskEnvironmentHelper.CreateForTest(testDir),
+                    targetingPackRoot: relativePackRoot,   // RELATIVE path
+                    runtimeGraphPath: runtimeGraphPath);
 
                 bool result = task.Execute();
 
-                // Assert task succeeded
                 result.Should().BeTrue();
-                task.AppHost.Should().NotBeNull();
-                task.AppHost.Should().HaveCount(1);
+                task.AppHost.Should().NotBeNull().And.HaveCount(1);
 
                 var appHostItem = task.AppHost[0];
 
-                // CRITICAL: PackageDirectory metadata should preserve RELATIVE path (not absolute)
                 string packageDirMetadata = appHostItem.GetMetadata(MetadataKeys.PackageDirectory);
-                packageDirMetadata.Should().NotBeNullOrEmpty();
-                packageDirMetadata.Should().StartWith(relativePackRoot, "PackageDirectory should remain relative");
-                Path.IsPathRooted(packageDirMetadata).Should().BeFalse("PackageDirectory should not be absolute");
-
-                // CRITICAL: Path metadata should preserve RELATIVE path (not absolute)
                 string pathMetadata = appHostItem.GetMetadata(MetadataKeys.Path);
-                pathMetadata.Should().NotBeNullOrEmpty();
-                pathMetadata.Should().StartWith(relativePackRoot, "Path should remain relative");
-                Path.IsPathRooted(pathMetadata).Should().BeFalse("Path should not be absolute");
 
-                // Verify the path structure is correct (relative base + runtime path)
-                string expectedRelativePath = Path.Combine(relativePackRoot, packName, packVersion, "runtimes", "win-x64", "native", "apphost.exe");
-                pathMetadata.Should().Be(expectedRelativePath);
+                // CRITICAL: metadata must preserve relativity — the absolutized form used for
+                // Directory.Exists must NOT leak into SetMetadata.
+                packageDirMetadata.Should().NotBeNullOrEmpty();
+                Path.IsPathRooted(packageDirMetadata).Should().BeFalse(
+                    "PackageDirectory must remain relative when input TargetingPackRoot was relative");
+                packageDirMetadata.Should().Be(Path.Combine(relativePackRoot, PackName, PackVersion));
+
+                pathMetadata.Should().NotBeNullOrEmpty();
+                Path.IsPathRooted(pathMetadata).Should().BeFalse(
+                    "Path must remain relative when input TargetingPackRoot was relative");
+                pathMetadata.Should().Be(
+                    Path.Combine(relativePackRoot, PackName, PackVersion, "runtimes", "win-x64", "native", "apphost.exe"));
+
+                // Same guarantee must hold for the other three host outputs.
+                foreach (var item in new[] { task.SingleFileHost?[0], task.ComHost?[0], task.IjwHost?[0] })
+                {
+                    item.Should().NotBeNull();
+                    Path.IsPathRooted(item.GetMetadata(MetadataKeys.PackageDirectory)).Should().BeFalse();
+                    Path.IsPathRooted(item.GetMetadata(MetadataKeys.Path)).Should().BeFalse();
+                }
             }
             finally
             {
                 if (Directory.Exists(testDir))
                 {
-                    Directory.Delete(testDir, true);
+                    Directory.Delete(testDir, recursive: true);
                 }
             }
         }
 
         /// <summary>
-        /// Verify absolute paths work correctly (not just relative).
+        /// Absolute TargetingPackRoot input: outputs must still be absolute (OriginalValue == absolute input).
+        /// Also exercises the decoy CWD pattern to confirm absolute-path inputs are unaffected
+        /// by TaskEnvironment.ProjectDirectory.
         /// </summary>
         [Fact]
         public void AbsolutePathInput_WorksCorrectly()
         {
             string testDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            string decoyDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             try
             {
                 Directory.CreateDirectory(testDir);
-                
+                Directory.CreateDirectory(decoyDir);
+
                 string absolutePackRoot = Path.Combine(testDir, "packs");
-                SetupPackStructure(absolutePackRoot, "8.0.0");
+                string nativePath = Path.Combine(absolutePackRoot, PackName, PackVersion, "runtimes", "win-x64", "native");
+                Directory.CreateDirectory(nativePath);
+                File.WriteAllText(Path.Combine(nativePath, "apphost.exe"), "fake apphost");
 
                 string runtimeGraphPath = Path.Combine(testDir, "runtime.json");
-                File.WriteAllText(runtimeGraphPath, @"{
-  ""runtimes"": {
-    ""win-x64"": {
-      ""#import"": []
-    }
-  }
-}");
+                File.WriteAllText(runtimeGraphPath,
+                    "{ \"runtimes\": { \"win-x64\": { \"#import\": [] } } }");
 
-                var knownAppHostPacks = new ITaskItem[]
-                {
-                    new TaskItem("Microsoft.NETCore.App.Host", new Dictionary<string, string>
-                    {
-                        { "TargetFramework", "net8.0" },
-                        { "AppHostRuntimeIdentifiers", "win-x64" },
-                        { "AppHostPackNamePattern", "Microsoft.NETCore.App.Host.**RID**" },
-                        { "AppHostPackVersion", "8.0.0" },
-                        { MetadataKeys.ExcludedRuntimeIdentifiers, "" }
-                    })
-                };
-
-                var task = new ResolveAppHosts
-                {
-                    BuildEngine = new MockBuildEngine(),
-                    TargetFrameworkIdentifier = ".NETCoreApp",
-                    TargetFrameworkVersion = "8.0",
-                    TargetingPackRoot = absolutePackRoot,  // ABSOLUTE path
-                    AppHostRuntimeIdentifier = "win-x64",
-                    DotNetAppHostExecutableNameWithoutExtension = "apphost",
-                    DotNetSingleFileHostExecutableNameWithoutExtension = "singlefilehost",
-                    DotNetComHostLibraryNameWithoutExtension = "comhost",
-                    DotNetIjwHostLibraryNameWithoutExtension = "ijwhost",
-                    RuntimeGraphPath = runtimeGraphPath,
-                    KnownAppHostPacks = knownAppHostPacks,
-                    NuGetRestoreSupported = true,
-                    EnableAppHostPackDownload = false
-                };
-
-#if NETFRAMEWORK
-                task.TaskEnvironment = new TaskEnvironment(new ProcessTaskEnvironmentDriver(testDir));
-#else
-                task.TaskEnvironment = null!;
-#endif
+                // decoyDir as ProjectDirectory proves absolute-path handling does not depend on it.
+                var task = CreateTask(
+                    taskEnv: TaskEnvironmentHelper.CreateForTest(decoyDir),
+                    targetingPackRoot: absolutePackRoot,   // ABSOLUTE path
+                    runtimeGraphPath: runtimeGraphPath);
 
                 bool result = task.Execute();
 
                 result.Should().BeTrue();
-                task.AppHost.Should().NotBeNull();
-                task.AppHost.Should().HaveCount(1);
+                task.AppHost.Should().NotBeNull().And.HaveCount(1);
 
-                // With absolute input, output should also be absolute (OriginalValue = Value)
                 string packageDirMetadata = task.AppHost[0].GetMetadata(MetadataKeys.PackageDirectory);
-                Path.IsPathRooted(packageDirMetadata).Should().BeTrue("Absolute input should produce absolute output");
-                packageDirMetadata.Should().StartWith(absolutePackRoot);
+                Path.IsPathRooted(packageDirMetadata).Should().BeTrue(
+                    "absolute input must produce absolute output");
+                packageDirMetadata.Should().Be(Path.Combine(absolutePackRoot, PackName, PackVersion));
+
+                string pathMetadata = task.AppHost[0].GetMetadata(MetadataKeys.Path);
+                Path.IsPathRooted(pathMetadata).Should().BeTrue();
+                pathMetadata.Should().Be(Path.Combine(absolutePackRoot, PackName, PackVersion,
+                    "runtimes", "win-x64", "native", "apphost.exe"));
             }
             finally
             {
-                if (Directory.Exists(testDir))
-                {
-                    Directory.Delete(testDir, true);
-                }
+                if (Directory.Exists(testDir)) Directory.Delete(testDir, recursive: true);
+                if (Directory.Exists(decoyDir)) Directory.Delete(decoyDir, recursive: true);
             }
         }
 
-        private static void SetupPackStructure(string packRoot, string version)
+        private static ResolveAppHosts CreateTask(TaskEnvironment taskEnv, string targetingPackRoot, string runtimeGraphPath)
         {
-            string packName = "Microsoft.NETCore.App.Host.win-x64";
-            string packPath = Path.Combine(packRoot, packName, version);
-            string nativePath = Path.Combine(packPath, "runtimes", "win-x64", "native");
-            
-            Directory.CreateDirectory(nativePath);
-            File.WriteAllText(Path.Combine(nativePath, "apphost.exe"), "fake apphost");
+            var knownAppHostPacks = new ITaskItem[]
+            {
+                new TaskItem("Microsoft.NETCore.App.Host", new Dictionary<string, string>
+                {
+                    { "TargetFramework", "net8.0" },
+                    { "AppHostRuntimeIdentifiers", "win-x64" },
+                    { "AppHostPackNamePattern", "Microsoft.NETCore.App.Host.**RID**" },
+                    { "AppHostPackVersion", PackVersion },
+                    { MetadataKeys.ExcludedRuntimeIdentifiers, "" }
+                })
+            };
+
+            return new ResolveAppHosts
+            {
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = taskEnv,
+                TargetFrameworkIdentifier = ".NETCoreApp",
+                TargetFrameworkVersion = "8.0",
+                TargetingPackRoot = targetingPackRoot,
+                AppHostRuntimeIdentifier = "win-x64",
+                DotNetAppHostExecutableNameWithoutExtension = "apphost",
+                DotNetSingleFileHostExecutableNameWithoutExtension = "singlefilehost",
+                DotNetComHostLibraryNameWithoutExtension = "comhost",
+                DotNetIjwHostLibraryNameWithoutExtension = "ijwhost",
+                RuntimeGraphPath = runtimeGraphPath,
+                KnownAppHostPacks = knownAppHostPacks,
+                NuGetRestoreSupported = true,
+                EnableAppHostPackDownload = false,
+            };
         }
     }
 }
-
