@@ -1,3 +1,7 @@
+# This workflow updates XLF files whenever a maintainer comments /updatexlf on
+# a pull request.
+# Keep documentation/project-docs/developer-guide.md up to date with changes in
+# this workflow.
 name: Update XLF files on command
 
 on:

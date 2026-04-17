@@ -1,3 +1,7 @@
+# This workflow updates snapshots for CLI completion tests whenever a
+# maintainer comments /fixcompletions on a pull request.
+# Keep documentation/project-docs/developer-guide.md up to date with changes in
+# this workflow.
 name: Fix completion snapshots on command
 
 on:
