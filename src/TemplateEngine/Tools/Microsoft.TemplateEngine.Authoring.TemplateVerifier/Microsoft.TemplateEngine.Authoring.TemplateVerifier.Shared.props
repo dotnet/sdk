@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,9 +27,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests" Key="$(TemplateEnginePublicKey)" />
     <InternalsVisibleTo Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests" Key="$(TemplateEnginePublicKey)" />
-    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests.XunitV3" Key="$(TemplateEnginePublicKey)" />
     <InternalsVisibleTo Include="Microsoft.TemplateEngine.Authoring.TemplateApiVerifier" Key="$(TemplateEnginePublicKey)" />
-    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.XunitV3" Key="$(TemplateEnginePublicKey)" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(DynamicProxyGenAssembly2PublicKey)" />
   </ItemGroup>
 
