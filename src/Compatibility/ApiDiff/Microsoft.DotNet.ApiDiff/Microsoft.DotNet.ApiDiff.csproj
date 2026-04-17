@@ -16,4 +16,8 @@
     <EmbeddedResource Update="Resources.resx" GenerateSource="True" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.DotNet.ApiDiff.Tests" Key="$(MicrosoftSharedPublicKey)" />
+  </ItemGroup>
+
 </Project>

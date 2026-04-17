@@ -451,7 +451,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         return node.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(leadingTrivia);
     }
 
-    private static SyntaxTriviaList GetLeadingTriviaForDiff(MemberDeclarationSyntax node)
+    internal static SyntaxTriviaList GetLeadingTriviaForDiff(MemberDeclarationSyntax node)
     {
         SyntaxTriviaList leadingTrivia = node.GetLeadingTrivia();
         if (leadingTrivia.Count > 0)
