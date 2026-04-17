@@ -12,9 +12,11 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [Fact]
         public void ItFailsWithAnAppropriateErrorMessage()
         {
+            // Use a dedicated empty directory to ensure no stray files are picked up from other tests.
+            var emptyDir = TestAssetsManager.CreateTestDirectory().Path;
+
             new DotnetCommand(Log, "run")
-                // executing in a known path, with no project, is a sure way to get run to throw a parse error
-                .WithWorkingDirectory(Path.GetTempPath())
+                .WithWorkingDirectory(emptyDir)
                 .Execute("--", "1")
                 .Should().Fail()
                 .And.HaveStdErrContainingOnce("Couldn't find a project to run.");
