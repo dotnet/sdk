@@ -46,7 +46,7 @@ extends:
   parameters:
     pool:
       name: NetCore1ESPool-Svc-Internal
-      image: 1es-ubuntu-2204
+      image: build.azurelinux.3.amd64
       os: linux
     sdl:
       sourceAnalysisPool:
