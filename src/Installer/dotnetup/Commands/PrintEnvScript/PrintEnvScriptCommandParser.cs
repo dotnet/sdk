@@ -2,33 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Completions;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 internal static class PrintEnvScriptCommandParser
 {
-    public static readonly Option<IEnvShellProvider?> ShellOption = new("--shell", "-s")
-    {
-        Description = $"The shell for which to generate the environment script (supported: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}). If not specified, the current shell will be detected.",
-        Arity = ArgumentArity.ZeroOrOne,
-        // called when no token is presented at all
-        DefaultValueFactory = (optionResult) => ShellDetection.GetCurrentShellProvider(),
-        // called for all other scenarios
-        CustomParser = (optionResult) =>
-        {
-            return optionResult.Tokens switch
-            {
-                // shouldn't be required because of the DefaultValueFactory above
-                [] => ShellDetection.GetCurrentShellProvider(),
-                [var shellToken] => ShellDetection.GetShellProvider(shellToken.Value),
-                _ => throw new InvalidOperationException("Unexpected number of tokens") // this is impossible because of the Arity set above
-            };
-        },
-        Validators = { OnlyAcceptSupportedShells() },
-        CompletionSources = { CreateCompletions() }
-    };
+    public static readonly Option<IEnvShellProvider?> ShellOption = CommonOptions.ShellOption;
 
     public static readonly Option<string?> DotnetInstallPathOption = new("--dotnet-install-path", "-d")
     {
@@ -60,29 +40,5 @@ internal static class PrintEnvScriptCommandParser
         command.SetAction(parseResult => new PrintEnvScriptCommand(parseResult).Execute());
 
         return command;
-    }
-
-    private static Action<System.CommandLine.Parsing.OptionResult> OnlyAcceptSupportedShells()
-    {
-        return (System.CommandLine.Parsing.OptionResult optionResult) =>
-        {
-            if (optionResult.Tokens.Count == 0)
-            {
-                return;
-            }
-            var singleToken = optionResult.Tokens[0];
-            if (!ShellDetection.IsSupported(singleToken.Value))
-            {
-                optionResult.AddError($"Unsupported shell '{singleToken.Value}'. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
-            }
-        };
-    }
-
-    private static Func<CompletionContext, IEnumerable<CompletionItem>> CreateCompletions()
-    {
-        return (CompletionContext context) =>
-        {
-            return ShellDetection.s_supportedShells.Select(s => new CompletionItem(s.ArgumentName, documentation: s.HelpDescription));
-        };
     }
 }

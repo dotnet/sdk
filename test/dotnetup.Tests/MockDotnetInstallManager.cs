@@ -4,6 +4,7 @@
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
@@ -53,7 +54,7 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
 
-    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
+    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null)
     {
         ApplyEnvironmentModificationsCallCount++;
     }

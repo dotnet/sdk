@@ -4,6 +4,8 @@
 using System.CommandLine;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using System.CommandLine.Completions;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -55,6 +57,24 @@ internal class CommonOptions
     {
         HelpName = "INSTALL_PATH",
         Description = "The path to install .NET to",
+    };
+
+    public static readonly Option<IEnvShellProvider?> ShellOption = new("--shell", "-s")
+    {
+        Description = $"The shell to use for profile-based environment configuration (supported: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}). If not specified, the current shell will be detected.",
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => ShellDetection.GetCurrentShellProvider(),
+        CustomParser = (optionResult) =>
+        {
+            return optionResult.Tokens switch
+            {
+                [] => ShellDetection.GetCurrentShellProvider(),
+                [var shellToken] => ShellDetection.GetShellProvider(shellToken.Value),
+                _ => throw new InvalidOperationException("Unexpected number of tokens")
+            };
+        },
+        Validators = { ValidateShellOption() },
+        CompletionSources = { CreateShellCompletions() }
     };
 
     public static readonly Option<bool?> SetDefaultInstallOption = new("--set-default-install")
@@ -166,4 +186,27 @@ internal class CommonOptions
 
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
+
+    private static Action<System.CommandLine.Parsing.OptionResult> ValidateShellOption()
+    {
+        return (System.CommandLine.Parsing.OptionResult optionResult) =>
+        {
+            if (optionResult.Tokens.Count == 0)
+            {
+                return;
+            }
+
+            var shellToken = optionResult.Tokens[0];
+            if (!ShellDetection.IsSupported(shellToken.Value))
+            {
+                optionResult.AddError($"Unsupported shell '{shellToken.Value}'. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
+            }
+        };
+    }
+
+    private static Func<CompletionContext, IEnumerable<CompletionItem>> CreateShellCompletions()
+    {
+        return _ => ShellDetection.s_supportedShells
+            .Select(s => new CompletionItem(s.ArgumentName, documentation: s.HelpDescription));
+    }
 }

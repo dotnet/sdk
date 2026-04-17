@@ -84,6 +84,30 @@ public class EnvShellProviderTests
     }
 
     [Fact]
+    public void ZshProvider_ShouldPreferZdotdirForProfilePath()
+    {
+        var originalZdotdir = Environment.GetEnvironmentVariable("ZDOTDIR");
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(temporaryDirectory);
+
+        try
+        {
+            Environment.SetEnvironmentVariable("ZDOTDIR", temporaryDirectory);
+
+            var provider = new ZshEnvShellProvider();
+            var paths = provider.GetProfilePaths();
+
+            paths.Should().ContainSingle();
+            paths[0].Should().Be(Path.Combine(temporaryDirectory, ".zshrc"));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ZDOTDIR", originalZdotdir);
+            Directory.Delete(temporaryDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public void PowerShellProvider_ShouldGenerateValidScript()
     {
         // Arrange
@@ -129,6 +153,18 @@ public class EnvShellProviderTests
         var provider = ShellDetection.s_supportedShells.FirstOrDefault(s => s.ArgumentName == expectedName);
 
         // Assert
+        provider.Should().NotBeNull();
+        provider!.ArgumentName.Should().Be(expectedName);
+    }
+
+    [Theory]
+    [InlineData("/bin/bash", "bash")]
+    [InlineData("/bin/zsh", "zsh")]
+    [InlineData(@"C:\Program Files\PowerShell\7\pwsh.exe", "pwsh")]
+    public void ShellDetection_ShouldResolveProviderFromShellPath(string shellPath, string expectedName)
+    {
+        var provider = ShellDetection.GetShellProvider(shellPath);
+
         provider.Should().NotBeNull();
         provider!.ArgumentName.Should().Be(expectedName);
     }

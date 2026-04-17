@@ -266,7 +266,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             paths.Add(path);
         }
     }
-    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
+    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null)
     {
         if (OperatingSystem.IsWindows())
         {
@@ -312,22 +312,21 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
         else
         {
-            ConfigureInstallTypeUnix(installType, dotnetRoot);
+            ConfigureInstallTypeUnix(installType, dotnetRoot, shellProvider);
         }
     }
 
-    private static void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot)
+    private static void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot, IEnvShellProvider? shellProvider)
     {
-        var dotnetupPath = Environment.ProcessPath
-            ?? throw new DotnetInstallException(DotnetInstallErrorCode.Unknown, "Unable to determine the dotnetup executable path.");
+        var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
 
-        IEnvShellProvider? shellProvider = ShellDetection.GetCurrentShellProvider();
+        shellProvider ??= ShellDetection.GetCurrentShellProvider();
         if (shellProvider is null)
         {
             var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
+                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}. You can specify one explicitly with --shell.");
         }
 
         switch (installType)

@@ -25,13 +25,27 @@ public static class ShellDetection
     /// Looks up a shell provider by its argument name (e.g., "bash", "zsh", "pwsh").
     /// </summary>
     internal static IEnvShellProvider? GetShellProvider(string shellName)
-        => s_shellMap.GetValueOrDefault(shellName);
+    {
+        if (string.IsNullOrWhiteSpace(shellName))
+        {
+            return null;
+        }
+
+        if (s_shellMap.TryGetValue(shellName, out var provider))
+        {
+            return provider;
+        }
+
+        var resolvedShellPath = Microsoft.DotNet.NativeWrapper.FileInterop.ResolveRealPath(shellName) ?? shellName;
+        var normalizedShellName = Path.GetFileNameWithoutExtension(resolvedShellPath);
+        return s_shellMap.GetValueOrDefault(normalizedShellName);
+    }
 
     /// <summary>
     /// Checks whether a shell name is supported.
     /// </summary>
     internal static bool IsSupported(string shellName)
-        => s_shellMap.ContainsKey(shellName);
+        => GetShellProvider(shellName) is not null;
 
     /// <summary>
     /// Returns the <see cref="IEnvShellProvider"/> for the user's current shell,
@@ -50,7 +64,6 @@ public static class ShellDetection
             return null;
         }
 
-        var shellName = Path.GetFileName(shellPath);
-        return s_shellMap.GetValueOrDefault(shellName);
+        return GetShellProvider(shellPath);
     }
 }

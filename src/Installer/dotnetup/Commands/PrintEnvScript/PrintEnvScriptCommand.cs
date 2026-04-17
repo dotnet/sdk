@@ -50,7 +50,7 @@ internal class PrintEnvScriptCommand : CommandBase
             string installPath = _dotnetInstallPath ?? _dotnetEnvironment.GetDefaultDotnetInstallPath();
 
             // Determine the dotnetup directory so it can be added to PATH
-            string? dotnetupDir = Path.GetDirectoryName(Environment.ProcessPath);
+            string dotnetupDir = ShellProviderHelpers.GetDotnetupDirectoryOrThrow();
 
             // Generate the shell script
             bool includeDotnet = !_dotnetupOnly;

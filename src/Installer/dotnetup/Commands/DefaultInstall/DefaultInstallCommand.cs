@@ -10,11 +10,13 @@ internal class DefaultInstallCommand : CommandBase
 {
     private readonly string _installType;
     private readonly InstallRootManager _installRootManager;
+    private readonly IEnvShellProvider? _shellProvider;
 
     public DefaultInstallCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
     {
         _installType = result.GetValue(DefaultInstallCommandParser.InstallTypeArgument)!;
         _installRootManager = new InstallRootManager(dotnetEnvironment);
+        _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
 
     protected override string GetCommandName() => "defaultinstall";
@@ -33,31 +35,8 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            var dotnetupPath = Environment.ProcessPath
-                ?? throw new DotnetInstallException(DotnetInstallErrorCode.Unknown, "Unable to determine the dotnetup executable path.");
             var userDotnetPath = _installRootManager.GetUserInstallRootChanges().UserDotnetPath;
-            var shellProvider = GetCurrentShellProviderOrThrow();
-
-            var modifiedFiles = ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: userDotnetPath);
-
-            if (modifiedFiles.Count == 0)
-            {
-                Console.WriteLine("Shell profile is already configured for dotnetup.");
-            }
-            else
-            {
-                Console.WriteLine("Updated shell profile files:");
-                foreach (var file in modifiedFiles)
-                {
-                    Console.WriteLine($"  {file}");
-                }
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("To start using .NET in this terminal, run:");
-            Console.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath, dotnetInstallPath: userDotnetPath)}");
-
-            return 0;
+            return SetUnixShellProfile(dotnetupOnly: false, userDotnetPath);
         }
 
         var changes = _installRootManager.GetUserInstallRootChanges();
@@ -89,28 +68,7 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            // On Unix, switching to admin means the system manages dotnet.
-            // Replace profile entries with dotnetup-only (keeps dotnetup on PATH but removes DOTNET_ROOT and dotnet PATH).
-            var dotnetupPath = Environment.ProcessPath
-                ?? throw new DotnetInstallException(DotnetInstallErrorCode.Unknown, "Unable to determine the dotnetup executable path.");
-            var shellProvider = GetCurrentShellProviderOrThrow();
-
-            var modifiedFiles = ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
-
-            if (modifiedFiles.Count == 0)
-            {
-                Console.WriteLine("Shell profile is already configured.");
-            }
-            else
-            {
-                Console.WriteLine("Updated shell profile files (dotnetup only, no DOTNET_ROOT or dotnet PATH):");
-                foreach (var file in modifiedFiles)
-                {
-                    Console.WriteLine($"  {file}");
-                }
-            }
-
-            return 0;
+            return SetUnixShellProfile(dotnetupOnly: true);
         }
 
         var changes = _installRootManager.GetAdminInstallRootChanges();
@@ -136,15 +94,54 @@ internal class DefaultInstallCommand : CommandBase
         return 0;
     }
 
-    private static IEnvShellProvider GetCurrentShellProviderOrThrow()
+    private int SetUnixShellProfile(bool dotnetupOnly, string? dotnetInstallPath = null)
     {
-        var shellProvider = ShellDetection.GetCurrentShellProvider();
+        var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
+        var shellProvider = GetCurrentShellProviderOrThrow();
+
+        var modifiedFiles = ShellProfileManager.AddProfileEntries(
+            shellProvider,
+            dotnetupPath,
+            dotnetupOnly,
+            dotnetInstallPath);
+
+        if (modifiedFiles.Count == 0)
+        {
+            Console.WriteLine(dotnetupOnly
+                ? "Shell profile is already configured."
+                : "Shell profile is already configured for dotnetup.");
+        }
+        else
+        {
+            Console.WriteLine(dotnetupOnly
+                ? "Updated shell profile files (dotnetup only, no DOTNET_ROOT or dotnet PATH):"
+                : "Updated shell profile files:");
+
+            foreach (var file in modifiedFiles)
+            {
+                Console.WriteLine($"  {file}");
+            }
+        }
+
+        if (!dotnetupOnly)
+        {
+            Console.WriteLine();
+            Console.WriteLine("To start using .NET in this terminal, run:");
+            Console.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath, dotnetInstallPath: dotnetInstallPath)}");
+        }
+
+        return 0;
+    }
+
+    private IEnvShellProvider GetCurrentShellProviderOrThrow()
+    {
+        var shellProvider = _shellProvider ?? ShellDetection.GetCurrentShellProvider();
         if (shellProvider is null)
         {
             var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
+                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}. You can specify one explicitly with --shell.");
         }
 
         return shellProvider;

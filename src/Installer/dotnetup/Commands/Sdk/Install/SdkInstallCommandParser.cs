@@ -46,6 +46,7 @@ internal static class SdkInstallCommandParser
         command.Options.Add(CommonOptions.ManifestPathOption);
 
         command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.ShellOption);
         command.Options.Add(CommonOptions.NoProgressOption);
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);

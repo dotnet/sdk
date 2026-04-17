@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -23,7 +24,7 @@ internal interface IDotnetEnvironmentManager
 
     List<DotnetInstall> GetExistingSystemInstalls();
 
-    void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null);
+    void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null);
 
     /// <summary>
     /// Updates the global.json file to reflect the installed SDK version,

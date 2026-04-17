@@ -26,6 +26,7 @@ internal static class RuntimeInstallCommandParser
         command.Options.Add(CommonOptions.SetDefaultInstallOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.ShellOption);
         command.Options.Add(CommonOptions.NoProgressOption);
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);

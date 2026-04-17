@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Dotnet.Installation.Internal;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 public class BashEnvShellProvider : IEnvShellProvider
@@ -15,35 +13,17 @@ public class BashEnvShellProvider : IEnvShellProvider
 
     public override string ToString() => ArgumentName;
 
-    public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true)
+    public string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true)
     {
-        var escapedPath = dotnetInstallPath.Replace("'", "'\\''", StringComparison.Ordinal);
-        var escapedDotnetupDir = dotnetupDir?.Replace("'", "'\\''", StringComparison.Ordinal);
-
-        string pathExport;
-        if (includeDotnet && escapedDotnetupDir is not null)
-        {
-            pathExport = $"export PATH='{escapedDotnetupDir}':'{escapedPath}':$PATH";
-        }
-        else if (includeDotnet)
-        {
-            pathExport = $"export PATH='{escapedPath}':$PATH";
-        }
-        else if (escapedDotnetupDir is not null)
-        {
-            pathExport = $"export PATH='{escapedDotnetupDir}':$PATH";
-        }
-        else
-        {
-            pathExport = "";
-        }
+        var escapedPath = ShellProviderHelpers.EscapePosixPath(dotnetInstallPath);
+        var pathExport = ShellProviderHelpers.BuildPosixPathExport(escapedPath, dotnetupDir, includeDotnet);
 
         if (!includeDotnet)
         {
             return
                 $"""
                 #!/usr/bin/env bash
-                # This script adds dotnetup to your PATH
+                {ShellProviderHelpers.GetDotnetupOnlyComment()}
                 {pathExport}
                 hash -d dotnet 2>/dev/null
                 hash -d dotnetup 2>/dev/null
@@ -53,7 +33,7 @@ public class BashEnvShellProvider : IEnvShellProvider
         return
             $"""
             #!/usr/bin/env bash
-            # This script configures the environment for .NET installed at {dotnetInstallPath}
+            {ShellProviderHelpers.GetEnvironmentConfigurationComment(dotnetInstallPath)}
 
             export DOTNET_ROOT='{escapedPath}'
             {pathExport}
@@ -64,7 +44,7 @@ public class BashEnvShellProvider : IEnvShellProvider
 
     public IReadOnlyList<string> GetProfilePaths()
     {
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var home = ShellProviderHelpers.GetUserHomeDirectoryOrThrow();
         var paths = new List<string> { Path.Combine(home, ".bashrc") };
 
         // For login shells, use the first existing of .bash_profile / .profile.
@@ -87,29 +67,17 @@ public class BashEnvShellProvider : IEnvShellProvider
 
     public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
     {
-        var escapedPath = dotnetupPath.Replace("'", "'\\''", StringComparison.Ordinal);
-        var flags = GetFlags(dotnetupOnly, dotnetInstallPath);
-        return $"{ShellProfileManager.MarkerComment}\neval \"$('{escapedPath}' print-env-script --shell bash{flags})\"";
+        var escapedPath = ShellProviderHelpers.EscapePosixPath(dotnetupPath);
+        var flags = ShellProviderHelpers.GetCommandFlags(dotnetupOnly, dotnetInstallPath, ShellProviderHelpers.EscapePosixPath);
+        var command = ShellProviderHelpers.AppendArguments($"'{escapedPath}' print-env-script --shell bash", flags);
+        return $"{ShellProfileManager.MarkerComment}\neval \"$({command})\"";
     }
 
     public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
     {
-        var escapedPath = dotnetupPath.Replace("'", "'\\''", StringComparison.Ordinal);
-        var flags = GetFlags(dotnetupOnly, dotnetInstallPath);
-        return $"eval \"$('{escapedPath}' print-env-script --shell bash{flags})\"";
-    }
-
-    private static string GetFlags(bool dotnetupOnly, string? dotnetInstallPath)
-    {
-        var flags = dotnetupOnly ? " --dotnetup-only" : "";
-        if (!dotnetupOnly &&
-            dotnetInstallPath is { Length: > 0 } installPath &&
-            !DotnetupUtilities.PathsEqual(installPath, DotnetupPaths.DefaultDotnetInstallPath))
-        {
-            var escapedInstallPath = installPath.Replace("'", "'\\''", StringComparison.Ordinal);
-            flags += $" --dotnet-install-path '{escapedInstallPath}'";
-        }
-
-        return flags;
+        var escapedPath = ShellProviderHelpers.EscapePosixPath(dotnetupPath);
+        var flags = ShellProviderHelpers.GetCommandFlags(dotnetupOnly, dotnetInstallPath, ShellProviderHelpers.EscapePosixPath);
+        var command = ShellProviderHelpers.AppendArguments($"'{escapedPath}' print-env-script --shell bash", flags);
+        return $"eval \"$({command})\"";
     }
 }
