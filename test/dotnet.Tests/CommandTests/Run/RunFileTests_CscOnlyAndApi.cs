@@ -361,7 +361,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             .And.HaveStdOutContaining("error CS0246");
     }
 
-    [Fact]
+    [Fact(Skip = "https://github.com/dotnet/sdk/issues/53930 - Temporarily disabled for Helix scheduling analysis")]
     public void CscOnly()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
