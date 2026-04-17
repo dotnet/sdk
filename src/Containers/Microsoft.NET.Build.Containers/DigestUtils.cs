@@ -65,12 +65,11 @@ internal sealed class DigestUtils
 
     /// <summary>
     /// Validates a digest string against the OCI grammar and registered
-    /// algorithms. Throws <see cref="ArgumentException"/> if the digest is
-    /// invalid.
+    /// algorithms. Throws <see cref="InvalidDigestException"/> if the digest
+    /// is invalid.
     /// </summary>
     /// <remarks>
     /// <c>ValidateDigest("sha256:e3b0c4...")</c> succeeds.
-    /// <c>ValidateDigest("md5:abc")</c> throws <see cref="ArgumentException"/>.
     /// </remarks>
     internal static void ValidateDigest(string digest) => ValidateAndParseDigest(digest, out _, out _);
 
@@ -104,7 +103,7 @@ internal sealed class DigestUtils
     /// <summary>
     /// Validates a digest string against the OCI grammar and registered
     /// algorithms, returning the parsed algorithm and encoded portions. Throws
-    /// <see cref="ArgumentException"/> if the digest is malformed, uses an
+    /// <see cref="InvalidDigestException"/> if the digest is malformed, uses an
     /// unsupported algorithm, or the encoded value does not match the
     /// algorithm's expected format.
     /// </summary>
@@ -118,7 +117,8 @@ internal sealed class DigestUtils
 
         if (!match.Success)
         {
-            throw new ArgumentException($"Invalid digest '{digest}'.", nameof(digest));
+            throw new InvalidDigestException(
+                $"Digest '{digest}' does not match expected pattern '{ReferenceParser.AnchoredDigestRegexp}'.");
         }
 
         algorithm = match.Groups[1].Value;
@@ -127,16 +127,14 @@ internal sealed class DigestUtils
         if (!s_registeredAlgorithms.TryGetValue(algorithm, out Regex? encodedPattern))
         {
             string supportedAlgorithms = string.Join(", ", s_registeredAlgorithms.Keys);
-            throw new ArgumentException(
-                message: $"Unsupported digest algorithm '{algorithm}'. Supported algorithms: {supportedAlgorithms}.",
-                paramName: nameof(digest));
+            throw new InvalidDigestException(
+                $"Unsupported digest algorithm '{algorithm}'. Supported algorithms: {supportedAlgorithms}.");
         }
 
         if (!encodedPattern.IsMatch(encoded))
         {
-            throw new ArgumentException(
-                message: $"Invalid encoded digest value for algorithm '{algorithm}'.",
-                paramName: nameof(digest));
+            throw new InvalidDigestException(
+                $"Digest '{digest}' encoded value does not match expected pattern for algorithm '{algorithm}': '{encodedPattern}'.");
         }
     }
 }

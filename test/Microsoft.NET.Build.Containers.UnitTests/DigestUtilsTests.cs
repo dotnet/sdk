@@ -31,7 +31,7 @@ public class DigestUtilsTests
     [InlineData("blake3:abc")] // blake3 not currently supported
     public void GetEncoded_RejectsInvalidDigest(string digest)
     {
-        Assert.Throws<ArgumentException>(() =>
+        Assert.Throws<InvalidDigestException>(() =>
             DigestUtils.GetEncoded(digest));
     }
 

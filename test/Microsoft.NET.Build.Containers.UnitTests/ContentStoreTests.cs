@@ -22,7 +22,7 @@ public class ContentStoreTests
     public void PathForDescriptor_RejectsInvalidDigest(string digest)
     {
         Descriptor descriptor = CreateDescriptorWithDigest(digest);
-        Assert.Throws<ArgumentException>(() =>
+        Assert.Throws<InvalidDigestException>(() =>
             ContentStore.PathForDescriptor(descriptor));
     }
 
