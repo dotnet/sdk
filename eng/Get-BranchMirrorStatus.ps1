@@ -14,9 +14,9 @@
     Number of AzDo commits to fetch when searching for the GitHub SHA. Default: 50.
 
 .EXAMPLE
-    ./branch-mirror-status.ps1
-    ./branch-mirror-status.ps1 -SearchDepth 100
-    ./branch-mirror-status.ps1 > status.md
+    ./eng/Get-BranchMirrorStatus.ps1
+    ./eng/Get-BranchMirrorStatus.ps1 -SearchDepth 100
+    ./eng/Get-BranchMirrorStatus.ps1 > status.md
 #>
 
 [CmdletBinding()]
@@ -29,7 +29,7 @@ $ErrorActionPreference = 'Continue'
 $AzDoOrg = "https://dev.azure.com/dnceng"
 $AzDoResourceId = "499b84ac-1321-427f-aa17-267ca6975798"
 
-# Branch mappings from .claude/skills/branch-mirror-status/SKILL.md
+# Branch mappings for GitHub-to-Azure-DevOps mirror status checks.
 $Mappings = @(
     @{ GHOrg = 'dotnet'; GHRepo = 'sdk'; GHBranch = 'release/8.0.1xx'; AzDoProject = 'internal'; AzDoRepo = 'dotnet-sdk'; AzDoBranch = 'internal/release/8.0.1xx' }
     @{ GHOrg = 'dotnet'; GHRepo = 'sdk'; GHBranch = 'release/8.0.4xx'; AzDoProject = 'internal'; AzDoRepo = 'dotnet-sdk'; AzDoBranch = 'internal/release/8.0.4xx' }
@@ -43,7 +43,7 @@ function Format-TableCell {
     param([string]$Text, [int]$MaxLength = 80)
 
     if ([string]::IsNullOrEmpty($Text)) { return '' }
-    $Text = $Text -replace '\|', '\|'
+    $Text = $Text -replace '\|', '\\|'
     $Text = $Text -replace '\r?\n', ' '
     if ($Text.Length -gt $MaxLength) {
         $Text = $Text.Substring(0, $MaxLength - 3) + '...'
