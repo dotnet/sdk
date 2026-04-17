@@ -16,8 +16,19 @@ namespace Microsoft.NET.Build.Tasks
     /// Tracking issue https://github.com/dotnet/roslyn-project-system/issues/587
     /// </summary>
     [MSBuildMultiThreadableTask]
-    public class CollectSDKReferencesDesignTime : TaskBase
+    public class CollectSDKReferencesDesignTime : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
+
         [Required]
         public ITaskItem[] SdkReferences { get; set; }
 
