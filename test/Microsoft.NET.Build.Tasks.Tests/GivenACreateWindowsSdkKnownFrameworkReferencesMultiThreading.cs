@@ -212,11 +212,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var scenario3Base = taskInstances[2].KnownFrameworkReferences.First(r => r.ItemSpec == "Microsoft.Windows.SDK.NET.Ref");
             scenario3Base.GetMetadata("DefaultRuntimeFrameworkVersion").Should().Be("10.0.19041.8");
 
-            // Scenario 4: Multiple supported platform versions
-            taskInstances[3].KnownFrameworkReferences.Should().HaveCount(5,
-                "should match the TargetPlatformVersion 10.0.22621.0");
-            var scenario4Base = taskInstances[3].KnownFrameworkReferences.First(r => r.ItemSpec == "Microsoft.Windows.SDK.NET.Ref");
-            scenario4Base.GetMetadata("DefaultRuntimeFrameworkVersion").Should().Be("10.0.22621.15");
+            // Scenario 4: Multiple supported platform versions produce a 5-item group per SDK version (10 total).
+            // The task does not filter by TargetPlatformVersion; that filtering happens later in ProcessFrameworkReferences.
+            taskInstances[3].KnownFrameworkReferences.Should().HaveCount(10,
+                "each supported Windows SDK version produces its own 5-item profile group");
+            var scenario4BaseVersions = taskInstances[3].KnownFrameworkReferences
+                .Where(r => r.ItemSpec == "Microsoft.Windows.SDK.NET.Ref")
+                .Select(r => r.GetMetadata("DefaultRuntimeFrameworkVersion"))
+                .ToArray();
+            scenario4BaseVersions.Should().BeEquivalentTo(new[] { "10.0.19041.8", "10.0.22621.15" });
 
             // Scenario 5: WindowsSdkPackageMinimumRevision bumps revision
             taskInstances[4].KnownFrameworkReferences.Should().HaveCount(5);
@@ -242,7 +246,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void ErrorCasesAreConcurrentlySafe()
+        public async Task ErrorCasesAreConcurrentlySafe()
         {
             var startGate = new ManualResetEventSlim(false);
             var tasks = new List<Task<bool>>();
@@ -286,15 +290,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             tasks.Add(Task.Run(() => { startGate.Wait(); return task3.Execute(); }));
 
             startGate.Set();
-            Task.WaitAll(tasks.ToArray());
+            var results = await Task.WhenAll(tasks);
 
-            tasks[0].Result.Should().BeFalse("task 1 should fail due to conflicting properties");
+            results[0].Should().BeFalse("task 1 should fail due to conflicting properties");
             engine1.Errors.Should().ContainSingle();
 
-            tasks[1].Result.Should().BeFalse("task 2 should fail due to conflicting properties");
+            results[1].Should().BeFalse("task 2 should fail due to conflicting properties");
             engine2.Errors.Should().ContainSingle();
 
-            tasks[2].Result.Should().BeTrue("task 3 should succeed with valid inputs");
+            results[2].Should().BeTrue("task 3 should succeed with valid inputs");
             engine3.Errors.Should().BeEmpty();
         }
 

@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class CreateWindowsSdkKnownFrameworkReferences : TaskBase, IMultiThreadableTask
     {
-        public TaskEnvironment? TaskEnvironment { get; set; }
+        public TaskEnvironment TaskEnvironment { get; set; }
 
         public bool UseWindowsSDKPreview { get; set; }
 
