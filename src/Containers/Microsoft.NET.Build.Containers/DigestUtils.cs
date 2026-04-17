@@ -25,50 +25,65 @@ internal sealed class DigestUtils
     /// </summary>
     private static readonly Dictionary<string, Regex> s_registeredAlgorithms = new(StringComparer.Ordinal)
     {
+        // TODO: Use GeneratedRegexAttribute when
+        // https://github.com/dotnet/sdk/pull/53547 is merged.
         ["sha256"] = new Regex(@"^[a-f0-9]{64}$"),
     };
 
     /// <summary>
     /// Computes the SHA-256 digest of <paramref name="content"/> and returns
-    /// the full digest string (e.g. "sha256:abcdef...").
+    /// the full digest string.
     /// </summary>
+    /// <remarks>
+    /// <c>ComputeSha256Digest("")</c> returns <c>"sha256:e3b0c4..."</c>.
+    /// </remarks>
     internal static string ComputeSha256Digest(string content) => FormatSha256Digest(ComputeSha256(content));
 
     /// <summary>
     /// Formats a SHA-256 digest string from an already-computed encoded hash
-    /// value.
+    /// value. The encoded value is lowercased to conform to the OCI spec.
+    /// Throws <see cref="ArgumentException"/> if <paramref name="encoded"/>
+    /// is not exactly 64 hex characters.
     /// </summary>
-    internal static string FormatSha256Digest(string encoded) => $"sha256:{encoded}";
+    /// <remarks>
+    /// <c>FormatSha256Digest("abcdef...")</c> returns
+    /// <c>"sha256:abcdef..."</c>.
+    /// </remarks>
+    internal static string FormatSha256Digest(string encoded)
+    {
+        encoded = encoded.ToLowerInvariant();
+
+        if (!s_registeredAlgorithms["sha256"].IsMatch(encoded))
+        {
+            throw new ArgumentException(
+                message: $"SHA-256 value '{encoded}' does not match expected format '{s_registeredAlgorithms["sha256"]}'",
+                paramName: nameof(encoded));
+        }
+
+        return $"sha256:{encoded}";
+    }
 
     /// <summary>
     /// Validates a digest string against the OCI grammar and registered
-    /// algorithms, then returns the encoded portion. The algorithm identifier
-    /// is returned via <paramref name="algorithm"/>.
+    /// algorithms. Throws <see cref="ArgumentException"/> if the digest is
+    /// invalid.
     /// </summary>
+    /// <remarks>
+    /// <c>ValidateDigest("sha256:e3b0c4...")</c> succeeds.
+    /// <c>ValidateDigest("md5:abc")</c> throws <see cref="ArgumentException"/>.
+    /// </remarks>
+    internal static void ValidateDigest(string digest) => ValidateAndParseDigest(digest, out _, out _);
+
+    /// <summary>
+    /// Validates a digest string against the OCI grammar and registered
+    /// algorithms, then returns the encoded portion.
+    /// </summary>
+    /// <remarks>
+    /// <c>GetEncoded("sha256:e3b0c4...")</c> returns <c>"e3b0c4..."</c>.
+    /// </remarks>
     internal static string GetEncoded(string digest)
     {
-        Match match = ReferenceParser.AnchoredDigestRegexp.Match(digest);
-
-        if (!match.Success)
-        {
-            throw new ArgumentException($"Invalid digest '{digest}'.");
-        }
-
-        string algorithm = match.Groups[1].Value;
-        string encoded = match.Groups[2].Value;
-
-        if (!s_registeredAlgorithms.TryGetValue(algorithm, out Regex? encodedPattern))
-        {
-            string supportedAlgorithms = string.Join(", ", s_registeredAlgorithms.Keys);
-            throw new ArgumentException(
-                $"Unsupported digest algorithm '{algorithm}'. Supported algorithms: {supportedAlgorithms}.");
-        }
-
-        if (!encodedPattern.IsMatch(encoded))
-        {
-            throw new ArgumentException($"Invalid encoded digest value for algorithm '{algorithm}'.");
-        }
-
+        ValidateAndParseDigest(digest, out _, out string encoded);
         return encoded;
     }
 
@@ -76,10 +91,52 @@ internal sealed class DigestUtils
     /// Computes the SHA-256 hash of <paramref name="content"/> and returns it
     /// as a lowercase hex string.
     /// </summary>
+    /// <remarks>
+    /// <c>ComputeSha256("")</c> returns <c>"e3b0c4..."</c>.
+    /// </remarks>
     internal static string ComputeSha256(string content)
     {
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
         SHA256.HashData(Encoding.UTF8.GetBytes(content), hash);
         return Convert.ToHexStringLower(hash);
+    }
+
+    /// <summary>
+    /// Validates a digest string against the OCI grammar and registered
+    /// algorithms, returning the parsed algorithm and encoded portions. Throws
+    /// <see cref="ArgumentException"/> if the digest is malformed, uses an
+    /// unsupported algorithm, or the encoded value does not match the
+    /// algorithm's expected format.
+    /// </summary>
+    /// <remarks>
+    /// <c>ValidateAndParseDigest("sha256:e3b0c4...", out algorithm, out encoded)</c>
+    /// sets <c>algorithm</c> to <c>"sha256"</c> and <c>encoded</c> to <c>"e3b0c4..."</c>.
+    /// </remarks>
+    private static void ValidateAndParseDigest(string digest, out string algorithm, out string encoded)
+    {
+        Match match = ReferenceParser.AnchoredDigestRegexp.Match(digest);
+
+        if (!match.Success)
+        {
+            throw new ArgumentException($"Invalid digest '{digest}'.", nameof(digest));
+        }
+
+        algorithm = match.Groups[1].Value;
+        encoded = match.Groups[2].Value;
+
+        if (!s_registeredAlgorithms.TryGetValue(algorithm, out Regex? encodedPattern))
+        {
+            string supportedAlgorithms = string.Join(", ", s_registeredAlgorithms.Keys);
+            throw new ArgumentException(
+                message: $"Unsupported digest algorithm '{algorithm}'. Supported algorithms: {supportedAlgorithms}.",
+                paramName: nameof(digest));
+        }
+
+        if (!encodedPattern.IsMatch(encoded))
+        {
+            throw new ArgumentException(
+                message: $"Invalid encoded digest value for algorithm '{algorithm}'.",
+                paramName: nameof(digest));
+        }
     }
 }
