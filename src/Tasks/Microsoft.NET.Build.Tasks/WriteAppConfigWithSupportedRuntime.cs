@@ -4,11 +4,24 @@
 #nullable disable
 
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public sealed class WriteAppConfigWithSupportedRuntime : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class WriteAppConfigWithSupportedRuntime : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
+
         /// <summary>
         /// Path to the app.config source file.
         /// </summary>
@@ -34,8 +47,9 @@ namespace Microsoft.NET.Build.Tasks
 
             AddSupportedRuntimeToAppconfig(doc, TargetFrameworkIdentifier, TargetFrameworkVersion, TargetFrameworkProfile);
 
+            AbsolutePath outputPath = TaskEnvironment?.GetAbsolutePath(OutputAppConfigFile.ItemSpec) ?? new AbsolutePath(Path.GetFullPath(OutputAppConfigFile.ItemSpec));
             var fileStream = new FileStream(
-                OutputAppConfigFile.ItemSpec,
+                outputPath.Value,
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.Read);
@@ -44,6 +58,8 @@ namespace Microsoft.NET.Build.Tasks
             {
                 doc.Save(stream);
             }
+
+            OutputAppConfigFile.SetMetadata("FullPath", outputPath.OriginalValue);
         }
 
         public static void AddSupportedRuntimeToAppconfig(
@@ -156,7 +172,8 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                document = XDocument.Load(appConfigItem.ItemSpec);
+                AbsolutePath appConfigPath = TaskEnvironment?.GetAbsolutePath(appConfigItem.ItemSpec) ?? new AbsolutePath(Path.GetFullPath(appConfigItem.ItemSpec));
+                document = XDocument.Load(appConfigPath.Value);
                 if (document.Root == null || document.Root.Name != "configuration")
                 {
                     throw new BuildErrorException(Strings.AppConfigRequiresRootConfiguration);
