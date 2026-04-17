@@ -157,16 +157,7 @@ public class ResolveCompressedAssetsTest
         var result = task.Execute();
 
         result.Should().BeTrue();
-
-        if (OSPath.PathComparer.Equals(asset.ItemSpec, relatedAssetPath))
-        {
-            task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(0);
-        }
-        else
-        {
-            task.AssetsToCompress.TakeWhile(a => a != null).Should().ContainSingle()
-                .Which.ItemSpec.Should().EndWith(".gz");
-        }
+        task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(0);
     }
     [Fact]
     public void ResolvesAssetsMatchingIncludePattern()
