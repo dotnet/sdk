@@ -852,6 +852,41 @@ public class RunCommand
             ref args,
             out string? entryPointFilePath);
 
+        // Warn if an argument looks like a file-based program entry point but we're falling back to project-based run.
+        // This helps users who accidentally run `dotnet run file.cs` in a directory containing a project file.
+        // Do not warn if --project or --file was explicitly specified.
+        // Only consider arguments that appear before '--' in the command line.
+        if (projectFilePath is not null && projectOption is null && fileOption is null && !readCodeFromStdin)
+        {
+            var argValuesBeforeDoubleDash = parseResult.Tokens
+                .TakeWhile(static t => t.Type != TokenType.DoubleDash)
+                .Where(static t => t.Type == TokenType.Argument)
+                .Select(static t => t.Value)
+                .ToHashSet();
+
+            foreach (var arg in args)
+            {
+                if (!argValuesBeforeDoubleDash.Contains(arg))
+                {
+                    continue;
+                }
+
+                if (VirtualProjectBuilder.IsValidEntryPointPath(arg))
+                {
+                    Reporter.Error.WriteLine(
+                        string.Format(CliCommandStrings.RunCommandWarningFileArgumentPassedToProject, arg, projectFilePath).Yellow());
+                    break;
+                }
+
+                if (arg.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                {
+                    Reporter.Error.WriteLine(
+                        string.Format(CliCommandStrings.RunCommandWarningCsFileArgumentPassedToProject, arg, projectFilePath).Yellow());
+                    break;
+                }
+            }
+        }
+
         bool noBuild = parseResult.HasOption(definition.NoBuildOption);
         string launchProfile = parseResult.GetValue(definition.LaunchProfileOption) ?? string.Empty;
 
