@@ -536,8 +536,8 @@ internal sealed class DockerCli
         // 1. create manifest list for the blobs
         cancellationToken.ThrowIfCancellationRequested();
 
-        var manifestListDigest = DigestUtils.GetDigest(multiArchImage.ImageIndex);
-        var manifestListSha = DigestUtils.GetShaFromDigest(manifestListDigest);
+        var manifestListDigest = DigestUtils.ComputeSha256Digest(multiArchImage.ImageIndex);
+        var manifestListSha = DigestUtils.GetEncoded(manifestListDigest);
         var manifestListPath = $"{_blobsPath}/{manifestListSha}";
         
         using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(multiArchImage.ImageIndex)))
