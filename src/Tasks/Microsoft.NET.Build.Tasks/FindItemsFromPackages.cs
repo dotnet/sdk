@@ -17,8 +17,19 @@ namespace Microsoft.NET.Build.Tasks
     /// metadata properties to use for the matching.
     /// </remarks>
     [MSBuildMultiThreadableTask]
-    public sealed class FindItemsFromPackages : TaskBase
+    public sealed class FindItemsFromPackages : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
+
         [Required]
         public ITaskItem[] Items { get; set; }
 
