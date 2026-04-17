@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
-
 namespace Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 /// <summary>
@@ -91,26 +89,25 @@ public class ShellProfileManager
         }
 
         var fileState = ReadProfileFile(profilePath);
-        var lines = fileState.Lines;
         var entryLines = entry.Split('\n', StringSplitOptions.None)
             .Select(l => l.TrimEnd('\r'))
             .ToArray();
 
         // Look for an existing marker
-        int markerIndex = lines.FindIndex(l => l.TrimEnd() == MarkerComment);
+        int markerIndex = fileState.Lines.FindIndex(l => l.TrimEnd() == MarkerComment);
 
         if (markerIndex >= 0)
         {
             // Determine how many lines the old entry spans (marker + command lines)
             int oldEntryEnd = markerIndex + 1;
             // The old entry is the marker line plus the next line (the eval/invoke line)
-            if (oldEntryEnd < lines.Count)
+            if (oldEntryEnd < fileState.Lines.Count)
             {
                 oldEntryEnd++;
             }
 
             // Check if the existing entry already matches
-            var oldEntry = lines.GetRange(markerIndex, oldEntryEnd - markerIndex);
+            var oldEntry = fileState.Lines.GetRange(markerIndex, oldEntryEnd - markerIndex);
             if (oldEntry.Count == entryLines.Length &&
                 oldEntry.Zip(entryLines).All(pair => pair.First.TrimEnd() == pair.Second.TrimEnd()))
             {
@@ -119,21 +116,22 @@ public class ShellProfileManager
 
             // Replace in-place
             File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
-            lines.RemoveRange(markerIndex, oldEntryEnd - markerIndex);
-            lines.InsertRange(markerIndex, entryLines);
-            WriteProfileFile(profilePath, lines, fileState, ensureTrailingNewLine: fileState.EndsWithTrailingNewLine);
+            fileState.Lines.RemoveRange(markerIndex, oldEntryEnd - markerIndex);
+            fileState.Lines.InsertRange(markerIndex, entryLines);
+            WriteProfileFile(profilePath, fileState);
             return true;
         }
 
         // No existing entry — append
         File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
-        if (lines.Count > 0)
+        if (fileState.Lines.Count > 0)
         {
-            lines.Add(string.Empty);
+            fileState.Lines.Add(string.Empty);
         }
 
-        lines.AddRange(entryLines);
-        WriteProfileFile(profilePath, lines, fileState, ensureTrailingNewLine: true);
+        fileState.Lines.AddRange(entryLines);
+        fileState = fileState with { EndsWithTrailingNewLine = true };
+        WriteProfileFile(profilePath, fileState);
         return true;
     }
 
@@ -145,18 +143,17 @@ public class ShellProfileManager
         }
 
         var fileState = ReadProfileFile(profilePath);
-        var lines = fileState.Lines;
         bool modified = false;
 
-        for (int i = lines.Count - 1; i >= 0; i--)
+        for (int i = fileState.Lines.Count - 1; i >= 0; i--)
         {
-            if (lines[i].TrimEnd() == MarkerComment)
+            if (fileState.Lines[i].TrimEnd() == MarkerComment)
             {
                 // Remove the marker line and the line after it (the eval/invoke line)
-                lines.RemoveAt(i);
-                if (i < lines.Count)
+                fileState.Lines.RemoveAt(i);
+                if (i < fileState.Lines.Count)
                 {
-                    lines.RemoveAt(i);
+                    fileState.Lines.RemoveAt(i);
                 }
                 modified = true;
             }
@@ -164,11 +161,12 @@ public class ShellProfileManager
 
         if (modified)
         {
-            WriteProfileFile(
-                profilePath,
-                lines,
-                fileState,
-                ensureTrailingNewLine: lines.Count > 0 && fileState.EndsWithTrailingNewLine);
+            fileState = fileState with
+            {
+                EndsWithTrailingNewLine = fileState.Lines.Count > 0 && fileState.EndsWithTrailingNewLine
+            };
+
+            WriteProfileFile(profilePath, fileState);
         }
 
         return modified;
@@ -202,15 +200,11 @@ public class ShellProfileManager
             EndsWithLineEnding(content));
     }
 
-    private static void WriteProfileFile(
-        string profilePath,
-        IReadOnlyList<string> lines,
-        ProfileFileState fileState,
-        bool ensureTrailingNewLine)
+    private static void WriteProfileFile(string profilePath, ProfileFileState fileState)
     {
-        string content = string.Join(fileState.NewLine, lines);
+        string content = string.Join(fileState.NewLine, fileState.Lines);
 
-        if (lines.Count > 0 && ensureTrailingNewLine)
+        if (fileState.Lines.Count > 0 && fileState.EndsWithTrailingNewLine)
         {
             content += fileState.NewLine;
         }
@@ -225,12 +219,12 @@ public class ShellProfileManager
             return "\r\n";
         }
 
-        if (content.Contains('\n'))
+        if (content.Contains('\n', StringComparison.Ordinal))
         {
             return "\n";
         }
 
-        if (content.Contains('\r'))
+        if (content.Contains('\r', StringComparison.Ordinal))
         {
             return "\r";
         }
@@ -240,8 +234,8 @@ public class ShellProfileManager
 
     private static bool EndsWithLineEnding(string content) =>
         content.EndsWith("\r\n", StringComparison.Ordinal) ||
-        content.EndsWith('\n') ||
-        content.EndsWith('\r');
+        content.EndsWith('\n', StringComparison.Ordinal) ||
+        content.EndsWith('\r', StringComparison.Ordinal);
 
     private static Encoding GetWritableEncoding(Encoding detectedEncoding, bool hadBom)
     {
