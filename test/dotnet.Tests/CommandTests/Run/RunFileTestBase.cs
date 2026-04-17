@@ -140,7 +140,7 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
     /// is created under this directory, and NuGet walks up from the project location to
     /// find config files.
     /// </summary>
-    protected static void CopyNuGetConfigToRunfileDirectory()
+    internal static void CopyNuGetConfigToRunfileDirectory()
     {
         var sourceNuGetConfig = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config");
         var runfileDir = VirtualProjectBuilder.GetTempSubdirectory();
