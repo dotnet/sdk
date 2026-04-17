@@ -249,6 +249,22 @@ public class FileWatcherTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void ConsolidateDirectories_NoCommonAncestorBeyondRoot()
+    {
+        // Simulates watching files under completely different root paths (e.g. /private/tmp/... and /Users/...). Should not consolidate since the only common prefix is the filesystem root.
+        var dirs = new List<string>
+        {
+            "/private/tmp/project/src/",
+            "/Users/someone/Library/dotnet/cache/",
+        };
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
     public void ConsolidateDirectories_SingleDirectory()
     {
         var dirs = new List<string> { "/some/path/" };

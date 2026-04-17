@@ -246,6 +246,13 @@ internal class FileWatcher(ILogger logger, EnvironmentOptions environmentOptions
         }
 
         var common = string.Join(Path.DirectorySeparatorChar, segments, 0, commonLength);
+
+        // On Unix, splitting an absolute path produces an empty first segment (e.g. "/a/b" -> ["", "a", "b"]). If only the empty root segment matched, there's no meaningful common path.
+        if (common.Length == 0)
+        {
+            return null;
+        }
+
         return PathUtilities.EnsureTrailingSlash(common);
     }
 
