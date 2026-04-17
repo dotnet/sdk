@@ -185,7 +185,7 @@ The SDK repository includes GitHub Actions workflows that automate common mainte
 - Workflow: [Update XLF files on command](https://github.com/dotnet/sdk/actions/workflows/update-xlf-on-comment.yml)
 - Source: [update-xlf-on-comment.yml](../../.github/workflows/update-xlf-on-comment.yml)
 
-When you modify `.resx` resource files, the corresponding `.xlf` translation files need to be updated. Instead of manually running the build locally, comment `/updatexlf` on the PR and the GitHub Action will:
+When you modify `.resx` resource files, the corresponding `.xlf` translation files need to be updated. Instead of manually running the build locally, comment `/xlf` or `/updatexlf` on the PR and the GitHub Action will:
 
 1. Check out the PR branch
 2. Run `./build.sh /t:UpdateXlf` (or full build if needed)
@@ -200,7 +200,7 @@ See also: [Localization documentation](Localization.md)
 - Workflow: [Fix completion snapshots on command](https://github.com/dotnet/sdk/actions/workflows/fix-completions-on-comment.yml)
 - Source: [fix-completions-on-comment.yml](../../.github/workflows/fix-completions-on-comment.yml)
 
-The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, etc.). When you add or modify CLI commands, these snapshots need to be updated. Comment `/fixcompletions` on the PR and the GitHub Action will:
+The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, etc.). When you add or modify CLI commands, these snapshots need to be updated. Comment `/completions` or `/fixcompletions` on the PR and the GitHub Action will:
 
 1. Build the repository
 2. Run the completion tests
