@@ -6,7 +6,7 @@
     TemplateEngine-specific build properties.
   -->
   <PropertyGroup>
-    <NoWarn>$(NoWarn);NU5105;NU5128;NU5100;NU5118;0419;0649;</NoWarn>
+    <NoWarn>$(NoWarn);NU5105;NU5128;NU5100;NU5118;0419;0649</NoWarn>
 
     <!--
       TemplateEngine projects target netstandard2.0 and pin NuGet packages to an older
