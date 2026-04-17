@@ -6,5 +6,11 @@ namespace Microsoft.NET.Build.Containers;
 public sealed class BaseImageNotFoundException : Exception
 {
     internal BaseImageNotFoundException(string specifiedRuntimeIdentifier, string repositoryName, string reference, IEnumerable<string> supportedRuntimeIdentifiers)
-            : base($"The RuntimeIdentifier '{specifiedRuntimeIdentifier}' is not supported by {repositoryName}:{reference}. The supported RuntimeIdentifiers are {String.Join(",", supportedRuntimeIdentifiers)}") {}
+            : base($"The RuntimeIdentifier '{specifiedRuntimeIdentifier}' is not supported by {repositoryName}:{reference}. The supported RuntimeIdentifiers are {String.Join(",", supportedRuntimeIdentifiers)}")
+    {
+        RequestedRuntimeIdentifier = specifiedRuntimeIdentifier;
+        AvailableRuntimeIdentifiers = supportedRuntimeIdentifiers;
+    }
+    internal string RequestedRuntimeIdentifier { get; }
+    internal IEnumerable<string> AvailableRuntimeIdentifiers { get; }
 }

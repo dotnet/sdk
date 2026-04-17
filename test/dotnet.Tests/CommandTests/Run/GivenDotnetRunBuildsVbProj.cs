@@ -80,6 +80,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: $"LaunchProfileSuccess-{launchProfileName}")
                             .WithSource();
 
+            var launchSettingsPath = Path.Combine(testInstance.Path, "My Project", "launchSettings.json");
+
             new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute("--launch-profile", launchProfileName)
@@ -88,7 +90,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And
                 .HaveStdOutContaining("Second")
                 .And
-                .HaveStdErrContaining("Using launch settings from");
+                .HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -106,10 +108,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute();
 
             cmd.Should().Pass()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
-
-            cmd.StdErr.Should().Contain(
-                string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]

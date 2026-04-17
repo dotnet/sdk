@@ -1,22 +1,27 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
+using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
+using NuGet.Packaging;
 
 namespace Microsoft.NET.Build.Containers;
 
 internal static class HttpExtensions
 {
+    private static readonly MediaTypeWithQualityHeaderValue[] _knownManifestFormats = [
+        new("application/json"),
+        new(SchemaTypes.DockerManifestListV2),
+        new(SchemaTypes.OciImageIndexV1),
+        new(SchemaTypes.DockerManifestV2),
+        new(SchemaTypes.OciManifestV1),
+        new(SchemaTypes.DockerContainerV1),
+    ];
+
     internal static HttpRequestMessage AcceptManifestFormats(this HttpRequestMessage request)
     {
         request.Headers.Accept.Clear();
-        request.Headers.Accept.Add(new("application/json"));
-        request.Headers.Accept.Add(new(SchemaTypes.DockerManifestListV2));
-        request.Headers.Accept.Add(new(SchemaTypes.DockerManifestV2));
-        request.Headers.Accept.Add(new(SchemaTypes.OciManifestV1));
-        request.Headers.Accept.Add(new(SchemaTypes.DockerContainerV1));
+        request.Headers.Accept.AddRange(_knownManifestFormats);
         return request;
     }
 
@@ -40,7 +45,7 @@ internal static class HttpExtensions
     internal static bool IsAmazonECRRegistry(this Uri uri)
     {
         // If this the registry is to public ECR the name will contain "public.ecr.aws".
-        if (uri.Authority.Contains("public.ecr.aws"))
+        if (uri.Authority.Contains(RegistryConstants.PublicAmazonElasticContainerRegistryDomain))
         {
             return true;
         }
@@ -61,13 +66,16 @@ internal static class HttpExtensions
     /// </summary>
     internal static async Task LogHttpResponseAsync(this HttpResponseMessage response, ILogger logger, CancellationToken cancellationToken)
     {
-        StringBuilder s = new();
-        s.AppendLine($"Last request URI: {response.RequestMessage?.RequestUri?.ToString()}");
-        s.AppendLine($"Status code: {response.StatusCode}");
-        s.AppendLine($"Response headers:");
-        s.AppendLine(response.Headers.ToString());
-        string detail = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        s.AppendLine($"Response content: {(string.IsNullOrWhiteSpace(detail) ? "<empty>" : detail)}");
-        logger.LogTrace(s.ToString());
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            StringBuilder s = new();
+            s.AppendLine($"Request URI: {response.RequestMessage?.Method} {response.RequestMessage?.RequestUri?.ToString()}");
+            s.AppendLine($"Status code: {response.StatusCode}");
+            s.AppendLine($"Response headers:");
+            s.AppendLine(response.Headers.ToString());
+            string detail = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            s.AppendLine($"Response content: {(string.IsNullOrWhiteSpace(detail) ? "<empty>" : detail)}");
+            logger.LogTrace(s.ToString());
+        }
     }
 }

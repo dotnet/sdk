@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.TemplateEngine.TemplateLocalizer.Core.Exceptions;
+using Microsoft.TemplateEngine.Tests;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
@@ -187,21 +188,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 
         private static string GetTestTemplateJsonContent()
         {
-            string thisDir = Path.GetDirectoryName(typeof(StringExtractorTests).Assembly.Location)
-                ?? throw new Exception("Failed to get assembly location, which is required to access test templates.");
-            string templateJsonPath = Path.GetFullPath(Path.Combine(
-                thisDir,
-                "..",
-                "..",
-                "..",
-                "..",
-                "..",
-                "test",
-                "Microsoft.TemplateEngine.TestTemplates",
-                "test_templates",
+            string templateJsonPath = Path.Combine(
+                TestBase.TestTemplatesLocation,
                 "TemplateWithLocalization",
                 ".template.config",
-                "template.json"));
+                "template.json");
 
             return File.ReadAllText(templateJsonPath);
         }

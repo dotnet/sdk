@@ -18,9 +18,9 @@
     <PackageReference Include="Moq" />
     <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
-    <PackageReference Include="Microsoft.TemplateEngine.Mocks.XunitV3" />
-    <PackageReference Include="Microsoft.TemplateEngine.TestHelper.XunitV3" />
-    <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
   </ItemGroup>
 
   <ItemGroup>
