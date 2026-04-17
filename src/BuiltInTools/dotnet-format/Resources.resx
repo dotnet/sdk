@@ -225,9 +225,6 @@
   <data name="Standard_input_used_multiple_times" xml:space="preserve">
     <value>Standard input markers ('/dev/stdin', '-') can only be used either with `--include` or `--exclude`, but not both.</value>
   </data>
-  <data name="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH" xml:space="preserve">
-    <value>Unable to locate dotnet CLI. Ensure that it is on the PATH.</value>
-  </data>
   <data name="The_dotnet_CLI_version_is_0" xml:space="preserve">
     <value>The dotnet CLI version is '{0}'.</value>
   </data>

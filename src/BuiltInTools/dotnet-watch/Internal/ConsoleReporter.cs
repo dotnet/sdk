@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using Microsoft.Build.Tasks;
-
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used
@@ -16,13 +13,15 @@ namespace Microsoft.Extensions.Tools.Internal
         public bool IsQuiet { get; } = quiet;
         public bool SuppressEmojis { get; } = suppressEmojis;
 
-        private readonly object _writeLock = new();
+        private readonly Lock _writeLock = new();
 
-        public bool ReportProcessOutput
-            => false;
-
-        public void ProcessOutput(string projectPath, string data)
-            => throw new InvalidOperationException();
+        public void ReportProcessOutput(OutputLine line)
+        {
+            lock (_writeLock)
+            {
+                (line.IsError ? console.Error : console.Out).WriteLine(line.Content);
+            }
+        }
 
         private void WriteLine(TextWriter writer, string message, ConsoleColor? color, string emoji)
         {
@@ -56,7 +55,8 @@ namespace Microsoft.Extensions.Tools.Internal
             switch (descriptor.Severity)
             {
                 case MessageSeverity.Error:
-                    WriteLine(console.Error, message, ConsoleColor.Red, descriptor.Emoji);
+                    // Use stdout for error messages to preserve ordering with respect to other output.
+                    WriteLine(console.Out, message, ConsoleColor.Red, descriptor.Emoji);
                     break;
 
                 case MessageSeverity.Warning:

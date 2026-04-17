@@ -4,9 +4,9 @@
 using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal class AwaitableProcess : IDisposable
+    internal class AwaitableProcess(DotnetCommand spec, ITestOutputHelper logger) : IDisposable
     {
         // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
         private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
@@ -14,29 +14,14 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private readonly object _testOutputLock = new();
 
+        private readonly DotnetCommand _spec = spec;
+        private readonly List<string> _lines = [];
+        private readonly BufferBlock<string> _source = new();
         private Process _process;
-        private readonly DotnetCommand _spec;
-        private readonly List<string> _lines;
-        private BufferBlock<string> _source;
-        private ITestOutputHelper _logger;
-        private TaskCompletionSource<int> _exited;
         private bool _disposed;
 
-        public AwaitableProcess(DotnetCommand spec, ITestOutputHelper logger)
-        {
-            _spec = spec;
-            _logger = logger;
-            _source = new BufferBlock<string>();
-            _lines = new List<string>();
-            _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        }
-
         public IEnumerable<string> Output => _lines;
-
-        public Task Exited => _exited.Task;
-
         public int Id => _process.Id;
-
         public Process Process => _process;
 
         public void Start()
@@ -69,6 +54,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             _process.BeginOutputReadLine();
             WriteTestOutput($"{DateTime.Now}: process started: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
         }
+
+        public void ClearOutput()
+            => _lines.Clear();
 
         public async Task<string> GetOutputLineAsync(Predicate<string> success, Predicate<string> failure)
         {
@@ -141,7 +129,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 line = line.StripTerminalLoggerProgressIndicators();
             }
 
-            WriteTestOutput($"{DateTime.Now}: post: '{line}'");
+            WriteTestOutput(line);
             _source.Post(line);
         }
 
@@ -151,7 +139,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 if (!_disposed)
                 {
-                    _logger.WriteLine(text);
+                    logger.WriteLine(text);
                 }
             }
         }
@@ -160,17 +148,9 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             // Wait to ensure the process has exited and all output consumed
             _process.WaitForExit();
-            _source.Complete();
-            _exited.TrySetResult(_process.ExitCode);
 
-            try
-            {
-                WriteTestOutput($"Process {_process.Id} has exited");
-            }
-            catch
-            {
-                // test might not be running anymore
-            }
+            // Signal test methods waiting on all process output to be completed:
+            _source.Complete();
         }
 
         public void Dispose()
@@ -182,38 +162,40 @@ namespace Microsoft.DotNet.Watcher.Tools
                 _disposed = true;
             }
 
-            if (_process != null)
+            if (_process == null)
             {
-                try
-                {
-                    _process.Kill(entireProcessTree: true);
-                }
-                catch
-                {
-                }
-
-                try
-                {
-                    _process.CancelErrorRead();
-                }
-                catch
-                {
-                }
-
-                try
-                {
-                    _process.CancelOutputRead();
-                }
-                catch
-                {
-                }
-
-                _process.ErrorDataReceived -= OnData;
-                _process.OutputDataReceived -= OnData;
-                _process.Exited -= OnExit;
-                _process.Dispose();
-                _process = null;
+                return;
             }
+
+            _process.ErrorDataReceived -= OnData;
+            _process.OutputDataReceived -= OnData;
+
+            try
+            {
+                _process.CancelErrorRead();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                _process.CancelOutputRead();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                _process.Kill(entireProcessTree: false);
+            }
+            catch
+            {
+            }
+
+            _process.Dispose();
+            _process = null;
         }
     }
 }
