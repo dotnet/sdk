@@ -6,8 +6,20 @@ using Microsoft.NET.HostModel.Bundle;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateBundle : TaskBase, ICancelableTask
+    [MSBuildMultiThreadableTask]
+    public class GenerateBundle : TaskBase, ICancelableTask, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment? _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
+
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly Random _jitter =
 #if NET
@@ -45,12 +57,26 @@ namespace Microsoft.NET.Build.Tasks
 
         public void Cancel() => _cancellationTokenSource.Cancel();
 
+        /// <summary>
+        /// Resolves a possibly-relative <paramref name="outputDir"/> to an absolute path,
+        /// anchored at <see cref="TaskEnvironment.ProjectDirectory"/> rather than the process's
+        /// current working directory. Exposed as internal for unit testing; production callers
+        /// reach it through <see cref="ExecuteCore"/>.
+        /// </summary>
+        internal static string ResolveOutputDir(TaskEnvironment taskEnvironment, string outputDir)
+        {
+            AbsolutePath outputPath = string.IsNullOrEmpty(outputDir)
+                ? taskEnvironment.ProjectDirectory
+                : taskEnvironment.GetAbsolutePath(outputDir);
+            return outputPath.Value;
+        }
+
         protected override void ExecuteCore()
         {
             ExecuteWithRetry().GetAwaiter().GetResult();
         }
 
-        private async Task ExecuteWithRetry()
+        private async System.Threading.Tasks.Task ExecuteWithRetry()
         {
             OSPlatform targetOS = RuntimeIdentifier.StartsWith("win") ? OSPlatform.Windows :
                                   RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX :
@@ -77,10 +103,14 @@ namespace Microsoft.NET.Build.Tasks
             options |= IncludeSymbols ? BundleOptions.BundleSymbolFiles : BundleOptions.None;
             options |= EnableCompressionInSingleFile ? BundleOptions.EnableCompression : BundleOptions.None;
 
+            // Resolve OutputDir to an absolute path using TaskEnvironment so that relative
+            // paths are interpreted against the project directory, not the process CWD.
+            string resolvedOutputDir = ResolveOutputDir(TaskEnvironment, OutputDir);
+
             Version version = new(TargetFrameworkVersion);
             var bundler = new Bundler(
                 AppHostName,
-                OutputDir,
+                resolvedOutputDir,
                 options,
                 targetOS,
                 targetArch,
@@ -109,7 +139,7 @@ namespace Microsoft.NET.Build.Tasks
             ExcludedFiles = FilesToBundle.Zip(fileSpec, (item, spec) => (spec.Excluded) ? item : null).Where(x => x != null).ToArray()!;
         }
 
-        public async Task DoWithRetry(Action action)
+        public async System.Threading.Tasks.Task DoWithRetry(Action action)
         {
             bool triedOnce = false;
             while (RetryCount > 0 || !triedOnce)
@@ -127,7 +157,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     Log.LogMessage(MessageImportance.High, $"Unable to access file during bundling. Retrying {RetryCount} more times...");
                     RetryCount--;
-                    await Task.Delay(_jitter.Next(10, 50));
+                    await System.Threading.Tasks.Task.Delay(_jitter.Next(10, 50));
                 }
             }
         }
