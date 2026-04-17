@@ -1258,7 +1258,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertDuplicateRefFolderName">
         <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
-        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <target state="translated">複数の参照ファイルが同じディレクトリに変換されます: '{0}'</target>
         <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
