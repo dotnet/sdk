@@ -1073,20 +1073,20 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("System.Spatial", "5.8.3"));
 
             // Override Program.cs to look up a French resource string at runtime
-            testProject.SourceFiles[$"{projectName}.cs"] = @"
+            testProject.SourceFiles[$"{projectName}.cs"] = $@"
 using System;
 using System.Globalization;
 using System.Resources;
 class Test
-{
+{{
     static int Main()
-    {
-        var rm = new ResourceManager(""NativeAotAppWithSatellites.Strings"", typeof(Test).Assembly);
+    {{
+        var rm = new ResourceManager(""{projectName}.Strings"", typeof(Test).Assembly);
         var value = rm.GetString(""HelloWorld"", CultureInfo.GetCultureInfo(""fr""));
         Console.WriteLine(value);
         return value == ""Bonjour"" ? 0 : 1;
-    }
-}";
+    }}
+}}";
 
             // Neutral-culture fallback resource
             testProject.EmbeddedResources["Strings.resx"] = @"<?xml version=""1.0"" encoding=""utf-8""?>
