@@ -1,10 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
 
-using System.Net;
 using System.Net.Http.Headers;
-using Microsoft.Extensions.Logging;
+using System.Net;
 using Microsoft.NET.Build.Containers.Resources;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -107,7 +108,7 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
         _logger.LogTrace("Uploading {0} bytes of content at {1}", content.Headers.ContentLength, uploadUri);
 
         HttpRequestMessage patchMessage = GetPatchHttpRequest(uploadUri, content);
-        using HttpResponseMessage patchResponse = await _client.SendAsync(patchMessage, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage patchResponse = await _client.SendAsync(patchMessage, cancellationToken).ConfigureAwait(false);
 
         _logger.LogTrace("Received status code '{0}' from upload.", patchResponse.StatusCode);
 

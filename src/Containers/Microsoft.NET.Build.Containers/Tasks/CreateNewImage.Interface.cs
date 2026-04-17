@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Reflection;
+using System.Resources;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -20,6 +23,7 @@ partial class CreateNewImage
     /// The base registry to pull from.
     /// Ex: mcr.microsoft.com
     /// </summary>
+    [Required]
     public string BaseRegistry { get; set; }
 
     /// <summary>
@@ -33,23 +37,13 @@ partial class CreateNewImage
     /// The base image tag.
     /// Ex: 6.0
     /// </summary>
+    [Required]
     public string BaseImageTag { get; set; }
-
-    /// <summary>
-    /// The base image digest.
-    /// Ex: sha256:12345...
-    /// </summary>
-    public string BaseImageDigest { get; set; }
 
     /// <summary>
     /// The registry to push to.
     /// </summary>
     public string OutputRegistry { get; set; }
-
-    /// <summary>
-    /// The file path to which to write a tar.gz archive of the container image.
-    /// </summary>
-    public string ArchiveOutputPath { get; set; }
 
     /// <summary>
     /// The kind of local registry to use, if any.
@@ -150,50 +144,11 @@ partial class CreateNewImage
     /// </summary>
     public string ContainerUser { get; set; }
 
-    /// <summary>
-    /// If true, the tooling may create labels on the generated images.
-    /// </summary>
-    [Required]
-    public bool GenerateLabels { get; set; }
-
-    /// <summary>
-    /// If true, the tooling will generate an <c>org.opencontainers.image.base.digest</c> label on the generated images containing the digest of the chosen base image.
-    /// </summary>
-    /// <remarks>
-    /// Normally this would have been handled in the container targets, but we do not currently _fetch_ the digest of the base image in pure MSBuild, so we do it during generation-time.
-    /// </remarks>
-    [Required]
-    public bool GenerateDigestLabel { get; set; }
-
-    /// <summary>
-    /// Set to either 'OCI', 'Docker', or null. If unset, the generated images' mediaType will be that of the base image. If set, the generated image will be given the specified media type.
-    /// </summary>
-    public string? ImageFormat { get; set; }
-
-    /// If true, the tooling will skip the publishing step.
-    /// </summary>
-    public bool SkipPublishing { get; set; }
-
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
     [Output]
     public string GeneratedContainerConfiguration { get; set; }
-
-    [Output]
-    public string GeneratedContainerDigest { get; set; }
-
-    [Output]
-    public string GeneratedArchiveOutputPath { get; set; }
-
-    [Output]
-    public string GeneratedContainerMediaType { get; set; }
-
-    [Output]
-    public ITaskItem[] GeneratedContainerNames { get; set; }
-
-    [Output]
-    public ITaskItem? GeneratedDigestLabel { get; set; }
 
     public CreateNewImage()
     {
@@ -203,9 +158,7 @@ partial class CreateNewImage
         BaseRegistry = "";
         BaseImageName = "";
         BaseImageTag = "";
-        BaseImageDigest = "";
         OutputRegistry = "";
-        ArchiveOutputPath = "";
         Repository = "";
         ImageTags = Array.Empty<string>();
         PublishDirectory = "";
@@ -226,14 +179,6 @@ partial class CreateNewImage
 
         GeneratedContainerConfiguration = "";
         GeneratedContainerManifest = "";
-        GeneratedContainerDigest = "";
-        GeneratedArchiveOutputPath = "";
-        GeneratedContainerMediaType = "";
-        GeneratedContainerNames = Array.Empty<ITaskItem>();
-        GeneratedDigestLabel = null;
-
-        GenerateLabels = false;
-        GenerateDigestLabel = false;
 
         TaskResources = Resource.Manager;
     }

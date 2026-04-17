@@ -3,37 +3,33 @@
 
 #if NETFRAMEWORK
 using System;
-using System.Linq;
 #endif
 #if NET
 using System.Diagnostics.CodeAnalysis;
 #endif
-using System.Text;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 public static class ContainerHelpers
 {
-    internal const string HostObjectUser = "DOTNET_CONTAINER_REGISTRY_UNAME";
-    internal const string HostObjectUserLegacy = "SDK_CONTAINER_REGISTRY_UNAME";
+    internal const string HostObjectUser = "SDK_CONTAINER_REGISTRY_UNAME";
 
-    internal const string HostObjectPass = "DOTNET_CONTAINER_REGISTRY_PWORD";
-    internal const string HostObjectPassLegacy = "SDK_CONTAINER_REGISTRY_PWORD";
-
-    internal const string PushHostObjectUser = "DOTNET_CONTAINER_PUSH_REGISTRY_UNAME";
-    internal const string PushHostObjectPass = "DOTNET_CONTAINER_PUSH_REGISTRY_PWORD";
-
-    internal const string PullHostObjectUser = "DOTNET_CONTAINER_PULL_REGISTRY_UNAME";
-    internal const string PullHostObjectPass = "DOTNET_CONTAINER_PULL_REGISTRY_PWORD";
+    internal const string HostObjectPass = "SDK_CONTAINER_REGISTRY_PWORD";
 
     internal const string DockerRegistryAlias = "docker.io";
-
+    
     /// <summary>
     /// Matches an environment variable name - must start with a letter or underscore, and can only contain letters, numbers, and underscores.
     /// </summary>
-    private static Regex envVarRegex = new(@"^[a-zA-Z_]{1,}[a-zA-Z0-9_]*$");
+    private static Regex envVarRegex = new Regex(@"^[a-zA-Z_]{1,}[a-zA-Z0-9_]*$");
+
+    /// <summary>
+    /// Matches if the string is not lowercase or numeric, or ., _, or -.
+    /// </summary>
+    /// <remarks>Technically the period should be allowed as well, but due to inconsistent support between cloud providers we're removing it.</remarks>
+    private static Regex imageNameCharacters = new Regex(@"[^a-z0-9_\-/]");
+
 
     /// <summary>
     /// The enum contains possible error reasons during port parsing using <see cref="TryParsePort(string, out Port?, out ParsePortError?)"/> or <see cref="TryParsePort(string?, string?, out Port?, out ParsePortError?)"/>.
@@ -41,10 +37,10 @@ public static class ContainerHelpers
     [Flags]
     public enum ParsePortError
     {
-        MissingPortNumber = 1,
-        InvalidPortNumber = 2,
-        InvalidPortType = 4,
-        UnknownPortFormat = 8
+        MissingPortNumber,
+        InvalidPortNumber,
+        InvalidPortType,
+        UnknownPortFormat
     }
 
     /// <summary>
@@ -59,7 +55,7 @@ public static class ContainerHelpers
     {
         var portNo = 0;
         error = null;
-        if (string.IsNullOrEmpty(portNumber))
+        if (String.IsNullOrEmpty(portNumber))
         {
             error = ParsePortError.MissingPortNumber;
         }
@@ -68,9 +64,9 @@ public static class ContainerHelpers
             error = ParsePortError.InvalidPortNumber;
         }
 
-        if (!Enum.TryParse(portType, out PortType t))
+        if (!Enum.TryParse<PortType>(portType, out PortType t))
         {
-            if (!string.IsNullOrEmpty(portType))
+            if (portType is not null)
             {
                 error = (error ?? ParsePortError.InvalidPortType) | ParsePortError.InvalidPortType;
             }
@@ -150,6 +146,16 @@ public static class ContainerHelpers
     internal static bool IsValidImageTag(string imageTag)
     {
         return ReferenceParser.anchoredTagRegexp.IsMatch(imageTag);
+    }
+
+    /// <summary>
+    /// Given an already-validated registry domain, this is our hueristic to determine what HTTP protocol should be used to interact with it.
+    /// This is primarily for testing - in the real world almost all usage should be through HTTPS!
+    /// </summary>
+    internal static Uri TryExpandRegistryToUri(string alreadyValidatedDomain)
+    {
+        var prefix = alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal) ? "http" : "https";
+        return new Uri($"{prefix}://{alreadyValidatedDomain}");
     }
 
     /// <summary>
@@ -253,81 +259,26 @@ public static class ContainerHelpers
         return true;
     }
 
-
-
     /// <summary>
     /// Checks if a given container image name adheres to the image name spec. If not, and recoverable, then normalizes invalid characters.
     /// </summary>
-    internal static (string? normalizedImageName, (string, object[])? normalizationWarning, (string, object[])? normalizationError) NormalizeRepository(string containerRepository)
+    internal static bool NormalizeRepository(string containerRepository,
+                                         [NotNullWhen(false)] out string? normalizedImageName)
     {
         if (IsValidImageName(containerRepository))
         {
-            return (containerRepository, null, null);
+            normalizedImageName = null;
+            return true;
         }
         else
         {
-            // check for leading alphanumeric character
-            char firstChar = containerRepository[0];
-            if (!IsAlpha(firstChar) && !IsNumeric(firstChar))
+            if (!Char.IsLetterOrDigit(containerRepository, 0))
             {
-                // The name did not start with an alphanumeric character, so we can't normalize it.
-                var error = (nameof(Strings.InvalidImageName_NonAlphanumericStartCharacter), new[] { containerRepository });
-                return (null, null, error);
+                throw new ArgumentException(Resources.Resource.GetString(nameof(Strings.InvalidImageName)));
             }
-
-
-            // normalize the name. a little more complex, but this does all of our checks in a single pass and doesn't require coming back
-            // after the normalization to check if our invariants hold
-            var invalidChars = 0;
-            var normalizationOccurred = false;
-            var builder = new StringBuilder(containerRepository);
-            for (int i = 0; i < containerRepository.Length; i++)
-            {
-                var current = containerRepository[i];
-                if (IsLowerAlpha(current) || IsNumeric(current) || IsAllowedPunctuation(current))
-                {
-                    // no need to set the builder's char here, since we preloaded
-                }
-                else if (IsUpperAlpha(current))
-                {
-                    builder[i] = char.ToLowerInvariant(current);
-                    normalizationOccurred = true;
-                }
-                else
-                {
-                    builder[i] = '-';
-                    normalizationOccurred = true;
-                    invalidChars++;
-                }
-            }
-            var normalizedImageName = builder.ToString();
-
-            // check for normalization to useless name
-            if (invalidChars == builder.Length)
-            {
-                // The name was normalized to all dashes, so there was nothing recoverable. We should throw.
-                var error = (nameof(Strings.InvalidImageName_EntireNameIsInvalidCharacters), new string[] { containerRepository });
-                return (null, null, error);
-            }
-
-            // check for warning/notification that we did indeed perform normalization
-            if (normalizationOccurred)
-            {
-                var warning = (nameof(Strings.NormalizedContainerName), new string[] { containerRepository, normalizedImageName });
-                return (normalizedImageName, warning, null);
-            }
-
-            // user value was already normalized, so we don't need to do anything
-            else
-            {
-                return (containerRepository, null, null);
-            }
+            var loweredImageName = containerRepository.ToLowerInvariant();
+            normalizedImageName = imageNameCharacters.Replace(loweredImageName, "-");
+            return false;
         }
-
-        static bool IsUpperAlpha(char c) => c >= 'A' && c <= 'Z';
-        static bool IsLowerAlpha(char c) => c >= 'a' && c <= 'z';
-        static bool IsAlpha(char c) => IsLowerAlpha(c) || IsUpperAlpha(c);
-        static bool IsNumeric(char c) => c >= '0' && c <= '9';
-        static bool IsAllowedPunctuation(char c) => (c == '_') || (c == '-') || (c == '/');
     }
 }

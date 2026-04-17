@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics;
+using System.Linq;
+using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.Resources;
@@ -22,37 +25,17 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
     {
         get
         {
-            // DOTNET_HOST_PATH, if set, is the full path to the dotnet host executable.
-            // However, not all environments/scenarios set it correctly - some set it to just the directory.
-
-            // this is the expected correct case - DOTNET_HOST_PATH is set to the full path of the dotnet host executable
             string path = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "";
-            if (Path.IsPathRooted(path) && File.Exists(path))
-            {
-                return path;
-            }
-            // some environments set it to just the directory, so we need to check that too
-            if (Path.IsPathRooted(path) && Directory.Exists(path))
-            {
-                path = Path.Combine(path, ToolExe);
-                if (File.Exists(path))
-                {
-                    return path;
-                }
-            }
-            // last-chance fallback - use the ToolPath and ToolExe properties to try to synthesize the path
             if (string.IsNullOrEmpty(path))
             {
-                // no
                 path = string.IsNullOrEmpty(ToolPath) ? "" : ToolPath;
-                path = Path.Combine(path, ToolExe);
             }
 
             return path;
         }
     }
 
-    protected override string GenerateFullPathToTool() => DotNetPath;
+    protected override string GenerateFullPathToTool() => Path.Combine(DotNetPath, ToolExe);
 
     /// <summary>
     /// Workaround to avoid storing user/pass into the EnvironmentVariables property, which gets logged by the task.
@@ -63,8 +46,8 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
     /// <returns></returns>
     protected override ProcessStartInfo GetProcessStartInfo(string pathToTool, string commandLineCommands, string responseFileSwitch)
     {
-        VSHostObject hostObj = new(HostObject, Log);
-        if (hostObj.TryGetCredentials() is (string user, string pass))
+        VSHostObject hostObj = new VSHostObject(HostObject as System.Collections.Generic.IEnumerable<ITaskItem>);
+        if (hostObj.ExtractCredentials(out string user, out string pass, (string s) => Log.LogWarning(s)))
         {
             extractionInfo = (true, user, pass);
         }
@@ -111,6 +94,14 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredPropertyNotSetOrEmpty), nameof(WorkingDirectory)));
         }
+        if (Entrypoint.Length == 0)
+        {
+            throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredItemsNotSet), nameof(Entrypoint)));
+        }
+        if (Entrypoint.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
+        {
+            throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredItemsContainsEmptyItems), nameof(Entrypoint)));
+        }
 
         CommandLineBuilder builder = new();
 
@@ -121,15 +112,13 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         builder.AppendSwitchIfNotNull("--baseimagename ", BaseImageName);
         builder.AppendSwitchIfNotNull("--repository ", Repository);
         builder.AppendSwitchIfNotNull("--workingdirectory ", WorkingDirectory);
+        ITaskItem[] sanitizedEntryPoints = Entrypoint.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
+        builder.AppendSwitchIfNotNull("--entrypoint ", sanitizedEntryPoints, delimiter: " ");
 
         //optional options
         if (!string.IsNullOrWhiteSpace(BaseImageTag))
         {
             builder.AppendSwitchIfNotNull("--baseimagetag ", BaseImageTag);
-        }
-        if (!string.IsNullOrWhiteSpace(BaseImageDigest))
-        {
-            builder.AppendSwitchIfNotNull("--baseimagedigest ", BaseImageDigest);
         }
         if (!string.IsNullOrWhiteSpace(OutputRegistry))
         {
@@ -139,20 +128,13 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--localregistry ", LocalRegistry);
         }
-        if (!string.IsNullOrWhiteSpace(AppCommandInstruction))
-        {
-            builder.AppendSwitchIfNotNull("--appcommandinstruction ", AppCommandInstruction);
-        }
-        if (!string.IsNullOrWhiteSpace(ImageFormat))
-        {
-            builder.AppendSwitchIfNotNull("--image-format ", ImageFormat);
-        }
 
-        AppendSwitchIfNotNullSanitized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);
-        AppendSwitchIfNotNullSanitized(builder, "--entrypointargs ", nameof(EntrypointArgs), EntrypointArgs);
-        AppendSwitchIfNotNullSanitized(builder, "--defaultargs ", nameof(DefaultArgs), DefaultArgs);
-        AppendSwitchIfNotNullSanitized(builder, "--appcommand ", nameof(AppCommand), AppCommand);
-        AppendSwitchIfNotNullSanitized(builder, "--appcommandargs ", nameof(AppCommandArgs), AppCommandArgs);
+        if (EntrypointArgs.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
+        {
+            Log.LogWarningWithCodeFromResources(nameof(Strings.EmptyValuesIgnored), nameof(EntrypointArgs));
+        }
+        ITaskItem[] sanitizedEntryPointArgs = EntrypointArgs.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
+        builder.AppendSwitchIfNotNull("--entrypointargs ", sanitizedEntryPointArgs, delimiter: " ");
 
         if (Labels.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
         {
@@ -215,32 +197,7 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
             builder.AppendSwitchIfNotNull("--container-user ", ContainerUser);
         }
 
-        if (!string.IsNullOrWhiteSpace(ArchiveOutputPath))
-        {
-            builder.AppendSwitchIfNotNull("--archiveoutputpath ", ArchiveOutputPath);
-        }
-
-        if (GenerateLabels)
-        {
-            builder.AppendSwitch("--generate-labels");
-        }
-
-        if (GenerateDigestLabel)
-        {
-            builder.AppendSwitch("--generate-digest-label");
-        }
-
         return builder.ToString();
-
-        void AppendSwitchIfNotNullSanitized(CommandLineBuilder builder, string commandArgName, string propertyName, ITaskItem[] value)
-        {
-            ITaskItem[] santized = value.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
-            if (santized.Length != value.Length)
-            {
-                Log.LogWarningWithCodeFromResources(nameof(Strings.EmptyValuesIgnored), propertyName);
-            }
-            builder.AppendSwitchIfNotNull(commandArgName, santized, delimiter: " ");
-        }
     }
 }
 

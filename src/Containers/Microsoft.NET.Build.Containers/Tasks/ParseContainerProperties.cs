@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -49,9 +52,6 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
     public string ParsedContainerTag { get; private set; }
 
     [Output]
-    public string ParsedContainerDigest { get; private set; }
-
-    [Output]
     public string NewContainerRegistry { get; private set; }
 
     [Output]
@@ -74,7 +74,6 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
         ParsedContainerRegistry = "";
         ParsedContainerImage = "";
         ParsedContainerTag = "";
-        ParsedContainerDigest = "";
         NewContainerRegistry = "";
         NewContainerRepository = "";
         NewContainerTags = Array.Empty<string>();
@@ -86,13 +85,13 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
     public override bool Execute()
     {
         string[] validTags;
-        if (!string.IsNullOrEmpty(ContainerImageTag) && ContainerImageTags.Length >= 1)
+        if (!String.IsNullOrEmpty(ContainerImageTag) && ContainerImageTags.Length >= 1)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.AmbiguousTags), nameof(ContainerImageTag), nameof(ContainerImageTags));
             return !Log.HasLoggedErrors;
         }
 
-        if (!string.IsNullOrEmpty(ContainerImageTag))
+        if (!String.IsNullOrEmpty(ContainerImageTag))
         {
             if (ContainerHelpers.IsValidImageTag(ContainerImageTag))
             {
@@ -104,12 +103,12 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
                 Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidTag), nameof(ContainerImageTag), ContainerImageTag);
             }
         }
-        else if (ContainerImageTags.Length != 0)
+        else if (ContainerImageTags.Length != 0 && TryValidateTags(ContainerImageTags, out var valids, out var invalids))
         {
-            (validTags, var invalidTags) = TryValidateTags(ContainerImageTags);
-            if (invalidTags.Any())
+            validTags = valids;
+            if (invalids.Any())
             {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidTags), nameof(ContainerImageTags), String.Join(",", invalidTags));
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidTags), nameof(ContainerImageTags), String.Join(",", invalids));
                 return !Log.HasLoggedErrors;
             }
         }
@@ -118,7 +117,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
             validTags = Array.Empty<string>();
         }
 
-        if (!string.IsNullOrEmpty(ContainerRegistry) && !ContainerHelpers.IsValidRegistry(ContainerRegistry))
+        if (!String.IsNullOrEmpty(ContainerRegistry) && !ContainerHelpers.IsValidRegistry(ContainerRegistry))
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.CouldntRecognizeRegistry), ContainerRegistry);
             return !Log.HasLoggedErrors;
@@ -136,7 +135,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
                                                                   out string? outputReg,
                                                                   out string? outputImage,
                                                                   out string? outputTag,
-                                                                  out string? outputDigest,
+                                                                  out string? _outputDigest,
                                                                   out bool isRegistrySpecified))
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNameParsingFailed), nameof(FullyQualifiedBaseImageName), FullyQualifiedBaseImageName);
@@ -148,26 +147,28 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
             Log.LogWarningWithCodeFromResources(nameof(Strings.BaseImageNameRegistryFallback), nameof(FullyQualifiedBaseImageName), ContainerHelpers.DockerRegistryAlias);
         }
 
-        var (normalizedRepository, normalizationWarning, normalizationError) = ContainerHelpers.NormalizeRepository(ContainerRepository);
-        if (normalizedRepository is not null)
+        try
         {
-            NewContainerRepository = normalizedRepository;
+            if (!ContainerHelpers.NormalizeRepository(ContainerRepository, out var normalizedRepository))
+            {
+                Log.LogMessageFromResources(nameof(Strings.NormalizedContainerName), nameof(ContainerRepository), normalizedRepository);
+                NewContainerRepository = normalizedRepository!; // known to be not null due to output of NormalizeImageName
+            }
+            else
+            {
+                // name was valid already
+                NewContainerRepository = ContainerRepository;
+            }
         }
-        if (normalizationWarning is (string warningMessageKey, object[] warningParams))
+        catch (ArgumentException)
         {
-            Log.LogMessageFromResources(warningMessageKey, warningParams);
-        }
-
-        if (normalizationError is (string errorMessageKey, object[] errorParams))
-        {
-            Log.LogErrorWithCodeFromResources(errorMessageKey, errorParams);
+            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerRepository), nameof(ContainerRepository), ContainerRepository);
             return !Log.HasLoggedErrors;
         }
 
         ParsedContainerRegistry = outputReg ?? "";
         ParsedContainerImage = outputImage ?? "";
         ParsedContainerTag = outputTag ?? "";
-        ParsedContainerDigest = outputDigest ?? "";
         NewContainerRegistry = ContainerRegistry;
         NewContainerTags = validTags;
 
@@ -177,9 +178,8 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
             Log.LogMessage(MessageImportance.Low, "Host: {0}", ParsedContainerRegistry);
             Log.LogMessage(MessageImportance.Low, "Image: {0}", ParsedContainerImage);
             Log.LogMessage(MessageImportance.Low, "Tag: {0}", ParsedContainerTag);
-            Log.LogMessage(MessageImportance.Low, "Digest: {0}", ParsedContainerDigest);
             Log.LogMessage(MessageImportance.Low, "Image Name: {0}", NewContainerRepository);
-            Log.LogMessage(MessageImportance.Low, "Image Tags: {0}", string.Join(", ", NewContainerTags));
+            Log.LogMessage(MessageImportance.Low, "Image Tags: {0}", String.Join(", ", NewContainerTags));
         }
 
         return !Log.HasLoggedErrors;
@@ -206,7 +206,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
         }
     }
 
-    private static (string[] validTags, string[] invalidTags) TryValidateTags(string[] inputTags)
+    private static bool TryValidateTags(string[] inputTags, out string[] validTags, out string[] invalidTags)
     {
         var v = new List<string>();
         var i = new List<string>();
@@ -221,6 +221,8 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
                 i.Add(tag);
             }
         }
-        return (v.ToArray(), i.ToArray());
+        validTags = v.ToArray();
+        invalidTags = i.ToArray();
+        return invalidTags.Length == 0;
     }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -17,16 +18,6 @@ internal sealed class DigestUtils
     /// </summary>
     internal static string GetDigestFromSha(string sha) => $"sha256:{sha}";
 
-    internal static string GetShaFromDigest(string digest)
-    {
-        if (!digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ArgumentException($"Invalid digest '{digest}'. Digest must start with 'sha256:'.");
-        }
-
-        return digest.Substring("sha256:".Length);
-    }
-
     /// <summary>
     /// Gets the SHA of <paramref name="str"/>.
     /// </summary>
@@ -35,6 +26,6 @@ internal sealed class DigestUtils
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
         SHA256.HashData(Encoding.UTF8.GetBytes(str), hash);
 
-        return Convert.ToHexStringLower(hash);
+        return Convert.ToHexString(hash).ToLowerInvariant();
     }
 }

@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -20,7 +19,6 @@ internal sealed class ImageConfig
     private string[]? _newEntrypoint;
     private string[]? _newCmd;
     private string? _user;
-    private bool _userHasBeenExplicitlySet;
 
     /// <summary>
     /// Models the file system of the image. Typically has a key 'type' with value 'layers' and a key 'diff_ids' with a list of layer digests.
@@ -34,9 +32,6 @@ internal sealed class ImageConfig
     /// Gets a value indicating whether the base image is has a Windows operating system.
     /// </summary>
     public bool IsWindows => "windows".Equals(_os, StringComparison.OrdinalIgnoreCase);
-
-    public ReadOnlyDictionary<string, string> EnvironmentVariables => _environmentVariables.AsReadOnly();
-    public HashSet<Port> Ports => _exposedPorts;
 
     internal ImageConfig(string imageConfigJson) : this(JsonNode.Parse(imageConfigJson)!)
     {
@@ -85,7 +80,7 @@ internal sealed class ImageConfig
         {
             newConfig["Labels"] = CreateLabelMap();
         }
-        if (_environmentVariables.Count != 0)
+        if (_environmentVariables.Any())
         {
             newConfig["Env"] = CreateEnvironmentVariablesMapping();
         }
@@ -112,7 +107,7 @@ internal sealed class ImageConfig
 
         // These fields aren't (yet) supported by the task layer, but we should
         // preserve them if they're already set in the base image.
-        foreach (string propertyName in new[] { "Volumes", "StopSignal" })
+        foreach (string propertyName in new [] { "Volumes", "StopSignal" })
         {
             if (_config["config"]?[propertyName] is JsonNode propertyValue)
             {
@@ -127,7 +122,7 @@ internal sealed class ImageConfig
         // The number of (non empty) history items must match the number of layers in the image.
         // Some registries like JFrog Artifactory have there a strict validation rule (see sdk-container-builds#382).
         int numberOfLayers = _rootFsLayers.Count;
-        int numberOfNonEmptyLayerHistoryEntries = _history.Count(h => h.empty_layer is null or false);
+        int numberOfNonEmptyLayerHistoryEntries = _history.Count(h =>h.empty_layer is null or false);
         int missingHistoryEntries = numberOfLayers - numberOfNonEmptyLayerHistoryEntries;
         HistoryEntry customHistoryEntry = new(created: DateTime.UtcNow, author: ".NET SDK",
             created_by: $".NET SDK Container Tooling, version {Constants.Version}");
@@ -168,7 +163,7 @@ internal sealed class ImageConfig
         {
             history["comment"] = h.comment;
         }
-        if (h.created is { } date)
+        if (h.created is {} date)
         {
             history["created"] = RFC3339Format(date);
         }
@@ -217,16 +212,7 @@ internal sealed class ImageConfig
         _rootFsLayers.Add(l.Descriptor.UncompressedDigest!);
     }
 
-    internal void SetUser(string user, bool isUserInteraction = false) {
-        // we don't let automatic/inferred user settings overwrite an explicit user request
-        if (_userHasBeenExplicitlySet && !isUserInteraction)
-        {
-            return;
-        }
-
-        _user = user;
-        _userHasBeenExplicitlySet = isUserInteraction;
-    }
+    internal void SetUser(string user) => _user = user;
 
     private HashSet<Port> GetExposedPorts()
     {

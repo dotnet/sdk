@@ -3,18 +3,17 @@
 
 using System.Diagnostics;
 using System.Formats.Tar;
+using System.Globalization;
 using System.IO.Compression;
-using System.IO.Enumeration;
 using System.Security.Cryptography;
-using Microsoft.NET.Build.Containers.Resources;
+using System.Text;
+using System.IO.Enumeration;
 
 namespace Microsoft.NET.Build.Containers;
 
 internal class Layer
 {
-    // NOTE: The SID string below was created using the following snippet. As the code is Windows only we keep the constant,
-    // so that we can author Windows layers successfully on non-Windows hosts.
-    //
+    // NOTE: The SID string below was created using the following snippet. As the code is Windows only we keep the constant
     // private static string CreateUserOwnerAndGroupSID()
     // {
     //     var descriptor = new RawSecurityDescriptor(
@@ -52,7 +51,7 @@ internal class Layer
         return new(ContentStore.PathForDescriptor(descriptor), descriptor);
     }
 
-    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType, int? userId = null)
+    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer)
     {
         long fileSize;
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
@@ -103,7 +102,7 @@ internal class Layer
                     }
 
                     // Write an entry for the application directory.
-                    WriteTarEntryForFile(writer, new DirectoryInfo(directory), containerPath, entryAttributes, isWindowsLayer ? null : userId);
+                    WriteTarEntryForFile(writer, new DirectoryInfo(directory), containerPath, entryAttributes);
 
                     // Write entries for the application directory contents.
                     var fileList = new FileSystemEnumerable<(FileSystemInfo file, string containerPath)>(
@@ -121,12 +120,11 @@ internal class Layer
                                 },
                                 options: new EnumerationOptions()
                                 {
-                                    AttributesToSkip = FileAttributes.System, // Include hidden files
                                     RecurseSubdirectories = true
                                 });
                     foreach (var item in fileList)
                     {
-                        WriteTarEntryForFile(writer, item.file, item.containerPath, entryAttributes, isWindowsLayer ? null : userId);
+                        WriteTarEntryForFile(writer, item.file, item.containerPath, entryAttributes);
                     }
 
                     // Windows layers need a Hives folder, we do not need to create any Registry Hive deltas inside
@@ -150,36 +148,27 @@ internal class Layer
             Debug.Assert(bW == hash.Length);
 
             // Writes a tar entry corresponding to the file system item.
-            static void WriteTarEntryForFile(TarWriter writer, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId)
+            static void WriteTarEntryForFile(TarWriter writer, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes)
             {
                 UnixFileMode mode = DetermineFileMode(file);
-                PaxTarEntry entry;
 
                 if (file is FileInfo)
                 {
-                    var fileStream = File.OpenRead(file.FullName);
-                    entry = new(TarEntryType.RegularFile, containerPath, entryAttributes)
+                    using var fileStream = File.OpenRead(file.FullName);
+                    PaxTarEntry entry = new(TarEntryType.RegularFile, containerPath, entryAttributes)
                     {
-                        DataStream = fileStream,
+                        Mode = mode,
+                        DataStream = fileStream
                     };
+                    writer.WriteEntry(entry);
                 }
                 else
                 {
-                    entry = new(TarEntryType.Directory, containerPath, entryAttributes);
-                }
-
-                entry.Mode = mode;
-                if (userId is int uid)
-                {
-                    entry.Uid = uid;
-                }
-
-                writer.WriteEntry(entry);
-
-                if (entry.DataStream is not null)
-                {
-                    // no longer relying on the `using` of the FileStream, so need to do it manually
-                    entry.DataStream.Dispose();
+                    PaxTarEntry entry = new(TarEntryType.Directory, containerPath, entryAttributes)
+                    {
+                        Mode = mode
+                    };
+                    writer.WriteEntry(entry);
                 }
 
                 static UnixFileMode DetermineFileMode(FileSystemInfo file)
@@ -196,20 +185,12 @@ internal class Layer
             }
         }
 
-        string contentHash = Convert.ToHexStringLower(hash);
-        string uncompressedContentHash = Convert.ToHexStringLower(uncompressedHash);
-
-        string layerMediaType = manifestMediaType switch
-        {
-             // TODO: configurable? gzip always?
-            SchemaTypes.DockerManifestV2 => SchemaTypes.DockerLayerGzip,
-            SchemaTypes.OciManifestV1 => SchemaTypes.OciLayerGzipV1,
-            _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), manifestMediaType))
-        };
+        string contentHash = Convert.ToHexString(hash).ToLowerInvariant();
+        string uncompressedContentHash = Convert.ToHexString(uncompressedHash).ToLowerInvariant();
 
         Descriptor descriptor = new()
         {
-            MediaType = layerMediaType,
+            MediaType = "application/vnd.docker.image.rootfs.diff.tar.gzip", // TODO: configurable? gzip always?
             Size = fileSize,
             Digest = $"sha256:{contentHash}",
             UncompressedDigest = $"sha256:{uncompressedContentHash}",
@@ -226,7 +207,7 @@ internal class Layer
 
     internal virtual Stream OpenBackingFile() => File.OpenRead(BackingFile);
 
-    private static readonly char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+    private readonly static char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
 
     /// <summary>
     /// A stream capable of computing the hash digest of raw uncompressed data while also compressing it.
