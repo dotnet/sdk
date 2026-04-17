@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using Microsoft.TemplateEngine.CommandUtils;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {

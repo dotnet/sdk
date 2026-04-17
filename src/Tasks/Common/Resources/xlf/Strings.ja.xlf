@@ -856,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: アセンブリのパフォーマンスを最適化できません: 有効なランタイム パッケージが見つかりませんでした。PublishReadyToRun プロパティを false に設定するか、公開時に、サポートされているランタイム識別子を使用してください。.NET 6 以降を対象とする場合は、必ず PublishReadyToRun プロパティを true に設定してパッケージを復元してください。</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: アセンブリのパフォーマンスの最適化は、選択されたターゲット プラットフォームまたはアーキテクチャに対してはサポートされていません。サポートされているランタイム識別子を使用していることを確認するか、PublishReadyToRun プロパティを false に設定してください。</target>

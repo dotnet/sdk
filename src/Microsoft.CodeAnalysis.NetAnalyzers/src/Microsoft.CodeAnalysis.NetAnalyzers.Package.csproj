@@ -30,7 +30,7 @@
     <None Include="assets\ThirdPartyNotices.txt" Pack="true" PackagePath="/" />
 
     <None Include="README.md" Pack="true" PackagePath="/documentation" />
-    <None Include="..\docs\Analyzer Configuration.md" Pack="true" PackagePath="/documentation" />
+    <None Include="..\docs\analyzer-configuration.md" Pack="true" PackagePath="/documentation" />
     <None Include="$(PackageId).md" Pack="true" PackagePath="/documentation" />
     <None Include="$(PackageId).sarif" Pack="true" PackagePath="/documentation" />
 
@@ -74,7 +74,7 @@
       <DisableNETAnalyzersPackagePropsFileName>DisableNETAnalyzersForNuGetPackage.props</DisableNETAnalyzersPackagePropsFileName>
       <AnalyzerDocumentationFileName>$(PackageId).md</AnalyzerDocumentationFileName>
       <AnalyzerSarifFileName>$(PackageId).sarif</AnalyzerSarifFileName>
-      <AnalyzerConfigurationFileName>Analyzer Configuration.md</AnalyzerConfigurationFileName>
+      <AnalyzerConfigurationFileName>analyzer-configuration.md</AnalyzerConfigurationFileName>
 
       <!-- Only run validate only in CI builds. Running them in local builds will prevent refreshing auto-generated files. -->
       <ValidateOnlyFlag>false</ValidateOnlyFlag>
