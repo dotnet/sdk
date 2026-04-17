@@ -19,11 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj;TemplateEngine\**\*" />
+    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj" />
     <SDKCustomXUnitProject Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
 
     <!-- Projects suffixed with UnitTests or IntegrationTests are not matched by *.Tests.csproj above, so include them with a separate glob. -->
-    <SDKCustomXUnitProject Include="**\*UnitTests.csproj;**\*IntegrationTests.csproj" Exclude="TestAssets\**\*;TemplateEngine\**\*" />
+    <SDKCustomXUnitProject Include="**\*UnitTests.csproj;**\*IntegrationTests.csproj" Exclude="TestAssets\**\*" />
 
     <!-- Don't run MSI installation tests in Helix / CI -->
     <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
@@ -96,6 +96,9 @@
       <!-- Include the template_feed directory from the repo root so tests that reference RepoTemplatePackages work in Helix. -->
       <TemplateFeedFiles Include="$(RepoRoot)template_feed\**\*.*" />
 
+      <!-- Include the TemplateEngine sample templates so tests that reference SampleTemplatesLocation work in Helix. -->
+      <TemplateSampleFiles Include="$(RepoRoot)documentation\TemplateEngine\Samples\**\*.*" />
+
       <!-- Files in testExecutionDirectory to prevent environment interference -->
       <TestExecutionDirectoryFiles Include="$(TestLayoutDir)NuGet.config" />
       <TestExecutionDirectoryFiles Include="$(TestLayoutDir)Directory.Build.props" />
@@ -134,6 +137,7 @@
     <Copy SourceFiles="@(LockFiles)" DestinationFiles="@(LockFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\LockFiles\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(AssetFiles)" DestinationFiles="@(AssetFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TestAssets\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(TemplateFeedFiles)" DestinationFiles="@(TemplateFeedFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\template_feed\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(TemplateSampleFiles)" DestinationFiles="@(TemplateSampleFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TemplateSamples\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <Target Name="AppendHelixPreCommand" BeforeTargets="CoreTest" DependsOnTargets="CopyHelixFiles">

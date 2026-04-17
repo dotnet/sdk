@@ -4,9 +4,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.TestHelper;
-#if !XUNIT_V3
-using Xunit.Abstractions;
-#endif
+using Microsoft.TemplateEngine.Tests;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 {
@@ -153,6 +151,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
                 TemplateSpecificArgs = new[] { "--empty" },
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 VerifyCommandOutput = true,
             };
 
@@ -168,6 +167,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
                 TemplateSpecificArgs = new[] { "--empty" },
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 VerifyCommandOutput = false,
                 SettingsDirectory = settingsPath
             };
