@@ -266,6 +266,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             paths.Add(path);
         }
     }
+    
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null)
     {
         if (OperatingSystem.IsWindows())
