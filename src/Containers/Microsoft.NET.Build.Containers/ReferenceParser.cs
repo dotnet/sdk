@@ -153,7 +153,7 @@ internal static class ReferenceParser
     /// This is a custom addition - see <see cref="digestAlgorithmComponent"/>.
     /// <see cref="digestEncodedComponent"/> matches the encoded portion of a
     /// digest. Per OCI spec, this allows alphanumeric characters plus "=",
-    /// "_", and "-" to support encodings beyond hex (e.g. base64, base58).
+    /// "_", and "-" to support encodings beyond hex (e.g. base64url, base58).
     ///
     /// <see href="https://github.com/opencontainers/image-spec/blob/a4c6ade7bb82b316d45391f572727a63e268b252/descriptor.md#digests">
     /// OCI descriptor digest grammar
