@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
@@ -10,8 +11,20 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Provides a localizable mechanism for logging messages with different levels of importance from the SDK targets.
     /// </summary>
-    public class ShowPreviewMessage : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ShowPreviewMessage : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+#endif
+
         protected override void ExecuteCore()
         {
             const string previewMessageKey = "Microsoft.NET.Build.Tasks.DisplayPreviewMessageKey";
