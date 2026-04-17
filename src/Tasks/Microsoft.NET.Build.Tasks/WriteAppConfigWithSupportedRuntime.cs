@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tasks
                 doc.Save(stream);
             }
 
-            OutputAppConfigFile.SetMetadata("FullPath", outputPath.OriginalValue);
+            OutputAppConfigFile.SetMetadata("FullPath", outputPath.Value);
         }
 
         public static void AddSupportedRuntimeToAppconfig(
