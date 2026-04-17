@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
@@ -35,11 +34,7 @@ internal static class ContentStore
 
     public static string PathForDescriptor(Descriptor descriptor)
     {
-        string digest = descriptor.Digest;
-
-        Debug.Assert(digest.StartsWith("sha256:", StringComparison.Ordinal));
-
-        string contentHash = digest.Substring("sha256:".Length);
+        string digestValue = DigestUtils.GetEncoded(descriptor.Digest);
 
         string extension = descriptor.MediaType switch
         {
@@ -53,7 +48,7 @@ internal static class ContentStore
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), descriptor.MediaType))
         };
 
-        return GetPathForHash(contentHash) + extension;
+        return GetPathForHash(digestValue) + extension;
     }
 
 
