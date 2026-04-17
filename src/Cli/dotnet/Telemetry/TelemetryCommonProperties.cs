@@ -6,6 +6,7 @@
 using System.Collections.Frozen;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.Utilities;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
 
