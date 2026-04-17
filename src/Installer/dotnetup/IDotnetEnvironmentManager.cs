@@ -26,6 +26,8 @@ internal interface IDotnetEnvironmentManager
 
     void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null);
 
+    void ApplyTerminalProfileModifications(IEnvShellProvider? shellProvider = null, string? dotnetRoot = null);
+
     /// <summary>
     /// Updates the global.json file to reflect the installed SDK version,
     /// if a global.json exists and the install was global.json-sourced.

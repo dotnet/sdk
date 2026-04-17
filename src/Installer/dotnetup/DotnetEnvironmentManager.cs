@@ -266,7 +266,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             paths.Add(path);
         }
     }
-    
+
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null)
     {
         if (OperatingSystem.IsWindows())
@@ -311,9 +311,18 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                     throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
             }
         }
+    }
+
+    public void ApplyTerminalProfileModifications(IEnvShellProvider? shellProvider = null, string? dotnetRoot = null)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            // Not implemented yet on Windows
+            return;
+        }
         else
         {
-            ConfigureInstallTypeUnix(installType, dotnetRoot, shellProvider);
+            ConfigureInstallTypeUnix(InstallType.User, dotnetRoot, shellProvider);
         }
     }
 

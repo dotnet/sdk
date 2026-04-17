@@ -41,7 +41,7 @@ internal class InitWorkflows
     /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
     /// </summary>
     public static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
-        preference is PathPreference.FullPathReplacement or PathPreference.ShellProfile;
+        preference is PathPreference.FullPathReplacement;
 
     /// <summary>
     /// Returns true when the user chose to convert existing system-level .NET installs
@@ -154,8 +154,12 @@ internal class InitWorkflows
         // Step 3: Run the primary action (typically installing the base SDK from global.json/latest).
         RunPrimaryInstall(requests, primaryActionAfterConfigured, predownloadTask);
 
-        // Save config and apply configuration(s) - NOTE: Terminal Profile not yet implemented.
         SaveConfigAndDisplayResult(pathPreference, previousPreference);
+
+        if (pathPreference is PathPreference.ShellProfile)
+        {
+            _dotnetEnvironment.ApplyTerminalProfileModifications(shellProvider);
+        }
 
         if (ShouldReplaceSystemConfiguration(pathPreference))
         {
