@@ -177,7 +177,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 <configuration>
 </configuration>");
 
-            string relativeOutputPath = "obj\\Debug\\output.config";
+            string relativeOutputPath = Path.Combine("obj", "Debug", "output.config");
             string expectedAbsolutePath = Path.Combine(workDir, relativeOutputPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(expectedAbsolutePath));
