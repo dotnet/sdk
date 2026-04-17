@@ -8,33 +8,10 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
-using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunFileCscOnlyFixture(IMessageSink sink) : IAsyncLifetime
-{
-    public ValueTask InitializeAsync()
-    {
-        RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
-
-        // Ensure a simple app runs fully with MSBuild before running other csc-only tests
-        // so we have packages like ILLink.Tasks restored and csc-only optimization can kick in.
-        new DotnetCommand(new SharedTestOutputHelper(sink), "run", "-")
-            .WithStandardInput("""
-                Console.WriteLine("Hello");
-                """)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello");
-
-        return default;
-    }
-
-    public ValueTask DisposeAsync() => default;
-}
-
-public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileTestBase(log), IClassFixture<RunFileCscOnlyFixture>
+public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileTestBase(log)
 {
     [Fact]
     public void UpToDate()
