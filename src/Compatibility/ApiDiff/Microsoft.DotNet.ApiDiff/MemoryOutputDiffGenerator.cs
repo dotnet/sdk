@@ -25,6 +25,7 @@ namespace Microsoft.DotNet.ApiDiff;
 /// </summary>
 public class MemoryOutputDiffGenerator : IDiffGenerator
 {
+    private const int SpacesPerIndentationLevel = 4;
     private readonly ILog _log;
     private readonly IAssemblySymbolLoader _beforeLoader;
     private readonly IAssemblySymbolLoader _afterLoader;
@@ -428,24 +429,43 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             return null;
         }
 
+        SyntaxTriviaList leadingTrivia = GetLeadingTriviaForDiff(node);
+
         if (node is EnumMemberDeclarationSyntax enumMember)
         {
             SyntaxTriviaList commaTrivia = SyntaxFactory.TriviaList(SyntaxFactory.SyntaxTrivia(SyntaxKind.EndOfLineTrivia, ","));
             return enumMember
                 .WithAttributeLists(_emptyAttributeList)
-                .WithLeadingTrivia(node.GetLeadingTrivia())
+                .WithLeadingTrivia(leadingTrivia)
                 .WithTrailingTrivia(commaTrivia);
         }
         else if (node is BaseNamespaceDeclarationSyntax namespaceNode)
         {
-            return namespaceNode.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
+            return namespaceNode.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(leadingTrivia);
         }
         else if (node is MemberDeclarationSyntax memberDeclaration)
         {
-            return memberDeclaration.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
+            return memberDeclaration.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(leadingTrivia);
         }
 
-        return node.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
+        return node.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(leadingTrivia);
+    }
+
+    private static SyntaxTriviaList GetLeadingTriviaForDiff(MemberDeclarationSyntax node)
+    {
+        SyntaxTriviaList leadingTrivia = node.GetLeadingTrivia();
+        if (leadingTrivia.Count > 0)
+        {
+            return leadingTrivia;
+        }
+
+        int indentationDepth = node.Ancestors().Count(a => a is BaseNamespaceDeclarationSyntax or BaseTypeDeclarationSyntax);
+        if (indentationDepth <= 0)
+        {
+            return leadingTrivia;
+        }
+
+        return SyntaxFactory.TriviaList(SyntaxFactory.Whitespace(new string(' ', indentationDepth * SpacesPerIndentationLevel)));
     }
 
     // Returns a non-null string if any attribute was changed (added, deleted or modified). Returns null if all attributes were the same before and after.
