@@ -17,7 +17,6 @@ safe-outputs:
     report-as-issue: false
 if: "!github.event.repository.fork"
 on:
-  roles: all
   slash_command:
     name: tactics
     events: [pull_request_comment]
