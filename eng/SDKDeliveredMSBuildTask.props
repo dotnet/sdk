@@ -1,0 +1,53 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+
+  <!-- Common configuration for MSBuild task assemblies that ship in the SDK. -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+
+    <!-- MSBuild Task DLLs need to be versioned with every build -->
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+
+    <!-- SDK tasks can reliably use the assemblies found in the SDK so don't need a deps file -->
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+  </PropertyGroup>
+
+  <!-- MSBuild core references -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" /><!-- Not needed by most tasks but a couple of APIs are used. -->
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+  </ItemGroup>
+
+  <!--
+    These packages use VersionOverride to ensure compatibility with MSBuild's binding redirects.
+    To be compatible with .NET Framework MSBuild, dependencies that are shared with MSBuild must
+    either:
+
+    1. Be within the MSBuild binding redirects, so the assemblies are fully provided by MSBuild
+       and don't need to be redistributed or have all references be to the same version, OR
+    2. Be redistributed alongside the SDK task assemblies, and avoid the need for binding
+       redirects within closure of the task (i.e. ALL assembly versions referenced must
+       always exactly match).
+
+    For .NET SDK tasks we prefer option 1.
+
+    See MSBuild binding redirect configuration for the relevant version:
+    https://github.com/dotnet/msbuild/blob/main/src/MSBuild/app.config
+  -->
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="$(SystemDiagnosticsDiagnosticSourceToolsetPackageVersion)" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
+    <PackageReference Include="System.Resources.Extensions" VersionOverride="$(SystemResourcesExtensionsToolsetPackageVersion)" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
+  </ItemGroup>
+
+</Project>
