@@ -102,6 +102,20 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
+    public void AddProfileEntries_PreservesUtf8BomAndLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-add-lf.sh");
+        File.WriteAllText(profilePath, "# existing config\nexport FOO=bar\n", new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+        var provider = new TestShellProvider(_tempDir, "preserve-add-lf.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeTrue();
+        AssertUsesOnlyLfLineEndings(File.ReadAllText(profilePath));
+    }
+
+    [Fact]
     public void AddProfileEntries_CreatesParentDirectories()
     {
         var nestedDir = Path.Combine(_tempDir, "config", "powershell");
@@ -167,6 +181,29 @@ public class ShellProfileManagerTests : IDisposable
         content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         content.Should().NotContain(ShellProfileManager.EndMarkerComment);
         AssertUsesOnlyCrLfLineEndings(content);
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_PreservesUtf8BomAndLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-remove-lf.sh");
+        var provider = new TestShellProvider(_tempDir, "preserve-remove-lf.sh");
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
+        var originalContent =
+            $"# existing config\n{ShellProfileManager.BeginMarkerComment}\n{entry}\n{ShellProfileManager.EndMarkerComment}\nexport FOO=bar\n";
+        File.WriteAllText(profilePath, originalContent, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+        ShellProfileManager.RemoveProfileEntries(provider);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeTrue();
+
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain("# existing config");
+        content.Should().Contain("export FOO=bar");
+        content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        content.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        AssertUsesOnlyLfLineEndings(content);
     }
 
     [Fact]
@@ -514,5 +551,12 @@ public class ShellProfileManagerTests : IDisposable
     {
         content.Should().Contain("\r\n");
         content.Replace("\r\n", string.Empty, StringComparison.Ordinal).Should().NotContain("\n");
+    }
+
+    private static void AssertUsesOnlyLfLineEndings(string content)
+    {
+        content.Should().Contain("\n");
+        content.Should().NotContain("\r\n");
+        content.Should().NotContain("\r");
     }
 }
