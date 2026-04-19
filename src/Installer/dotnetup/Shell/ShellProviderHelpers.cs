@@ -41,10 +41,16 @@ internal static class ShellProviderHelpers
     internal static string AppendArguments(string command, string flags)
         => string.IsNullOrEmpty(flags) ? command : $"{command} {flags}";
 
+    internal static string BuildPosixActivationCommand(string dotnetupPath, string shellName, string flags)
+    {
+        var command = BuildPosixPrintEnvCommand(dotnetupPath, shellName, flags);
+        return $"eval \"$({command})\"";
+    }
+
     internal static string BuildPosixProfileEntry(string dotnetupPath, string shellName, string flags)
     {
         var escapedPath = EscapePosixPath(dotnetupPath);
-        var command = AppendArguments($"'{escapedPath}' print-env-script --shell {shellName}", flags);
+        var command = BuildPosixPrintEnvCommand(dotnetupPath, shellName, flags);
 
         return $$"""
             if [ -x '{{escapedPath}}' ]; then
@@ -53,22 +59,50 @@ internal static class ShellProviderHelpers
             """;
     }
 
+    internal static string BuildPowerShellActivationCommand(string dotnetupPath, string shellName, string flags)
+    {
+        var command = BuildPowerShellPrintEnvCommand(dotnetupPath, shellName, flags);
+        return BuildPowerShellInvocationBlock(command);
+    }
+
     internal static string BuildPowerShellProfileEntry(string dotnetupPath, string shellName, string flags)
     {
         var escapedPath = EscapePowerShellPath(dotnetupPath);
-        var command = AppendArguments($"& '{escapedPath}' print-env-script --shell {shellName}", flags);
+        var activationBlock = IndentLines(BuildPowerShellActivationCommand(dotnetupPath, shellName, flags), "    ");
 
         return $$"""
             if (Test-Path -LiteralPath '{{escapedPath}}' -PathType Leaf)
             {
-                $dotnetupScript = {{command}} | Out-String
-                if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
-                {
-                    Invoke-Expression $dotnetupScript
-                }
+                {{activationBlock}}
             }
             """;
     }
+
+    private static string BuildPosixPrintEnvCommand(string dotnetupPath, string shellName, string flags)
+    {
+        var escapedPath = EscapePosixPath(dotnetupPath);
+        return AppendArguments($"'{escapedPath}' print-env-script --shell {shellName}", flags);
+    }
+
+    private static string BuildPowerShellPrintEnvCommand(string dotnetupPath, string shellName, string flags)
+    {
+        var escapedPath = EscapePowerShellPath(dotnetupPath);
+        return AppendArguments($"& '{escapedPath}' print-env-script --shell {shellName}", flags);
+    }
+
+    private static string BuildPowerShellInvocationBlock(string command)
+    {
+        return $$"""
+            $dotnetupScript = {{command}} | Out-String
+            if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
+            {
+                Invoke-Expression $dotnetupScript
+            }
+            """;
+    }
+
+    private static string IndentLines(string text, string indentation)
+        => indentation + text.ReplaceLineEndings(Environment.NewLine + indentation);
 
     internal static string BuildPosixPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
     {

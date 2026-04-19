@@ -54,9 +54,7 @@ public class ZshEnvShellProvider : IEnvShellProvider
 
     public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
     {
-        var escapedPath = ShellProviderHelpers.EscapePosixPath(dotnetupPath);
         var flags = ShellProviderHelpers.GetCommandFlags(dotnetupOnly, dotnetInstallPath, ShellProviderHelpers.EscapePosixPath);
-        var command = ShellProviderHelpers.AppendArguments($"'{escapedPath}' print-env-script --shell zsh", flags);
-        return $"eval \"$({command})\"";
+        return ShellProviderHelpers.BuildPosixActivationCommand(dotnetupPath, "zsh", flags);
     }
 }
