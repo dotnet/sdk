@@ -313,8 +313,10 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
     }
 
-    public void ApplyTerminalProfileModifications(IEnvShellProvider? shellProvider = null, string? dotnetRoot = null)
+    public void ApplyTerminalProfileModifications(string dotnetRoot, IEnvShellProvider? shellProvider = null)
     {
+        ArgumentNullException.ThrowIfNull(dotnetRoot);
+
         if (OperatingSystem.IsWindows())
         {
             // Not implemented yet on Windows

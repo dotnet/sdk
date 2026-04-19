@@ -22,6 +22,9 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public int GetExistingSystemInstallsCallCount { get; private set; }
     public int ApplyEnvironmentModificationsCallCount { get; private set; }
+    public int ApplyTerminalProfileModificationsCallCount { get; private set; }
+    public string? LastDotnetRootForEnvironmentModifications { get; private set; }
+    public string? LastDotnetRootForTerminalProfileModifications { get; private set; }
 
     public MockDotnetInstallManager(
         string defaultInstallPath,
@@ -57,10 +60,14 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null)
     {
         ApplyEnvironmentModificationsCallCount++;
+        LastDotnetRootForEnvironmentModifications = dotnetRoot;
     }
 
-    public void ApplyTerminalProfileModifications(IEnvShellProvider? shellProvider = null, string? dotnetRoot = null)
-        => throw new NotImplementedException();
+    public void ApplyTerminalProfileModifications(string dotnetRoot, IEnvShellProvider? shellProvider = null)
+    {
+        ApplyTerminalProfileModificationsCallCount++;
+        LastDotnetRootForTerminalProfileModifications = dotnetRoot;
+    }
 
     public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests) { }
 }

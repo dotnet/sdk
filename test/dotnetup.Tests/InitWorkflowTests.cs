@@ -7,6 +7,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 using Xunit;
 
@@ -121,6 +122,25 @@ public class InitWorkflowTests : IDisposable
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
     }
 
+    [Fact]
+    public void BaseConfigurationWalkthrough_PassesInstallRootToTerminalProfileModifications()
+    {
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls: []);
+        var workflow = new InitWorkflows(mock, null!);
+
+        workflow.BaseConfigurationWalkthrough(
+            requests: [],
+            primaryActionAfterConfigured: () => { },
+            noProgress: true,
+            interactive: false,
+            shellProvider: new TestShellProvider());
+
+        mock.ApplyTerminalProfileModificationsCallCount.Should().Be(1);
+        mock.LastDotnetRootForTerminalProfileModifications.Should().Be(_tempDir);
+    }
+
     // ── GetExistingSystemInstalls — architecture filtering ──
 
     [Fact]
@@ -190,5 +210,24 @@ public class InitWorkflowTests : IDisposable
         result.Should().BeEmpty();
         // Should still query system installs because ignoreConfig overrides the disabled flag
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
+    }
+
+    private sealed class TestShellProvider : IEnvShellProvider
+    {
+        public string ArgumentName => "test";
+        public string Extension => "test";
+        public string? HelpDescription => "Test shell provider";
+
+        public string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true)
+            => string.Empty;
+
+        public IReadOnlyList<string> GetProfilePaths()
+            => [];
+
+        public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
+            => string.Empty;
+
+        public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
+            => string.Empty;
     }
 }
