@@ -44,10 +44,8 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
 
     public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
     {
-        var escapedPath = ShellProviderHelpers.EscapePowerShellPath(dotnetupPath);
         var flags = ShellProviderHelpers.GetCommandFlags(dotnetupOnly, dotnetInstallPath, ShellProviderHelpers.EscapePowerShellPath);
-        var command = ShellProviderHelpers.AppendArguments($"& '{escapedPath}' print-env-script --shell pwsh", flags);
-        return $"{command} | Invoke-Expression";
+        return ShellProviderHelpers.BuildPowerShellProfileEntry(dotnetupPath, "pwsh", flags);
     }
 
     public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)

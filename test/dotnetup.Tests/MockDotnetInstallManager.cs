@@ -59,5 +59,8 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
         ApplyEnvironmentModificationsCallCount++;
     }
 
+    public void ApplyTerminalProfileModifications(IEnvShellProvider? shellProvider = null, string? dotnetRoot = null)
+        => throw new NotImplementedException();
+
     public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests) { }
 }

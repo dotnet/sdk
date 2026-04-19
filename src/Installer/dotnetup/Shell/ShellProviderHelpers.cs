@@ -41,6 +41,31 @@ internal static class ShellProviderHelpers
     internal static string AppendArguments(string command, string flags)
         => string.IsNullOrEmpty(flags) ? command : $"{command} {flags}";
 
+    internal static string BuildPosixProfileEntry(string dotnetupPath, string shellName, string flags)
+    {
+        var escapedPath = EscapePosixPath(dotnetupPath);
+        var command = AppendArguments($"'{escapedPath}' print-env-script --shell {shellName}", flags);
+
+        return $$"""
+            if [ -x '{{escapedPath}}' ]; then
+                eval "$({{command}})"
+            fi
+            """;
+    }
+
+    internal static string BuildPowerShellProfileEntry(string dotnetupPath, string shellName, string flags)
+    {
+        var escapedPath = EscapePowerShellPath(dotnetupPath);
+        var command = AppendArguments($"& '{escapedPath}' print-env-script --shell {shellName}", flags);
+
+        return $$"""
+            if (Test-Path -LiteralPath '{{escapedPath}}' -PathType Leaf)
+            {
+                {{command}} | Invoke-Expression
+            }
+            """;
+    }
+
     internal static string BuildPosixPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
     {
         // Put the managed paths first so the shell resolves dotnet/dotnetup from the selected install immediately.

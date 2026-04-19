@@ -67,10 +67,8 @@ public class BashEnvShellProvider : IEnvShellProvider
 
     public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
     {
-        var escapedPath = ShellProviderHelpers.EscapePosixPath(dotnetupPath);
         var flags = ShellProviderHelpers.GetCommandFlags(dotnetupOnly, dotnetInstallPath, ShellProviderHelpers.EscapePosixPath);
-        var command = ShellProviderHelpers.AppendArguments($"'{escapedPath}' print-env-script --shell bash", flags);
-        return $"eval \"$({command})\"";
+        return ShellProviderHelpers.BuildPosixProfileEntry(dotnetupPath, "bash", flags);
     }
 
     public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)

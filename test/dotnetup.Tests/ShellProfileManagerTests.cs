@@ -331,6 +331,7 @@ public class ShellProfileManagerTests : IDisposable
 
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        entry.Should().Contain($"if [ -x '{FakeDotnetupPath}' ]; then");
         entry.Should().Contain("eval");
         entry.Should().Contain("--shell bash");
         entry.Should().NotContain("--dotnetup-only");
@@ -375,6 +376,7 @@ public class ShellProfileManagerTests : IDisposable
 
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        entry.Should().Contain($"if [ -x '{FakeDotnetupPath}' ]; then");
         entry.Should().Contain("eval");
         entry.Should().Contain("--shell zsh");
         entry.Should().NotContain("--dotnetup-only");
@@ -388,6 +390,7 @@ public class ShellProfileManagerTests : IDisposable
 
         entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        entry.Should().Contain($"if (Test-Path -LiteralPath '{FakeDotnetupPath}' -PathType Leaf)");
         entry.Should().Contain("Invoke-Expression");
         entry.Should().Contain("--shell pwsh");
         entry.Should().NotContain("--dotnetup-only");

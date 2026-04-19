@@ -65,14 +65,19 @@ Each profile file gets a dotnetup-managed block with explicit begin/end markers:
 **Bash / Zsh:**
 ```bash
 # dotnetup: begin
-eval "$('/path/to/dotnetup' print-env-script --shell bash)"
+if [ -x '/path/to/dotnetup' ]; then
+    eval "$('/path/to/dotnetup' print-env-script --shell bash)"
+fi
 # dotnetup: end
 ```
 
 **PowerShell:**
 ```powershell
 # dotnetup: begin
-& '/path/to/dotnetup' print-env-script --shell pwsh | Invoke-Expression
+if (Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf)
+{
+    & '/path/to/dotnetup' print-env-script --shell pwsh | Invoke-Expression
+}
 # dotnetup: end
 ```
 
