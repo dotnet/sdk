@@ -9,13 +9,15 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 internal class DefaultInstallCommand : CommandBase
 {
     private readonly string _installType;
+    private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly InstallRootManager _installRootManager;
     private readonly IEnvShellProvider? _shellProvider;
 
     public DefaultInstallCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
     {
+        _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _installType = result.GetValue(DefaultInstallCommandParser.InstallTypeArgument)!;
-        _installRootManager = new InstallRootManager(dotnetEnvironment);
+        _installRootManager = new InstallRootManager(_dotnetEnvironment);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
 
@@ -35,7 +37,7 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            var userDotnetPath = _installRootManager.GetUserInstallRootChanges().UserDotnetPath;
+            var userDotnetPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
             return SetUnixShellProfile(dotnetupOnly: false, userDotnetPath);
         }
 
