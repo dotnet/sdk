@@ -143,6 +143,22 @@ public class EnvShellProviderTests
         script.Should().Contain("$env:PATH = '/usr/local/bin' + [IO.Path]::PathSeparator + $env:PATH");
     }
 
+    [Fact]
+    public void PowerShellProvider_ShouldCaptureScriptBeforeInvokingExpression()
+    {
+        var provider = new PowerShellEnvShellProvider();
+
+        var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
+        var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
+
+        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' print-env-script --shell pwsh | Out-String");
+        profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
+        profileEntry.Should().Contain("Invoke-Expression $dotnetupScript");
+
+        activationCommand.Should().Contain("| Out-String");
+        activationCommand.Should().Contain("Invoke-Expression $dotnetupScript");
+    }
+
     [Theory]
     [InlineData("bash")]
     [InlineData("zsh")]

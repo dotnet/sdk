@@ -61,7 +61,11 @@ internal static class ShellProviderHelpers
         return $$"""
             if (Test-Path -LiteralPath '{{escapedPath}}' -PathType Leaf)
             {
-                {{command}} | Invoke-Expression
+                $dotnetupScript = {{command}} | Out-String
+                if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
+                {
+                    Invoke-Expression $dotnetupScript
+                }
             }
             """;
     }

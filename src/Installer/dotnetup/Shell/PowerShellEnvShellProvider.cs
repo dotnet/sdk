@@ -53,6 +53,6 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
         var escapedPath = ShellProviderHelpers.EscapePowerShellPath(dotnetupPath);
         var flags = ShellProviderHelpers.GetCommandFlags(dotnetupOnly, dotnetInstallPath, ShellProviderHelpers.EscapePowerShellPath);
         var command = ShellProviderHelpers.AppendArguments($"& '{escapedPath}' print-env-script --shell pwsh", flags);
-        return $"{command} | Invoke-Expression";
+        return $"$dotnetupScript = {command} | Out-String; if (-not [string]::IsNullOrWhiteSpace($dotnetupScript)) {{ Invoke-Expression $dotnetupScript }}";
     }
 }
