@@ -54,22 +54,26 @@ dotnetup defaultinstall system
 |-------|---------------|-----------|
 | **bash** | `~/.bashrc` (always) + the first existing of `~/.bash_profile` / `~/.profile` (creates `~/.profile` if neither exists) | `.bashrc` covers Linux terminals (non-login shells). The login profile covers macOS Terminal and SSH sessions. We never create `~/.bash_profile` to avoid shadowing an existing `~/.profile`. |
 | **zsh** | `$ZDOTDIR/.zshrc` when `ZDOTDIR` is set; otherwise `~/.zshrc` (created if needed) | Covers all interactive zsh sessions. `~/.zshenv` is avoided because on macOS, `/etc/zprofile` runs `path_helper` which resets PATH after `.zshenv` loads. |
-| **pwsh** | `~/.config/powershell/Microsoft.PowerShell_profile.ps1` (creates directory and file if needed) | Standard `$PROFILE` path on Unix. |
+| **pwsh** | `~/.config/powershell/Microsoft.PowerShell_profile.ps1` (creates directory and file if needed) | Standard PowerShell profile path on Unix. |
+
+The home directory used for these lookups comes from the user's current environment (`HOME`, or `USERPROFILE` / `Environment.SpecialFolder.UserProfile` as a fallback). dotnetup fails with a clear error if it cannot determine a writable profile location.
 
 ### Profile Entry Format
 
-Each profile file gets a marker comment and an eval line:
+Each profile file gets a dotnetup-managed block with explicit begin/end markers:
 
 **Bash / Zsh:**
 ```bash
-# dotnetup
+# dotnetup: begin
 eval "$('/path/to/dotnetup' print-env-script --shell bash)"
+# dotnetup: end
 ```
 
 **PowerShell:**
 ```powershell
-# dotnetup
+# dotnetup: begin
 & '/path/to/dotnetup' print-env-script --shell pwsh | Invoke-Expression
+# dotnetup: end
 ```
 
 The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). The `--dotnet-install-path` argument is only included in generated profile entries when dotnetup is configured to use a non-default install root.
@@ -80,11 +84,11 @@ Before modifying an existing profile file, dotnetup creates a backup (e.g., `~/.
 
 ### Reversibility
 
-To remove the environment configuration, find the `# dotnetup` marker comment and the line immediately after it in each profile file, and remove both lines. The backup files can be used as a reference.
+To remove the environment configuration manually, remove the full block from `# dotnetup: begin` through `# dotnetup: end` in each profile file. The backup files can be used as a reference.
 
 ### Idempotency
 
-If a profile file already contains the `# dotnetup` marker, the entry is not duplicated.
+If a profile file already contains a dotnetup-managed block, the entry is updated in place rather than duplicated.
 
 ## The `print-env-script` Command
 
@@ -186,8 +190,8 @@ public interface IEnvShellProvider
     string? HelpDescription { get; }
     string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true);
     IReadOnlyList<string> GetProfilePaths();
-    string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false);
-    string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false);
+    string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null);
+    string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null);
 }
 ```
 
@@ -200,8 +204,8 @@ public interface IEnvShellProvider
 ### ShellProfileManager
 
 `ShellProfileManager` coordinates profile file modifications:
-- `AddProfileEntries(provider, dotnetupPath, dotnetupOnly, dotnetInstallPath)` — creates or updates the managed entry in place, creates backups, and can thread through a custom install path
-- `RemoveProfileEntries(provider)` — finds and removes marker + eval lines
+- `AddProfileEntries(provider, dotnetupPath, dotnetupOnly, dotnetInstallPath)` — creates or updates the managed begin/end block in place, creates backups, and can thread through a custom install path
+- `RemoveProfileEntries(provider)` — finds and removes the full managed block
 
 `defaultinstall system` uses `AddProfileEntries(..., dotnetupOnly: true)` to switch the managed entry into dotnetup-only mode.
 

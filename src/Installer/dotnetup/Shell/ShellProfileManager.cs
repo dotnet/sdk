@@ -8,7 +8,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Shell;
 /// </summary>
 public class ShellProfileManager
 {
-    internal const string MarkerComment = "# dotnetup";
+    internal const string BeginMarkerComment = "# dotnetup: begin";
+    internal const string EndMarkerComment = "# dotnetup: end";
     private const string BackupSuffix = ".dotnetup-backup";
 
     private sealed record ProfileFileState(
@@ -83,48 +84,44 @@ public class ShellProfileManager
 
         if (!File.Exists(profilePath))
         {
-            // New file — just write the entry
-            File.WriteAllText(profilePath, entry + Environment.NewLine, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            // New file — just write the managed block.
+            File.WriteAllText(profilePath, WrapEntryWithMarkers(entry) + Environment.NewLine, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             return true;
         }
 
         var fileState = ReadProfileFile(profilePath);
-        var entryLines = entry.Split('\n', StringSplitOptions.None)
+        var entryLines = WrapEntryWithMarkers(entry).Split('\n', StringSplitOptions.None)
             .Select(l => l.TrimEnd('\r'))
             .ToArray();
+        var existingBlocks = FindManagedBlocks(fileState.Lines);
 
-        // Look for an existing marker
-        int markerIndex = fileState.Lines.FindIndex(l => l.TrimEnd() == MarkerComment);
-
-        if (markerIndex >= 0)
+        if (existingBlocks.Count > 0)
         {
-            // Determine how many lines the old entry spans (marker + command lines)
-            int oldEntryEnd = markerIndex + 1;
-            // The old entry is the marker line plus the next line (the eval/invoke line)
-            if (oldEntryEnd < fileState.Lines.Count)
-            {
-                oldEntryEnd++;
-            }
-
-            // Check if the existing entry already matches
-            var oldEntry = fileState.Lines.GetRange(markerIndex, oldEntryEnd - markerIndex);
-            if (oldEntry.Count == entryLines.Length &&
+            var firstBlock = existingBlocks[0];
+            var oldEntry = fileState.Lines.GetRange(firstBlock.Start, firstBlock.EndExclusive - firstBlock.Start);
+            if (existingBlocks.Count == 1 &&
+                oldEntry.Count == entryLines.Length &&
                 oldEntry.Zip(entryLines).All(pair => pair.First.TrimEnd() == pair.Second.TrimEnd()))
             {
                 return false; // Already correct
             }
 
-            // Replace in-place
             File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
-            fileState.Lines.RemoveRange(markerIndex, oldEntryEnd - markerIndex);
-            fileState.Lines.InsertRange(markerIndex, entryLines);
+
+            for (int i = existingBlocks.Count - 1; i >= 0; i--)
+            {
+                var block = existingBlocks[i];
+                fileState.Lines.RemoveRange(block.Start, block.EndExclusive - block.Start);
+            }
+
+            fileState.Lines.InsertRange(firstBlock.Start, entryLines);
             WriteProfileFile(profilePath, fileState);
             return true;
         }
 
         // No existing entry — append
         File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
-        if (fileState.Lines.Count > 0)
+        if (fileState.Lines.Count > 0 && !string.IsNullOrWhiteSpace(fileState.Lines[^1]))
         {
             fileState.Lines.Add(string.Empty);
         }
@@ -143,43 +140,40 @@ public class ShellProfileManager
         }
 
         var fileState = ReadProfileFile(profilePath);
-        bool modified = false;
+        var existingBlocks = FindManagedBlocks(fileState.Lines);
 
-        for (int i = fileState.Lines.Count - 1; i >= 0; i--)
+        if (existingBlocks.Count == 0)
         {
-            if (fileState.Lines[i].TrimEnd() == MarkerComment)
-            {
-                // Remove the marker line and the line after it (the eval/invoke line)
-                fileState.Lines.RemoveAt(i);
-                if (i < fileState.Lines.Count)
-                {
-                    fileState.Lines.RemoveAt(i);
-                }
-                modified = true;
-            }
+            return false;
         }
 
-        if (modified)
-        {
-            fileState = fileState with
-            {
-                EndsWithTrailingNewLine = fileState.Lines.Count > 0 && fileState.EndsWithTrailingNewLine
-            };
+        File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
 
-            WriteProfileFile(profilePath, fileState);
+        for (int i = existingBlocks.Count - 1; i >= 0; i--)
+        {
+            var block = existingBlocks[i];
+            fileState.Lines.RemoveRange(block.Start, block.EndExclusive - block.Start);
         }
 
-        return modified;
+        fileState = fileState with
+        {
+            EndsWithTrailingNewLine = fileState.Lines.Count > 0 && fileState.EndsWithTrailingNewLine
+        };
+
+        WriteProfileFile(profilePath, fileState);
+        return true;
     }
 
     private static ProfileFileState ReadProfileFile(string profilePath)
     {
         byte[] bytes = File.ReadAllBytes(profilePath);
+        var utf8FallbackEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         using var stream = new MemoryStream(bytes);
         using var reader = new StreamReader(
             stream,
-            encoding: new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+            // Use UTF-8 as the fallback, but allow an existing BOM to override it.
+            encoding: utf8FallbackEncoding,
             detectEncodingFromByteOrderMarks: true);
 
         string content = reader.ReadToEnd();
@@ -210,6 +204,32 @@ public class ShellProfileManager
         }
 
         File.WriteAllText(profilePath, content, fileState.Encoding);
+    }
+
+    private static string WrapEntryWithMarkers(string entry) =>
+        $"{BeginMarkerComment}\n{entry}\n{EndMarkerComment}";
+
+    private static List<(int Start, int EndExclusive)> FindManagedBlocks(List<string> lines)
+    {
+        var blocks = new List<(int Start, int EndExclusive)>();
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            var trimmedLine = lines[i].TrimEnd();
+            if (trimmedLine == BeginMarkerComment)
+            {
+                int endIndex = i + 1;
+                while (endIndex < lines.Count && lines[endIndex].TrimEnd() != EndMarkerComment)
+                {
+                    endIndex++;
+                }
+
+                blocks.Add((i, endIndex < lines.Count ? endIndex + 1 : lines.Count));
+                i = endIndex;
+            }
+        }
+
+        return blocks;
     }
 
     private static string DetectLineEnding(string content)
@@ -249,6 +269,11 @@ public class ShellProfileManager
 
     private static bool HasPreamble(byte[] bytes, Encoding encoding)
     {
+        if (encoding.CodePage == Encoding.UTF8.CodePage)
+        {
+            return bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble);
+        }
+
         byte[] preamble = encoding.GetPreamble();
         return preamble.Length > 0 && bytes.AsSpan().StartsWith(preamble);
     }

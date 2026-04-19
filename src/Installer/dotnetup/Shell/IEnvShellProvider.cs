@@ -39,8 +39,8 @@ public interface IEnvShellProvider
     IReadOnlyList<string> GetProfilePaths();
 
     /// <summary>
-    /// Generates the line(s) to append to a shell profile that will eval dotnetup's env script.
-    /// Includes a marker comment for identification and removal.
+    /// Generates the shell command block to append to a shell profile that will eval dotnetup's env script.
+    /// <see cref="ShellProfileManager"/> adds the surrounding marker comments when it writes the block.
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
     /// <param name="dotnetupOnly">When true, the profile entry only adds dotnetup to PATH (no DOTNET_ROOT or dotnet PATH).</param>

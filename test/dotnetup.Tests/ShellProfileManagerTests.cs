@@ -37,7 +37,8 @@ public class ShellProfileManagerTests : IDisposable
 
         modified.Should().HaveCount(1);
         var content = File.ReadAllText(modified[0]);
-        content.Should().Contain(ShellProfileManager.MarkerComment);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain(ShellProfileManager.EndMarkerComment);
         content.Should().Contain("print-env-script");
     }
 
@@ -52,7 +53,8 @@ public class ShellProfileManagerTests : IDisposable
 
         var content = File.ReadAllText(profilePath);
         content.Should().StartWith("# existing config");
-        content.Should().Contain(ShellProfileManager.MarkerComment);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain(ShellProfileManager.EndMarkerComment);
     }
 
     [Fact]
@@ -66,7 +68,8 @@ public class ShellProfileManagerTests : IDisposable
 
         modified.Should().BeEmpty();
         var lines = File.ReadAllLines(profilePath);
-        lines.Count(l => l.TrimEnd() == ShellProfileManager.MarkerComment).Should().Be(1);
+        lines.Count(l => l.TrimEnd() == ShellProfileManager.BeginMarkerComment).Should().Be(1);
+        lines.Count(l => l.TrimEnd() == ShellProfileManager.EndMarkerComment).Should().Be(1);
     }
 
     [Fact]
@@ -111,19 +114,20 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
-    public void RemoveProfileEntries_RemovesMarkerAndEvalLine()
+    public void RemoveProfileEntries_RemovesManagedBlock()
     {
         var profilePath = Path.Combine(_tempDir, "remove.sh");
         var provider = new TestShellProvider(_tempDir, "remove.sh");
 
         ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
-        File.ReadAllText(profilePath).Should().Contain(ShellProfileManager.MarkerComment);
+        File.ReadAllText(profilePath).Should().Contain(ShellProfileManager.BeginMarkerComment);
 
         var modified = ShellProfileManager.RemoveProfileEntries(provider);
 
         modified.Should().HaveCount(1);
         var content = File.ReadAllText(profilePath);
-        content.Should().NotContain(ShellProfileManager.MarkerComment);
+        content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        content.Should().NotContain(ShellProfileManager.EndMarkerComment);
         content.Should().NotContain("print-env-script");
     }
 
@@ -147,8 +151,9 @@ public class ShellProfileManagerTests : IDisposable
     {
         var profilePath = Path.Combine(_tempDir, "preserve-remove.sh");
         var provider = new TestShellProvider(_tempDir, "preserve-remove.sh");
-        var entry = provider.GenerateProfileEntry(FakeDotnetupPath).Replace("\n", "\r\n", StringComparison.Ordinal);
-        var originalContent = $"# existing config\r\n{entry}\r\nexport FOO=bar\r\n";
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
+        var originalContent =
+            $"# existing config\r\n{ShellProfileManager.BeginMarkerComment}\r\n{entry}\r\n{ShellProfileManager.EndMarkerComment}\r\nexport FOO=bar\r\n";
         File.WriteAllText(profilePath, originalContent, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
 
         ShellProfileManager.RemoveProfileEntries(provider);
@@ -159,8 +164,52 @@ public class ShellProfileManagerTests : IDisposable
         var content = File.ReadAllText(profilePath);
         content.Should().Contain("# existing config");
         content.Should().Contain("export FOO=bar");
-        content.Should().NotContain(ShellProfileManager.MarkerComment);
+        content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        content.Should().NotContain(ShellProfileManager.EndMarkerComment);
         AssertUsesOnlyCrLfLineEndings(content);
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_RemovesManagedBlockWhenEndMarkerIsMissing()
+    {
+        var profilePath = Path.Combine(_tempDir, "missing-end.sh");
+        File.WriteAllText(
+            profilePath,
+            $"""
+            # existing config
+            {ShellProfileManager.BeginMarkerComment}
+            eval "$('/old/dotnetup' print-env-script --shell test)"
+            export TEMP_VAR=1
+            """);
+        var provider = new TestShellProvider(_tempDir, "missing-end.sh");
+
+        var modified = ShellProfileManager.RemoveProfileEntries(provider);
+
+        modified.Should().HaveCount(1);
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain("# existing config");
+        content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        content.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        content.Should().NotContain("print-env-script");
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_IgnoresOrphanedEndMarkerWithoutBegin()
+    {
+        var profilePath = Path.Combine(_tempDir, "missing-begin.sh");
+        var originalContent =
+            $"""
+            # existing config
+            {ShellProfileManager.EndMarkerComment}
+            export FOO=bar
+            """;
+        File.WriteAllText(profilePath, originalContent);
+        var provider = new TestShellProvider(_tempDir, "missing-begin.sh");
+
+        var modified = ShellProfileManager.RemoveProfileEntries(provider);
+
+        modified.Should().BeEmpty();
+        File.ReadAllText(profilePath).Should().Be(originalContent.ReplaceLineEndings(Environment.NewLine));
     }
 
     [Fact]
@@ -181,8 +230,8 @@ public class ShellProfileManagerTests : IDisposable
         var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
 
         modified.Should().HaveCount(2);
-        File.ReadAllText(Path.Combine(_tempDir, "file1.sh")).Should().Contain(ShellProfileManager.MarkerComment);
-        File.ReadAllText(Path.Combine(_tempDir, "file2.sh")).Should().Contain(ShellProfileManager.MarkerComment);
+        File.ReadAllText(Path.Combine(_tempDir, "file1.sh")).Should().Contain(ShellProfileManager.BeginMarkerComment);
+        File.ReadAllText(Path.Combine(_tempDir, "file2.sh")).Should().Contain(ShellProfileManager.BeginMarkerComment);
     }
 
     [Fact]
@@ -223,8 +272,44 @@ public class ShellProfileManagerTests : IDisposable
         modified.Should().HaveCount(1);
         var content = File.ReadAllText(profilePath);
         content.Should().Contain("--dotnetup-only");
-        // Should only have one marker
-        content.Split('\n').Count(l => l.TrimEnd() == ShellProfileManager.MarkerComment).Should().Be(1);
+        content.Split('\n').Count(l => l.TrimEnd() == ShellProfileManager.BeginMarkerComment).Should().Be(1);
+        content.Split('\n').Count(l => l.TrimEnd() == ShellProfileManager.EndMarkerComment).Should().Be(1);
+    }
+
+    [Fact]
+    public void AddProfileEntries_ReplacesManagedBlockOfArbitraryLength()
+    {
+        var profilePath = Path.Combine(_tempDir, "multiline.sh");
+        File.WriteAllText(
+            profilePath,
+            $"""
+            # existing config
+            {ShellProfileManager.BeginMarkerComment}
+            old line 1
+            old line 2
+            old line 3
+            {ShellProfileManager.EndMarkerComment}
+            export FOO=bar
+            """);
+
+        var provider = new TestShellProvider(_tempDir, "multiline.sh")
+        {
+            ProfileEntryOverride =
+                """
+                eval "$('/usr/local/bin/dotnetup' print-env-script --shell test)"
+                hash -r 2>/dev/null
+                """,
+        };
+
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        modified.Should().HaveCount(1);
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain(ShellProfileManager.EndMarkerComment);
+        content.Should().Contain("hash -r 2>/dev/null");
+        content.Should().Contain("export FOO=bar");
+        content.Should().NotContain("old line 1");
     }
 
     [Fact]
@@ -244,7 +329,8 @@ public class ShellProfileManagerTests : IDisposable
         var provider = new BashEnvShellProvider();
         var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
 
-        entry.Should().Contain(ShellProfileManager.MarkerComment);
+        entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
         entry.Should().Contain("eval");
         entry.Should().Contain("--shell bash");
         entry.Should().NotContain("--dotnetup-only");
@@ -287,7 +373,8 @@ public class ShellProfileManagerTests : IDisposable
         var provider = new ZshEnvShellProvider();
         var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
 
-        entry.Should().Contain(ShellProfileManager.MarkerComment);
+        entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
         entry.Should().Contain("eval");
         entry.Should().Contain("--shell zsh");
         entry.Should().NotContain("--dotnetup-only");
@@ -299,7 +386,8 @@ public class ShellProfileManagerTests : IDisposable
         var provider = new PowerShellEnvShellProvider();
         var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
 
-        entry.Should().Contain(ShellProfileManager.MarkerComment);
+        entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
         entry.Should().Contain("Invoke-Expression");
         entry.Should().Contain("--shell pwsh");
         entry.Should().NotContain("--dotnetup-only");
@@ -313,7 +401,8 @@ public class ShellProfileManagerTests : IDisposable
 
         command.Should().Contain("eval");
         command.Should().Contain("--shell bash");
-        command.Should().NotContain(ShellProfileManager.MarkerComment);
+        command.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        command.Should().NotContain(ShellProfileManager.EndMarkerComment);
     }
 
     [Fact]
@@ -381,6 +470,7 @@ public class ShellProfileManagerTests : IDisposable
         public string ArgumentName => "test";
         public string Extension => "sh";
         public string? HelpDescription => null;
+        public string? ProfileEntryOverride { get; init; }
 
         public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true) =>
             includeDotnet
@@ -391,13 +481,18 @@ public class ShellProfileManagerTests : IDisposable
 
         public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
         {
+            if (ProfileEntryOverride is not null)
+            {
+                return ProfileEntryOverride;
+            }
+
             var flags = dotnetupOnly ? " --dotnetup-only" : "";
             if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
             {
                 flags += $" --dotnet-install-path '{dotnetInstallPath}'";
             }
 
-            return $"# dotnetup\neval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
+            return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
         }
 
         public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
