@@ -49,6 +49,8 @@ public class BashEnvShellProvider : IEnvShellProvider
 
         // For login shells, use the first existing of .bash_profile / .profile.
         // Never create .bash_profile — it would shadow an existing .profile.
+        // If the user later creates .bash_profile themselves and it does not source .profile,
+        // the dotnetup initialization we wrote to .profile will no longer run for login shells.
         string bashProfile = Path.Combine(home, ".bash_profile");
         string profile = Path.Combine(home, ".profile");
 
