@@ -10,6 +10,7 @@ public class ShellProfileManager
 {
     internal const string BeginMarkerComment = "# dotnetup: begin";
     internal const string EndMarkerComment = "# dotnetup: end";
+    // Used only during file replacement and deleted after a successful update.
     private const string BackupSuffix = ".dotnetup-backup";
 
     private sealed record ProfileFileState(
@@ -21,7 +22,7 @@ public class ShellProfileManager
     /// <summary>
     /// Ensures the correct dotnetup profile entry is present in all profile files for the given shell provider.
     /// If an entry already exists, it is replaced in-place. If no entry exists, one is appended.
-    /// Creates backups before modifying existing files.
+    /// Existing files are updated via a write-and-rename flow to avoid partially written profiles.
     /// </summary>
     /// <param name="provider">The shell provider to use.</param>
     /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
@@ -106,8 +107,6 @@ public class ShellProfileManager
                 return false; // Already correct
             }
 
-            File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
-
             for (int i = existingBlocks.Count - 1; i >= 0; i--)
             {
                 var block = existingBlocks[i];
@@ -120,7 +119,6 @@ public class ShellProfileManager
         }
 
         // No existing entry — append
-        File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
         if (fileState.Lines.Count > 0 && !string.IsNullOrWhiteSpace(fileState.Lines[^1]))
         {
             fileState.Lines.Add(string.Empty);
@@ -146,8 +144,6 @@ public class ShellProfileManager
         {
             return false;
         }
-
-        File.Copy(profilePath, profilePath + BackupSuffix, overwrite: true);
 
         for (int i = existingBlocks.Count - 1; i >= 0; i--)
         {
@@ -203,7 +199,70 @@ public class ShellProfileManager
             content += fileState.NewLine;
         }
 
-        File.WriteAllText(profilePath, content, fileState.Encoding);
+        if (!File.Exists(profilePath))
+        {
+            File.WriteAllText(profilePath, content, fileState.Encoding);
+            return;
+        }
+
+        var directory = Path.GetDirectoryName(profilePath)
+            ?? throw new InvalidOperationException($"Unable to determine the directory for '{profilePath}'.");
+        var tempPath = Path.Combine(directory, $"{Path.GetFileName(profilePath)}.{Path.GetRandomFileName()}.tmp");
+        var backupPath = profilePath + BackupSuffix;
+
+        File.WriteAllText(tempPath, content, fileState.Encoding);
+
+        if (File.Exists(backupPath))
+        {
+            File.Delete(backupPath);
+        }
+
+        try
+        {
+            File.Move(profilePath, backupPath);
+
+            try
+            {
+                File.Move(tempPath, profilePath);
+            }
+            catch (IOException)
+            {
+                RestoreOriginalFile(profilePath, backupPath, tempPath);
+                throw;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                RestoreOriginalFile(profilePath, backupPath, tempPath);
+                throw;
+            }
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+
+        File.Delete(backupPath);
+    }
+
+    private static void RestoreOriginalFile(string profilePath, string backupPath, string tempPath)
+    {
+        if (File.Exists(profilePath))
+        {
+            File.Delete(profilePath);
+        }
+
+        if (File.Exists(backupPath))
+        {
+            File.Move(backupPath, profilePath);
+        }
+
+        if (File.Exists(tempPath))
+        {
+            File.Delete(tempPath);
+        }
     }
 
     private static string WrapEntryWithMarkers(string entry) =>

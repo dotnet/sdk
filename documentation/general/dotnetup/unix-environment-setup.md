@@ -83,13 +83,13 @@ if (Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf)
 
 The path to dotnetup is the full path to the running binary (`Environment.ProcessPath`). The `--dotnet-install-path` argument is only included in generated profile entries when dotnetup is configured to use a non-default install root.
 
-### Backups
+### Safe updates
 
-Before modifying an existing profile file, dotnetup creates a backup (e.g., `~/.bashrc.dotnetup-backup`). This allows the user to restore the file if needed.
+When updating an existing profile file, dotnetup writes the new content to a separate file and then swaps it into place. This avoids leaving a partially written profile behind if the update is interrupted, and it does not keep a persistent backup file after a successful update.
 
 ### Reversibility
 
-To remove the environment configuration manually, remove the full block from `# dotnetup: begin` through `# dotnetup: end` in each profile file. The backup files can be used as a reference.
+To remove the environment configuration manually, remove the full block from `# dotnetup: begin` through `# dotnetup: end` in each profile file.
 
 ### Idempotency
 

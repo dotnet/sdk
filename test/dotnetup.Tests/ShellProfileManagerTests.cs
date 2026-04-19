@@ -73,7 +73,7 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
-    public void AddProfileEntries_CreatesBackupOfExistingFile()
+    public void AddProfileEntries_DoesNotLeaveBackupOfExistingFile()
     {
         var profilePath = Path.Combine(_tempDir, "backup.sh");
         var originalContent = "# original content\n";
@@ -83,8 +83,8 @@ public class ShellProfileManagerTests : IDisposable
         ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
 
         var backupPath = profilePath + ".dotnetup-backup";
-        File.Exists(backupPath).Should().BeTrue();
-        File.ReadAllText(backupPath).Should().Be(originalContent);
+        File.Exists(backupPath).Should().BeFalse();
+        File.ReadAllText(profilePath).Should().NotBe(originalContent);
     }
 
     [Fact]
@@ -143,6 +143,20 @@ public class ShellProfileManagerTests : IDisposable
         content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         content.Should().NotContain(ShellProfileManager.EndMarkerComment);
         content.Should().NotContain("print-env-script");
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_DoesNotLeaveBackupOfExistingFile()
+    {
+        var profilePath = Path.Combine(_tempDir, "remove-backup.sh");
+        var provider = new TestShellProvider(_tempDir, "remove-backup.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var modified = ShellProfileManager.RemoveProfileEntries(provider);
+
+        modified.Should().HaveCount(1);
+        File.Exists(profilePath + ".dotnetup-backup").Should().BeFalse();
     }
 
     [Fact]
