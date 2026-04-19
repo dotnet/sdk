@@ -155,8 +155,7 @@ public class EnvShellProviderTests
         profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
         profileEntry.Should().Contain("Invoke-Expression $dotnetupScript");
 
-        activationCommand.Should().Contain("| Out-String");
-        activationCommand.Should().Contain("Invoke-Expression $dotnetupScript");
+        activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' print-env-script --shell pwsh | Out-String)");
     }
 
     [Theory]

@@ -76,7 +76,11 @@ fi
 # dotnetup: begin
 if (Test-Path -LiteralPath '/path/to/dotnetup' -PathType Leaf)
 {
-    & '/path/to/dotnetup' print-env-script --shell pwsh | Invoke-Expression
+    $dotnetupScript = & '/path/to/dotnetup' print-env-script --shell pwsh | Out-String
+    if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))
+    {
+        Invoke-Expression $dotnetupScript
+    }
 }
 # dotnetup: end
 ```

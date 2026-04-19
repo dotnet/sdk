@@ -62,13 +62,14 @@ internal static class ShellProviderHelpers
     internal static string BuildPowerShellActivationCommand(string dotnetupPath, string shellName, string flags)
     {
         var command = BuildPowerShellPrintEnvCommand(dotnetupPath, shellName, flags);
-        return BuildPowerShellInvocationBlock(command);
+        return $"Invoke-Expression ({command} | Out-String)";
     }
 
     internal static string BuildPowerShellProfileEntry(string dotnetupPath, string shellName, string flags)
     {
         var escapedPath = EscapePowerShellPath(dotnetupPath);
-        var activationBlock = IndentLines(BuildPowerShellActivationCommand(dotnetupPath, shellName, flags), "    ");
+        var command = BuildPowerShellPrintEnvCommand(dotnetupPath, shellName, flags);
+        var activationBlock = IndentLines(BuildPowerShellGuardedInvocationBlock(command), "    ");
 
         return $$"""
             if (Test-Path -LiteralPath '{{escapedPath}}' -PathType Leaf)
@@ -90,7 +91,7 @@ internal static class ShellProviderHelpers
         return AppendArguments($"& '{escapedPath}' print-env-script --shell {shellName}", flags);
     }
 
-    private static string BuildPowerShellInvocationBlock(string command)
+    private static string BuildPowerShellGuardedInvocationBlock(string command)
     {
         return $$"""
             $dotnetupScript = {{command}} | Out-String
