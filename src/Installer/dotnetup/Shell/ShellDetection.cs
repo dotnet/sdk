@@ -51,7 +51,8 @@ public static class ShellDetection
         }
 
         var resolvedShellPath = Microsoft.DotNet.NativeWrapper.FileInterop.ResolveRealPath(shellPathOrName) ?? shellPathOrName;
-        var normalizedShellName = Path.GetFileNameWithoutExtension(resolvedShellPath);
+        var normalizedShellPath = resolvedShellPath.Replace('\\', '/');
+        var normalizedShellName = Path.GetFileNameWithoutExtension(normalizedShellPath);
         return GetShellProviderByName(normalizedShellName);
     }
 

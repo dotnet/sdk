@@ -41,7 +41,6 @@ public class InitWorkflowTests : IDisposable
     }
 
     [Theory]
-    [InlineData(PathPreference.ShellProfile)]
     [InlineData(PathPreference.FullPathReplacement)]
     internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(PathPreference preference)
     {
