@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.TemplateEngine.Tests;
 using VerifyTests.DiffPlex;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
@@ -18,7 +19,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             s_called = true;
             DerivePathInfo(
                 (_, _, type, method) => new(
-                    directory: "Snapshots",
+                    directory: TestBase.SnapshotsDirectory,
                     typeName: type.Name,
                     methodName: method.Name));
 
