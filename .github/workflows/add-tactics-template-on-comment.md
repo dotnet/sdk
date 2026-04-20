@@ -15,7 +15,7 @@ safe-outputs:
     target: "${{ github.event.issue.number }}"
   noop:
     report-as-issue: false
-if: "!github.event.repository.fork"
+if: "github.event.repository.fork == false"
 on:
   slash_command:
     name: tactics
