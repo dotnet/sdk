@@ -106,8 +106,8 @@ function Get-RuntimeId {
 # so we check that the version isn't Core instead of "version is Desktop"
 if ($PSVersionTable.PSEdition -ne "Core") {
     throw @"
-This script requires PowerShell 7 (pwsh) and cannot run on Windows PowerShell 5.x.
-Install PowerShell 7 from: https://aka.ms/install-powershell
+This script requires PowerShell Core (pwsh) and cannot run on Windows PowerShell 5.x.
+Install PowerShell Core from: https://aka.ms/install-powershell
 Then re-run this script with 'pwsh' instead of 'powershell'.
 "@
 }
