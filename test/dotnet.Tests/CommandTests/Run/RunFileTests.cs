@@ -4723,7 +4723,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
-            .WithEnvironmentVariable(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, "true")
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Hello, String from Util");
