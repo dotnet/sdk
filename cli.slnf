@@ -3,6 +3,8 @@
     "path": "sdk.slnx",
     "projects": [
       "src\\Dotnet.Watch\\dotnet-watch\\dotnet-watch.csproj",
+      "src\\Cli\\dn\\dn.csproj",
+      "src\\Cli\\dn\\dn-native-debug.vcxproj",
       "src\\Cli\\dotnet\\dotnet.csproj",
       "src\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
       "test\\dotnet-new.IntegrationTests\\dotnet-new.IntegrationTests.csproj",
