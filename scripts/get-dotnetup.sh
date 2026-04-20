@@ -89,6 +89,13 @@ if ! command -v az &>/dev/null; then
     exit 1
 fi
 
+if ! az extension show --name azure-devops &>/dev/null; then
+    err "The 'azure-devops' Azure CLI extension is required but is not installed."
+    err "Install it with:"
+    err "  az extension add --name azure-devops"
+    exit 1
+fi
+
 # --- Detect runtime ID ---
 detect_rid() {
     if [ -n "$RUNTIME_ID" ]; then

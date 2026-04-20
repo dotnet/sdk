@@ -123,6 +123,16 @@ After installing, log in with:
 "@
 }
 
+# Check for the azure-devops extension
+$extList = az extension show --name azure-devops 2>&1
+if ($LASTEXITCODE -ne 0) {
+    throw @"
+The 'azure-devops' Azure CLI extension is required but is not installed.
+Install it with:
+    az extension add --name azure-devops
+"@
+}
+
 $rid = Get-RuntimeId
 Write-Host "Detected runtime: $rid" -ForegroundColor Cyan
 
