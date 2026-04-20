@@ -12,7 +12,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         public DynamicAssembly(string assemblyName, Version verToLoad, string publicKeyToken)
         {
             AssemblyFullName = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0}, Version={1}.{2}.0.0, Culture=neutral, PublicKeyToken={3}", assemblyName, verToLoad.Major, verToLoad.Minor, publicKeyToken);
-#if NET472
+#if NETFRAMEWORK
             bool isAssemblyLoaded = false;
             try
             {
@@ -32,7 +32,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             Version = verToLoad;
         }
 
-#if NET472
+#if NETFRAMEWORK
         public static string TaskAssemblyDirectory
         {
             get
@@ -133,7 +133,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return createdObject;
         }
 
-#if NET472
+#if NETFRAMEWORK
         public object? CallStaticMethod(string typeName, string methodName, object[] arguments)
         {
             Type? t = GetType(typeName);
@@ -163,7 +163,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             MethodCallExpression body = Expression.Call(Expression.Constant(d), invokeMethod, parameters);
             var lambda = Expression.Lambda(body, parameters);
             // Diagnostics.Debug.Assert(false, lambda.ToString());
-#if NET472
+#if NETFRAMEWORK
             return Delegate.CreateDelegate(handlerType, lambda.Compile(), "Invoke", false);
 #else
             return null;
