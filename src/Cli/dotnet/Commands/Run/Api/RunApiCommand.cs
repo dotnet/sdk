@@ -1,12 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
@@ -65,22 +65,33 @@ internal abstract class RunApiInput
 
         public override RunApiOutput Execute()
         {
-            var sourceFile = SourceFile.Load(EntryPointFileFullPath);
-            var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: true, ErrorReporters.CreateCollectingReporter(out var diagnostics));
-            string artifactsPath = ArtifactsPath ?? VirtualProjectBuilder.GetArtifactsPath(EntryPointFileFullPath);
+            var builder = new VirtualProjectBuilder(
+                entryPointFileFullPath: EntryPointFileFullPath,
+                targetFramework: VirtualProjectBuildingCommand.TargetFramework,
+                artifactsPath: ArtifactsPath);
+
+            var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
+
+            builder.CreateProjectInstance(
+                new ProjectCollection(),
+                errorReporter,
+                out var project,
+                out var evaluatedDirectives,
+                validateAllDirectives: true);
 
             var csprojWriter = new StringWriter();
             VirtualProjectBuilder.WriteProjectFile(
                 csprojWriter,
-                directives,
-                VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFrameworkVersion),
+                evaluatedDirectives,
+                VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework),
                 isVirtualProject: true,
-                targetFilePath: EntryPointFileFullPath,
-                artifactsPath: artifactsPath);
+                entryPointFilePath: EntryPointFileFullPath,
+                artifactsPath: builder.ArtifactsPath);
 
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
+                ProjectPath = project.FullPath,
                 Diagnostics = diagnostics.ToImmutableArray(),
             };
         }
@@ -153,6 +164,7 @@ internal abstract class RunApiOutput
     public sealed class Project : RunApiOutput
     {
         public required string Content { get; init; }
+        public required string ProjectPath { get; init; }
         public required ImmutableArray<SimpleDiagnostic> Diagnostics { get; init; }
     }
 

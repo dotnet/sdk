@@ -856,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: Impossible d'optimiser les assemblages pour les performances : un package d'exécution valide n'a pas été trouvé. Définissez la propriété PublishReadyToRun sur false ou utilisez un identificateur d'exécution pris en charge lors de la publication. Lorsque vous ciblez .NET 6 ou supérieur, assurez-vous de restaurer les packages avec la propriété PublishReadyToRun définie sur true.</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: l'optimisation des assemblys afin d'améliorer le niveau de performance n'est pas prise en charge pour la plateforme ou l'architecture cible sélectionnée. Vérifiez que vous utilisez un identificateur de runtime pris en charge, ou affectez la valeur false à la propriété PublishReadyToRun.</target>
@@ -915,6 +920,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</source>
         <target state="translated">NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</target>
         <note>{StrBegins="NETSDK1179: "}{Locked="--self-contained"}{Locked="--no-self-contained"}{Locked="--runtime"}</note>
+      </trans-unit>
+      <trans-unit id="SingleFileBundleUnexpectedExclusion">
+        <source>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</source>
+        <target state="new">NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</target>
+        <note>{StrBegins="NETSDK1236: "}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
         <source>NETSDK1048: 'AdditionalProbingPaths' were specified for GenerateRuntimeConfigurationFiles, but are being skipped because 'RuntimeConfigDevPath' is empty.</source>
@@ -1052,11 +1062,6 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</source>
         <target state="translated">NETSDK1200: si UseArtifactsPath est défini sur true et que le chemin de l'artefact n'est pas défini, il doit y avoir un fichier Directory.Build.props afin de déterminer l'emplacement du dossier des artefacts.</target>
         <note>{StrBegins="NETSDK1200: "}</note>
-      </trans-unit>
-      <trans-unit id="UnsupportedVisualStudioVersion">
-        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
-        <target state="translated">NETSDK1209: la version Visual Studio actuelle ne prend pas en charge le ciblage de {0} {1}.  Ciblez {0} {2} ou une version antérieure, ou utilisez Visual Studio version {3} ou ultérieure</target>
-        <note>{StrBegins="NETSDK1209: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
         <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>

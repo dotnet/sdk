@@ -856,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: Sestavení nelze optimalizovat z hlediska výkonu: nebyl nalezen platný balíček modulu runtime. Buď nastavte vlastnost PublishReadyToRun na hodnotu false, nebo při publikování použijte podporovaný identifikátor modulu runtime. Při cílení na .NET 6 nebo vyšší nezapomeňte obnovit balíčky s vlastností PublishReadyToRun nastavenou na hodnotu true.</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: Optimalizace sestavení z hlediska výkonu není u vybrané cílové platformy nebo architektury podporovaná. Ujistěte se prosím, že používáte podporovaný identifikátor modulu runtime, nebo nastavte vlastnost PublishReadyToRun na false.</target>
@@ -915,6 +920,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</source>
         <target state="translated">NETSDK1179: Při použití příkazu --runtime je vyžadována jedna z možností --self-contained nebo --no-self-contained.</target>
         <note>{StrBegins="NETSDK1179: "}{Locked="--self-contained"}{Locked="--no-self-contained"}{Locked="--runtime"}</note>
+      </trans-unit>
+      <trans-unit id="SingleFileBundleUnexpectedExclusion">
+        <source>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</source>
+        <target state="new">NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</target>
+        <note>{StrBegins="NETSDK1236: "}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
         <source>NETSDK1048: 'AdditionalProbingPaths' were specified for GenerateRuntimeConfigurationFiles, but are being skipped because 'RuntimeConfigDevPath' is empty.</source>
@@ -1052,11 +1062,6 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</source>
         <target state="translated">NETSDK1200: Pokud je vlastnost UseArtifactsPath nastavena na hodnotu true a parametr ArtifactsPath není nastaven, musí existovat soubor Directory.Build.props, aby bylo možné určit, kde má být složka artefaktů umístěna.</target>
         <note>{StrBegins="NETSDK1200: "}</note>
-      </trans-unit>
-      <trans-unit id="UnsupportedVisualStudioVersion">
-        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
-        <target state="translated">NETSDK1209: Aktuální verze Visual Studio nepodporuje cílení {0} {1}. Buď zacilte {0} {2} nebo nižší, nebo použijte Visual Studio ve verzi {3} nebo vyšší.</target>
-        <note>{StrBegins="NETSDK1209: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
         <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>

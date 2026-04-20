@@ -13,6 +13,7 @@ jobs:
   backport:
     uses: dotnet/arcade/.github/workflows/backport-base.yml@main
     with:
+        pr_labels: backport
         pr_description_template: |
           Backport of #%source_pr_number% to %target_branch%
 

@@ -1,7 +1,7 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Solution Filter File",
-  "description": "Create a solution filter file that references a parent solution",
-  "symbols/ParentSolution/displayName": "Parent solution file",
-  "symbols/ParentSolution/description": "The parent solution file (sln or slnx) that this filter references (default: same name with .slnx extension)."
+  "name": "Filtre le fichier de solutions",
+  "description": "Créer un fichier de filtre de solution qui référence une solution parente",
+  "symbols/ParentSolution/displayName": "Fichier de solution parent",
+  "symbols/ParentSolution/description": "Le fichier solution parent (sln ou slnx) auquel ce filtre fait référence (par défaut : même nom avec l’extension .slnx)."
 }

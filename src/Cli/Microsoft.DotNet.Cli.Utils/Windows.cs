@@ -39,7 +39,7 @@ public static class Windows
     /// <returns>The commandline of the current process.</returns>
     public static string? GetProcessCommandLine()
     {
-#if !DOTNET_BUILDSOURCEONLY
+#if TARGET_WINDOWS
         // Windows manages the lifetime of the returned PWSTR, so we don't need to free it.
         return PInvoke.GetCommandLine().ToString();
 #else

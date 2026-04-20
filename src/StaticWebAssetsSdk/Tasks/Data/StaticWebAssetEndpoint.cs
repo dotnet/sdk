@@ -6,6 +6,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -19,6 +20,8 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     private StaticWebAssetEndpointSelector[] _selectors;
     private string _assetFile;
     private string _route;
+    private string _order;
+    private bool _orderRead;
     private bool _modified;
     private string _selectorsString;
     private bool _selectorsModified;
@@ -40,6 +43,29 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         set
         {
             _route = value;
+            _modified = true;
+        }
+    }
+
+    // Optional order for the endpoint in the routing table.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string Order
+    {
+        get
+        {
+            if (!_orderRead && _order == null && _originalItem != null)
+            {
+                var value = _originalItem.GetMetadata(nameof(Order));
+                _order = string.IsNullOrEmpty(value) ? null : value;
+                _orderRead = true;
+            }
+            return _order;
+        }
+
+        set
+        {
+            _order = value;
+            _orderRead = true;
             _modified = true;
         }
     }
@@ -421,6 +447,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
     private static readonly string[] _defaultPropertyNames = [
         nameof(AssetFile),
+        nameof(Order),
         nameof(Selectors),
         nameof(ResponseHeaders),
         nameof(EndpointProperties)
@@ -454,6 +481,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         return metadataName switch
         {
             nameof(AssetFile) => AssetFile ?? "",
+            nameof(Order) => Order ?? "",
             nameof(Selectors) => !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors),
             nameof(ResponseHeaders) => !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders),
             nameof(EndpointProperties) => !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties),
@@ -468,6 +496,9 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         {
             case nameof(AssetFile):
                 AssetFile = metadataValue;
+                break;
+            case nameof(Order):
+                Order = metadataValue;
                 break;
             case nameof(Selectors):
                 _selectorsString = metadataValue;
@@ -497,6 +528,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         var result = new Dictionary<string, string>(((ITaskItem)this).MetadataCount)
         {
             { nameof(AssetFile), AssetFile ?? "" },
+            { nameof(Order), Order ?? "" },
             { nameof(Selectors), !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors) },
             { nameof(ResponseHeaders), !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders) },
             { nameof(EndpointProperties), !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties) }
@@ -522,6 +554,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     void ITaskItem.CopyMetadataTo(ITaskItem destinationItem)
     {
         destinationItem.SetMetadata(nameof(AssetFile), AssetFile ?? "");
+        destinationItem.SetMetadata(nameof(Order), Order ?? "");
         destinationItem.SetMetadata(nameof(Selectors), !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors));
         destinationItem.SetMetadata(nameof(ResponseHeaders), !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders));
         destinationItem.SetMetadata(nameof(EndpointProperties), !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties));

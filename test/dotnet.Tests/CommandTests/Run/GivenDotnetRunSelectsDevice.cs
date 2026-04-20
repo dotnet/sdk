@@ -296,10 +296,17 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         result.Should().Pass()
             .And.HaveStdOutContaining($"Device: {deviceId}");
 
-        // Verify the binlog file was created and the DeployToDevice target ran
+        // Verify the binlog file was created and the DeployToDevice target ran with the correct Device property
         File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
         AssertTargetInBinlog(binlogPath, "DeployToDevice",
-            targets => targets.Should().NotBeEmpty("DeployToDevice target should have been executed"));
+            targets =>
+            {
+                targets.Should().NotBeEmpty("DeployToDevice target should have been executed");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var deployMessage = messages.FirstOrDefault(m => m.Text.Contains("DeployToDevice: Deployed to device"));
+                deployMessage.Should().NotBeNull("the DeployToDevice target should have logged the device");
+                deployMessage.Text.Should().Contain(deviceId, "the Device property should be passed to DeployToDevice");
+            });
     }
 
     [Fact]
@@ -353,9 +360,18 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         // Verify the binlog file was created
         File.Exists(binlogPath).Should().BeTrue("the binlog file should be created");
 
-        // DeployToDevice target should have been called since a device was selected
+        // DeployToDevice target should have been called with the correct Device and RuntimeIdentifier
         AssertTargetInBinlog(binlogPath, "DeployToDevice",
-            targets => targets.Should().NotBeEmpty("DeployToDevice target should have been executed when a device is selected"));
+            targets =>
+            {
+                targets.Should().NotBeEmpty("DeployToDevice target should have been executed when a device is selected");
+                var messages = targets.First().FindChildrenRecursive<Message>();
+                var deployMessage = messages.FirstOrDefault(m => m.Text.Contains("DeployToDevice: Deployed to device"));
+                deployMessage.Should().NotBeNull("the DeployToDevice target should have logged the device");
+                deployMessage.Text.Should().Contain("single-device", "the auto-selected Device should be passed to DeployToDevice");
+                // The single-device has RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" which resolves to the current SDK RID
+                deployMessage.Text.Should().Contain(RuntimeInformation.RuntimeIdentifier, "the RuntimeIdentifier from the device should be passed to DeployToDevice");
+            });
     }
 
     [Fact]
