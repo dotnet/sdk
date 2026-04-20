@@ -1,7 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit.Abstractions;
+using System.Text;
+using Xunit;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 {
@@ -9,8 +10,34 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
     {
         public static readonly TestOutputLogger Instance = new TestOutputLogger();
 
-        public void WriteLine(string message) => Console.WriteLine(message);
+        private readonly StringBuilder _output = new();
 
-        public void WriteLine(string format, params object[] args) => Console.WriteLine(format, args);
+        public string Output => _output.ToString();
+
+        public void Write(string message)
+        {
+            _output.Append(message);
+            Console.Write(message);
+        }
+
+        public void Write(string format, params object[] args)
+        {
+            string message = string.Format(format, args);
+            _output.Append(message);
+            Console.Write(message);
+        }
+
+        public void WriteLine(string message)
+        {
+            _output.AppendLine(message);
+            Console.WriteLine(message);
+        }
+
+        public void WriteLine(string format, params object[] args)
+        {
+            string message = string.Format(format, args);
+            _output.AppendLine(message);
+            Console.WriteLine(message);
+        }
     }
 }
