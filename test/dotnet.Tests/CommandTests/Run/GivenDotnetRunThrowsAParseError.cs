@@ -12,7 +12,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [Fact]
         public void ItFailsWithAnAppropriateErrorMessage()
         {
-            // Use a dedicated empty directory to ensure no stray files are picked up from other tests.
+            // Use a dedicated empty directory because file-based program support means that dotnet run will
+            //  pick up stray .cs files from other tests.
             var emptyDir = TestAssetsManager.CreateTestDirectory().Path;
 
             new DotnetCommand(Log, "run")
