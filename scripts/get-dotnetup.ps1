@@ -39,6 +39,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+
 $AzdoOrg = "https://dev.azure.com/dnceng"
 $AzdoProject = "internal"
 $PipelineId = 1544
@@ -99,6 +100,17 @@ function Get-RuntimeId {
 }
 
 # --- Main ---
+
+# Windows PowerShell (5.x) is not supported; require PowerShell 6+ (pwsh).
+# The 'PSEdition' property is only present on 5+, so usage on 4 and below will be null,
+# so we check that the version isn't Core instead of "version is Desktop"
+if ($PSVersionTable.PSEdition -ne "Core") {
+    throw @"
+This script requires PowerShell 7 (pwsh) and cannot run on Windows PowerShell 5.x.
+Install PowerShell 7 from: https://aka.ms/install-powershell
+Then re-run this script with 'pwsh' instead of 'powershell'.
+"@
+}
 
 # Check for Azure CLI
 if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
