@@ -150,4 +150,15 @@
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" Condition="'$(_HasVCTargets)' == 'true'" />
 
+  <!--
+    No-op targets for Arcade build phases that don't apply to this debug-only
+    project. Arcade's Build.proj dispatches Pack, Test, IntegrationTest, and
+    PerformanceTest to every project in the solution; the C++ project system
+    doesn't define them, so we must provide empty stubs to avoid MSB4057.
+  -->
+  <Target Name="Pack" />
+  <Target Name="Test" />
+  <Target Name="IntegrationTest" />
+  <Target Name="PerformanceTest" />
+
 </Project>
