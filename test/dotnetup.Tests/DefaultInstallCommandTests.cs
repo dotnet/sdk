@@ -34,7 +34,7 @@ public sealed class DefaultInstallCommandTests : IDisposable
     }
 
     [Fact]
-    public void DefaultInstallUser_UsesDefaultInstallPathForPwshProfileOnUnix()
+    public void DefaultInstallUser_DoesNotPassDefaultInstallPathToPwshProfileOnUnix()
     {
         if (OperatingSystem.IsWindows())
         {
@@ -53,6 +53,8 @@ public sealed class DefaultInstallCommandTests : IDisposable
 
         string profilePath = Path.Combine(_tempHome, ".config", "powershell", "Microsoft.PowerShell_profile.ps1");
         File.Exists(profilePath).Should().BeTrue();
-        File.ReadAllText(profilePath).Should().Contain(defaultInstallPath);
+        var profileContents = File.ReadAllText(profilePath);
+        profileContents.Should().Contain("print-env-script --shell pwsh");
+        profileContents.Should().NotContain("--dotnet-install-path");
     }
 }
