@@ -75,17 +75,67 @@ extends:
             # Trim leading/trailing spaces from the repo name
             specificRepoName=$(echo "${{ parameters.specificRepoName }}" | awk '{$1=$1};1')
 
+            addMatrixEntry() {
+              local name="$1"
+              local repoPath="$2"
+              local scanIgnorePatterns="${3:-}"
+              if [ ! -z "$matrix" ]; then
+                matrix="$matrix,"
+              fi
+              matrix="$matrix \"$name\": { \"repoPath\": \"$repoPath\", \"scanIgnorePatterns\": \"$scanIgnorePatterns\" }"
+            }
+
+            # Repos whose src/ subdirectories should be scanned as separate jobs.
+            # The repo root is also scanned with --ignore to skip subdirectories covered by sub-scans.
+            splitRepos="source-build-assets"
+
             # If the repo name is provided, only scan that repo.
             if [ ! -z "$specificRepoName" ]; then
-              matrix="\"$specificRepoName\": { \"repoPath\": \"$vmrSrcDir/$specificRepoName\" }"
+              repoName="$specificRepoName"
+              dir="$vmrSrcDir/$specificRepoName"
+
+              if echo "$splitRepos" | grep -qw "$repoName"; then
+                ignorePatterns=""
+                for subdir in "$dir"/src/*/
+                do
+                  if [ -d "$subdir" ]; then
+                    subdirName=$(basename "$subdir")
+                    if [ ! -z "$ignorePatterns" ]; then
+                      ignorePatterns="$ignorePatterns "
+                    fi
+                    ignorePatterns="$ignorePatterns$subdirName"
+                    addMatrixEntry "${repoName}_${subdirName}" "$subdir"
+                  fi
+                done
+                addMatrixEntry "$repoName" "$dir" "$ignorePatterns"
+              else
+                addMatrixEntry "$repoName" "$dir"
+              fi
             else
-              for dir in $vmrSrcDir/*/
+              for dir in "$vmrSrcDir"/*/
               do
-                if [ ! -z "$matrix" ]; then
-                  matrix="$matrix,"
+                repoName=$(basename "$dir")
+
+                if echo "$splitRepos" | grep -qw "$repoName"; then
+                  # Root scan: skip subdirectories that are covered by sub-scans
+                  # Build ignore patterns from subdirectory names so that files
+                  # directly under src/ are still scanned by the root job.
+                  ignorePatterns=""
+                  for subdir in "$dir"src/*/
+                  do
+                    if [ -d "$subdir" ]; then
+                      subdirName=$(basename "$subdir")
+                      if [ ! -z "$ignorePatterns" ]; then
+                        ignorePatterns="$ignorePatterns "
+                      fi
+                      ignorePatterns="$ignorePatterns$subdirName"
+                      addMatrixEntry "${repoName}_${subdirName}" "$subdir"
+                    fi
+                  done
+                  addMatrixEntry "$repoName" "$dir" "$ignorePatterns"
+                else
+                  addMatrixEntry "$repoName" "$dir"
                 fi
-                repoName=$(basename $dir)
-                matrix="$matrix \"$repoName\": { \"repoPath\": \"$dir\" }"
               done
             fi
 
@@ -125,6 +175,7 @@ extends:
             -flp:LogFile=$(Build.SourcesDirectory)/artifacts/logs/BuildTests_$(date +"%m%d%H%M%S").log
             -clp:v=m
             /p:SmokeTestsLicenseScanPath=$(repoPath)
+            "/p:SourceBuildTestsLicenseScanIgnorePatterns=$(scanIgnorePatterns)"
             /p:SmokeTestsWarnOnLicenseScanDiffs=false
             /p:TargetRid=linux-x64
             /p:PortableRid=linux-x64
