@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands;
@@ -39,6 +40,26 @@ public static class CommandFactory
         }
         else
         {
+            // Warn if any argument looks like a file-based program entry point but we're falling back to MSBuild.
+            // This can happen when extra positional arguments prevent the single-arg file-based path from being taken,
+            // or when a .cs file doesn't exist (so IsValidEntryPointPath returns false).
+            foreach (var candidate in nonBinLogArgs)
+            {
+                if (VirtualProjectBuilder.IsValidEntryPointPath(candidate))
+                {
+                    Reporter.Error.WriteLine(
+                        string.Format(CliCommandStrings.WarningFileArgumentPassedToMSBuild, candidate, commandDefinition.Name).Yellow());
+                    break;
+                }
+
+                if (candidate.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                {
+                    Reporter.Error.WriteLine(
+                        string.Format(CliCommandStrings.WarningCsFileArgumentPassedToMSBuild, candidate).Yellow());
+                    break;
+                }
+            }
+
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], [.. optionsToUseWhenParsingMSBuildFlags]);
             msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
             return createPhysicalCommand(msbuildArgs, msbuildPath);

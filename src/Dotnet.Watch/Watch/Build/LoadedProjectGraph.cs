@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class LoadedProjectGraph(ProjectGraph graph, ProjectCollection collection, ILogger logger)
+internal sealed class LoadedProjectGraph(ProjectGraph graph, ProjectCollection collection, ILogger logger, GlobalOptions globalOptions, EnvironmentOptions environmentOptions)
 {
     // full path of proj file to list of nodes representing all target frameworks of the project (excluding outer build nodes):
     private readonly IReadOnlyDictionary<string, IReadOnlyList<ProjectGraphNode>> _innerBuildNodes = 
@@ -19,6 +19,9 @@ internal sealed class LoadedProjectGraph(ProjectGraph graph, ProjectCollection c
         graph.ProjectNodes.SelectMany(p => p.ProjectInstance.ImportPaths)
             .Concat(graph.ProjectNodes.Select(p => p.ProjectInstance.FullPath))
             .ToHashSet(PathUtilities.OSSpecificPathComparer));
+
+    public readonly ProjectBuildManager BuildManager =
+        new(collection, new BuildReporter(logger, globalOptions, environmentOptions));
 
     public ProjectGraph Graph => graph;
     public ILogger Logger => logger;

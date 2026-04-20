@@ -22,6 +22,16 @@ public sealed class VirtualProjectBuilder
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
 
+    /// <summary>
+    /// Prevents the virtual project's <see cref="ProjectRootElement"/> from being garbage collected
+    /// when MSBuild's <see cref="ProjectRootElementCache"/> demotes it to a weak reference
+    /// (which can happen when many SDK import files fill the cache during NuGet restore).
+    /// Without this, nested <c>&lt;MSBuild&gt;</c> tasks that re-evaluate the project with different properties
+    /// would fail to find the <see cref="ProjectRootElement"/> in the cache and try to load it from disk,
+    /// resulting in MSB4025 because the virtual project file does not exist on disk.
+    /// </summary>
+    private ProjectRootElement? _projectRootElement;
+
     internal string EntryPointFileFullPath { get; }
 
     internal SourceFile EntryPointSourceFile
@@ -106,6 +116,20 @@ public sealed class VirtualProjectBuilder
     }
 
     /// <summary>
+    /// Parses a source file to extract property value from directives.
+    /// </summary>
+    /// <returns>Array of frameworks if TargetFrameworks is specified, or empty otherwise</returns>
+    public static string? GetPropertyFromSourceFile(string sourceFilePath, string propertyName)
+    {
+        var sourceFile = SourceFile.Load(sourceFilePath);
+        var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
+
+        // Return the first value. Duplicate directives are not supported.
+        return directives.OfType<CSharpDirective.Property>()
+            .FirstOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.OrdinalIgnoreCase))?.Value;
+    }
+
+    /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
     /// </summary>
     internal static string GetTempSubdirectory()
@@ -175,7 +199,7 @@ public sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
-        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude))
+        if (!directives.Any(static d => d is CSharpDirective.Project or CSharpDirective.IncludeOrExclude or CSharpDirective.Ref))
         {
             return directives;
         }
@@ -193,6 +217,13 @@ public sealed class VirtualProjectBuilder
                     projectDirective = projectDirective.EnsureProjectFilePath(reportError);
 
                     builder.Add(projectDirective);
+                    break;
+
+                case CSharpDirective.Ref refDirective:
+                    refDirective = refDirective.WithName(project.ExpandString(refDirective.Name), CSharpDirective.Ref.NameKind.Expanded);
+                    refDirective = refDirective.EnsureResolvedPath(reportError);
+
+                    builder.Add(refDirective);
                     break;
 
                 case CSharpDirective.IncludeOrExclude includeOrExcludeDirective:
@@ -221,12 +252,10 @@ public sealed class VirtualProjectBuilder
 
     internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
     {
-        return MSBuildUtilities.ConvertStringToBool(project.GetPropertyValue(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping))
-            ? CSharpDirective.IncludeOrExclude.ParseMapping(
-                project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
-                EntryPointSourceFile,
-                reportError)
-            : CSharpDirective.IncludeOrExclude.DefaultMapping;
+        return CSharpDirective.IncludeOrExclude.ParseMapping(
+            project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
+            EntryPointSourceFile,
+            reportError);
     }
 
     public static ProjectInstance CreateProjectInstance(
@@ -241,7 +270,8 @@ public sealed class VirtualProjectBuilder
             projectCollection,
             (text, path, textSpan, message, _) => errorReporter(path, text.Lines.GetLinePositionSpan(textSpan).Start.Line + 1, message),
             out var projectInstance,
-            out _);
+            projectRootElement: out _,
+            evaluatedDirectives: out _);
 
         return projectInstance;
     }
@@ -250,6 +280,7 @@ public sealed class VirtualProjectBuilder
         ProjectCollection projectCollection,
         ErrorReporter reportError,
         out ProjectInstance project,
+        out ProjectRootElement projectRootElement,
         out ImmutableArray<CSharpDirective> evaluatedDirectives,
         ImmutableArray<CSharpDirective> directives = default,
         Action<IDictionary<string, string>>? addGlobalProperties = null,
@@ -262,7 +293,7 @@ public sealed class VirtualProjectBuilder
             directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, reportError);
         }
 
-        (string ProjectFileText, ProjectInstance ProjectInstance)? lastProject = null;
+        (string ProjectFileText, ProjectInstance ProjectInstance, ProjectRootElement ProjectRootElement)? lastProject = null;
 
         // If we evaluated directives previously (e.g., during restore), reuse them.
         // We don't use the additional properties from `addGlobalProperties`
@@ -271,7 +302,7 @@ public sealed class VirtualProjectBuilder
             cached.Original == directivesOriginal)
         {
             evaluatedDirectives = cached.Evaluated;
-            project = CreateProjectInstanceNoEvaluation(
+            (project, projectRootElement) = CreateProjectInstanceNoEvaluation(
                 projectCollection,
                 evaluatedDirectives,
                 addGlobalProperties);
@@ -289,7 +320,7 @@ public sealed class VirtualProjectBuilder
         do
         {
             // Create a project with properties from #:property directives so they can be expanded inside EvaluateDirectives.
-            project = CreateProjectInstanceNoEvaluation(
+            (project, projectRootElement) = CreateProjectInstanceNoEvaluation(
                 projectCollection,
                 [.. evaluatedDirectiveBuilder, .. directives],
                 addGlobalProperties);
@@ -302,7 +333,7 @@ public sealed class VirtualProjectBuilder
             if (fileEvaluatedDirectives != directives)
             {
                 // This project will contain items from #:include/#:exclude directives which we will traverse recursively.
-                project = CreateProjectInstanceNoEvaluation(
+                (project, projectRootElement) = CreateProjectInstanceNoEvaluation(
                     projectCollection,
                     evaluatedDirectiveBuilder.ToImmutable(),
                     addGlobalProperties);
@@ -345,7 +376,7 @@ public sealed class VirtualProjectBuilder
             return false;
         }
 
-        ProjectInstance CreateProjectInstanceNoEvaluation(
+        (ProjectInstance, ProjectRootElement) CreateProjectInstanceNoEvaluation(
             ProjectCollection projectCollection,
             ImmutableArray<CSharpDirective> directives,
             Action<IDictionary<string, string>>? addGlobalProperties = null)
@@ -366,7 +397,7 @@ public sealed class VirtualProjectBuilder
             // If nothing changed, reuse the previous project instance to avoid unnecessary re-evaluations.
             if (lastProject is { } cachedProject && cachedProject.ProjectFileText == projectFileText)
             {
-                return cachedProject.ProjectInstance;
+                return (cachedProject.ProjectInstance, cachedProject.ProjectRootElement);
             }
 
             var projectRoot = CreateProjectRootElement(projectFileText, projectCollection);
@@ -378,15 +409,15 @@ public sealed class VirtualProjectBuilder
                 addGlobalProperties(globalProperties);
             }
 
-            var result = ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
+            var project = ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
             {
                 ProjectCollection = projectCollection,
                 GlobalProperties = globalProperties,
             });
 
-            lastProject = (projectFileText, result);
+            lastProject = (projectFileText, project, projectRoot);
 
-            return result;
+            return (project, projectRoot);
 
             ProjectRootElement CreateProjectRootElement(string projectFileText, ProjectCollection projectCollection)
             {
@@ -394,6 +425,7 @@ public sealed class VirtualProjectBuilder
                 using var xmlReader = XmlReader.Create(reader);
                 var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
                 projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
+                _projectRootElement = projectRoot;
                 return projectRoot;
             }
         }
@@ -404,23 +436,14 @@ public sealed class VirtualProjectBuilder
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
-        bool? includeEnabled = null;
-        bool? excludeEnabled = null;
+        bool? refEnabled = null;
         bool? transitiveEnabled = null;
 
         foreach (var directive in directives)
         {
-            if (directive is CSharpDirective.IncludeOrExclude includeOrExcludeDirective)
+            if (directive is CSharpDirective.Ref)
             {
-                if (includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Include)
-                {
-                    CheckFlagEnabled(ref includeEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, directive);
-                }
-                else
-                {
-                    Debug.Assert(includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Exclude);
-                    CheckFlagEnabled(ref excludeEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective, directive);
-                }
+                CheckFlagEnabled(ref refEnabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, directive);
             }
 
             if (directive is not CSharpDirective.Shebang && directive.Info.SourceFile.Path != EntryPointSourceFile.Path)
@@ -462,6 +485,7 @@ public sealed class VirtualProjectBuilder
         var propertyDirectives = directives.OfType<CSharpDirective.Property>();
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
+        var refDirectives = directives.OfType<CSharpDirective.Ref>();
         var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>();
 
         const string defaultSdkName = "Microsoft.NET.Sdk";
@@ -499,6 +523,7 @@ public sealed class VirtualProjectBuilder
                     <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                     <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
+                    <EntryPointFilePath>{EscapeValue(entryPointFilePath)}</EntryPointFilePath>
                     <FileBasedProgramsItemMapping>{CSharpDirective.IncludeOrExclude.DefaultMappingString}</FileBasedProgramsItemMapping>
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                     <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
@@ -708,7 +733,7 @@ public sealed class VirtualProjectBuilder
                 """);
         }
 
-        if (projectDirectives.Any())
+        if (projectDirectives.Any() || refDirectives.Any())
         {
             writer.WriteLine("""
                   <ItemGroup>
@@ -719,6 +744,19 @@ public sealed class VirtualProjectBuilder
                 writer.WriteLine($"""
                         <ProjectReference Include="{EscapeValue(projectReference.Name)}" />
                     """);
+
+                processedDirectives++;
+            }
+
+            foreach (var refDirective in refDirectives)
+            {
+                if (refDirective.ResolvedPath is not null)
+                {
+                    var virtualProjectPath = GetVirtualProjectPath(refDirective.ResolvedPath);
+                    writer.WriteLine($"""
+                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" />
+                        """);
+                }
 
                 processedDirectives++;
             }
