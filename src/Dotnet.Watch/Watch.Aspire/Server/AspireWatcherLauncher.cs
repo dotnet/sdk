@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -29,9 +28,8 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
             ProcessRunner = new ProcessRunner(EnvironmentOptions.GetProcessCleanupTimeout()),
             Options = GlobalOptions,
             EnvironmentOptions = EnvironmentOptions,
-            MainProjectOptions = null,
+            MainProjectOptions = GetProjectOptions(),
             BuildArguments = [],
-            TargetFramework = null,
             RootProjects = rootProjects,
             BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
             BrowserLauncher = new BrowserLauncher(logger, Reporter, EnvironmentOptions),
@@ -42,7 +40,7 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
 
         try
         {
-            var watcher = new HotReloadDotNetWatcher(context, Console, processLauncherFactory);
+            var watcher = new HotReloadDotNetWatcher(context, Console, processLauncherFactory, targetFrameworkSelectionPrompt: null);
             await watcher.WatchAsync(cancellationSource.Token);
         }
         catch (OperationCanceledException) when (shutdownHandler.CancellationToken.IsCancellationRequested)
@@ -52,4 +50,6 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
 
         return 0;
     }
+
+    protected virtual ProjectOptions? GetProjectOptions() => null;
 }

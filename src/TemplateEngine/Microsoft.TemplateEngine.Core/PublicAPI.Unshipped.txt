@@ -1,0 +1,24 @@
+Microsoft.TemplateEngine.Core.Matching.OperationTerminal.Operation.get -> Microsoft.TemplateEngine.Core.Contracts.IOperation!
+Microsoft.TemplateEngine.Core.Matching.OperationTerminal.OperationTerminal(Microsoft.TemplateEngine.Core.Contracts.IOperation! operation, int token, int tokenLength, int start = 0, int end = -1) -> void
+Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>
+Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>.Terminal.get -> T!
+Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>.TerminalLocation(T! terminal, int location) -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Abstractions.IVariableCollection! variables) -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Abstractions.IVariableCollection! variables, string! variableFormatString) -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, System.Collections.Generic.IReadOnlyList<string!>! whitespaces, System.Collections.Generic.IReadOnlyList<string!>! lineEndings, Microsoft.TemplateEngine.Abstractions.IVariableCollection! variables, string! variableFormatString = "{0}") -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Variables.get -> Microsoft.TemplateEngine.Abstractions.IVariableCollection!
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekSourceForwardUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match, ref int bufferLength, ref int currentBufferPosition, bool consumeToken = false) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekSourceForwardWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekTargetBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match, bool consume = false) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekTargetBackWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.WriteToTarget(byte[]! buffer, int offset, int count) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Parent.get -> Microsoft.TemplateEngine.Abstractions.IVariableCollection?
+Microsoft.TemplateEngine.Core.VariableCollection.Parent.set -> void
+Microsoft.TemplateEngine.Core.VariableCollection.VariableCollection(Microsoft.TemplateEngine.Abstractions.IVariableCollection? parent, System.Collections.Generic.IDictionary<string!, object!>! values) -> void
+static Microsoft.TemplateEngine.Core.CommonOperations.ConsumeWholeLine(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processor, ref int bufferLength, ref int currentBufferPosition) -> void
+static Microsoft.TemplateEngine.Core.CommonOperations.TrimWhitespace(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processor, bool forward, bool backward, ref int bufferLength, ref int currentBufferPosition) -> void
+static Microsoft.TemplateEngine.Core.CommonOperations.WhitespaceHandler(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processor, ref int bufferLength, ref int currentBufferPosition, bool wholeLine = false, bool trim = false, bool trimForward = false, bool trimBackward = false) -> void
+static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.EvaluateFromString(Microsoft.Extensions.Logging.ILogger! logger, string! text, Microsoft.TemplateEngine.Abstractions.IVariableCollection! variables) -> bool
+~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Abstractions.IVariableCollection variables) -> bool
+~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Abstractions.IVariableCollection variables, out string faultedMessage, System.Collections.Generic.HashSet<string> referencedVariablesKeys = null) -> bool
+~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.GetEvaluableExpression(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Abstractions.IVariableCollection variables, out string evaluableExpressionError, System.Collections.Generic.HashSet<string> referencedVariablesKeys) -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable

@@ -140,11 +140,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 disposalCompletionSource.Token,
                 timeoutCancellation.Token);
 
-            if (!Debugger.IsAttached)
-            {
-                outputReadCancellation.CancelAfter(s_timeout);
-            }
-
             try
             {
                 while (!outputReadCancellation.IsCancellationRequested)
@@ -209,6 +204,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Process.ErrorDataReceived -= OnData;
             Process.OutputDataReceived -= OnData;
+
+            // Close stdin before killing the process to unblock any pending stdin reads
+            // (e.g. PhysicalConsole.ListenToStandardInputAsync on Linux where stdin reads
+            // don't unblock on process kill).
+            try
+            {
+                Process.StandardInput?.Close();
+            }
+            catch
+            {
+            }
 
             try
             {

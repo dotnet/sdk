@@ -440,6 +440,10 @@ For {expectedAsset.AssetFile}:
         {
             assetDifferences.Add($"Expected manifest SourceType of {expectedAsset.AssetFile} but found {manifestAsset.AssetFile}.");
         }
+        if ((manifestAsset.Order ?? "") != (expectedAsset.Order ?? ""))
+        {
+            assetDifferences.Add($"Expected manifest Order of '{expectedAsset.Order}' but found '{manifestAsset.Order}'.");
+        }
 
         ComputeSelectorDifferences(assetDifferences, manifestAsset.Selectors, expectedAsset.Selectors);
         ComputeResponseHeaderDifferences(assetDifferences, manifestAsset.ResponseHeaders, expectedAsset.ResponseHeaders);

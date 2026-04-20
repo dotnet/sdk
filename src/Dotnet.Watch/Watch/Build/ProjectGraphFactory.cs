@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.Build.Evaluation;
@@ -15,7 +16,7 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class ProjectGraphFactory(
     ImmutableArray<ProjectRepresentation> rootProjects,
-    string? targetFramework,
+    string? virtualProjectTargetFramework,
     ImmutableDictionary<string, string> buildProperties,
     ILogger logger)
 {
@@ -36,7 +37,7 @@ internal sealed class ProjectGraphFactory(
         useAsynchronousLogging: false,
         reuseProjectRootElementCache: true);
 
-    private readonly string _targetFramework = targetFramework ?? GetProductTargetFramework();
+    private readonly string _virtualProjectTargetFramework = virtualProjectTargetFramework ?? GetProductTargetFramework();
 
     public ILogger Logger => logger;
 
@@ -55,10 +56,14 @@ internal sealed class ProjectGraphFactory(
         var entryPoints = rootProjects.Select(p => new ProjectGraphEntryPoint(p.ProjectGraphPath, buildProperties));
         try
         {
-            return new LoadedProjectGraph(
+            var stopwatch = Stopwatch.StartNew();
+            var graph = new LoadedProjectGraph(
                 new ProjectGraph(entryPoints, _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, logger), cancellationToken),
                 _collection,
                 logger);
+
+            logger.LogDebug("Project graph loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
+            return graph;
         }
         catch (ProjectCreationFailedException)
         {
@@ -107,8 +112,8 @@ internal sealed class ProjectGraphFactory(
     {
         if (!File.Exists(projectPath))
         {
-            var entryPointFilePath = Path.ChangeExtension(projectPath, ".cs");
-            if (!File.Exists(entryPointFilePath))
+            // The virtual project path is the entry-point file path with ".csproj" appended (e.g., "App.cs.csproj" for "App.cs").
+            if (!VirtualProjectBuilder.TryGetEntryPointFilePathFromVirtualProjectPath(projectPath, out string? entryPointFilePath))
             {
                 // `dotnet build` reports a warning when the reference project is missing.
                 // However, ProjectGraph doesn't allow us to return null to skip the project so we need to be stricter.
@@ -120,7 +125,7 @@ internal sealed class ProjectGraphFactory(
 
             var projectInstance = VirtualProjectBuilder.CreateProjectInstance(
                 entryPointFilePath,
-                _targetFramework,
+                _virtualProjectTargetFramework,
                 projectCollection,
                 (path, line, message) =>
                 {

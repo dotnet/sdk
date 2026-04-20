@@ -528,7 +528,20 @@ namespace GenerateDocumentationAndConfigFiles
                     // Note: Although a using statement exists for the textWriter, its scope is the whole method.
                     // So Dispose isn't called before the whole method returns.
                     textWriter.Close();
-                    Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                    try
+                    {
+                        Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                    }
+                    finally
+                    {
+                        // Best-effort cleanup of the temp sarif file (fileWithPath points to the temp-* file, not the checked-in one).
+                        try
+                        {
+                            File.Delete(fileWithPath);
+                        }
+                        catch (IOException) { }
+                        catch (UnauthorizedAccessException) { }
+                    }
                 }
 
                 return;

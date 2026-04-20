@@ -142,6 +142,21 @@ Açıklamalar:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="MoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="translated">Yukarı ve aşağı hareket ederek daha fazla çerçeve görüntüleyin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="translated">Aramak için yazın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="translated">Çalıştırmak için hedef çerçeveyi seçin:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">
         <source>The specified path '{0}' is invalid: {1}</source>
         <target state="translated">Belirtilen '{0}' yolu geçersiz: {1}</target>

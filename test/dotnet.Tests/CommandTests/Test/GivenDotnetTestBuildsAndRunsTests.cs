@@ -158,10 +158,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                result.StdOut
+                result.StdErr
                     .Should().Contain("Using launch settings from")
-                    .And.Contain(runJson ? "TestProjectWithLaunchSettings.run.json..." : $"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
-                    .And.Contain("Test run summary: Passed!")
+                    .And.Contain(runJson ? "TestProjectWithLaunchSettings.run.json..." : $"Properties{Path.DirectorySeparatorChar}launchSettings.json...");
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Passed!")
                     .And.Contain("MY_VARIABLE_FROM_LAUNCH_SETTINGS=TestValue1")
                     .And.Contain("skipped Test1")
                     .And.Contain("total: 2")
@@ -217,10 +219,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute(
                     "-c", TestingConstants.Debug);
 
-            result.StdOut.Should()
+            result.StdErr.Should()
                 .Contain("Using launch settings from")
-                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
-                .And.Contain("FAILED to find argument from launchSettings.json");
+                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...");
+
+            result.StdOut.Should()
+                .Contain("FAILED to find argument from launchSettings.json");
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -237,10 +241,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         "-c", configuration,
                                         "--no-launch-profile-arguments", "true");
 
-            result.StdOut.Should()
+            result.StdErr.Should()
                 .Contain("Using launch settings from")
-                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
-                .And.Contain("FAILED to find argument from launchSettings.json");
+                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...");
+
+            result.StdOut.Should()
+                .Contain("FAILED to find argument from launchSettings.json");
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -575,10 +581,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                result.StdOut
+                result.StdErr
                     .Should().Contain("Using launch settings from")
-                    .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
-                    .And.Contain("Test run summary: Failed!")
+                    .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...");
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Failed!")
                     .And.Contain("total: 1")
                     .And.Contain("succeeded: 0")
                     .And.Contain("failed: 1")

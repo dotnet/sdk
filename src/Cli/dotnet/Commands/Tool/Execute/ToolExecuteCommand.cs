@@ -38,7 +38,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         : base(result)
     {
         _packageToolIdentityArgument = result.GetValue(Definition.PackageIdentityArgument);
-        _forwardArguments = result.GetValue(Definition.CommandArgument) ?? Enumerable.Empty<string>();
+        _forwardArguments = result.GetValue(Definition.CommandArgument) ?? [];
         _allowRollForward = result.GetValue(Definition.RollForwardOption);
         _configFile = result.GetValue(Definition.ConfigOption);
         _sources = result.GetValue(Definition.SourceOption) ?? [];
@@ -86,6 +86,14 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 {
                     Reporter.Error.WriteLine(restoreResult.Message.Red());
                     return 1;
+                }
+
+                if (restoreResult.SaveToCache is not null)
+                {
+                    localToolsResolverCache.Save(new Dictionary<RestoredCommandIdentifier, ToolCommand>
+                    {
+                        { restoreResult.SaveToCache.Value.restoredCommandIdentifier, restoreResult.SaveToCache.Value.toolCommand }
+                    });
                 }
 
                 var localToolsCommandResolver = new LocalToolsCommandResolver(

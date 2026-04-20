@@ -29,7 +29,7 @@ public static class BuildCommand
 
         bool noRestore = parseResult.HasOption(definition.NoRestoreOption);
 
-        return CommandFactory.CreateVirtualOrPhysicalCommand(
+        return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
             createVirtualCommand: (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(

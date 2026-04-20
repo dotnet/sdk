@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../CliCommandStrings.resx">
     <body>
@@ -2386,21 +2386,43 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Kontekst projektu</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Usunąć wszystkie pliki źródłowe po konwersji?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Konwertuj program oparty na plikach na program oparty na projekcie.</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
         <target state="translated">Określ katalog wyjściowy (naciśnij Enter, aby użyć wartości domyślnej: „{0}”, katalog nie może istnieć):</target>
         <note>{0} is the default value</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">Nie — zachowaj wszystkie pliki źródłowe</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Tak — usuń wszystkie pliki źródłowe</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">Usunięto plik źródłowy: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">Określa zmiany bez faktycznej modyfikacji systemu plików</target>
         <note />
       </trans-unit>
+
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
         <target state="translated">Przebieg próbny: spowoduje usunięcie dyrektyw na poziomie pliku z pliku: {0}</target>
@@ -2421,6 +2443,11 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Przebieg próbny: spowoduje utworzenie pliku: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Przebieg próbny: spowoduje usunięcie pliku źródłowego: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
         <target state="translated">Przebieg próbny: spowoduje usunięcie pliku: {0}</target>
@@ -2440,6 +2467,7 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <source>The XML file that contains the list of packages to be stored.</source>
         <target state="translated">Plik XML zawierający listę pakietów, które mają być przechowywane.</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>

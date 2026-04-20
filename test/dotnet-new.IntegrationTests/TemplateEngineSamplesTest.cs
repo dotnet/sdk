@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 TemplateSpecificArgs = arguments ?? Enumerable.Empty<string>(),
                 VerifyCommandOutput = true,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 SettingsDirectory = _sharedHome.HomeDirectory,
                 DoNotAppendTemplateArgsToScenarioName = true,
                 DotnetExecutablePath = SdkTestContext.Current.ToolsetUnderTest?.DotNetHostPath,
@@ -63,7 +63,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                ScrubbersDefinition.Empty
-               .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));
+               .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****"))
+               .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt"));
 
             VerificationEngine engine = new(_log);
             await engine.Execute(options);
