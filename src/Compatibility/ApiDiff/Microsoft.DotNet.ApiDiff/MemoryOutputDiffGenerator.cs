@@ -730,6 +730,10 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         string unchangedText = unchangedNode.ToFullString();
         foreach (var line in InlineDiffBuilder.Diff(oldText: unchangedText, newText: unchangedText).Lines)
         {
+            if (string.IsNullOrWhiteSpace(line.Text))
+            {
+                continue;
+            }
             sb.AppendLine($"  {line.Text}");
         }
         return sb.ToString();
