@@ -214,15 +214,23 @@ namespace Microsoft.DotNet.Tests
                _localToolsResolverCache,
                _fileSystem);
 
-            localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            var commandSpecA = localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
                 CommandName = "dotnet-a",
-            }).Args!.Trim('"').Should().Be(fakeExecutableA.Value);
+            });
+            commandSpecA.Should().NotBeNull();
+            var argsA = commandSpecA.Args;
+            argsA.Should().NotBeNull();
+            argsA.Trim('"').Should().Be(fakeExecutableA.Value);
 
-            localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            var commandSpecDotnetA = localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
                 CommandName = "dotnet-dotnet-a",
-            }).Args!.Trim('"').Should().Be(fakeExecutableDotnetA.Value);
+            });
+            commandSpecDotnetA.Should().NotBeNull();
+            var argsDotnetA = commandSpecDotnetA.Args;
+            argsDotnetA.Should().NotBeNull();
+            argsDotnetA.Trim('"').Should().Be(fakeExecutableDotnetA.Value);
         }
 
         private string _jsonContent =

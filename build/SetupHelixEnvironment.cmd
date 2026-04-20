@@ -9,6 +9,12 @@ set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
 set TestFullMSBuild=%1
 
+REM Enable crash dump collection for .NET processes.
+set DOTNET_DbgEnableMiniDump=1
+set DOTNET_DbgMiniDumpType=4
+set DOTNET_DbgMiniDumpName=%HELIX_WORKITEM_UPLOAD_ROOT%\coredump.%p
+set DOTNET_EnableCrashReport=1
+
 REM Ensure Visual Studio instances allow preview SDKs
 PowerShell -ExecutionPolicy ByPass -NoProfile -File "%HELIX_CORRELATION_PAYLOAD%\t\eng\enable-preview-sdks.ps1"
 
@@ -29,6 +35,7 @@ set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%
 set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\r
 set DOTNET_SDK_TEST_ASSETS_DIRECTORY=%TestExecutionDirectory%\TestAssets
 set DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES=%TestExecutionDirectory%\template_feed
+set DOTNET_SDK_TEST_TEMPLATE_SAMPLES_DIR=%TestExecutionDirectory%\TemplateSamples
 
 REM call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive

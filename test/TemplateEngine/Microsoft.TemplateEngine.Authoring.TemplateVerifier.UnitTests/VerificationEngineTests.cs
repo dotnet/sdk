@@ -7,9 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
-#if !XUNIT_V3
-using Xunit.Abstractions;
-#endif
+using Microsoft.TemplateEngine.Tests;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
 {
@@ -114,7 +112,6 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         public async Task ExecuteSucceedsOnExpectedInstantiationFailure()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string snapshotsDir = "Snapshots";
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
@@ -124,7 +121,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             {
                 TemplateSpecificArgs = new string[] { "--a", "-b", "c", "--d" },
                 //DisableDiffTool = true,
-                SnapshotsDirectory = snapshotsDir,
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 IsCommandExpectedToFail = true,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
@@ -138,7 +135,6 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         public async Task ExecuteSucceedsOnExpectedInstantiationSuccess()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string snapshotsDir = "Snapshots";
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
@@ -148,7 +144,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             {
                 TemplateSpecificArgs = new string[] { "--x", "y", "-z" },
                 //DisableDiffTool = true,
-                SnapshotsDirectory = snapshotsDir,
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 IsCommandExpectedToFail = false,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
