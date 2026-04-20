@@ -455,7 +455,7 @@ public class C
     public static void D()
     {
         var ms = new MemoryStream();
-        var res = DoAsync(ms).GetAwaiter();
+        var res = DoAsync({|CA2025:ms|}).GetAwaiter();
         ms.Dispose();
     }
 
@@ -470,7 +470,7 @@ Imports System.Threading.Tasks
 Public Class C
     Public Shared Sub D()
         Dim ms = New MemoryStream()
-        Dim res = DoAsync(ms).GetAwaiter()
+        Dim res = DoAsync({|CA2025:ms|}s).GetAwaiter()
         ms.Dispose()
     End Sub
 
