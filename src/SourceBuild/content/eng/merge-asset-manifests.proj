@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
+  </ItemGroup>
+
+  <!-- Create a merge manifest from the individual repository manifest files. -->
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="MergeAssetManifests" AfterTargets="Build">
+    <ItemGroup>
+      <RepoAssetManifest Include="$(AssetManifestsIntermediateDir)\**\*.xml" />
+    </ItemGroup>
+
+    <Error Text="Couldn't find any repository asset manifest file. Make sure to build the repositories before invoking this target." Condition="'@(RepoAssetManifest)' == ''" />
+
+    <!-- It's OK for the VmrBuildNumber to be empty -->
+    <Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests 
+      AssetManifest="@(RepoAssetManifest)" 
+      MergedAssetManifestOutputPath="$(MergedAssetManifestOutputPath)"
+      VmrBuildNumber="$(BUILD_BUILDNUMBER)" />
+  </Target>
+
+</Project>

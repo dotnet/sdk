@@ -5,12 +5,12 @@
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
         <target state="translated">'{0}' içinde birden fazla MSBuild proje dosyası bulundu. --project seçeneği ile kullanılacak proje dosyalarını belirtin.</target>
-        <note />
+        <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_NoProjectsFound">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
         <target state="translated">'{0}' içinde MSBuild proje dosyası bulunamadı. --project seçeneği ile kullanılacak projeyi belirtin.</target>
-        <note />
+        <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
         <source>The project file '{0}' does not exist.</source>
@@ -20,12 +20,132 @@
       <trans-unit id="Error_QuietAndVerboseSpecified">
         <source>Cannot specify both '--quiet' and '--verbose' options.</source>
         <target state="translated">Hem '--quiet' hem de '--verbose' seçenekleri belirtilemez.</target>
+        <note>{Locked="--quiet"}{Locked="--verbose"}</note>
+      </trans-unit>
+      <trans-unit id="Help">
+        <source>
+
+Environment variables:
+
+  DOTNET_USE_POLLING_FILE_WATCHER
+  When set to '1' or 'true', dotnet-watch will poll the file system for
+  changes. This is required for some file systems, such as network shares,
+  Docker mounted volumes, and other virtual file systems.
+
+  DOTNET_WATCH
+  dotnet-watch sets this variable to '1' on all child processes launched.
+
+  DOTNET_WATCH_ITERATION
+  dotnet-watch sets this variable to '1' and increments by one each time
+  a file is changed and the command is restarted.
+
+  DOTNET_WATCH_SUPPRESS_EMOJIS
+  When set to '1' or 'true', dotnet-watch will not show emojis in the 
+  console output.
+
+Remarks:
+  The special option '--' is used to delimit the end of the options and
+  the beginning of arguments that will be passed to the child dotnet process.
+
+  For example: dotnet watch -- --verbose run
+
+  Even though '--verbose' is an option dotnet-watch supports, the use of '--'
+  indicates that '--verbose' should be treated instead as an argument for
+  dotnet-run.
+
+Examples:
+  dotnet watch run
+  dotnet watch test
+
+    </source>
+        <target state="translated">
+
+Ortam değişkenleri:
+
+  DOTNET_USE_POLLING_FILE_WATCHER
+  '1' veya 'true' olarak ayarlandığında dotnet-watch,
+  değişiklikleri için dosya sistemini yoklar. Bu, ağ paylaşımları,
+  Docker'a bağlı birimler ve diğer sanal dosya sistemleri gibi bazı dosya sistemleri için gereklidir.
+
+  DOTNET_WATCH
+  dotnet-watch, başlatılan tüm alt işlemlerde bu değişkeni '1' olarak ayarlar.
+
+  DOTNET_WATCH_ITERATION
+  dotnet-watch bu değişkeni '1' olarak ayarlar ve bir dosya her değiştirildiğinde
+  ve komut yeniden başlatıldığında bir artırır.
+
+  DOTNET_WATCH_SUPPRESS_EMOJIS
+  '1' veya 'true' olarak ayarlandığında dotnet-watch, 
+  konsol çıkışında emoji göstermez.
+
+Açıklamalar:
+  '--' özel seçeneği, seçeneklerin sonunu ve alt dotnet işlemine geçirilecek
+  bağımsız değişkenlerin başlangıcını sınırlandırmak için kullanılır.
+
+  Örneğin: dotnet watch -- --verbose run
+
+  '--verbose', dotnet-watch'un desteklediği bir seçenek olsa da '--'
+  '--verbose' öğesinin dotnet-run için bir bağımsız değişken olarak değerlendirilmesi
+  gerektiğini gösterir.
+
+Örnekler:
+  dotnet watch run
+  dotnet watch test
+
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_List">
+        <source>
+      Lists all discovered files without starting the watcher.
+    </source>
+        <target state="translated">
+      İzleyiciyi başlatmadan bulunan tüm dosyaları listeler.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_NoHotReload">
+        <source>
+      Suppress hot reload for supported apps.
+    </source>
+        <target state="translated">
+      Desteklenen uygulamalar için çalışırken yeniden yüklemeyi gizleyin.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_NonInteractive">
+        <source>
+      Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
+      Use this option to prevent console input from being captured.
+    </source>
+        <target state="translated">
+      dotnet-watch'u etkileşimli olmayan modda çalıştırır. Bu seçenek yalnızca Çalışırken Yeniden Yükleme etkinken çalıştırıldığında desteklenir.
+      Konsol girişinin yakalanmasını önlemek için bu seçeneği kullanın.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_Quiet">
+        <source>
+      Suppresses all output except warnings and errors
+    </source>
+        <target state="translated">
+      Uyarılar ve hatalar dışında tüm çıkışı gizler
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_Verbose">
+        <source>
+      Show verbose output
+    </source>
+        <target state="translated">
+      Ayrıntılı çıkışı göster
+    </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Uyarı NETSDK1174: --project için -p kısaltması kullanımdan kaldırıldı. Lütfen --project kullanın.</target>
-        <note />
+        <note>{Locked="-p"}{Locked="--project"}</note>
       </trans-unit>
     </body>
   </file>

@@ -1,6 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable IDE0240 // Remove redundant nullable directive
+#nullable enable
+#pragma warning restore IDE0240 // Remove redundant nullable directive
+
 using System.Diagnostics;
 using Microsoft.DotNet.NativeWrapper;
 
@@ -8,21 +12,19 @@ using Microsoft.DotNet.NativeWrapper;
 using Microsoft.VisualStudio.Setup.Configuration;
 #endif
 
-#nullable disable
-
 namespace Microsoft.DotNet.DotNetSdkResolver
 {
     public sealed class VSSettings
     {
-        private readonly object _lock = new object();
-        private readonly string _settingsFilePath;
+        private readonly object _lock = new();
+        private readonly string? _settingsFilePath;
         private readonly bool _disallowPrereleaseByDefault;
-        private FileInfo _settingsFile;
+        private FileInfo? _settingsFile;
         private bool _disallowPrerelease;
 
         // In the product, this singleton is used. It must be safe to use in parallel on multiple threads.
         // In tests, mock instances can be created with the test constructor below.
-        public static readonly VSSettings Ambient = new VSSettings();
+        public static readonly VSSettings Ambient = new();
 
         private VSSettings()
         {
@@ -90,7 +92,7 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 
             // NB: All calls to Exists and LastWriteTimeUtc below will not hit the disk
             //     They will return data obtained during Refresh() here.
-            file.Refresh(); 
+            file.Refresh();
 
             lock (_lock)
             {
@@ -124,25 +126,28 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 
         private void ReadFromDisk()
         {
-            using (var reader = new StreamReader(_settingsFilePath))
+            if (_settingsFilePath != null)
             {
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                using (var reader = new StreamReader(_settingsFilePath))
                 {
-                    int indexOfEquals = line.IndexOf('=');
-                    if (indexOfEquals < 0 || indexOfEquals == (line.Length - 1))
+                    string? line;
+                    while ((line = reader.ReadLine()) != null)
                     {
-                        continue;
-                    }
+                        int indexOfEquals = line.IndexOf('=');
+                        if (indexOfEquals < 0 || indexOfEquals == (line.Length - 1))
+                        {
+                            continue;
+                        }
 
-                    string key = line.Substring(0, indexOfEquals).Trim();
-                    string value = line.Substring(indexOfEquals + 1).Trim();
+                        string key = line.Substring(0, indexOfEquals).Trim();
+                        string value = line.Substring(indexOfEquals + 1).Trim();
 
-                    if (key.Equals("UsePreviews", StringComparison.OrdinalIgnoreCase)
-                        && bool.TryParse(value, out bool usePreviews))
-                    {
-                        _disallowPrerelease = !usePreviews;
-                        return;
+                        if (key.Equals("UsePreviews", StringComparison.OrdinalIgnoreCase)
+                            && bool.TryParse(value, out bool usePreviews))
+                        {
+                            _disallowPrerelease = !usePreviews;
+                            return;
+                        }
                     }
                 }
             }

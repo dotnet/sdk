@@ -1,0 +1,43 @@
+<Project>
+
+  <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
+    <BundledDotnetTool Include="dotnet-dev-certs" Version="$(DotnetDevCertsPackageVersion)" />
+    <BundledDotnetTool Include="dotnet-user-jwts" Version="$(DotnetUserJwtsPackageVersion)" />
+    <BundledDotnetTool Include="dotnet-user-secrets" Version="$(DotnetUserSecretsPackageVersion)" ObsoletesCliTool="Microsoft.Extensions.SecretManager.Tools" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BundledDotnetTool Update="@(BundledDotnetTool)">
+      <PackagePathRelativeToPackageRoot>%(Identity)/%(Version)/</PackagePathRelativeToPackageRoot>
+      <RestoredPackagePath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(PackagePathRelativeToPackageRoot)', '').ToLower())/</RestoredPackagePath>
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(Version)/%(Identity).%(Version).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
+    </BundledDotnetTool>
+  </ItemGroup>
+
+  <Target Name="LayoutBundledTools" DependsOnTargets="SetupBundledComponents">
+    <ItemGroup>
+      <BundledToolLayoutProject Include="$(MSBuildThisFileDirectory)..\projects\DownloadPackage.csproj">
+        <!-- For this unique RestoreProjectStyle, see: https://aka.ms/global-tools-nuget -->
+        <Properties>
+          PackageToRestore=%(BundledDotnetTool.Identity);
+          PackageVersionToRestore=%(BundledDotnetTool.Version);
+          TargetFramework=$(TargetFramework);
+          RestoreProjectStyle=DotnetToolReference
+        </Properties>
+      </BundledToolLayoutProject>
+    </ItemGroup>
+
+    <MSBuild Projects="@(BundledToolLayoutProject)" />
+
+    <ItemGroup>
+      <BundledToolFiles Include="%(BundledDotnetTool.RestoredPackagePath)\**\*.*" PackageToRestore="%(BundledDotnetTool.Identity)" PackageVersionToRestore="%(BundledDotnetTool.Version)" />
+      <BundledToolFiles Remove="%(BundledDotnetTool.RestoredPackagePath)\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(BundledToolFiles)"
+          DestinationFiles="@(BundledToolFiles->'$(SdkOutputDirectory)DotnetTools/%(PackageToRestore)\%(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
