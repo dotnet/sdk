@@ -35,7 +35,24 @@
 -->
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <ItemGroup Label="ProjectConfigurations">
+  <!--
+    This project requires the Visual Studio C++ workload (VCTargetsPath) and only
+    works on Windows. When built outside VS or on non-Windows platforms (e.g., CI),
+    it becomes a no-op.
+  -->
+  <PropertyGroup>
+    <_HasVCTargets Condition="'$(VCTargetsPath)' != '' and Exists('$(VCTargetsPath)\Microsoft.Cpp.Default.props')">true</_HasVCTargets>
+  </PropertyGroup>
+
+  <!-- Early exit: define empty Build/Clean/Rebuild targets when C++ tooling is unavailable -->
+  <Target Name="Build" Condition="'$(_HasVCTargets)' != 'true'" />
+  <Target Name="Clean" Condition="'$(_HasVCTargets)' != 'true'" />
+  <Target Name="Rebuild" Condition="'$(_HasVCTargets)' != 'true'" />
+  <Target Name="Restore" Condition="'$(_HasVCTargets)' != 'true'" />
+
+  <!-- Everything below is conditional on having the C++ toolset -->
+
+  <ItemGroup Label="ProjectConfigurations" Condition="'$(_HasVCTargets)' == 'true'">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -46,7 +63,7 @@
     </ProjectConfiguration>
   </ItemGroup>
 
-  <PropertyGroup Label="Globals">
+  <PropertyGroup Label="Globals" Condition="'$(_HasVCTargets)' == 'true'">
     <ProjectGuid>{E9A0B5D7-2F4A-4C8E-9D3B-1A6F5E8C7D2A}</ProjectGuid>
     <RootNamespace>dn-native-debug</RootNamespace>
     <ProjectName>dn-native-debug</ProjectName>
@@ -54,21 +71,21 @@
     <VCProjectVersion>17.0</VCProjectVersion>
   </PropertyGroup>
 
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" Condition="'$(_HasVCTargets)' == 'true'" />
 
-  <PropertyGroup Label="Configuration">
+  <PropertyGroup Label="Configuration" Condition="'$(_HasVCTargets)' == 'true'">
     <!-- Makefile type: no C++ compiler is invoked, only NMake commands run -->
     <ConfigurationType>Makefile</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
 
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" Condition="'$(_HasVCTargets)' == 'true'" />
 
   <!--
     Compute paths to the repo's dotnet CLI and the published AOT binary.
     These use MSBuild path utilities so they work on any developer machine.
   -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(_HasVCTargets)' == 'true'">
     <_RepoRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', '..', '..'))</_RepoRoot>
     <_DotNetTool>$([MSBuild]::NormalizePath('$(_RepoRoot)', '.dotnet', 'dotnet.exe'))</_DotNetTool>
     <_DnPublishDir>$([MSBuild]::NormalizePath('$(_RepoRoot)', 'artifacts', 'bin', 'dn', '$(Configuration)', 'net11.0', 'win-x64', 'publish'))</_DnPublishDir>
@@ -80,7 +97,7 @@
     NMake build commands: publish all three layers (AOT exe, AOT shared lib,
     managed DLL) and assemble them in the publish directory.
   -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(_HasVCTargets)' == 'true'">
     <NMakeBuildCommandLine>"$(_DotNetTool)" publish "$(MSBuildThisFileDirectory)..\dotnet-aot\dotnet-aot.csproj" -r win-x64 -c $(Configuration) &amp;&amp; "$(_DotNetTool)" publish "$(MSBuildThisFileDirectory)dn.csproj" -r win-x64 -c $(Configuration) &amp;&amp; "$(_DotNetTool)" build "$(MSBuildThisFileDirectory)..\dotnet\dotnet.csproj" -c $(Configuration) &amp;&amp; copy /Y "$(_RepoRoot)\artifacts\bin\dotnet-aot\$(Configuration)\net11.0\win-x64\publish\dotnet-aot.dll" "$(_DnPublishDir)\" &amp;&amp; xcopy "$(_RepoRoot)\artifacts\bin\dotnet\$(Configuration)\net11.0\*" "$(_DnPublishDir)\" /S /Y /Q</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>if exist "$(_DnPublishDir)" rd /s /q "$(_DnPublishDir)"</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>$(NMakeCleanCommandLine) &amp;&amp; $(NMakeBuildCommandLine)</NMakeReBuildCommandLine>
@@ -93,7 +110,7 @@
     primary. This is the key property that the .NET project system cannot provide.
     C# breakpoints set in AOT-compiled source files bind via the native PDB.
   -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(_HasVCTargets)' == 'true'">
     <LocalDebuggerCommand>$(_DnExePath)</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>--info</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(_DnPublishDir)</LocalDebuggerWorkingDirectory>
@@ -107,7 +124,7 @@
     without navigating to another project. The files are not compiled by this
     project (Makefile projects don't compile anything).
   -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(_HasVCTargets)' == 'true'">
     <None Include="..\dotnet-aot\NativeEntryPoint.cs" Link="AOT Sources\NativeEntryPoint.cs" />
     <None Include="..\dotnet-aot\ManagedHost.cs" Link="AOT Sources\ManagedHost.cs" />
     <None Include="Program.cs" Link="AOT Sources\dn.Program.cs" />
@@ -116,6 +133,6 @@
     <None Include="debug-dn.cmd" />
   </ItemGroup>
 
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" Condition="'$(_HasVCTargets)' == 'true'" />
 
 </Project>
