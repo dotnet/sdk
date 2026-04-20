@@ -443,6 +443,44 @@ End Class
 ");
         }
 
+        [Fact]
+        public async Task TaskGetAwaiterWithoutAwaiting_DiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+using System.Threading.Tasks;
+
+public class C
+{
+    public static void D()
+    {
+        var ms = new MemoryStream();
+        var res = DoAsync(ms).GetAwaiter();
+        ms.Dispose();
+    }
+
+    public static Task<string> DoAsync(Stream s) => Task.FromResult(string.Empty);
+}
+");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+Imports System.Threading.Tasks
+
+Public Class C
+    Public Shared Sub D()
+        Dim ms = New MemoryStream()
+        Dim res = DoAsync(ms).GetAwaiter()
+        ms.Dispose()
+    End Sub
+
+    Public Shared Function DoAsync(ByVal s As Stream) As Task(Of String)
+        Return Task.FromResult(String.Empty)
+    End Function
+End Class
+");
+        }
+
         #endregion Diagnostic
 
         #region No Diagnostic
