@@ -44,11 +44,26 @@
     <_HasVCTargets Condition="'$(VCTargetsPath)' != '' and Exists('$(VCTargetsPath)\Microsoft.Cpp.Default.props')">true</_HasVCTargets>
   </PropertyGroup>
 
-  <!-- Early exit: define empty Build/Clean/Rebuild targets when C++ tooling is unavailable -->
+  <!--
+    Early exit: define empty Build/Clean/Rebuild/Restore targets when C++ tooling
+    is unavailable. Also define NuGet restore stubs so that solution-level restore
+    (which calls _IsProjectRestoreSupported on every project) recognizes this project
+    as valid rather than emitting NU1503 (which TreatWarningsAsErrors promotes to an error).
+    When VCTargets IS available, Microsoft.Cpp.targets imports NuGet.targets which
+    redefines these targets with real implementations.
+  -->
   <Target Name="Build" Condition="'$(_HasVCTargets)' != 'true'" />
   <Target Name="Clean" Condition="'$(_HasVCTargets)' != 'true'" />
   <Target Name="Rebuild" Condition="'$(_HasVCTargets)' != 'true'" />
   <Target Name="Restore" Condition="'$(_HasVCTargets)' != 'true'" />
+  <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
+    <ItemGroup>
+      <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_GetRestoreProjectPathItems" />
+  <Target Name="_GenerateRestoreGraphProjectEntry" Returns="@(_RestoreGraphEntry)" />
+  <Target Name="_GenerateProjectRestoreGraph" Returns="@(_RestoreGraphEntry)" />
 
   <!-- Everything below is conditional on having the C++ toolset -->
 

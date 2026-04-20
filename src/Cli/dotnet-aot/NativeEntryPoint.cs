@@ -27,6 +27,12 @@ static unsafe partial class NativeEntryPoint
         string sdkDir = PlatformStringMarshaller.ConvertToManaged(sdkDirPtr) ?? string.Empty;
         string hostfxrPath = PlatformStringMarshaller.ConvertToManaged(hostfxrPathPtr) ?? string.Empty;
 
+        // Make hostfxr discoverable for NativeWrapper P/Invokes (required on non-Windows)
+        if (!string.IsNullOrEmpty(hostfxrPath))
+        {
+            AppContext.SetData("HOSTFXR_PATH", hostfxrPath);
+        }
+
         string[] args = new string[argc];
         nint* argv = (nint*)argvPtr;
         for (int i = 0; i < argc; i++)
@@ -64,7 +70,8 @@ static unsafe partial class NativeEntryPoint
         }
 
         // No managed fallback available
-        return Program.Main(args);
+        Console.Error.WriteLine($"The managed fallback could not be located. Expected '{dotnetDll}' and '{runtimeConfig}'.");
+        return 1;
     }
 
     /// <summary>

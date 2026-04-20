@@ -115,7 +115,7 @@ internal sealed unsafe class ManagedHost : IDisposable
 
         var parameters = new Interop.hostfxr_initialize_parameters
         {
-            size = nint.Size * 3,
+            size = sizeof(Interop.hostfxr_initialize_parameters),
             dotnet_root = PlatformStringMarshaller.ConvertToUnmanaged(dotnetRoot),
         };
 
@@ -157,7 +157,7 @@ internal sealed unsafe class ManagedHost : IDisposable
         {
             var parameters = new Interop.hostfxr_initialize_parameters
             {
-                size = nint.Size * 3,
+                size = sizeof(Interop.hostfxr_initialize_parameters),
                 dotnet_root = dotnetRootNative,
             };
 
@@ -179,6 +179,8 @@ internal sealed unsafe class ManagedHost : IDisposable
 
             if (result != StatusCode.Success)
             {
+                Interop.hostfxr_close(_hostContextHandle);
+                _hostContextHandle = 0;
                 throw new InvalidOperationException($"hostfxr_get_runtime_delegate failed. Status: {result} (0x{(uint)result:X8})");
             }
 

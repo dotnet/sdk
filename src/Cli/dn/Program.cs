@@ -24,27 +24,38 @@ partial class Program
         string sdkDir = baseDir;
         string hostfxrPath = ResolveHostfxrPath(dotnetRoot);
 
-        // Marshal argv to native platform strings (UTF-16 on Windows)
+        // Marshal argv to native platform strings (UTF-16 on Windows, UTF-8 on Unix)
+        // to match hostfxr's char_t definition used by PlatformStringMarshaller
+        // in dotnet-aot.dll.
         nint* nativeArgv = stackalloc nint[args.Length];
         try
         {
             for (int i = 0; i < args.Length; i++)
             {
-                nativeArgv[i] = Marshal.StringToCoTaskMemUni(args[i]);
+                nativeArgv[i] = MarshalStringToNative(args[i]);
             }
 
-            fixed (char* hp = hostPath)
-            fixed (char* dr = dotnetRoot)
-            fixed (char* sd = sdkDir)
-            fixed (char* hf = hostfxrPath)
+            nint hpNative = MarshalStringToNative(hostPath);
+            nint drNative = MarshalStringToNative(dotnetRoot);
+            nint sdNative = MarshalStringToNative(sdkDir);
+            nint hfNative = MarshalStringToNative(hostfxrPath);
+
+            try
             {
                 return DotnetExecute(
-                    (nint)hp,
-                    (nint)dr,
-                    (nint)sd,
-                    (nint)hf,
+                    hpNative,
+                    drNative,
+                    sdNative,
+                    hfNative,
                     args.Length,
                     (nint)nativeArgv);
+            }
+            finally
+            {
+                Marshal.FreeCoTaskMem(hpNative);
+                Marshal.FreeCoTaskMem(drNative);
+                Marshal.FreeCoTaskMem(sdNative);
+                Marshal.FreeCoTaskMem(hfNative);
             }
         }
         finally
@@ -127,9 +138,16 @@ partial class Program
             return string.Empty;
         }
 
-        // Pick the highest version directory
+        // Pick the highest version directory by parsing version numbers
         string? latestFxr = Directory.GetDirectories(fxrDir)
-            .OrderDescending()
+            .Select(path => new
+            {
+                Path = path,
+                Version = Version.TryParse(Path.GetFileName(path), out Version? version) ? version : null
+            })
+            .Where(candidate => candidate.Version is not null)
+            .OrderByDescending(candidate => candidate.Version)
+            .Select(candidate => candidate.Path)
             .FirstOrDefault();
 
         if (latestFxr is null)
@@ -145,5 +163,16 @@ partial class Program
 
         string hostfxrPath = Path.Combine(latestFxr, hostfxrName);
         return File.Exists(hostfxrPath) ? hostfxrPath : string.Empty;
+    }
+
+    /// <summary>
+    ///  Marshals a string to a native platform string (UTF-16 on Windows, UTF-8 on Unix)
+    ///  to match hostfxr's char_t definition.
+    /// </summary>
+    private static nint MarshalStringToNative(string value)
+    {
+        return OperatingSystem.IsWindows()
+            ? Marshal.StringToCoTaskMemUni(value)
+            : Marshal.StringToCoTaskMemUTF8(value);
     }
 }
