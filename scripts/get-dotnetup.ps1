@@ -39,6 +39,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+
 $AzdoOrg = "https://dev.azure.com/dnceng"
 $AzdoProject = "internal"
 $PipelineId = 1544
@@ -100,6 +101,17 @@ function Get-RuntimeId {
 
 # --- Main ---
 
+# Windows PowerShell (5.x) is not supported; require PowerShell 6+ (pwsh).
+# The 'PSEdition' property is only present on 5+, so usage on 4 and below will be null,
+# so we check that the version isn't Core instead of "version is Desktop"
+if ($PSVersionTable.PSEdition -ne "Core") {
+    throw @"
+This script requires PowerShell Core (pwsh) and cannot run on Windows PowerShell 5.x.
+Install PowerShell Core from: https://aka.ms/install-powershell
+Then re-run this script with 'pwsh' instead of 'powershell'.
+"@
+}
+
 # Check for Azure CLI
 if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
     throw @"
@@ -108,6 +120,16 @@ Install it from: https://aka.ms/install-az-cli
 
 After installing, log in with:
     az login
+"@
+}
+
+# Check for the azure-devops extension
+$extList = az extension show --name azure-devops 2>&1
+if ($LASTEXITCODE -ne 0) {
+    throw @"
+The 'azure-devops' Azure CLI extension is required but is not installed.
+Install it with:
+    az extension add --name azure-devops
 "@
 }
 
