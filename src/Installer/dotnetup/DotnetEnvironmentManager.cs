@@ -328,7 +328,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
     }
 
-    private static void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot, IEnvShellProvider? shellProvider)
+    private void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot, IEnvShellProvider? shellProvider)
     {
         var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
 
@@ -348,7 +348,12 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                 {
                     throw new ArgumentNullException(nameof(dotnetRoot));
                 }
-                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: dotnetRoot);
+
+                string? profileDotnetRoot = DotnetupUtilities.PathsEqual(dotnetRoot, GetDefaultDotnetInstallPath())
+                    ? null
+                    : dotnetRoot;
+
+                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: profileDotnetRoot);
                 break;
             case InstallType.System:
                 ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);

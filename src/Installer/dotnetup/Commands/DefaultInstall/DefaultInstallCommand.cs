@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
@@ -37,8 +38,7 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            var userDotnetPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
-            return SetUnixShellProfile(dotnetupOnly: false, userDotnetPath);
+            return SetUnixShellProfile(dotnetupOnly: false);
         }
 
         var changes = _installRootManager.GetUserInstallRootChanges();
@@ -100,12 +100,13 @@ internal class DefaultInstallCommand : CommandBase
     {
         var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
         var shellProvider = GetCurrentShellProviderOrThrow();
+        var profileDotnetInstallPath = GetInstallPathToPassToProfile(dotnetInstallPath);
 
         var modifiedFiles = ShellProfileManager.AddProfileEntries(
             shellProvider,
             dotnetupPath,
             dotnetupOnly,
-            dotnetInstallPath);
+            profileDotnetInstallPath);
 
         if (modifiedFiles.Count == 0)
         {
@@ -129,10 +130,18 @@ internal class DefaultInstallCommand : CommandBase
         {
             Console.WriteLine();
             Console.WriteLine("To start using .NET in this terminal, run:");
-            Console.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath, dotnetInstallPath: dotnetInstallPath)}");
+            Console.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath, dotnetInstallPath: profileDotnetInstallPath)}");
         }
 
         return 0;
+    }
+
+    private string? GetInstallPathToPassToProfile(string? dotnetInstallPath)
+    {
+        return dotnetInstallPath is { Length: > 0 } installPath &&
+            !DotnetupUtilities.PathsEqual(installPath, _dotnetEnvironment.GetDefaultDotnetInstallPath())
+            ? installPath
+            : null;
     }
 
     private IEnvShellProvider GetCurrentShellProviderOrThrow()
