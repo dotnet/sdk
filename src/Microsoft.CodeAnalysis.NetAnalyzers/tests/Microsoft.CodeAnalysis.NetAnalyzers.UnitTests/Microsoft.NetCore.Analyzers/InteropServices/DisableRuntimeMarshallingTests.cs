@@ -1619,7 +1619,7 @@ End Structure
 
             test.TestState.Sources.Add(additionalSourceFile);
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyCSAnalyzerWithAdditionalAssemblyAsync(string source, string additionalReferencedAssemblySource)
@@ -1641,7 +1641,7 @@ End Structure
             test.TestState.AdditionalProjects.Add(AdditionalAssemblyName, additionalProject);
             test.TestState.AdditionalProjectReferences.Add(AdditionalAssemblyName);
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static Task VerifyCSAnalyzerAsync(string source, bool allowUnsafeBlocks = false)
@@ -1674,7 +1674,7 @@ End Structure
             test.FixedState.MarkupHandling = MarkupMode.Allow;
             test.MarkupOptions = MarkupOptions.UseFirstDescriptor;
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyVBAnalyzerAsync(string source)
@@ -1687,7 +1687,7 @@ End Structure
             };
             test.MarkupOptions = MarkupOptions.UseFirstDescriptor;
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>() { { "default-port", "3332" } });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>() { { "default-port", "3332" } });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             .WithInstantiationThroughTemplateCreatorApi(parameters);
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             .WithInstantiationThroughTemplateCreatorApi(parameters);
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -190,7 +190,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             .WithInstantiationThroughTemplateCreatorApi(parameters);
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         private Dictionary<string, string?> ConvertToParameters(string?[]? parametersArray)
