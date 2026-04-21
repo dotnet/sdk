@@ -29,7 +29,7 @@ jobs:
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
   steps:
   - script: |
-      # Allow implicit installation of the Azure DevOps extension to use dnceng feed
+      # Pre-install the Azure DevOps extension using the dnceng PyPI feed for dependency resolution under network isolation
       az extension add --name azure-devops \
         --pip-extra-index-urls https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-pypi/pypi/simple/
       
