@@ -186,6 +186,32 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
+        public void ItUsesInvocationWorkingDirectoryWhenProjectIsSpecified()
+        {
+            var testAppName = "MSBuildTestApp";
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+                .WithSource();
+
+            var projectFile = Path.Combine(testInstance.Path, $"{testAppName}.csproj");
+            var invocationDirectory = Directory.GetParent(testInstance.Path).FullName;
+            var expectedWorkingDirectory = Microsoft.NET.TestFramework.Utilities.TestPathUtility
+                .ResolveTempPrefixLink(invocationDirectory)
+                .TrimEnd(Path.DirectorySeparatorChar);
+
+            File.WriteAllText(Path.Combine(testInstance.Path, "Program.cs"), """
+                using System;
+
+                Console.WriteLine(Environment.CurrentDirectory);
+                """);
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(invocationDirectory)
+                .Execute("--project", projectFile)
+                .Should().Pass()
+                .And.HaveStdOutContaining(expectedWorkingDirectory);
+        }
+
+        [Fact]
         public void ItWarnsWhenShortFormOfProjectArgumentIsUsed()
         {
             var testAppName = "MSBuildTestApp";
