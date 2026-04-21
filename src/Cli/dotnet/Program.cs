@@ -55,7 +55,7 @@ public class Program
 
         if (CommandLoggingContext.IsVerbose)
         {
-            Console.WriteLine($"Telemetry is: {(TelemetryInstance.Enabled ? "Enabled" : "Disabled")}");
+            Reporter.Verbose.WriteLine($"Telemetry is: {(TelemetryInstance.Enabled ? "Enabled" : "Disabled")}");
         }
 
         // Creates a host-startup activity which includes the global.json state.
