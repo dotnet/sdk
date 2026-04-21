@@ -693,7 +693,6 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// </summary>
     public sealed class IncludeOrExclude(in ParseInfo info) : Named(info)
     {
-        public const string ExperimentalFileBasedProgramEnableTransitiveDirectives = nameof(ExperimentalFileBasedProgramEnableTransitiveDirectives);
         public const string MappingPropertyName = "FileBasedProgramsItemMapping";
 
         public static string DefaultMappingString => ".cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content";
