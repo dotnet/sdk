@@ -1,4 +1,3 @@
-const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives = "ExperimentalFileBasedProgramEnableTransitiveDirectives" -> string!
 const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.MappingPropertyName = "FileBasedProgramsItemMapping" -> string!
 const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective = "ExperimentalFileBasedProgramEnableRefDirective" -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective

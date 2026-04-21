@@ -437,18 +437,12 @@ public sealed class VirtualProjectBuilder
         ErrorReporter reportError)
     {
         bool? refEnabled = null;
-        bool? transitiveEnabled = null;
 
         foreach (var directive in directives)
         {
             if (directive is CSharpDirective.Ref)
             {
                 CheckFlagEnabled(ref refEnabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, directive);
-            }
-
-            if (directive.Info.SourceFile.Path != EntryPointSourceFile.Path)
-            {
-                CheckFlagEnabled(ref transitiveEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives, directive);
             }
         }
 

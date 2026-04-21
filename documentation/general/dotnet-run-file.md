@@ -261,7 +261,6 @@ and can do that efficiently by stopping the search when it sees the first "C# to
 
 For a given `dotnet run file.cs`, we include directives from the current entry point file (`file.cs`) and all other non-entry-point C# files,
 specifically from all `Compile` items included in the project, no matter whether the `Compile` items are specified in some MSBuild code or inferred from `#:include`.
-(Processing directives from other files is currently gated under a feature flag that can be enabled by setting the MSBuild property `ExperimentalFileBasedProgramEnableTransitiveDirectives=true`.)
 The order in which other files are processed is currently unspecified (can change across SDK versions) but deterministic (stable in a given SDK version).
 We do not limit these directives to appear only in entry point files because it allows:
 - a non-entry-point file like `Util.cs` to be self-contained and have all the `#:package`s it needs specified in it,
