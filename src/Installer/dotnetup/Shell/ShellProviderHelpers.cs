@@ -11,8 +11,10 @@ internal static class ShellProviderHelpers
 
     internal static string GetDotnetupOnlyComment() => DotnetupOnlyComment;
 
+    // This text is emitted as a shell comment for the supported providers in ShellDetection.
+    // Keep it on one line so an unusual install path can't break out of the comment block.
     internal static string GetEnvironmentConfigurationComment(string dotnetInstallPath)
-        => $"# This script configures the environment for .NET installed at {dotnetInstallPath}";
+        => $"# This script configures the environment for .NET installed at {dotnetInstallPath.ReplaceLineEndings(" ")}";
 
     internal static string EscapePosixPath(string path)
         => path.Replace("'", "'\\''", StringComparison.Ordinal);
@@ -145,7 +147,7 @@ internal static class ShellProviderHelpers
         return Environment.ProcessPath
             ?? throw new DotnetInstallException(
                 DotnetInstallErrorCode.ContextResolutionFailed,
-                "Unable to determine the dotnetup executable path.");
+                "Unable to determine the full path to the running dotnetup executable.");
     }
 
     internal static string GetDotnetupDirectoryOrThrow()

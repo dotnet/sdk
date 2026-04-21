@@ -163,7 +163,7 @@ internal class InitWorkflows
 
         if (ShouldReplaceSystemConfiguration(pathPreference))
         {
-            _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path, shellProvider);
+            _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
         }
 
         // Step 4: Prompt migrating admin installs now that the environment is configured (if deferred).
@@ -222,9 +222,8 @@ internal class InitWorkflows
 
         if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
         {
-            var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
-                $"[{DotnetupTheme.Current.Warning}]Warning:[/] Shell '{shellEnv.EscapeMarkup()}' is not supported for automatic environment configuration. dotnetup will continue without changing your shell profile unless you specify one with --shell."));
+                $"[{DotnetupTheme.Current.Warning}]Warning:[/] Shell '{ShellDetection.GetCurrentShellDisplayName().EscapeMarkup()}' is not supported for automatic environment configuration. dotnetup will continue without changing your shell profile unless you specify one with --shell."));
             return PathPreference.DotnetupDotnet;
         }
 

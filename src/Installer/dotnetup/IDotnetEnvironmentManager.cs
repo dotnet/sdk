@@ -24,7 +24,7 @@ internal interface IDotnetEnvironmentManager
 
     List<DotnetInstall> GetExistingSystemInstalls();
 
-    void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null);
+    void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null);
 
     void ApplyTerminalProfileModifications(string dotnetRoot, IEnvShellProvider? shellProvider = null);
 

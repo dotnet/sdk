@@ -60,6 +60,18 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
+    public void AddProfileEntries_BlankFile_UsesConsistentLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "blank.sh");
+        File.WriteAllText(profilePath, string.Empty);
+        var provider = new TestShellProvider(_tempDir, "blank.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        AssertUsesOnlyCurrentPlatformLineEndings(File.ReadAllText(profilePath));
+    }
+
+    [Fact]
     public void AddProfileEntries_DoesNotDuplicateIfAlreadyPresent()
     {
         var profilePath = Path.Combine(_tempDir, "dup.sh");
@@ -115,6 +127,20 @@ public class ShellProfileManagerTests : IDisposable
         var bytes = File.ReadAllBytes(profilePath);
         bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeTrue();
         AssertUsesOnlyLfLineEndings(File.ReadAllText(profilePath));
+    }
+
+    [Fact]
+    public void AddProfileEntries_PreservesUnicodeBomAndCrLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-add-unicode.sh");
+        File.WriteAllText(profilePath, "# existing config\r\nexport FOO=bar\r\n", Encoding.Unicode);
+        var provider = new TestShellProvider(_tempDir, "preserve-add-unicode.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.Unicode.Preamble.Length).SequenceEqual(Encoding.Unicode.Preamble).Should().BeTrue();
+        AssertUsesOnlyCrLfLineEndings(File.ReadAllText(profilePath, Encoding.Unicode));
     }
 
     [Fact]

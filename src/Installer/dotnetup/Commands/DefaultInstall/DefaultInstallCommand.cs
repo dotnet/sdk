@@ -99,7 +99,7 @@ internal class DefaultInstallCommand : CommandBase
     private int SetUnixShellProfile(bool dotnetupOnly, string? dotnetInstallPath = null)
     {
         var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
-        var shellProvider = GetCurrentShellProviderOrThrow();
+        var shellProvider = ShellDetection.GetCurrentShellProviderOrThrow(_shellProvider);
         var profileDotnetInstallPath = GetInstallPathToPassToProfile(dotnetInstallPath);
 
         var modifiedFiles = ShellProfileManager.AddProfileEntries(
@@ -142,19 +142,5 @@ internal class DefaultInstallCommand : CommandBase
             !DotnetupUtilities.PathsEqual(installPath, _dotnetEnvironment.GetDefaultDotnetInstallPath())
             ? installPath
             : null;
-    }
-
-    private IEnvShellProvider GetCurrentShellProviderOrThrow()
-    {
-        var shellProvider = _shellProvider ?? ShellDetection.GetCurrentShellProvider();
-        if (shellProvider is null)
-        {
-            var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.PlatformNotSupported,
-                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}. You can specify one explicitly with --shell.");
-        }
-
-        return shellProvider;
     }
 }

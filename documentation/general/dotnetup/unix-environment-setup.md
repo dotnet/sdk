@@ -2,9 +2,9 @@
 
 ## Overview
 
-dotnetup automatically configures the Unix shell environment so that .NET is available in every new terminal session. This involves modifying shell profile files to set the `PATH` and `DOTNET_ROOT` environment variables. The same mechanism also supports PowerShell on any platform.
+dotnetup (upon user consent) configures the Unix shell environment so that .NET is available in every new terminal session. This involves modifying shell profile files to set the `PATH` and `DOTNET_ROOT` environment variables. The same mechanism also supports PowerShell on any platform.
 
-On Windows the primary method is registry-based environment variables, which is handled separately. This document focuses on the Unix (and PowerShell) profile-based approach.
+This document focuses on the Unix (and PowerShell) profile-based approach. On Windows, registry-based environment variables also impact the environment in addition to profile files.
 
 ## How the Environment Gets Configured
 
@@ -113,6 +113,7 @@ dotnetup print-env-script [--shell <shell>] [--dotnet-install-path <path>]
 
 - `--shell` / `-s`: The target shell for which to generate the environment script
   - Supported values: `bash`, `zsh`, `pwsh`
+  - The supported shell values are based on what `nvm` and `rustup` support today.
   - Optional: If not specified, automatically detects the current shell from the `$SHELL` environment variable
   - On Windows, defaults to PowerShell (`pwsh`)
 

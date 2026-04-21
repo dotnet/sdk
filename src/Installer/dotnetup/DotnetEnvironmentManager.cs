@@ -267,7 +267,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
     }
 
-    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null)
+    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
     {
         if (OperatingSystem.IsWindows())
         {
@@ -331,15 +331,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     private void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot, IEnvShellProvider? shellProvider)
     {
         var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
-
-        shellProvider ??= ShellDetection.GetCurrentShellProvider();
-        if (shellProvider is null)
-        {
-            var shellEnv = Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.PlatformNotSupported,
-                $"Unable to detect a supported shell. SHELL={shellEnv}. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}. You can specify one explicitly with --shell.");
-        }
+        shellProvider = ShellDetection.GetCurrentShellProviderOrThrow(shellProvider);
 
         switch (installType)
         {

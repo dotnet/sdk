@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Dotnet.Installation;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 /// <summary>
@@ -10,6 +12,8 @@ public static class ShellDetection
 {
     /// <summary>
     /// The list of shell providers supported by dotnetup.
+    /// Revisit the generated script/comment helpers before adding a new shell here,
+    /// since profile blocks assume the comment and quoting behavior of these shells.
     /// </summary>
     internal static readonly IEnvShellProvider[] s_supportedShells =
     [
@@ -33,6 +37,12 @@ public static class ShellDetection
 
         return s_shellMap.GetValueOrDefault(shellName);
     }
+
+    internal static string GetCurrentShellDisplayName()
+        => Environment.GetEnvironmentVariable("SHELL") ?? "(not set)";
+
+    internal static string GetUnsupportedShellMessage()
+        => $"Unable to detect a supported shell. SHELL={GetCurrentShellDisplayName()}. Supported shells: {string.Join(", ", s_supportedShells.Select(s => s.ArgumentName))}. You can specify one explicitly with --shell.";
 
     /// <summary>
     /// Resolves a shell provider from either a shell name or the path to a shell executable.
@@ -81,4 +91,10 @@ public static class ShellDetection
 
         return ResolveShellProvider(shellPath);
     }
+
+    internal static IEnvShellProvider GetCurrentShellProviderOrThrow(IEnvShellProvider? shellProvider = null)
+        => shellProvider ?? GetCurrentShellProvider()
+            ?? throw new DotnetInstallException(
+                DotnetInstallErrorCode.PlatformNotSupported,
+                GetUnsupportedShellMessage());
 }

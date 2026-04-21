@@ -48,6 +48,17 @@ public class EnvShellProviderTests
     }
 
     [Fact]
+    public void BashProvider_ShouldNormalizePathInCommentToSingleLine()
+    {
+        var provider = new BashEnvShellProvider();
+        var installPath = "/test/dotnet" + Environment.NewLine + "path";
+
+        var script = provider.GenerateEnvScript(installPath);
+
+        script.Should().Contain("# This script configures the environment for .NET installed at /test/dotnet path");
+    }
+
+    [Fact]
     public void ZshProvider_ShouldGenerateValidScript()
     {
         // Arrange

@@ -57,7 +57,7 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
 
-    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null, IEnvShellProvider? shellProvider = null)
+    public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
     {
         ApplyEnvironmentModificationsCallCount++;
         LastDotnetRootForEnvironmentModifications = dotnetRoot;
