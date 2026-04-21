@@ -29,6 +29,10 @@ jobs:
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
   steps:
   - script: |
+      # Allow implicit installation of the Azure DevOps extension to use dnceng feed
+      az extension add --name azure-devops \
+        --pip-extra-index-urls https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-pypi/pypi/simple/
+      
       dotnet_dotnet_build='${{ replace(parameters.dotnetDotnetRunId, ' ', '') }}'
 
       if [[ -z "$dotnet_dotnet_build" ]]; then
