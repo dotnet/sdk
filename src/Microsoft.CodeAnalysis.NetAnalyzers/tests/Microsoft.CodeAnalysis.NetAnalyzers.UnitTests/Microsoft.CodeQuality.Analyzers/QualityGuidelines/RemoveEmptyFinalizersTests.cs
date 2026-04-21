@@ -218,7 +218,7 @@ public class Class1
                             .Solution;
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -242,7 +242,7 @@ End Class
                             .Solution;
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
@@ -273,7 +273,7 @@ public class Class1
                             .Solution;
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -298,7 +298,7 @@ End Class
                             .Solution;
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

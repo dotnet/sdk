@@ -160,7 +160,7 @@ public sealed class C : B, IFace
                 },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeSealed",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -214,7 +214,7 @@ internal class C : B, IFace
                 },
                 CodeActionIndex = 2,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -268,7 +268,7 @@ internal abstract class C : B, IFace
                 },
                 CodeActionIndex = 1, // sealed option is not available because class is abstract
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -357,7 +357,7 @@ internal class C : B, IFace
                 },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -405,7 +405,7 @@ internal abstract class C : B, IFace
                 },
                 CodeActionIndex = 0, // sealed option is not available because type is abstract
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

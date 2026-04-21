@@ -1273,7 +1273,7 @@ internal interface IImpl : IMyInterface
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = source
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyCSCodeFixAsync(string source, string codeFix)
@@ -1289,7 +1289,7 @@ internal interface IImpl : IMyInterface
                 ReferenceAssemblies = referenceAssemblies,
                 TestCode = source,
                 FixedCode = codeFix
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }
