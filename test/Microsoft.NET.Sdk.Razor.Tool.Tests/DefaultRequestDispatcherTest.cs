@@ -382,6 +382,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 }
             };
             var keepAlive = TimeSpan.FromSeconds(1);
+
             var dispatcherTask = Task.Run(() =>
             {
                 var dispatcher = new DefaultRequestDispatcher(connectionHost.Object, compilerHost, CancellationToken.None, eventBus, keepAlive);

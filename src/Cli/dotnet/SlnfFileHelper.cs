@@ -11,6 +11,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli;
 
+[JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.Never)]
+[JsonSerializable(typeof(SlnfFileHelper.SlnfRoot))]
+internal partial class SlnfJsonSerializerContext : JsonSerializerContext;
+
 /// <summary>
 /// Utilities for working with solution filter (.slnf) files
 /// </summary>
@@ -41,7 +45,7 @@ public static class SlnfFileHelper
         return path.Replace(Path.DirectorySeparatorChar, '\\');
     }
 
-    private class SlnfSolution
+    internal class SlnfSolution
     {
         [JsonPropertyName("path")]
         public string Path { get; set; }
@@ -50,7 +54,7 @@ public static class SlnfFileHelper
         public List<string> Projects { get; set; } = new();
     }
 
-    private class SlnfRoot
+    internal class SlnfRoot
     {
         [JsonPropertyName("solution")]
         public SlnfSolution Solution { get; set; } = new();
@@ -80,13 +84,7 @@ public static class SlnfFileHelper
             }
         };
 
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never
-        };
-
-        var json = JsonSerializer.Serialize(root, options);
+        var json = JsonSerializer.Serialize(root, SlnfJsonSerializerContext.Default.SlnfRoot);
         File.WriteAllText(slnfPath, json);
     }
 
@@ -119,13 +117,7 @@ public static class SlnfFileHelper
             }
         };
 
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never
-        };
-
-        var json = JsonSerializer.Serialize(root, options);
+        var json = JsonSerializer.Serialize(root, SlnfJsonSerializerContext.Default.SlnfRoot);
         File.WriteAllText(slnfPath, json);
     }
 }

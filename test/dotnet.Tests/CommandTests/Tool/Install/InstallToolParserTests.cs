@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -171,6 +172,19 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var definition = Assert.IsType<ToolInstallCommandDefinition>(result.CommandResult.Command);
             result.GetRequiredValue(definition.RestoreOptions.InteractiveOption).Should().BeTrue();
+        }
+
+        [Fact]
+        public void InstallToolWithBothAtVersionAndVersionOptionThrowsError()
+        {
+            var result = Parser.Parse("dotnet tool install -g console.test.app@1.0.0 --version 2.0.0");
+
+            var toolInstallCommand = new Cli.Commands.Tool.Install.ToolInstallCommand(result);
+
+            Action a = () => toolInstallCommand.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(Cli.CliStrings.PackageIdentityArgumentVersionOptionConflict);
         }
     }
 }

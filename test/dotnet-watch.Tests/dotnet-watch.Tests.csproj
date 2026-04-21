@@ -6,8 +6,8 @@
     <RootNamespace>Microsoft.DotNet.Watch.UnitTests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
-    <Compile Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockTaskItem.cs" Link="TestUtilities\MockTaskItem.cs" />
+    <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
+    <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockTaskItem.cs" Link="TestUtilities\MockTaskItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <!--

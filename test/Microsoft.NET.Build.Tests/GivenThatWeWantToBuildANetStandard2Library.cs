@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(project, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -49,7 +49,7 @@ public static class {project.Name}
     {ConflictResolutionAssets.ConflictResolutionTestMethod}
 }}";
 
-            var testAsset = _testAssetsManager.CreateTestProject(project)
+            var testAsset = TestAssetsManager.CreateTestProject(project)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;

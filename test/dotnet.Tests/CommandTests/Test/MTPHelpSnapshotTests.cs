@@ -17,7 +17,7 @@ public class MTPHelpSnapshotTests : SdkTest
     [Fact]
     public async Task VerifyMTPHelpOutput()
     {
-        TestAsset testInstance = _testAssetsManager
+        TestAsset testInstance = TestAssetsManager
             .CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString())
             .WithSource();
 

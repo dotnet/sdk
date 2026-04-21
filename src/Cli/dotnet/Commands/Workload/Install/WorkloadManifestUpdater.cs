@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -14,7 +15,6 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
@@ -66,14 +66,24 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
         var tempPackagesDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
-        var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
-                                      filePermissionSetter: null,
-                                      new FirstPartyNuGetPackageSigningVerifier(),
-                                      new NullLogger(),
-                                      reporter,
-                                      verifySignatures: SignCheck.IsDotNetSigned());
-        var installer = WorkloadInstallerFactory.GetWorkloadInstaller(reporter, new SdkFeatureBand(sdkVersion),
-            workloadResolver, VerbosityOptions.normal, userProfileDir, verifySignatures: false);
+        // NuGet verification uses ShouldVerifySignatures() (respects registry policy and host
+        // signing status, but not --skip-sign-check since this is a background operation).
+        // MSI verification is intentionally disabled — this updater only downloads advertising
+        // manifests, not installable MSIs.
+        var verifySignatures = WorkloadUtilities.ShouldVerifySignatures();
+        var nugetPackageDownloader = NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
+            tempPackagesDir,
+            verifySignatures,
+            reporter: reporter);
+
+        var installer = WorkloadInstallerFactory.GetWorkloadInstaller(
+            reporter,
+            new SdkFeatureBand(sdkVersion),
+            workloadResolver,
+            VerbosityOptions.normal,
+            userProfileDir,
+            verifyMsiSignature: false);
+
         var workloadRecordRepo = installer.GetWorkloadInstallationRecordRepository();
 
         return new WorkloadManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, workloadRecordRepo, installer);
@@ -87,7 +97,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
         else
         {
-            // this updates all the manifests 
+            // this updates all the manifests
             var manifests = _workloadResolver.GetInstalledManifests();
             await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
             WriteUpdatableWorkloadsFile();
@@ -138,7 +148,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var installedWorkloads = _workloadRecordRepo.GetInstalledWorkloads(_sdkFeatureBand);
         var updatableWorkloads = GetUpdatableWorkloadsToAdvertise(installedWorkloads);
         var filePath = GetAdvertisingWorkloadsFilePath(_sdkFeatureBand);
-        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray());
+        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray(), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
         if (Directory.Exists(Path.GetDirectoryName(filePath)))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -164,7 +174,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
             var adUpdatesFile = GetAdvertisingWorkloadsFilePath(CliFolderPathCalculator.DotnetUserProfileFolderPath, featureBand);
             if (!backgroundUpdatesDisabled && File.Exists(adUpdatesFile))
             {
-                var updatableWorkloads = JsonSerializer.Deserialize<string[]>(File.ReadAllText(adUpdatesFile));
+                var updatableWorkloads = JsonSerializer.Deserialize(File.ReadAllText(adUpdatesFile), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
                 if (updatableWorkloads != null && updatableWorkloads.Any())
                 {
                     Console.WriteLine();
@@ -215,7 +225,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
     {
         try
         {
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
             if (OperatingSystem.IsWindows())
             {
                 //  Also advertise updates for workloads installed by Visual Studio
@@ -529,3 +539,6 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
 
     private record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
 }
+
+[JsonSerializable(typeof(string[]))]
+internal partial class WorkloadManifestUpdaterJsonSerializerContext : JsonSerializerContext;
