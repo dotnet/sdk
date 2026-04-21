@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ConsoleApp25": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DUMMY_TEST_ENV_VAR": "FROM_LAUNCHSETTINGS"
+      }
+    }
+  }
+}

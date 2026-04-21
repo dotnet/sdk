@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -23,12 +24,11 @@ namespace Microsoft.DotNet.Tests.ParserTests
             };
             File.WriteAllLines(tempFilePath, lines);
 
-            var parser = Parser.Instance;
-            var parseResult = parser.Parse(new[] { "dotnet", $"@{tempFilePath}" });
+            var parseResult = Parser.Parse(new[] { "dotnet", $"@{tempFilePath}" });
 
             var tokens = parseResult.Tokens.Select(t => t.Value);
             var tokenString = string.Join(", ", tokens);
-            var bc = Tools.Build.BuildCommand.FromParseResult(parseResult);
+            var bc = (RestoringCommand)Cli.Commands.Build.BuildCommand.FromParseResult(parseResult);
             var tokenized = new[] {
                 "build",
                 "a b",
@@ -56,8 +56,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             };
             File.WriteAllLines(tempFilePath, lines);
 
-            var parser = Parser.Instance;
-            var parseResult = parser.Parse(new[] { "dotnet", $"@{tempFilePath}" });
+            var parseResult = Parser.Parse(new[] { "dotnet", $"@{tempFilePath}" });
             var tokens = parseResult.Tokens.Select(t => t.Value);
             var tokenized = new[] {
                 "build",

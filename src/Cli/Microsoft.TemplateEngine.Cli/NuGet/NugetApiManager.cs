@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             PackageSource? sourceFeed = null,
             CancellationToken cancellationToken = default)
         {
-            if (sourceFeed == null && Microsoft.DotNet.Tools.Common.PathUtility.CheckForNuGetInNuGetConfig())
+            if (sourceFeed == null && DotNet.Cli.Utils.PathUtility.CheckForNuGetInNuGetConfig())
             {
                 sourceFeed = _nugetOrgSource;
             }

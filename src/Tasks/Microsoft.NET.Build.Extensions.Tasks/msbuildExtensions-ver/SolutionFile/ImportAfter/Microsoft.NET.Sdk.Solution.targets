@@ -21,7 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   ============================================================
    -->
   <Target Name="_CheckForSolutionLevelRuntimeIdentifier"
-          BeforeTargets="Build"
+          BeforeTargets="Build;_MTPBuild"
           Condition="'$(RuntimeIdentifier)' != ''">
 
     <NETSdkError ResourceName="CannotHaveSolutionLevelRuntimeIdentifier" />
@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 
   <Target Name="_CheckForSolutionLevelOutputPath"
-          BeforeTargets="Build;Publish;Clean;Store;VSTest"
+          BeforeTargets="Build;Publish;Clean;Store;VSTest;_MTPBuild"
           Condition="'$(_CommandLineDefinedOutputPath)' == 'true'">
 
     <NetSdkWarning ResourceName="CannotHaveSolutionLevelOutputPath" />

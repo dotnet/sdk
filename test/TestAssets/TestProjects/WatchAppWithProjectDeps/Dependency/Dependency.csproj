@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(CurrentTargetFramework)</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DefineConstants>$(DefineConstants);BUILD_CONST_IN_CSPROJ</DefineConstants>
   </PropertyGroup>
 
 </Project>

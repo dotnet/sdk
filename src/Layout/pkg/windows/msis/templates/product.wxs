@@ -1,0 +1,27 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package  UpgradeCode="$(UpgradeCode)" Version="$(ProductVersion)" Manufacturer="$(Manufacturer)" InstallerVersion="$(InstallerVersion)" Compressed="yes"
+            Scope="perMachine" Language="$(ProductLanguage)" Name="$(ProductName)">
+
+    <Launch Condition="Installed OR ALLOWMSIINSTALL"
+            Message="$(ProductName) must be installed as part of a coordinated SDK installation." />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+    <MediaTemplate CompressionLevel="high" EmbedCab="yes" />
+
+    <Feature Id="MainFeature" Title="Main Feature" Level="1">
+      <ComponentGroupRef Id="InstallFiles" />
+    </Feature>
+
+    <FeatureRef Id="F_DependencyProvider" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="..\..\dummyeula.rtf" />
+
+    <Icon Id="icon.ico" SourceFile="..\..\dotnet.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="RTM_ProductVersion" Value="$(ProductVersion)" />
+    <Property Id="MSIFASTINSTALL" Value="7" />
+  </Package>
+</Wix>

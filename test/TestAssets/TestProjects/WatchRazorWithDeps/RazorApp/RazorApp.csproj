@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <LinkAlternativeRepresentationsToOriginalResource>ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
     </PropertyGroup>
 
     <ItemGroup>

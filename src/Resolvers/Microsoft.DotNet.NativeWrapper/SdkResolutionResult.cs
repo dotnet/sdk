@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable enable
-#pragma warning restore IDE0240 // Remove redundant nullable directive
-
 namespace Microsoft.DotNet.NativeWrapper
 {
     public class SdkResolutionResult
@@ -25,6 +21,11 @@ namespace Microsoft.DotNet.NativeWrapper
         public string? RequestedVersion;
 
         /// <summary>
+        /// Result of the global.json search
+        /// </summary>
+        public string? GlobalJsonState;
+
+        /// <summary>
         /// True if a global.json was found but there was no compatible SDK, so it was ignored. 
         /// </summary>
         public bool FailedToResolveSDKSpecifiedInGlobalJson;
@@ -41,6 +42,9 @@ namespace Microsoft.DotNet.NativeWrapper
                     break;
                 case Interop.hostfxr_resolve_sdk2_result_key_t.requested_version:
                     RequestedVersion = value;
+                    break;
+                case Interop.hostfxr_resolve_sdk2_result_key_t.global_json_state:
+                    GlobalJsonState = value;
                     break;
             }
         }

@@ -3,6 +3,7 @@
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <LinkAlternativeRepresentationsToOriginalResource>ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
   </PropertyGroup>
   <ItemGroup>
     <SupportedPlatform Include="browser"/>

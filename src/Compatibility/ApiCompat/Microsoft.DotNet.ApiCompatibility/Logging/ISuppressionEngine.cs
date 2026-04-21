@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// </summary>
         /// <param name="suppressionOutputFile">The path to the file to be written.</param>
         /// <param name="preserveUnnecessarySuppressions">If <see langword="true"/>, preserves unnecessary suppressions.</param>
-        /// <returns>Returns the set of suppressions written.</returns>
-        IReadOnlyCollection<Suppression> WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions = false);
+        /// <returns>Returns a boolean indicating whether the suppression file got updated and the set of suppressions written.</returns>
+        (bool SuppressionFileUpdated, IReadOnlyCollection<Suppression> UpdatedSuppressions) WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions = false);
     }
 }

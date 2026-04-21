@@ -17,4 +17,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(_BlazorWebAssemblyTargetsFile)" />
 
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException"
+                                    Condition="'$(BlazorDisableThrowNavigationException)' != ''"
+                                    Value="$(BlazorDisableThrowNavigationException)"
+                                    Trim="true" />
+  </ItemGroup>
 </Project>

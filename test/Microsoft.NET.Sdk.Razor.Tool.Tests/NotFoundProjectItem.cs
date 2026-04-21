@@ -16,11 +16,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         /// <param name="basePath">The base path.</param>
         /// <param name="path">The path.</param>
         /// <param name="fileKind">The file kind</param>
-        public NotFoundProjectItem(string basePath, string path, string fileKind)
+        public NotFoundProjectItem(string basePath, string path, RazorFileKind? fileKind)
         {
             BasePath = basePath;
             FilePath = path;
-            FileKind = fileKind ?? FileKinds.GetFileKindFromFilePath(path);
+            FileKind = fileKind ?? FileKinds.GetFileKindFromPath(path);
         }
 
         /// <inheritdoc />
@@ -30,7 +30,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         public override string FilePath { get; }
 
         /// <inheritdoc />
-        public override string FileKind { get; }
+        public override RazorFileKind FileKind { get; }
 
         /// <inheritdoc />
         public override bool Exists => false;
