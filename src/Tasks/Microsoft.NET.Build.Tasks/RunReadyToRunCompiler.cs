@@ -23,6 +23,7 @@ namespace Microsoft.NET.Build.Tasks
         public bool ShowCompilerWarnings { get; set; }
         public bool UseCrossgen2 { get; set; }
         public string Crossgen2ExtraCommandLineArgs { get; set; }
+        public string Crossgen2CompositeExtraCommandLineArgs { get; set; }
         public ITaskItem[] Crossgen2PgoFiles { get; set; }
         public string Crossgen2ContainerFormat { get; set; }
 
@@ -357,6 +358,17 @@ namespace Microsoft.NET.Build.Tasks
             if (!string.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))
             {
                 foreach (string extraArg in Crossgen2ExtraCommandLineArgs.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+                {
+                    result.AppendLine(extraArg);
+                }
+            }
+
+            // Args that are only valid for full composite builds (e.g. --strip-il-bodies),
+            // never for per-assembly partial R2R compilations.
+            if (_createCompositeImage && !_partialCompile
+                && !string.IsNullOrEmpty(Crossgen2CompositeExtraCommandLineArgs))
+            {
+                foreach (string extraArg in Crossgen2CompositeExtraCommandLineArgs.Split([';'], StringSplitOptions.RemoveEmptyEntries))
                 {
                     result.AppendLine(extraArg);
                 }

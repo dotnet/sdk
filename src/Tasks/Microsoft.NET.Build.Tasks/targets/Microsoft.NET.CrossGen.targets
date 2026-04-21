@@ -47,11 +47,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripDebugInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-debug-info</PublishReadyToRunCrossgen2ExtraArgs>
     <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripDebugInfo)' != 'false' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-debug-info</PublishReadyToRunCrossgen2ExtraArgs>
 
-    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and $(RuntimeIdentifier.StartsWith('ios-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2ExtraArgs>
-    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and $(RuntimeIdentifier.StartsWith('tvos-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2ExtraArgs>
-    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and $(RuntimeIdentifier.StartsWith('iossimulator-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2ExtraArgs>
-    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2ExtraArgs>
-    <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2ExtraArgs>
+    <PublishReadyToRunCrossgen2CompositeExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and '@(PublishReadyToRunPartialAssemblies)' == '' and '@(PublishReadyToRunCompositeExclusions)' == '' and $(RuntimeIdentifier.StartsWith('ios-'))">$(PublishReadyToRunCrossgen2CompositeExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2CompositeExtraArgs>
+    <PublishReadyToRunCrossgen2CompositeExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and '@(PublishReadyToRunPartialAssemblies)' == '' and '@(PublishReadyToRunCompositeExclusions)' == '' and $(RuntimeIdentifier.StartsWith('tvos-'))">$(PublishReadyToRunCrossgen2CompositeExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2CompositeExtraArgs>
+    <PublishReadyToRunCrossgen2CompositeExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and '@(PublishReadyToRunPartialAssemblies)' == '' and '@(PublishReadyToRunCompositeExclusions)' == '' and $(RuntimeIdentifier.StartsWith('iossimulator-'))">$(PublishReadyToRunCrossgen2CompositeExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2CompositeExtraArgs>
+    <PublishReadyToRunCrossgen2CompositeExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and '@(PublishReadyToRunPartialAssemblies)' == '' and '@(PublishReadyToRunCompositeExclusions)' == '' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">$(PublishReadyToRunCrossgen2CompositeExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2CompositeExtraArgs>
+    <PublishReadyToRunCrossgen2CompositeExtraArgs Condition="'$(PublishReadyToRunStripILBodies)' != 'false' and '$(PublishReadyToRunComposite)' == 'true' and '@(PublishReadyToRunPartialAssemblies)' == '' and '@(PublishReadyToRunCompositeExclusions)' == '' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">$(PublishReadyToRunCrossgen2CompositeExtraArgs);--strip-il-bodies</PublishReadyToRunCrossgen2CompositeExtraArgs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -511,6 +511,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                            Crossgen2PgoFiles="@(_ReadyToRunPgoFiles)"
                            Crossgen2ContainerFormat="$(PublishReadyToRunContainerFormat)"
                            Crossgen2ExtraCommandLineArgs="$(PublishReadyToRunCrossgen2ExtraArgs)"
+                           Crossgen2CompositeExtraCommandLineArgs="$(PublishReadyToRunCrossgen2CompositeExtraArgs)"
                            ImplementationAssemblyReferences="@(_ReadyToRunAssembliesToReference)"
                            ShowCompilerWarnings="$(PublishReadyToRunShowWarnings)"
                            CompilationEntry="@(_ReadyToRunCompileList)"
