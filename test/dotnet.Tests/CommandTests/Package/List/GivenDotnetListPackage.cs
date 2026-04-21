@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
             var packageId = "Newtonsoft.Json";
             var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
 
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "file.cs");
             File.WriteAllText(file, $"""
                 #:package {packageId}@{packageVersion}

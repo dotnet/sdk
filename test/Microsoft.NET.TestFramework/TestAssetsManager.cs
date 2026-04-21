@@ -58,7 +58,7 @@ namespace Microsoft.NET.TestFramework
             var testDestinationDirectory = GetTestDestinationDirectoryPath(name, callingMethod, identifier);
             TestDestinationDirectories.Add(testDestinationDirectory);
 
-            return new TestAsset(testDestinationDirectory, SdkTestContext.Current.SdkVersion, Log);
+            return new TestAsset(testDestinationDirectory, Log);
         }
 
         /// <summary>

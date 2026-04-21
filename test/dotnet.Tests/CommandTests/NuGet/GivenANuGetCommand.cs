@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         [Fact]
         public void ItHasAWhySubcommand_FileBasedApp()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, $"""
                 #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         [Fact]
         public void ItHasAWhySubcommand_FileBasedApp_WithOptionsBeforePath()
         {
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, $"""
                 #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
@@ -233,7 +233,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         public void ItCanUpdatePackages_FileBasedApp()
         {
             // Arrange
-            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var testInstance = TestAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, """
                 Console.WriteLine();

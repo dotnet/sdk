@@ -472,7 +472,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
 
             testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
 

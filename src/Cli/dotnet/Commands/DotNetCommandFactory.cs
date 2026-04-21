@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ProjectTools;
 using NuGet.Frameworks;
+using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli;
 
