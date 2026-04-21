@@ -1,18 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Cli;
 
 static unsafe partial class NativeEntryPoint
 {
-    [LibraryImport("kernel32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool IsDebuggerPresent();
-
     [UnmanagedCallersOnly(EntryPoint = "dotnet_execute")]
     static int Execute(
         nint hostPathPtr,      // const char_t* host_path
@@ -49,13 +43,6 @@ static unsafe partial class NativeEntryPoint
             return Parser.Invoke(parseResult);
         }
 
-        // If a native debugger is attached, signal the managed code to call Debugger.Launch()
-        // so a managed debugger can be attached for mixed-mode debugging.
-        if (IsNativeDebuggerAttached())
-        {
-            Environment.SetEnvironmentVariable("DOTNET_LAUNCH_MANAGED_DEBUGGER", "1");
-        }
-
         // Fall back to the fully managed dotnet CLI by hosting .NET
         string dotnetDll = Path.Combine(sdkDir, "dotnet.dll");
         string runtimeConfig = Path.Combine(sdkDir, "dotnet.runtimeconfig.json");
@@ -72,39 +59,5 @@ static unsafe partial class NativeEntryPoint
         // No managed fallback available
         Console.Error.WriteLine($"The managed fallback could not be located. Expected '{dotnetDll}' and '{runtimeConfig}'.");
         return 1;
-    }
-
-    /// <summary>
-    ///  Checks if a native debugger is attached to the current process.
-    /// </summary>
-    private static bool IsNativeDebuggerAttached()
-    {
-        if (OperatingSystem.IsWindows())
-        {
-            return IsDebuggerPresent();
-        }
-
-        // On Linux, check TracerPid in /proc/self/status
-        if (OperatingSystem.IsLinux())
-        {
-            try
-            {
-                string status = File.ReadAllText("/proc/self/status");
-                foreach (string line in status.Split('\n'))
-                {
-                    if (line.StartsWith("TracerPid:", StringComparison.Ordinal))
-                    {
-                        string pid = line["TracerPid:".Length..].Trim();
-                        return pid != "0";
-                    }
-                }
-            }
-            catch
-            {
-                // Ignore errors reading proc filesystem
-            }
-        }
-
-        return false;
     }
 }
