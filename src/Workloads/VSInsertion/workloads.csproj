@@ -208,6 +208,19 @@
           UseHardlinksIfPossible="true" />
   </Target>
 
+  <!-- In graph build mode (.slnx), the Traversal SDK's Pack target in manifest-packages.csproj
+       is skipped because it has Condition="'$(IsGraphBuild)' != 'true'". The graph scheduler is
+       supposed to dispatch Pack to the child .Manifest.proj projects via ProjectReferenceTargets,
+       but the graph builder does not discover them. Explicitly invoke Pack here without IsGraphBuild
+       so the Traversal SDK's Pack target executes normally. -->
+  <Target Name="_PackManifestPackages"
+          BeforeTargets="BuildWorkloadMsis"
+          Condition="'$(BuildWorkloads)' == 'true' and '$(DotNetBuild)' != 'true' and '$(IsGraphBuild)' == 'true'">
+    <MSBuild Projects="$(RepoRoot)src\Workloads\Manifests\manifest-packages.csproj"
+             Targets="Pack"
+             RemoveProperties="IsGraphBuild" />
+  </Target>
+
   <Target Name="BuildWorkloadMsis"
           Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' != 'true'">
     <ItemGroup>
