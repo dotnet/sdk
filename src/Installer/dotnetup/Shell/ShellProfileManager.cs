@@ -94,7 +94,7 @@ public class ShellProfileManager
         var entryLines = WrapEntryWithMarkers(entry).Split('\n', StringSplitOptions.None)
             .Select(l => l.TrimEnd('\r'))
             .ToArray();
-        var existingBlocks = FindManagedBlocks(fileState.Lines);
+        var existingBlocks = FindManagedBlocks(fileState.Lines, profilePath);
 
         if (existingBlocks.Count > 0)
         {
@@ -138,7 +138,7 @@ public class ShellProfileManager
         }
 
         var fileState = ReadProfileFile(profilePath);
-        var existingBlocks = FindManagedBlocks(fileState.Lines);
+        var existingBlocks = FindManagedBlocks(fileState.Lines, profilePath);
 
         if (existingBlocks.Count == 0)
         {
@@ -268,7 +268,7 @@ public class ShellProfileManager
     private static string WrapEntryWithMarkers(string entry) =>
         $"{BeginMarkerComment}\n{entry}\n{EndMarkerComment}";
 
-    private static List<(int Start, int EndExclusive)> FindManagedBlocks(List<string> lines)
+    private static List<(int Start, int EndExclusive)> FindManagedBlocks(List<string> lines, string profilePath)
     {
         var blocks = new List<(int Start, int EndExclusive)>();
 
@@ -283,7 +283,14 @@ public class ShellProfileManager
                     endIndex++;
                 }
 
-                blocks.Add((i, endIndex < lines.Count ? endIndex + 1 : lines.Count));
+                if (endIndex >= lines.Count)
+                {
+                    throw new DotnetInstallException(
+                        DotnetInstallErrorCode.UserConfigurationCorrupted,
+                        $"The shell profile '{profilePath}' contains a malformed dotnetup block: '{BeginMarkerComment}' does not have a matching '{EndMarkerComment}'. Remove or repair the block manually and try again.");
+                }
+
+                blocks.Add((i, endIndex + 1));
                 i = endIndex;
             }
         }

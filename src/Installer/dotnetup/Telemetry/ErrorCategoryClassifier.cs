@@ -44,6 +44,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.LocalManifestError => ErrorCategory.Product,
             DotnetInstallErrorCode.LocalManifestCorrupted => ErrorCategory.Product,
             DotnetInstallErrorCode.LocalManifestUserCorrupted => ErrorCategory.User,
+            DotnetInstallErrorCode.UserConfigurationCorrupted => ErrorCategory.User,
             DotnetInstallErrorCode.InstallPathIsFile => ErrorCategory.User,
             DotnetInstallErrorCode.AdminPathBlocked => ErrorCategory.User,
             DotnetInstallErrorCode.ContextResolutionFailed => ErrorCategory.User,

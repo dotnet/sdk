@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using Microsoft.Dotnet.Installation;
 using System.Text;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -221,27 +222,47 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
-    public void RemoveProfileEntries_RemovesManagedBlockWhenEndMarkerIsMissing()
+    public void RemoveProfileEntries_ThrowsWhenEndMarkerIsMissing()
     {
         var profilePath = Path.Combine(_tempDir, "missing-end.sh");
-        File.WriteAllText(
-            profilePath,
+        var originalContent =
             $"""
             # existing config
             {ShellProfileManager.BeginMarkerComment}
             eval "$('/old/dotnetup' print-env-script --shell test)"
             export TEMP_VAR=1
-            """);
+            """;
+        File.WriteAllText(profilePath, originalContent);
         var provider = new TestShellProvider(_tempDir, "missing-end.sh");
 
-        var modified = ShellProfileManager.RemoveProfileEntries(provider);
+        Action act = () => ShellProfileManager.RemoveProfileEntries(provider);
 
-        modified.Should().HaveCount(1);
-        var content = File.ReadAllText(profilePath);
-        content.Should().Contain("# existing config");
-        content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
-        content.Should().NotContain(ShellProfileManager.EndMarkerComment);
-        content.Should().NotContain("print-env-script");
+        act.Should().Throw<DotnetInstallException>()
+            .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.UserConfigurationCorrupted)
+            .WithMessage("*malformed dotnetup block*");
+        File.ReadAllText(profilePath).Should().Be(originalContent.ReplaceLineEndings(Environment.NewLine));
+    }
+
+    [Fact]
+    public void AddProfileEntries_ThrowsWhenEndMarkerIsMissing()
+    {
+        var profilePath = Path.Combine(_tempDir, "missing-end-add.sh");
+        var originalContent =
+            $"""
+            # existing config
+            {ShellProfileManager.BeginMarkerComment}
+            eval "$('/old/dotnetup' print-env-script --shell test)"
+            export TEMP_VAR=1
+            """;
+        File.WriteAllText(profilePath, originalContent);
+        var provider = new TestShellProvider(_tempDir, "missing-end-add.sh");
+
+        Action act = () => ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        act.Should().Throw<DotnetInstallException>()
+            .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.UserConfigurationCorrupted)
+            .WithMessage("*malformed dotnetup block*");
+        File.ReadAllText(profilePath).Should().Be(originalContent.ReplaceLineEndings(Environment.NewLine));
     }
 
     [Fact]
