@@ -41,6 +41,7 @@ public class ShellProfileManagerTests : IDisposable
         content.Should().Contain(ShellProfileManager.BeginMarkerComment);
         content.Should().Contain(ShellProfileManager.EndMarkerComment);
         content.Should().Contain("print-env-script");
+        AssertUsesOnlyCurrentPlatformLineEndings(content);
     }
 
     [Fact]
@@ -593,5 +594,17 @@ public class ShellProfileManagerTests : IDisposable
         content.Should().Contain("\n");
         content.Should().NotContain("\r\n");
         content.Should().NotContain("\r");
+    }
+
+    private static void AssertUsesOnlyCurrentPlatformLineEndings(string content)
+    {
+        if (Environment.NewLine == "\r\n")
+        {
+            AssertUsesOnlyCrLfLineEndings(content);
+        }
+        else
+        {
+            AssertUsesOnlyLfLineEndings(content);
+        }
     }
 }

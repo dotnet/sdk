@@ -22,7 +22,7 @@ public class ShellProfileManager
     /// <summary>
     /// Ensures the correct dotnetup profile entry is present in all profile files for the given shell provider.
     /// If an entry already exists, it is replaced in-place. If no entry exists, one is appended.
-    /// Existing files are updated via a write-and-rename flow to avoid partially written profiles.
+    /// Existing files are updated via a write-and-replace flow to avoid partially written profiles.
     /// </summary>
     /// <param name="provider">The shell provider to use.</param>
     /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
@@ -85,15 +85,18 @@ public class ShellProfileManager
 
         if (!File.Exists(profilePath))
         {
-            // New file — just write the managed block.
-            File.WriteAllText(profilePath, WrapEntryWithMarkers(entry) + Environment.NewLine, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            // New file — write the managed block using a consistent newline style.
+            var newFileState = new ProfileFileState(
+                [.. GetWrappedEntryLines(entry)],
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                Environment.NewLine,
+                EndsWithTrailingNewLine: true);
+            WriteProfileFile(profilePath, newFileState);
             return true;
         }
 
         var fileState = ReadProfileFile(profilePath);
-        var entryLines = WrapEntryWithMarkers(entry).Split('\n', StringSplitOptions.None)
-            .Select(l => l.TrimEnd('\r'))
-            .ToArray();
+        var entryLines = GetWrappedEntryLines(entry);
         var existingBlocks = FindManagedBlocks(fileState.Lines, profilePath);
 
         if (existingBlocks.Count > 0)
@@ -199,74 +202,54 @@ public class ShellProfileManager
             content += fileState.NewLine;
         }
 
-        if (!File.Exists(profilePath))
-        {
-            File.WriteAllText(profilePath, content, fileState.Encoding);
-            return;
-        }
-
         var directory = Path.GetDirectoryName(profilePath)
             ?? throw new InvalidOperationException($"Unable to determine the directory for '{profilePath}'.");
+        Directory.CreateDirectory(directory);
         var tempPath = Path.Combine(directory, $"{Path.GetFileName(profilePath)}.{Path.GetRandomFileName()}.tmp");
         var backupPath = profilePath + BackupSuffix;
 
-        File.WriteAllText(tempPath, content, fileState.Encoding);
-
-        if (File.Exists(backupPath))
-        {
-            File.Delete(backupPath);
-        }
-
         try
         {
-            File.Move(profilePath, backupPath);
+            File.WriteAllText(tempPath, content, fileState.Encoding);
 
-            try
+            if (File.Exists(profilePath))
+            {
+                TryDeleteFile(backupPath);
+                File.Replace(tempPath, profilePath, backupPath, ignoreMetadataErrors: true);
+                TryDeleteFile(backupPath);
+            }
+            else
             {
                 File.Move(tempPath, profilePath);
-            }
-            catch (IOException)
-            {
-                RestoreOriginalFile(profilePath, backupPath, tempPath);
-                throw;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                RestoreOriginalFile(profilePath, backupPath, tempPath);
-                throw;
             }
         }
         finally
         {
-            if (File.Exists(tempPath))
-            {
-                File.Delete(tempPath);
-            }
+            TryDeleteFile(tempPath);
+            TryDeleteFile(backupPath);
         }
-
-        File.Delete(backupPath);
     }
 
-    private static void RestoreOriginalFile(string profilePath, string backupPath, string tempPath)
+    private static void TryDeleteFile(string path)
     {
-        if (File.Exists(profilePath))
+        try
         {
-            File.Delete(profilePath);
+            File.Delete(path);
         }
-
-        if (File.Exists(backupPath))
+        catch (FileNotFoundException)
         {
-            File.Move(backupPath, profilePath);
         }
-
-        if (File.Exists(tempPath))
+        catch (DirectoryNotFoundException)
         {
-            File.Delete(tempPath);
         }
     }
 
-    private static string WrapEntryWithMarkers(string entry) =>
-        $"{BeginMarkerComment}\n{entry}\n{EndMarkerComment}";
+    private static string[] GetWrappedEntryLines(string entry) =>
+    [
+        BeginMarkerComment,
+        .. entry.ReplaceLineEndings("\n").Split('\n', StringSplitOptions.None),
+        EndMarkerComment,
+    ];
 
     private static List<(int Start, int EndExclusive)> FindManagedBlocks(List<string> lines, string profilePath)
     {
