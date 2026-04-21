@@ -8,10 +8,33 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
+public sealed class RunFileTestFixture(IMessageSink sink) : IAsyncLifetime
+{
+    public ValueTask InitializeAsync()
+    {
+        RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
+
+        // Ensure a simple app runs fully with MSBuild before running other csc-only tests
+        // so we have packages like ILLink.Tasks restored and csc-only optimization can kick in.
+        new DotnetCommand(new SharedTestOutputHelper(sink), "run", "-")
+            .WithStandardInput("""
+                Console.WriteLine("Hello");
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
+
+        return default;
+    }
+
+    public ValueTask DisposeAsync() => default;
+}
+
+public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), IClassFixture<RunFileTestFixture>
 {
     internal static string s_includeExcludeDefaultKnownExtensions
         => field ??= string.Join(", ", CSharpDirective.IncludeOrExclude.DefaultMapping.Select(static e => e.Extension));
@@ -140,7 +163,7 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
     /// is created under this directory, and NuGet walks up from the project location to
     /// find config files.
     /// </summary>
-    protected static void CopyNuGetConfigToRunfileDirectory()
+    internal static void CopyNuGetConfigToRunfileDirectory()
     {
         var sourceNuGetConfig = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config");
         var runfileDir = VirtualProjectBuilder.GetTempSubdirectory();
@@ -178,7 +201,9 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
         };
 
         var command = new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(workDir ?? testInstance.Path);
+            .WithWorkingDirectory(workDir ?? testInstance.Path)
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.VerboseToStdErr, bool.TrueString);
 
         if (customizeCommand != null)
         {
