@@ -1,28 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
-using Microsoft.DotNet.Tools.Bootstrapper.Tests;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public sealed class DefaultInstallCommandTests : IDisposable
 {
     private readonly string _tempHome;
-    private readonly string? _originalHome;
+    private readonly string _tempXdgDataHome;
 
     public DefaultInstallCommandTests()
     {
         _tempHome = Path.Combine(Path.GetTempPath(), "dotnetup-defaultinstall-tests", Guid.NewGuid().ToString("N"));
+        _tempXdgDataHome = Path.Combine(_tempHome, ".local", "share");
         Directory.CreateDirectory(_tempHome);
-        _originalHome = Environment.GetEnvironmentVariable("HOME");
     }
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable("HOME", _originalHome);
-
         try
         {
             Directory.Delete(_tempHome, recursive: true);
@@ -41,15 +37,17 @@ public sealed class DefaultInstallCommandTests : IDisposable
             return;
         }
 
-        Environment.SetEnvironmentVariable("HOME", _tempHome);
+        var (exitCode, output) = DotnetupTestUtilities.RunDotnetupProcess(
+            ["defaultinstall", "user", "--shell", "pwsh"],
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory,
+            environmentVariables: new Dictionary<string, string>
+            {
+                ["HOME"] = _tempHome,
+                ["XDG_DATA_HOME"] = _tempXdgDataHome,
+            });
 
-        string defaultInstallPath = Path.Combine(_tempHome, "dotnet-managed");
-        var parseResult = Parser.Parse(["defaultinstall", "user", "--shell", "pwsh"]);
-        var environmentManager = new MockDotnetInstallManager(defaultInstallPath: defaultInstallPath);
-
-        var exitCode = new DefaultInstallCommand(parseResult, environmentManager).Execute();
-
-        exitCode.Should().Be(0);
+        exitCode.Should().Be(0, output);
 
         string profilePath = Path.Combine(_tempHome, ".config", "powershell", "Microsoft.PowerShell_profile.ps1");
         File.Exists(profilePath).Should().BeTrue();
