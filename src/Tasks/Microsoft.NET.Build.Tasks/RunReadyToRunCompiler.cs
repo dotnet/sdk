@@ -363,8 +363,8 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            // Args that are only valid for full composite builds (e.g. --strip-il-bodies),
-            // never for per-assembly partial R2R compilations.
+            // Arguments that are only valid for full composite builds (e.g. --strip-il-bodies).
+            // These arguments will not be applied to any assemblies that have been excluded from the composite image.
             if (_createCompositeImage && !_partialCompile
                 && !string.IsNullOrEmpty(Crossgen2CompositeExtraCommandLineArgs))
             {
