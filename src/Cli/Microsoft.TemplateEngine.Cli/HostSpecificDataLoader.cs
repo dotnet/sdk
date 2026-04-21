@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -14,6 +15,12 @@ namespace Microsoft.TemplateEngine.Cli
     public class HostSpecificDataLoader : IHostSpecificDataLoader
     {
         private readonly IEngineEnvironmentSettings _engineEnvironment;
+
+        private static readonly JsonDocumentOptions s_jsonDocumentOptions = new()
+        {
+            CommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
+        };
 
         private readonly ConcurrentDictionary<ITemplateInfo, HostSpecificTemplateData> _cache =
             new();
@@ -38,7 +45,7 @@ namespace Microsoft.TemplateEngine.Cli
                 {
                     if (!string.IsNullOrWhiteSpace(hostData))
                     {
-                        JsonObject? jObject = JsonNode.Parse(hostData)?.AsObject();
+                        JsonObject? jObject = JsonNode.Parse(hostData, nodeOptions: null, s_jsonDocumentOptions)?.AsObject();
                         return new HostSpecificTemplateData(jObject);
                     }
                 }
@@ -62,7 +69,7 @@ namespace Microsoft.TemplateEngine.Cli
                         JsonObject? jsonData;
                         using (Stream stream = file.OpenRead())
                         {
-                            jsonData = JsonNode.Parse(stream)?.AsObject();
+                            jsonData = JsonNode.Parse(stream, nodeOptions: null, s_jsonDocumentOptions)?.AsObject();
                         }
 
                         return new HostSpecificTemplateData(jsonData);

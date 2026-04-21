@@ -28,7 +28,9 @@ namespace Microsoft.TemplateEngine.Cli
             JsonNode? usagesNode = GetPropertyCaseInsensitive(jObject, nameof(UsageExamples));
             if (usagesNode is JsonArray usagesArray)
             {
-                UsageExamples = new List<string>(usagesArray.Select(v => v?.GetValue<string>()).Where(v => v != null).OfType<string>());
+                UsageExamples = new List<string>(usagesArray
+                    .Where(v => v != null && v.GetValueKind() == JsonValueKind.String)
+                    .Select(v => v!.GetValue<string>()));
             }
 
             JsonNode? symbolsNode = GetPropertyCaseInsensitive(jObject, nameof(SymbolInfo));

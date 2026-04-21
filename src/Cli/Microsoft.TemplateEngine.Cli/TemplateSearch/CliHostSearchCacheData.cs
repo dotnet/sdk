@@ -20,7 +20,8 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             }
             try
             {
-                if (_hostDataPropertyNames.Any(name => cacheObject.ContainsKey(name) || cacheObject.Any(p => string.Equals(p.Key, name, StringComparison.OrdinalIgnoreCase))))
+                var keys = new HashSet<string>(cacheObject.Select(p => p.Key), StringComparer.OrdinalIgnoreCase);
+                if (_hostDataPropertyNames.Any(keys.Contains))
                 {
                     return new HostSpecificTemplateData(cacheObject);
                 }

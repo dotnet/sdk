@@ -171,9 +171,20 @@ namespace Microsoft.TemplateEngine.Cli.Alias
         {
             Dictionary<string, IReadOnlyList<string>> result = new(comparer ?? StringComparer.Ordinal);
 
-            if (propertyName == null || !token.TryGetPropertyValue(propertyName, out JsonNode? element))
+            if (propertyName == null)
             {
                 return result;
+            }
+
+            // Case-insensitive property lookup for compatibility with Newtonsoft.Json behavior
+            JsonNode? element = null;
+            foreach (var prop in token)
+            {
+                if (string.Equals(prop.Key, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    element = prop.Value;
+                    break;
+                }
             }
 
             if (element is not JsonObject jObj)
