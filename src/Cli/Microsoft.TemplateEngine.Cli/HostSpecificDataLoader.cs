@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Cli
 {
@@ -39,7 +38,7 @@ namespace Microsoft.TemplateEngine.Cli
                 {
                     if (!string.IsNullOrWhiteSpace(hostData))
                     {
-                        JObject jObject = JObject.Parse(hostData);
+                        JsonObject? jObject = JsonNode.Parse(hostData)?.AsObject();
                         return new HostSpecificTemplateData(jObject);
                     }
                 }
@@ -60,12 +59,10 @@ namespace Microsoft.TemplateEngine.Cli
                     file = mountPoint.FileInfo(templateInfo.HostConfigPlace);
                     if (file != null && file.Exists)
                     {
-                        JObject jsonData;
+                        JsonObject? jsonData;
                         using (Stream stream = file.OpenRead())
-                        using (TextReader textReader = new StreamReader(stream, true))
-                        using (JsonReader jsonReader = new JsonTextReader(textReader))
                         {
-                            jsonData = JObject.Load(jsonReader);
+                            jsonData = JsonNode.Parse(stream)?.AsObject();
                         }
 
                         return new HostSpecificTemplateData(jsonData);
