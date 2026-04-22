@@ -25,5 +25,11 @@
   "symbols/RollForward/choices/latestMajor/displayName": "최신 주",
   "symbols/RollForward/choices/disable/description": "롤포워드하지 않습니다. 정확히 일치해야 합니다.",
   "symbols/RollForward/choices/disable/displayName": "롤포워드 비활성화",
+  "symbols/TestRunner/description": "사용할 Test Runner입니다.",
+  "symbols/TestRunner/displayName": "Test Runner",
+  "symbols/TestRunner/choices/VSTest/description": "VSTest를 Test Runner로 사용",
+  "symbols/TestRunner/choices/VSTest/displayName": "VSTest",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Microsoft.Testing.Platform을 Test Runner로 사용",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/displayName": "Microsoft.Testing.Platform",
   "postActions/open-file/description": "편집기에서 global.json을 엽니다"
 }

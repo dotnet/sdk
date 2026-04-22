@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Tasks
 {
     static partial class FileUtilities
     {
-        private static Version GetAssemblyVersion(string sourcePath)
+        private static Version? GetAssemblyVersion(string? sourcePath)
         {
             try
             {

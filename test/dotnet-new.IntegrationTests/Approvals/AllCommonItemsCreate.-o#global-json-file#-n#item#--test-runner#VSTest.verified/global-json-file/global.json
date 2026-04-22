@@ -1,0 +1,8 @@
+﻿{
+  "sdk": {
+    "version": "%CURRENT-VER%"
+  },
+  "test": {
+    "runner": "VSTest"
+  }
+}

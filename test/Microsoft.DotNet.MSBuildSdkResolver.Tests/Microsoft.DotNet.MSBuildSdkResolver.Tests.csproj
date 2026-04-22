@@ -1,4 +1,5 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project>
+
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
@@ -7,9 +8,11 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>net472;$(ToolsetTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(ToolsetTargetFramework)</TargetFrameworks>
-    <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <!-- For product build, the .NET Framework TFM only builds in the second build pass as it depends on assets from other
+         verticals that are built in the first build pass.
+         Disabling this project as references are not building in this case. -->
+    <ExcludeFromBuild Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">true</ExcludeFromBuild>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <!-- By default test projects don't append TargetFramework to output path, but for multi-targeted tests
@@ -43,9 +46,6 @@
     <Compile Include="**\*.cs" Exclude="$(GlobalExclude)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-    <Reference Include="System.Core" />
-  </ItemGroup>
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
 </Project>

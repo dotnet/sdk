@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <DefineConstants>$(DefineConstants);BUILD_CONST_IN_PROPS</DefineConstants>
+  </PropertyGroup>
+</Project>
