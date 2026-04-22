@@ -107,7 +107,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -139,7 +139,7 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -214,7 +214,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -246,7 +246,7 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -322,7 +322,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -354,7 +354,7 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -429,7 +429,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -461,7 +461,7 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -536,7 +536,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -568,7 +568,7 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -966,7 +966,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1002,7 +1002,7 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

@@ -37,7 +37,7 @@ namespace Blah
                 {
                     GetCSharpResultAt(12, 20, "object BinaryFormatter.UnsafeDeserialize(Stream serializationStream, HeaderHandler handler)"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Blah
                 {
                     GetCSharpResultAt(12, 20, "object BinaryFormatter.UnsafeDeserializeMethodResponse(Stream serializationStream, HeaderHandler handler, IMethodCallMessage methodCallMessage)"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace Blah
                 {
                     GetCSharpResultAt(12, 20, "object BinaryFormatter.Deserialize(Stream serializationStream, HeaderHandler handler)"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace Blah
                 {
                     GetCSharpResultAt(12, 20, "object BinaryFormatter.DeserializeMethodResponse(Stream serializationStream, HeaderHandler handler, IMethodCallMessage methodCallMessage)"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
