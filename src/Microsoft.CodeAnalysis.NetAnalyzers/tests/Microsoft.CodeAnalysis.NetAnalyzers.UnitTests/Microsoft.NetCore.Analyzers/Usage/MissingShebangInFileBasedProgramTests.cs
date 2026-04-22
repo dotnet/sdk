@@ -32,7 +32,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     Sources = { ("Test0.cs", """class Program { static void Main() { } }""") },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                                 [new KeyValuePair<string, string>("FileBasedProgram", "true")])));
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -137,7 +137,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                                 [new KeyValuePair<string, string>("FileBasedProgram", "true")])));
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", "is_global = true\r\nbuild_property.EntryPointFilePath = ") },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -174,7 +174,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -197,7 +197,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -221,7 +221,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -260,7 +260,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                                 [new KeyValuePair<string, string>("FileBasedProgram", "true")])));
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }
