@@ -227,7 +227,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void Use(int count) {}
                 }
                 """
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -248,7 +248,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         }
                     }
                     """
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

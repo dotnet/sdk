@@ -16,15 +16,15 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string nuGetOrgFeed = "https://api.nuget.org/v3/index.json";
             var repository = Repository.Factory.GetCoreV3(nuGetOrgFeed);
-            ServiceIndexResourceV3 indexResource = repository.GetResource<ServiceIndexResourceV3>();
+            ServiceIndexResourceV3 indexResource = repository.GetResource<ServiceIndexResourceV3>(TestContext.Current.CancellationToken);
             IReadOnlyList<ServiceIndexEntry> searchResources = indexResource.GetServiceEntries("SearchQueryService");
             string queryString = $"{searchResources[0].Uri}?q=Microsoft.DotNet.Common.ProjectTemplates.5.0&skip=0&take=10&prerelease=true&semVerLevel=2.0.0";
             Uri queryUri = new Uri(queryString);
             using HttpClient client = new HttpClient();
-            using HttpResponseMessage response = await client.GetAsync(queryUri, CancellationToken.None);
+            using HttpResponseMessage response = await client.GetAsync(queryUri, TestContext.Current.CancellationToken);
             if (response.IsSuccessStatusCode)
             {
-                string responseText = await response.Content.ReadAsStringAsync(CancellationToken.None);
+                string responseText = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
                 NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JsonNode.Parse(responseText)!.AsObject());
                 Assert.Equal(1, resultsForPage.TotalHits);
