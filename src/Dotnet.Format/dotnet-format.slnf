@@ -1,0 +1,9 @@
+{
+  "solution": {
+    "path": "..\\..\\sdk.slnx",
+    "projects": [
+      "src\\Dotnet.Format\\dotnet-format\\dotnet-format.csproj",
+      "test\\dotnet-format.UnitTests\\dotnet-format.UnitTests.csproj"
+    ]
+  }
+}

@@ -16,7 +16,7 @@ namespace Microsoft.NET.TestFramework
 
         public TestAssetsManager(ITestOutputHelper log)
         {
-            var testAssetsDirectory = TestContext.Current.TestAssetsDirectory;
+            var testAssetsDirectory = SdkTestContext.Current.TestAssetsDirectory;
             Log = log;
 
             if (!Directory.Exists(testAssetsDirectory))
@@ -46,8 +46,19 @@ namespace Microsoft.NET.TestFramework
             testDestinationDirectory ??= GetTestDestinationDirectoryPath(testProjectName, callingMethod + "_" + fileName, identifier, allowCopyIfPresent);
             TestDestinationDirectories.Add(testDestinationDirectory);
 
-            var testAsset = new TestAsset(testProjectDirectory, testDestinationDirectory, TestContext.Current.SdkVersion, Log);
+            var testAsset = new TestAsset(testProjectDirectory, testDestinationDirectory, SdkTestContext.Current.SdkVersion, Log);
             return testAsset;
+        }
+
+        public TestAsset CreateTestAsset(
+            string name,
+            [CallerMemberName] string callingMethod = "",
+            string? identifier = "")
+        {
+            var testDestinationDirectory = GetTestDestinationDirectoryPath(name, callingMethod, identifier);
+            TestDestinationDirectories.Add(testDestinationDirectory);
+
+            return new TestAsset(testDestinationDirectory, SdkTestContext.Current.SdkVersion, Log);
         }
 
         /// <summary>
@@ -125,7 +136,7 @@ namespace Microsoft.NET.TestFramework
             IEnumerable<TestProject> testProjects,
             string testDestinationDirectory)
         {
-            var testAsset = new TestAsset(testDestinationDirectory, TestContext.Current.SdkVersion, Log);
+            var testAsset = new TestAsset(testDestinationDirectory, SdkTestContext.Current.SdkVersion, Log);
 
             Stack<TestProject> projectStack = new(testProjects);
             HashSet<TestProject> createdProjects = new();
@@ -151,7 +162,7 @@ namespace Microsoft.NET.TestFramework
         public TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, string? identifier = null, string? baseDirectory = null)
         {
             string dir = GetTestDestinationDirectoryPath(testName, testName, identifier ?? string.Empty, baseDirectory: baseDirectory);
-            return new TestDirectory(dir, TestContext.Current.SdkVersion);
+            return new TestDirectory(dir, SdkTestContext.Current.SdkVersion);
         }
 
         public string GetAndValidateTestProjectDirectory(string testProjectName, string testAssetSubdirectory = "")
@@ -177,7 +188,7 @@ namespace Microsoft.NET.TestFramework
             bool allowCopyIfPresent = false,
             string? baseDirectory = null)
         {
-            baseDirectory ??= TestContext.Current.TestExecutionDirectory;
+            baseDirectory ??= SdkTestContext.Current.TestExecutionDirectory;
             var directoryName = new StringBuilder(callingMethodAndFileName).Append(identifier);
 
             if (testProjectName != callingMethodAndFileName)

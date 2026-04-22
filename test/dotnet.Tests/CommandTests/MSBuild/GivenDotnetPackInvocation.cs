@@ -8,8 +8,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetPackInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "-restore", "--target:Pack"];
-        private static readonly string[] ExpectedNoBuildPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "--target:Pack"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "-restore", "--target:Pack"];
+        private static readonly string[] ExpectedNoBuildPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "--target:Pack"];
         private readonly string[] ExpectedProperties = ["--property:_IsPacking=true", "--property:NuGetInteractive=false"];
 
         private static readonly string WorkingDirectory =
