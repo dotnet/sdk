@@ -153,8 +153,7 @@ The command generates shell-specific scripts that:
 
 **Bash/Zsh Example:**
 ```bash
-#!/usr/bin/env bash
-# This script configures the environment for .NET installed at /home/user/.local/share/dotnet
+# This bash script configures the environment for .NET installed at /home/user/.local/share/dotnet
 
 export DOTNET_ROOT='/home/user/.local/share/dotnet'
 export PATH='/home/user/.local/share/dotnetup':'/home/user/.local/share/dotnet':$PATH
@@ -164,7 +163,7 @@ hash -d dotnetup 2>/dev/null
 
 **PowerShell Example:**
 ```powershell
-# This script configures the environment for .NET installed at /home/user/.local/share/dotnet
+# This PowerShell script configures the environment for .NET installed at /home/user/.local/share/dotnet
 
 $env:DOTNET_ROOT = '/home/user/.local/share/dotnet'
 $env:PATH = '/home/user/.local/share/dotnetup' + [IO.Path]::PathSeparator + '/home/user/.local/share/dotnet' + [IO.Path]::PathSeparator + $env:PATH

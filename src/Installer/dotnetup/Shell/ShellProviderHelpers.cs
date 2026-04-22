@@ -7,14 +7,16 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 internal static class ShellProviderHelpers
 {
-    private const string DotnetupOnlyComment = "# This script adds dotnetup to your PATH";
-
-    internal static string GetDotnetupOnlyComment() => DotnetupOnlyComment;
+    internal static string GetDotnetupOnlyComment(string shellName)
+        => $"# This {GetShellDisplayName(shellName)} script adds dotnetup to your PATH";
 
     // This text is emitted as a shell comment for the supported providers in ShellDetection.
     // Keep it on one line so an unusual install path can't break out of the comment block.
-    internal static string GetEnvironmentConfigurationComment(string dotnetInstallPath)
-        => $"# This script configures the environment for .NET installed at {dotnetInstallPath.ReplaceLineEndings(" ")}";
+    internal static string GetEnvironmentConfigurationComment(string shellName, string dotnetInstallPath)
+        => $"# This {GetShellDisplayName(shellName)} script configures the environment for .NET installed at {dotnetInstallPath.ReplaceLineEndings(" ")}";
+
+    private static string GetShellDisplayName(string shellName)
+        => shellName.Equals("pwsh", StringComparison.OrdinalIgnoreCase) ? "PowerShell" : shellName;
 
     internal static string EscapePosixPath(string path)
         => path.Replace("'", "'\\''", StringComparison.Ordinal);

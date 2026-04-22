@@ -22,8 +22,7 @@ public class BashEnvShellProvider : IEnvShellProvider
         {
             return
                 $"""
-                #!/usr/bin/env bash
-                {ShellProviderHelpers.GetDotnetupOnlyComment()}
+                {ShellProviderHelpers.GetDotnetupOnlyComment(ArgumentName)}
                 {pathExport}
                 hash -d dotnet 2>/dev/null
                 hash -d dotnetup 2>/dev/null
@@ -32,8 +31,7 @@ public class BashEnvShellProvider : IEnvShellProvider
 
         return
             $"""
-            #!/usr/bin/env bash
-            {ShellProviderHelpers.GetEnvironmentConfigurationComment(dotnetInstallPath)}
+            {ShellProviderHelpers.GetEnvironmentConfigurationComment(ArgumentName, dotnetInstallPath)}
 
             export DOTNET_ROOT='{escapedPath}'
             {pathExport}

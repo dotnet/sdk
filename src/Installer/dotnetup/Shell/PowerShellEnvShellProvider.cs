@@ -22,14 +22,14 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
         {
             return
                 $"""
-                {ShellProviderHelpers.GetDotnetupOnlyComment()}
+                {ShellProviderHelpers.GetDotnetupOnlyComment(ArgumentName)}
                 {pathExport}
                 """;
         }
 
         return
             $"""
-            {ShellProviderHelpers.GetEnvironmentConfigurationComment(dotnetInstallPath)}
+            {ShellProviderHelpers.GetEnvironmentConfigurationComment(ArgumentName, dotnetInstallPath)}
 
             $env:DOTNET_ROOT = '{escapedPath}'
             {pathExport}

@@ -22,8 +22,7 @@ public class ZshEnvShellProvider : IEnvShellProvider
         {
             return
                 $"""
-                #!/usr/bin/env zsh
-                {ShellProviderHelpers.GetDotnetupOnlyComment()}
+                {ShellProviderHelpers.GetDotnetupOnlyComment(ArgumentName)}
                 {pathExport}
                 rehash 2>/dev/null
                 """;
@@ -31,8 +30,7 @@ public class ZshEnvShellProvider : IEnvShellProvider
 
         return
             $"""
-            #!/usr/bin/env zsh
-            {ShellProviderHelpers.GetEnvironmentConfigurationComment(dotnetInstallPath)}
+            {ShellProviderHelpers.GetEnvironmentConfigurationComment(ArgumentName, dotnetInstallPath)}
 
             export DOTNET_ROOT='{escapedPath}'
             {pathExport}

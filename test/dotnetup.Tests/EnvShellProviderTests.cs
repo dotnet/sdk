@@ -22,7 +22,8 @@ public class EnvShellProviderTests
 
         // Assert
         script.Should().NotBeNullOrEmpty();
-        script.Should().Contain("#!/usr/bin/env bash");
+        script.Should().NotContain("#!/usr/bin/env");
+        script.Should().Contain("# This bash script configures the environment for .NET installed at /test/dotnet/path");
         script.Should().Contain($"export DOTNET_ROOT='{installPath}'");
         script.Should().Contain($"export PATH='{installPath}':$PATH");
     }
@@ -43,6 +44,7 @@ public class EnvShellProviderTests
         var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin", includeDotnet: false);
 
         script.Should().NotContain("DOTNET_ROOT");
+        script.Should().Contain("# This bash script adds dotnetup to your PATH");
         script.Should().Contain("export PATH='/usr/local/bin':$PATH");
         script.Should().NotContain("'/test/dotnet'");
     }
@@ -55,7 +57,7 @@ public class EnvShellProviderTests
 
         var script = provider.GenerateEnvScript(installPath);
 
-        script.Should().Contain("# This script configures the environment for .NET installed at /test/dotnet path");
+        script.Should().Contain("# This bash script configures the environment for .NET installed at /test/dotnet path");
     }
 
     [Fact]
@@ -70,7 +72,8 @@ public class EnvShellProviderTests
 
         // Assert
         script.Should().NotBeNullOrEmpty();
-        script.Should().Contain("#!/usr/bin/env zsh");
+        script.Should().NotContain("#!/usr/bin/env");
+        script.Should().Contain("# This zsh script configures the environment for .NET installed at /test/dotnet/path");
         script.Should().Contain($"export DOTNET_ROOT='{installPath}'");
         script.Should().Contain($"export PATH='{installPath}':$PATH");
     }
@@ -91,6 +94,7 @@ public class EnvShellProviderTests
         var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin", includeDotnet: false);
 
         script.Should().NotContain("DOTNET_ROOT");
+        script.Should().Contain("# This zsh script adds dotnetup to your PATH");
         script.Should().Contain("export PATH='/usr/local/bin':$PATH");
     }
 
@@ -130,6 +134,7 @@ public class EnvShellProviderTests
 
         // Assert
         script.Should().NotBeNullOrEmpty();
+        script.Should().Contain("# This PowerShell script configures the environment for .NET installed at /test/dotnet/path");
         script.Should().Contain($"$env:DOTNET_ROOT = '{installPath}'");
         script.Should().Contain($"$env:PATH = '{installPath}'");
         script.Should().Contain("[IO.Path]::PathSeparator");
@@ -151,6 +156,7 @@ public class EnvShellProviderTests
         var script = provider.GenerateEnvScript("/test/dotnet", "/usr/local/bin", includeDotnet: false);
 
         script.Should().NotContain("DOTNET_ROOT");
+        script.Should().Contain("# This PowerShell script adds dotnetup to your PATH");
         script.Should().Contain("$env:PATH = '/usr/local/bin' + [IO.Path]::PathSeparator + $env:PATH");
     }
 
