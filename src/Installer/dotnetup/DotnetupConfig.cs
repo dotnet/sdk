@@ -68,6 +68,11 @@ internal static class DotnetupConfig
         {
             Activity.Current?.SetTag(TelemetryTagNames.ConfigCorrupted, true);
             Activity.Current?.SetTag(TelemetryTagNames.ConfigCorruptedError, ex.GetType().Name);
+            DotnetupTelemetry.Instance.TrackEvent("config/corrupted", new Dictionary<string, string?>
+            {
+                [TelemetryTagNames.ConfigCorrupted] = "true",
+                [TelemetryTagNames.ConfigCorruptedError] = ex.GetType().Name
+            });
             SpectreAnsiConsole.MarkupLine(
                 $"[{DotnetupTheme.Current.Warning}]Warning:[/] The dotnetup config file at {path.EscapeMarkup()} appears to be corrupted and could not be read: {ex.Message.EscapeMarkup()}");
             return null;

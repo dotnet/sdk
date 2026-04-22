@@ -111,6 +111,12 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                 Activity.Current?.SetTag(TelemetryTagNames.HostfxrEnumerationFailed, true);
                 Activity.Current?.SetTag(TelemetryTagNames.HostfxrEnumerationError, ex.GetType().Name);
                 Activity.Current?.SetTag(TelemetryTagNames.HostfxrEnumerationPath, systemPath);
+                DotnetupTelemetry.Instance.TrackEvent("hostfxr/enumeration-failed", new Dictionary<string, string?>
+                {
+                    [TelemetryTagNames.HostfxrEnumerationFailed] = "true",
+                    [TelemetryTagNames.HostfxrEnumerationError] = ex.GetType().Name,
+                    [TelemetryTagNames.HostfxrEnumerationPath] = systemPath
+                });
                 AnsiConsole.MarkupLine(DotnetupTheme.Dim(
                     $"[{DotnetupTheme.Current.Warning}]Warning:[/] Could not enumerate installs at {systemPath.EscapeMarkup()}: {ex.Message.EscapeMarkup()}"));
             }

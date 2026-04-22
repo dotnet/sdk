@@ -195,6 +195,10 @@ internal class InstallWorkflow
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
         int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);
         Activity.Current?.SetTag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
+        DotnetupTelemetry.Instance.TrackEvent("install/complete", new Dictionary<string, string?>
+        {
+            [TelemetryTagNames.InstallResult] = $"installed:{newlyInstalled},already_installed:{alreadyInstalled}"
+        });
 
         if (batchResult.Failures.Count > 0)
         {
@@ -218,6 +222,11 @@ internal class InstallWorkflow
         {
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "system");
             Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, pathSource.ToString().ToLowerInvariant());
+            DotnetupTelemetry.Instance.TrackEvent("install/admin-path-blocked", new Dictionary<string, string?>
+            {
+                [TelemetryTagNames.InstallPathType] = "system",
+                [TelemetryTagNames.InstallPathSource] = pathSource.ToString().ToLowerInvariant()
+            });
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminPathBlocked,
                 $"The install path '{installPath}' is a system-managed .NET location. " +
@@ -283,5 +292,20 @@ internal class InstallWorkflow
                 : "default-latest";
         Activity.Current?.SetTag(TelemetryTagNames.DotnetRequestSource, requestSource);
         Activity.Current?.SetTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(resolvedChannel));
+
+        // Emit install telemetry as an event for data-x-platform (traces table).
+        DotnetupTelemetry.Instance.TrackEvent("install/resolved", new Dictionary<string, string?>
+        {
+            [TelemetryTagNames.InstallComponent] = component.ToString(),
+            [TelemetryTagNames.InstallRequestedVersion] = VersionSanitizer.Sanitize(requestedVersionOrChannel),
+            [TelemetryTagNames.InstallPathExplicit] = (explicitInstallPath is not null).ToString(),
+            [TelemetryTagNames.InstallHasGlobalJson] = (globalJson?.GlobalJsonPath is not null).ToString(),
+            [TelemetryTagNames.InstallExistingInstallType] = currentInstallRoot?.InstallType.ToString() ?? "none",
+            [TelemetryTagNames.InstallPathType] = InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource),
+            [TelemetryTagNames.InstallPathSource] = pathResolution.PathSource.ToString().ToLowerInvariant(),
+            [TelemetryTagNames.InstallResolvedVersion] = resolved.ResolvedVersion.ToString(),
+            [TelemetryTagNames.DotnetRequestSource] = requestSource,
+            [TelemetryTagNames.DotnetRequested] = VersionSanitizer.Sanitize(resolvedChannel)
+        });
     }
 }

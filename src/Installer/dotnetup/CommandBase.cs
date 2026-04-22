@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -17,6 +18,7 @@ public abstract class CommandBase
 {
     protected ParseResult ParseResult { get; }
     private Activity? _commandActivity;
+    private readonly Dictionary<string, string?> _eventProperties = new(StringComparer.OrdinalIgnoreCase);
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult)
@@ -33,6 +35,7 @@ public abstract class CommandBase
     {
         var commandName = GetCommandName();
         _commandActivity = DotnetupTelemetry.Instance.StartCommand(commandName);
+        _eventProperties[TelemetryTagNames.CommandName] = commandName;
         _exitCode = 1;
 
         try
@@ -44,6 +47,7 @@ public abstract class CommandBase
         {
             // Known installation errors - print a clean user-friendly message
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
+            AddErrorEventProperties(ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
             return 1;
         }
@@ -51,6 +55,7 @@ public abstract class CommandBase
         {
             // Unexpected errors - still record telemetry so error_type is populated
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
+            AddErrorEventProperties(ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
 #if DEBUG
             Console.Error.WriteLine(ex.StackTrace);
@@ -61,6 +66,15 @@ public abstract class CommandBase
         {
             _commandActivity?.SetTag(TelemetryTagNames.ExitCode, _exitCode);
             _commandActivity?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+
+            // Emit command event for data-x-platform (lands in traces table).
+            _eventProperties[TelemetryTagNames.ExitCode] = _exitCode.ToString(CultureInfo.InvariantCulture);
+            _eventProperties[TelemetryTagNames.Caller] = "dotnetup";
+            _eventProperties["command.status"] = _exitCode == 0 ? "ok" : "error";
+            _eventProperties["command.duration_ms"] = _commandActivity?.Duration.TotalMilliseconds
+                .ToString(CultureInfo.InvariantCulture);
+            DotnetupTelemetry.Instance.TrackEvent($"command/{commandName}", _eventProperties);
+
             _commandActivity?.Dispose();
         }
     }
@@ -77,13 +91,15 @@ public abstract class CommandBase
     protected abstract string GetCommandName();
 
     /// <summary>
-    /// Adds a tag to the current command activity.
+    /// Adds a tag to the current command activity and accumulates it for the
+    /// TrackEvent emission at command completion.
     /// </summary>
     /// <param name="key">The tag key.</param>
     /// <param name="value">The tag value.</param>
     protected void SetCommandTag(string key, object? value)
     {
         _commandActivity?.SetTag(key, value);
+        _eventProperties[key] = value?.ToString();
     }
 
     /// <summary>
@@ -95,6 +111,7 @@ public abstract class CommandBase
     {
         var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
         _commandActivity?.SetTag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
+        _eventProperties[TelemetryTagNames.DotnetRequestedVersion] = sanitized;
     }
 
     /// <summary>
@@ -105,10 +122,35 @@ public abstract class CommandBase
     protected void RecordRequestSource(string source, string? requestedValue)
     {
         _commandActivity?.SetTag(TelemetryTagNames.DotnetRequestSource, source);
+        _eventProperties[TelemetryTagNames.DotnetRequestSource] = source;
         if (requestedValue != null)
         {
             var sanitized = VersionSanitizer.Sanitize(requestedValue);
             _commandActivity?.SetTag(TelemetryTagNames.DotnetRequested, sanitized);
+            _eventProperties[TelemetryTagNames.DotnetRequested] = sanitized;
+        }
+    }
+
+    private void AddErrorEventProperties(Exception ex)
+    {
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
+        _eventProperties[TelemetryTagNames.ErrorType] = errorInfo.ErrorType;
+        _eventProperties[TelemetryTagNames.ErrorCategory] = errorInfo.Category.ToString().ToLowerInvariant();
+        if (errorInfo.StatusCode is { } statusCode)
+        {
+            _eventProperties[TelemetryTagNames.ErrorHttpStatus] = statusCode.ToString(CultureInfo.InvariantCulture);
+        }
+        if (errorInfo.HResult is { } hResult)
+        {
+            _eventProperties[TelemetryTagNames.ErrorHResult] = hResult.ToString(CultureInfo.InvariantCulture);
+        }
+        if (errorInfo.Details is { } details)
+        {
+            _eventProperties[TelemetryTagNames.ErrorDetails] = details;
+        }
+        if (errorInfo.StackTrace is { } stackTrace)
+        {
+            _eventProperties[TelemetryTagNames.ErrorStackTrace] = stackTrace;
         }
     }
 }

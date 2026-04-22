@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -197,6 +198,13 @@ internal class GarbageCollector
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Some subcomponents could not be deleted");
         }
+
+        DotnetupTelemetry.Instance.TrackEvent("gc/delete-orphaned-subcomponents", new Dictionary<string, string?>
+        {
+            ["gc.deleted_count"] = deleted.Count.ToString(CultureInfo.InvariantCulture),
+            ["gc.failed_count"] = failedCount.ToString(CultureInfo.InvariantCulture),
+            ["gc.status"] = failedCount > 0 ? "error" : "ok"
+        });
 
         return deleted;
     }
