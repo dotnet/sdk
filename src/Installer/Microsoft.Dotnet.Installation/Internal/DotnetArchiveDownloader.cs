@@ -188,12 +188,12 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         string destinationPath,
         IProgress<DownloadProgress>? progress = null)
     {
-        using var op = InstallationActivitySource.StartTracked("download", "download/complete");
-        op.SetTag("download.version", resolvedVersion.ToString());
+        using var op = Metrics.Track("download", "download/complete");
+        op.Tag("download.version", resolvedVersion.ToString());
 
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
 
-        op.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
+        op.Tag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
 
         if (TryServeCachedArchive(downloadUrl, expectedHash, destinationPath, progress))
         {
@@ -204,8 +204,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         VerifyFileHash(destinationPath, expectedHash);
 
         var fileInfo = new FileInfo(destinationPath);
-        op.SetTag("download.bytes", fileInfo.Length);
-        op.SetTag("download.from_cache", false);
+        op.Tag("download.bytes", fileInfo.Length);
+        op.Tag("download.from_cache", false);
 
         try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
         catch { /* Ignore errors adding to cache - it's not critical */ }
@@ -264,8 +264,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             var cachedFileSize = new FileInfo(cachedFilePath).Length;
             progress?.Report(new DownloadProgress(cachedFileSize, cachedFileSize));
 
-            Activity.Current?.SetTag("download.bytes", cachedFileSize);
-            Activity.Current?.SetTag("download.from_cache", true);
+            Metrics.Tag("download.bytes", cachedFileSize);
+            Metrics.Tag("download.from_cache", true);
             return true;
         }
         catch

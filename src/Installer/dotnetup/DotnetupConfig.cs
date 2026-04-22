@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -65,11 +66,8 @@ internal static class DotnetupConfig
         }
         catch (Exception ex)
         {
-            DotnetupTelemetry.Instance.TrackEvent("config/corrupted", new Dictionary<string, string?>
-            {
-                [TelemetryTagNames.ConfigCorrupted] = "true",
-                [TelemetryTagNames.ConfigCorruptedError] = ex.GetType().Name
-            });
+            Metrics.Tag(TelemetryTagNames.ConfigCorrupted, "true");
+            Metrics.Tag(TelemetryTagNames.ConfigCorruptedError, ex.GetType().Name);
             SpectreAnsiConsole.MarkupLine(
                 $"[{DotnetupTheme.Current.Warning}]Warning:[/] The dotnetup config file at {path.EscapeMarkup()} appears to be corrupted and could not be read: {ex.Message.EscapeMarkup()}");
             return null;

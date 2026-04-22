@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
@@ -194,10 +193,7 @@ internal class InstallWorkflow
 
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
         int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);
-        DotnetupTelemetry.Instance.TrackEvent("install/complete", new Dictionary<string, string?>
-        {
-            [TelemetryTagNames.InstallResult] = $"installed:{newlyInstalled},already_installed:{alreadyInstalled}"
-        });
+        Metrics.Tag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
 
         if (batchResult.Failures.Count > 0)
         {
@@ -219,11 +215,8 @@ internal class InstallWorkflow
         // Block system-managed install paths — dotnetup should not install there
         if (InstallPathClassifier.IsAdminInstallPath(installPath))
         {
-            DotnetupTelemetry.Instance.TrackEvent("install/admin-path-blocked", new Dictionary<string, string?>
-            {
-                [TelemetryTagNames.InstallPathType] = "system",
-                [TelemetryTagNames.InstallPathSource] = pathSource.ToString().ToLowerInvariant()
-            });
+            Metrics.Tag(TelemetryTagNames.InstallPathType, "system");
+            Metrics.Tag(TelemetryTagNames.InstallPathSource, pathSource.ToString().ToLowerInvariant());
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminPathBlocked,
                 $"The install path '{installPath}' is a system-managed .NET location. " +
@@ -274,18 +267,15 @@ internal class InstallWorkflow
                 ? "default-globaljson"
                 : "default-latest";
 
-        DotnetupTelemetry.Instance.TrackEvent("install/resolved", new Dictionary<string, string?>
-        {
-            [TelemetryTagNames.InstallComponent] = component.ToString(),
-            [TelemetryTagNames.InstallRequestedVersion] = VersionSanitizer.Sanitize(requestedVersionOrChannel),
-            [TelemetryTagNames.InstallPathExplicit] = (explicitInstallPath is not null).ToString(),
-            [TelemetryTagNames.InstallHasGlobalJson] = (globalJson?.GlobalJsonPath is not null).ToString(),
-            [TelemetryTagNames.InstallExistingInstallType] = currentInstallRoot?.InstallType.ToString() ?? "none",
-            [TelemetryTagNames.InstallPathType] = InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource),
-            [TelemetryTagNames.InstallPathSource] = pathResolution.PathSource.ToString().ToLowerInvariant(),
-            [TelemetryTagNames.InstallResolvedVersion] = resolved.ResolvedVersion.ToString(),
-            [TelemetryTagNames.DotnetRequestSource] = requestSource,
-            [TelemetryTagNames.DotnetRequested] = VersionSanitizer.Sanitize(resolvedChannel)
-        });
+        Metrics.Tag(TelemetryTagNames.InstallComponent, component.ToString());
+        Metrics.Tag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
+        Metrics.Tag(TelemetryTagNames.InstallPathExplicit, (explicitInstallPath is not null).ToString());
+        Metrics.Tag(TelemetryTagNames.InstallHasGlobalJson, (globalJson?.GlobalJsonPath is not null).ToString());
+        Metrics.Tag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot?.InstallType.ToString() ?? "none");
+        Metrics.Tag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
+        Metrics.Tag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
+        Metrics.Tag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());
+        Metrics.Tag(TelemetryTagNames.DotnetRequestSource, requestSource);
+        Metrics.Tag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(resolvedChannel));
     }
 }

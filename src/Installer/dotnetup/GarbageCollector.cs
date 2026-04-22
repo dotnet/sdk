@@ -145,7 +145,7 @@ internal class GarbageCollector
     /// </summary>
     private static List<string> DeleteOrphanedSubcomponents(string dotnetRootPath, HashSet<string> referencedSubcomponents)
     {
-        using var op = InstallationActivitySource.StartTracked("gc.delete-orphaned-subcomponents", "gc/delete-orphaned-subcomponents");
+        using var op = Metrics.Track("gc.delete-orphaned-subcomponents", "gc/delete-orphaned-subcomponents");
         var deleted = new List<string>();
         var failedCount = 0;
         string? lastFailedPath = null;
@@ -192,10 +192,10 @@ internal class GarbageCollector
             }
         }
 
-        op.SetTag("gc.deleted_count", deleted.Count);
-        op.SetTag("gc.failed_count", failedCount);
-        op.SetTag("gc.failed_path", lastFailedPath);
-        op.SetTag("gc.status", failedCount > 0 ? "error" : "ok");
+        op.Tag("gc.deleted_count", deleted.Count);
+        op.Tag("gc.failed_count", failedCount);
+        op.Tag("gc.failed_path", lastFailedPath);
+        op.Tag("gc.status", failedCount > 0 ? "error" : "ok");
         if (failedCount > 0)
         {
             op.SetStatus(ActivityStatusCode.Error, "Some subcomponents could not be deleted");

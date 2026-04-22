@@ -96,7 +96,7 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         // Register with the installation library so its telemetry flows through TrackEvent.
-        InstallationActivitySource.OnTrackEvent = TrackEvent;
+        Metrics.OnTrackEvent = TrackEvent;
 
         try
         {
@@ -178,9 +178,9 @@ public sealed class DotnetupTelemetry : IDisposable
             : null;
 
         var op = new TrackedOperation(activity, $"command/{commandName}");
-        op.SetTag(TelemetryTagNames.CommandName, commandName);
-        op.SetTag(TelemetryTagNames.Caller, "dotnetup");
-        op.SetTag(TelemetryTagNames.SessionId, SessionId);
+        op.Tag(TelemetryTagNames.CommandName, commandName);
+        op.Tag(TelemetryTagNames.Caller, "dotnetup");
+        op.Tag(TelemetryTagNames.SessionId, SessionId);
 
         if (activity != null)
         {
@@ -273,11 +273,13 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Emits an ActivityEvent on Activity.Current AND sets each property as a
-    /// tag on Activity.Current. This is the single entry point for telemetry
-    /// data — callers should NOT separately call Activity.Current?.SetTag().
+    /// Callback invoked by <see cref="TrackedOperation"/> on dispose (via
+    /// <see cref="Metrics.OnTrackEvent"/>) and by <see cref="RecordException"/>.
+    /// Enriches the properties with a unique event ID and session ID, sets them
+    /// as span tags on <c>Activity.Current</c>, and emits an <see cref="ActivityEvent"/>
+    /// so the data appears in both the dependencies and traces tables.
     /// </summary>
-    public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
+    private void TrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
         if (!Enabled)
         {

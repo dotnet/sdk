@@ -107,12 +107,9 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             {
                 // Log the failure rather than silently swallowing — aids debugging
                 // when hostfxr is missing or the path is inaccessible.
-                DotnetupTelemetry.Instance.TrackEvent("hostfxr/enumeration-failed", new Dictionary<string, string?>
-                {
-                    [TelemetryTagNames.HostfxrEnumerationFailed] = "true",
-                    [TelemetryTagNames.HostfxrEnumerationError] = ex.GetType().Name,
-                    [TelemetryTagNames.HostfxrEnumerationPath] = systemPath
-                });
+                Metrics.Tag(TelemetryTagNames.HostfxrEnumerationFailed, "true");
+                Metrics.Tag(TelemetryTagNames.HostfxrEnumerationError, ex.GetType().Name);
+                Metrics.Tag(TelemetryTagNames.HostfxrEnumerationPath, systemPath);
                 AnsiConsole.MarkupLine(DotnetupTheme.Dim(
                     $"[{DotnetupTheme.Current.Warning}]Warning:[/] Could not enumerate installs at {systemPath.EscapeMarkup()}: {ex.Message.EscapeMarkup()}"));
             }

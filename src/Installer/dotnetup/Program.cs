@@ -18,6 +18,9 @@ internal class DotnetupProgram
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
+        // Start root activity for the entire process
+        using var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+
         // Capture current console encoding so it can be restored on exit.
         // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.
         using AutomaticEncodingRestorer encodingRestorer = new();
@@ -40,8 +43,6 @@ internal class DotnetupProgram
         // Show first-run telemetry notice if needed
         FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
 
-        // Start root activity for the entire process
-        using var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
 
         int processExitCode = 1;
 
@@ -64,7 +65,7 @@ internal class DotnetupProgram
         }
         finally
         {
-            rootOp.SetTag(TelemetryTagNames.ExitCode, processExitCode);
+            rootOp.Tag(TelemetryTagNames.ExitCode, processExitCode);
             rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             rootOp.Dispose(); // emit process/complete event before flush
             DisposeTelemetry();

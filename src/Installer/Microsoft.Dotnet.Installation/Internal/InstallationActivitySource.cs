@@ -42,7 +42,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// TelemetryIntegrationDemo project in test/dotnetup.Tests/TestAssets/.
 /// </para>
 /// </remarks>
-internal static class InstallationActivitySource
+internal static class Metrics
 {
     /// <summary>
     /// The name of the ActivitySource. Must match what consumers listen for.
@@ -51,7 +51,7 @@ internal static class InstallationActivitySource
 
     public static ActivitySource ActivitySource { get; } = new(
         SourceName,
-        typeof(InstallationActivitySource).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0");
+        typeof(Metrics).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0");
 
     /// <summary>
     /// Optional callback registered by the host (e.g., dotnetup) to receive telemetry events.
@@ -66,9 +66,19 @@ internal static class InstallationActivitySource
     /// Tags set via the returned <see cref="TrackedOperation"/> are captured on both
     /// the underlying span and the emitted event.
     /// </summary>
-    public static TrackedOperation StartTracked(string activityName, string eventName)
+    public static TrackedOperation Track(string activityName, string eventName)
     {
         var activity = ActivitySource.StartActivity(activityName, ActivityKind.Internal);
         return new TrackedOperation(activity, eventName);
+    }
+
+    /// <summary>
+    /// Sets a tag on the current activity span. Use this instead of
+    /// <c>Activity.Current?.SetTag()</c> so that the data is captured by the
+    /// enclosing <see cref="TrackedOperation"/> on dispose.
+    /// </summary>
+    public static void Tag(string key, object? value)
+    {
+        Activity.Current?.SetTag(key, value);
     }
 }

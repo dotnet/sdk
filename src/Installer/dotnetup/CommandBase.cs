@@ -52,7 +52,7 @@ public abstract class CommandBase
         }
         finally
         {
-            _operation?.SetTag(TelemetryTagNames.ExitCode, _exitCode);
+            _operation?.Tag(TelemetryTagNames.ExitCode, _exitCode);
             _operation?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             _operation?.Dispose();
         }
@@ -64,22 +64,22 @@ public abstract class CommandBase
 
     protected void SetCommandTag(string key, object? value)
     {
-        _operation?.SetTag(key, value);
+        _operation?.Tag(key, value);
     }
 
     protected void RecordRequestedVersion(string? versionOrChannel)
     {
         var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
-        _operation?.SetTag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
+        _operation?.Tag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
     }
 
     protected void RecordRequestSource(string source, string? requestedValue)
     {
-        _operation?.SetTag(TelemetryTagNames.DotnetRequestSource, source);
+        _operation?.Tag(TelemetryTagNames.DotnetRequestSource, source);
         if (requestedValue != null)
         {
             var sanitized = VersionSanitizer.Sanitize(requestedValue);
-            _operation?.SetTag(TelemetryTagNames.DotnetRequested, sanitized);
+            _operation?.Tag(TelemetryTagNames.DotnetRequested, sanitized);
         }
     }
 }
