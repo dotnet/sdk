@@ -6,11 +6,7 @@
     TemplateEngine-specific build properties.
   -->
   <PropertyGroup>
-    <!--
-      TODO: Update PublicAPI.Shipped/Unshipped.txt files to fix RS0016/RS0041 violations, then remove the suppression. 
-      https://github.com/dotnet/templating/issues/10085
-    -->
-    <NoWarn>$(NoWarn);NU5105;NU5128;NU5100;NU5118;0419;0649;RS0016;RS0041</NoWarn>
+    <NoWarn>$(NoWarn);NU5105;NU5128;NU5100;NU5118;0419;0649</NoWarn>
 
     <!--
       TemplateEngine projects target netstandard2.0 and pin NuGet packages to an older

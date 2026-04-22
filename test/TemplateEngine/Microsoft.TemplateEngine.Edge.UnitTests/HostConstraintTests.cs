@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             A.CallTo(() => settings.Components.OfType<ITemplateConstraintFactory>()).Returns(new[] { new HostConstraintFactory() });
 
             var constraintManager = new TemplateConstraintManager(settings);
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(TemplateConstraintResult.Status.Allowed, evaluateResult.EvaluationStatus);
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             A.CallTo(() => settings.Components.OfType<ITemplateConstraintFactory>()).Returns(new[] { new HostConstraintFactory() });
 
             var constraintManager = new TemplateConstraintManager(settings);
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
             Assert.Equal("Running template on host2 (version: 2.0.0) is not supported, supported hosts is/are: host1, host2(1.0.0), host3([1.0.0-*]).", evaluateResult.LocalizedErrorMessage);
             Assert.Null(evaluateResult.CallToAction);
@@ -149,7 +149,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             A.CallTo(() => settings.Components.OfType<ITemplateConstraintFactory>()).Returns(new[] { new HostConstraintFactory() });
 
             var constraintManager = new TemplateConstraintManager(settings);
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(TemplateConstraintResult.Status.Allowed, evaluateResult.EvaluationStatus);
         }
 
@@ -182,7 +182,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             A.CallTo(() => settings.Components.OfType<ITemplateConstraintFactory>()).Returns(new[] { new HostConstraintFactory() });
 
             var constraintManager = new TemplateConstraintManager(settings);
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, evaluateResult.EvaluationStatus);
             Assert.Equal("'{\"hostName\":\"host2\",\"version\":\"1.0.0\"}' is not a valid JSON array.", evaluateResult.LocalizedErrorMessage);
             Assert.Equal("Check the constraint configuration in template.json.", evaluateResult.CallToAction);
@@ -231,7 +231,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             A.CallTo(() => settings.Components.OfType<ITemplateConstraintFactory>()).Returns(new[] { new HostConstraintFactory() });
 
             var constraintManager = new TemplateConstraintManager(settings);
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             if (expectedResult)
             {
                 Assert.Equal(TemplateConstraintResult.Status.Allowed, evaluateResult.EvaluationStatus);
@@ -282,7 +282,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             A.CallTo(() => settings.Components.OfType<ITemplateConstraintFactory>()).Returns(new[] { new HostConstraintFactory() });
 
             var constraintManager = new TemplateConstraintManager(settings);
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             if (expectedResult)
             {
                 Assert.Equal(TemplateConstraintResult.Status.Allowed, evaluateResult.EvaluationStatus);

@@ -1095,7 +1095,7 @@ public class Test
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task TestCSMissingAttributeAsync(string source, params DiagnosticResult[] diagnosticResults)
@@ -1108,7 +1108,7 @@ public class Test
             };
             test.TestState.Sources.Add(SimilarAttributeSource);
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private const string SimilarAttributeSource = @"#nullable enable
