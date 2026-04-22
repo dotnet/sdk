@@ -6,9 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-#if !XUNIT_V3
-using Xunit.Abstractions;
-#endif
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 {
@@ -53,6 +50,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: shortName)
             {
                 TemplatePath = templateLocation,
+                SnapshotsDirectory = SnapshotsDirectory,
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = $"{folderName.Substring(folderName.IndexOf('-') + 1)}{argsScenarioName}"
             }
@@ -62,10 +60,10 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                 .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
-        private string GetSamplesTemplateLocation() => Path.Combine(CodeBaseRoot, "dotnet-template-samples", "content");
+        private string GetSamplesTemplateLocation() => Path.Combine(SampleTemplatesLocation, "content");
 
         private (Dictionary<string, string?> Args, string ArgsScenarioName) GetTemplateArgs(string[]? args)
         {

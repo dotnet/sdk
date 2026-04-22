@@ -84,7 +84,7 @@ End Class",
                         GetBasicResultAt(11, 9, 9, 31, "Function Assembly.Load(rawAssembly As Byte()) As Assembly", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

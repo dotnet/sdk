@@ -4,11 +4,13 @@ Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands.IInstantiationResul
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands.IInstantiationResult.StdErr.get -> string!
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands.IInstantiationResult.StdOut.get -> string!
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands.RunInstantiation
+virtual Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands.RunInstantiation.Invoke(Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions! options) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands.IInstantiationResult!>!
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition.AddScrubber(Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition.ScrubFileByPath! fileScrubber) -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition!
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition.AddScrubber(System.Action<System.Text.StringBuilder!>! scrubber, string? extension = null) -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition!
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition.ScrubbersDefinition(System.Action<System.Text.StringBuilder!>! scrubber, string? extension = null) -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition.ScrubFileByPath
+virtual Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition.ScrubFileByPath.Invoke(string! relativeFilePath, System.Text.StringBuilder! content) -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationErrorCode
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationErrorCode.InstallFailed = 106 -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationErrorCode
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationErrorCode.InstantiationFailed = 100 -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationErrorCode
@@ -87,4 +89,5 @@ Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.Execute(M
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.VerificationEngine(Microsoft.Extensions.Logging.ILogger! logger) -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerificationEngine.VerificationEngine(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerifyDirectory
+virtual Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerifyDirectory.Invoke(string! contentDirectory, System.Lazy<System.Collections.Generic.IAsyncEnumerable<(string! FilePath, string! ScrubbedContent)>!>! contentFetcher) -> System.Threading.Tasks.Task!
 static readonly Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition.Empty -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition!

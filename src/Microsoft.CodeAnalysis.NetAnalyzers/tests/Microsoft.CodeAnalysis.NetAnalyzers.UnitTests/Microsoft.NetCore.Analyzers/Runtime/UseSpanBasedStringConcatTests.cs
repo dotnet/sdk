@@ -86,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_SingleViolationInOneBlock_VB
@@ -152,7 +152,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_MultipleViolationsInOneBlock_CS
@@ -199,7 +199,7 @@ string delta = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyCS.Diagnostic(Rule).WithLocation(x)));
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_MultipleViolationsInOneBlock_VB
@@ -246,7 +246,7 @@ Dim delta = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.As
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyVB.Diagnostic(Rule).WithLocation(x)));
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_NestedViolations_CS
@@ -290,7 +290,7 @@ var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(stri
                 NumberOfFixAllIterations = fixAllIterations
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyCS.Diagnostic(Rule).WithLocation(x)));
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_NestedViolations_VB
@@ -334,7 +334,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 NumberOfFixAllInDocumentIterations = fixAllIterations
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyVB.Diagnostic(Rule).WithLocation(x)));
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -350,7 +350,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -366,7 +366,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -379,7 +379,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         //  Visual Basic supports implicit global imports. By default, 'System' is added as a global
@@ -402,7 +402,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 options = options.WithGlobalImports(globalSystemImport);
                 return s.WithProjectCompilationOptions(project.Id, options);
             });
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         //  We must add 'Imports System' if it is not included as a global import.
@@ -416,7 +416,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -437,7 +437,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -458,7 +458,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -495,7 +495,7 @@ var s = {0};";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -535,7 +535,7 @@ Dim s = {0}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         //  No C# case because C# has only one concat operator.
@@ -563,7 +563,7 @@ Dim s = {0}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -582,7 +582,7 @@ Dim s = {0}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -601,7 +601,7 @@ Dim s = {0}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 
@@ -622,7 +622,7 @@ Dim s = {0}";
                 TestCode = CSUsings + CSWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -641,7 +641,7 @@ Dim s = {0}";
                 TestCode = VBUsings + VBWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -658,7 +658,7 @@ Dim s = {0}";
                 TestCode = CSUsings + CSWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -675,7 +675,7 @@ Dim s = {0}";
                 TestCode = VBUsings + VBWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         //  No VB case because VB can't overload operators.
@@ -706,7 +706,7 @@ var e = {expression};";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -733,7 +733,7 @@ string s = {expression};";
                 TestCode = CSUsings + CSWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -760,7 +760,7 @@ Dim s As String = {expression}";
                 TestCode = VBUsings + VBWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -785,7 +785,7 @@ Dim s As String = {expression}";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 

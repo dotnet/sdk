@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
@@ -39,12 +39,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -64,12 +64,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -89,12 +89,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -114,12 +114,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -140,12 +140,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(
                     new Dictionary<string, string?>()
@@ -171,7 +171,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -188,12 +188,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -210,7 +210,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(
                     new Dictionary<string, string?>()
@@ -220,7 +220,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -237,7 +237,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(
                     new Dictionary<string, string?>()
@@ -247,7 +247,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -266,12 +266,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     DoNotPrependTemplateNameToScenarioName = true,
                     VerifyCommandOutput = true,
                     IsCommandExpectedToFail = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -295,12 +295,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     OutputDirectory = workingDir,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     DoNotPrependTemplateNameToScenarioName = true,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = ApprovalsDirectory
                 }
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
     }
 }

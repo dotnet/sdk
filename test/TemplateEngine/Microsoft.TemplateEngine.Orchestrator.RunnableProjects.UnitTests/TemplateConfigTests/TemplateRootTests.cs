@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IFile? templateConfigFile = mountPoint.FileInfo(pathToTemplateJson);
             Assert.NotNull(templateConfigFile);
             using RunnableProjectConfig templateModel = new(environmentSettings, generator, templateConfigFile);
-            await templateModel.ValidateAsync(ValidationScope.Instantiation, default);
+            await templateModel.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
 
             Assert.True(templateModel.IsValid);
             Assert.DoesNotContain(templateModel.ValidationErrors, e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning });
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.NotNull(templateConfigFile);
 
             using RunnableProjectConfig templateModel = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile);
-            await templateModel.ValidateAsync(ValidationScope.Instantiation, default);
+            await templateModel.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
 
             if (shouldAllPathsBeValid)
             {
@@ -208,7 +208,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.NotNull(templateConfigFile);
 
             using RunnableProjectConfig templateModel = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile);
-            await templateModel.ValidateAsync(ValidationScope.Instantiation, default);
+            await templateModel.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
 
             if (shouldAllPathsBeValid)
             {
