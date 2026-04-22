@@ -155,7 +155,7 @@ End Class",
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -175,7 +175,7 @@ End Class",
     End Sub
 End Class"
             };
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -195,7 +195,7 @@ End Class",
     End Sub
 End Class"
             };
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyCSCodeFixWithGivenReferenceAssembliesAsync(string source, ReferenceAssemblies referenceAssemblies, string fixedSource)
@@ -205,7 +205,7 @@ End Class"
                 TestCode = source,
                 ReferenceAssemblies = referenceAssemblies,
                 FixedCode = fixedSource
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

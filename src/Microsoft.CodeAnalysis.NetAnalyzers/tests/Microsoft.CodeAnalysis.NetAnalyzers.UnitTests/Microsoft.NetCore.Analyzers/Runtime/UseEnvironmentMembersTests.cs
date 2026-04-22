@@ -95,7 +95,7 @@ class C
     public ProcessModule MainModule => null;
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
