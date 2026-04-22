@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
-using Microsoft.DotNet.Cli;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Telemetry;
 using OpenTelemetry;
@@ -84,13 +83,12 @@ public sealed class DotnetupTelemetry : IDisposable
     {
         SessionId = Guid.NewGuid().ToString();
 
-        // Check opt-out using the same logic as the SDK:
-        // - MICROSOFT_ENABLE_TELEMETRY compile flag controls the default (official builds = on, dev/test = off)
-        // - DOTNET_CLI_TELEMETRY_OPTOUT env var overrides explicitly
+        // Check opt-out (same env var as SDK).
+        // Unlike the SDK, dotnetup sends telemetry from dev/test builds too —
+        // distinguished by the dev.build=true tag in common properties.
         var optOutValue = Environment.GetEnvironmentVariable(TelemetryOptOutEnvVar);
-        bool explicitOptOut = string.Equals(optOutValue, "1", StringComparison.Ordinal) ||
-                              string.Equals(optOutValue, "true", StringComparison.OrdinalIgnoreCase);
-        Enabled = !explicitOptOut && !CompileOptions.TelemetryOptOutDefault;
+        Enabled = !string.Equals(optOutValue, "1", StringComparison.Ordinal) &&
+                  !string.Equals(optOutValue, "true", StringComparison.OrdinalIgnoreCase);
 
         if (!Enabled)
         {
