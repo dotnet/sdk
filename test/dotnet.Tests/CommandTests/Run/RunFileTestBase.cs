@@ -5,13 +5,34 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
+public sealed class RunFileTestFixture(IMessageSink sink) : IAsyncLifetime
+{
+    public System.Threading.Tasks.Task InitializeAsync()
+    {
+        RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
+
+        // Ensure a simple app runs fully with MSBuild before running other csc-only tests
+        // so we have packages like ILLink.Tasks restored and csc-only optimization can kick in.
+        new DotnetCommand(new SharedTestOutputHelper(sink), "run", "-")
+            .WithStandardInput("""
+                Console.WriteLine("Hello");
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
+
+        return System.Threading.Tasks.Task.CompletedTask;
+    }
+
+    public System.Threading.Tasks.Task DisposeAsync() => System.Threading.Tasks.Task.CompletedTask;
+}
+
+public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), IClassFixture<RunFileTestFixture>
 {
     internal static string s_includeExcludeDefaultKnownExtensions
         => field ??= string.Join(", ", CSharpDirective.IncludeOrExclude.DefaultMapping.Select(static e => e.Extension));
@@ -132,6 +153,20 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log)
             "so we can test optimizations that would be disabled with implicit build files present");
 
         return outOfTreeBaseDirectory;
+    }
+
+    /// <summary>
+    /// Copies NuGet.config to the runfile base directory so virtual projects created by
+    /// <c>dotnet run -</c> (stdin) can resolve packages from test feeds. The virtual project
+    /// is created under this directory, and NuGet walks up from the project location to
+    /// find config files.
+    /// </summary>
+    internal static void CopyNuGetConfigToRunfileDirectory()
+    {
+        var sourceNuGetConfig = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config");
+        var runfileDir = VirtualProjectBuilder.GetTempSubdirectory();
+        Directory.CreateDirectory(runfileDir);
+        File.Copy(sourceNuGetConfig, Path.Join(runfileDir, "NuGet.config"), overwrite: true);
     }
 
     internal static string DirectiveError(string path, int line, string messageFormat, params ReadOnlySpan<object> args)
