@@ -140,7 +140,13 @@ internal sealed unsafe class ManagedHost : IDisposable
                 // without relying on dlopen/LoadLibrary to find it.
                 if (!string.IsNullOrEmpty(hostfxrPath))
                 {
-                    Interop.hostfxr_set_runtime_property_value(handle, "HOSTFXR_PATH", hostfxrPath);
+                    StatusCode propertyResult = Interop.hostfxr_set_runtime_property_value(
+                        handle, Constants.RuntimeProperty.HostFxrPath, hostfxrPath);
+                    if (propertyResult != StatusCode.Success)
+                    {
+                        throw new InvalidOperationException(
+                            $"hostfxr_set_runtime_property_value failed for {Constants.RuntimeProperty.HostFxrPath}. Status: {propertyResult} (0x{(uint)propertyResult:X8})");
+                    }
                 }
 
                 StatusCode appResult = Interop.hostfxr_run_app(handle);
