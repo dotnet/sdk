@@ -621,56 +621,176 @@ public class ActivitySourceIntegrationTests
     }
 }
 
+public class TrackedOperationTests : IDisposable
+{
+    private readonly ActivityListener _listener;
+    private readonly List<Activity> _capturedActivities = [];
+    private readonly List<(string EventName, IDictionary<string, string?> Properties)> _capturedEvents = [];
+
+    public TrackedOperationTests()
+    {
+        _listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == InstallationActivitySource.SourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => _capturedActivities.Add(activity)
+        };
+        ActivitySource.AddActivityListener(_listener);
+        InstallationActivitySource.OnTrackEvent = (name, props) => _capturedEvents.Add((name, props));
+    }
+
+    public void Dispose()
+    {
+        _listener.Dispose();
+        InstallationActivitySource.OnTrackEvent = null;
+    }
+
+    [Fact]
+    public void TrackedOperation_EmitsEventOnDispose()
+    {
+        using (var op = InstallationActivitySource.StartTracked("test-op", "test/complete"))
+        {
+            op.SetTag("key1", "value1");
+        }
+
+        Assert.Single(_capturedEvents);
+        Assert.Equal("test/complete", _capturedEvents[0].EventName);
+        Assert.Equal("value1", _capturedEvents[0].Properties["key1"]);
+    }
+
+    [Fact]
+    public void TrackedOperation_IncludesDuration()
+    {
+        using (var op = InstallationActivitySource.StartTracked("test-duration", "test/duration"))
+        {
+            op.SetTag("foo", "bar");
+        }
+
+        Assert.Single(_capturedEvents);
+        Assert.True(_capturedEvents[0].Properties.ContainsKey("operation.duration_ms"));
+        Assert.True(double.TryParse(_capturedEvents[0].Properties["operation.duration_ms"], out var ms));
+        Assert.True(ms >= 0);
+    }
+
+    [Fact]
+    public void TrackedOperation_CapturesTagsSetViaActivityCurrent()
+    {
+        using (var op = InstallationActivitySource.StartTracked("test-current", "test/current"))
+        {
+            // Simulate code deeper in the call stack setting tags via Activity.Current
+            Activity.Current?.SetTag("inner.tag", "inner-value");
+            op.SetTag("outer.tag", "outer-value");
+        }
+
+        Assert.Single(_capturedEvents);
+        Assert.Equal("inner-value", _capturedEvents[0].Properties["inner.tag"]);
+        Assert.Equal("outer-value", _capturedEvents[0].Properties["outer.tag"]);
+    }
+
+    [Fact]
+    public void TrackedOperation_SetsTagOnUnderlyingActivity()
+    {
+        using (var op = InstallationActivitySource.StartTracked("test-span-tags", "test/span"))
+        {
+            op.SetTag("span.key", "span-value");
+        }
+
+        Assert.Single(_capturedActivities);
+        Assert.Contains(_capturedActivities[0].Tags, t => t.Key == "span.key" && t.Value == "span-value");
+    }
+
+    [Fact]
+    public void TrackedOperation_SetStatus_SetsOnActivity()
+    {
+        using (var op = InstallationActivitySource.StartTracked("test-status", "test/status"))
+        {
+            op.SetStatus(ActivityStatusCode.Error, "test failure");
+        }
+
+        Assert.Single(_capturedActivities);
+        Assert.Equal(ActivityStatusCode.Error, _capturedActivities[0].Status);
+    }
+
+    [Fact]
+    public void TrackedOperation_NoEventWhenCallbackNotRegistered()
+    {
+        InstallationActivitySource.OnTrackEvent = null;
+
+        using (var op = InstallationActivitySource.StartTracked("test-no-callback", "test/no-callback"))
+        {
+            op.SetTag("key", "value");
+        }
+
+        Assert.Empty(_capturedEvents);
+    }
+}
+
 /// <summary>
-/// Enforces that telemetry data in dotnetup source files is sent through
-/// DotnetupTelemetry.TrackEvent (which dual-writes to both spans and events)
-/// rather than calling Activity.Current?.SetTag() or activity?.SetTag() directly.
-/// Direct SetTag calls only reach the span (dependencies/requests tables) but
-/// not the traces table where the data-x-platform reads from.
+/// Enforces that telemetry data in dotnetup and library source files is routed
+/// through TrackedOperation (which auto-emits events on dispose) rather than
+/// calling Activity.Current?.SetTag() directly. Direct SetTag calls only reach
+/// the span but not the traces table where the data-x-platform reads from.
+///
+/// Allowed exceptions: files that set tags within a TrackedOperation scope
+/// (the tags are captured on dispose), lifecycle-only code (status, errors),
+/// and the TrackedOperation class itself.
 /// </summary>
 public class TelemetryDualWriteEnforcementTests
 {
-    // Files that legitimately call SetTag for span lifecycle (status, error propagation)
-    // rather than telemetry data emission.
     private static readonly HashSet<string> s_allowedFiles = new(StringComparer.OrdinalIgnoreCase)
     {
-        "DotnetupTelemetry.cs",   // StartCommand sets span-level context for RecordException
-        "ErrorCodeMapper.cs",     // Applies error tags to specific activity instances
-        "CommandBase.cs",         // Sets exit code and status on _commandActivity
-        "Program.cs",             // Sets exit code and status on rootActivity
+        "DotnetupTelemetry.cs",           // StartCommand/StartTrackedCommand sets span-level context
+        "ErrorCodeMapper.cs",             // Applies error tags to specific activity instances
+        "CommandBase.cs",                 // Uses TrackedOperation
+        "Program.cs",                     // Uses TrackedOperation
+        "InstallationActivitySource.cs",  // StartTracked factory
+        "TrackedOperation.cs",            // The TrackedOperation class itself
+        "MuxerHandler.cs",               // Sets tags within parent TrackedOperation scope (extract)
+        "DotnetArchiveDownloader.cs",     // TryServeCachedArchive sets tags within TrackedOperation scope
     };
 
     [Fact]
     public void DotnetupSource_ShouldNotCallSetTagDirectly_OutsideAllowedFiles()
     {
-        var dotnetupSrcDir = FindDotnetupSourceDirectory();
-        if (dotnetupSrcDir is null)
+        var installerDir = FindInstallerSourceDirectory();
+        if (installerDir is null)
         {
             // Skip if source directory not found (e.g., running from packaged test)
             return;
         }
 
         var violations = new List<string>();
-        var csFiles = Directory.GetFiles(dotnetupSrcDir, "*.cs", SearchOption.AllDirectories);
 
-        foreach (var file in csFiles)
+        // Scan both dotnetup and the installation library
+        var searchDirs = new[]
         {
-            var fileName = Path.GetFileName(file);
-            if (s_allowedFiles.Contains(fileName))
-            {
-                continue;
-            }
+            Path.Combine(installerDir, "dotnetup"),
+            Path.Combine(installerDir, "Microsoft.Dotnet.Installation")
+        };
 
-            var lines = File.ReadAllLines(file);
-            for (int i = 0; i < lines.Length; i++)
+        foreach (var searchDir in searchDirs.Where(Directory.Exists))
+        {
+            var csFiles = Directory.GetFiles(searchDir, "*.cs", SearchOption.AllDirectories);
+
+            foreach (var file in csFiles)
             {
-                var line = lines[i];
-                if (line.Contains(".SetTag(", StringComparison.Ordinal)
-                    && (line.Contains("Activity.Current", StringComparison.Ordinal)
-                        || line.Contains("activity?.", StringComparison.OrdinalIgnoreCase)
-                        || line.Contains("activity.", StringComparison.OrdinalIgnoreCase)))
+                var fileName = Path.GetFileName(file);
+                if (s_allowedFiles.Contains(fileName))
                 {
-                    violations.Add($"{Path.GetRelativePath(dotnetupSrcDir, file)}:{i + 1}: {line.Trim()}");
+                    continue;
+                }
+
+                var lines = File.ReadAllLines(file);
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    var line = lines[i];
+                    if (line.Contains(".SetTag(", StringComparison.Ordinal)
+                        && (line.Contains("Activity.Current", StringComparison.Ordinal)
+                            || line.Contains("activity?.", StringComparison.OrdinalIgnoreCase)
+                            || line.Contains("activity.", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        violations.Add($"{Path.GetRelativePath(installerDir, file)}:{i + 1}: {line.Trim()}");
+                    }
                 }
             }
         }
@@ -678,19 +798,19 @@ public class TelemetryDualWriteEnforcementTests
         Assert.True(
             violations.Count == 0,
             $"Found {violations.Count} direct Activity.SetTag() call(s) outside allowed files. " +
-            "Use DotnetupTelemetry.Instance.TrackEvent() instead, which writes to both " +
-            "the span and the traces table (for data-x-platform).\n\n" +
+            "In dotnetup, use DotnetupTelemetry.Instance.TrackEvent(). " +
+            "In Microsoft.Dotnet.Installation, use InstallationActivitySource.SetTag() and EmitEvent().\n\n" +
             string.Join("\n", violations));
     }
 
-    private static string? FindDotnetupSourceDirectory()
+    private static string? FindInstallerSourceDirectory()
     {
-        // Walk up from test assembly location to find src/Installer/dotnetup
+        // Walk up from test assembly location to find src/Installer
         var dir = AppContext.BaseDirectory;
         for (int i = 0; i < 10; i++)
         {
-            var candidate = Path.Combine(dir, "src", "Installer", "dotnetup");
-            if (Directory.Exists(candidate))
+            var candidate = Path.Combine(dir, "src", "Installer");
+            if (Directory.Exists(candidate) && Directory.Exists(Path.Combine(candidate, "dotnetup")))
             {
                 return candidate;
             }

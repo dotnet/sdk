@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -146,7 +145,7 @@ internal class GarbageCollector
     /// </summary>
     private static List<string> DeleteOrphanedSubcomponents(string dotnetRootPath, HashSet<string> referencedSubcomponents)
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("gc.delete-orphaned-subcomponents");
+        using var op = InstallationActivitySource.StartTracked("gc.delete-orphaned-subcomponents", "gc/delete-orphaned-subcomponents");
         var deleted = new List<string>();
         var failedCount = 0;
         string? lastFailedPath = null;
@@ -187,24 +186,20 @@ internal class GarbageCollector
                         Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
                         ++failedCount;
                         lastFailedPath = relativePath;
-                        DotnetupTelemetry.Instance.RecordException(activity, ex, errorCode: "gc.delete_failed");
+                        DotnetupTelemetry.Instance.RecordException(op.Activity, ex, errorCode: "gc.delete_failed");
                     }
                 }
             }
         }
 
+        op.SetTag("gc.deleted_count", deleted.Count);
+        op.SetTag("gc.failed_count", failedCount);
+        op.SetTag("gc.failed_path", lastFailedPath);
+        op.SetTag("gc.status", failedCount > 0 ? "error" : "ok");
         if (failedCount > 0)
         {
-            activity?.SetStatus(ActivityStatusCode.Error, "Some subcomponents could not be deleted");
+            op.SetStatus(ActivityStatusCode.Error, "Some subcomponents could not be deleted");
         }
-
-        DotnetupTelemetry.Instance.TrackEvent("gc/delete-orphaned-subcomponents", new Dictionary<string, string?>
-        {
-            ["gc.deleted_count"] = deleted.Count.ToString(CultureInfo.InvariantCulture),
-            ["gc.failed_count"] = failedCount.ToString(CultureInfo.InvariantCulture),
-            ["gc.failed_path"] = lastFailedPath,
-            ["gc.status"] = failedCount > 0 ? "error" : "ok"
-        });
 
         return deleted;
     }

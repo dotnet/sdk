@@ -16,11 +16,11 @@ internal class DotnetInstaller : IDotnetInstaller
 
     public void Install(DotnetInstallRoot dotnetRoot, InstallComponent component, ReleaseVersion version)
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("DotnetInstaller.Install");
-        activity?.SetTag("install.root", dotnetRoot.Path);
-        activity?.SetTag("install.arch", dotnetRoot.Architecture.ToString());
-        activity?.SetTag("install.component", component.ToString());
-        activity?.SetTag("install.version", version.ToString());
+        using var op = InstallationActivitySource.StartTracked("DotnetInstaller.Install", "install/complete");
+        op.SetTag("install.root", dotnetRoot.Path);
+        op.SetTag("install.arch", dotnetRoot.Architecture.ToString());
+        op.SetTag("install.component", component.ToString());
+        op.SetTag("install.version", version.ToString());
 
         var installRequest = new DotnetInstallRequest(dotnetRoot, new UpdateChannel(version.ToString()), component, new InstallRequestOptions());
 

@@ -4,6 +4,8 @@
 using System.Diagnostics;
 using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.DotNet.Cli;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Telemetry;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
@@ -82,15 +84,21 @@ public sealed class DotnetupTelemetry : IDisposable
     {
         SessionId = Guid.NewGuid().ToString();
 
-        // Check opt-out (same env var as SDK)
+        // Check opt-out using the same logic as the SDK:
+        // - MICROSOFT_ENABLE_TELEMETRY compile flag controls the default (official builds = on, dev/test = off)
+        // - DOTNET_CLI_TELEMETRY_OPTOUT env var overrides explicitly
         var optOutValue = Environment.GetEnvironmentVariable(TelemetryOptOutEnvVar);
-        Enabled = !string.Equals(optOutValue, "1", StringComparison.Ordinal) &&
-                  !string.Equals(optOutValue, "true", StringComparison.OrdinalIgnoreCase);
+        bool explicitOptOut = string.Equals(optOutValue, "1", StringComparison.Ordinal) ||
+                              string.Equals(optOutValue, "true", StringComparison.OrdinalIgnoreCase);
+        Enabled = !explicitOptOut && !CompileOptions.TelemetryOptOutDefault;
 
         if (!Enabled)
         {
             return;
         }
+
+        // Register with the installation library so its telemetry flows through TrackEvent.
+        InstallationActivitySource.OnTrackEvent = TrackEvent;
 
         try
         {
@@ -151,7 +159,6 @@ public sealed class DotnetupTelemetry : IDisposable
         if (activity != null)
         {
             activity.SetTag(TelemetryTagNames.CommandName, commandName);
-            // Add common properties to each span for App Insights customDimensions
             foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
             {
                 activity.SetTag(attr.Key, attr.Value?.ToString());
@@ -160,6 +167,44 @@ public sealed class DotnetupTelemetry : IDisposable
         activity?.SetTag(TelemetryTagNames.Caller, "dotnetup");
         activity?.SetTag(TelemetryTagNames.SessionId, SessionId);
         return activity;
+    }
+
+    /// <summary>
+    /// Starts a tracked command operation that emits a telemetry event on dispose.
+    /// Common properties and caller/session tags are pre-populated on the span.
+    /// </summary>
+    internal TrackedOperation StartTrackedCommand(string commandName)
+    {
+        var activity = Enabled
+            ? CommandSource.StartActivity($"command/{commandName}", ActivityKind.Internal)
+            : null;
+
+        var op = new TrackedOperation(activity, $"command/{commandName}");
+        op.SetTag(TelemetryTagNames.CommandName, commandName);
+        op.SetTag(TelemetryTagNames.Caller, "dotnetup");
+        op.SetTag(TelemetryTagNames.SessionId, SessionId);
+
+        if (activity != null)
+        {
+            foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
+            {
+                activity.SetTag(attr.Key, attr.Value?.ToString());
+            }
+        }
+
+        return op;
+    }
+
+    /// <summary>
+    /// Starts a tracked root process operation.
+    /// </summary>
+    internal TrackedOperation StartTrackedProcess(string name)
+    {
+        var activity = Enabled
+            ? CommandSource.StartActivity(name, ActivityKind.Internal)
+            : null;
+
+        return new TrackedOperation(activity, "process/complete");
     }
 
     /// <summary>

@@ -188,12 +188,12 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         string destinationPath,
         IProgress<DownloadProgress>? progress = null)
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("download");
-        activity?.SetTag("download.version", resolvedVersion.ToString());
+        using var op = InstallationActivitySource.StartTracked("download", "download/complete");
+        op.SetTag("download.version", resolvedVersion.ToString());
 
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
 
-        activity?.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
+        op.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
 
         if (TryServeCachedArchive(downloadUrl, expectedHash, destinationPath, progress))
         {
@@ -204,8 +204,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         VerifyFileHash(destinationPath, expectedHash);
 
         var fileInfo = new FileInfo(destinationPath);
-        activity?.SetTag("download.bytes", fileInfo.Length);
-        activity?.SetTag("download.from_cache", false);
+        op.SetTag("download.bytes", fileInfo.Length);
+        op.SetTag("download.from_cache", false);
 
         try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
         catch { /* Ignore errors adding to cache - it's not critical */ }

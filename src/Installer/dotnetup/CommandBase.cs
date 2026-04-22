@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -12,13 +11,12 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
 /// Base class for all dotnetup commands with automatic telemetry.
-/// Uses the template method pattern to wrap command execution with telemetry.
+/// Uses TrackedOperation for automatic event emission on dispose.
 /// </summary>
 public abstract class CommandBase
 {
     protected ParseResult ParseResult { get; }
-    private Activity? _commandActivity;
-    private readonly Dictionary<string, string?> _eventProperties = new(StringComparer.OrdinalIgnoreCase);
+    private TrackedOperation? _operation;
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult)
@@ -26,16 +24,10 @@ public abstract class CommandBase
         ParseResult = parseResult;
     }
 
-    /// <summary>
-    /// Executes the command with automatic telemetry tracking.
-    /// Activities automatically track duration via start/stop — no Stopwatch needed.
-    /// </summary>
-    /// <returns>The exit code of the command.</returns>
     public int Execute()
     {
         var commandName = GetCommandName();
-        _commandActivity = DotnetupTelemetry.Instance.StartCommand(commandName);
-        _eventProperties[TelemetryTagNames.CommandName] = commandName;
+        _operation = DotnetupTelemetry.Instance.StartTrackedCommand(commandName);
         _exitCode = 1;
 
         try
@@ -45,15 +37,13 @@ public abstract class CommandBase
         }
         catch (DotnetInstallException ex)
         {
-            // Known installation errors - print a clean user-friendly message
-            DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
+            DotnetupTelemetry.Instance.RecordException(_operation?.Activity, ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
             return 1;
         }
         catch (Exception ex)
         {
-            // Unexpected errors - still record telemetry so error_type is populated
-            DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
+            DotnetupTelemetry.Instance.RecordException(_operation?.Activity, ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
 #if DEBUG
             Console.Error.WriteLine(ex.StackTrace);
@@ -62,66 +52,34 @@ public abstract class CommandBase
         }
         finally
         {
-            SetCommandTag(TelemetryTagNames.ExitCode, _exitCode);
-            SetCommandTag(TelemetryTagNames.Caller, "dotnetup");
-            SetCommandTag("command.status", _exitCode == 0 ? "ok" : "error");
-            SetCommandTag("command.duration_ms", _commandActivity?.Duration.TotalMilliseconds
-                .ToString(CultureInfo.InvariantCulture));
-            _commandActivity?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-
-            // Emit command event for data-x-platform (lands in traces table).
-            DotnetupTelemetry.Instance.TrackEvent($"command/{commandName}", _eventProperties);
-
-            _commandActivity?.Dispose();
+            _operation?.SetTag(TelemetryTagNames.ExitCode, _exitCode);
+            _operation?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            _operation?.Dispose();
         }
     }
 
-    /// <summary>
-    /// Implement this method to provide the command's core logic.
-    /// </summary>
-    /// <returns>The exit code of the command.</returns>
     protected abstract int ExecuteCore();
 
-    /// <summary>
-    /// Gets the command name for telemetry purposes (e.g., "sdk/install", "list").
-    /// </summary>
     protected abstract string GetCommandName();
 
-    /// <summary>
-    /// Adds a tag to the current command activity and accumulates it for the
-    /// TrackEvent emission at command completion.
-    /// </summary>
-    /// <param name="key">The tag key.</param>
-    /// <param name="value">The tag value.</param>
     protected void SetCommandTag(string key, object? value)
     {
-        _commandActivity?.SetTag(key, value);
-        _eventProperties[key] = value?.ToString();
+        _operation?.SetTag(key, value);
     }
 
-    /// <summary>
-    /// Records the requested version/channel with PII sanitization.
-    /// Only known safe patterns are passed through; unknown patterns are replaced with "invalid".
-    /// </summary>
-    /// <param name="versionOrChannel">The raw version or channel string from user input.</param>
     protected void RecordRequestedVersion(string? versionOrChannel)
     {
         var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
-        SetCommandTag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
+        _operation?.SetTag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
     }
 
-    /// <summary>
-    /// Records the source of the install request (explicit user input vs default).
-    /// </summary>
-    /// <param name="source">The request source: "explicit", "default-latest", or "default-globaljson".</param>
-    /// <param name="requestedValue">The sanitized requested value (channel/version). For defaults, this is what was defaulted to.</param>
     protected void RecordRequestSource(string source, string? requestedValue)
     {
-        SetCommandTag(TelemetryTagNames.DotnetRequestSource, source);
+        _operation?.SetTag(TelemetryTagNames.DotnetRequestSource, source);
         if (requestedValue != null)
         {
             var sanitized = VersionSanitizer.Sanitize(requestedValue);
-            SetCommandTag(TelemetryTagNames.DotnetRequested, sanitized);
+            _operation?.SetTag(TelemetryTagNames.DotnetRequested, sanitized);
         }
     }
 }

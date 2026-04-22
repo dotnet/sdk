@@ -544,6 +544,21 @@
       "visualOptions": { "hideLegend": false }
     },
     {
+      "id": "tile-download-extract-duration",
+      "title": "Download & Extract Duration Over Time",
+      "visualType": "line",
+      "pageId": "page-performance",
+      "layout": { "x": 0, "y": 7, "width": 24, "height": 7 },
+      "queryRef": { "kind": "query", "queryId": "q-download-extract-duration" },
+      "visualOptions": {
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumn": "Hour",
+        "yColumns": ["AvgDuration"],
+        "seriesColumns": ["operation"]
+      }
+    },
+    {
       "id": "tile-user-stats",
       "title": "User Statistics",
       "visualType": "table",
@@ -585,13 +600,13 @@
     {
       "id": "q-base-dotnetup-commands",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnet/cli/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = coalesce(tostring(Properties[\"dotnetup.version\"]), ProductVersion)\n| extend command = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend is_success = Properties[\"command.status\"] == \"ok\"\n| extend duration_ms = todouble(Properties[\"command.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = coalesce(tostring(Properties[\"dotnetup.version\"]), ProductVersion)\n| extend command = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend is_success = Properties[\"operation.status\"] == \"ok\"\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": ["_startTime", "_endTime", "_versionFilter", "_devBuild"]
     },
     {
       "id": "q-base-dotnetup-all",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnet/cli/\"\n| where tostring(Properties[\"caller\"]) == \"dotnetup\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = coalesce(tostring(Properties[\"dotnetup.version\"]), ProductVersion)\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = coalesce(tostring(Properties[\"dotnetup.version\"]), ProductVersion)\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": ["_startTime", "_endTime", "_versionFilter", "_devBuild"]
     },
     {
@@ -663,49 +678,49 @@
     {
       "id": "q-runtime-type-dist",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "_dotnetupCommands\n| where Message == \"dotnet/cli/command/runtime/install\"\n| extend component = coalesce(tostring(Properties[\"install.component\"]), \"Runtime\")\n| summarize Count = count() by component",
+      "text": "_dotnetupCommands\n| where Message == \"dotnetup/command/runtime/install\"\n| extend component = coalesce(tostring(Properties[\"install.component\"]), \"Runtime\")\n| summarize Count = count() by component",
       "usedVariables": ["_dotnetupCommands"]
     },
     {
       "id": "q-install-path-source",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "_dotnetupCommands\n| where Message startswith \"dotnet/cli/command/\" and Message endswith \"/install\"\n| extend path_source = coalesce(tostring(Properties[\"install.path_source\"]), \"unknown\")\n| summarize Count = count() by path_source",
+      "text": "_dotnetupCommands\n| where Message startswith \"dotnetup/command/\" and Message endswith \"/install\"\n| extend path_source = coalesce(tostring(Properties[\"install.path_source\"]), \"unknown\")\n| summarize Count = count() by path_source",
       "usedVariables": ["_dotnetupCommands"]
     },
     {
       "id": "q-install-path-type",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "_dotnetupCommands\n| where Message startswith \"dotnet/cli/command/\" and Message endswith \"/install\"\n| extend path_type = coalesce(tostring(Properties[\"install.path_type\"]), \"unknown\")\n| summarize Count = count() by path_type",
+      "text": "_dotnetupCommands\n| where Message startswith \"dotnetup/command/\" and Message endswith \"/install\"\n| extend path_type = coalesce(tostring(Properties[\"install.path_type\"]), \"unknown\")\n| summarize Count = count() by path_type",
       "usedVariables": ["_dotnetupCommands"]
     },
     {
       "id": "q-install-outcome",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "_dotnetupCommands\n| where Message startswith \"dotnet/cli/command/\" and Message endswith \"/install\"\n| extend result = coalesce(tostring(Properties[\"install.result\"]), iif(is_success, \"success\", \"failed\"))\n| summarize Count = count() by result",
+      "text": "_dotnetupCommands\n| where Message startswith \"dotnetup/command/\" and Message endswith \"/install\"\n| extend result = coalesce(tostring(Properties[\"install.result\"]), iif(is_success, \"success\", \"failed\"))\n| summarize Count = count() by result",
       "usedVariables": ["_dotnetupCommands"]
     },
     {
       "id": "q-installed-sdk-versions",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "_dotnetupCommands\n| where Message == \"dotnet/cli/command/sdk/install\"\n| extend version = coalesce(tostring(Properties[\"download.version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(version) and version != \"unknown\"\n| summarize Count = count() by version\n| order by Count desc\n| take 20",
+      "text": "_dotnetupCommands\n| where Message == \"dotnetup/command/sdk/install\"\n| extend installed_version = coalesce(tostring(Properties[\"download.version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
       "usedVariables": ["_dotnetupCommands"]
     },
     {
       "id": "q-installed-runtime-versions",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "_dotnetupCommands\n| where Message == \"dotnet/cli/command/runtime/install\"\n| extend version = coalesce(tostring(Properties[\"download.version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(version) and version != \"unknown\"\n| summarize Count = count() by version\n| order by Count desc\n| take 20",
+      "text": "_dotnetupCommands\n| where Message == \"dotnetup/command/runtime/install\"\n| extend installed_version = coalesce(tostring(Properties[\"download.version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
       "usedVariables": ["_dotnetupCommands"]
     },
     {
       "id": "q-requested-versions",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "_dotnetupCommands\n| where Message in (\"dotnet/cli/command/sdk/install\", \"dotnet/cli/command/runtime/install\")\n| extend requested = tostring(Properties[\"dotnet.requested\"]),\n    source = tostring(Properties[\"dotnet.request_source\"])\n| extend display_requested = case(\n    source == \"default-latest\", \"(default: latest)\",\n    source == \"default-globaljson\", strcat(\"(global.json: \", requested, \")\"),\n    source == \"explicit\" and isnotempty(requested), requested,\n    isnotempty(requested), requested,\n    isnotempty(source), strcat(\"(\", source, \")\"),\n    \"(no request data)\")\n| summarize Count = count() by display_requested\n| order by Count desc\n| take 15",
+      "text": "_dotnetupCommands\n| where Message in (\"dotnetup/command/sdk/install\", \"dotnetup/command/runtime/install\")\n| extend requested = tostring(Properties[\"dotnet.requested\"]),\n    source = tostring(Properties[\"dotnet.request_source\"])\n| extend display_requested = case(\n    source == \"default-latest\", \"(default: latest)\",\n    source == \"default-globaljson\", strcat(\"(global.json: \", requested, \")\"),\n    source == \"explicit\" and isnotempty(requested), requested,\n    isnotempty(requested), requested,\n    isnotempty(source), strcat(\"(\", source, \")\"),\n    \"(no request data)\")\n| summarize Count = count() by display_requested\n| order by Count desc\n| take 15",
       "usedVariables": ["_dotnetupCommands"]
     },
     {
       "id": "q-request-source-dist",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "_dotnetupCommands\n| where Message in (\"dotnet/cli/command/sdk/install\", \"dotnet/cli/command/runtime/install\")\n| extend source = coalesce(tostring(Properties[\"dotnet.request_source\"]), \"unknown\")\n| summarize Count = count() by source",
+      "text": "_dotnetupCommands\n| where Message in (\"dotnetup/command/sdk/install\", \"dotnetup/command/runtime/install\")\n| extend source = coalesce(tostring(Properties[\"dotnet.request_source\"]), \"unknown\")\n| summarize Count = count() by source",
       "usedVariables": ["_dotnetupCommands"]
     },
     {
@@ -759,7 +774,7 @@
     {
       "id": "q-download-stats",
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
-      "text": "// Note: download/extract sub-span events are not currently emitted as ActivityEvents.\n// This query uses install/complete events which carry download metadata.\n_dotnetupAll\n| where Message == \"dotnet/cli/install/complete\"\n| extend from_cache = tostring(Properties[\"download.from_cache\"]),\n    bytes = todouble(Properties[\"download.bytes\"])\n| summarize\n    TotalInstalls = count(),\n    CacheHits = countif(from_cache == \"true\" or from_cache == \"True\"),\n    AvgSizeMB = round(avg(bytes) / 1048576, 2)\n| extend CacheHitRate = round(100.0 * CacheHits / TotalInstalls, 1)\n| project TotalInstalls, CacheHits, CacheHitRate, AvgSizeMB",
+      "text": "// download/complete events carry download.bytes and download.from_cache tags\n// emitted by the library via InstallationActivitySource.EmitEvent.\n_dotnetupAll\n| where Message == \"dotnetup/download/complete\"\n| extend from_cache = tostring(Properties[\"download.from_cache\"]),\n    bytes = todouble(Properties[\"download.bytes\"])\n| summarize\n    TotalDownloads = count(),\n    CacheHits = countif(from_cache == \"true\" or from_cache == \"True\"),\n    AvgSizeMB = round(avg(bytes) / 1048576, 2)\n| extend CacheHitRate = round(100.0 * CacheHits / TotalDownloads, 1)\n| project TotalDownloads, CacheHits, CacheHitRate, AvgSizeMB",
       "usedVariables": ["_dotnetupAll"]
     },
     {
@@ -779,6 +794,13 @@
       "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
       "text": "_dotnetupCommands\n| extend device_id = tostring(Properties[\"device.id\"])\n| summarize UniqueDevices = dcount(device_id) by Day = bin(TimeGenerated, 1d)",
       "usedVariables": ["_dotnetupCommands"]
+    },
+    {
+      "id": "q-download-extract-duration",
+      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "text": "// download/complete and extract/complete events are emitted by the library\n// via InstallationActivitySource.EmitEvent with span tags copied to properties.\n_dotnetupAll\n| where Message in (\"dotnetup/download/complete\", \"dotnetup/extract/complete\")\n| extend from_cache = tostring(Properties[\"download.from_cache\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where isnotnull(duration_ms)\n| extend operation = case(\n    Message == \"dotnetup/download/complete\" and (from_cache == \"true\" or from_cache == \"True\"), \"download (cached)\",\n    Message == \"dotnetup/download/complete\", \"download (network)\",\n    \"extract\")\n| summarize AvgDuration = avg(duration_ms) by Hour = bin(TimeGenerated, 1h), operation",
+      "usedVariables": ["_dotnetupAll"]
     }
   ]
 }
+

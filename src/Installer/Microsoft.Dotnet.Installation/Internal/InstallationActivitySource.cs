@@ -52,4 +52,23 @@ internal static class InstallationActivitySource
     public static ActivitySource ActivitySource { get; } = new(
         SourceName,
         typeof(InstallationActivitySource).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0");
+
+    /// <summary>
+    /// Optional callback registered by the host (e.g., dotnetup) to receive telemetry events.
+    /// When set, all library telemetry flows through the host's TrackEvent implementation,
+    /// ensuring data lands in both spans and events (traces table).
+    /// When null, telemetry falls back to span-only (Activity.SetTag).
+    /// </summary>
+    public static Action<string, IDictionary<string, string?>>? OnTrackEvent { get; set; }
+
+    /// <summary>
+    /// Starts a tracked operation that automatically emits a telemetry event on dispose.
+    /// Tags set via the returned <see cref="TrackedOperation"/> are captured on both
+    /// the underlying span and the emitted event.
+    /// </summary>
+    public static TrackedOperation StartTracked(string activityName, string eventName)
+    {
+        var activity = ActivitySource.StartActivity(activityName, ActivityKind.Internal);
+        return new TrackedOperation(activity, eventName);
+    }
 }

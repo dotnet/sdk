@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
@@ -42,23 +41,19 @@ internal class DotnetupProgram
         FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
 
         // Start root activity for the entire process
-        using var rootActivity = DotnetupTelemetry.Instance.Enabled
-            ? DotnetupTelemetry.CommandSource.StartActivity("dotnetup", ActivityKind.Internal)
-            : null;
+        using var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
 
         int processExitCode = 1;
 
         try
         {
-            processExitCode = InvokeParser(args, rootActivity);
+            processExitCode = InvokeParser(args);
 
             return processExitCode;
         }
         catch (Exception ex)
         {
-            // Catch-all for unhandled exceptions — RecordException emits both
-            // span error tags and an error event for data-x-platform.
-            DotnetupTelemetry.Instance.RecordException(rootActivity, ex);
+            DotnetupTelemetry.Instance.RecordException(rootOp.Activity, ex);
 
             // Log the error and return non-zero exit code
             Console.Error.WriteLine($"Error: {ex.Message}");
@@ -69,28 +64,16 @@ internal class DotnetupProgram
         }
         finally
         {
-            rootActivity?.SetTag(TelemetryTagNames.ExitCode, processExitCode);
-            rootActivity?.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-
-            // Emit root process event for data-x-platform.
-            DotnetupTelemetry.Instance.TrackEvent("process/complete", new Dictionary<string, string?>
-            {
-                [TelemetryTagNames.ExitCode] = processExitCode.ToString(CultureInfo.InvariantCulture),
-                ["process.status"] = processExitCode == 0 ? "ok" : "error"
-            });
-
-            // Stop the root activity before disposing so the console/Azure Monitor
-            // exporters see it.  The 'using' dispose that follows is a no-op on
-            // an already-stopped Activity.
-            rootActivity?.Stop();
+            rootOp.SetTag(TelemetryTagNames.ExitCode, processExitCode);
+            rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            rootOp.Dispose(); // emit process/complete event before flush
             DisposeTelemetry();
         }
     }
 
-    private static int InvokeParser(string[] args, Activity? rootActivity)
+    private static int InvokeParser(string[] args)
     {
-        var result = Parser.Invoke(args);
-        return result;
+        return Parser.Invoke(args);
     }
 
     private static void DisposeTelemetry()

@@ -130,8 +130,8 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Commit()
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("extract");
-        activity?.SetTag("download.version", _resolvedVersion.ToString());
+        using var op = InstallationActivitySource.StartTracked("extract", "extract/complete");
+        op.SetTag("download.version", _resolvedVersion.ToString());
 
         _extractedSubcomponents.Clear();
 
