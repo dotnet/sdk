@@ -1266,7 +1266,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(RunFileTests.DirectiveError(filePath, 1, FileBasedProgramsResources.UnrecognizedDirective, "invalid"));
+            .And.HaveStdErrContaining(RunFileTestBase.DirectiveError(filePath, 1, FileBasedProgramsResources.UnrecognizedDirective, "invalid"));
 
         new DirectoryInfo(Path.Join(testInstance.Path))
             .EnumerateDirectories().Should().BeEmpty();
@@ -1719,8 +1719,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: "",
             expectedErrors:
             [
-                (7, string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:include", RunFileTests.s_includeExcludeDefaultKnownExtensions)),
-                (8, string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:exclude", RunFileTests.s_includeExcludeDefaultKnownExtensions)),
+                (7, string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:include", RunFileTestBase.s_includeExcludeDefaultKnownExtensions)),
+                (8, string.Format(FileBasedProgramsResources.IncludeOrExcludeDirectiveUnknownFileType, "#:exclude", RunFileTestBase.s_includeExcludeDefaultKnownExtensions)),
                 (1, string.Format(Resources.IncludedFileNotFound, Path.Join(testInstance.Path, "A.cs"))),
                 (1, string.Format(Resources.IncludedFileNotFound, Path.Join(testInstance.Path, "|.cs"))),
             ]);
