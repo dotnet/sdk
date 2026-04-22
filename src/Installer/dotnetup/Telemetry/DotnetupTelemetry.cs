@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -35,12 +36,16 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </summary>
     private const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
 
-    /// <summary>
-    /// Environment variable to opt out of telemetry.
-    /// </summary>
     private const string TelemetryOptOutEnvVar = "DOTNET_CLI_TELEMETRY_OPTOUT";
+    private const string StoragePathEnvVar = "DOTNET_CLI_TELEMETRY_STORAGE_PATH";
+    private const string DisableTraceExportEnvVar = "DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT";
+
+    private static readonly string s_defaultStorageDirectory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+        ".dotnet", "TelemetryStorageService");
 
     private readonly TracerProvider? _tracerProvider;
+    private readonly List<Activity> _activities = [];
     private bool _disposed;
 
     /// <summary>
@@ -69,23 +74,33 @@ public sealed class DotnetupTelemetry : IDisposable
 
         try
         {
+            var disableExport = IsTruthy(Environment.GetEnvironmentVariable(DisableTraceExportEnvVar));
+            var environmentStoragePath = Environment.GetEnvironmentVariable(StoragePathEnvVar);
+
+            // Mirror the SDK TelemetryClient's TracerProvider setup exactly.
+            // Using "dotnet-cli" as service name to test data-x-platform ingestion.
+            // TODO: Change to "dotnetup" once we confirm the platform accepts it.
             var builder = Sdk.CreateTracerProviderBuilder()
-                .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                    .AddService(
-                        serviceName: "dotnetup",
-                        serviceVersion: GetVersion())
-                    .AddAttributes(TelemetryCommonProperties.GetCommonAttributes(SessionId)))
+                .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: GetVersion()); })
                 .AddSource("Microsoft.Dotnet.Bootstrapper")
-                .AddSource("Microsoft.Dotnet.Installation");  // Library's ActivitySource
+                .AddSource("Microsoft.Dotnet.Installation")
+                .AddOtlpExporter()
+                .AddInMemoryExporter(_activities)
+                .SetSampler(new AlwaysOnSampler());
 
-            // IMPORTANT: Do NOT add auto-instrumentation (e.g. AddHttpClientInstrumentation)
-            // without reviewing PII implications.
-
-            // Add Azure Monitor exporter
-            builder.AddAzureMonitorTraceExporter(o =>
+            if (!disableExport)
             {
-                o.ConnectionString = ConnectionString;
-            });
+                var storageDirectory = string.IsNullOrWhiteSpace(environmentStoragePath)
+                    ? s_defaultStorageDirectory
+                    : environmentStoragePath;
+
+                builder.AddAzureMonitorTraceExporter(o =>
+                {
+                    o.ConnectionString = ConnectionString;
+                    o.EnableLiveMetrics = false;
+                    o.StorageDirectory = storageDirectory;
+                });
+            }
 
             // Console exporter for local debugging / E2E test verification.
             // Set DOTNETUP_TELEMETRY_DEBUG=1 to enable.
@@ -178,6 +193,44 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
+    /// Emits an ActivityEvent on Activity.Current using the same format as the
+    /// .NET SDK TelemetryClient (lands in customEvents table in App Insights).
+    /// Uses "dotnet/cli/" prefix to test data-x-platform ingestion.
+    /// </summary>
+    public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
+    {
+        if (!Enabled)
+        {
+            return;
+        }
+
+        try
+        {
+            properties ??= new Dictionary<string, string?>();
+            properties["event id"] = Guid.NewGuid().ToString();
+            properties["SessionId"] = SessionId;
+
+            // Merge common properties as tags (same as SDK's MakeTags)
+            var tags = new ActivityTagsCollection();
+            foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
+            {
+                tags.Add(new KeyValuePair<string, object?>(attr.Key, attr.Value?.ToString()));
+            }
+            foreach (var prop in properties.Where(p => p.Value is not null).OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                tags.Add(new KeyValuePair<string, object?>(prop.Key, prop.Value));
+            }
+
+            var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: tags);
+            Activity.Current?.AddEvent(@event);
+        }
+        catch
+        {
+            // Telemetry should never crash the app
+        }
+    }
+
+    /// <summary>
     /// Disposes the telemetry provider.
     /// </summary>
     public void Dispose()
@@ -197,4 +250,8 @@ public sealed class DotnetupTelemetry : IDisposable
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
             ?? "0.0.0";
     }
+
+    private static bool IsTruthy(string? value) =>
+        string.Equals(value, "1", StringComparison.Ordinal) ||
+        string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
 }

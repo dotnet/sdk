@@ -45,6 +45,14 @@ internal class DotnetupProgram
             ? DotnetupTelemetry.CommandSource.StartActivity("dotnetup", ActivityKind.Internal)
             : null;
 
+        // Test event: emit an ActivityEvent using the SDK's format to verify
+        // data-x-platform ingestion. Remove after testing.
+        DotnetupTelemetry.Instance.TrackEvent("dotnetup/test-ping", new Dictionary<string, string?>
+        {
+            ["test.source"] = "dotnetup",
+            ["test.timestamp"] = DateTime.UtcNow.ToString("o")
+        });
+
         try
         {
             var exitCode = InvokeParser(args, rootActivity);
@@ -94,7 +102,7 @@ internal class DotnetupProgram
         // threads, any remaining exporter work is terminated when Main returns.
         try
         {
-            DotnetupTelemetry.Instance.Flush(timeoutMilliseconds: 100);
+            DotnetupTelemetry.Instance.Flush(timeoutMilliseconds: 5000);
         }
         catch
         {
