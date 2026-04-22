@@ -267,7 +267,7 @@ We do not limit these directives to appear only in entry point files because it 
 - which also makes it possible to share it independently or symlink it to multiple script folders,
 - and it's similar to `global using`s which users usually put into a single file but don't have to.
 
-We disallow duplicate `#:` directives (except `#:project` and `#:ref`) to allow us design some deduplication mechanism in the future.
+We disallow duplicate `#:` directives (except `#:project` and `#:ref`) to allow us to design some deduplication mechanism in the future.
 Specifically, directives are considered duplicate if their type and name (case insensitive) are equal.
 `#:project` and `#:ref` duplicates are allowed because MSBuild handles deduplication of project references naturally.
 Later with deduplication, separate "self-contained" utilities could reference overlapping sets of packages

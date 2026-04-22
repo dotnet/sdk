@@ -3507,7 +3507,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             </Project>
             """);
 
-        // Duplicate #:project directives are allowed (MSBuild handles deduplication).
+        // Duplicate #:project directives are allowed (MSBuild can handle that).
         File.WriteAllText(filePath, """
             #:project dir/
             #:project dir/
