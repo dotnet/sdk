@@ -5,6 +5,8 @@ on:
 
 env:
   KBE_LABEL: 'Known Build Error'
+  STALE_LABEL: 'stale'
+  KEEP_OPEN_LABEL: 'keep-open'
 
 permissions:
   actions: write # For managing the operation state cache
@@ -40,8 +42,6 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
-            const staleLabel = 'stale';
-
             const issues = await github.paginate(
               github.rest.issues.listForRepo,
               { owner: context.repo.owner, repo: context.repo.repo,
@@ -49,7 +49,7 @@ jobs:
 
             for (const issue of issues) {
               if (issue.pull_request) continue;
-              if (issue.labels.some(l => l.name === 'keep-open')) continue;
+              if (issue.labels.some(l => l.name === process.env.KEEP_OPEN_LABEL)) continue;
 
               // Parse the hit count summary table from the issue body.
               // Format: |24-Hour Hit Count|7-Day Hit Count|1-Month Count|
@@ -60,23 +60,23 @@ jobs:
               if (!match) continue;
               const monthCount = parseInt(match[3], 10);
 
-              const hasStale = issue.labels.some(l => l.name === staleLabel);
+              const hasStale = issue.labels.some(l => l.name === process.env.STALE_LABEL);
 
               if (monthCount === 0 && !hasStale) {
                 // Zero hits for a month: mark as stale
                 await github.rest.issues.addLabels({
                   ...context.repo, issue_number: issue.number,
-                  labels: [staleLabel] });
+                  labels: [process.env.STALE_LABEL] });
                 await github.rest.issues.createComment({
                   ...context.repo, issue_number: issue.number,
                   body: 'This Known Build Error has had **0 hits in the past month** and has been labeled `stale`. ' +
                     'It will be auto-closed in 7 days if the hit count remains at 0. ' +
-                    'Add the `keep-open` label to prevent auto-closure.' });
+                    'Add the `' + process.env.KEEP_OPEN_LABEL + '` label to prevent auto-closure.' });
               } else if (monthCount > 0 && hasStale) {
                 // Hits resumed: remove the stale label
                 await github.rest.issues.removeLabel({
                   ...context.repo, issue_number: issue.number,
-                  name: staleLabel }).catch(() => {});
+                  name: process.env.STALE_LABEL }).catch(() => {});
               }
             }
 
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/stale@v9
         with:
           only-labels: ${{ env.KBE_LABEL }}
-          stale-issue-label: 'stale'
+          stale-issue-label: ${{ env.STALE_LABEL }}
           close-issue-message: 'Closed automatically — this Known Build Error has had 0 hits for over a month.'
           days-before-issue-stale: -1 # Don't auto-stale; step 1 handles that
           days-before-issue-close: 7
