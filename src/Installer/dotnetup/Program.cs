@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
@@ -45,17 +46,19 @@ internal class DotnetupProgram
             ? DotnetupTelemetry.CommandSource.StartActivity("dotnetup", ActivityKind.Internal)
             : null;
 
+        int processExitCode = 1;
+
         try
         {
-            var exitCode = InvokeParser(args, rootActivity);
+            processExitCode = InvokeParser(args, rootActivity);
 
-            return exitCode;
+            return processExitCode;
         }
         catch (Exception ex)
         {
-            // Catch-all for unhandled exceptions
+            // Catch-all for unhandled exceptions — RecordException emits both
+            // span error tags and an error event for data-x-platform.
             DotnetupTelemetry.Instance.RecordException(rootActivity, ex);
-            rootActivity?.SetTag(TelemetryTagNames.ExitCode, 1);
 
             // Log the error and return non-zero exit code
             Console.Error.WriteLine($"Error: {ex.Message}");
@@ -66,6 +69,16 @@ internal class DotnetupProgram
         }
         finally
         {
+            rootActivity?.SetTag(TelemetryTagNames.ExitCode, processExitCode);
+            rootActivity?.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+
+            // Emit root process event for data-x-platform.
+            DotnetupTelemetry.Instance.TrackEvent("process/complete", new Dictionary<string, string?>
+            {
+                [TelemetryTagNames.ExitCode] = processExitCode.ToString(CultureInfo.InvariantCulture),
+                ["process.status"] = processExitCode == 0 ? "ok" : "error"
+            });
+
             // Stop the root activity before disposing so the console/Azure Monitor
             // exporters see it.  The 'using' dispose that follows is a no-op on
             // an already-stopped Activity.
@@ -77,8 +90,6 @@ internal class DotnetupProgram
     private static int InvokeParser(string[] args, Activity? rootActivity)
     {
         var result = Parser.Invoke(args);
-        rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
-        rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
         return result;
     }
 
@@ -94,6 +105,7 @@ internal class DotnetupProgram
         // threads, any remaining exporter work is terminated when Main returns.
         try
         {
+            DotnetupTelemetry.Instance.WriteLogIfNecessary();
             DotnetupTelemetry.Instance.Flush(timeoutMilliseconds: 5000);
         }
         catch

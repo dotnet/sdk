@@ -194,7 +194,6 @@ internal class InstallWorkflow
 
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
         int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
         DotnetupTelemetry.Instance.TrackEvent("install/complete", new Dictionary<string, string?>
         {
             [TelemetryTagNames.InstallResult] = $"installed:{newlyInstalled},already_installed:{alreadyInstalled}"
@@ -220,8 +219,6 @@ internal class InstallWorkflow
         // Block system-managed install paths — dotnetup should not install there
         if (InstallPathClassifier.IsAdminInstallPath(installPath))
         {
-            Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "system");
-            Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, pathSource.ToString().ToLowerInvariant());
             DotnetupTelemetry.Instance.TrackEvent("install/admin-path-blocked", new Dictionary<string, string?>
             {
                 [TelemetryTagNames.InstallPathType] = "system",
@@ -271,29 +268,12 @@ internal class InstallWorkflow
         string resolvedChannel,
         ResolvedInstallRequest resolved)
     {
-        // Request-level tags
-        Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, component.ToString());
-        Activity.Current?.SetTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathExplicit, explicitInstallPath is not null);
-
-        // Resolved context tags
-        Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, globalJson?.GlobalJsonPath is not null);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot?.InstallType.ToString() ?? "none");
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
-
-        // Resolved version tags
-        Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());
-
         string requestSource = requestedVersionOrChannel is not null
             ? "explicit"
             : globalJson?.GlobalJsonPath is not null
                 ? "default-globaljson"
                 : "default-latest";
-        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequestSource, requestSource);
-        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(resolvedChannel));
 
-        // Emit install telemetry as an event for data-x-platform (traces table).
         DotnetupTelemetry.Instance.TrackEvent("install/resolved", new Dictionary<string, string?>
         {
             [TelemetryTagNames.InstallComponent] = component.ToString(),

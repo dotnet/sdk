@@ -149,6 +149,7 @@ internal class GarbageCollector
         using var activity = InstallationActivitySource.ActivitySource.StartActivity("gc.delete-orphaned-subcomponents");
         var deleted = new List<string>();
         var failedCount = 0;
+        string? lastFailedPath = null;
 
         if (!Directory.Exists(dotnetRootPath))
         {
@@ -185,15 +186,13 @@ internal class GarbageCollector
                     {
                         Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
                         ++failedCount;
+                        lastFailedPath = relativePath;
                         DotnetupTelemetry.Instance.RecordException(activity, ex, errorCode: "gc.delete_failed");
-                        activity?.SetTag("gc.failed_path", relativePath);
                     }
                 }
             }
         }
 
-        activity?.SetTag("gc.deleted_count", deleted.Count);
-        activity?.SetTag("gc.failed_count", failedCount);
         if (failedCount > 0)
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Some subcomponents could not be deleted");
@@ -203,6 +202,7 @@ internal class GarbageCollector
         {
             ["gc.deleted_count"] = deleted.Count.ToString(CultureInfo.InvariantCulture),
             ["gc.failed_count"] = failedCount.ToString(CultureInfo.InvariantCulture),
+            ["gc.failed_path"] = lastFailedPath,
             ["gc.status"] = failedCount > 0 ? "error" : "ok"
         });
 

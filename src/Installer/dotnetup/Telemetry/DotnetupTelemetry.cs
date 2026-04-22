@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.DotNet.Cli.Telemetry;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
@@ -39,10 +40,29 @@ public sealed class DotnetupTelemetry : IDisposable
     private const string TelemetryOptOutEnvVar = "DOTNET_CLI_TELEMETRY_OPTOUT";
     private const string StoragePathEnvVar = "DOTNET_CLI_TELEMETRY_STORAGE_PATH";
     private const string DisableTraceExportEnvVar = "DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT";
+    private const string DiskLogPathEnvVar = "DOTNET_CLI_TELEMETRY_LOG_PATH";
 
     private static readonly string s_defaultStorageDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
         ".dotnet", "TelemetryStorageService");
+
+    private static readonly string? s_diskLogPath = GetDiskLogPath();
+
+    private static string? GetDiskLogPath()
+    {
+        var path = Environment.GetEnvironmentVariable(DiskLogPathEnvVar);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        // Write to the same directory as the SDK log but with a distinct filename
+        // to avoid read-modify-write conflicts between dotnet CLI and dotnetup.
+        var dir = Path.GetDirectoryName(path);
+        var name = Path.GetFileNameWithoutExtension(path);
+        var ext = Path.GetExtension(path);
+        return Path.Combine(dir ?? string.Empty, $"{name}-dotnetup{ext}");
+    }
 
     private readonly TracerProvider? _tracerProvider;
     private readonly List<Activity> _activities = [];
@@ -77,11 +97,8 @@ public sealed class DotnetupTelemetry : IDisposable
             var disableExport = IsTruthy(Environment.GetEnvironmentVariable(DisableTraceExportEnvVar));
             var environmentStoragePath = Environment.GetEnvironmentVariable(StoragePathEnvVar);
 
-            // Mirror the SDK TelemetryClient's TracerProvider setup exactly.
-            // Using "dotnet-cli" as service name to test data-x-platform ingestion.
-            // TODO: Change to "dotnetup" once we confirm the platform accepts it.
             var builder = Sdk.CreateTracerProviderBuilder()
-                .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: GetVersion()); })
+                .ConfigureResource(r => { r.AddService("dotnetup", serviceVersion: GetVersion()); })
                 .AddSource("Microsoft.Dotnet.Bootstrapper")
                 .AddSource("Microsoft.Dotnet.Installation")
                 .AddOtlpExporter()
@@ -174,6 +191,14 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             ErrorCodeMapper.ApplyErrorTags(root, errorInfo);
         }
+
+        // Emit error as an event for data-x-platform (traces table).
+        var errorEventProps = ErrorCodeMapper.ToEventProperties(errorInfo);
+        if (errorCode is not null)
+        {
+            errorEventProps[TelemetryTagNames.ErrorCode] = errorCode;
+        }
+        TrackEvent("error", errorEventProps);
     }
 
     /// <summary>
@@ -193,9 +218,21 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Emits an ActivityEvent on Activity.Current using the same format as the
-    /// .NET SDK TelemetryClient (lands in customEvents table in App Insights).
-    /// Uses "dotnet/cli/" prefix to test data-x-platform ingestion.
+    /// Writes collected activities to disk if DOTNET_CLI_TELEMETRY_LOG_PATH is set.
+    /// Same format as the SDK's TelemetryDiskLogger.
+    /// </summary>
+    public void WriteLogIfNecessary()
+    {
+        if (!string.IsNullOrWhiteSpace(s_diskLogPath) && _activities.Count > 0)
+        {
+            TelemetryDiskLogger.WriteLog(s_diskLogPath, _activities);
+        }
+    }
+
+    /// <summary>
+    /// Emits an ActivityEvent on Activity.Current AND sets each property as a
+    /// tag on Activity.Current. This is the single entry point for telemetry
+    /// data — callers should NOT separately call Activity.Current?.SetTag().
     /// </summary>
     public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
@@ -210,6 +247,17 @@ public sealed class DotnetupTelemetry : IDisposable
             properties["event id"] = Guid.NewGuid().ToString();
             properties["SessionId"] = SessionId;
 
+            // Set each property as a span tag so it appears in the span's
+            // customDimensions (dependencies/requests tables) as well.
+            var current = Activity.Current;
+            if (current != null)
+            {
+                foreach (var prop in properties)
+                {
+                    current.SetTag(prop.Key, prop.Value);
+                }
+            }
+
             // Merge common properties as tags (same as SDK's MakeTags)
             var tags = new ActivityTagsCollection();
             foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
@@ -221,8 +269,8 @@ public sealed class DotnetupTelemetry : IDisposable
                 tags.Add(new KeyValuePair<string, object?>(prop.Key, prop.Value));
             }
 
-            var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: tags);
-            Activity.Current?.AddEvent(@event);
+            var @event = new ActivityEvent($"dotnetup/{eventName}", tags: tags);
+            current?.AddEvent(@event);
         }
         catch
         {

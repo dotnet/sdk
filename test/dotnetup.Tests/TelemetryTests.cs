@@ -620,3 +620,90 @@ public class ActivitySourceIntegrationTests
         Assert.Contains(capturedActivities[0].Tags, t => t.Key == "test.key" && t.Value == "test-value");
     }
 }
+
+/// <summary>
+/// Enforces that telemetry data in dotnetup source files is sent through
+/// DotnetupTelemetry.TrackEvent (which dual-writes to both spans and events)
+/// rather than calling Activity.Current?.SetTag() or activity?.SetTag() directly.
+/// Direct SetTag calls only reach the span (dependencies/requests tables) but
+/// not the traces table where the data-x-platform reads from.
+/// </summary>
+public class TelemetryDualWriteEnforcementTests
+{
+    // Files that legitimately call SetTag for span lifecycle (status, error propagation)
+    // rather than telemetry data emission.
+    private static readonly HashSet<string> s_allowedFiles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "DotnetupTelemetry.cs",   // StartCommand sets span-level context for RecordException
+        "ErrorCodeMapper.cs",     // Applies error tags to specific activity instances
+        "CommandBase.cs",         // Sets exit code and status on _commandActivity
+        "Program.cs",             // Sets exit code and status on rootActivity
+    };
+
+    [Fact]
+    public void DotnetupSource_ShouldNotCallSetTagDirectly_OutsideAllowedFiles()
+    {
+        var dotnetupSrcDir = FindDotnetupSourceDirectory();
+        if (dotnetupSrcDir is null)
+        {
+            // Skip if source directory not found (e.g., running from packaged test)
+            return;
+        }
+
+        var violations = new List<string>();
+        var csFiles = Directory.GetFiles(dotnetupSrcDir, "*.cs", SearchOption.AllDirectories);
+
+        foreach (var file in csFiles)
+        {
+            var fileName = Path.GetFileName(file);
+            if (s_allowedFiles.Contains(fileName))
+            {
+                continue;
+            }
+
+            var lines = File.ReadAllLines(file);
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                if (line.Contains(".SetTag(", StringComparison.Ordinal)
+                    && (line.Contains("Activity.Current", StringComparison.Ordinal)
+                        || line.Contains("activity?.", StringComparison.OrdinalIgnoreCase)
+                        || line.Contains("activity.", StringComparison.OrdinalIgnoreCase)))
+                {
+                    violations.Add($"{Path.GetRelativePath(dotnetupSrcDir, file)}:{i + 1}: {line.Trim()}");
+                }
+            }
+        }
+
+        Assert.True(
+            violations.Count == 0,
+            $"Found {violations.Count} direct Activity.SetTag() call(s) outside allowed files. " +
+            "Use DotnetupTelemetry.Instance.TrackEvent() instead, which writes to both " +
+            "the span and the traces table (for data-x-platform).\n\n" +
+            string.Join("\n", violations));
+    }
+
+    private static string? FindDotnetupSourceDirectory()
+    {
+        // Walk up from test assembly location to find src/Installer/dotnetup
+        var dir = AppContext.BaseDirectory;
+        for (int i = 0; i < 10; i++)
+        {
+            var candidate = Path.Combine(dir, "src", "Installer", "dotnetup");
+            if (Directory.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            var parent = Directory.GetParent(dir);
+            if (parent is null)
+            {
+                break;
+            }
+
+            dir = parent.FullName;
+        }
+
+        return null;
+    }
+}

@@ -54,7 +54,10 @@ internal static class TelemetryDiskLogger
             var jsonText = !File.Exists(logPath) ? """{"activities":[]}""" : File.ReadAllText(logPath);
             var root = JsonNode.Parse(jsonText)!;
             var activitiesArray = root["activities"]!.AsArray();
-            activitiesArray.AddRange(activies.Select(r => JsonNode.Parse(JsonSerializer.Serialize(CreateActivityJsonModel(r), s_jsonContext.ActivityModel))));
+            foreach (var activity in activies)
+            {
+                activitiesArray.Add(JsonNode.Parse(JsonSerializer.Serialize(CreateActivityJsonModel(activity), s_jsonContext.ActivityModel)));
+            }
             root["activities"] = activitiesArray;
             File.WriteAllText(logPath, root.ToJsonString(s_jsonOptions));
         }
@@ -79,13 +82,13 @@ internal static class TelemetryDiskLogger
         source: new(
             name: activity.Source.Name,
             version: activity.Source.Version,
-            tags: activity.Source.Tags?.ToDictionary()
+            tags: activity.Source.Tags?.ToDictionary(StringComparer.OrdinalIgnoreCase)
         ),
-        tags: activity.Tags.ToDictionary(),
+        tags: activity.Tags.ToDictionary(StringComparer.OrdinalIgnoreCase),
         events: [.. activity.Events.Select(e => new EventModel(
             name: e.Name,
             timestamp: e.Timestamp,
-            tags: e.Tags.ToDictionary()
+            tags: e.Tags.ToDictionary(StringComparer.OrdinalIgnoreCase)
         ))]
     );
 }

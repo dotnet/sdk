@@ -47,7 +47,6 @@ public abstract class CommandBase
         {
             // Known installation errors - print a clean user-friendly message
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
-            AddErrorEventProperties(ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
             return 1;
         }
@@ -55,7 +54,6 @@ public abstract class CommandBase
         {
             // Unexpected errors - still record telemetry so error_type is populated
             DotnetupTelemetry.Instance.RecordException(_commandActivity, ex);
-            AddErrorEventProperties(ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
 #if DEBUG
             Console.Error.WriteLine(ex.StackTrace);
@@ -64,15 +62,14 @@ public abstract class CommandBase
         }
         finally
         {
-            _commandActivity?.SetTag(TelemetryTagNames.ExitCode, _exitCode);
+            SetCommandTag(TelemetryTagNames.ExitCode, _exitCode);
+            SetCommandTag(TelemetryTagNames.Caller, "dotnetup");
+            SetCommandTag("command.status", _exitCode == 0 ? "ok" : "error");
+            SetCommandTag("command.duration_ms", _commandActivity?.Duration.TotalMilliseconds
+                .ToString(CultureInfo.InvariantCulture));
             _commandActivity?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
 
             // Emit command event for data-x-platform (lands in traces table).
-            _eventProperties[TelemetryTagNames.ExitCode] = _exitCode.ToString(CultureInfo.InvariantCulture);
-            _eventProperties[TelemetryTagNames.Caller] = "dotnetup";
-            _eventProperties["command.status"] = _exitCode == 0 ? "ok" : "error";
-            _eventProperties["command.duration_ms"] = _commandActivity?.Duration.TotalMilliseconds
-                .ToString(CultureInfo.InvariantCulture);
             DotnetupTelemetry.Instance.TrackEvent($"command/{commandName}", _eventProperties);
 
             _commandActivity?.Dispose();
@@ -110,8 +107,7 @@ public abstract class CommandBase
     protected void RecordRequestedVersion(string? versionOrChannel)
     {
         var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
-        _commandActivity?.SetTag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
-        _eventProperties[TelemetryTagNames.DotnetRequestedVersion] = sanitized;
+        SetCommandTag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
     }
 
     /// <summary>
@@ -121,36 +117,11 @@ public abstract class CommandBase
     /// <param name="requestedValue">The sanitized requested value (channel/version). For defaults, this is what was defaulted to.</param>
     protected void RecordRequestSource(string source, string? requestedValue)
     {
-        _commandActivity?.SetTag(TelemetryTagNames.DotnetRequestSource, source);
-        _eventProperties[TelemetryTagNames.DotnetRequestSource] = source;
+        SetCommandTag(TelemetryTagNames.DotnetRequestSource, source);
         if (requestedValue != null)
         {
             var sanitized = VersionSanitizer.Sanitize(requestedValue);
-            _commandActivity?.SetTag(TelemetryTagNames.DotnetRequested, sanitized);
-            _eventProperties[TelemetryTagNames.DotnetRequested] = sanitized;
-        }
-    }
-
-    private void AddErrorEventProperties(Exception ex)
-    {
-        var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-        _eventProperties[TelemetryTagNames.ErrorType] = errorInfo.ErrorType;
-        _eventProperties[TelemetryTagNames.ErrorCategory] = errorInfo.Category.ToString().ToLowerInvariant();
-        if (errorInfo.StatusCode is { } statusCode)
-        {
-            _eventProperties[TelemetryTagNames.ErrorHttpStatus] = statusCode.ToString(CultureInfo.InvariantCulture);
-        }
-        if (errorInfo.HResult is { } hResult)
-        {
-            _eventProperties[TelemetryTagNames.ErrorHResult] = hResult.ToString(CultureInfo.InvariantCulture);
-        }
-        if (errorInfo.Details is { } details)
-        {
-            _eventProperties[TelemetryTagNames.ErrorDetails] = details;
-        }
-        if (errorInfo.StackTrace is { } stackTrace)
-        {
-            _eventProperties[TelemetryTagNames.ErrorStackTrace] = stackTrace;
+            SetCommandTag(TelemetryTagNames.DotnetRequested, sanitized);
         }
     }
 }
