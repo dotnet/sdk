@@ -25,6 +25,7 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = nameof(DOTNET_ADD_GLOBAL_TOOLS_TO_PATH);
     public static readonly string DOTNET_NOLOGO = nameof(DOTNET_NOLOGO);
     public static readonly string DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK = nameof(DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK);
+    public static readonly string DOTNET_CLI_ENABLEAOT = nameof(DOTNET_CLI_ENABLEAOT);
     public static readonly string DOTNET_CLI_TELEMETRY_SESSIONID = nameof(DOTNET_CLI_TELEMETRY_SESSIONID);
     public static readonly string DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING = nameof(DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING);
     // Telemetry logging/debug/testing.

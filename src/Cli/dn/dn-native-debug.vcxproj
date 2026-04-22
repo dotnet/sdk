@@ -129,7 +129,8 @@
     <LocalDebuggerCommand>$(_DnExePath)</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>--info</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(_DnPublishDir)</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerEnvironment>DOTNET_ROOT=$(_DotnetRootPath)</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>DOTNET_ROOT=$(_DotnetRootPath)
+DOTNET_CLI_ENABLEAOT=true</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 

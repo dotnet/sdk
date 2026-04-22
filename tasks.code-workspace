@@ -19,7 +19,8 @@
           "args": ["--info"],
           "cwd": "${workspaceFolder}${/}artifacts${/}bin${/}dn${/}Debug${/}net11.0${/}win-x64${/}publish",
           "environment": [
-            { "name": "DOTNET_ROOT", "value": "${workspaceFolder}/.dotnet" }
+            { "name": "DOTNET_ROOT", "value": "${workspaceFolder}/.dotnet" },
+            { "name": "DOTNET_CLI_ENABLEAOT", "value": "true" }
           ],
           "stopAtEntry": false,
           "console": "integratedTerminal"
