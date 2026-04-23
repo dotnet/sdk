@@ -170,6 +170,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       Assets="@(_ReferencedProjectPublishStaticWebAssetsUpdateCandidates)"
       Endpoints="@(_ReferencedProjectPublishStaticWebAssetEndpointsUpdateCandidates)"
       FingerprintInferenceExpressions="@(StaticWebAssetFingerprintInferenceExpression)"
+      IntermediateOutputPath="$(_StaticWebAssetsIntermediateOutputPath)"
+      ProjectPackageId="$(PackageId)"
+      ProjectBasePath="$(StaticWebAssetBasePath)"
     >
       <Output TaskParameter="UpdatedAssets" ItemName="_ReferencedProjectPublishStaticWebAssets" />
       <Output TaskParameter="UpdatedEndpoints" ItemName="_ReferencedProjectPublishStaticWebAssetEndpoints" />

@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // For example, the JavaScript Project Tools SDK integrates with the static web asset protocol for SPA applications
 // but it doesn't support integrity or fingerprinting, which causes issues when we reference the project and we try
 // to further process the assets.
+// Additionally, this task handles incoming framework assets from P2P references by materializing them
+// (copying files to an intermediate directory and updating metadata) so they become local to the consuming project.
 public class UpdateExternallyDefinedStaticWebAssets : Task
 {
     [Required]
@@ -27,6 +29,12 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
 
     public ITaskItem[] StaticWebAssetGroups { get; set; }
 
+    public string IntermediateOutputPath { get; set; }
+
+    public string ProjectPackageId { get; set; }
+
+    public string ProjectBasePath { get; set; }
+
     [Output]
     public ITaskItem[] UpdatedAssets { get; set; }
 
@@ -35,6 +43,9 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
 
     [Output]
     public ITaskItem[] AssetsWithoutEndpoints { get; set; }
+
+    [Output]
+    public ITaskItem[] OriginalFrameworkAssets { get; set; }
 
     public override bool Execute()
     {
@@ -48,10 +59,28 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
         var fingerprintExpressions = CreateFingerprintExpressions(FingerprintInferenceExpressions);
 
         var assetsWithoutEndpoints = new List<StaticWebAsset>();
+        var originalFrameworkAssetItems = new List<ITaskItem>();
+        var assetMapping = new Dictionary<string, (string NewIdentity, string OldBasePath)>(OSPath.PathComparer);
 
         for (var i = 0; i < assets.Length; i++)
         {
             var asset = assets[i];
+
+            // Materialize framework assets from P2P references.
+            if (StaticWebAsset.SourceTypes.IsFramework(asset.SourceType))
+            {
+                // Keep the original input task item before materialization mutates the StaticWebAsset.
+                originalFrameworkAssetItems.Add(Assets[i]);
+                var (materialized, oldIdentity, oldBasePath) = StaticWebAsset.MaterializeFrameworkAsset(
+                    asset, IntermediateOutputPath, ProjectPackageId, ProjectBasePath, Log);
+                if (materialized != null)
+                {
+                    assets[i] = materialized;
+                    assetMapping[oldIdentity] = (materialized.Identity, oldBasePath);
+                }
+                continue;
+            }
+
             if (!endpointByAsset.TryGetValue(asset.Identity, out var endpoint))
             {
                 Log.LogMessage($"Asset {asset.Identity} does not have an associated endpoint defined.");
@@ -67,6 +96,20 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
             }
         }
 
+        // Update RelatedAsset on compressed/alternative assets that reference materialized framework assets.
+        if (assetMapping.Count > 0)
+        {
+            for (var i = 0; i < assets.Length; i++)
+            {
+                var asset = assets[i];
+                if (!string.IsNullOrEmpty(asset.RelatedAsset) &&
+                    assetMapping.TryGetValue(asset.RelatedAsset, out var mapping))
+                {
+                    asset.RelatedAsset = mapping.NewIdentity;
+                }
+            }
+        }
+
         var (filteredAssets, excludedAssetFiles) = StaticWebAsset.FilterByGroup(assets, groupLookup, skipDeferred: true);
 
         UpdatedAssets = StaticWebAsset.ToTaskItems(filteredAssets);
@@ -74,10 +117,30 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
         // Filter endpoints using the shared helper.
         var endpointGroups = StaticWebAssetEndpointGroup.CreateEndpointGroups(endpoints);
         var (_, survivingEndpoints) = StaticWebAssetEndpointGroup.ComputeFilteredEndpoints(endpointGroups, excludedAssetFiles);
+
+        // Remap endpoints for materialized framework assets — update AssetFile and Route
+        // to reflect the new materialized path and the consuming project's base path.
+        if (assetMapping.Count > 0)
+        {
+            var routeSegments = new List<PathTokenizer.Segment>();
+            var basePathSegments = new List<PathTokenizer.Segment>();
+
+            foreach (var ep in survivingEndpoints)
+            {
+                if (assetMapping.TryGetValue(ep.AssetFile, out var info))
+                {
+                    ep.AssetFile = info.NewIdentity;
+                    StaticWebAssetEndpoint.RemapEndpointRoute(ep, info.OldBasePath, ProjectBasePath, routeSegments, basePathSegments);
+                }
+            }
+        }
+
         UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(survivingEndpoints);
 
         AssetsWithoutEndpoints = StaticWebAsset.ToTaskItems(
             assetsWithoutEndpoints.Where(a => !excludedAssetFiles.Contains(a.Identity)));
+
+        OriginalFrameworkAssets = [.. originalFrameworkAssetItems];
 
         return !Log.HasLoggedErrors;
     }

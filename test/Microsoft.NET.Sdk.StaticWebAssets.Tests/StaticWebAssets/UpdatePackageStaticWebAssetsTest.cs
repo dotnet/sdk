@@ -623,4 +623,93 @@ public class UpdatePackageStaticWebAssetsTest : IDisposable
             ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat),
         });
     }
+
+    private ITaskItem CreateEndpoint(string route, string assetFile, string label = null)
+    {
+        var properties = label != null
+            ? $$"""[{"Name":"label","Value":"{{label}}"}]"""
+            : "[]";
+
+        return new TaskItem(route, new Dictionary<string, string>
+        {
+            ["Route"] = route,
+            ["AssetFile"] = assetFile,
+            ["Selectors"] = "[]",
+            ["ResponseHeaders"] = "[]",
+            ["EndpointProperties"] = properties,
+        });
+    }
+
+    [Fact]
+    public void Execute_FrameworkAssets_RemapsEndpointRoutes_StripOldBasePath()
+    {
+        // Arrange
+        var sourceFile = CreateTempFile("source", "framework.js", "content");
+        var asset = CreateFrameworkAsset(sourceFile, "FxLib", "_content/FxLib", "js/framework.js");
+        var endpoint = CreateEndpoint("_content/FxLib/js/framework.js", sourceFile, "_content/FxLib/js/framework.js");
+
+        var task = new UpdatePackageStaticWebAssets
+        {
+            BuildEngine = _buildEngine.Object,
+            Assets = [asset],
+            Endpoints = [endpoint],
+            IntermediateOutputPath = Path.Combine(_tempDir, "obj"),
+            ProjectPackageId = "ConsumerApp",
+            ProjectBasePath = "/",
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        task.RemappedEndpoints.Should().HaveCount(1);
+        var remapped = task.RemappedEndpoints[0];
+
+        // Route should have old base path stripped; "/" means just relative path.
+        remapped.ItemSpec.Should().Be("js/framework.js");
+        remapped.GetMetadata("AssetFile").Should().Contain(Path.Combine("fx", "FxLib"));
+
+        // Label should also be remapped.
+        remapped.GetMetadata("EndpointProperties").Should().Contain("js/framework.js");
+        remapped.GetMetadata("EndpointProperties").Should().NotContain("_content/FxLib");
+
+        // Original endpoints should be output for removal.
+        task.OriginalFrameworkEndpoints.Should().HaveCount(1);
+        task.OriginalFrameworkEndpoints[0].ItemSpec.Should().Be("_content/FxLib/js/framework.js");
+    }
+
+    [Fact]
+    public void Execute_FrameworkAssets_RemapsEndpointRoutes_ToConsumerBasePath()
+    {
+        // Arrange
+        var sourceFile = CreateTempFile("source2", "lib.js", "content");
+        var asset = CreateFrameworkAsset(sourceFile, "FxLib", "_content/FxLib", "js/lib.js");
+        var endpoint = CreateEndpoint("_content/FxLib/js/lib.js", sourceFile, "_content/FxLib/js/lib.js");
+
+        var task = new UpdatePackageStaticWebAssets
+        {
+            BuildEngine = _buildEngine.Object,
+            Assets = [asset],
+            Endpoints = [endpoint],
+            IntermediateOutputPath = Path.Combine(_tempDir, "obj"),
+            ProjectPackageId = "ConsumerLib",
+            ProjectBasePath = "_content/ConsumerLib",
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().BeTrue();
+        task.RemappedEndpoints.Should().HaveCount(1);
+        var remapped = task.RemappedEndpoints[0];
+
+        // Route should use consumer's base path.
+        remapped.ItemSpec.Should().Be("_content/ConsumerLib/js/lib.js");
+
+        // Label should also reflect consumer's base path.
+        remapped.GetMetadata("EndpointProperties").Should().Contain("_content/ConsumerLib/js/lib.js");
+        remapped.GetMetadata("EndpointProperties").Should().NotContain("_content/FxLib");
+    }
 }
