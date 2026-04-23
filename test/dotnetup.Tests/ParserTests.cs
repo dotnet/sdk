@@ -13,6 +13,13 @@ public class ParserTests
         [new[] { "init", "--shell", "bash" }]
     ];
 
+    public static IEnumerable<object[]> MigrateFromSystemCommandArgs =>
+    [
+        [new[] { "sdk", "install", "8.0", "--migrate-from-system" }],
+        [new[] { "install", "8.0", "--migrate-from-system" }],
+        [new[] { "runtime", "install", "aspnetcore@9.0", "--migrate-from-system" }]
+    ];
+
     [Fact]
     public void Parser_ShouldParseValidCommands()
     {
@@ -74,6 +81,16 @@ public class ParserTests
     {
         var args = new[] { "init", "--help" };
 
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [MemberData(nameof(MigrateFromSystemCommandArgs))]
+    public void Parser_ShouldParseInstallCommandsWithMigrateFromSystem(string[] args)
+    {
         var parseResult = Parser.Parse(args);
 
         parseResult.Should().NotBeNull();
@@ -253,6 +270,7 @@ public class ParserTests
 
         exitCode.Should().Be(0);
         output.Should().Contain("init");
+        output.Should().NotContain("migrate");
         output.Should().NotContain("walkthrough");
     }
 

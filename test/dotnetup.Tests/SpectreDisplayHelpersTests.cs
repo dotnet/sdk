@@ -36,36 +36,29 @@ public class SpectreDisplayHelpersTests
 
     [Fact]
     public void ConfirmScroll_UpArrow_ScrollsUp()
-        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.UpArrow), allowNeverAsk: false).Should().Be(ScrollAction.ScrollUp);
+        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.UpArrow)).Should().Be(ScrollAction.ScrollUp);
 
     [Fact]
     public void ConfirmScroll_DownArrow_ScrollsDown()
-        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.DownArrow), allowNeverAsk: false).Should().Be(ScrollAction.ScrollDown);
+        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.DownArrow)).Should().Be(ScrollAction.ScrollDown);
 
     [Fact]
     public void ConfirmScroll_Enter_Accepts()
-        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.Enter), allowNeverAsk: false).Should().Be(ScrollAction.Accept);
+        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.Enter)).Should().Be(ScrollAction.Accept);
 
     [Fact]
     public void ConfirmScroll_Y_Accepts()
-        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.Y), allowNeverAsk: false).Should().Be(ScrollAction.Accept);
+        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.Y)).Should().Be(ScrollAction.Accept);
 
     [Fact]
     public void ConfirmScroll_N_Declines()
-        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.N), allowNeverAsk: false).Should().Be(ScrollAction.Decline);
-
-    [Fact]
-    public void ConfirmScroll_P_NeverAskAgain_WhenAllowed()
-        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.P), allowNeverAsk: true).Should().Be(ScrollAction.NeverAskAgain);
-
-    [Fact]
-    public void ConfirmScroll_P_Ignored_WhenNotAllowed()
-        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.P), allowNeverAsk: false).Should().Be(ScrollAction.None);
+        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.N)).Should().Be(ScrollAction.Decline);
 
     [Theory]
     [InlineData(ConsoleKey.A)]
+    [InlineData(ConsoleKey.P)]
     [InlineData(ConsoleKey.Spacebar)]
     [InlineData(ConsoleKey.Escape)]
     public void ConfirmScroll_UnrecognizedKeys_AreIgnored(ConsoleKey key)
-        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(key), allowNeverAsk: true).Should().Be(ScrollAction.None);
+        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(key)).Should().Be(ScrollAction.None);
 }
