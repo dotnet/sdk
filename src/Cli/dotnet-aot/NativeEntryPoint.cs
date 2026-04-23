@@ -34,18 +34,19 @@ static unsafe partial class NativeEntryPoint
             args[i] = PlatformStringMarshaller.ConvertToManaged(argv[i]) ?? string.Empty;
         }
 
-        // Try the AOT-compiled path first for supported commands
-        var parseResult = Parser.Parse(args);
-        bool handled = parseResult.Errors.Count == 0;
-
-        if (handled)
+        // Try the AOT-compiled path for supported commands (if enabled)
+        if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
         {
-            return Parser.Invoke(parseResult);
+            var parseResult = Parser.Parse(args);
+            if (parseResult.Errors.Count == 0)
+            {
+                return Parser.Invoke(parseResult);
+            }
         }
 
         // Fall back to the fully managed dotnet CLI by hosting .NET
-        string dotnetDll = Path.Combine(sdkDir, "dotnet.dll");
-        string runtimeConfig = Path.Combine(sdkDir, "dotnet.runtimeconfig.json");
+        string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
+        string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
 
         if (File.Exists(dotnetDll) && File.Exists(runtimeConfig))
         {
@@ -53,7 +54,7 @@ static unsafe partial class NativeEntryPoint
             string[] appArgs = new string[args.Length + 1];
             appArgs[0] = dotnetDll;
             Array.Copy(args, 0, appArgs, 1, args.Length);
-            return ManagedHost.RunApp(dotnetRoot, appArgs);
+            return ManagedHost.RunApp(hostPath, dotnetRoot, hostfxrPath, appArgs);
         }
 
         // No managed fallback available

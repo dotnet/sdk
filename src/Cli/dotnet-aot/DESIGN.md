@@ -5,14 +5,14 @@ to the .NET SDK CLI. The goal is to achieve near-instant startup for common
 commands while preserving full functionality through the managed CLI.
 
 The current implementation uses a standalone `dn.exe` host that lives alongside
-the existing `dotnet` CLI. `dn.exe` emulates functionality that will eventually
-be integrated into the dotnet host (muxer) itself — see
-[dotnet/runtime#126171](https://github.com/dotnet/runtime/issues/126171). Once
-the muxer gains native SDK resolution support, the AOT entry point will be
-called directly by the standard `dotnet` executable and `dn.exe` will remain as
-a local development and testing entry point. At that point, AOT-handled command
-implementations will likely be removed from the managed `dotnet.dll` package as
-well.
+the existing `dotnet` CLI. `dn.exe` emulates the muxer's `try_invoke_aot_sdk`
+function — see
+[dotnet/runtime#126171](https://github.com/dotnet/runtime/issues/126171). The
+muxer looks for `dotnet-aot` in the resolved SDK directory and, when found,
+calls `dotnet_execute` directly. `dn.exe` follows the same contract and serves
+as a local development and testing entry point. The AOT fast path is gated
+behind `DOTNET_CLI_ENABLEAOT=true`; when the variable is unset or false, the
+bridge falls through to the managed CLI immediately.
 
 ## Motivation
 
@@ -48,14 +48,16 @@ graph TD
 
     subgraph L2["Layer 2 · dotnet-aot.dll  (Native AOT Shared Library)"]
         Entry["NativeEntryPoint.Execute()"]
+        AotCheck{"DOTNET_CLI_ENABLEAOT<br/>enabled?"}
         Parse["Parser.Parse(args)"]
         Fast{"Command handled<br/>by AOT path?"}
         Invoke["Parser.Invoke()"]
-        DebugCheck["Check for native debugger"]
         HostInit["ManagedHost.RunApp()"]
-        Entry --> Parse --> Fast
+        Entry --> AotCheck
+        AotCheck -- "Yes" --> Parse --> Fast
+        AotCheck -- "No" --> HostInit
         Fast -- "Yes" --> Invoke
-        Fast -- "No" --> DebugCheck --> HostInit
+        Fast -- "No" --> HostInit
     end
 
     Invoke --> Done["Return exit code"]
@@ -92,15 +94,18 @@ A NativeAOT shared library (`NativeLib=Shared`) that exports a single
 `[UnmanagedCallersOnly]` entry point: `dotnet_execute`. This layer contains
 the dual-path dispatch logic.
 
-**Fast path** — The AOT bridge compiles a minimal `Parser` (guarded by
-`#if CLI_AOT`) that handles simple commands (`--version`, `--info`) entirely in
-native code. If the parser recognizes the command, it executes immediately and
-returns.
+**Fast path** — When `DOTNET_CLI_ENABLEAOT=true`, the AOT bridge compiles a
+minimal `Parser` (guarded by `#if CLI_AOT`) that handles simple commands
+(`--version`, `--info`) entirely in native code. If the parser recognizes the
+command, it executes immediately and returns.
 
-**Slow path** — For any command not handled by the AOT parser, the bridge calls
-`ManagedHost.RunApp()`, which uses the hostfxr native hosting APIs
-(`hostfxr_initialize_for_dotnet_command_line` / `hostfxr_run_app`) to bootstrap
-CoreCLR and run `dotnet.dll`.
+**Slow path** — When `DOTNET_CLI_ENABLEAOT` is not set or the AOT parser does
+not handle the command, the bridge calls `ManagedHost.RunApp()`, which uses the
+hostfxr native hosting APIs (`hostfxr_initialize_for_dotnet_command_line` /
+`hostfxr_set_runtime_property_value` / `hostfxr_run_app`) to bootstrap CoreCLR
+and run `dotnet.dll`. The bridge passes through the `host_path`, `dotnet_root`,
+and `hostfxr_path` received from the caller so that the runtime is configured
+exactly as the muxer would configure it for an SDK command.
 
 ```mermaid
 sequenceDiagram
@@ -113,13 +118,14 @@ sequenceDiagram
     dn->>aot: dotnet_execute(hostPath, dotnetRoot, sdkDir, hostfxrPath, argc, argv)
     aot->>aot: Parser.Parse(args)
 
-    alt Command handled by AOT
+    alt DOTNET_CLI_ENABLEAOT=true and command handled by AOT
         aot->>aot: Parser.Invoke(parseResult)
         aot-->>dn: exit code
-    else Command not handled
-        aot->>hfxr: hostfxr_initialize_for_dotnet_command_line(args)
-        hfxr->>clr: Load CoreCLR runtime
+    else Command not handled or AOT disabled
+        aot->>hfxr: hostfxr_initialize_for_dotnet_command_line(args, host_path, dotnet_root)
+        aot->>hfxr: hostfxr_set_runtime_property_value(handle, "HOSTFXR_PATH", hostfxrPath)
         aot->>hfxr: hostfxr_run_app(handle)
+        hfxr->>clr: Load CoreCLR runtime
         hfxr->>cli: Program.Main(args)
         cli-->>hfxr: exit code
         hfxr-->>aot: exit code
@@ -156,8 +162,9 @@ In the shared files:
 - **`Program.cs`** — Under `#if CLI_AOT`, provides a simple `Main` that
   delegates to the AOT parser. Under `#else`, provides the full CLI entry point
   with telemetry, signal handlers, and workload checks.
-- **`CommandLineInfo.cs`** — Shared without conditional compilation; prints
-  version and environment information.
+- **`CommandLineInfo.cs`** — Uses `#if CLI_AOT` to substitute lightweight
+  implementations for workload info, localized strings, and OS detection that
+  would otherwise pull in dependencies incompatible with AOT.
 
 ```mermaid
 graph LR
@@ -442,10 +449,11 @@ dialog (or auto-attaches in configured environments).
 
 ## Future Work
 
-- **Muxer integration** — The `dn.exe` host emulates muxer behavior locally.
-  Once [dotnet/runtime#126171](https://github.com/dotnet/runtime/issues/126171)
-  lands, the dotnet muxer will call `dotnet_execute` directly. `dn.exe` will
-  continue to serve as a local development and testing entry point.
+- **Muxer integration** — The muxer's `try_invoke_aot_sdk` function
+  ([dotnet/runtime#126171](https://github.com/dotnet/runtime/issues/126171))
+  already calls `dotnet_execute` from the resolved SDK directory, passing
+  `host_path`, `dotnet_root`, `sdk_dir`, and `hostfxr_path`. `dn.exe`
+  emulates this same contract for local development and testing.
 - **Remove AOT commands from managed package** — After the AOT path is
   validated and shipping, the `#if CLI_AOT` implementations in `Parser.cs`
   and `Program.cs` can be removed from the managed `dotnet.dll` build.
