@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Пакет шаблонов",
+  "description": "Проект для пакета шаблонов .NET.",
+  "postActions/instructions/description": "Необходимо выполнить действия вручную",
+  "postActions/instructions/manualInstructions/default/text": "Откройте *.csproj в редакторе и заполните конфигурацию метаданных пакета. Скопируйте шаблоны в папку \"content\". Заполните файл README.md."
+}

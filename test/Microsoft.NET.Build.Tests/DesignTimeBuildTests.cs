@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibrary", identifier: relativeProjectPath + "_" + targetFramework ?? string.Empty)
                 .WithSource()
                 .WithProjectChanges(p =>
@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new MSBuildCommand(testAsset, "ResolvePackageDependenciesDesignTime")
                 .Execute()
@@ -115,7 +115,7 @@ namespace Microsoft.NET.Build.Tests
             // disable implicit use of the Roslyn Toolset compiler package
             testProject.AdditionalProperties["BuildWithNetFrameworkHostedCompiler"] = false.ToString();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "_PackageDependenciesDesignTime", GetValuesCommand.ValueType.Item)
             {
@@ -157,7 +157,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Commands", "4.0.0"));
             testProject.PackageReferences.Add(new TestPackageReference("NuGet.Packaging", "3.5.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             new RestoreCommand(testAsset)
                 .Execute()
@@ -206,7 +206,7 @@ namespace Microsoft.NET.Build.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;

@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ItPassesEnvironmentVariablesFromCommandLineParametersWhenRunningViaCsproj()
         {
-            var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ItPassesEnvironmentVariablesFromCommandLineParametersWhenRunningViaDll()
         {
-            var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 

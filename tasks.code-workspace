@@ -6,5 +6,106 @@
     ],
     "settings": {
       "dotnet.defaultSolution": "tasks.slnf"
+    },
+    "launch": {
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "name": "Debug dn (AOT native)",
+          "type": "cppvsdbg",
+          "request": "launch",
+          "preLaunchTask": "publish-and-copy-dn-aot",
+          "program": "${workspaceFolder}${/}artifacts${/}bin${/}dn${/}Debug${/}net11.0${/}win-x64${/}publish${/}dn.exe",
+          "args": ["--info"],
+          "cwd": "${workspaceFolder}${/}artifacts${/}bin${/}dn${/}Debug${/}net11.0${/}win-x64${/}publish",
+          "environment": [
+            { "name": "DOTNET_ROOT", "value": "${workspaceFolder}/.dotnet" }
+          ],
+          "stopAtEntry": false,
+          "console": "integratedTerminal"
+        }
+      ]
+    },
+    "tasks": {
+      "version": "2.0.0",
+      "tasks": [
+        {
+          "label": "publish-dotnet-aot",
+          "command": "${workspaceFolder}/.dotnet/dotnet.exe",
+          "type": "process",
+          "args": [
+            "publish",
+            "${workspaceFolder}/src/Cli/dotnet-aot/dotnet-aot.csproj",
+            "-r", "win-x64",
+            "-c", "Debug"
+          ],
+          "problemMatcher": "$msCompile",
+          "group": "build"
+        },
+        {
+          "label": "publish-dn",
+          "command": "${workspaceFolder}/.dotnet/dotnet.exe",
+          "type": "process",
+          "args": [
+            "publish",
+            "${workspaceFolder}/src/Cli/dn/dn.csproj",
+            "-r", "win-x64",
+            "-c", "Debug"
+          ],
+          "problemMatcher": "$msCompile",
+          "group": "build"
+        },
+        {
+          "label": "copy-dotnet-aot-lib",
+          "type": "shell",
+          "command": "copy",
+          "args": [
+            "${workspaceFolder}\\artifacts\\bin\\dotnet-aot\\Debug\\net11.0\\win-x64\\publish\\dotnet-aot.dll",
+            "${workspaceFolder}\\artifacts\\bin\\dn\\Debug\\net11.0\\win-x64\\publish\\"
+          ],
+          "problemMatcher": []
+        },
+        {
+          "label": "build-dotnet",
+          "command": "${workspaceFolder}/.dotnet/dotnet.exe",
+          "type": "process",
+          "args": [
+            "build",
+            "${workspaceFolder}/src/Cli/dotnet/dotnet.csproj",
+            "-c", "Debug"
+          ],
+          "problemMatcher": "$msCompile",
+          "group": "build"
+        },
+        {
+          "label": "copy-dotnet-managed",
+          "type": "shell",
+          "command": "xcopy",
+          "args": [
+            "${workspaceFolder}\\artifacts\\bin\\dotnet\\Debug\\net11.0\\*",
+            "${workspaceFolder}\\artifacts\\bin\\dn\\Debug\\net11.0\\win-x64\\publish\\",
+            "/S", "/Y", "/Q"
+          ],
+          "problemMatcher": []
+        },
+        {
+          "label": "publish-dn-aot",
+          "dependsOn": ["publish-dotnet-aot", "publish-dn", "build-dotnet"],
+          "dependsOrder": "sequence",
+          "problemMatcher": []
+        },
+        {
+          "label": "copy-all-deps",
+          "dependsOn": ["copy-dotnet-aot-lib", "copy-dotnet-managed"],
+          "dependsOrder": "sequence",
+          "problemMatcher": []
+        },
+        {
+          "label": "publish-and-copy-dn-aot",
+          "dependsOn": ["publish-dn-aot", "copy-all-deps"],
+          "dependsOrder": "sequence",
+          "problemMatcher": []
+        }
+      ]
     }
   }

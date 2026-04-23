@@ -21,11 +21,15 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [WindowsOnlyFact]
         public void ItTerminatesWinExeAppWithCloseMainWindow()
         {
-            var asset = _testAssetsManager.CopyTestAsset("WinExeApp")
+            var asset = TestAssetsManager.CopyTestAsset("WinExeApp")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(asset.Path);
+
+            // Launch dotnet run in a new process group so that GenerateConsoleCtrlEvent
+            // targets only the child group and does not propagate to the test host.
+            command.CreateNewProcessGroup = true;
 
             bool signaled = false;
             bool sawClosingGracefully = false;
@@ -101,7 +105,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItIgnoresSIGINT()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run", "-v:q")
@@ -162,7 +166,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItPassesSIGTERMToChild()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")
@@ -223,7 +227,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [WindowsOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/38268")]
         public void ItTerminatesTheChildWhenKilled()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")

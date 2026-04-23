@@ -5,14 +5,16 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTestFixture(IMessageSink sink) : IAsyncLifetime
 {
-    public System.Threading.Tasks.Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
 
@@ -26,10 +28,10 @@ public sealed class RunFileTestFixture(IMessageSink sink) : IAsyncLifetime
             .Should().Pass()
             .And.HaveStdOut("Hello");
 
-        return System.Threading.Tasks.Task.CompletedTask;
+        return default;
     }
 
-    public System.Threading.Tasks.Task DisposeAsync() => System.Threading.Tasks.Task.CompletedTask;
+    public ValueTask DisposeAsync() => default;
 }
 
 public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), IClassFixture<RunFileTestFixture>
@@ -174,25 +176,6 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), ICl
         return $"{path}({line}): {FileBasedProgramsResources.DirectiveError}: {string.Format(messageFormat, args)}";
     }
 
-    internal static void EnableRefDirective(TestDirectory testInstance)
-    {
-        var propsPath = Path.Join(testInstance.Path, "Directory.Build.props");
-        var propsContent = File.Exists(propsPath) ? File.ReadAllText(propsPath) : null;
-        if (propsContent is not null && propsContent.Contains(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective))
-        {
-            return;
-        }
-
-        File.WriteAllText(propsPath, $"""
-            <Project>
-              <PropertyGroup>
-                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
-              </PropertyGroup>
-            </Project>
-            """);
-    }
-
-
     internal static void VerifyBinLogEvaluationDataCount(string binaryLogPath, int expectedCount)
     {
         var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
@@ -218,7 +201,9 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), ICl
         };
 
         var command = new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(workDir ?? testInstance.Path);
+            .WithWorkingDirectory(workDir ?? testInstance.Path)
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.VerboseToStdErr, bool.TrueString);
 
         if (customizeCommand != null)
         {
@@ -246,5 +231,4 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), ICl
             binlog.Delete();
         }
     }
-
 }
