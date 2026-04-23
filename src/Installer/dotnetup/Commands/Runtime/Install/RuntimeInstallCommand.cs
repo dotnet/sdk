@@ -10,6 +10,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result)
 {
     private readonly string[] _componentSpecs = result.GetValue(RuntimeInstallCommandParser.ComponentSpecsArgument) ?? [];
+    public override IReadOnlyCollection<InstallComponent> MigrationComponents =>
+        [InstallComponent.Runtime, InstallComponent.ASPNETCore, InstallComponent.WindowsDesktop];
 
     /// <summary>
     /// Maps user-friendly runtime type names to InstallComponent enum values.

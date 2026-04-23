@@ -13,13 +13,12 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// Extracted to keep UI rendering separate from decision logic.
 /// </summary>
 /// <summary>
-/// Result of a confirm prompt that supports Y/N/P (never ask again).
+/// Result of a confirm prompt that supports Y/N.
 /// </summary>
 internal enum ConfirmResult
 {
     Yes,
     No,
-    NeverAskAgain,
 }
 
 /// <summary>
@@ -33,7 +32,6 @@ internal enum ScrollAction
     ScrollDown,
     Accept,
     Decline,
-    NeverAskAgain,
 }
 
 internal static class SpectreDisplayHelpers
@@ -42,7 +40,7 @@ internal static class SpectreDisplayHelpers
     /// Renders a scrollable list with an inline confirmation prompt.
     /// The prompt is shown below the list and Enter accepts the default (yes).
     /// </summary>
-    internal static ConfirmResult RenderScrollableListWithConfirm(List<string> items, int visibleCount, string confirmPrompt, bool allowNeverAsk = false)
+    internal static ConfirmResult RenderScrollableListWithConfirm(List<string> items, int visibleCount, string confirmPrompt)
     {
         if (items.Count == 0)
         {
@@ -60,16 +58,14 @@ internal static class SpectreDisplayHelpers
                 SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
             }
 
-            string promptSuffix = allowNeverAsk
-                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/([bold]p[/])lease never ask again)[/] ", confirmPrompt, brand)
-                : string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/] ", confirmPrompt, brand);
+            string promptSuffix = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/] ", confirmPrompt, brand);
             SpectreAnsiConsole.Markup(promptSuffix);
-            var result = ReadConfirm(defaultValue: ConfirmResult.Yes, allowNeverAsk: allowNeverAsk);
+            var result = ReadConfirm(defaultValue: ConfirmResult.Yes);
             SpectreAnsiConsole.WriteLine();
             return result;
         }
 
-        return RunInteractiveScrollLoop(items, visibleCount, confirmPrompt, allowNeverAsk);
+        return RunInteractiveScrollLoop(items, visibleCount, confirmPrompt);
     }
 
     /// <summary>
@@ -77,14 +73,14 @@ internal static class SpectreDisplayHelpers
     /// always returns true when <paramref name="confirmPrompt"/> is null (plain scroll).
     /// Uses Spectre.Console's LiveDisplay for reliable rendering without manual ANSI cursor management.
     /// </summary>
-    private static ConfirmResult RunInteractiveScrollLoop(List<string> items, int visibleCount, string? confirmPrompt, bool allowNeverAsk = false)
+    private static ConfirmResult RunInteractiveScrollLoop(List<string> items, int visibleCount, string? confirmPrompt)
     {
         int offset = 0;
         int maxOffset = items.Count - visibleCount;
         bool done = false;
         ConfirmResult result = ConfirmResult.Yes;
 
-        SpectreAnsiConsole.Live(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk))
+        SpectreAnsiConsole.Live(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt))
             .AutoClear(true)
             .Start(ctx =>
             {
@@ -102,10 +98,10 @@ internal static class SpectreDisplayHelpers
 
                     var key = Console.ReadKey(intercept: true);
                     var action = confirmPrompt is not null
-                        ? MapConfirmScrollKey(key, allowNeverAsk)
+                        ? MapConfirmScrollKey(key)
                         : MapPlainScrollKey(key);
 
-                    (done, result, offset) = ApplyScrollAction(action, offset, maxOffset, items, visibleCount, confirmPrompt, allowNeverAsk, ctx);
+                    (done, result, offset) = ApplyScrollAction(action, offset, maxOffset, items, visibleCount, confirmPrompt, ctx);
                 }
             });
 
@@ -119,7 +115,7 @@ internal static class SpectreDisplayHelpers
     /// Applies a <see cref="ScrollAction"/> to the current scroll state and returns the updated state.
     /// </summary>
     private static (bool Done, ConfirmResult Result, int Offset) ApplyScrollAction(
-        ScrollAction action, int offset, int maxOffset, List<string> items, int visibleCount, string? confirmPrompt, bool allowNeverAsk, LiveDisplayContext ctx)
+        ScrollAction action, int offset, int maxOffset, List<string> items, int visibleCount, string? confirmPrompt, LiveDisplayContext ctx)
     {
         switch (action)
         {
@@ -127,7 +123,7 @@ internal static class SpectreDisplayHelpers
                 if (offset > 0)
                 {
                     offset--;
-                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt));
                 }
 
                 return (false, ConfirmResult.Yes, offset);
@@ -135,7 +131,7 @@ internal static class SpectreDisplayHelpers
                 if (offset < maxOffset)
                 {
                     offset++;
-                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt, allowNeverAsk));
+                    ctx.UpdateTarget(BuildScrollRenderable(items, offset, visibleCount, confirmPrompt));
                 }
 
                 return (false, ConfirmResult.Yes, offset);
@@ -143,8 +139,6 @@ internal static class SpectreDisplayHelpers
                 return (true, ConfirmResult.Yes, offset);
             case ScrollAction.Decline:
                 return (true, ConfirmResult.No, offset);
-            case ScrollAction.NeverAskAgain:
-                return (true, ConfirmResult.NeverAskAgain, offset);
             default:
                 return (false, ConfirmResult.Yes, offset);
         }
@@ -168,7 +162,7 @@ internal static class SpectreDisplayHelpers
     /// <summary>
     /// Maps a keypress to a <see cref="ScrollAction"/> for a scrollable list with a Y/N confirmation prompt.
     /// </summary>
-    internal static ScrollAction MapConfirmScrollKey(ConsoleKeyInfo key, bool allowNeverAsk)
+    internal static ScrollAction MapConfirmScrollKey(ConsoleKeyInfo key)
     {
         return key.Key switch
         {
@@ -177,7 +171,6 @@ internal static class SpectreDisplayHelpers
             ConsoleKey.Enter => ScrollAction.Accept,
             ConsoleKey.Y => ScrollAction.Accept,
             ConsoleKey.N => ScrollAction.Decline,
-            ConsoleKey.P when allowNeverAsk => ScrollAction.NeverAskAgain,
             _ => ScrollAction.None,
         };
     }
@@ -185,7 +178,7 @@ internal static class SpectreDisplayHelpers
     /// <summary>
     /// Builds a Spectre <see cref="Rows"/> renderable for the current scroll window.
     /// </summary>
-    private static Rows BuildScrollRenderable(List<string> items, int offset, int visibleCount, string? confirmPrompt, bool allowNeverAsk)
+    private static Rows BuildScrollRenderable(List<string> items, int offset, int visibleCount, string? confirmPrompt)
     {
         string dim = DotnetupTheme.Current.Dim;
         string accent = DotnetupTheme.Current.Accent;
@@ -217,9 +210,7 @@ internal static class SpectreDisplayHelpers
 
         if (confirmPrompt is not null)
         {
-            string promptHint = allowNeverAsk
-                ? string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n/([bold]p[/])lease never ask again)[/]", confirmPrompt, DotnetupTheme.Current.Brand)
-                : string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand);
+            string promptHint = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand);
             rows.Add(new Markup(promptHint));
         }
         else if (remaining <= 0)
@@ -252,7 +243,6 @@ internal static class SpectreDisplayHelpers
             string answer = result switch
             {
                 ConfirmResult.Yes => "Yes",
-                ConfirmResult.NeverAskAgain => "No (won't ask again)",
                 _ => "No",
             };
             SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", confirmPrompt, brand, answer));
@@ -263,7 +253,7 @@ internal static class SpectreDisplayHelpers
     /// <summary>
     /// Reads a single y/n keypress. Returns <paramref name="defaultValue"/> on Enter.
     /// </summary>
-    private static ConfirmResult ReadConfirm(ConfirmResult defaultValue, bool allowNeverAsk)
+    private static ConfirmResult ReadConfirm(ConfirmResult defaultValue)
     {
         string brand = DotnetupTheme.Current.Brand;
         while (true)
@@ -281,14 +271,6 @@ internal static class SpectreDisplayHelpers
                 case ConsoleKey.N:
                     SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]No[/]", brand));
                     return ConfirmResult.No;
-                case ConsoleKey.P:
-                    if (allowNeverAsk)
-                    {
-                        SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]No (won't ask again)[/]", brand));
-                        return ConfirmResult.NeverAskAgain;
-                    }
-
-                    break;
             }
         }
     }

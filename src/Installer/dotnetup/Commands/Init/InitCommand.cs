@@ -17,7 +17,7 @@ internal class InitCommand(ParseResult result) : InstallCommand(result)
     protected override int ExecuteCore()
     {
         var workflows = new InitWorkflows(DotnetEnvironment, ChannelVersionResolver);
-        workflows.FullIntroductionWalkthrough(this);
+        workflows.InitWalkthrough(this);
         return 0;
     }
 }

@@ -108,6 +108,12 @@ internal class CommonOptions
         Arity = ArgumentArity.ZeroOrOne
     };
 
+    public static readonly Option<bool> MigrateFromSystemOption = new("--migrate-from-system")
+    {
+        Description = "Automatically install matching system-managed SDKs or runtimes into the selected dotnetup-managed directory as part of the current install.",
+        Arity = ArgumentArity.ZeroOrOne
+    };
+
     /// <summary>
     /// Creates a channel argument for SDK commands.
     /// Each command needs its own Argument instance (System.CommandLine requirement),
