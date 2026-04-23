@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -1135,6 +1136,61 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public bool HasContentRoot(string path) =>
         string.Equals(ContentRoot, NormalizeContentRootPath(path), StringComparison.Ordinal);
+
+    /// <summary>
+    /// Materializes a framework asset by copying it to the consuming project's intermediate directory
+    /// and updating its metadata (Identity, ContentRoot, SourceId, BasePath, SourceType, AssetMode).
+    /// Used by both the P2P and NuGet package paths.
+    /// Returns the old identity and old base path so callers can remap endpoints and related assets.
+    /// </summary>
+    public static (StaticWebAsset Asset, string OldIdentity, string OldBasePath) MaterializeFrameworkAsset(
+        StaticWebAsset asset,
+        string intermediateOutputPath,
+        string projectPackageId,
+        string projectBasePath,
+        TaskLoggingHelper log)
+    {
+        var originalSourceId = asset.SourceId;
+        var oldBasePath = asset.BasePath;
+        var relativePath = asset.RelativePath;
+        var oldIdentity = asset.Identity;
+
+        var fxDir = Path.Combine(intermediateOutputPath, "fx", originalSourceId);
+        var fileSystemRelativePath = asset.ComputePathWithoutTokens(relativePath);
+        var destPath = Path.Combine(fxDir, Normalize(fileSystemRelativePath));
+        destPath = Path.GetFullPath(destPath);
+
+        var sourceFile = asset.Identity;
+        if (!File.Exists(sourceFile))
+        {
+            log.LogError("Source file '{0}' does not exist for framework asset materialization.", sourceFile);
+            return (null, null, null);
+        }
+
+        var destDir = Path.GetDirectoryName(destPath);
+        Directory.CreateDirectory(destDir);
+
+        if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(sourceFile) > File.GetLastWriteTimeUtc(destPath))
+        {
+            File.Copy(sourceFile, destPath, overwrite: true);
+            log.LogMessage(MessageImportance.Low, "Materialized framework asset '{0}' to '{1}'.", sourceFile, destPath);
+        }
+        else
+        {
+            log.LogMessage(MessageImportance.Low, "Framework asset '{0}' already up to date at '{1}'.", sourceFile, destPath);
+        }
+
+        asset.Identity = destPath;
+        asset.OriginalItemSpec = destPath;
+        asset.ContentRoot = NormalizeContentRootPath(fxDir);
+        asset.SourceType = SourceTypes.Discovered;
+        asset.SourceId = projectPackageId;
+        asset.BasePath = projectBasePath;
+        asset.AssetMode = AssetModes.CurrentProject;
+        asset.Normalize();
+
+        return (asset, oldIdentity, oldBasePath);
+    }
 
     public static string Normalize(string path, bool allowEmpyPath = false)
     {

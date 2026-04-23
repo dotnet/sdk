@@ -5,7 +5,6 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -29,6 +28,9 @@ public class UpdatePackageStaticWebAssets : Task
     [Output]
     public ITaskItem[] RemappedEndpoints { get; set; }
 
+    [Output]
+    public ITaskItem[] OriginalFrameworkEndpoints { get; set; }
+
     public ITaskItem[] Endpoints { get; set; }
 
     public override bool Execute()
@@ -37,7 +39,7 @@ public class UpdatePackageStaticWebAssets : Task
         {
             var originalAssets = new List<ITaskItem>();
             var updatedAssets = new List<ITaskItem>();
-            var assetMapping = new Dictionary<string, string>(OSPath.PathComparer);
+            var assetMapping = new Dictionary<string, (string NewIdentity, string OldBasePath)>(OSPath.PathComparer);
 
             for (var i = 0; i < Assets.Length; i++)
             {
@@ -52,11 +54,13 @@ public class UpdatePackageStaticWebAssets : Task
                 else if (StaticWebAsset.SourceTypes.IsFramework(sourceType))
                 {
                     originalAssets.Add(candidate);
-                    var (transformed, oldPath) = MaterializeFrameworkAsset(candidate);
+                    var asset = StaticWebAsset.FromV1TaskItem(candidate);
+                    var (transformed, oldPath, oldBasePath) = StaticWebAsset.MaterializeFrameworkAsset(
+                        asset, IntermediateOutputPath, ProjectPackageId, ProjectBasePath, Log);
                     if (transformed != null)
                     {
                         updatedAssets.Add(transformed.ToTaskItem());
-                        assetMapping[oldPath] = transformed.Identity;
+                        assetMapping[oldPath] = (transformed.Identity, oldBasePath);
                     }
                 }
             }
@@ -77,31 +81,34 @@ public class UpdatePackageStaticWebAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private void RemapEndpoints(Dictionary<string, string> assetMapping)
+    private void RemapEndpoints(Dictionary<string, (string NewIdentity, string OldBasePath)> assetMapping)
     {
-        var remappedEndpoints = new List<ITaskItem>();
+        var remappedEndpoints = new List<StaticWebAssetEndpoint>();
+        var originalEndpointItems = new List<ITaskItem>();
+        var parsedEndpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
 
-        var endpointsByIdentity = new Dictionary<string, List<ITaskItem>>(StringComparer.Ordinal);
-        foreach (var endpoint in Endpoints)
+        var endpointsByRoute = new Dictionary<string, List<(StaticWebAssetEndpoint Parsed, int OriginalIndex)>>(StringComparer.Ordinal);
+        for (var i = 0; i < parsedEndpoints.Length; i++)
         {
-            var identity = endpoint.ItemSpec;
-            if (!endpointsByIdentity.TryGetValue(identity, out var group))
+            var endpoint = parsedEndpoints[i];
+            if (!endpointsByRoute.TryGetValue(endpoint.Route, out var group))
             {
-                group = new List<ITaskItem>();
-                endpointsByIdentity[identity] = group;
+                group = [];
+                endpointsByRoute[endpoint.Route] = group;
             }
-            group.Add(endpoint);
+            group.Add((endpoint, i));
         }
 
-        foreach (var kvp in endpointsByIdentity)
+        var routeSegments = new List<PathTokenizer.Segment>();
+        var basePathSegments = new List<PathTokenizer.Segment>();
+
+        foreach (var kvp in endpointsByRoute)
         {
-            var identity = kvp.Key;
             var group = kvp.Value;
             var groupNeedsRemapping = false;
-            foreach (var endpoint in group)
+            foreach (var (endpoint, _) in group)
             {
-                var assetFile = endpoint.GetMetadata("AssetFile");
-                if (!string.IsNullOrEmpty(assetFile) && assetMapping.ContainsKey(assetFile))
+                if (!string.IsNullOrEmpty(endpoint.AssetFile) && assetMapping.ContainsKey(endpoint.AssetFile))
                 {
                     groupNeedsRemapping = true;
                     break;
@@ -110,67 +117,28 @@ public class UpdatePackageStaticWebAssets : Task
 
             if (groupNeedsRemapping)
             {
-                foreach (var endpoint in group)
+                foreach (var (endpoint, originalIndex) in group)
                 {
-                    var newEndpoint = new TaskItem(endpoint);
-                    var assetFile = endpoint.GetMetadata("AssetFile");
-                    if (!string.IsNullOrEmpty(assetFile) && assetMapping.TryGetValue(assetFile, out var newAssetFile))
+                    // Capture the original endpoint task item for removal.
+                    originalEndpointItems.Add(Endpoints[originalIndex]);
+
+                    if (!string.IsNullOrEmpty(endpoint.AssetFile) && assetMapping.TryGetValue(endpoint.AssetFile, out var info))
                     {
-                        newEndpoint.SetMetadata("AssetFile", newAssetFile);
-                        Log.LogMessage(MessageImportance.Low, "Remapped endpoint '{0}' AssetFile from '{1}' to '{2}'.",
-                            identity, assetFile, newAssetFile);
+                        var oldAssetFile = endpoint.AssetFile;
+                        endpoint.AssetFile = info.NewIdentity;
+
+                        StaticWebAssetEndpoint.RemapEndpointRoute(endpoint, info.OldBasePath, ProjectBasePath, routeSegments, basePathSegments);
+
+                        Log.LogMessage(MessageImportance.Low, "Remapped endpoint route from '{0}' to '{1}', AssetFile from '{2}' to '{3}'.",
+                            kvp.Key, endpoint.Route, oldAssetFile, info.NewIdentity);
                     }
-                    remappedEndpoints.Add(newEndpoint);
+                    remappedEndpoints.Add(endpoint);
                 }
             }
         }
 
-        RemappedEndpoints = [.. remappedEndpoints];
-    }
-
-    private (StaticWebAsset, string) MaterializeFrameworkAsset(ITaskItem candidate)
-    {
-        var asset = StaticWebAsset.FromV1TaskItem(candidate);
-
-        var originalSourceId = asset.SourceId;
-        var relativePath = asset.RelativePath;
-        var oldIdentity = asset.Identity;
-
-        var fxDir = Path.Combine(IntermediateOutputPath, "fx", originalSourceId);
-        var fileSystemRelativePath = asset.ComputePathWithoutTokens(relativePath);
-        var destPath = Path.Combine(fxDir, StaticWebAsset.Normalize(fileSystemRelativePath));
-        destPath = Path.GetFullPath(destPath);
-
-        var sourceFile = asset.Identity;
-        if (!File.Exists(sourceFile))
-        {
-            Log.LogError("Source file '{0}' does not exist for framework asset materialization.", sourceFile);
-            return (null, null);
-        }
-
-        var destDir = Path.GetDirectoryName(destPath);
-        Directory.CreateDirectory(destDir);
-
-        if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(sourceFile) > File.GetLastWriteTimeUtc(destPath))
-        {
-            File.Copy(sourceFile, destPath, overwrite: true);
-            Log.LogMessage(MessageImportance.Low, "Materialized framework asset '{0}' to '{1}'.", sourceFile, destPath);
-        }
-        else
-        {
-            Log.LogMessage(MessageImportance.Low, "Framework asset '{0}' already up to date at '{1}'.", sourceFile, destPath);
-        }
-
-        asset.Identity = destPath;
-        asset.OriginalItemSpec = destPath;
-        asset.ContentRoot = StaticWebAsset.NormalizeContentRootPath(fxDir);
-        asset.SourceType = StaticWebAsset.SourceTypes.Discovered;
-        asset.SourceId = ProjectPackageId;
-        asset.BasePath = ProjectBasePath;
-        asset.AssetMode = StaticWebAsset.AssetModes.CurrentProject;
-        asset.Normalize();
-
-        return (asset, oldIdentity);
+        OriginalFrameworkEndpoints = [.. originalEndpointItems];
+        RemappedEndpoints = StaticWebAssetEndpoint.ToTaskItems(remappedEndpoints);
     }
 
 }
