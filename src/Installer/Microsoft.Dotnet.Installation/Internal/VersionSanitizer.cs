@@ -87,7 +87,7 @@ public static partial class VersionSanitizer
             }
 
             // Validate prerelease token: must start with a known token
-            var dotIndex = releaseVersion.Prerelease.IndexOf('.');
+            var dotIndex = releaseVersion.Prerelease.IndexOf('.', StringComparison.Ordinal);
             var token = dotIndex < 0 ? releaseVersion.Prerelease : releaseVersion.Prerelease[..dotIndex];
 
             return KnownPrereleaseTokens.Contains(token, StringComparer.OrdinalIgnoreCase);

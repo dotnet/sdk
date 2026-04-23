@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
@@ -20,6 +21,7 @@ internal abstract class InstallCommand : CommandBase
     public Verbosity Verbosity { get; }
     public bool RequireMuxerUpdate { get; }
     public bool Untracked { get; }
+    public IEnvShellProvider? ShellProvider { get; }
     public virtual bool UpdateGlobalJson => false;
 
     public IDotnetEnvironmentManager DotnetEnvironment { get; }
@@ -35,6 +37,7 @@ internal abstract class InstallCommand : CommandBase
         Verbosity = parseResult.GetValue(CommonOptions.VerbosityOption);
         RequireMuxerUpdate = parseResult.GetValue(CommonOptions.RequireMuxerUpdateOption);
         Untracked = parseResult.GetValue(CommonOptions.UntrackedOption);
+        ShellProvider = parseResult.GetValue(CommonOptions.ShellOption);
 
         DotnetEnvironment = new DotnetEnvironmentManager();
         ChannelVersionResolver = new ChannelVersionResolver();

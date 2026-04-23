@@ -7,6 +7,12 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class ParserTests
 {
+    public static IEnumerable<object[]> ShellOverrideCommandArgs =>
+    [
+        [new[] { "defaultinstall", "user", "--shell", "bash" }],
+        [new[] { "init", "--shell", "bash" }]
+    ];
+
     [Fact]
     public void Parser_ShouldParseValidCommands()
     {
@@ -111,6 +117,29 @@ public class ParserTests
         // Assert
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [MemberData(nameof(ShellOverrideCommandArgs))]
+    public void Parser_ShouldParseCommandsWithShellOverride(string[] args)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("sdk", "install", "9.0", "--shell", "zsh")]
+    [InlineData("runtime", "install", "aspnetcore@9.0", "--shell", "pwsh")]
+    public void Parser_ShouldRejectShellOverrideOnInstallCommands(params string[] args)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
+        parseResult.Errors.Select(error => error.Message)
+            .Should().Contain(message => message.Contains("--shell"));
     }
 
     [Theory]

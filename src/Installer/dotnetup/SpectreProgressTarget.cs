@@ -76,7 +76,7 @@ public class SpectreProgressTarget : IProgressTarget
             _task = task;
             _baseDescription = task.Description;
 
-            int spaceIndex = _baseDescription.IndexOf(' ');
+            int spaceIndex = _baseDescription.IndexOf(' ', StringComparison.Ordinal);
             if (spaceIndex > 0 && _baseDescription.StartsWith("Installing", StringComparison.Ordinal))
             {
                 _shimmerWord = _baseDescription[..spaceIndex];

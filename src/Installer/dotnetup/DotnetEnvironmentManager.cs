@@ -3,10 +3,11 @@
 
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
+using CliEnvironmentProvider = Microsoft.DotNet.Cli.Utils.EnvironmentProvider;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -28,14 +29,20 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
 
     public DotnetInstallRootConfiguration? GetCurrentPathConfiguration()
     {
-        var environmentProvider = new EnvironmentProvider();
+        var environmentProvider = new CliEnvironmentProvider();
         string? foundDotnet = environmentProvider.GetCommandPath("dotnet");
         if (string.IsNullOrEmpty(foundDotnet))
         {
             return null;
         }
 
-        var currentInstallRoot = new DotnetInstallRoot(Path.GetDirectoryName(foundDotnet)!, InstallerUtilities.GetDefaultInstallArchitecture());
+        // On Linux/WSL, `dotnet` on PATH is often exposed through a symlink such
+        // as /usr/bin/dotnet -> /usr/lib/dotnet/dotnet. We need to classify the
+        // real install root, not the shim location, or dotnetup can mistake
+        // /usr/bin for the install directory.
+        var currentInstallRoot = new DotnetInstallRoot(
+            ResolveCurrentInstallRootPath(foundDotnet),
+            InstallerUtilities.GetDefaultInstallArchitecture());
 
         // Use InstallRootManager to determine if the install is fully configured
         if (OperatingSystem.IsWindows())
@@ -77,6 +84,14 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     public string GetDefaultDotnetInstallPath()
     {
         return DotnetupPaths.DefaultDotnetInstallPath;
+    }
+
+    internal static string ResolveCurrentInstallRootPath(string dotnetExecutablePath)
+    {
+        string fullPath = Path.GetFullPath(dotnetExecutablePath);
+        string resolvedExecutablePath = Microsoft.DotNet.NativeWrapper.FileInterop.ResolveRealPath(fullPath) ?? fullPath;
+        return Path.GetDirectoryName(resolvedExecutablePath)
+            ?? throw new InvalidOperationException($"Unable to determine the install root for '{dotnetExecutablePath}'.");
     }
 
     public string? GetLatestInstalledSystemVersion()
@@ -251,6 +266,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             paths.Add(path);
         }
     }
+
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
     {
         if (OperatingSystem.IsWindows())
@@ -295,21 +311,27 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                     throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
             }
         }
+    }
+
+    public void ApplyTerminalProfileModifications(string dotnetRoot, IEnvShellProvider? shellProvider = null)
+    {
+        ArgumentNullException.ThrowIfNull(dotnetRoot);
+
+        if (OperatingSystem.IsWindows())
+        {
+            // Not implemented yet on Windows
+            return;
+        }
         else
         {
-            ConfigureInstallTypeUnix(installType, dotnetRoot);
+            ConfigureInstallTypeUnix(InstallType.User, dotnetRoot, shellProvider);
         }
     }
 
-    private static void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot)
+    private void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot, IEnvShellProvider? shellProvider)
     {
-        // Non-Windows platforms: use the simpler PATH-based approach
-        // Get current PATH
-        var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
-        var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-        string exeName = "dotnet";
-        // Remove only actual dotnet installation folders from PATH
-        pathEntries = [.. pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName)))];
+        var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
+        shellProvider = ShellDetection.GetCurrentShellProviderOrThrow(shellProvider);
 
         switch (installType)
         {
@@ -318,27 +340,19 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
                 {
                     throw new ArgumentNullException(nameof(dotnetRoot));
                 }
-                // Add dotnetRoot to PATH
-                pathEntries.Insert(0, dotnetRoot);
-                // Set DOTNET_ROOT
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
+
+                string? profileDotnetRoot = DotnetupUtilities.PathsEqual(dotnetRoot, GetDefaultDotnetInstallPath())
+                    ? null
+                    : dotnetRoot;
+
+                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: profileDotnetRoot);
                 break;
             case InstallType.System:
-                if (string.IsNullOrEmpty(dotnetRoot))
-                {
-                    throw new ArgumentNullException(nameof(dotnetRoot));
-                }
-                // Add dotnetRoot to PATH
-                pathEntries.Insert(0, dotnetRoot);
-                // Unset DOTNET_ROOT
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
+                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
                 break;
             default:
                 throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
         }
-        // Update PATH
-        var newPath = string.Join(Path.PathSeparator, pathEntries);
-        Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
     }
 
     /// <inheritdoc />

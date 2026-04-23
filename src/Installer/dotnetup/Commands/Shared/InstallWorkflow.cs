@@ -57,7 +57,8 @@ internal class InstallWorkflow
                 _command.NoProgress,
                 _command.Interactive,
                 true,
-                false);
+                false,
+                _command.ShellProvider);
         }
 
         // Global.json update runs after install in all code paths, but only when

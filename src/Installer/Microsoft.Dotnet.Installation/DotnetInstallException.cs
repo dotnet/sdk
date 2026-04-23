@@ -62,6 +62,9 @@ public enum DotnetInstallErrorCode
     /// <summary>The dotnetup installation manifest was modified externally and is now corrupted.</summary>
     LocalManifestUserCorrupted,
 
+    /// <summary>A user-managed configuration file contains malformed dotnetup state.</summary>
+    UserConfigurationCorrupted,
+
     /// <summary>The install path points to an existing file instead of a directory.</summary>
     InstallPathIsFile,
 
