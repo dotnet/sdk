@@ -558,15 +558,8 @@
   </Target>
 
   <Target Name="ChmodPublishDir"
-          DependsOnTargets="GenerateCliRuntimeConfigurationFiles;CreateMSBuildAppHost"
+          DependsOnTargets="GenerateCliRuntimeConfigurationFiles;CreateMSBuildAppHost;PublishDotnetAot"
           Condition="'$(OSName)' != 'win'">
-    <PropertyGroup>
-      <!-- Recompute native lib name for chmod (same logic as PublishDotnetAot) -->
-      <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
-      <_DotnetAotNativeLibExtension Condition="'$(OSName)' == 'osx'">.dylib</_DotnetAotNativeLibExtension>
-      <_DotnetAotNativeLibExtension Condition="'$(_DotnetAotNativeLibExtension)' == ''">.so</_DotnetAotNativeLibExtension>
-      <_DotnetAotNativeLibName>$(_DotnetAotNativeLibPrefix)dotnet-aot$(_DotnetAotNativeLibExtension)</_DotnetAotNativeLibName>
-    </PropertyGroup>
 
     <Exec Command="find $(OutputPath) -type d -exec chmod 755 {} \;" />
     <Exec Command="find $(OutputPath) -type f -exec chmod 644 {} \;" />
