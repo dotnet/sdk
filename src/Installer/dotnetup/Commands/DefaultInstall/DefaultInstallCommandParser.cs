@@ -36,6 +36,7 @@ internal static class DefaultInstallCommandParser
         Command command = new("defaultinstall", "Sets the default dotnet installation");
 
         command.Arguments.Add(InstallTypeArgument);
+        command.Options.Add(CommonOptions.ShellOption);
 
         command.SetAction(parseResult => new DefaultInstallCommand(parseResult).Execute());
 

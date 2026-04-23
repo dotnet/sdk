@@ -332,7 +332,7 @@ internal class DotnetArchiveExtractor : IDisposable
             return archivePath;
         }
 
-        string decompressedPath = archivePath.Replace(".gz", "");
+        string decompressedPath = archivePath.Replace(".gz", "", StringComparison.Ordinal);
 
         using FileStream originalFileStream = File.OpenRead(archivePath);
         using FileStream decompressedFileStream = File.Create(decompressedPath);

@@ -1,0 +1,636 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using Microsoft.Dotnet.Installation;
+using System.Text;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
+
+public class ShellProfileManagerTests : IDisposable
+{
+    private readonly string _tempDir;
+    private const string FakeDotnetupPath = "/usr/local/bin/dotnetup";
+    private const string FakeDotnetInstallPath = "/custom/dotnet path";
+
+    public ShellProfileManagerTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-profile-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDir))
+        {
+            try { Directory.Delete(_tempDir, recursive: true); }
+            catch { }
+        }
+    }
+
+    [Fact]
+    public void AddProfileEntries_CreatesFileAndAddsEntry()
+    {
+        var provider = new TestShellProvider(_tempDir, "test.sh");
+
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        modified.Should().HaveCount(1);
+        var content = File.ReadAllText(modified[0]);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain(ShellProfileManager.EndMarkerComment);
+        content.Should().Contain("print-env-script");
+        AssertUsesOnlyCurrentPlatformLineEndings(content);
+    }
+
+    [Fact]
+    public void AddProfileEntries_AppendsToExistingFile()
+    {
+        var profilePath = Path.Combine(_tempDir, "existing.sh");
+        File.WriteAllText(profilePath, "# existing config\nexport FOO=bar\n");
+        var provider = new TestShellProvider(_tempDir, "existing.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var content = File.ReadAllText(profilePath);
+        content.Should().StartWith("# existing config");
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain(ShellProfileManager.EndMarkerComment);
+    }
+
+    [Fact]
+    public void AddProfileEntries_BlankFile_UsesConsistentLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "blank.sh");
+        File.WriteAllText(profilePath, string.Empty);
+        var provider = new TestShellProvider(_tempDir, "blank.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        AssertUsesOnlyCurrentPlatformLineEndings(File.ReadAllText(profilePath));
+    }
+
+    [Fact]
+    public void AddProfileEntries_DoesNotDuplicateIfAlreadyPresent()
+    {
+        var profilePath = Path.Combine(_tempDir, "dup.sh");
+        var provider = new TestShellProvider(_tempDir, "dup.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        modified.Should().BeEmpty();
+        var lines = File.ReadAllLines(profilePath);
+        lines.Count(l => l.TrimEnd() == ShellProfileManager.BeginMarkerComment).Should().Be(1);
+        lines.Count(l => l.TrimEnd() == ShellProfileManager.EndMarkerComment).Should().Be(1);
+    }
+
+    [Fact]
+    public void AddProfileEntries_DoesNotLeaveBackupOfExistingFile()
+    {
+        var profilePath = Path.Combine(_tempDir, "backup.sh");
+        var originalContent = "# original content\n";
+        File.WriteAllText(profilePath, originalContent);
+        var provider = new TestShellProvider(_tempDir, "backup.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var backupPath = profilePath + ".dotnetup-backup";
+        File.Exists(backupPath).Should().BeFalse();
+        File.ReadAllText(profilePath).Should().NotBe(originalContent);
+    }
+
+    [Fact]
+    public void AddProfileEntries_PreservesUtf8BomAndCrLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-add.sh");
+        File.WriteAllText(profilePath, "# existing config\r\nexport FOO=bar\r\n", new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+        var provider = new TestShellProvider(_tempDir, "preserve-add.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeTrue();
+        AssertUsesOnlyCrLfLineEndings(File.ReadAllText(profilePath));
+    }
+
+    [Fact]
+    public void AddProfileEntries_PreservesUtf8BomAndLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-add-lf.sh");
+        File.WriteAllText(profilePath, "# existing config\nexport FOO=bar\n", new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+        var provider = new TestShellProvider(_tempDir, "preserve-add-lf.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeTrue();
+        AssertUsesOnlyLfLineEndings(File.ReadAllText(profilePath));
+    }
+
+    [Fact]
+    public void AddProfileEntries_PreservesUnicodeBomAndCrLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-add-unicode.sh");
+        File.WriteAllText(profilePath, "# existing config\r\nexport FOO=bar\r\n", Encoding.Unicode);
+        var provider = new TestShellProvider(_tempDir, "preserve-add-unicode.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.Unicode.Preamble.Length).SequenceEqual(Encoding.Unicode.Preamble).Should().BeTrue();
+        AssertUsesOnlyCrLfLineEndings(File.ReadAllText(profilePath, Encoding.Unicode));
+    }
+
+    [Fact]
+    public void AddProfileEntries_CreatesParentDirectories()
+    {
+        var nestedDir = Path.Combine(_tempDir, "config", "powershell");
+        var provider = new TestShellProvider(nestedDir, "profile.ps1");
+
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        modified.Should().HaveCount(1);
+        File.Exists(Path.Combine(nestedDir, "profile.ps1")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_RemovesManagedBlock()
+    {
+        var profilePath = Path.Combine(_tempDir, "remove.sh");
+        var provider = new TestShellProvider(_tempDir, "remove.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+        File.ReadAllText(profilePath).Should().Contain(ShellProfileManager.BeginMarkerComment);
+
+        var modified = ShellProfileManager.RemoveProfileEntries(provider);
+
+        modified.Should().HaveCount(1);
+        var content = File.ReadAllText(profilePath);
+        content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        content.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        content.Should().NotContain("print-env-script");
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_DoesNotLeaveBackupOfExistingFile()
+    {
+        var profilePath = Path.Combine(_tempDir, "remove-backup.sh");
+        var provider = new TestShellProvider(_tempDir, "remove-backup.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var modified = ShellProfileManager.RemoveProfileEntries(provider);
+
+        modified.Should().HaveCount(1);
+        File.Exists(profilePath + ".dotnetup-backup").Should().BeFalse();
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_LeavesOtherContentIntact()
+    {
+        var profilePath = Path.Combine(_tempDir, "partial.sh");
+        File.WriteAllText(profilePath, "# my config\nexport FOO=bar\n");
+        var provider = new TestShellProvider(_tempDir, "partial.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+        ShellProfileManager.RemoveProfileEntries(provider);
+
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain("# my config");
+        content.Should().Contain("export FOO=bar");
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_PreservesUtf8BomAndCrLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-remove.sh");
+        var provider = new TestShellProvider(_tempDir, "preserve-remove.sh");
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
+        var originalContent =
+            $"# existing config\r\n{ShellProfileManager.BeginMarkerComment}\r\n{entry}\r\n{ShellProfileManager.EndMarkerComment}\r\nexport FOO=bar\r\n";
+        File.WriteAllText(profilePath, originalContent, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+        ShellProfileManager.RemoveProfileEntries(provider);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeTrue();
+
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain("# existing config");
+        content.Should().Contain("export FOO=bar");
+        content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        content.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        AssertUsesOnlyCrLfLineEndings(content);
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_PreservesUtf8BomAndLfLineEndings()
+    {
+        var profilePath = Path.Combine(_tempDir, "preserve-remove-lf.sh");
+        var provider = new TestShellProvider(_tempDir, "preserve-remove-lf.sh");
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
+        var originalContent =
+            $"# existing config\n{ShellProfileManager.BeginMarkerComment}\n{entry}\n{ShellProfileManager.EndMarkerComment}\nexport FOO=bar\n";
+        File.WriteAllText(profilePath, originalContent, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+        ShellProfileManager.RemoveProfileEntries(provider);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan(0, Encoding.UTF8.Preamble.Length).SequenceEqual(Encoding.UTF8.Preamble).Should().BeTrue();
+
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain("# existing config");
+        content.Should().Contain("export FOO=bar");
+        content.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        content.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        AssertUsesOnlyLfLineEndings(content);
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_ThrowsWhenEndMarkerIsMissing()
+    {
+        var profilePath = Path.Combine(_tempDir, "missing-end.sh");
+        var originalContent =
+            $"""
+            # existing config
+            {ShellProfileManager.BeginMarkerComment}
+            eval "$('/old/dotnetup' print-env-script --shell test)"
+            export TEMP_VAR=1
+            """;
+        File.WriteAllText(profilePath, originalContent);
+        var provider = new TestShellProvider(_tempDir, "missing-end.sh");
+
+        Action act = () => ShellProfileManager.RemoveProfileEntries(provider);
+
+        act.Should().Throw<DotnetInstallException>()
+            .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.UserConfigurationCorrupted)
+            .WithMessage("*malformed dotnetup block*");
+        File.ReadAllText(profilePath).Should().Be(originalContent.ReplaceLineEndings(Environment.NewLine));
+    }
+
+    [Fact]
+    public void AddProfileEntries_ThrowsWhenEndMarkerIsMissing()
+    {
+        var profilePath = Path.Combine(_tempDir, "missing-end-add.sh");
+        var originalContent =
+            $"""
+            # existing config
+            {ShellProfileManager.BeginMarkerComment}
+            eval "$('/old/dotnetup' print-env-script --shell test)"
+            export TEMP_VAR=1
+            """;
+        File.WriteAllText(profilePath, originalContent);
+        var provider = new TestShellProvider(_tempDir, "missing-end-add.sh");
+
+        Action act = () => ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        act.Should().Throw<DotnetInstallException>()
+            .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.UserConfigurationCorrupted)
+            .WithMessage("*malformed dotnetup block*");
+        File.ReadAllText(profilePath).Should().Be(originalContent.ReplaceLineEndings(Environment.NewLine));
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_IgnoresOrphanedEndMarkerWithoutBegin()
+    {
+        var profilePath = Path.Combine(_tempDir, "missing-begin.sh");
+        var originalContent =
+            $"""
+            # existing config
+            {ShellProfileManager.EndMarkerComment}
+            export FOO=bar
+            """;
+        File.WriteAllText(profilePath, originalContent);
+        var provider = new TestShellProvider(_tempDir, "missing-begin.sh");
+
+        var modified = ShellProfileManager.RemoveProfileEntries(provider);
+
+        modified.Should().BeEmpty();
+        File.ReadAllText(profilePath).Should().Be(originalContent.ReplaceLineEndings(Environment.NewLine));
+    }
+
+    [Fact]
+    public void RemoveProfileEntries_ReturnsEmptyForMissingFile()
+    {
+        var provider = new TestShellProvider(_tempDir, "nonexistent.sh");
+
+        var modified = ShellProfileManager.RemoveProfileEntries(provider);
+
+        modified.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AddProfileEntries_ModifiesMultipleFiles()
+    {
+        var provider = new TestShellProvider(_tempDir, "file1.sh", "file2.sh");
+
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        modified.Should().HaveCount(2);
+        File.ReadAllText(Path.Combine(_tempDir, "file1.sh")).Should().Contain(ShellProfileManager.BeginMarkerComment);
+        File.ReadAllText(Path.Combine(_tempDir, "file2.sh")).Should().Contain(ShellProfileManager.BeginMarkerComment);
+    }
+
+    [Fact]
+    public void AddProfileEntries_DotnetupOnly_IncludesFlag()
+    {
+        var provider = new TestShellProvider(_tempDir, "admin.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+
+        var content = File.ReadAllText(Path.Combine(_tempDir, "admin.sh"));
+        content.Should().Contain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void AddProfileEntries_CustomDotnetInstallPath_IncludesFlag()
+    {
+        var provider = new TestShellProvider(_tempDir, "custom.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetInstallPath: FakeDotnetInstallPath);
+
+        var content = File.ReadAllText(Path.Combine(_tempDir, "custom.sh"));
+        content.Should().Contain($"--dotnet-install-path '{FakeDotnetInstallPath}'");
+    }
+
+    [Fact]
+    public void AddProfileEntries_ReplacesExistingEntryInPlace()
+    {
+        var profilePath = Path.Combine(_tempDir, "replace.sh");
+        var provider = new TestShellProvider(_tempDir, "replace.sh");
+
+        // Add user entry
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+        File.ReadAllText(profilePath).Should().NotContain("--dotnetup-only");
+
+        // Replace with admin entry (AddProfileEntries now replaces in-place)
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+
+        modified.Should().HaveCount(1);
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain("--dotnetup-only");
+        content.Split('\n').Count(l => l.TrimEnd() == ShellProfileManager.BeginMarkerComment).Should().Be(1);
+        content.Split('\n').Count(l => l.TrimEnd() == ShellProfileManager.EndMarkerComment).Should().Be(1);
+    }
+
+    [Fact]
+    public void AddProfileEntries_ReplacesManagedBlockOfArbitraryLength()
+    {
+        var profilePath = Path.Combine(_tempDir, "multiline.sh");
+        File.WriteAllText(
+            profilePath,
+            $"""
+            # existing config
+            {ShellProfileManager.BeginMarkerComment}
+            old line 1
+            old line 2
+            old line 3
+            {ShellProfileManager.EndMarkerComment}
+            export FOO=bar
+            """);
+
+        var provider = new TestShellProvider(_tempDir, "multiline.sh")
+        {
+            ProfileEntryOverride =
+                """
+                eval "$('/usr/local/bin/dotnetup' print-env-script --shell test)"
+                hash -r 2>/dev/null
+                """,
+        };
+
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        modified.Should().HaveCount(1);
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain(ShellProfileManager.EndMarkerComment);
+        content.Should().Contain("hash -r 2>/dev/null");
+        content.Should().Contain("export FOO=bar");
+        content.Should().NotContain("old line 1");
+    }
+
+    [Fact]
+    public void AddProfileEntries_WorksWithNoExistingEntry()
+    {
+        var provider = new TestShellProvider(_tempDir, "fresh.sh");
+
+        var modified = ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath, dotnetupOnly: true);
+
+        modified.Should().HaveCount(1);
+        File.ReadAllText(Path.Combine(_tempDir, "fresh.sh")).Should().Contain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void BashProvider_GenerateProfileEntry_ContainsEval()
+    {
+        var provider = new BashEnvShellProvider();
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
+
+        entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        entry.Should().Contain($"if [ -x '{FakeDotnetupPath}' ]; then");
+        entry.Should().Contain("eval");
+        entry.Should().Contain("--shell bash");
+        entry.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void BashProvider_GenerateProfileEntry_DotnetupOnly()
+    {
+        var provider = new BashEnvShellProvider();
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetupOnly: true);
+
+        entry.Should().Contain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void BashProvider_GenerateActivationCommand_WithCustomInstallPath_IncludesFlag()
+    {
+        var provider = new BashEnvShellProvider();
+        var command = provider.GenerateActivationCommand(FakeDotnetupPath, dotnetInstallPath: FakeDotnetInstallPath);
+
+        command.Should().Contain($"--dotnet-install-path '{FakeDotnetInstallPath}'");
+        command.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void BashProvider_DefaultInstallPath_KeepsCommandSimple()
+    {
+        var provider = new BashEnvShellProvider();
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetInstallPath: DotnetupPaths.DefaultDotnetInstallPath);
+        var command = provider.GenerateActivationCommand(FakeDotnetupPath, dotnetInstallPath: DotnetupPaths.DefaultDotnetInstallPath);
+
+        entry.Should().NotContain("--dotnet-install-path");
+        command.Should().NotContain("--dotnet-install-path");
+        command.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void ZshProvider_GenerateProfileEntry_ContainsEval()
+    {
+        var provider = new ZshEnvShellProvider();
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
+
+        entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        entry.Should().Contain($"if [ -x '{FakeDotnetupPath}' ]; then");
+        entry.Should().Contain("eval");
+        entry.Should().Contain("--shell zsh");
+        entry.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void PowerShellProvider_GenerateProfileEntry_ContainsInvokeExpression()
+    {
+        var provider = new PowerShellEnvShellProvider();
+        var entry = provider.GenerateProfileEntry(FakeDotnetupPath);
+
+        entry.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        entry.Should().NotContain(ShellProfileManager.EndMarkerComment);
+        entry.Should().Contain($"if (Test-Path -LiteralPath '{FakeDotnetupPath}' -PathType Leaf)");
+        entry.Should().Contain("Invoke-Expression");
+        entry.Should().Contain("--shell pwsh");
+        entry.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void BashProvider_GenerateActivationCommand_IsCorrect()
+    {
+        var provider = new BashEnvShellProvider();
+        var command = provider.GenerateActivationCommand(FakeDotnetupPath);
+
+        command.Should().Contain("eval");
+        command.Should().Contain("--shell bash");
+        command.Should().NotContain(ShellProfileManager.BeginMarkerComment);
+        command.Should().NotContain(ShellProfileManager.EndMarkerComment);
+    }
+
+    [Fact]
+    public void ZshProvider_GenerateActivationCommand_IsCorrect()
+    {
+        var provider = new ZshEnvShellProvider();
+        var command = provider.GenerateActivationCommand(FakeDotnetupPath);
+
+        command.Should().Contain("eval");
+        command.Should().Contain("--shell zsh");
+    }
+
+    [Fact]
+    public void PowerShellProvider_GenerateActivationCommand_IsCorrect()
+    {
+        var provider = new PowerShellEnvShellProvider();
+        var command = provider.GenerateActivationCommand(FakeDotnetupPath);
+
+        command.Should().Contain("Invoke-Expression");
+        command.Should().Contain("--shell pwsh");
+    }
+
+    [Fact]
+    public void BashProvider_GetProfilePaths_ReturnsAtLeastBashrc()
+    {
+        var provider = new BashEnvShellProvider();
+        var paths = provider.GetProfilePaths();
+
+        paths.Should().HaveCountGreaterThanOrEqualTo(2);
+        paths[0].Should().EndWith(".bashrc");
+    }
+
+    [Fact]
+    public void ZshProvider_GetProfilePaths_ReturnsZshrc()
+    {
+        var provider = new ZshEnvShellProvider();
+        var paths = provider.GetProfilePaths();
+
+        paths.Should().HaveCount(1);
+        paths[0].Should().EndWith(".zshrc");
+    }
+
+    [Fact]
+    public void PowerShellProvider_GetProfilePaths_ReturnsProfilePs1()
+    {
+        var provider = new PowerShellEnvShellProvider();
+        var paths = provider.GetProfilePaths();
+
+        paths.Should().HaveCount(1);
+        paths[0].Should().EndWith("Microsoft.PowerShell_profile.ps1");
+    }
+
+    /// <summary>
+    /// Test-only shell provider that targets files in the temp directory.
+    /// </summary>
+    private sealed class TestShellProvider : IEnvShellProvider
+    {
+        private readonly string[] _profilePaths;
+
+        public TestShellProvider(string dir, params string[] fileNames)
+        {
+            _profilePaths = fileNames.Select(f => Path.Combine(dir, f)).ToArray();
+        }
+
+        public string ArgumentName => "test";
+        public string Extension => "sh";
+        public string? HelpDescription => null;
+        public string? ProfileEntryOverride { get; init; }
+
+        public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true) =>
+            includeDotnet
+                ? $"export DOTNET_ROOT='{dotnetInstallPath}'"
+                : dotnetupDir is not null ? $"export PATH='{dotnetupDir}':$PATH" : "";
+
+        public IReadOnlyList<string> GetProfilePaths() => _profilePaths;
+
+        public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
+        {
+            if (ProfileEntryOverride is not null)
+            {
+                return ProfileEntryOverride;
+            }
+
+            var flags = dotnetupOnly ? " --dotnetup-only" : "";
+            if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+            {
+                flags += $" --dotnet-install-path '{dotnetInstallPath}'";
+            }
+
+            return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
+        }
+
+        public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
+        {
+            var flags = dotnetupOnly ? " --dotnetup-only" : "";
+            if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+            {
+                flags += $" --dotnet-install-path '{dotnetInstallPath}'";
+            }
+
+            return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
+        }
+    }
+
+    private static void AssertUsesOnlyCrLfLineEndings(string content)
+    {
+        content.Should().Contain("\r\n");
+        content.Replace("\r\n", string.Empty, StringComparison.Ordinal).Should().NotContain("\n");
+    }
+
+    private static void AssertUsesOnlyLfLineEndings(string content)
+    {
+        content.Should().Contain("\n");
+        content.Should().NotContain("\r\n");
+        content.Should().NotContain("\r");
+    }
+
+    private static void AssertUsesOnlyCurrentPlatformLineEndings(string content)
+    {
+        if (Environment.NewLine == "\r\n")
+        {
+            AssertUsesOnlyCrLfLineEndings(content);
+        }
+        else
+        {
+            AssertUsesOnlyLfLineEndings(content);
+        }
+    }
+}

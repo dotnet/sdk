@@ -26,10 +26,14 @@ internal static class RuntimeInstallCommandParser
         command.Options.Add(CommonOptions.SetDefaultInstallOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.InteractiveOption);
+        // Intentionally do not expose --shell on install commands.
+        // If a user wants to override shell detection for the profile-setup experience,
+        // they can run `dotnetup init --shell <name>` before installing.
         command.Options.Add(CommonOptions.NoProgressOption);
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
         command.Options.Add(CommonOptions.UntrackedOption);
+        command.Validators.Add(CommonOptions.RejectShellOptionOnInstallCommand());
 
         command.SetAction(parseResult => new RuntimeInstallCommand(parseResult).Execute());
 

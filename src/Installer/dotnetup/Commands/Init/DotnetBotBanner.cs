@@ -17,7 +17,7 @@ internal static class DotnetBotBanner
     {
         // Trim the commit hash from the informational version (e.g. "0.1.1-preview+abc123" -> "0.1.1-preview")
         string version = Parser.Version;
-        int plusIndex = version.IndexOf('+');
+        int plusIndex = version.IndexOf('+', StringComparison.Ordinal);
         if (plusIndex >= 0)
         {
             version = version[..plusIndex];

@@ -4,6 +4,7 @@
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
@@ -21,6 +22,9 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public int GetExistingSystemInstallsCallCount { get; private set; }
     public int ApplyEnvironmentModificationsCallCount { get; private set; }
+    public int ApplyTerminalProfileModificationsCallCount { get; private set; }
+    public string? LastDotnetRootForEnvironmentModifications { get; private set; }
+    public string? LastDotnetRootForTerminalProfileModifications { get; private set; }
 
     public MockDotnetInstallManager(
         string defaultInstallPath,
@@ -56,6 +60,13 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
     {
         ApplyEnvironmentModificationsCallCount++;
+        LastDotnetRootForEnvironmentModifications = dotnetRoot;
+    }
+
+    public void ApplyTerminalProfileModifications(string dotnetRoot, IEnvShellProvider? shellProvider = null)
+    {
+        ApplyTerminalProfileModificationsCallCount++;
+        LastDotnetRootForTerminalProfileModifications = dotnetRoot;
     }
 
     public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests) { }
