@@ -38,7 +38,7 @@ class TestClass
                         GetCSharpResultAt(8, 22, "DSACng"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ class TestClass
                         GetCSharpResultAt(8, 22, "DSACng"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -96,7 +96,7 @@ class TestClass
                         GetCSharpResultAt(8, 22, "DSACng"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -125,7 +125,7 @@ class TestClass
                         GetCSharpResultAt(8, 22, "DSACng"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

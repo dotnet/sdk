@@ -27,8 +27,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
             var foundTemplates = await bootstrapper.GetTemplatesAsync(
-                new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName") });
-            var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string?>());
+                new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName") }, cancellationToken: TestContext.Current.CancellationToken);
+            var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(2, result.CreationEffects?.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(0, result.CreationEffects?.CreationResult.PostActions.Count);
             Assert.Equal(2, result.CreationEffects?.FileChanges.Count);
@@ -55,9 +55,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
             var foundTemplates = await bootstrapper.GetTemplatesAsync(
-                new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName") });
+                new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithSourceName") }, cancellationToken: TestContext.Current.CancellationToken);
 
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string?>());
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(2, result.CreationResult?.PrimaryOutputs.Count);
             Assert.Equal(0, result.CreationResult?.PostActions.Count);
@@ -74,8 +74,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("console") });
-            var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string?>());
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("console") }, cancellationToken: TestContext.Current.CancellationToken);
+            var result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(2, result.CreationEffects?.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(2, result.CreationEffects?.CreationResult.PostActions.Count);
             Assert.Equal(2, result.CreationEffects?.FileChanges.Count);
@@ -101,8 +101,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             await InstallTemplateAsync(bootstrapper, packageLocation);
 
             string output = TestUtils.CreateTemporaryFolder();
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("console") });
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string?>());
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("console") }, cancellationToken: TestContext.Current.CancellationToken);
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(2, result.CreationResult?.PrimaryOutputs.Count);
             Assert.Equal(2, result.CreationResult?.PostActions.Count);
 
@@ -119,8 +119,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") });
-            await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string?>());
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") }, cancellationToken: TestContext.Current.CancellationToken);
+            await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
             string sourceImage = Path.Combine(templateLocation, "image.png");
             string targetImage = Path.Combine(output, "image.png");
@@ -144,8 +144,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") });
-            await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string?>());
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") }, cancellationToken: TestContext.Current.CancellationToken);
+            await bootstrapper.CreateAsync(foundTemplates[0].Info, "my-test-folder", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
             string sourceImage = Path.Combine(templateLocation, "image.png");
             string targetImage = Path.Combine(output, "image.png");
@@ -163,8 +163,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         {
             using Bootstrapper bootstrapper = GetBootstrapper(loadTestTemplates: true);
 
-            var result1 = await bootstrapper.GetTemplatesAsync(default);
-            var result2 = await bootstrapper.GetTemplatesAsync([], cancellationToken: default);
+            var result1 = await bootstrapper.GetTemplatesAsync(TestContext.Current.CancellationToken);
+            var result2 = await bootstrapper.GetTemplatesAsync([], cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.NotEmpty(result1);
             Assert.Equal(result1.Count, result2.Count);
@@ -179,8 +179,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.SourceNameForms") });
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "MyApp.1", output, new Dictionary<string, string?>());
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.SourceNameForms") }, cancellationToken: TestContext.Current.CancellationToken);
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "MyApp.1", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
 

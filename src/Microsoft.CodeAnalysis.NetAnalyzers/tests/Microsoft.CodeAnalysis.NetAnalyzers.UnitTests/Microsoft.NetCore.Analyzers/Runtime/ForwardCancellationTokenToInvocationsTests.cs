@@ -4750,7 +4750,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task CS8VerifyAnalyzerAsync(string originalCode)
@@ -4763,7 +4763,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VB16VerifyCodeFixAsync(string originalCode, string fixedCode)
@@ -4777,7 +4777,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VB16VerifyAnalyzerAsync(string originalCode)
@@ -4790,7 +4790,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

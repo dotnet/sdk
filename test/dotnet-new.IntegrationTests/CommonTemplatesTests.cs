@@ -95,12 +95,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             if (expectedTemplateName.Equals("global.json file") &&
                 (args == null || !args.Contains("--sdk-version")))
             {
-                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(default);
+                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(TestContext.Current.CancellationToken);
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");
             }
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         //
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             );
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
 
             Directory.Delete(workingDir, true);
         }
@@ -430,7 +430,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             );
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
 
             if (buildPass)
             {

@@ -228,7 +228,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                     }
                 },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
