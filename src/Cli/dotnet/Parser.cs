@@ -1,6 +1,52 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if CLI_AOT
+using System.CommandLine;
+using Microsoft.DotNet.Cli.Utils;
+
+namespace Microsoft.DotNet.Cli;
+
+public static class Parser
+{
+    internal static RootCommand RootCommand { get; } = CreateCommand();
+
+    private static RootCommand CreateCommand()
+    {
+        var versionOption = new Option<bool>("--version") { Description = "Display .NET SDK version." };
+        var infoOption = new Option<bool>("--info") { Description = "Display .NET information." };
+
+        var rootCommand = new RootCommand("The .NET CLI")
+        {
+            versionOption,
+            infoOption,
+        };
+
+        rootCommand.SetAction(parseResult =>
+        {
+            if (parseResult.GetValue(versionOption))
+            {
+                CommandLineInfo.PrintVersion();
+                return 0;
+            }
+            if (parseResult.GetValue(infoOption))
+            {
+                CommandLineInfo.PrintInfo();
+                return 0;
+            }
+            parseResult.InvocationConfiguration.Output.WriteLine("Usage: dn [options]");
+            return 0;
+        });
+
+        return rootCommand;
+    }
+
+    public static ParseResult Parse(string[] args) => RootCommand.Parse(args);
+
+    public static int Invoke(ParseResult parseResult) => parseResult.Invoke();
+}
+
+#else
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.StaticCompletions;
@@ -308,7 +354,7 @@ public static class Parser
                 option.EnsureHelpName();
             }
 
-            if (command.GetRootCommand() is NuGetCommandDefinition)
+            if (IsInNuGetCommandTree(command))
             {
                 NuGetCommand.Run(context.ParseResult);
             }
@@ -376,5 +422,20 @@ public static class Parser
                 base.Write(context);
             }
         }
+
+        private static bool IsInNuGetCommandTree(Command command)
+        {
+            Command? current = command;
+            while (current is not null)
+            {
+                if (current is NuGetCommandDefinition)
+                {
+                    return true;
+                }
+                current = current.Parents.FirstOrDefault(p => p is Command) as Command;
+            }
+            return false;
+        }
     }
 }
+#endif

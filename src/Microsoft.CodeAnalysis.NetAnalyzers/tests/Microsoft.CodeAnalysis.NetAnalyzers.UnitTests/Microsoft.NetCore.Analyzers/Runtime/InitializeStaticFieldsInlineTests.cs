@@ -368,7 +368,7 @@ public class C2
     private static void OnThreadExit(object sender, EventArgs e) {}
 }
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -534,7 +534,7 @@ class C
                     GetCA1810CSharpDefaultResultAt(9, 12, "C")
                 },
             }
-            .RunAsync();
+            .RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

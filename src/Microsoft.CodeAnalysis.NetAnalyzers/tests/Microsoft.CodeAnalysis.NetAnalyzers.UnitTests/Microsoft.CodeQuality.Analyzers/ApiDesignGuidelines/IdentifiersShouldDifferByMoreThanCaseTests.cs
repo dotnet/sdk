@@ -141,7 +141,7 @@ namespace N
                         GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.F.x", "N.F.X"), ("/0/Test0.cs", 12, 26), ("/0/Test1.cs", 7, 26)),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
@@ -167,7 +167,7 @@ namespace N
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
@@ -191,7 +191,7 @@ namespace N
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -446,7 +446,7 @@ public static class StringExtensions
             {
                 TestCode = code,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp14,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

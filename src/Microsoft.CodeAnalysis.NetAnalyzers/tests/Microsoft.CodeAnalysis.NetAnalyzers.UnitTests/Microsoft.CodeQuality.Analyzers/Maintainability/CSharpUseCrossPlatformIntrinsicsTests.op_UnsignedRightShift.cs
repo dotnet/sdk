@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -109,7 +109,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -158,7 +158,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -205,7 +205,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -252,7 +252,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -299,7 +299,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

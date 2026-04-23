@@ -159,6 +159,16 @@
         <ProjectName>Microsoft.Net.Sdk.Compilers.Toolset.csproj</ProjectName>
         <Version>$(Version)</Version>
       </BaseTestPackageProject>
+      <BaseTestPackageProject Include="src/TemplateEngine/Tools/Microsoft.TemplateEngine.Authoring.Tasks">
+        <Name>Microsoft.TemplateEngine.Authoring.Tasks</Name>
+        <ProjectName>Microsoft.TemplateEngine.Authoring.Tasks.csproj</ProjectName>
+        <Version>$(Version)</Version>
+      </BaseTestPackageProject>
+      <BaseTestPackageProject Include="src/TemplateEngine/Tools/Microsoft.TemplateSearch.TemplateDiscovery">
+        <Name>Microsoft.TemplateSearch.TemplateDiscovery</Name>
+        <ProjectName>Microsoft.TemplateSearch.TemplateDiscovery.csproj</ProjectName>
+        <Version>$(Version)</Version>
+      </BaseTestPackageProject>
 
       <BaseTestPackageProject>
         <NuPkgName Condition=" '%(NuPkgName)' == '' ">%(Name)</NuPkgName>

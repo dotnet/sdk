@@ -140,7 +140,7 @@ public class OuterClass
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -188,7 +188,7 @@ End Class"
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -361,7 +361,7 @@ class TestClass
                         GetCSharpResultAt(9, 34, SslProtocolsAnalyzer.HardcodedRule, "Tls13"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

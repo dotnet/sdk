@@ -138,7 +138,7 @@ CA1501: 0
 ") },
                 },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -158,7 +158,7 @@ End Class",
 ") },
                 },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -175,7 +175,7 @@ End Class",
                         DiagnosticResult.CompilerError("CS0234").WithLocation(0).WithArguments("NonExistentType", "System"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -194,7 +194,7 @@ End Class",
                         DiagnosticResult.CompilerError("BC30002").WithLocation(0).WithArguments("System.NonExistentType"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
@@ -267,7 +267,7 @@ public class C2 : SomeClass2 {}"
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbnetTest = new VerifyVB.Test
             {
@@ -348,7 +348,7 @@ End Class"
                 });
             }
 
-            await vbnetTest.RunAsync();
+            await vbnetTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
@@ -415,7 +415,7 @@ public class C1 : SomeClass {}
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 1, 1, "SomeClass"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbnetTest = new VerifyVB.Test
             {
@@ -474,7 +474,7 @@ End Class"
                 vbnetTest.ExpectedDiagnostics.Add(GetBasicCA1501ExpectedDiagnostic(15, 18, "C1", 1, 1, "SomeClass"));
             }
 
-            await vbnetTest.RunAsync();
+            await vbnetTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
@@ -535,7 +535,7 @@ public class C1 : SomeClass {}
 "),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -593,7 +593,7 @@ End Class"
 "),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -1449,7 +1449,7 @@ CA 1501: 10
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private async Task VerifyBasicAsync(string source, string codeMetricsConfigSource, params DiagnosticResult[] expected)
@@ -1465,7 +1465,7 @@ CA 1501: 10
 
             vbTest.ExpectedDiagnostics.AddRange(expected);
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

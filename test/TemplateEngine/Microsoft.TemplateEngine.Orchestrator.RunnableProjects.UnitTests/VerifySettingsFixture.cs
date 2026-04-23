@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.TemplateEngine.Tests;
 using VerifyTests.DiffPlex;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
@@ -18,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             s_called = true;
             DerivePathInfo(
                 (_, _, type, method) => new(
-                    directory: "Approvals",
+                    directory: TestBase.ApprovalsDirectory,
                     typeName: type.Name,
                     methodName: method.Name));
 
