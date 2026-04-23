@@ -177,7 +177,7 @@ public sealed class DotnetupTelemetry : IDisposable
             ? CommandSource.StartActivity($"command/{commandName}", ActivityKind.Internal)
             : null;
 
-        var op = new TrackedOperation(activity, $"command/{commandName}");
+        var op = new TrackedOperation(activity, $"command/{commandName}", TrackEvent);
         op.Tag(TelemetryTagNames.CommandName, commandName);
         op.Tag(TelemetryTagNames.Caller, "dotnetup");
         op.Tag(TelemetryTagNames.SessionId, SessionId);
@@ -202,7 +202,7 @@ public sealed class DotnetupTelemetry : IDisposable
             ? CommandSource.StartActivity(name, ActivityKind.Internal)
             : null;
 
-        return new TrackedOperation(activity, "process/complete");
+        return new TrackedOperation(activity, "process/complete", TrackEvent);
     }
 
     /// <summary>

@@ -10,19 +10,21 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// Wraps an <see cref="Activity"/> and automatically emits a telemetry event
 /// containing all accumulated tags when disposed. Callers use <see cref="Tag"/>
 /// to set data on both the span and the eventual event. On dispose, the activity
-/// is stopped (capturing duration) and all tags are forwarded to the registered
-/// <see cref="Metrics.OnTrackEvent"/> callback.
+/// is stopped (capturing duration) and all tags are forwarded to the injected
+/// callback.
 /// </summary>
 internal sealed class TrackedOperation : IDisposable
 {
     private readonly Activity? _activity;
     private readonly string _eventName;
+    private readonly Action<string, IDictionary<string, string?>>? _onTrackEvent;
     private bool _disposed;
 
-    internal TrackedOperation(Activity? activity, string eventName)
+    internal TrackedOperation(Activity? activity, string eventName, Action<string, IDictionary<string, string?>>? onTrackEvent)
     {
         _activity = activity;
         _eventName = eventName;
+        _onTrackEvent = onTrackEvent;
     }
 
     public Activity? Activity => _activity;
@@ -62,6 +64,6 @@ internal sealed class TrackedOperation : IDisposable
         properties["operation.duration_ms"] = _activity.Duration.TotalMilliseconds
             .ToString(CultureInfo.InvariantCulture);
 
-        Metrics.OnTrackEvent?.Invoke(_eventName, properties);
+        _onTrackEvent?.Invoke(_eventName, properties);
     }
 }

@@ -69,7 +69,7 @@ internal static class Metrics
     public static TrackedOperation Track(string activityName, string eventName)
     {
         var activity = ActivitySource.StartActivity(activityName, ActivityKind.Internal);
-        return new TrackedOperation(activity, eventName);
+        return new TrackedOperation(activity, eventName, OnTrackEvent);
     }
 
     /// <summary>
