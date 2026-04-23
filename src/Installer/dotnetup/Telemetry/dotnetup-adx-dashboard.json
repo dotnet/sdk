@@ -473,13 +473,44 @@
       }
     },
     {
-      "id": "8a78fbf9-21c4-4617-87f2-fdca36eca1f1",
+      "id": "c7a1e2d3-4b5f-6a7c-8d9e-0f1a2b3c4d5e",
       "title": "Usage by OS",
       "visualType": "pie",
       "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
       "layout": {
         "x": 0,
         "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e"
+      },
+      "visualOptions": {
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
+        "pie__orderBy": "size",
+        "pie__kind": "pie"
+      }
+    },
+    {
+      "id": "8a78fbf9-21c4-4617-87f2-fdca36eca1f1",
+      "title": "Usage by OS (Detailed)",
+      "visualType": "pie",
+      "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
+      "layout": {
+        "x": 0,
+        "y": 7,
         "width": 6,
         "height": 7
       },
@@ -566,13 +597,81 @@
       }
     },
     {
-      "id": "02bdc29b-3948-43c5-9774-4bde5ac4cff6",
+      "id": "d8e9f0a1-b2c3-4d5e-6f7a-8b9c0d1e2f3a",
       "title": "Success Rate by OS",
       "visualType": "table",
       "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
       "layout": {
         "x": 18,
         "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b"
+      },
+      "visualOptions": {
+        "hideLegend": false,
+        "colorRulesDisabled": false,
+        "colorRules": [
+          {
+            "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "ruleType": "colorByCondition",
+            "ruleName": "HighSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
+            "applyToColumn": "SuccessRate",
+            "hideText": false,
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": ">=",
+                "values": [
+                  "95"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "green",
+            "tag": "",
+            "icon": null
+          },
+          {
+            "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+            "ruleType": "colorByCondition",
+            "ruleName": "LowSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
+            "applyToColumn": "SuccessRate",
+            "hideText": false,
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": "<",
+                "values": [
+                  "95"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "02bdc29b-3948-43c5-9774-4bde5ac4cff6",
+      "title": "Success Rate by OS (Detailed)",
+      "visualType": "table",
+      "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
+      "layout": {
+        "x": 18,
+        "y": 7,
         "width": 6,
         "height": 7
       },
@@ -1331,6 +1430,28 @@
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
       "text": "_dotnetupCommands\n| extend ci = tostring(Properties[\"ci.detected\"])\n| where isnotempty(ci)\n| summarize Count = count() by CI_Environment = iif(ci == \"true\" or ci == \"True\", \"CI/CD\", \"Interactive\")",
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
+    },
+    {
+      "id": "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
+      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.type\"])\n| where isnotempty(os)\n| summarize Count = count() by os",
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
+    },
+    {
+      "id": "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
+      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.type\"])\n| where isnotempty(os)\n| summarize\n    Total = count(),\n    SuccessRate = round(100.0 * countif(is_success) / count(), 1)\n    by os\n| order by Total desc\n| project OS = os, Total, SuccessRate",
       "usedVariables": [
         "_dotnetupCommands"
       ]

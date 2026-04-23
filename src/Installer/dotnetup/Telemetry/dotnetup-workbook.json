@@ -310,9 +310,23 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend os = tostring(customDimensions[\"os.platform\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(os)\n| summarize Count = count() by os\n| render piechart",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend os = tostring(customDimensions[\"os.type\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(os)\n| summarize Count = count() by os\n| render piechart",
         "size": 1,
         "title": "Usage by OS",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "25",
+      "name": "os-type-piechart"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend os = tostring(customDimensions[\"os.platform\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(os)\n| summarize Count = count() by os\n| render piechart",
+        "size": 1,
+        "title": "Usage by OS (Detailed)",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
         "visualization": "piechart"
@@ -352,9 +366,31 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend os = tostring(customDimensions[\"os.platform\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(os)\n| summarize \n    Total = count(),\n    SuccessRate = round(100.0 * countif(success == true) / count(), 1)\n    by os\n| order by Total desc\n| project OS = os, Total, ['Success Rate'] = strcat(SuccessRate, '%')",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend os = tostring(customDimensions[\"os.type\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(os)\n| summarize \n    Total = count(),\n    SuccessRate = round(100.0 * countif(success == true) / count(), 1)\n    by os\n| order by Total desc\n| project OS = os, Total, ['Success Rate'] = strcat(SuccessRate, '%')",
         "size": 1,
         "title": "Success Rate by OS",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Success Rate",
+              "formatter": 1
+            }
+          ]
+        }
+      },
+      "customWidth": "25",
+      "name": "success-by-os-type"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name startswith \"command/\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| extend os = tostring(customDimensions[\"os.platform\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| where isnotempty(os)\n| summarize \n    Total = count(),\n    SuccessRate = round(100.0 * countif(success == true) / count(), 1)\n    by os\n| order by Total desc\n| project OS = os, Total, ['Success Rate'] = strcat(SuccessRate, '%')",
+        "size": 1,
+        "title": "Success Rate by OS (Detailed)",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
         "visualization": "table",
