@@ -1203,7 +1203,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTracesUnclassified\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend is_success = tostring(Properties[\"command.status\"]) == \"ok\"\n| extend duration_ms = todouble(Properties[\"command.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTracesUnclassified\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend is_success = tostring(Properties[\"command.status\"]) == \"ok\"\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
@@ -1572,7 +1572,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// download/complete and extract/complete events are emitted by the library\n// via InstallationActivitySource.EmitEvent with span tags copied to properties.\n_dotnetupAll\n| where Message in (\"dotnetup/download/complete\", \"dotnetup/extract/complete\")\n| extend from_cache = tostring(Properties[\"download.from_cache\"])\n| extend duration_ms = todouble(Properties[\"command.duration_ms\"])\n| where isnotnull(duration_ms)\n| extend operation = case(\n    Message == \"dotnetup/download/complete\" and (from_cache == \"true\" or from_cache == \"True\"), \"download (cached)\",\n    Message == \"dotnetup/download/complete\", \"download (network)\",\n    \"extract\")\n| summarize AvgDuration = avg(duration_ms) by Hour = bin(TimeGenerated, 1h), operation",
+      "text": "// download/complete and extract/complete events are emitted by the library\n// via InstallationActivitySource.EmitEvent with span tags copied to properties.\n_dotnetupAll\n| where Message in (\"dotnetup/download/complete\", \"dotnetup/extract/complete\")\n| extend from_cache = tostring(Properties[\"download.from_cache\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where isnotnull(duration_ms)\n| extend operation = case(\n    Message == \"dotnetup/download/complete\" and (from_cache == \"true\" or from_cache == \"True\"), \"download (cached)\",\n    Message == \"dotnetup/download/complete\", \"download (network)\",\n    \"extract\")\n| summarize AvgDuration = avg(duration_ms) by Hour = bin(TimeGenerated, 1h), operation",
       "usedVariables": [
         "_dotnetupAll"
       ]

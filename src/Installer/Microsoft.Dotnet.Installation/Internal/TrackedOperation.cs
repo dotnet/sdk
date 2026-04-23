@@ -70,7 +70,7 @@ internal sealed class TrackedOperation : IDisposable
             properties[tag.Key] = tag.Value;
         }
 
-        properties["command.duration_ms"] = _activity.Duration.TotalMilliseconds
+        properties["operation.duration_ms"] = _activity.Duration.TotalMilliseconds
             .ToString(CultureInfo.InvariantCulture);
 
         _onTrackEvent?.Invoke(_eventName, properties);

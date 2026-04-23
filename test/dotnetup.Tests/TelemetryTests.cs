@@ -667,8 +667,8 @@ public class TrackedOperationTests : IDisposable
         }
 
         Assert.Single(_capturedEvents);
-        Assert.True(_capturedEvents[0].Properties.ContainsKey("command.duration_ms"));
-        Assert.True(double.TryParse(_capturedEvents[0].Properties["command.duration_ms"], out var ms));
+        Assert.True(_capturedEvents[0].Properties.ContainsKey("operation.duration_ms"));
+        Assert.True(double.TryParse(_capturedEvents[0].Properties["operation.duration_ms"], out var ms));
         Assert.True(ms >= 0);
     }
 
