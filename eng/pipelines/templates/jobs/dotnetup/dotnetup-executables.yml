@@ -77,13 +77,20 @@ jobs:
       - powershell: |
           New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}" -Force
           & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained -p:EnforceCodeStyleInBuild=false -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
-          # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
+        displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
+      - powershell: |
+          $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
+          $dotnetupPublishDir = "$($publishDir.FullName)\${{ parameters.rid }}\publish\"
+          & .\.dotnet\dotnet build .\src\Installer\dotnetup.sign.proj /t:Sign "/p:DotnetupPublishDir=$dotnetupPublishDir" -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+        displayName: 🖋️ Sign dotnetup executable (${{ parameters.rid }})
+      - powershell: |
+          # Copy the published (and signed) output to the artifact staging directory
           $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
           Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\*" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup\${{ parameters.rid }}\" -Recurse -Force
           # Copy just the binary to the standalone artifact staging directory
           New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}" -Force | Out-Null
           Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\dotnetup.exe" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}\"
-        displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
+        displayName: 📦 Stage dotnetup artifacts (${{ parameters.rid }})
 
     - ${{ if ne(parameters.pool.os, 'windows') }}:
       - script: |
