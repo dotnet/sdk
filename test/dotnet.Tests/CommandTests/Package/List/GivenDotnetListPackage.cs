@@ -3,6 +3,9 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Hidden.List;
+using Microsoft.DotNet.Cli.Commands.Hidden.List.Package;
+using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
@@ -160,6 +163,27 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .Pass()
                 .And.HaveStdOut()
                 .And.HaveStdOutContaining("NewtonSoft.Json");
+        }
+
+        [Fact]
+        public void RestoresAndLists_FileBasedApp()
+        {
+            var packageId = "Newtonsoft.Json";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
+
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var file = Path.Join(testInstance.Path, "file.cs");
+            File.WriteAllText(file, $"""
+                #:package {packageId}@{packageVersion}
+                Console.WriteLine();
+                """);
+
+            new DotnetCommand(Log, "list", "file.cs", "package")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(packageId)
+                .And.HaveStdOutContaining(packageVersion);
         }
 
         [Fact]
@@ -348,7 +372,10 @@ class Program
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
             var parseResult = Parser.Parse(["dotnet", "list", "package", ..options]);
-            Action checkRules = () => Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommand.EnforceOptionRules(parseResult);
+
+            var command = Assert.IsType<ListPackageCommandDefinition>(parseResult.CommandResult.Command);
+
+            Action checkRules = () => command.EnforceOptionRules(parseResult);
 
             if (throws)
             {

@@ -11,7 +11,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
+        [FullMSBuildOnlyFact]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";
@@ -26,7 +26,7 @@ namespace Microsoft.NET.Restore.Tests
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Restore.Tests
                 .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
+        [FullMSBuildOnlyFact]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
         {
             const string testProjectName = "NetCoreApp";
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Restore.Tests
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
@@ -153,7 +153,7 @@ namespace Microsoft.NET.Restore.Tests
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var customPackagesDir = Path.Combine(testAsset.Path, "nuget-packages");
 
@@ -176,7 +176,7 @@ namespace Microsoft.NET.Restore.Tests
                 .CopyTestAsset("DesktopWpf")
                 .WithSource();
                 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var buildCommand = new BuildCommand(testAsset, relativePathToProject: "FxWpf")
             {

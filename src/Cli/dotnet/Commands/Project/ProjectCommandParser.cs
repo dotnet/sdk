@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -9,12 +9,9 @@ namespace Microsoft.DotNet.Cli.Commands.Project;
 
 internal sealed class ProjectCommandParser
 {
-    public static Command GetCommand()
+    public static void ConfigureCommand(ProjectCommandDefinition command)
     {
-        Command command = new("project");
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-        command.Subcommands.Add(ProjectConvertCommandParser.GetCommand());
-
-        return command;
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
+        command.ConvertCommand.SetAction(parseResult => new ProjectConvertCommand(parseResult).Execute());
     }
 }
