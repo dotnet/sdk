@@ -24,6 +24,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
 
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns("/bin/bash");
+
             var environmentPath = new LinuxEnvironmentPath(
                 toolsPath,
                 reporter,
@@ -49,6 +53,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
             provider
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
+
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns("/bin/bash");
 
             var environmentPath = new LinuxEnvironmentPath(
                 toolsPath,
@@ -78,6 +86,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue + ":" + toolsDirectoryOnPath);
 
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns("/bin/bash");
+
             var environmentPath = new LinuxEnvironmentPath(
                 toolsPath,
                 reporter,
@@ -101,6 +113,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
             provider
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue + ":" + toolsPath.Path);
+
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns("/bin/bash");
 
             var environmentPath = new LinuxEnvironmentPath(
                 toolsPath,
@@ -131,6 +147,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
             provider
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
+
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns("/bin/bash");
 
             var environmentPath = new LinuxEnvironmentPath(
                 toolsPath,
