@@ -480,7 +480,7 @@
       "layout": {
         "x": 0,
         "y": 0,
-        "width": 6,
+        "width": 8,
         "height": 7
       },
       "queryRef": {
@@ -511,7 +511,7 @@
       "layout": {
         "x": 0,
         "y": 7,
-        "width": 6,
+        "width": 24,
         "height": 7
       },
       "queryRef": {
@@ -540,9 +540,9 @@
       "visualType": "pie",
       "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
       "layout": {
-        "x": 6,
+        "x": 8,
         "y": 0,
-        "width": 6,
+        "width": 8,
         "height": 7
       },
       "queryRef": {
@@ -571,9 +571,9 @@
       "visualType": "pie",
       "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
       "layout": {
-        "x": 12,
+        "x": 16,
         "y": 0,
-        "width": 6,
+        "width": 8,
         "height": 7
       },
       "queryRef": {
@@ -602,9 +602,9 @@
       "visualType": "table",
       "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
       "layout": {
-        "x": 18,
-        "y": 0,
-        "width": 6,
+        "x": 0,
+        "y": 14,
+        "width": 24,
         "height": 7
       },
       "queryRef": {
@@ -670,9 +670,9 @@
       "visualType": "table",
       "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
       "layout": {
-        "x": 18,
-        "y": 7,
-        "width": 6,
+        "x": 0,
+        "y": 21,
+        "width": 24,
         "height": 7
       },
       "queryRef": {
