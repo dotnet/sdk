@@ -3804,7 +3804,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             }
             """);
 
-        // Duplicate #:ref directives are allowed (MSBuild handles deduplication).
+        // Duplicate #:ref directives are allowed (MSBuild can handle that).
         File.WriteAllText(filePath, """
             #:ref lib.cs
             #:ref lib.cs

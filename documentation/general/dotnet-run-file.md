@@ -269,7 +269,7 @@ We do not limit these directives to appear only in entry point files because it 
 
 We disallow duplicate `#:` directives (except `#:project` and `#:ref`) to allow us to design some deduplication mechanism in the future.
 Specifically, directives are considered duplicate if their type and name (case insensitive) are equal.
-`#:project` and `#:ref` duplicates are allowed because MSBuild handles deduplication of project references naturally.
+`#:project` and `#:ref` duplicates are allowed because MSBuild allows duplicate `<ProjectReference />` items.
 Later with deduplication, separate "self-contained" utilities could reference overlapping sets of packages
 even if they end up in the same compilation.
 For example, properties could be concatenated via `;`, more specific package versions could override less specific ones.

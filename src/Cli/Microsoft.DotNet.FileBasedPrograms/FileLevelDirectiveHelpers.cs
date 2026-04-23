@@ -156,7 +156,7 @@ internal static class FileLevelDirectiveHelpers
 
                 if (CSharpDirective.Parse(context) is { } directive)
                 {
-                    // Duplicate #:project and #:ref directives are allowed (we let MSBuild handle that).
+                    // Duplicate #:project and #:ref directives are allowed (MSBuild can handle that).
                     if (directive is not (CSharpDirective.Project or CSharpDirective.Ref))
                     {
                         // If the directive is already present, report an error.
