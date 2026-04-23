@@ -252,12 +252,10 @@ public sealed class VirtualProjectBuilder
 
     internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
     {
-        return MSBuildUtilities.ConvertStringToBool(project.GetPropertyValue(CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableItemMapping))
-            ? CSharpDirective.IncludeOrExclude.ParseMapping(
-                project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
-                EntryPointSourceFile,
-                reportError)
-            : CSharpDirective.IncludeOrExclude.DefaultMapping;
+        return CSharpDirective.IncludeOrExclude.ParseMapping(
+            project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
+            EntryPointSourceFile,
+            reportError);
     }
 
     public static ProjectInstance CreateProjectInstance(
@@ -439,33 +437,12 @@ public sealed class VirtualProjectBuilder
         ErrorReporter reportError)
     {
         bool? refEnabled = null;
-        bool? includeEnabled = null;
-        bool? excludeEnabled = null;
-        bool? transitiveEnabled = null;
 
         foreach (var directive in directives)
         {
             if (directive is CSharpDirective.Ref)
             {
                 CheckFlagEnabled(ref refEnabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, directive);
-            }
-
-            if (directive is CSharpDirective.IncludeOrExclude includeOrExcludeDirective)
-            {
-                if (includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Include)
-                {
-                    CheckFlagEnabled(ref includeEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableIncludeDirective, directive);
-                }
-                else
-                {
-                    Debug.Assert(includeOrExcludeDirective.Kind == CSharpDirective.IncludeOrExcludeKind.Exclude);
-                    CheckFlagEnabled(ref excludeEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableExcludeDirective, directive);
-                }
-            }
-
-            if (directive.Info.SourceFile.Path != EntryPointSourceFile.Path)
-            {
-                CheckFlagEnabled(ref transitiveEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives, directive);
             }
         }
 
