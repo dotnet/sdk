@@ -106,16 +106,17 @@ internal sealed unsafe class ManagedHost : IDisposable
     ///  Runs the managed application using the hostfxr command-line hosting path.
     ///  This is the simplest way to invoke <c>dotnet.dll Program.Main(args)</c>.
     /// </summary>
+    /// <param name="hostPath">Path to the host executable (e.g., dotnet.exe).</param>
     /// <param name="dotnetRoot">Path to the .NET installation root.</param>
+    /// <param name="hostfxrPath">Path to the hostfxr library.</param>
     /// <param name="args">Command-line arguments (first element should be the app path).</param>
     /// <returns>The application exit code.</returns>
-    public static int RunApp(string dotnetRoot, string[] args)
+    public static int RunApp(string hostPath, string dotnetRoot, string hostfxrPath, string[] args)
     {
-        nint handle;
-
         var parameters = new Interop.hostfxr_initialize_parameters
         {
             size = sizeof(Interop.hostfxr_initialize_parameters),
+            host_path = PlatformStringMarshaller.ConvertToUnmanaged(hostPath),
             dotnet_root = PlatformStringMarshaller.ConvertToUnmanaged(dotnetRoot),
         };
 
@@ -125,7 +126,7 @@ internal sealed unsafe class ManagedHost : IDisposable
                 args.Length,
                 args,
                 in parameters,
-                out handle);
+                out nint handle);
 
             if (result != StatusCode.Success && handle == 0)
             {
@@ -134,6 +135,20 @@ internal sealed unsafe class ManagedHost : IDisposable
 
             try
             {
+                // Set HOSTFXR_PATH property to match the muxer's behavior for SDK commands.
+                // The muxer sets this when is_sdk_command=true so the SDK can load hostfxr
+                // without relying on dlopen/LoadLibrary to find it.
+                if (!string.IsNullOrEmpty(hostfxrPath))
+                {
+                    StatusCode propertyResult = Interop.hostfxr_set_runtime_property_value(
+                        handle, Constants.RuntimeProperty.HostFxrPath, hostfxrPath);
+                    if (propertyResult != StatusCode.Success)
+                    {
+                        throw new InvalidOperationException(
+                            $"hostfxr_set_runtime_property_value failed for {Constants.RuntimeProperty.HostFxrPath}. Status: {propertyResult} (0x{(uint)propertyResult:X8})");
+                    }
+                }
+
                 StatusCode appResult = Interop.hostfxr_run_app(handle);
                 return (int)appResult;
             }
@@ -144,6 +159,7 @@ internal sealed unsafe class ManagedHost : IDisposable
         }
         finally
         {
+            PlatformStringMarshaller.Free(parameters.host_path);
             PlatformStringMarshaller.Free(parameters.dotnet_root);
         }
     }
