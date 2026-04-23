@@ -192,6 +192,29 @@
             "color": "yellow",
             "tag": "",
             "icon": null
+          },
+          {
+            "id": "25295878-8c84-4991-9159-e5e0c96d3458",
+            "ruleType": "colorByCondition",
+            "ruleName": "LowSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
+            "applyToColumn": "SuccessRate",
+            "hideText": false,
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": "<",
+                "values": [
+                  "80"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": null
           }
         ]
       }
@@ -212,7 +235,79 @@
         "queryId": "cb0b8e02-5588-4654-883b-06c186f753de"
       },
       "visualOptions": {
-        "hideLegend": false
+        "hideLegend": false,
+        "colorRulesDisabled": false,
+        "colorRules": [
+          {
+            "id": "171829aa-f0cb-4fda-a77f-9900ebd1ac04",
+            "ruleType": "colorByCondition",
+            "ruleName": "HighSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
+            "applyToColumn": "SuccessRate",
+            "hideText": false,
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": ">=",
+                "values": [
+                  "95"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "green",
+            "tag": "",
+            "icon": null
+          },
+          {
+            "id": "b1c0c4dd-833b-4381-8a60-5e71340aaf17",
+            "ruleType": "colorByCondition",
+            "ruleName": "MediumSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
+            "applyToColumn": "SuccessRate",
+            "hideText": false,
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": ">=",
+                "values": [
+                  "80"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": null
+          },
+          {
+            "id": "68ab9495-1815-49e7-bcf2-06c699781e5e",
+            "ruleType": "colorByCondition",
+            "ruleName": "LowSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
+            "applyToColumn": "SuccessRate",
+            "hideText": false,
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": "<",
+                "values": [
+                  "80"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": null
+          }
+        ]
       }
     },
     {
@@ -486,7 +581,79 @@
         "queryId": "fd4b0f4d-8a7b-451c-96b5-a96606ff972e"
       },
       "visualOptions": {
-        "hideLegend": false
+        "hideLegend": false,
+        "colorRulesDisabled": false,
+        "colorRules": [
+          {
+            "id": "e339bfd9-bb42-4d26-a3fa-96a22f3fd28b",
+            "ruleType": "colorByCondition",
+            "ruleName": "HighSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
+            "applyToColumn": "SuccessRate",
+            "hideText": false,
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": ">=",
+                "values": [
+                  "95"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "green",
+            "tag": "",
+            "icon": null
+          },
+          {
+            "id": "167f52b6-7e5c-4165-a990-a3910841dd42",
+            "ruleType": "colorByCondition",
+            "ruleName": "MediumSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
+            "applyToColumn": "SuccessRate",
+            "hideText": false,
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": ">=",
+                "values": [
+                  "80"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": null
+          },
+          {
+            "id": "eba70af8-a21c-4340-a1c9-6c5e82b4056e",
+            "ruleType": "colorByCondition",
+            "ruleName": "LowSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
+            "applyToColumn": "SuccessRate",
+            "hideText": false,
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": "<",
+                "values": [
+                  "80"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": null
+          }
+        ]
       }
     },
     {
@@ -1036,7 +1203,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTracesUnclassified\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend is_success = Properties[\"operation.status\"] == \"ok\"\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTracesUnclassified\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend is_success = tostring(Properties[\"operation.status\"]) == \"ok\"\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
