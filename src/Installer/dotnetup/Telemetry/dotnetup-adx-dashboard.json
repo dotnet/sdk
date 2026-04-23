@@ -7,36 +7,36 @@
   "pages": [
     {
       "name": "Success Rates",
-      "id": "page-success-rates"
+      "id": "db02633f-d182-4a41-bc0b-371f1a8d01f2"
     },
     {
       "name": "Command Usage",
-      "id": "page-command-usage"
+      "id": "145b086a-fcc7-4509-b4ba-77f8f035abe8"
     },
     {
       "name": "Platform & Environment",
-      "id": "page-platform"
+      "id": "e792297e-38e2-4096-b439-5c07a1ddd969"
     },
     {
       "name": "Installations",
-      "id": "page-installations"
+      "id": "a9f233eb-eb63-4ccf-93e7-91fd158112a4"
     },
     {
       "name": "Errors",
-      "id": "page-errors"
+      "id": "5196e72b-c21a-43f5-94ca-856ed25b261a"
     },
     {
       "name": "Performance",
-      "id": "page-performance"
+      "id": "4d45674d-e423-46a3-a402-40777c038e27"
     },
     {
       "name": "Users",
-      "id": "page-users"
+      "id": "14db25c2-f747-4516-83af-7f3d932be733"
     }
   ],
   "dataSources": [
     {
-      "id": "ds-dotnetcli",
+      "id": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb",
       "kind": "manual-kusto",
       "name": "DotNetCli",
       "clusterUri": "https://dotnettel.kusto.windows.net/",
@@ -46,7 +46,7 @@
   "parameters": [
     {
       "kind": "duration",
-      "id": "param-time-range",
+      "id": "8a4eebf0-d706-461c-9bb5-e57bec83e22d",
       "displayName": "Time range",
       "description": "",
       "beginVariableName": "_startTime",
@@ -61,14 +61,14 @@
       }
     },
     {
-      "kind": "freetext",
-      "id": "param-version-filter",
+      "kind": "string",
+      "id": "29e92018-8bda-4e71-a574-b9f435751135",
       "displayName": "Version Filter",
       "description": "Enter a dotnetup version to filter, or leave empty for all",
       "variableName": "_versionFilter",
+      "selectionType": "freetext",
       "defaultValue": {
-        "kind": "value",
-        "value": ""
+        "kind": "all"
       },
       "showOnPages": {
         "kind": "all"
@@ -76,7 +76,7 @@
     },
     {
       "kind": "bool",
-      "id": "param-dev-build",
+      "id": "37601060-6169-4b0a-9795-6aeb7ff552ff",
       "displayName": "Dev Builds",
       "description": "Filter by dev/prod builds",
       "variableName": "_devBuild",
@@ -88,8 +88,12 @@
       "dataSource": {
         "kind": "static",
         "values": [
-          { "value": true },
-          { "value": false }
+          {
+            "value": true
+          },
+          {
+            "value": false
+          }
         ]
       },
       "showOnPages": {
@@ -99,83 +103,144 @@
   ],
   "baseQueries": [
     {
-      "id": "bq-dotnetup-commands",
-      "queryId": "q-base-dotnetup-commands",
+      "id": "340d3c6f-9303-47f7-af67-02b42d2c1acd",
+      "queryId": "aef03f17-b73d-4625-8879-31fc030a514c",
       "variableName": "_dotnetupCommands"
     },
     {
-      "id": "bq-dotnetup-all-events",
-      "queryId": "q-base-dotnetup-all",
+      "id": "e1597b5c-d7ca-4f1c-84dc-ab62e7406b0f",
+      "queryId": "44ed3d3a-a43c-4cbb-91c4-8b5f39591290",
       "variableName": "_dotnetupAll"
     }
   ],
   "tiles": [
     {
-      "id": "tile-success-header",
+      "id": "8aaed247-b136-4ee3-9061-0feeb3ae47d0",
       "title": "Success Rate Overview",
       "visualType": "markdownCard",
-      "pageId": "page-success-rates",
-      "layout": { "x": 0, "y": 0, "width": 24, "height": 1 },
+      "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 24,
+        "height": 1
+      },
       "markdownText": "Success rate excludes user errors (invalid input, permissions, disk full, network issues). Only product issues count against quality.",
       "visualOptions": {}
     },
     {
-      "id": "tile-success-by-version",
+      "id": "0b9d0c7b-6dbd-4aac-9d77-a069ab15f834",
       "title": "Product Success Rate by Version",
       "visualType": "table",
-      "pageId": "page-success-rates",
-      "layout": { "x": 0, "y": 1, "width": 8, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-success-by-version" },
+      "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
+      "layout": {
+        "x": 0,
+        "y": 1,
+        "width": 8,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "6d27e3c5-57a3-4e90-a194-19ea05f7f88e"
+      },
       "visualOptions": {
         "hideLegend": false,
         "colorRulesDisabled": false,
         "colorRules": [
           {
-            "id": "cr-success-green",
+            "id": "73c5daba-70a3-425d-ad1c-fe5c73db5f5c",
             "ruleType": "colorByCondition",
+            "ruleName": "HighSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
             "applyToColumn": "SuccessRate",
             "hideText": false,
-            "applyTo": "cells",
-            "conditions": [{ "column": "SuccessRate", "operator": ">=", "values": ["95"] }],
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": ">=",
+                "values": [
+                  "95"
+                ]
+              }
+            ],
             "chainingOperator": "and",
             "colorStyle": "bold",
             "color": "green",
-            "tag": ""
+            "tag": "",
+            "icon": null
           },
           {
-            "id": "cr-success-yellow",
+            "id": "adb277bb-2ee2-432b-bc1a-f5b8448e3897",
             "ruleType": "colorByCondition",
+            "ruleName": "MediumSuccess",
+            "applyTo": "cells",
+            "visualType": "table",
             "applyToColumn": "SuccessRate",
             "hideText": false,
-            "applyTo": "cells",
-            "conditions": [{ "column": "SuccessRate", "operator": ">=", "values": ["80"] }],
+            "conditions": [
+              {
+                "column": "SuccessRate",
+                "operator": ">=",
+                "values": [
+                  "80"
+                ]
+              }
+            ],
             "chainingOperator": "and",
             "colorStyle": "bold",
             "color": "yellow",
-            "tag": ""
+            "tag": "",
+            "icon": null
           }
         ]
       }
     },
     {
-      "id": "tile-success-by-command-version",
+      "id": "b17d4bc8-d527-4e83-a7eb-6581c8574bc2",
       "title": "Product Success Rate by Command & Version",
       "visualType": "table",
-      "pageId": "page-success-rates",
-      "layout": { "x": 8, "y": 1, "width": 10, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-success-by-command-version" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
+      "layout": {
+        "x": 8,
+        "y": 1,
+        "width": 10,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "cb0b8e02-5588-4654-883b-06c186f753de"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-success-timechart-version",
+      "id": "88ce50ed-da13-45f5-ac73-3346ae7f8d66",
       "title": "Product Success Rate Over Time (by Version)",
       "visualType": "line",
-      "pageId": "page-success-rates",
-      "layout": { "x": 0, "y": 8, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-success-timechart-version" },
+      "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
+      "layout": {
+        "x": 0,
+        "y": 8,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "a80abc92-d22c-4df1-be99-e32e9d88c65a"
+      },
       "visualOptions": {
         "multipleYAxes": {
-          "base": { "id": "-1", "label": "Success Rate %", "columns": [], "yAxisMaximumValue": 100, "yAxisMinimumValue": 0, "yAxisScale": "linear", "horizontalLines": [] },
+          "base": {
+            "id": "-1",
+            "label": "Success Rate %",
+            "columns": [],
+            "yAxisMaximumValue": 100,
+            "yAxisMinimumValue": 0,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
           "additional": [],
           "showMultiplePanels": false
         },
@@ -183,21 +248,41 @@
         "legendLocation": "bottom",
         "xColumnTitle": "",
         "xColumn": "Day",
-        "yColumns": ["SuccessRate"],
-        "seriesColumns": ["version"],
+        "yColumns": [
+          "SuccessRate"
+        ],
+        "seriesColumns": [
+          "version"
+        ],
         "xAxisScale": "linear"
       }
     },
     {
-      "id": "tile-success-timechart-command",
+      "id": "eccf2c58-5072-4a07-ba21-6e04e551ba50",
       "title": "Product Success Rate Over Time (by Command)",
       "visualType": "line",
-      "pageId": "page-success-rates",
-      "layout": { "x": 12, "y": 8, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-success-timechart-command" },
+      "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
+      "layout": {
+        "x": 12,
+        "y": 8,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "c3aaa994-2252-455e-8b42-0074c3e4811b"
+      },
       "visualOptions": {
         "multipleYAxes": {
-          "base": { "id": "-1", "label": "Success Rate %", "columns": [], "yAxisMaximumValue": 100, "yAxisMinimumValue": 0, "yAxisScale": "linear", "horizontalLines": [] },
+          "base": {
+            "id": "-1",
+            "label": "Success Rate %",
+            "columns": [],
+            "yAxisMaximumValue": 100,
+            "yAxisMinimumValue": 0,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
           "additional": [],
           "showMultiplePanels": false
         },
@@ -205,602 +290,1125 @@
         "legendLocation": "bottom",
         "xColumnTitle": "",
         "xColumn": "Day",
-        "yColumns": ["SuccessRate"],
-        "seriesColumns": ["command"],
+        "yColumns": [
+          "SuccessRate"
+        ],
+        "seriesColumns": [
+          "command"
+        ],
         "xAxisScale": "linear"
       }
     },
     {
-      "id": "tile-total-commands",
+      "id": "fc1c42dd-f8a1-4ede-b6d2-0fc491fc597c",
       "title": "Total Commands",
       "visualType": "card",
-      "pageId": "page-command-usage",
-      "layout": { "x": 0, "y": 0, "width": 5, "height": 4 },
-      "queryRef": { "kind": "query", "queryId": "q-total-commands" },
+      "pageId": "145b086a-fcc7-4509-b4ba-77f8f035abe8",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 5,
+        "height": 4
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "2337726f-d97f-4642-b5a8-5454a7af209a"
+      },
       "visualOptions": {
         "multiStat__textSize": "large",
         "multiStat__valueColumn": "Count"
       }
     },
     {
-      "id": "tile-commands-piechart",
+      "id": "2afdc64a-c4c2-4134-af50-df10ef20246c",
       "title": "Commands by Type",
       "visualType": "pie",
-      "pageId": "page-command-usage",
-      "layout": { "x": 5, "y": 0, "width": 9, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-commands-piechart" },
+      "pageId": "145b086a-fcc7-4509-b4ba-77f8f035abe8",
+      "layout": {
+        "x": 5,
+        "y": 0,
+        "width": 9,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "40d64515-9432-476a-870e-d6df057976be"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-commands-timechart",
+      "id": "59562829-5a1d-44c1-a651-c14b4d3c0bf4",
       "title": "Command Usage Over Time",
       "visualType": "line",
-      "pageId": "page-command-usage",
-      "layout": { "x": 14, "y": 0, "width": 10, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-commands-timechart" },
+      "pageId": "145b086a-fcc7-4509-b4ba-77f8f035abe8",
+      "layout": {
+        "x": 14,
+        "y": 0,
+        "width": 10,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "b03168fb-2608-4d51-a823-11bfc7b01c9e"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
         "xColumn": "Day",
-        "yColumns": ["Count"],
-        "seriesColumns": ["command"]
+        "yColumns": [
+          "Count"
+        ],
+        "seriesColumns": [
+          "command"
+        ]
       }
     },
     {
-      "id": "tile-os-piechart",
+      "id": "8a78fbf9-21c4-4617-87f2-fdca36eca1f1",
       "title": "Usage by OS",
       "visualType": "pie",
-      "pageId": "page-platform",
-      "layout": { "x": 0, "y": 0, "width": 6, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-os-piechart" },
+      "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "a6b17c3f-2fc2-4e69-9795-cc4d1ae8ccae"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-arch-piechart",
+      "id": "155cfc66-0a81-4526-aaf2-55043cf2bc9d",
       "title": "Usage by Architecture",
       "visualType": "pie",
-      "pageId": "page-platform",
-      "layout": { "x": 6, "y": 0, "width": 6, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-arch-piechart" },
+      "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
+      "layout": {
+        "x": 6,
+        "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "fc50a9ec-deb9-4803-9226-cbc5c6193d58"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-ci-piechart",
+      "id": "89bae1b9-296c-487a-9a2c-49ff8ce0cbe0",
       "title": "CI vs Interactive",
       "visualType": "pie",
-      "pageId": "page-platform",
-      "layout": { "x": 12, "y": 0, "width": 6, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-ci-piechart" },
+      "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
+      "layout": {
+        "x": 12,
+        "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "2cfbf601-237a-4088-a7dc-88f6c6f64be6"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-success-by-os",
+      "id": "02bdc29b-3948-43c5-9774-4bde5ac4cff6",
       "title": "Success Rate by OS",
       "visualType": "table",
-      "pageId": "page-platform",
-      "layout": { "x": 18, "y": 0, "width": 6, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-success-by-os" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "e792297e-38e2-4096-b439-5c07a1ddd969",
+      "layout": {
+        "x": 18,
+        "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "fd4b0f4d-8a7b-451c-96b5-a96606ff972e"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-runtime-type-dist",
+      "id": "a2aab2e7-351c-4028-ab88-6628f9e3c332",
       "title": "Runtime Type Distribution",
       "visualType": "pie",
-      "pageId": "page-installations",
-      "layout": { "x": 0, "y": 0, "width": 6, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-runtime-type-dist" },
+      "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "16b11f62-1253-4f7b-ab4b-8069c1f87432"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-install-path-source",
+      "id": "55a4df40-ff15-4e3e-b16e-8b62755a7f9c",
       "title": "Install Path Source",
       "visualType": "pie",
-      "pageId": "page-installations",
-      "layout": { "x": 6, "y": 0, "width": 6, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-install-path-source" },
+      "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
+      "layout": {
+        "x": 6,
+        "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "bde0a89b-de8d-4c85-b486-f175188795b1"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-install-path-type",
+      "id": "bef17cb7-1e75-4039-b9a8-70cf16b72093",
       "title": "Install Path Type",
       "visualType": "pie",
-      "pageId": "page-installations",
-      "layout": { "x": 12, "y": 0, "width": 6, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-install-path-type" },
+      "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
+      "layout": {
+        "x": 12,
+        "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "265d22c9-5ca1-4296-8150-f7696681fa67"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-install-outcome",
+      "id": "be4b7323-7700-4bdc-8378-f639c568778f",
       "title": "Install Outcome",
       "visualType": "pie",
-      "pageId": "page-installations",
-      "layout": { "x": 18, "y": 0, "width": 6, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-install-outcome" },
+      "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
+      "layout": {
+        "x": 18,
+        "y": 0,
+        "width": 6,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "6b053d1e-86bb-4bad-95fd-ce6606854bb6"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-installed-sdk-versions",
+      "id": "3d2b7c85-985d-47a9-b011-45558c8c5ad1",
       "title": "Most Installed SDK Versions",
       "visualType": "column",
-      "pageId": "page-installations",
-      "layout": { "x": 0, "y": 7, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-installed-sdk-versions" },
+      "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
+      "layout": {
+        "x": 0,
+        "y": 7,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "71c76c85-9893-46a1-9f6d-e07824c7d7b0"
+      },
       "visualOptions": {
         "hideLegend": true,
         "xColumnTitle": "Version",
         "xColumn": "version",
-        "yColumns": ["Count"]
+        "yColumns": [
+          "Count"
+        ]
       }
     },
     {
-      "id": "tile-installed-runtime-versions",
+      "id": "5c65443d-e8df-4b87-bf8e-6f268618bd85",
       "title": "Most Installed Runtime Versions",
       "visualType": "column",
-      "pageId": "page-installations",
-      "layout": { "x": 12, "y": 7, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-installed-runtime-versions" },
+      "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
+      "layout": {
+        "x": 12,
+        "y": 7,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "9189c166-2e8d-4dc9-9e49-80de634db968"
+      },
       "visualOptions": {
         "hideLegend": true,
         "xColumnTitle": "Version",
         "xColumn": "version",
-        "yColumns": ["Count"]
+        "yColumns": [
+          "Count"
+        ]
       }
     },
     {
-      "id": "tile-requested-versions",
+      "id": "d0a99ba9-3652-4c37-94e8-d7a59956915c",
       "title": "Requested Versions (User Input)",
       "visualType": "column",
-      "pageId": "page-installations",
-      "layout": { "x": 0, "y": 14, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-requested-versions" },
+      "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
+      "layout": {
+        "x": 0,
+        "y": 14,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "ee9a473d-200a-4fc9-af8c-7838d72eaefb"
+      },
       "visualOptions": {
         "hideLegend": true,
         "xColumnTitle": "Requested",
         "xColumn": "display_requested",
-        "yColumns": ["Count"]
+        "yColumns": [
+          "Count"
+        ]
       }
     },
     {
-      "id": "tile-request-source-dist",
+      "id": "c00e5e28-66f7-4200-a1f2-4c0c0678a9d9",
       "title": "Request Source Distribution",
       "visualType": "pie",
-      "pageId": "page-installations",
-      "layout": { "x": 12, "y": 14, "width": 8, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-request-source-dist" },
+      "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
+      "layout": {
+        "x": 12,
+        "y": 14,
+        "width": 8,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "db6aa1a2-e802-4528-9260-d67a871a54a6"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-errors-header",
+      "id": "a3594e58-d65b-4997-a636-c24757a1c01c",
       "title": "Product Errors",
       "visualType": "markdownCard",
-      "pageId": "page-errors",
-      "layout": { "x": 0, "y": 0, "width": 24, "height": 1 },
+      "pageId": "5196e72b-c21a-43f5-94ca-856ed25b261a",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 24,
+        "height": 1
+      },
       "markdownText": "Product errors are bugs, crashes, and server issues we can take action on.",
       "visualOptions": {}
     },
     {
-      "id": "tile-product-errors-by-type",
+      "id": "2f63080e-0937-4e0d-b82f-a7c678430b4d",
       "title": "Product Errors by Type",
       "visualType": "column",
-      "pageId": "page-errors",
-      "layout": { "x": 0, "y": 1, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-product-errors-by-type" },
+      "pageId": "5196e72b-c21a-43f5-94ca-856ed25b261a",
+      "layout": {
+        "x": 0,
+        "y": 1,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "ef254a80-406d-40c9-bba3-521048cacb83"
+      },
       "visualOptions": {
         "hideLegend": true,
         "xColumnTitle": "Error Type",
         "xColumn": "display_error",
-        "yColumns": ["Count"]
+        "yColumns": [
+          "Count"
+        ]
       }
     },
     {
-      "id": "tile-http-errors",
+      "id": "d83f4158-587b-43e6-918e-43eaacd70862",
       "title": "HTTP Errors (Product)",
       "visualType": "table",
-      "pageId": "page-errors",
-      "layout": { "x": 12, "y": 1, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-http-errors" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "5196e72b-c21a-43f5-94ca-856ed25b261a",
+      "layout": {
+        "x": 12,
+        "y": 1,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "a874acdf-7886-4186-ba8b-b3212af6bd2f"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-product-failures-detail",
+      "id": "90afc8e4-d0c7-4090-bb08-bd6f1a0981e4",
       "title": "Product Failures by Error (Counts)",
       "visualType": "table",
-      "pageId": "page-errors",
-      "layout": { "x": 0, "y": 8, "width": 24, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-product-failures-detail" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "5196e72b-c21a-43f5-94ca-856ed25b261a",
+      "layout": {
+        "x": 0,
+        "y": 8,
+        "width": 24,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "711ad96e-c6b7-4cee-8536-08317edbf156"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-product-errors-stacktrace",
+      "id": "003c992c-55f0-4f3b-aad1-e3078778069e",
       "title": "Product Errors by Stack Trace",
       "visualType": "table",
-      "pageId": "page-errors",
-      "layout": { "x": 0, "y": 15, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-product-errors-stacktrace" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "5196e72b-c21a-43f5-94ca-856ed25b261a",
+      "layout": {
+        "x": 0,
+        "y": 15,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "ea9e8142-0d11-4e79-9fed-7a916bd79238"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-product-errors-by-type-table",
+      "id": "59f6a20f-268b-4571-af6e-bcd5507f1a4c",
       "title": "Product Errors by Type (Table)",
       "visualType": "table",
-      "pageId": "page-errors",
-      "layout": { "x": 12, "y": 15, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-product-errors-by-type-table" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "5196e72b-c21a-43f5-94ca-856ed25b261a",
+      "layout": {
+        "x": 12,
+        "y": 15,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "b9c3b4c5-e8f6-4560-b673-f8c3adbb0c27"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-user-errors-header",
+      "id": "12539442-b51c-4c11-8fa8-a74601fbba3a",
       "title": "User Errors (UX Opportunities)",
       "visualType": "markdownCard",
-      "pageId": "page-errors",
-      "layout": { "x": 0, "y": 22, "width": 24, "height": 1 },
+      "pageId": "5196e72b-c21a-43f5-94ca-856ed25b261a",
+      "layout": {
+        "x": 0,
+        "y": 22,
+        "width": 24,
+        "height": 1
+      },
       "markdownText": "User errors indicate user confusion or environmental issues — opportunities to improve documentation, validation, or error messages.",
       "visualOptions": {}
     },
     {
-      "id": "tile-user-errors-piechart",
+      "id": "f0eb2533-d5d0-4423-a0d7-a30ca3b3dece",
       "title": "User Errors by Type",
       "visualType": "pie",
-      "pageId": "page-errors",
-      "layout": { "x": 0, "y": 23, "width": 10, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-user-errors-piechart" },
+      "pageId": "5196e72b-c21a-43f5-94ca-856ed25b261a",
+      "layout": {
+        "x": 0,
+        "y": 23,
+        "width": 10,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "4b144e08-eb93-4a89-b09f-06b878ed7e52"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
-        "pie__label": ["name", "percentage"],
-        "pie__tooltip": ["name", "percentage", "value"],
+        "pie__label": [
+          "name",
+          "percentage"
+        ],
+        "pie__tooltip": [
+          "name",
+          "percentage",
+          "value"
+        ],
         "pie__orderBy": "size",
         "pie__kind": "pie"
       }
     },
     {
-      "id": "tile-user-errors-detail",
+      "id": "d8177d72-1a11-405d-8ee4-96d990f556e2",
       "title": "User Errors by Error (Counts)",
       "visualType": "table",
-      "pageId": "page-errors",
-      "layout": { "x": 10, "y": 23, "width": 14, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-user-errors-detail" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "5196e72b-c21a-43f5-94ca-856ed25b261a",
+      "layout": {
+        "x": 10,
+        "y": 23,
+        "width": 14,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "9d7f8847-3e1e-416b-b89d-b5f06214d6ee"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-duration-percentiles",
+      "id": "181c1ad4-962d-4685-a467-5ebfae82be24",
       "title": "Command Duration Percentiles (Successful Only)",
       "visualType": "table",
-      "pageId": "page-performance",
-      "layout": { "x": 0, "y": 0, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-duration-percentiles" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "4d45674d-e423-46a3-a402-40777c038e27",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "b4925074-bbe0-4861-9c7a-3c8af110095b"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-download-stats",
+      "id": "7154ebfe-dfc6-4fb2-8781-e1fdb2ddd1ac",
       "title": "Download Statistics",
       "visualType": "table",
-      "pageId": "page-performance",
-      "layout": { "x": 12, "y": 0, "width": 12, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-download-stats" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "4d45674d-e423-46a3-a402-40777c038e27",
+      "layout": {
+        "x": 12,
+        "y": 0,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "0e356fc2-977e-41c4-a2a1-89cc8e4a5de5"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-download-extract-duration",
+      "id": "143ec616-00ff-4880-9e16-13c6cd3bff1c",
       "title": "Download & Extract Duration Over Time",
       "visualType": "line",
-      "pageId": "page-performance",
-      "layout": { "x": 0, "y": 7, "width": 24, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-download-extract-duration" },
+      "pageId": "4d45674d-e423-46a3-a402-40777c038e27",
+      "layout": {
+        "x": 0,
+        "y": 7,
+        "width": 24,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "7965a530-8a8a-4326-8ddf-6f22b4eea954"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
         "xColumn": "Hour",
-        "yColumns": ["AvgDuration"],
-        "seriesColumns": ["operation"]
+        "yColumns": [
+          "AvgDuration"
+        ],
+        "seriesColumns": [
+          "operation"
+        ]
       }
     },
     {
-      "id": "tile-user-stats",
+      "id": "56514dd3-9563-41ac-8d83-9dff86f64a70",
       "title": "User Statistics",
       "visualType": "table",
-      "pageId": "page-users",
-      "layout": { "x": 0, "y": 0, "width": 8, "height": 5 },
-      "queryRef": { "kind": "query", "queryId": "q-user-stats" },
-      "visualOptions": { "hideLegend": false }
+      "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 8,
+        "height": 5
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "c20e30d3-3d67-4b8f-9c6c-d8b1cee97623"
+      },
+      "visualOptions": {
+        "hideLegend": false
+      }
     },
     {
-      "id": "tile-daily-users-version",
+      "id": "7e79a842-85f9-4172-8f8c-89c7f71e09bf",
       "title": "Daily Unique Users by Version",
       "visualType": "stackedcolumn",
-      "pageId": "page-users",
-      "layout": { "x": 8, "y": 0, "width": 8, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-daily-users-version" },
+      "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
+      "layout": {
+        "x": 8,
+        "y": 0,
+        "width": 8,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "3076d5f1-1836-4dbe-812e-6ddbb60defb2"
+      },
       "visualOptions": {
         "hideLegend": false,
         "legendLocation": "bottom",
         "xColumn": "Day",
-        "yColumns": ["UniqueDevices"],
-        "seriesColumns": ["version"]
+        "yColumns": [
+          "UniqueDevices"
+        ],
+        "seriesColumns": [
+          "version"
+        ]
       }
     },
     {
-      "id": "tile-daily-active-devices",
+      "id": "b38ca851-8bc0-4709-949f-712d2b3d8f2c",
       "title": "Daily Active Devices",
       "visualType": "line",
-      "pageId": "page-users",
-      "layout": { "x": 16, "y": 0, "width": 8, "height": 7 },
-      "queryRef": { "kind": "query", "queryId": "q-daily-active-devices" },
+      "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
+      "layout": {
+        "x": 16,
+        "y": 0,
+        "width": 8,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "8bb0f949-4467-4b35-8f14-c7df28e8db4c"
+      },
       "visualOptions": {
         "hideLegend": false,
         "xColumn": "Day",
-        "yColumns": ["UniqueDevices"]
+        "yColumns": [
+          "UniqueDevices"
+        ]
       }
     }
   ],
   "queries": [
     {
-      "id": "q-base-dotnetup-commands",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "aef03f17-b73d-4625-8879-31fc030a514c",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = coalesce(tostring(Properties[\"dotnetup.version\"]), ProductVersion)\n| extend command = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend is_success = Properties[\"operation.status\"] == \"ok\"\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
-      "usedVariables": ["_startTime", "_endTime", "_versionFilter", "_devBuild"]
+      "usedVariables": [
+        "_startTime",
+        "_endTime",
+        "_versionFilter",
+        "_devBuild"
+      ]
     },
     {
-      "id": "q-base-dotnetup-all",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "44ed3d3a-a43c-4cbb-91c4-8b5f39591290",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = coalesce(tostring(Properties[\"dotnetup.version\"]), ProductVersion)\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
-      "usedVariables": ["_startTime", "_endTime", "_versionFilter", "_devBuild"]
+      "usedVariables": [
+        "_startTime",
+        "_endTime",
+        "_versionFilter",
+        "_devBuild"
+      ]
     },
     {
-      "id": "q-success-by-version",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "6d27e3c5-57a3-4e90-a194-19ea05f7f88e",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "let filteredData = _dotnetupCommands;\nlet versions = filteredData\n| where isnotempty(version)\n| distinct version\n| order by version desc\n| take 2\n| extend rank = row_number();\nlet latestVersion = toscalar(versions | where rank == 1 | project version);\nlet priorVersion = toscalar(versions | where rank == 2 | project version);\nlet latestStats = filteredData\n| where version == latestVersion\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n| extend\n    Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1),\n    Version = latestVersion,\n    Label = \"Latest\";\nlet priorStats = filteredData\n| where version == priorVersion and isnotempty(priorVersion)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n| extend\n    Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1),\n    Version = priorVersion,\n    Label = \"Prior\";\nlatestStats\n| union priorStats\n| where isnotempty(Version)\n| project Label, Version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors\n| order by Label asc",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-success-by-command-version",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "cb0b8e02-5588-4654-883b-06c186f753de",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where isnotempty(command)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by command, version\n| where version != \"unknown\" or Total >= 25\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n| order by command asc, version desc\n| project Command = command, Version = version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-success-timechart-version",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "a80abc92-d22c-4df1-be99-e32e9d88c65a",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where isnotempty(version)\n| where not(not(is_success) and error_category == \"user\")\n| summarize Total = count(), Successful = countif(is_success) by Day = bin(TimeGenerated, 1d), version\n| where Total > 0\n| extend SuccessRate = round(100.0 * Successful / Total, 1)\n| project Day, version, SuccessRate\n| order by Day asc, version desc",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-success-timechart-command",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "c3aaa994-2252-455e-8b42-0074c3e4811b",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where isnotempty(command)\n| where not(not(is_success) and error_category == \"user\")\n| summarize Total = count(), Successful = countif(is_success) by Day = bin(TimeGenerated, 1d), command\n| where Total > 0\n| extend SuccessRate = round(100.0 * Successful / Total, 1)\n| project Day, command, SuccessRate\n| order by Day asc, command asc",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-total-commands",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "2337726f-d97f-4642-b5a8-5454a7af209a",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| count",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-commands-piechart",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "40d64515-9432-476a-870e-d6df057976be",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where isnotempty(command)\n| summarize Count = count() by command\n| order by Count desc",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-commands-timechart",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "b03168fb-2608-4d51-a823-11bfc7b01c9e",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where isnotempty(command)\n| summarize Count = count() by Day = bin(TimeGenerated, 1d), command",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-os-piechart",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "a6b17c3f-2fc2-4e69-9795-cc4d1ae8ccae",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.platform\"])\n| where isnotempty(os)\n| summarize Count = count() by os",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-arch-piechart",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "fc50a9ec-deb9-4803-9226-cbc5c6193d58",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| extend arch = tostring(Properties[\"process.arch\"])\n| where isnotempty(arch)\n| summarize Count = count() by arch",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-ci-piechart",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "2cfbf601-237a-4088-a7dc-88f6c6f64be6",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| extend ci = tostring(Properties[\"ci.detected\"])\n| where isnotempty(ci)\n| summarize Count = count() by CI_Environment = iif(ci == \"true\" or ci == \"True\", \"CI/CD\", \"Interactive\")",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-success-by-os",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "fd4b0f4d-8a7b-451c-96b5-a96606ff972e",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.platform\"])\n| where isnotempty(os)\n| summarize\n    Total = count(),\n    SuccessRate = round(100.0 * countif(is_success) / count(), 1)\n    by os\n| order by Total desc\n| project OS = os, Total, SuccessRate",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-runtime-type-dist",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "16b11f62-1253-4f7b-ab4b-8069c1f87432",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where Message == \"dotnetup/command/runtime/install\"\n| extend component = coalesce(tostring(Properties[\"install.component\"]), \"Runtime\")\n| summarize Count = count() by component",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-install-path-source",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "bde0a89b-de8d-4c85-b486-f175188795b1",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where Message startswith \"dotnetup/command/\" and Message endswith \"/install\"\n| extend path_source = coalesce(tostring(Properties[\"install.path_source\"]), \"unknown\")\n| summarize Count = count() by path_source",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-install-path-type",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "265d22c9-5ca1-4296-8150-f7696681fa67",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where Message startswith \"dotnetup/command/\" and Message endswith \"/install\"\n| extend path_type = coalesce(tostring(Properties[\"install.path_type\"]), \"unknown\")\n| summarize Count = count() by path_type",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-install-outcome",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "6b053d1e-86bb-4bad-95fd-ce6606854bb6",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where Message startswith \"dotnetup/command/\" and Message endswith \"/install\"\n| extend result = coalesce(tostring(Properties[\"install.result\"]), iif(is_success, \"success\", \"failed\"))\n| summarize Count = count() by result",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-installed-sdk-versions",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "71c76c85-9893-46a1-9f6d-e07824c7d7b0",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where Message == \"dotnetup/command/sdk/install\"\n| extend installed_version = coalesce(tostring(Properties[\"download.version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-installed-runtime-versions",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "9189c166-2e8d-4dc9-9e49-80de634db968",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where Message == \"dotnetup/command/runtime/install\"\n| extend installed_version = coalesce(tostring(Properties[\"download.version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-requested-versions",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "ee9a473d-200a-4fc9-af8c-7838d72eaefb",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where Message in (\"dotnetup/command/sdk/install\", \"dotnetup/command/runtime/install\")\n| extend requested = tostring(Properties[\"dotnet.requested\"]),\n    source = tostring(Properties[\"dotnet.request_source\"])\n| extend display_requested = case(\n    source == \"default-latest\", \"(default: latest)\",\n    source == \"default-globaljson\", strcat(\"(global.json: \", requested, \")\"),\n    source == \"explicit\" and isnotempty(requested), requested,\n    isnotempty(requested), requested,\n    isnotempty(source), strcat(\"(\", source, \")\"),\n    \"(no request data)\")\n| summarize Count = count() by display_requested\n| order by Count desc\n| take 15",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-request-source-dist",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "db6aa1a2-e802-4528-9260-d67a871a54a6",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where Message in (\"dotnetup/command/sdk/install\", \"dotnetup/command/runtime/install\")\n| extend source = coalesce(tostring(Properties[\"dotnet.request_source\"]), \"unknown\")\n| summarize Count = count() by source",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-product-errors-by-type",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "ef254a80-406d-40c9-bba3-521048cacb83",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = coalesce(tostring(Properties[\"error.type\"]), \"(no error.type)\")\n| extend error_code = tostring(Properties[\"error.code\"])\n| extend display_error = iif(error_type == \"Exception\" and isnotempty(error_code) and error_code != \"Exception\", error_code, error_type)\n| summarize Count = count() by display_error\n| order by Count desc",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-http-errors",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "a874acdf-7886-4186-ba8b-b3212af6bd2f",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where not(is_success)\n| extend error_type = tostring(Properties[\"error.type\"]),\n    http_status = tostring(Properties[\"error.http_status\"])\n| where error_category == \"product\" or isempty(error_category)\n| where isnotempty(http_status)\n| summarize Count = count() by http_status, error_type\n| order by Count desc\n| project HTTPStatus = http_status, ErrorType = error_type, Count",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-product-failures-detail",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "711ad96e-c6b7-4cee-8536-08317edbf156",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = tostring(Properties[\"error.type\"]),\n    error_details = tostring(Properties[\"error.details\"]),\n    hresult = tostring(Properties[\"error.hresult\"]),\n    os = tostring(Properties[\"os.platform\"])\n| summarize Count = count(), LastSeen = max(TimeGenerated) by error_type, error_details, hresult, os, version\n| order by Count desc\n| take 25\n| project ErrorType = error_type, ErrorDetails = error_details, Count, LastSeen, hresult, os, version",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-product-errors-stacktrace",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "ea9e8142-0d11-4e79-9fed-7a916bd79238",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where not(is_success)\n| extend stack_trace = tostring(Properties[\"error.stack_trace\"]),\n    error_type = tostring(Properties[\"error.type\"])\n| where error_category == \"product\" or isempty(error_category)\n| where isnotempty(stack_trace)\n| summarize Count = count() by stack_trace, error_type\n| order by Count desc\n| take 20\n| project StackTrace = stack_trace, ErrorType = error_type, Count",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-product-errors-by-type-table",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "b9c3b4c5-e8f6-4560-b673-f8c3adbb0c27",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = tostring(Properties[\"error.type\"])\n| where isnotempty(error_type)\n| summarize Count = count() by error_type\n| order by Count desc\n| take 20\n| project ErrorType = error_type, Count",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-user-errors-piechart",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "4b144e08-eb93-4a89-b09f-06b878ed7e52",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"user\"\n| extend error_type = coalesce(tostring(Properties[\"error.type\"]), \"Unknown\")\n| summarize Count = count() by error_type",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-user-errors-detail",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "9d7f8847-3e1e-416b-b89d-b5f06214d6ee",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"user\"\n| extend error_type = tostring(Properties[\"error.type\"]),\n    error_details = tostring(Properties[\"error.details\"]),\n    os = tostring(Properties[\"os.platform\"])\n| summarize Count = count(), LastSeen = max(TimeGenerated) by error_type, error_details, os, version\n| order by Count desc\n| take 25\n| project ErrorType = error_type, ErrorDetails = error_details, Count, LastSeen, os, version",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-duration-percentiles",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "b4925074-bbe0-4861-9c7a-3c8af110095b",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| where is_success\n| where isnotempty(command) and isnotnull(duration_ms)\n| summarize\n    Count = count(),\n    P50 = percentile(duration_ms, 50),\n    P90 = percentile(duration_ms, 90),\n    P99 = percentile(duration_ms, 99),\n    Avg = avg(duration_ms)\n    by command\n| project Command = command,\n    Count,\n    P50_ms = round(P50, 0),\n    P90_ms = round(P90, 0),\n    P99_ms = round(P99, 0),\n    Avg_ms = round(Avg, 0)",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-download-stats",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "0e356fc2-977e-41c4-a2a1-89cc8e4a5de5",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "// download/complete events carry download.bytes and download.from_cache tags\n// emitted by the library via InstallationActivitySource.EmitEvent.\n_dotnetupAll\n| where Message == \"dotnetup/download/complete\"\n| extend from_cache = tostring(Properties[\"download.from_cache\"]),\n    bytes = todouble(Properties[\"download.bytes\"])\n| summarize\n    TotalDownloads = count(),\n    CacheHits = countif(from_cache == \"true\" or from_cache == \"True\"),\n    AvgSizeMB = round(avg(bytes) / 1048576, 2)\n| extend CacheHitRate = round(100.0 * CacheHits / TotalDownloads, 1)\n| project TotalDownloads, CacheHits, CacheHitRate, AvgSizeMB",
-      "usedVariables": ["_dotnetupAll"]
+      "usedVariables": [
+        "_dotnetupAll"
+      ]
     },
     {
-      "id": "q-user-stats",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "c20e30d3-3d67-4b8f-9c6c-d8b1cee97623",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| extend device_id = tostring(Properties[\"device.id\"])\n| summarize\n    UniqueDevices = dcount(device_id),\n    TotalCommands = count()\n| project UniqueDevices, TotalCommands, AvgCommandsPerDevice = round(1.0 * TotalCommands / UniqueDevices, 1)",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-daily-users-version",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "3076d5f1-1836-4dbe-812e-6ddbb60defb2",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(version)\n| summarize UniqueDevices = dcount(device_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-daily-active-devices",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "8bb0f949-4467-4b35-8f14-c7df28e8db4c",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "_dotnetupCommands\n| extend device_id = tostring(Properties[\"device.id\"])\n| summarize UniqueDevices = dcount(device_id) by Day = bin(TimeGenerated, 1d)",
-      "usedVariables": ["_dotnetupCommands"]
+      "usedVariables": [
+        "_dotnetupCommands"
+      ]
     },
     {
-      "id": "q-download-extract-duration",
-      "dataSource": { "kind": "inline", "dataSourceId": "ds-dotnetcli" },
+      "id": "7965a530-8a8a-4326-8ddf-6f22b4eea954",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
       "text": "// download/complete and extract/complete events are emitted by the library\n// via InstallationActivitySource.EmitEvent with span tags copied to properties.\n_dotnetupAll\n| where Message in (\"dotnetup/download/complete\", \"dotnetup/extract/complete\")\n| extend from_cache = tostring(Properties[\"download.from_cache\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where isnotnull(duration_ms)\n| extend operation = case(\n    Message == \"dotnetup/download/complete\" and (from_cache == \"true\" or from_cache == \"True\"), \"download (cached)\",\n    Message == \"dotnetup/download/complete\", \"download (network)\",\n    \"extract\")\n| summarize AvgDuration = avg(duration_ms) by Hour = bin(TimeGenerated, 1h), operation",
-      "usedVariables": ["_dotnetupAll"]
+      "usedVariables": [
+        "_dotnetupAll"
+      ]
     }
   ]
 }
-
