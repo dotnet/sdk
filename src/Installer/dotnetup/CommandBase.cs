@@ -37,13 +37,13 @@ public abstract class CommandBase
         }
         catch (DotnetInstallException ex)
         {
-            DotnetupTelemetry.Instance.RecordException(_operation?.Activity, ex);
+            DotnetupTelemetry.Instance.RecordException(_operation, ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
             return 1;
         }
         catch (Exception ex)
         {
-            DotnetupTelemetry.Instance.RecordException(_operation?.Activity, ex);
+            DotnetupTelemetry.Instance.RecordException(_operation, ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
 #if DEBUG
             Console.Error.WriteLine(ex.StackTrace);
@@ -62,7 +62,7 @@ public abstract class CommandBase
 
     protected abstract string GetCommandName();
 
-    protected void SetCommandTag(string key, object? value)
+    internal void SetCommandTag(string key, object? value)
     {
         _operation?.Tag(key, value);
     }

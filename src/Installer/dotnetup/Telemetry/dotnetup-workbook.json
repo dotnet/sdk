@@ -441,7 +441,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/sdk/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| extend version = coalesce(tostring(customDimensions[\"download.version\"]), tostring(customDimensions[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(version) and version != \"unknown\"\n| summarize Count = count() by version\n| order by Count desc\n| take 20\n| render barchart",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/sdk/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| extend version = coalesce(tostring(customDimensions[\"install.resolved_version\"]), tostring(customDimensions[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(version) and version != \"unknown\"\n| summarize Count = count() by version\n| order by Count desc\n| take 20\n| render barchart",
         "size": 1,
         "title": "Most Installed SDK Versions",
         "queryType": 0,
@@ -455,7 +455,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/runtime/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| extend version = coalesce(tostring(customDimensions[\"download.version\"]), tostring(customDimensions[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(version) and version != \"unknown\"\n| summarize Count = count() by version\n| order by Count desc\n| take 20\n| render barchart",
+        "query": "let devFilter = '{DevBuildFilter}';\ndependencies\n| where timestamp {TimeRange}\n| where name == \"command/runtime/install\"\n| extend is_dev = tobool(customDimensions[\"dev.build\"])\n| where (devFilter == 'all') or (devFilter == 'exclude' and is_dev == false) or (devFilter == 'only' and is_dev == true)\n| extend version = coalesce(tostring(customDimensions[\"install.resolved_version\"]), tostring(customDimensions[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(version) and version != \"unknown\"\n| summarize Count = count() by version\n| order by Count desc\n| take 20\n| render barchart",
         "size": 1,
         "title": "Most Installed Runtime Versions",
         "queryType": 0,

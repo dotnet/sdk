@@ -54,7 +54,7 @@ internal class DotnetupProgram
         }
         catch (Exception ex)
         {
-            DotnetupTelemetry.Instance.RecordException(rootOp.Activity, ex);
+            DotnetupTelemetry.Instance.RecordException(rootOp, ex);
 
             // Log the error and return non-zero exit code
             Console.Error.WriteLine($"Error: {ex.Message}");

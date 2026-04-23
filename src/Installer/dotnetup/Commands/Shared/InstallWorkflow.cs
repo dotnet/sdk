@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
-using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
@@ -193,7 +192,7 @@ internal class InstallWorkflow
 
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
         int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);
-        Metrics.Tag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
+        _command.SetCommandTag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
 
         if (batchResult.Failures.Count > 0)
         {
@@ -215,8 +214,8 @@ internal class InstallWorkflow
         // Block system-managed install paths — dotnetup should not install there
         if (InstallPathClassifier.IsAdminInstallPath(installPath))
         {
-            Metrics.Tag(TelemetryTagNames.InstallPathType, "system");
-            Metrics.Tag(TelemetryTagNames.InstallPathSource, pathSource.ToString().ToLowerInvariant());
+            _command.SetCommandTag(TelemetryTagNames.InstallPathType, "system");
+            _command.SetCommandTag(TelemetryTagNames.InstallPathSource, pathSource.ToString().ToLowerInvariant());
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminPathBlocked,
                 $"The install path '{installPath}' is a system-managed .NET location. " +
@@ -267,15 +266,15 @@ internal class InstallWorkflow
                 ? "default-globaljson"
                 : "default-latest";
 
-        Metrics.Tag(TelemetryTagNames.InstallComponent, component.ToString());
-        Metrics.Tag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
-        Metrics.Tag(TelemetryTagNames.InstallPathExplicit, (explicitInstallPath is not null).ToString());
-        Metrics.Tag(TelemetryTagNames.InstallHasGlobalJson, (globalJson?.GlobalJsonPath is not null).ToString());
-        Metrics.Tag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot?.InstallType.ToString() ?? "none");
-        Metrics.Tag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
-        Metrics.Tag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
-        Metrics.Tag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());
-        Metrics.Tag(TelemetryTagNames.DotnetRequestSource, requestSource);
-        Metrics.Tag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(resolvedChannel));
+        _command.SetCommandTag(TelemetryTagNames.InstallComponent, component.ToString());
+        _command.SetCommandTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
+        _command.SetCommandTag(TelemetryTagNames.InstallPathExplicit, (explicitInstallPath is not null).ToString());
+        _command.SetCommandTag(TelemetryTagNames.InstallHasGlobalJson, (globalJson?.GlobalJsonPath is not null).ToString());
+        _command.SetCommandTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot?.InstallType.ToString() ?? "none");
+        _command.SetCommandTag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
+        _command.SetCommandTag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
+        _command.SetCommandTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());
+        _command.SetCommandTag(TelemetryTagNames.DotnetRequestSource, requestSource);
+        _command.SetCommandTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(resolvedChannel));
     }
 }

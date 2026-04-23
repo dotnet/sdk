@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Dotnet.Installation.Internal;
@@ -206,36 +207,55 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Records an exception on the given activity.
+    /// Records an exception on the given operation and its underlying activity.
+    /// Tags the TrackedOperation directly so error properties appear in the
+    /// command event's Properties (the data-x pipeline only carries tags set
+    /// via TrackedOperation.Tag(), not raw Activity.SetTag()).
     /// </summary>
-    /// <param name="activity">The activity to record the exception on.</param>
+    /// <param name="operation">The tracked operation to tag.</param>
     /// <param name="ex">The exception to record.</param>
     /// <param name="errorCode">Optional error code override.</param>
-    public void RecordException(Activity? activity, Exception ex, string? errorCode = null)
+    internal void RecordException(TrackedOperation? operation, Exception ex, string? errorCode = null)
     {
-        if (activity == null || !Enabled)
+        if (operation == null || !Enabled)
         {
             return;
         }
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-        ErrorCodeMapper.ApplyErrorTags(activity, errorInfo, errorCode);
 
-        // Walk up to the root activity and apply the same error tags there,
-        // so workbook queries on either the command span or the root span
-        // see error information.
-        var root = activity;
-        while (root.Parent != null)
+        // Tag the operation so error data flows into the command event.
+        operation.Tag(TelemetryTagNames.ErrorType, errorInfo.ErrorType);
+        operation.Tag(TelemetryTagNames.ErrorCategory, errorInfo.Category.ToString().ToLowerInvariant());
+        if (errorCode is not null)
         {
-            root = root.Parent;
+            operation.Tag(TelemetryTagNames.ErrorCode, errorCode);
+        }
+        if (errorInfo.StatusCode is { } sc)
+        {
+            operation.Tag(TelemetryTagNames.ErrorHttpStatus, sc.ToString(CultureInfo.InvariantCulture));
+        }
+        if (errorInfo.HResult is { } hr)
+        {
+            operation.Tag(TelemetryTagNames.ErrorHResult, hr.ToString(CultureInfo.InvariantCulture));
+        }
+        if (errorInfo.Details is { } details)
+        {
+            operation.Tag(TelemetryTagNames.ErrorDetails, details);
+        }
+        if (errorInfo.StackTrace is { } stackTrace)
+        {
+            operation.Tag(TelemetryTagNames.ErrorStackTrace, stackTrace);
         }
 
-        if (root != activity)
+        // Also apply to the raw Activity for OpenTelemetry span-level visibility.
+        var activity = operation.Activity;
+        if (activity is not null)
         {
-            ErrorCodeMapper.ApplyErrorTags(root, errorInfo);
+            ErrorCodeMapper.ApplyErrorTags(activity, errorInfo, errorCode);
         }
 
-        // Emit error as an event for data-x-platform (traces table).
+        // Emit error as a separate event for data-x-platform (traces table).
         var errorEventProps = ErrorCodeMapper.ToEventProperties(errorInfo);
         if (errorCode is not null)
         {
