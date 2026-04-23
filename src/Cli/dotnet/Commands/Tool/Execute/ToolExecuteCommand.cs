@@ -68,6 +68,14 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
                     return 1;
                 }
 
+                if (restoreResult.SaveToCache is not null)
+                {
+                    localToolsResolverCache.Save(new Dictionary<RestoredCommandIdentifier, ToolCommand>
+                    {
+                        { restoreResult.SaveToCache.Value.restoredCommandIdentifier, restoreResult.SaveToCache.Value.toolCommand }
+                    });
+                }
+
                 var localToolsCommandResolver = new LocalToolsCommandResolver(
                     _toolManifestFinder,
                     localToolsResolverCache);
