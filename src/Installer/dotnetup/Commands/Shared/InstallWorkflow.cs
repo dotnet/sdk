@@ -252,7 +252,7 @@ internal class InstallWorkflow
         }
     }
 
-    private static void RecordInstallTelemetry(
+    private void RecordInstallTelemetry(
         InstallComponent component,
         string? requestedVersionOrChannel,
         string? explicitInstallPath,

@@ -299,7 +299,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// as span tags on <c>Activity.Current</c>, and emits an <see cref="ActivityEvent"/>
     /// so the data appears in both the dependencies and traces tables.
     /// </summary>
-    private void TrackEvent(string eventName, Dictionary<string, string?>? properties)
+    private void TrackEvent(string eventName, IDictionary<string, string?> properties)
     {
         if (!Enabled)
         {
@@ -308,7 +308,6 @@ public sealed class DotnetupTelemetry : IDisposable
 
         try
         {
-            properties ??= new Dictionary<string, string?>();
             properties["event id"] = Guid.NewGuid().ToString();
             properties["SessionId"] = SessionId;
 

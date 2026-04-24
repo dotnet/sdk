@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
@@ -157,7 +158,7 @@ public abstract class CommandBase
         // Enum: emit the name if it's a defined member, "unknown" otherwise
         if (valueType.IsEnum)
         {
-            var rawValue = result.GetValueForOption(option);
+            var rawValue = result.GetValueOrDefault<object>();
             if (rawValue is not null && Enum.IsDefined(valueType, rawValue))
             {
                 return rawValue.ToString()!.ToLowerInvariant();
@@ -168,7 +169,7 @@ public abstract class CommandBase
         // Numeric types: safe to emit directly
         if (valueType == typeof(int) || valueType == typeof(long) || valueType == typeof(double))
         {
-            var rawValue = result.GetValueForOption(option);
+            var rawValue = result.GetValueOrDefault<object>();
             return rawValue?.ToString() ?? "unknown";
         }
 
