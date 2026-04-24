@@ -290,30 +290,30 @@ as channel qualifiers (e.g., `10.0/signed`).
 
 ## Implementation phases
 
-### Phase 1: Daily channel parsing and blob-feed download
+### Phase 1: Specific prerelease version install from blob feed
+
+**Goal**: `dotnetup sdk install 10.0.100-preview.7.25351.1` works for versions not in the release manifest.
+
+This is the simplest starting point — the user provides the exact version, so no version discovery
+is needed. We just need the blob-feed download path:
+- Extend `IArchiveDownloader` / `DotnetArchiveDownloader` to handle versions that aren't in the
+  release manifest — construct the download URL from the blob feed and fetch the hash from the
+  `{url}.sha512` companion file (`InstallWorkflow` already calls `DownloadArchiveWithVerification`
+  — it doesn't need to know where the archive comes from)
+- Add host allowlist for blob feed redirect validation
+- Modify version resolution to fall back to blob storage when the release manifest doesn't
+  contain the requested prerelease version
+
+### Phase 2: Daily channel parsing and latest version resolution
 
 **Goal**: `dotnetup sdk install 10.0/daily` resolves and installs the latest daily build.
 
-Changes needed:
+Builds on Phase 1's blob-feed download path by adding version discovery:
 - Extend `UpdateChannel` with `IsDaily` / `BaseChannel` properties for `.../daily` suffix parsing
 - Add `IsValidChannelFormat()` support for `.../daily` channels
 - Extend `ChannelVersionResolver.Resolve()` to detect daily channels and query the aka.ms
   redirect to discover the latest version (the `InstallWorkflow` doesn't need to change —
   it already calls `Resolve()` and gets back a version)
-- Extend `IArchiveDownloader` / `DotnetArchiveDownloader` to handle versions that aren't in the
-  release manifest — when the channel is daily, construct the download URL from the blob feed
-  and fetch the hash from the `{url}.sha512` companion file instead of the release manifest
-  (the `InstallWorkflow` already calls `DownloadArchiveWithVerification` — it doesn't need
-  to know where the archive comes from)
-- Add host allowlist for blob feed redirect validation
-
-### Phase 2: Specific prerelease version fallback
-
-**Goal**: `dotnetup sdk install 10.0.100-preview.7.25351.1` works for versions not in the release manifest.
-
-Changes needed:
-- Modify `InstallWorkflow.ResolveSpec()` to fall back to blob storage when the release manifest
-  doesn't contain the requested prerelease version (non-daily channel, prerelease tag present)
 - Reuse the blob-feed download path from Phase 1
 
 ### Phase 3: List and browse daily builds
