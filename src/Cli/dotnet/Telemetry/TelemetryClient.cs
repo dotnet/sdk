@@ -10,7 +10,6 @@ using Microsoft.DotNet.Configurer;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
-using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 #endif
@@ -23,9 +22,7 @@ public class TelemetryClient : ITelemetryClient
     private Task? _trackEventTask;
 
 #if TARGET_WINDOWS
-    private static readonly MeterProviderBuilder s_metricsProviderBuilder;
-    private static MeterProvider? s_metricsProvider;
-    private static readonly TracerProviderBuilder s_tracerProviderBuilder;
+    private static readonly object s_providerLock = new();
     private static TracerProvider? s_tracerProvider;
     private static readonly List<Activity> s_activities = [];
 
@@ -59,34 +56,10 @@ public class TelemetryClient : ITelemetryClient
 
     static TelemetryClient()
     {
-#if TARGET_WINDOWS
-        s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
-            .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
-            .AddMeter(Activities.Source.Name)
-            .AddHttpClientInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddOtlpExporter();
-
-        s_tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
-            .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
-            .AddSource(Activities.Source.Name)
-            .AddHttpClientInstrumentation()
-            .AddOtlpExporter()
-            .AddInMemoryExporter(s_activities)
-            .SetSampler(new AlwaysOnSampler());
-
-        if (!s_disableTraceExport)
-        {
-            var storageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
-            s_tracerProviderBuilder.AddAzureMonitorTraceExporter(o =>
-            {
-                o.ConnectionString = s_connectionString;
-                o.EnableLiveMetrics = false;
-                o.StorageDirectory = storageDirectory;
-            });
-        }
-#endif
-
+        // Only extract parent activity context in the static constructor.
+        // All OTel provider setup is deferred to the instance constructor,
+        // gated behind the telemetry opt-out check, to avoid paying initialization
+        // costs when telemetry is disabled.
         var parentActivityContext = GetParentActivityContext();
         ActivityKind = GetActivityKind(parentActivityContext);
         ParentActivityContext = parentActivityContext ?? default;
@@ -113,18 +86,57 @@ public class TelemetryClient : ITelemetryClient
         }
 
 #if TARGET_WINDOWS
-        if (s_metricsProvider is null || s_tracerProvider is null)
-        {
-            // Create a new OTel meter and tracer provider.
-            // It is important to keep the provider instances active throughout the process lifetime.
-            s_metricsProvider ??= s_metricsProviderBuilder.Build();
-            s_tracerProvider ??= s_tracerProviderBuilder.Build();
-        }
+        EnsureTracerProviderInitialized();
 #endif
 
         CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
     }
+
+#if TARGET_WINDOWS
+    private static void EnsureTracerProviderInitialized()
+    {
+        if (s_tracerProvider is not null)
+        {
+            return;
+        }
+
+        lock (s_providerLock)
+        {
+            if (s_tracerProvider is not null)
+            {
+                return;
+            }
+
+            var tracerBuilder = Sdk.CreateTracerProviderBuilder()
+                .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
+                .AddSource(Activities.Source.Name)
+                .AddInMemoryExporter(s_activities)
+                .SetSampler(new AlwaysOnSampler());
+
+            // Only add the OTLP exporter when the user has explicitly configured an endpoint.
+            var otlpEndpoint = Env.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")
+                ?? Env.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT");
+            if (!string.IsNullOrEmpty(otlpEndpoint))
+            {
+                tracerBuilder.AddOtlpExporter();
+            }
+
+            if (!s_disableTraceExport)
+            {
+                var storageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
+                tracerBuilder.AddAzureMonitorTraceExporter(o =>
+                {
+                    o.ConnectionString = s_connectionString;
+                    o.EnableLiveMetrics = false;
+                    o.StorageDirectory = storageDirectory;
+                });
+            }
+
+            s_tracerProvider = tracerBuilder.Build();
+        }
+    }
+#endif
 
     /// <summary>
     /// Uses the OpenTelemetry SDK's Propagation API to derive the parent activity context from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
@@ -166,7 +178,6 @@ public class TelemetryClient : ITelemetryClient
     {
 #if TARGET_WINDOWS
         s_tracerProvider?.ForceFlush(s_flushTimeoutMs);
-        s_metricsProvider?.ForceFlush(s_flushTimeoutMs);
 #endif
     }
 
