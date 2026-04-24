@@ -63,151 +63,155 @@ This file contains a single line with the latest version string for that channel
 
 ## Proposed design
 
+### Core principle: daily builds are just channels
+
+Rather than introducing a separate `--quality` flag, daily builds are expressed as **channel names**
+in dotnetup. This keeps the mental model simple: every install is `dnup sdk install <channel>`,
+and daily channels are just another kind of channel alongside `latest`, `preview`, `lts`, etc.
+
 ### Terminology
 
-We propose using **"daily"** as the primary term, matching the existing `dotnet-install` scripts'
-`--quality daily` parameter. The GitHub issue uses "nightly" which is more familiar to users of
-other ecosystems (Rust, Python, etc.), but aligning with the existing .NET infrastructure reduces
-confusion and implementation complexity.
+We use **"daily"** as the channel keyword, matching the existing `dotnet-install` scripts'
+quality level. The GitHub issue uses "nightly" which is more familiar in other ecosystems
+(Rust, Python), but "daily" aligns with the existing .NET build infrastructure.
 
 Alternative names considered:
-- **"nightly"**: More familiar to the broader developer community; could be used as a user-facing
-  alias even if the underlying quality is "daily"
-- **"prerelease"**: Too broad — preview releases are also pre-release but come from the release manifest
+- **"nightly"**: More community-friendly; could be added as an alias
 - **"ci"**: Accurate but less user-friendly
+- **"preview"**: Already used for official preview releases from the release manifest
 
-**Recommendation**: Use "daily" in the implementation and documentation to match `dotnet-install`.
-If user research indicates "nightly" resonates better, we can add it as an alias later.
+**Recommendation**: Use "daily" as the primary name. Consider "nightly" as an alias if user
+research shows it resonates better.
 
-### CLI syntax
+### Channel syntax
 
-#### Installing the latest daily build for a channel
+Daily channels follow the pattern `daily[/{version-scope}]`:
+
+| Channel | Meaning |
+|---------|---------|
+| `daily` | Latest daily build (latest major version) |
+| `daily/10.0` | Latest daily build for .NET 10.0 |
+| `daily/10.0.1xx` | Latest daily build for the 10.0.1xx feature band |
+
+This extends the existing channel vocabulary naturally:
+
+| Existing channels | Daily channels |
+|-------------------|---------------|
+| `latest` | `daily` |
+| `preview` | (already in release manifest) |
+| `lts` | (not applicable — daily builds aren't LTS) |
+| `10.0` | `daily/10.0` |
+| `10.0.1xx` | `daily/10.0.1xx` |
+
+### CLI examples
 
 ```bash
+# Install the latest daily SDK build
+dnup sdk install daily
+
 # Install the latest daily SDK for .NET 10.0
-dnup sdk install 10.0 --quality daily
+dnup sdk install daily/10.0
 
 # Install the latest daily SDK for the 10.0.1xx feature band
-dnup sdk install 10.0.1xx --quality daily
+dnup sdk install daily/10.0.1xx
 
-# Short form (if we want to support it)
-dnup sdk install daily/10.0
-```
-
-The `--quality` flag mirrors `dotnet-install`'s terminology and is the recommended approach.
-It composes naturally with the existing channel argument.
-
-The `daily/{channel}` short form is convenient but introduces a new syntax pattern. It could
-be supported as sugar that expands to `--quality daily`.
-
-#### Installing a specific daily build version
-
-```bash
 # Install a specific daily build by its full version string
 dnup sdk install 10.0.100-preview.7.25351.1
+
+# Daily runtime builds follow the same pattern
+dnup runtime install daily/10.0
 ```
 
-When the user provides a fully-specified version with a prerelease tag, dotnetup should:
+#### Specific version fallback
+
+When the user provides a fully-specified version with a prerelease tag (e.g.,
+`10.0.100-preview.7.25351.1`), dotnetup should:
 1. First, check the release manifest (it may be an officially published preview)
 2. If not found in the release manifest, attempt to download from the daily build feed
-
-This fallback behavior means users don't need to know whether a version is "released" or "daily" —
-they just provide the version string and dotnetup figures out where to get it.
 
 **Important constraint**: blob-feed fallback should only be attempted for **prerelease** version
 strings (versions containing a `-` prerelease tag). Stable version strings like `10.0.100` that
 aren't in the release manifest should produce a clear "version not found" error rather than probing
 blob storage — this avoids confusing behavior for typos like `10.0.999`.
 
-If `--quality daily` is explicitly provided alongside an exact version, that is an error
-(quality is only meaningful for "latest" resolution, matching the `dotnet-install` script behavior).
-
-#### Runtime installs
-
-```bash
-# Daily runtime builds follow the same pattern
-dnup runtime install 10.0 --quality daily
-```
-
 ### Version resolution
 
-A new resolution path is needed alongside the existing `ChannelVersionResolver`:
-
 ```
-User provides: channel + quality
-                    │
-                    ▼
-        ┌───────────────────────┐
-        │  Is quality specified? │
-        └───────┬───────┬───────┘
-                │       │
-            No  │       │  Yes (daily/preview)
-                ▼       ▼
-    ┌──────────────┐  ┌──────────────────────┐
-    │ Release       │  │ Daily build feed     │
-    │ manifest      │  │ (aka.ms / blob)      │
-    │ (existing)    │  │                      │
-    └──────────────┘  └──────────────────────┘
+User provides: channel
+        │
+        ▼
+  ┌─────────────────────┐
+  │ Is it a daily/...   │
+  │ channel?            │
+  └───────┬───────┬─────┘
+          │       │
+      No  │       │  Yes
+          ▼       ▼
+  ┌──────────────┐  ┌──────────────────────┐
+  │ Release       │  │ Daily build feed     │
+  │ manifest      │  │ (aka.ms / blob)      │
+  │ (existing)    │  │                      │
+  └──────────────┘  └──────────────────────┘
 ```
 
-For daily builds, version resolution queries the build feed:
-1. Construct the aka.ms URL: `https://aka.ms/dotnet/{channel}/{quality}/sdk-productVersion.txt`
-2. Follow the redirect to get the `latest.version` file content
-3. Parse the version string
+For daily channels, version resolution queries the build feed:
+1. Parse the channel: `daily/10.0` → base channel `10.0`, quality `daily`
+2. Construct the aka.ms URL: `https://aka.ms/dotnet/10.0/daily/sdk-productVersion.txt`
+3. Follow the redirect to get the latest version string
 4. Construct the download URL: `{feed}/Sdk/{version}/dotnet-sdk-{version}-{os}-{arch}.{ext}`
 
 For a specific prerelease version that isn't in the release manifest:
-1. Construct the download URL directly: `{feed}/Sdk/{version}/dotnet-sdk-{version}-{os}-{arch}.{ext}`
+1. Construct the download URL directly from the version string
 2. Verify the archive exists (HEAD request or attempt download)
 3. Fetch the hash from `{url}.sha512` for verification
 
+### Channel parsing in `UpdateChannel`
+
+The `UpdateChannel` class gains awareness of the `daily/` prefix:
+
+```csharp
+// New properties
+public bool IsDaily => Name.StartsWith("daily", StringComparison.OrdinalIgnoreCase);
+public string BaseChannel => IsDaily
+    ? Name.Contains('/') ? Name.Substring(Name.IndexOf('/') + 1) : "latest"
+    : Name;
+```
+
+The `Matches()` method for daily channels matches any version that would match the base channel.
+For example, `daily/10.0` matches any `10.0.x` version, just like `10.0` does today. The
+difference is only in how versions are **resolved** (blob feed vs release manifest) and
+**tracked** (daily install specs vs release install specs).
+
 ### Manifest tracking
 
-Daily builds need to be tracked in the dotnetup manifest so that:
-- `dnup list` shows them
-- `dnup remove` can remove them
-- The garbage collector knows about them
-
-A daily install should be recorded with enough information to identify its source:
+Daily builds are tracked in the dotnetup manifest just like any other channel:
 
 ```json
 {
-  "channel": "10.0",
-  "quality": "daily",
+  "channel": "daily/10.0",
   "version": "10.0.100-preview.7.25351.1",
-  "component": "sdk",
-  "feedKind": "daily-build"
+  "component": "sdk"
 }
 ```
 
-The `quality` and `feedKind` fields distinguish daily installs from release-manifest installs.
-(Note: the existing `InstallSource` field means something different — it tracks whether the
-install was triggered explicitly by the user vs. by `global.json`. We use `feedKind` to avoid
-naming confusion.)
+Because the channel name itself encodes the daily nature, no additional `quality` or `feedKind`
+fields are needed. The GC, update, and list logic can use the existing `channel` field to
+determine resolution behavior:
+- Channel starts with `daily/`? → resolve from blob feed
+- Otherwise → resolve from release manifest
 
-This distinction is important because:
-- The same version string might not exist in the release manifest
-- Update/GC logic must distinguish `{channel: "10.0", quality: "daily"}` from `{channel: "10.0"}`
-  (stable) — otherwise daily installs would be garbage-collected by stable channel rules
-- The download source is different
+This keeps the manifest schema unchanged and avoids needing to update every piece of code that
+reads install specs.
 
 ### Update behavior
 
-**Daily builds should not auto-update by default.** The issue author confirms this assumption:
-> "I assume we don't update specific nightlies."
+**Daily channel installs support updates**, just like any other tracked channel. Running
+`dnup sdk update` will re-resolve the `daily/10.0` channel against the blob feed and install
+a newer version if available.
 
-However, we should support explicit updates:
-```bash
-# Explicitly update to the latest daily for the tracked channel
-dnup sdk update --quality daily
-```
-
-When a user has an install spec like `{channel: "10.0", quality: "daily"}`, running `dnup sdk update`
-with `--quality daily` would resolve the latest daily for 10.0 and install it if newer.
-
-Install specs for daily builds should be recorded only when the user installs via channel + quality
-(not when they install a specific version). A specific-version daily install is a point-in-time
-snapshot and shouldn't imply ongoing tracking.
+**Specific-version daily installs** (e.g., `dnup sdk install 10.0.100-preview.7.25351.1`)
+are point-in-time snapshots. They record the exact version as the channel, so there's nothing
+to "update to" — same as installing a specific released version today.
 
 ### Security and trust model
 
@@ -243,43 +247,30 @@ No additional signature verification infrastructure is needed for daily builds.
 
 ## Implementation phases
 
-### Phase 1: Data model and source identity
+### Phase 1: Daily channel parsing and blob-feed download
 
-**Goal**: Introduce the concept of build quality and feed kind into the request/manifest/spec model.
-
-Changes needed:
-- Add `Quality` property to `InstallRequestOptions` (enum: `Ga`, `Preview`, `Daily`)
-- Add `FeedKind` property to install spec recording (enum: `ReleaseManifest`, `DailyBuild`)
-- Update `UpdateChannel` identity: a channel + quality pair must be distinct from the same channel
-  without quality, so update/remove/GC logic doesn't confuse daily and stable installs
-- Update manifest serialization to persist `quality` and `feedKind`
-- Update `dnup list` output to surface daily-build provenance
-
-### Phase 2: Install a specific daily build version
-
-**Goal**: `dnup sdk install 10.0.100-preview.7.25351.1` works for versions not in the release manifest.
+**Goal**: `dnup sdk install daily/10.0` resolves and installs the latest daily build.
 
 Changes needed:
+- Extend `UpdateChannel` with `IsDaily` / `BaseChannel` properties for `daily/...` prefix parsing
+- Add `IsValidChannelFormat()` support for `daily/...` channels
+- Create a `DailyBuildVersionResolver` that queries `aka.ms` / `latest.version` files
 - Extend `DotnetArchiveDownloader` with a blob-storage download path that constructs URLs from
   version strings rather than release manifest entries
 - Add hash fetching from `{url}.sha512` companion files
 - Add host allowlist for blob feed redirect validation
-- Modify `InstallWorkflow.ResolveSpec()` to fall back to blob storage when the release manifest
-  doesn't contain the requested prerelease version
-- Track the install in the manifest with `feedKind: "daily-build"`
+- Wire daily channel detection through `InstallWorkflow` to use the daily resolver and downloader
 
-### Phase 3: Install latest daily for a channel
+### Phase 2: Specific prerelease version fallback
 
-**Goal**: `dnup sdk install 10.0 --quality daily` resolves and installs the latest daily build.
+**Goal**: `dnup sdk install 10.0.100-preview.7.25351.1` works for versions not in the release manifest.
 
 Changes needed:
-- Add `--quality` option to install commands (validate: incompatible with exact versions, `lts`, `sts`)
-- Create a `DailyBuildVersionResolver` (or extend `ChannelVersionResolver`) that queries
-  `aka.ms` / `latest.version` files
-- Wire quality through the install workflow
-- Record install spec with quality so updates can re-resolve from the daily feed
+- Modify `InstallWorkflow.ResolveSpec()` to fall back to blob storage when the release manifest
+  doesn't contain the requested prerelease version (non-daily channel, prerelease tag present)
+- Reuse the blob-feed download path from Phase 1
 
-### Phase 4: List and browse daily builds
+### Phase 3: List and browse daily builds
 
 **Goal**: Users can discover what daily builds are available.
 
@@ -292,37 +283,31 @@ The feasibility depends on what listing/enumeration APIs are available from the 
 
 ## Open questions
 
-1. **Should `dnup sdk install 10.0 --quality preview` also be supported?** The `dotnet-install`
-   scripts support `--quality preview` to get the latest preview build. This would be a natural
-   extension.
-
-2. **How should `global.json` interact with daily builds?** If a `global.json` specifies a daily
+1. **How should `global.json` interact with daily builds?** If a `global.json` specifies a daily
    build version, should `dnup` automatically try the daily feed? Or should it require explicit
    configuration?
 
-3. **Should there be a `--feed` override?** For internal scenarios, users might want to point at
+2. **Should there be a `--feed` override?** For internal scenarios, users might want to point at
    a different feed URL. The `dotnet-install` scripts support `--azure-feed` for this. If added,
    this should be treated as an advanced/untrusted mode.
 
-4. **What about listing daily builds (Phase 4)?** The blob storage doesn't have a natural listing
+3. **What about listing daily builds (Phase 3)?** The blob storage doesn't have a natural listing
    API. We may need to rely on version ranges or a separate index. This needs investigation.
 
-5. **Naming**: Should we use "daily" throughout, or offer "nightly" as a user-facing alias?
+4. **Naming**: Should we use "daily" throughout, or offer "nightly" as a user-facing alias?
    User research / PM input would be valuable here.
 
-6. **Runtime daily builds**: Do daily builds of the runtime follow the same feed structure?
+5. **Runtime daily builds**: Do daily builds of the runtime follow the same feed structure?
    Need to verify the URL patterns for runtime vs SDK daily downloads.
 
-7. **Host allowlist / redirect policy**: What is the exact set of allowed hosts for aka.ms
+6. **Host allowlist / redirect policy**: What is the exact set of allowed hosts for aka.ms
    redirects? Need to enumerate all legitimate blob storage hosts used by the .NET build
    infrastructure.
 
-8. **Feed retry order**: What is the exact primary/fallback retry order across
+7. **Feed retry order**: What is the exact primary/fallback retry order across
    `builds.dotnet.microsoft.com` and `ci.dot.net/public`? Should we always try primary first,
    or use both in parallel?
 
-9. **Invalid combinations**: What validation and error messages do we want for invalid combos
-   like `--quality daily` with `lts`, `sts`, or a fully specified version?
-
-10. **Distinguishing tracked channels**: How do we surface the difference between tracked `10.0`
-    (stable) vs tracked `10.0 --quality daily` in `dnup list`, `dnup remove`, and other commands?
+8. **Channel separator**: Is `daily/10.0` the best syntax? Alternatives include `daily:10.0`,
+   `daily-10.0`, or `10.0-daily`. The `/` syntax reads naturally ("daily builds of 10.0") but
+   may conflict with file path parsing on some platforms.
