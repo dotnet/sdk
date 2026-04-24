@@ -9,7 +9,8 @@
     <LogDir Condition="'$(LogDir)' == ''">$(RepoRoot)artifacts\log\DotnetupSign\</LogDir>
 
     <!-- SignTool requires explicit dotnet path; default to repo-local SDK. -->
-    <DotNetPath Condition="'$(DotNetPath)' == ''">$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
+    <DotNetPath Condition="'$(DotNetPath)' == '' and '$(OS)' == 'Windows_NT'">$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
+    <DotNetPath Condition="'$(DotNetPath)' == '' and '$(OS)' != 'Windows_NT'">$(RepoRoot).dotnet/dotnet</DotNetPath>
 
     <MicroBuild_DoNotStrongNameSign>true</MicroBuild_DoNotStrongNameSign>
     <MicroBuild_SigningEnabled>true</MicroBuild_SigningEnabled>
@@ -17,11 +18,17 @@
 
   <Import Project="$(NuGetPackageRoot)microsoft.dotnet.signtool\$(MicrosoftDotNetSignToolVersion)\build\Microsoft.DotNet.SignTool.props" />
 
-  <ItemGroup>
-    <!-- Only sign the dotnetup executable itself. -->
+  <!-- Windows: Authenticode-sign dotnetup.exe with Microsoft400 -->
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <FileExtensionSignInfo Include=".exe" CertificateName="Microsoft400" />
     <FileSignInfo Include="dotnetup.exe" CertificateName="Microsoft400" />
     <ItemsToSign Include="$(DotnetupPublishDir)dotnetup.exe" />
+  </ItemGroup>
+
+  <!-- macOS: codesign + harden the extensionless dotnetup binary -->
+  <ItemGroup Condition="'$(TargetOS)' == 'osx'">
+    <FileSignInfo Include="dotnetup" CertificateName="MacDeveloperHarden" />
+    <ItemsToSign Include="$(DotnetupPublishDir)dotnetup" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(SignType)' == ''">

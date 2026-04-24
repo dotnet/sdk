@@ -23,6 +23,7 @@ jobs:
     helixRepo: dotnet/sdk
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     enableMicrobuild: true
+    enableMicrobuildForMacAndLinux: true
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
@@ -117,11 +118,21 @@ jobs:
             CROSS_ARGS="-p:SysRoot=$ROOTFS_DIR -p:LinkerFlavor=lld"
           fi
           ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained $CROSS_ARGS -p:EnforceCodeStyleInBuild=false -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
-          # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
-          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
-          cp -r "$PUBLISH_DIR/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
-          # Copy just the binary to the standalone artifact staging directory
-          mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"
-          cp "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup" "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}/"
         displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
         retryCountOnTaskFailure: 2
+
+    # Sign macOS binaries with MacDeveloperHarden (requires MicroBuild for Mac)
+    - ${{ if startsWith(parameters.rid, 'osx') }}:
+      - script: |
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          DOTNETUP_PUBLISH_DIR="$PUBLISH_DIR/${{ parameters.rid }}/publish/"
+          ./.dotnet/dotnet build ./src/Installer/dotnetup.sign.proj /t:Sign "/p:DotnetupPublishDir=$DOTNETUP_PUBLISH_DIR" /p:TargetOS=osx -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+        displayName: 🖋️ Sign dotnetup executable (${{ parameters.rid }})
+
+    - ${{ if ne(parameters.pool.os, 'windows') }}:
+      - script: |
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          cp -r "$PUBLISH_DIR/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
+          mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"
+          cp "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup" "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}/"
+        displayName: 📦 Stage dotnetup artifacts (${{ parameters.rid }})
