@@ -69,7 +69,6 @@ internal class InitWorkflows
         ShowBanner();
         var effectiveRequests = ResolveWalkthroughRequests(command, requests);
 
-
         // Determine the install root for environment configuration and migration.
         // Use the first request's root if available, otherwise fall back to the default path.
         DotnetInstallRoot installRoot = effectiveRequests.Count > 0
@@ -101,7 +100,6 @@ internal class InitWorkflows
         {
             effectiveRequests = MergeInstallRequests(effectiveRequests, toMigrate, installRoot, manifestPath);
         }
-
 
         // Step 3: Run the primary install (typically the base SDK from global.json/latest)
         // and any selected migration installs before completing setup.
@@ -526,20 +524,6 @@ internal class InitWorkflows
 
     private static string GetMigrationRetryHint()
         => "You can migrate matching SDKs or runtimes later with \"dotnetup sdk install --migrate-from-system\" or \"dotnetup runtime install --migrate-from-system\".";
-
-    /// <summary>
-    /// Checks whether a runtime's framework folder already exists on disk,
-    /// typically because it was bundled inside an SDK archive.
-    /// </summary>
-    private static bool RuntimeFolderExistsOnDisk(DotnetInstallRoot installRoot, DotnetInstall runtime)
-    {
-        string frameworkDir = Path.Combine(
-            installRoot.Path,
-            "shared",
-            runtime.Component.GetFrameworkName(),
-            runtime.Version.ToString());
-        return Directory.Exists(frameworkDir);
-    }
 
     // ── Display Functions ──
 
