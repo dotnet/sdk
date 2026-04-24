@@ -86,7 +86,7 @@ Is version specific (e.g. "10.0.100-preview.7.25351.1")?
 ### Core principle: daily builds are just channels
 
 Rather than introducing a separate `--quality` flag, daily builds are expressed as **channel names**
-in dotnetup. This keeps the mental model simple: every install is `dnup sdk install <channel>`,
+in dotnetup. This keeps the mental model simple: every install is `dotnetup sdk install <channel>`,
 and daily channels are just another kind of channel alongside `latest`, `preview`, `lts`, etc.
 
 ### Terminology
@@ -129,19 +129,19 @@ with the version scope and optionally narrow it.
 
 ```bash
 # Install the latest daily SDK build
-dnup sdk install daily
+dotnetup sdk install daily
 
 # Install the latest daily SDK for .NET 10.0
-dnup sdk install 10.0/daily
+dotnetup sdk install 10.0/daily
 
 # Install the latest daily SDK for the 10.0.1xx feature band
-dnup sdk install 10.0.1xx/daily
+dotnetup sdk install 10.0.1xx/daily
 
 # Install a specific daily build by its full version string
-dnup sdk install 10.0.100-preview.7.25351.1
+dotnetup sdk install 10.0.100-preview.7.25351.1
 
 # Daily runtime builds follow the same pattern
-dnup runtime install 10.0/daily
+dotnetup runtime install 10.0/daily
 ```
 
 #### Specific version fallback
@@ -234,10 +234,10 @@ reads install specs.
 ### Update behavior
 
 **Daily channel installs support updates**, just like any other tracked channel. Running
-`dnup sdk update` will re-resolve the `10.0/daily` channel against the blob feed and install
+`dotnetup sdk update` will re-resolve the `10.0/daily` channel against the blob feed and install
 a newer version if available.
 
-**Specific-version daily installs** (e.g., `dnup sdk install 10.0.100-preview.7.25351.1`)
+**Specific-version daily installs** (e.g., `dotnetup sdk install 10.0.100-preview.7.25351.1`)
 are point-in-time snapshots. They record the exact version as the channel, so there's nothing
 to "update to" — same as installing a specific released version today.
 
@@ -254,7 +254,7 @@ Mitigations:
   (`builds.dotnet.microsoft.com`, `ci.dot.net`). Redirects to unexpected hosts should be rejected.
 - **TLS-only**: All feed communication must be over HTTPS.
 - **Transparency**: dotnetup should clearly indicate when an install came from a daily build feed
-  rather than the release manifest (e.g., in `dnup list` output and installation messages).
+  rather than the release manifest (e.g., in `dotnetup list` output and installation messages).
 - **Future**: If independent signature verification is added (e.g., verifying the Authenticode
   signature on the extracted binaries), this would strengthen the trust model for daily builds.
 
@@ -292,7 +292,7 @@ as channel qualifiers (e.g., `10.0/signed`).
 
 ### Phase 1: Daily channel parsing and blob-feed download
 
-**Goal**: `dnup sdk install 10.0/daily` resolves and installs the latest daily build.
+**Goal**: `dotnetup sdk install 10.0/daily` resolves and installs the latest daily build.
 
 Changes needed:
 - Extend `UpdateChannel` with `IsDaily` / `BaseChannel` properties for `.../daily` suffix parsing
@@ -309,7 +309,7 @@ Changes needed:
 
 ### Phase 2: Specific prerelease version fallback
 
-**Goal**: `dnup sdk install 10.0.100-preview.7.25351.1` works for versions not in the release manifest.
+**Goal**: `dotnetup sdk install 10.0.100-preview.7.25351.1` works for versions not in the release manifest.
 
 Changes needed:
 - Modify `InstallWorkflow.ResolveSpec()` to fall back to blob storage when the release manifest
@@ -330,7 +330,7 @@ The feasibility depends on what listing/enumeration APIs are available from the 
 ## Open questions
 
 1. **How should `global.json` interact with daily builds?** If a `global.json` specifies a daily
-   build version, should `dnup` automatically try the daily feed? Or should it require explicit
+   build version, should `dotnetup` automatically try the daily feed? Or should it require explicit
    configuration?
 
 2. **Should there be a `--feed` override?** For internal scenarios, users might want to point at
