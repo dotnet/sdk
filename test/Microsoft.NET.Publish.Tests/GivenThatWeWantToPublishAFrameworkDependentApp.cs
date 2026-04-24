@@ -38,7 +38,7 @@ namespace Microsoft.NET.Publish.Tests
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
             var appHostName = $"{TestProjectName}{Constants.ExeSuffix}";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(TestProjectName, $"It_publishes_with_or_without_apphost_{(useAppHost ?? "null")}_{targetFramework}")
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -85,7 +85,7 @@ namespace Microsoft.NET.Publish.Tests
                 new RunExeCommand(Log, Path.Combine(publishDirectory.FullName, appHostName))
                     .WithEnvironmentVariable(
                         Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)",
-                        Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath))
+                        Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath))
                     .Execute()
                     .Should()
                     .Pass()
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(TestProjectName)
                 .WithSource()
                 .WithTargetFramework("netcoreapp2.0");

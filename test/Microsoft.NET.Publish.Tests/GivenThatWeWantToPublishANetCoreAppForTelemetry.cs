@@ -26,7 +26,7 @@ namespace Microsoft.NET.Publish.Tests
                 };
 
             var testProject = CreateTestProject(targetFramework, "PlainProject");
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute(TelemetryTestLogger).StdOut.Should().Contain(
                 "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"null\",\"PublishTrimmed\":\"null\",\"PublishSingleFile\":\"null\",\"PublishAot\":\"null\",\"PublishProtocol\":\"null\"}");
@@ -40,12 +40,13 @@ namespace Microsoft.NET.Publish.Tests
             var TelemetryTestLogger = new[]
                 {
                     "--property:SelfContained=true",
-                    $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}"
+                    $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}",
+                    this.BinLogArgument(["targetFramework", targetFramework])
                 };
 
             var testProject = CreateTestProject(targetFramework, "TrimmedR2RSingleFileProject", true, true, true);
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
-            var publishCommand = new PublishCommand(testProjectInstance);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testProjectInstance).WithWorkingDirectory(testProjectInstance.TestRoot);
             string s = publishCommand.Execute(TelemetryTestLogger).StdOut;//.Should()
             s.Should().Contain(
                 "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"True\",\"PublishTrimmed\":\"True\",\"PublishSingleFile\":\"True\",\"PublishAot\":\"null\",\"PublishProtocol\":\"null\"}");
@@ -76,7 +77,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProject(targetFramework, "TrimmedR2RSingleFileProject", r2r: true);
             testProject.AdditionalProperties["PublishReadyToRunUseCrossgen2"] = "True";
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute(TelemetryTestLogger).StdOut.Should()
                 .Contain(
@@ -109,7 +110,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProject(targetFramework, "AotProject", aot: true);
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testProjectInstance);
             publishCommand.Execute(TelemetryTestLogger).StdOut.Should().Contain(
                 "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"null\",\"PublishTrimmed\":\"true\",\"PublishSingleFile\":\"null\",\"PublishAot\":\"True\",\"PublishProtocol\":\"null\"}");

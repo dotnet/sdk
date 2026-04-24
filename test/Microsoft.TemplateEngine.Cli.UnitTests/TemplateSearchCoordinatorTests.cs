@@ -73,11 +73,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search foo");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    default);
+                    TestContext.Current.CancellationToken);
 
                 Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
@@ -120,11 +120,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search foo --framework netcoreapp2.0");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -134,7 +134,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    default);
+                    TestContext.Current.CancellationToken);
 
                 Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
@@ -164,11 +164,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search foo --tfm netcoreapp2.0");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -178,7 +178,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    default);
+                    TestContext.Current.CancellationToken);
 
                 Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
@@ -203,11 +203,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search bar --language F#");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -217,7 +217,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    default);
+                    TestContext.Current.CancellationToken);
 
                 Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
@@ -247,11 +247,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --author {commandAuthor}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -261,7 +261,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    default);
+                    TestContext.Current.CancellationToken);
 
                 Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
@@ -288,12 +288,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --type {commandType}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -303,7 +303,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    default);
+                    TestContext.Current.CancellationToken);
 
                 Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
@@ -331,12 +331,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --package {commandPackage}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -346,7 +346,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    default);
+                    TestContext.Current.CancellationToken);
 
                 Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
@@ -379,11 +379,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --tag {commandTag}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -393,7 +393,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    default);
+                    TestContext.Current.CancellationToken);
 
                 Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
@@ -421,11 +421,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search bar --language VB");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -435,7 +435,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    default);
+                    TestContext.Current.CancellationToken);
 
                 Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
@@ -458,11 +458,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
             var templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
 
-            NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
             ParseResult parseResult = myCommand.Parse($"new search --unknown");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, default);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.Current.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -470,7 +470,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                 factory.GetPackFilter(args),
                 CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                default);
+                TestContext.Current.CancellationToken);
 
             Assert.Single(searchResults);
             Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");

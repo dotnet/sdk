@@ -11,8 +11,10 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ApiCompatServiceProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SuppressionFileHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ValidatePackage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ValidateAssemblies.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ValidateAssembliesOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ValidatePackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ValidatePackageOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RegexStringTransformer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RoslynResolver.cs" />
   </ItemGroup>

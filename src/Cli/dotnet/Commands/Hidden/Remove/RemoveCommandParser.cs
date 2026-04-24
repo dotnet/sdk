@@ -2,39 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Package;
-using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
-using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Package.Remove;
+using Microsoft.DotNet.Cli.Commands.Reference.Remove;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 
 internal static class RemoveCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-remove";
-
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(RemoveCommandDefinition command)
     {
-        return Command;
-    }
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-    private static Command ConstructCommand()
-    {
-        var command = new Command("remove", CliCommandStrings.NetRemoveCommand)
-        {
-            Hidden = true,
-            DocsLink = DocsLink
-        };
-
-        command.Arguments.Add(PackageCommandParser.ProjectOrFileArgument);
-        command.Subcommands.Add(RemovePackageCommandParser.GetCommand());
-        command.Subcommands.Add(RemoveReferenceCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-
-        return command;
+        command.PackageCommand.SetAction(parseResult => new PackageRemoveCommand(parseResult).Execute());
+        command.ReferenceCommand.SetAction(parseResult => new ReferenceRemoveCommand(parseResult).Execute());
     }
 }

@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void It_builds_and_runs()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) => AddBuildProperty(projectPath, project, "EnableManagedpackageReferenceSupport", "true"));
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_builds_and_runs_with_package_reference()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework + "-windows";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void Given_no_restore_It_builds_cpp_project()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) => AddBuildProperty(projectPath, project, "EnableManagedpackageReferenceSupport", "True")); ;
@@ -101,7 +101,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void Given_Wpf_framework_reference_It_builds_cpp_project()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("CppCliLibWithWpfFrameworkReference")
                 .WithSource();
 
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void It_fails_with_error_message_on_EnableComHosting()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -142,7 +142,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void It_fails_with_error_message_on_fullframework()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -159,7 +159,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void It_fails_with_error_message_on_tfm_lower_than_3_1()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -176,7 +176,7 @@ namespace Microsoft.NET.Build.Tests
         [FullMSBuildOnlyFact]
         public void When_run_with_selfcontained_It_fails_with_error_message()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource();
 

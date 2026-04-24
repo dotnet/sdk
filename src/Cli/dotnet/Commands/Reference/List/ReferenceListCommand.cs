@@ -4,28 +4,23 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Hidden.List;
+using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
 
-internal class ReferenceListCommand : CommandBase
+internal class ReferenceListCommand : CommandBase<ListReferenceCommandDefinitionBase>
 {
     private readonly string _fileOrDirectory;
 
-    public ReferenceListCommand(ParseResult parseResult) : base(parseResult)
+    public ReferenceListCommand(ParseResult parseResult)
+        : base(parseResult)
     {
         ShowHelpOrErrorIfAppropriate(parseResult);
 
-        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ??
-            Directory.GetCurrentDirectory();
+        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult) ?? Directory.GetCurrentDirectory();
     }
 
     public override int Execute()

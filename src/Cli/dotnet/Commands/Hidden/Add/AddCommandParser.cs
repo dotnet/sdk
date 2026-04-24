@@ -2,39 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
-using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Reference.Add;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
 
 internal static class AddCommandParser
 {
-    public static readonly string DocsLink = "https://aka.ms/dotnet-add";
-
-    private static readonly Command Command = ConstructCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(AddCommandDefinition command)
     {
-        return Command;
-    }
+        command.SetAction(parseResult => parseResult.HandleMissingCommand());
 
-    private static Command ConstructCommand()
-    {
-        var command = new Command("add", CliCommandStrings.NetAddCommand)
-        {
-            Hidden = true,
-            DocsLink = DocsLink
-        };
-
-        command.Arguments.Add(PackageCommandParser.ProjectOrFileArgument);
-        command.Subcommands.Add(AddPackageCommandParser.GetCommand());
-        command.Subcommands.Add(AddReferenceCommandParser.GetCommand());
-
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-
-        return command;
+        PackageCommandParser.ConfigureAddCommand(command.PackageCommand);
+        command.ReferenceCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
     }
 }

@@ -2,6 +2,7 @@ name: Inter-branch merge workflow
 on:
   push:
     branches:
+      - main
       - release/**
 
 permissions:

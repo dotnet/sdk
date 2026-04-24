@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../CliCommandStrings.resx">
     <body>
@@ -90,6 +90,26 @@
       <trans-unit id="BuildAppFullName">
         <source>.NET Builder</source>
         <target state="translated">.NET Oluşturucusu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestNoTestProjectsFound">
+        <source>No test projects were found.</source>
+        <target state="new">No test projects were found.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
@@ -554,8 +574,8 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">MSBuild ile proje özelliklerini al işlemi {0} çıkış koduyla çıkarak düzgün şekilde çalışmadı.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">MSBuild ile proje özelliklerini al işlemi {0} çıkış koduyla çıkarak düzgün şekilde çalışmadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -725,17 +745,17 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
       </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Çalıştırılacak proje dosyasının yolunu tanımlar. Proje dosyasının yolunu veya proje dosyasını içeren dizinin yolunu kullanın. Belirtilmezse, varsayılan olarak geçerli dizine ayarlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
         <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Test edilecek proje veya çözüm dosyasının yolunu tanımlar. Proje dosyasının yolunu veya proje dosyasını içeren dizinin yolunu kullanın. Belirtilmezse, varsayılan olarak geçerli dizine ayarlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
         <source>PROJECT_OR_SOLUTION_PATH</source>
-        <target state="new">PROJECT_OR_SOLUTION_PATH</target>
+        <target state="translated">PROJECT_OR_SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -782,7 +802,7 @@ Belirtilen dizin yoksa oluşturulur.</target>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Test edilecek çözüm dosyasının yolunu tanımlar. Çözüm dosyasının yolunu veya çözüm dosyasını içeren dizinin yolunu kullanın. Belirtilmezse, varsayılan olarak geçerli dizine ayarlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -1051,11 +1071,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">Tarih</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(Varsayılan)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">İş yükü bildirimi {0} sürümü {1} yükleniyor...</target>
@@ -1085,11 +1100,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <source>Description</source>
         <target state="translated">Açıklama</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">‘{0}’ okunurken bir hata oluştu: {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1191,15 +1201,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <source>Downloads</source>
         <target state="translated">İndirmeler</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Adı büyük/küçük harfe duyarlı olan birkaç başlatma profili var ama bu duruma izin verilmiyor:
-{0}
-Lütfen profil adlarını değiştirin.</target>
-        <note />
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
@@ -1590,26 +1591,6 @@ Lütfen profil adlarını değiştirin.</target>
         <source>Latest Version</source>
         <target state="translated">En Son Sürüm</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">'{0}' adlı bir başlatma profili yok.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">'{0}' başlatma profili türü desteklenmiyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Belirtilen adla bir profil, geçerli bir JSON nesnesi değil.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">Başlatma ayarları belgesinin 'profiles' özelliği bir JSON nesnesi değil.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -2405,21 +2386,43 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">Proje bağlamı</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Dönüştürmeden sonra tüm kaynak dosyalar silinsin mi?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Dosya tabanlı bir programı proje tabanlı bir programa dönüştür.</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Çıkış dizinini belirtin ({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="translated">Çıkış dizinini belirtin (varsayılan için Enter tuşuna basın: '{0}', dizin mevcut olmamalıdır):</target>
         <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">Hayır - tüm kaynak dosyaları sakla</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Evet - tüm kaynak dosyaları sil</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">Kaynak dosya silindi: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">Dosya sistemini gerçekten değiştirmeden değişiklikleri belirler</target>
         <note />
       </trans-unit>
+
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
         <target state="translated">Deneme çalıştırması: dosya düzeyindeki yönergeleri şu dosyadan kaldırıyor: {0}</target>
@@ -2440,6 +2443,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">Deneme çalıştırması: şu dosya oluşturuluyor: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Deneme çalıştırması: kaynak dosyayı silecektir: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
         <target state="translated">Deneme çalıştırması: şu dosya siliniyor: {0}</target>
@@ -2459,6 +2467,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>The XML file that contains the list of packages to be stored.</source>
         <target state="translated">Depolanacak paketlerin listesini içeren XML dosyası.</target>
         <note />
+
       </trans-unit>
       <trans-unit id="ProjectsHeader">
         <source>Project(s)</source>
@@ -2612,6 +2621,11 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
         <target state="translated">Geri yükleme başarısız oldu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">Geri yükleme kısmen başarısız oldu.</target>
@@ -2657,15 +2671,35 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
         <target state="translated">.NET Run Komutu</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="translated">Mevcut hedef çerçeveler:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Derleniyor...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Çalıştırma komutlarını bulmak için {0} hedefini çalıştırma bu proje için başarısız oldu. Hataları ve uyarıları düzeltip yeniden çalıştırın.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="translated">Örnek</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2707,6 +2741,11 @@ The current OutputType is '{2}'.</source>
 Geçerli {1}: '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</source>
@@ -2714,10 +2753,40 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'ün çalıştırılacağını belirtin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="translated">Yukarı ve aşağı hareket ederek daha fazla çerçeve görüntüleyin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Uyarı NETSDK1174: --project için -p kısaltması kullanımdan kaldırıldı. Lütfen --project kullanın.</target>
         <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="translated">Aramak için yazın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="translated">Çalıştırmak için hedef çerçeveyi seçin:</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
@@ -2949,6 +3018,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
       <trans-unit id="SolutionArgumentName">
         <source>SLN_FILE</source>
         <target state="translated">SLN_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
@@ -3471,9 +3545,9 @@ and the corresponding package Ids for installed tools using the command
 'dotnet tool list'.</source>
         <target state="translated">'{0}' paket kimliğine sahip araç bulunamadı.
 
-Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen
-paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve
-karşılık gelen paket kimliklerini bulmak için
+Araçlar, aracı çağırırken kullandığınız araç adından farklı olabilen 
+paket kimlikleri kullanılarak kaldırılır. Yüklü araçların araç adlarını ve 
+karşılık gelen paket kimliklerini bulmak için 
 'dotnet tool list' komutunu kullanabilirsiniz.</target>
         <note />
       </trans-unit>
@@ -3630,11 +3704,6 @@ karşılık gelen paket kimliklerini bulmak için
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
         <target state="translated">İş yükü yükleme modu {0} kullanacak şekilde başarıyla güncelleştirildi.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Kullanılabilir bir başlatma profili bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="Usage">
@@ -4008,6 +4077,11 @@ Bir değeri görüntülemek için, bir değer sağlamadan ilgili komut satırı 
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Görüntülenecek bir iş yükü sürümü veya bir veya daha fazla iş yükü ve bunların '@' karakteriyle birleştirilen sürümleri.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">İş yükü kümesi {0} sürümü, paket yönetimi tarafından kaldırılmış olabilecek eksik bildirimlere sahip. Bunu düzeltmek için "dotnet workload repair" komutunu çalıştırın.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>

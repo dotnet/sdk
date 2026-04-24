@@ -19,13 +19,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunHelpOnTestProject_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CliConstants.HelpOptionKey, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, "-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(@"Extension Options:\s+--[\s\S]*", result.StdOut);
                 Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
@@ -41,15 +41,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunHelpOnMultipleTestProjects_ShouldReturnExitCodeSuccess(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
                 .WithSource();
             testInstance.WithTargetFramework($"{DotnetVersionHelper.GetPreviousDotnetVersion()}", "TestProject");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CliConstants.HelpOptionKey, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, "-c", configuration);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 Assert.Matches(@"Extension Options:\s+--[\s\S]*", result.StdOut);
                 Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
@@ -68,26 +68,22 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunHelpCommand_ShouldNotShowDuplicateOptions(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CliConstants.HelpOptionKey, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, "-c", configuration);
 
             // Parse the help output to extract option names
             var helpOutput = result.StdOut;
 
-            // Check for specific options we care about
-            string outputOptionName = MicrosoftTestingPlatformOptions.OutputOption.Name; // --output
-            string noAnsiOptionName = MicrosoftTestingPlatformOptions.NoAnsiOption.Name; // --no-ansi
-
             // Count occurrences of each option in the help output
-            int outputOptionCount = CountOptionOccurrences(helpOutput!, outputOptionName);
-            int noAnsiOptionCount = CountOptionOccurrences(helpOutput!, noAnsiOptionName);
+            int outputOptionCount = CountOptionOccurrences(helpOutput!, "--output");
+            int noAnsiOptionCount = CountOptionOccurrences(helpOutput!, "--no-ansi");
 
             // Assert that each option appears only once
-            outputOptionCount.Should().Be(1, $"Option '{outputOptionName}' should not appear more than once in help output");
-            noAnsiOptionCount.Should().Be(1, $"Option '{noAnsiOptionName}' should not appear more than once in help output");
+            outputOptionCount.Should().Be(1, $"Option '--output' should not appear more than once in help output");
+            noAnsiOptionCount.Should().Be(1, $"Option '--no-ansi' should not appear more than once in help output");
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }

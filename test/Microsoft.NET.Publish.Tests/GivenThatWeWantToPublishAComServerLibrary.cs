@@ -12,7 +12,7 @@ namespace Microsoft.NET.Publish.Tests
         [WindowsOnlyFact]
         public void It_publishes_comhost_to_the_publish_folder()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource();
 

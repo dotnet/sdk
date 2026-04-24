@@ -3,12 +3,13 @@
 
 #nullable disable
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
 using Microsoft.NET.Sdk.Razor.Tool.Json;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
@@ -189,7 +190,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             {
                 b.RegisterExtensions();
 
-                b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
+                b.Features.Add(new StaticTagHelperFeature(tagHelpers));
 
                 b.ConfigureCodeGenerationOptions(b =>
                 {
@@ -296,22 +297,18 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             return project;
         }
 
-        private IReadOnlyList<TagHelperDescriptor> GetTagHelpers(string tagHelperManifest)
+        private static TagHelperCollection GetTagHelpers(string tagHelperManifest)
         {
             if (!File.Exists(tagHelperManifest))
             {
-                return Array.Empty<TagHelperDescriptor>();
+                return [];
             }
 
             using (var stream = File.OpenRead(tagHelperManifest))
             {
-                var reader = new JsonTextReader(new StreamReader(stream));
+                var tagHelpers = JsonSerializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(stream, TagHelperDescriptorJsonConverter.SerializerOptions);
 
-                var serializer = new JsonSerializer();
-                serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
-
-                var descriptors = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
-                return descriptors;
+                return TagHelperCollection.Create(tagHelpers);
             }
         }
 
@@ -429,11 +426,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             public string CssScope { get; }
         }
 
-        private class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
+        private sealed class StaticTagHelperFeature(TagHelperCollection tagHelpers) : RazorEngineFeatureBase, ITagHelperFeature
         {
-            public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
-
-            public IReadOnlyList<TagHelperDescriptor> GetDescriptors(CancellationToken cancellationToken) => TagHelpers;
+            public TagHelperCollection GetTagHelpers(CancellationToken cancellationToken) => tagHelpers;
         }
     }
 }

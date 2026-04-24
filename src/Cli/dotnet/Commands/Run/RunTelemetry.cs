@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
-using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -36,7 +36,7 @@ internal static class RunTelemetry
         string projectIdentifier,
         string? launchProfile = null,
         bool noLaunchProfile = false,
-        ProjectLaunchSettingsModel? launchSettings = null,
+        LaunchProfile? launchSettings = null,
         int sdkCount = 1,
         int packageReferenceCount = 0,
         int projectReferenceCount = 0,
@@ -48,13 +48,9 @@ internal static class RunTelemetry
         {
             ["app_type"] = isFileBased ? "file_based" : "project_based",
             ["project_id"] = projectIdentifier,
-        };
-
-        var measurements = new Dictionary<string, double>
-        {
-            ["sdk_count"] = sdkCount,
-            ["package_reference_count"] = packageReferenceCount,
-            ["project_reference_count"] = projectReferenceCount,
+            ["sdk_count"] = sdkCount.ToString(),
+            ["package_reference_count"] = packageReferenceCount.ToString(),
+            ["project_reference_count"] = projectReferenceCount.ToString(),
         };
 
         // Launch profile telemetry
@@ -80,7 +76,7 @@ internal static class RunTelemetry
         // File-based app specific telemetry
         if (isFileBased)
         {
-            measurements["additional_properties_count"] = additionalPropertiesCount;
+            properties["additional_properties_count"] = additionalPropertiesCount.ToString();
             if (usedMSBuild.HasValue)
             {
                 properties["used_msbuild"] = usedMSBuild.Value ? "true" : "false";
@@ -91,7 +87,7 @@ internal static class RunTelemetry
             }
         }
 
-        TelemetryEventEntry.TrackEvent(RunEventName, properties, measurements);
+        TelemetryEventEntry.TrackEvent(RunEventName, properties);
     }
 
     /// <summary>

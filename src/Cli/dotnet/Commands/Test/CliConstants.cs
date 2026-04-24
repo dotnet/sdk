@@ -13,9 +13,6 @@ internal static class CliConstants
 
     public const string SemiColon = ";";
 
-    public const string VSTest = "VSTest";
-    public const string MicrosoftTestingPlatform = "Microsoft.Testing.Platform";
-
     public static readonly string[] SolutionExtensions = [".sln", ".slnx", ".slnf"];
 
     public const string ProjectExtensionPattern = "*.*proj";
@@ -26,8 +23,6 @@ internal static class CliConstants
     public const string BinLogFileName = "msbuild.binlog";
 
     public const string DLLExtension = ".dll";
-
-    public const string MTPTarget = "_MTPBuild";
 
     public const string TestTraceLoggingEnvVar = "DOTNET_CLI_TEST_TRACEFILE";
 }
@@ -76,6 +71,8 @@ internal static class ProjectProperties
     internal const string IsTestProject = "IsTestProject";
     internal const string TargetFramework = "TargetFramework";
     internal const string TargetFrameworks = "TargetFrameworks";
+    internal const string Configuration = "Configuration";
+    internal const string Platform = "Platform";
     internal const string TargetPath = "TargetPath";
     internal const string ProjectFullPath = "MSBuildProjectFullPath";
     internal const string RunCommand = "RunCommand";

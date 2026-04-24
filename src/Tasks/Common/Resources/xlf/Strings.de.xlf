@@ -374,6 +374,11 @@
         <target state="translated">NETSDK1156: Die ausführbare .NET-Hostdatei "{0}" wurde nicht gefunden.</target>
         <note>{StrBegins="NETSDK1156: "}</note>
       </trans-unit>
+      <trans-unit id="DotnetToolDoesNotSupportCustomNuspecFile">
+        <source>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</source>
+        <target state="new">NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</target>
+        <note>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</note>
+      </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
         <source>NETSDK1055: DotnetTool does not support target framework lower than netcoreapp2.1.</source>
         <target state="translated">NETSDK1055: DotnetTool unterstützt kein Zielframework vor netcoreapp2.1.</target>
@@ -663,7 +668,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="Net10NotCompatibleWithVS17">
         <source>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</source>
-        <target state="new">NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</target>
+        <target state="translated">NETSDK1233: Die Ausrichtung auf .NET 10.0 oder höher in Visual Studio 2022 17.14 wird nicht unterstützt.</target>
         <note>{StrBegins="NETSDK1233: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
@@ -851,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: Assemblys können nicht für Leistung optimiert werden: Es wurde kein gültiges Runtimepaket gefunden. Legen Sie entweder die PublishReadyToRun-Eigenschaft auf FALSE fest, oder verwenden Sie beim Veröffentlichen einen unterstützten Runtimebezeichner. Wenn Sie .NET 6 oder höher verwenden, stellen Sie sicher, dass Sie Pakete wiederherstellen, bei denen die PublishReadyToRun-Eigenschaft auf TRUE festgelegt ist.</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: Die Leistungsoptimierung von Assemblys wird für die ausgewählte Zielplattform oder -architektur nicht unterstützt. Überprüfen Sie, ob Sie einen unterstützten Runtimebezeichner verwenden, oder legen Sie die PublishReadyToRun-Eigenschaft auf FALSE fest.</target>
@@ -860,6 +870,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1103: RollForward setting is only supported on .NET Core 3.0 or higher.</source>
         <target state="translated">NETSDK1103: Die RollForward-Einstellung wird nur für .NET Core 3.0 oder höher unterstützt.</target>
         <note>{StrBegins="NETSDK1103: "}</note>
+      </trans-unit>
+      <trans-unit id="RoslynCompilerTypeFrameworkIsDeprecated">
+        <source>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</source>
+        <target state="translated">NETSDK1234: RoslynCompilerType „Framework“ ist veraltet und wird in einer zukünftigen Version entfernt. Weitere Informationen finden Sie unter {0}.</target>
+        <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
@@ -905,6 +920,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</source>
         <target state="translated">NETSDK1179: Eine der Optionen „--self-contained“ oder „--no-self-contained“ ist erforderlich, wenn „--runtime“ verwendet wird.</target>
         <note>{StrBegins="NETSDK1179: "}{Locked="--self-contained"}{Locked="--no-self-contained"}{Locked="--runtime"}</note>
+      </trans-unit>
+      <trans-unit id="SingleFileBundleUnexpectedExclusion">
+        <source>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</source>
+        <target state="new">NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</target>
+        <note>{StrBegins="NETSDK1236: "}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
         <source>NETSDK1048: 'AdditionalProbingPaths' were specified for GenerateRuntimeConfigurationFiles, but are being skipped because 'RuntimeConfigDevPath' is empty.</source>
@@ -1042,11 +1062,6 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</source>
         <target state="translated">NETSDK1200: Wenn UseArtifactsPath auf TRUE und ArtifactsPath nicht festgelegt ist, muss eine Directory.Build.props-Datei vorhanden sein, um zu bestimmen, wo sich der Ordner "artifacts" befinden soll.</target>
         <note>{StrBegins="NETSDK1200: "}</note>
-      </trans-unit>
-      <trans-unit id="UnsupportedVisualStudioVersion">
-        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
-        <target state="translated">NETSDK1209: Die aktuelle Visual Studio-Version unterstützt {0} {1} nicht als Ziel. Geben Sie entweder {0} {2} oder niedriger als Ziel ein, oder verwenden Sie eine Version von Visual Studio {3} oder höher.</target>
-        <note>{StrBegins="NETSDK1209: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
         <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>

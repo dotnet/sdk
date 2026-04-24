@@ -1,74 +1,125 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace EndToEnd.Tests
-{
-    public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
-    {
-        [Fact]
-        public void ItHasExpectedDependencies()
-        {
-            var installerFile = Environment.GetEnvironmentVariable("SDK_INSTALLER_FILE");
-            if (string.IsNullOrEmpty(installerFile))
-            {
-                return;
-            }
+using System.Runtime.InteropServices;
+using EndToEnd.Tests.Utilities;
 
-            var ext = Path.GetExtension(installerFile);
-            switch (ext)
-            {
-                case ".deb":
-                    DebianPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(installerFile);
-                    return;
-                case ".rpm":
-                    RpmPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(installerFile);
-                    return;
-            }
+namespace EndToEnd.Tests;
+
+public class GivenDotNetLinuxInstallers(ITestOutputHelper log) : SdkTest(log)
+{
+    private static readonly string[] ExcludedDebSuffixes = ["-newkey"];
+    private static readonly string[] ExcludedRpmSuffixes = ["-newkey", "-azl"];
+
+    [Fact]
+    public void ItHasExpectedDependencies()
+    {
+        var installerFile = Environment.GetEnvironmentVariable("SDK_INSTALLER_FILE");
+        if (string.IsNullOrEmpty(installerFile))
+        {
+            return;
         }
 
-        private void DebianPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(string installerFile) =>
-            // Example output:
-
-            // $ dpkg --info dotnet-sdk-2.1.105-ubuntu-x64.deb
-
-            // new debian package, version 2.0.
-            // size 75660448 bytes: control archive=29107 bytes.
-            //     717 bytes,    11 lines      control
-            // 123707 bytes,  1004 lines      md5sums
-            //     1710 bytes,    28 lines   *  postinst             #!/usr/bin/env
-            // Package: dotnet-sdk-2.1.104
-            // Version: 2.1.104-1
-            // Architecture: amd64
-            // Maintainer: Microsoft <dotnetcore@microsoft.com>
-            // Installed-Size: 201119
-            // Depends: dotnet-runtime-2.0.6, aspnetcore-store-2.0.6
-            // Section: devel
-            // Priority: standard
-            // Homepage: https://dotnet.github.io/core
-            // Description: Microsoft .NET Core SDK - 2.1.104
-
-            new RunExeCommand(Log, "dpkg")
-                .Execute("--info", installerFile)
-                .Should().Pass()
-                    .And.HaveStdOutMatching(@"Depends:.*\s?dotnet-runtime-\d+(\.\d+){2}")
-                    .And.HaveStdOutMatching(@"Depends:.*\s?aspnetcore-store-\d+(\.\d+){2}");
-
-        private void RpmPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(string installerFile) =>
-            // Example output:
-
-            // $ rpm -qpR dotnet-sdk-2.1.105-rhel-x64.rpm
-
-            // dotnet-runtime-2.0.7 >= 2.0.7
-            // aspnetcore-store-2.0.7 >= 2.0.7
-            // /bin/sh
-            // /bin/sh
-            // rpmlib(PayloadFilesHavePrefix) <= 4.0-1
-            // rpmlib(CompressedFileNames) <= 3.0.4-1
-
-            new RunExeCommand(Log, "rpm")
-                .Execute("-qpR", installerFile)
-                .Should().Pass()
-                    .And.HaveStdOutMatching(@"dotnet-runtime-\d+(\.\d+){2} >= \d+(\.\d+){2}")
-                    .And.HaveStdOutMatching(@"aspnetcore-store-\d+(\.\d+){2} >= \d+(\.\d+){2}");
+        var ext = Path.GetExtension(installerFile);
+        switch (ext)
+        {
+            case ".deb":
+                DebianPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(installerFile);
+                return;
+            case ".rpm":
+                RpmPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(installerFile);
+                return;
+        }
     }
+
+    private void DebianPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(string installerFile) =>
+        // Example output:
+
+        // $ dpkg --info dotnet-sdk-2.1.105-ubuntu-x64.deb
+
+        // new debian package, version 2.0.
+        // size 75660448 bytes: control archive=29107 bytes.
+        //     717 bytes,    11 lines      control
+        // 123707 bytes,  1004 lines      md5sums
+        //     1710 bytes,    28 lines   *  postinst             #!/usr/bin/env
+        // Package: dotnet-sdk-2.1.104
+        // Version: 2.1.104-1
+        // Architecture: amd64
+        // Maintainer: Microsoft <dotnetcore@microsoft.com>
+        // Installed-Size: 201119
+        // Depends: dotnet-runtime-2.0.6, aspnetcore-store-2.0.6
+        // Section: devel
+        // Priority: standard
+        // Homepage: https://dotnet.github.io/core
+        // Description: Microsoft .NET Core SDK - 2.1.104
+
+        new RunExeCommand(Log, "dpkg")
+            .Execute("--info", installerFile)
+            .Should().Pass()
+                .And.HaveStdOutMatching(@"Depends:.*\s?dotnet-runtime-\d+(\.\d+){2}")
+                .And.HaveStdOutMatching(@"Depends:.*\s?aspnetcore-store-\d+(\.\d+){2}");
+
+    private void RpmPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(string installerFile) =>
+        // Example output:
+
+        // $ rpm -qpR dotnet-sdk-2.1.105-rhel-x64.rpm
+
+        // dotnet-runtime-2.0.7 >= 2.0.7
+        // aspnetcore-store-2.0.7 >= 2.0.7
+        // /bin/sh
+        // /bin/sh
+        // rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+        // rpmlib(CompressedFileNames) <= 3.0.4-1
+
+        new RunExeCommand(Log, "rpm")
+            .Execute("-qpR", installerFile)
+            .Should().Pass()
+                .And.HaveStdOutMatching(@"dotnet-runtime-\d+(\.\d+){2} >= \d+(\.\d+){2}")
+                .And.HaveStdOutMatching(@"aspnetcore-store-\d+(\.\d+){2} >= \d+(\.\d+){2}");
+
+    [Fact]
+    public void DebPackagePreservesSymbolicLinks() =>
+        FileLinkHelpers.VerifyInstallerSymlinks(
+            OSPlatform.Linux,
+            "dotnet-sdk-*.deb",
+            ExcludedDebSuffixes,
+            ExtractDebPackage,
+            TestAssetsManager,
+            Log);
+
+    private void ExtractDebPackage(string installerPath, string tempDir)
+    {
+        // Extract the deb package (ar archive containing data.tar.gz)
+        var dataDir = Path.Combine(tempDir, "data");
+        Directory.CreateDirectory(dataDir);
+
+        new RunExeCommand(Log, "ar")
+            .WithWorkingDirectory(tempDir)
+            .Execute("x", installerPath)
+            .Should().Pass();
+
+        // Find and extract data.tar (could be .gz, .xz, or .zst)
+        var dataTar = Directory.GetFiles(tempDir, "data.tar*").FirstOrDefault();
+        if (dataTar != null)
+        {
+            FileLinkHelpers.ExtractTar(dataTar, dataDir, Log);
+        }
+    }
+
+    [Fact]
+    public void RpmPackagePreservesSymbolicLinks() =>
+        FileLinkHelpers.VerifyInstallerSymlinks(
+            OSPlatform.Linux,
+            "dotnet-sdk-*.rpm",
+            ExcludedRpmSuffixes,
+            ExtractRpmPackage,
+            TestAssetsManager,
+            Log);
+
+    private void ExtractRpmPackage(string installerPath, string tempDir) =>
+        // Extract rpm using rpm2cpio and cpio
+        new RunExeCommand(Log, "sh")
+            .WithWorkingDirectory(tempDir)
+            .Execute("-c", $"rpm2cpio '{installerPath}' | cpio -idmv")
+            .Should().Pass();
 }

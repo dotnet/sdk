@@ -1,14 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
@@ -64,16 +65,33 @@ internal abstract class RunApiInput
 
         public override RunApiOutput Execute()
         {
-            var sourceFile = SourceFile.Load(EntryPointFileFullPath);
-            var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
-            string artifactsPath = ArtifactsPath ?? VirtualProjectBuildingCommand.GetArtifactsPath(EntryPointFileFullPath);
+            var builder = new VirtualProjectBuilder(
+                entryPointFileFullPath: EntryPointFileFullPath,
+                targetFramework: VirtualProjectBuildingCommand.TargetFramework,
+                artifactsPath: ArtifactsPath);
+
+            var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
+
+            builder.CreateProjectInstance(
+                new ProjectCollection(),
+                errorReporter,
+                out var project,
+                out var evaluatedDirectives,
+                validateAllDirectives: true);
 
             var csprojWriter = new StringWriter();
-            VirtualProjectBuildingCommand.WriteProjectFile(csprojWriter, directives, isVirtualProject: true, targetFilePath: EntryPointFileFullPath, artifactsPath: artifactsPath);
+            VirtualProjectBuilder.WriteProjectFile(
+                csprojWriter,
+                evaluatedDirectives,
+                VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework),
+                isVirtualProject: true,
+                entryPointFilePath: EntryPointFileFullPath,
+                artifactsPath: builder.ArtifactsPath);
 
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
+                ProjectPath = project.FullPath,
                 Diagnostics = diagnostics.ToImmutableArray(),
             };
         }
@@ -88,11 +106,8 @@ internal abstract class RunApiInput
         {
             var msbuildArgs = MSBuildArgs.FromVerbosity(VerbosityOptions.quiet);
             var buildCommand = new VirtualProjectBuildingCommand(
-                entryPointFileFullPath: EntryPointFileFullPath,
-                msbuildArgs: msbuildArgs)
-            {
-                CustomArtifactsPath = ArtifactsPath,
-            };
+                EntryPointFileFullPath, msbuildArgs, artifactsPath: ArtifactsPath);
+
             buildCommand.MarkArtifactsFolderUsed();
 
             var runCommand = new RunCommand(
@@ -102,18 +117,18 @@ internal abstract class RunApiInput
                 launchProfile: null,
                 noLaunchProfile: false,
                 noLaunchProfileArguments: false,
+                device: null,
+                listDevices: false,
                 noRestore: false,
                 noCache: false,
                 interactive: false,
                 msbuildArgs: msbuildArgs,
                 applicationArgs: [],
                 readCodeFromStdin: false,
-                environmentVariables: ReadOnlyDictionary<string, string>.Empty,
-                msbuildRestoreProperties: ReadOnlyDictionary<string, string>.Empty);
+                environmentVariables: ReadOnlyDictionary<string, string>.Empty);
 
-            runCommand.TryGetLaunchProfileSettingsIfNeeded(out var launchSettings);
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(buildCommand.CreateProjectInstance, cachedRunProperties: null);
-            runCommand.ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
+            var result = runCommand.ReadLaunchProfileSettings();
+            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, logger: null);
 
             return new RunApiOutput.RunCommand
             {
@@ -149,6 +164,7 @@ internal abstract class RunApiOutput
     public sealed class Project : RunApiOutput
     {
         public required string Content { get; init; }
+        public required string ProjectPath { get; init; }
         public required ImmutableArray<SimpleDiagnostic> Diagnostics { get; init; }
     }
 

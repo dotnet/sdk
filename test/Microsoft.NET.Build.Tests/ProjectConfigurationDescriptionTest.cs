@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
                 IsSdkProject = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProj);
+            var testAsset = TestAssetsManager.CreateTestProject(testProj);
             File.WriteAllText(Path.Combine(testAsset.Path, testProj.Name, $"{testProj.Name}.cs"), @"
             using System;
             class Program
