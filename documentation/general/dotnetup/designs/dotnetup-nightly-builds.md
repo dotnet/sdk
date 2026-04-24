@@ -326,8 +326,9 @@ version. This package isn't meant for direct consumption — it's an internal tr
 but it provides a reliable index of available daily builds.
 
 - Query the NuGet V3 feed for available versions of `Microsoft.NET.Sdk` (for SDK daily builds)
-- For runtime daily builds, use a different transport package (TBD — need to identify the right
-  package name per runtime component)
+- For runtime daily builds, use a runtime transport package such as
+  `Microsoft.NETCore.App.Runtime.{rid}`. With the VMR, all components version together, so any
+  VMR-produced package can serve as the version index for a given daily build.
 - Filter versions to the requested channel scope (e.g., `10.0/daily` → versions matching `10.0.*`)
 - Present available versions in a list, sorted by date/version
 - In interactive mode, offer a picker to select and install a specific daily version
@@ -342,9 +343,10 @@ but it provides a reliable index of available daily builds.
    a different feed URL. The `dotnet-install` scripts support `--azure-feed` for this. If added,
    this should be treated as an advanced/untrusted mode.
 
-3. **Runtime transport package**: For SDK daily builds, `Microsoft.NET.Sdk` is the transport
-   package to query for available versions. What is the equivalent package for runtime components
-   (e.g., `Microsoft.NETCore.App`, `Microsoft.AspNetCore.App`)?
+3. **Runtime transport package**: With the VMR, all components version together, so any
+   VMR-produced package can serve as the version index. A candidate like
+   `Microsoft.NETCore.App.Runtime.{rid}` would work — the specific choice just needs to be
+   a package reliably published for every daily build.
 
 4. **Naming**: Should we use "daily" throughout, or offer "nightly" as a user-facing alias?
    User research / PM input would be valuable here.
