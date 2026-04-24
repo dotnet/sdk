@@ -269,9 +269,24 @@ companion file instead of from the release manifest.
 
 ### Archive signatures
 
-Daily build archives are signed with the same Authenticode/codesign signatures as release builds
-(the signing happens in the build pipeline). The archive-level verification (SHA-512) is the same.
-No additional signature verification infrastructure is needed for daily builds.
+Daily build archives are **not** Authenticode-signed. The .NET build pipeline has a quality
+progression: `daily → signed → validated → preview → ga`. Code signing happens at the "signed"
+quality level and above. Daily builds are the lowest quality — they are produced by CI on every
+commit or daily schedule and have not passed through the signing gate.
+
+This means:
+- Windows `.exe` installers and binaries inside daily archives may not pass Authenticode trust checks
+- macOS archives may not be codesigned/notarized
+- Users installing daily builds are trusting the feed and SHA-512 hash only
+
+dotnetup should clearly communicate this to users when installing from daily channels:
+```
+⚠ Daily builds are not code-signed. Only the SHA-512 hash is verified.
+```
+
+If users need signed pre-release builds, they should use the `signed` quality level instead.
+This raises the question of whether dotnetup should also support `signed` and `validated`
+as channel qualifiers (e.g., `10.0/signed`).
 
 ## Implementation phases
 
@@ -340,3 +355,8 @@ The feasibility depends on what listing/enumeration APIs are available from the 
    `10.0-daily`. The `/` syntax reads naturally ("10.0 slash daily") and mirrors URL path
    structure, but may conflict with file path parsing on some platforms. The `-` syntax is
    simpler but could be confused with prerelease version tags.
+
+9. **Other quality levels**: The .NET build pipeline has quality levels beyond `daily`:
+   `daily → signed → validated → preview → ga`. Should dotnetup support `10.0/signed` or
+   `10.0/validated` channels? `signed` builds are code-signed but not fully validated —
+   they may be useful for users who want pre-release builds with signature verification.
