@@ -322,6 +322,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
             #:include {includePattern}
             {additionalDirectives}
             #:property MyProp1=cs
@@ -350,6 +351,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             """;
 
         File.WriteAllText(Path.Join(srcDir, "A.cs"), $"""
+            #!/usr/bin/env dotnet
             #:include B.cs
             {a}
             """);
@@ -425,6 +427,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             """;
 
         File.WriteAllText(Path.Join(testInstance.Path, "dir1/A.cs"), $"""
+            #!/usr/bin/env dotnet
             #:include dir2/B.cs
             {a}
             """);
@@ -555,6 +558,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:include {glob}.cs
             #:property _Star=*
             {s_programDependingOnUtil}
@@ -613,6 +617,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:include Util.cs
             {s_programDependingOnUtil}
             """);
@@ -703,6 +708,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         var programPath = Path.Join(appDir, "Program.cs");
         var programCode = """
+            #!/usr/bin/env dotnet
             #:include Util.cs
             Console.WriteLine("Program(v1) " + UtilClass.GetMessage());
             """;
@@ -732,6 +738,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:include *.cs
             {s_programDependingOnUtil}
             """);
@@ -788,6 +795,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .And.HaveStdOutContaining("error CS0103");
 
         File.WriteAllText(programPath, $"""
+            #!/usr/bin/env dotnet
             #:property FileBasedProgramsItemMapping=.cs=Compile
             #:include *.cs
             {s_programDependingOnUtil}
