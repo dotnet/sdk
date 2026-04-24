@@ -297,12 +297,15 @@ as channel qualifiers (e.g., `10.0/signed`).
 Changes needed:
 - Extend `UpdateChannel` with `IsDaily` / `BaseChannel` properties for `.../daily` suffix parsing
 - Add `IsValidChannelFormat()` support for `.../daily` channels
-- Create a `DailyBuildVersionResolver` that queries `aka.ms` / `latest.version` files
-- Extend `DotnetArchiveDownloader` with a blob-storage download path that constructs URLs from
-  version strings rather than release manifest entries
-- Add hash fetching from `{url}.sha512` companion files
+- Extend `ChannelVersionResolver.Resolve()` to detect daily channels and query the aka.ms
+  redirect to discover the latest version (the `InstallWorkflow` doesn't need to change —
+  it already calls `Resolve()` and gets back a version)
+- Extend `IArchiveDownloader` / `DotnetArchiveDownloader` to handle versions that aren't in the
+  release manifest — when the channel is daily, construct the download URL from the blob feed
+  and fetch the hash from the `{url}.sha512` companion file instead of the release manifest
+  (the `InstallWorkflow` already calls `DownloadArchiveWithVerification` — it doesn't need
+  to know where the archive comes from)
 - Add host allowlist for blob feed redirect validation
-- Wire daily channel detection through `InstallWorkflow` to use the daily resolver and downloader
 
 ### Phase 2: Specific prerelease version fallback
 
