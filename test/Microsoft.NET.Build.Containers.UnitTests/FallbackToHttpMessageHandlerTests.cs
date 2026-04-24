@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 NullLogger.Instance
             );
             using var httpClient = new HttpClient(handler);
-            var response = await httpClient.GetAsync(uri);
+            var response = await httpClient.GetAsync(uri, TestContext.Current.CancellationToken);
             Assert.Equal(expectedPort, response.RequestMessage?.RequestUri?.Port);
         }
 

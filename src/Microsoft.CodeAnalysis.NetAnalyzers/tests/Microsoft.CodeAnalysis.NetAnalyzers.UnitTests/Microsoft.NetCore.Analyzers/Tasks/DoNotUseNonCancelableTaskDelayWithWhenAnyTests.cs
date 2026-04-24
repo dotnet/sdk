@@ -317,7 +317,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                         Task CreateTask() => Task.CompletedTask;
                     }
                     """,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -337,7 +337,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                         }
                     }
                     """,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -357,7 +357,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                         }
                     }
                     """,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

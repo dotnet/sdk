@@ -74,7 +74,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.Current.CancellationToken);
 
             Assert.NotNull(searchResult);
             Assert.Single(searchResult);
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.Current.CancellationToken);
 
             Assert.NotNull(searchResult);
             Assert.Single(searchResult);
@@ -193,7 +193,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.Current.CancellationToken);
 
             Assert.NotNull(searchResult);
             Assert.Single(searchResult);
@@ -226,7 +226,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.Current.CancellationToken);
 
             Assert.NotNull(searchResult);
             Assert.Single(searchResult);
@@ -259,7 +259,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.Current.CancellationToken);
 
             Assert.NotNull(searchResult);
             Assert.Single(searchResult);
@@ -292,7 +292,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.Current.CancellationToken);
 
             Assert.NotNull(searchResult);
             Assert.Single(searchResult);

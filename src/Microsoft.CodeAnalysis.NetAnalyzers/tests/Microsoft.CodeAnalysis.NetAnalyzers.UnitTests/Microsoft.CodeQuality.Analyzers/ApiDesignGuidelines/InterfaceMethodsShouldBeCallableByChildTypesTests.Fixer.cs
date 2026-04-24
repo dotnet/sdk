@@ -270,7 +270,7 @@ public class ImplementsGeneralThree : IGeneral
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -366,7 +366,7 @@ public sealed class ImplementsGeneral  : IGeneral
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -516,7 +516,7 @@ public sealed class ImplementsGeneralThree : IGeneral
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -876,7 +876,7 @@ End Class
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -948,7 +948,7 @@ End Class
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1064,7 +1064,7 @@ End Class
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

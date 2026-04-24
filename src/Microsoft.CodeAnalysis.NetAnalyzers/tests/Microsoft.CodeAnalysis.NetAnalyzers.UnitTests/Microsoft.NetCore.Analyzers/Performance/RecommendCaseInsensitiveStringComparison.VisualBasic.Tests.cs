@@ -388,7 +388,7 @@ End Class";
                 FixedCode = originalSource
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private async Task VerifyFixVisualBasicAsync(string originalSource, string fixedSource)
@@ -400,7 +400,7 @@ End Class";
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }
