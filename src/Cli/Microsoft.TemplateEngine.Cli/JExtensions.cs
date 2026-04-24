@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 #endif
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -215,6 +216,8 @@ namespace Microsoft.TemplateEngine
             }
         }
 
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Newtonsoft.Json is not used in AOT scenarios in this context.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Newtonsoft.Json is not used in trimmed scenarios in this context.")]
         internal static void WriteObject(this IPhysicalFileSystem fileSystem, string path, object obj)
         {
             using (Stream fileStream = fileSystem.CreateFile(path))

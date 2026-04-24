@@ -49,7 +49,7 @@
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
-    <NewtonsoftJsonPackageVersion>13.0.3</NewtonsoftJsonPackageVersion>
+    <NewtonsoftJsonPackageVersion>13.0.4</NewtonsoftJsonPackageVersion>
     <SystemDataSqlClientPackageVersion>4.8.6</SystemDataSqlClientPackageVersion>
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
     <SystemCommandLineNamingConventionBinderVersion>2.0.0-beta5.25279.2</SystemCommandLineNamingConventionBinderVersion>
@@ -150,8 +150,8 @@
 
     <!--
       Updates to any of these versions will require the updating of that package version in the
-      source-build-reference-packages repo as a text-only package.
-      See https://github.com/dotnet/source-build-reference-packages?tab=readme-ov-file#text-only
+      source-build-assets repo as a text-only package.
+      See https://github.com/dotnet/source-build-assets?tab=readme-ov-file#text-only
     -->
     <MauiWorkloadManifestVersion>11.0.0-preview.1.26102.3</MauiWorkloadManifestVersion>
     <XamarinAndroidWorkloadManifestVersion>36.1.99-preview.1.119</XamarinAndroidWorkloadManifestVersion>
