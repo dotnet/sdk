@@ -325,7 +325,16 @@ SDK build, a `Microsoft.NET.Sdk` transport package is published with a version m
 version. This package isn't meant for direct consumption — it's an internal transport mechanism —
 but it provides a reliable index of available daily builds.
 
-- Query the NuGet V3 feed for available versions of `Microsoft.NET.Sdk` (for SDK daily builds)
+The feed URLs are calculated from the major version, not read from `NuGet.config`. The pattern is:
+```
+https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet{major}-transport/nuget/v3/index.json
+```
+For example, to list .NET 11 daily builds, dotnetup queries the `dotnet11-transport` feed. These
+are public feeds (no authentication required). dotnetup uses the NuGet V3 protocol directly to
+enumerate package versions — it does not shell out to `dotnet nuget` or read project NuGet
+configuration.
+
+- Query the transport feed for available versions of `Microsoft.NET.Sdk` (for SDK daily builds)
 - For runtime daily builds, use a runtime transport package such as
   `Microsoft.NETCore.App.Runtime.{rid}`. With the VMR, all components version together, so any
   VMR-produced package can serve as the version index for a given daily build.
