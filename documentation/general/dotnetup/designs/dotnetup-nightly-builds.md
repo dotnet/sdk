@@ -27,32 +27,52 @@ The `dotnet-install.sh` and `dotnet-install.ps1` scripts use a **quality + chann
 - **Channel**: A version band like `10.0`, `10.0.1xx`, `STS`, `LTS`, or a specific version
 - **Quality**: One of `daily`, `preview`, or `ga` (default)
 
-Quality combined with channel constructs a discovery URL:
+### Version discovery: two mechanisms
+
+The scripts use **two different mechanisms** for discovering versions, tried in order:
+
+#### 1. aka.ms redirect (primary, when quality is specified)
+
+When `--quality` is provided and the version is `latest`, the script constructs an aka.ms URL
+that points directly to the **archive file** (not a version file):
 ```
-https://aka.ms/dotnet/{channel}/{quality}/sdk-productVersion.txt
+https://aka.ms/dotnet/{channel}/{quality}/dotnet-sdk-{os}-{arch}.tar.gz
 ```
 
-This aka.ms redirect resolves to a blob on the primary build feed. The resolved version is then used
-to construct the download URL:
+This aka.ms link returns a 301 redirect to the actual blob storage URL, which embeds the
+resolved version in the path:
 ```
-{feed}/Sdk/{version}/dotnet-sdk-{version}-{os}-{arch}.tar.gz
+https://builds.dotnet.microsoft.com/dotnet/Sdk/{version}/dotnet-sdk-{version}-{os}-{arch}.tar.gz
 ```
 
-### Build feeds
+The script extracts the version from the redirect URL path. This is the **only** mechanism used
+when `--quality` is specified — there is no fallback to `latest.version` files.
 
-Two feeds serve daily builds:
-1. **Primary**: `https://builds.dotnet.microsoft.com/dotnet`
-2. **Fallback**: `https://ci.dot.net/public`
+#### 2. `latest.version` file (legacy fallback, no quality)
 
-### Version discovery
-
-For a given channel and quality, the scripts fetch a `latest.version` file:
+When `--quality` is NOT specified, the script falls back to fetching a version file from the feed:
 ```
 {feed}/Sdk/{channel}/latest.version
 ```
 
-This file contains a single line with the latest version string for that channel
-(e.g., `10.0.100-preview.7.25351.1`).
+This file contains the latest version string. The script then constructs the download URL from
+the resolved version. This mechanism iterates over two feeds:
+1. **Primary**: `https://builds.dotnet.microsoft.com/dotnet`
+2. **Fallback**: `https://ci.dot.net/public`
+
+#### Decision logic
+
+```
+Is version "latest" AND quality specified?
+    → aka.ms redirect (direct to archive, version extracted from redirect URL)
+    → If quality specified and aka.ms fails, ERROR (no fallback)
+
+Is version "latest" AND no quality?
+    → latest.version file from feeds (legacy path)
+
+Is version specific (e.g. "10.0.100-preview.7.25351.1")?
+    → Use version directly, construct download URL from feed
+```
 
 ### Key constraints in the current model
 
@@ -156,11 +176,16 @@ User provides: channel
   └──────────────┘  └──────────────────────┘
 ```
 
-For daily channels, version resolution queries the build feed:
+For daily channels, version resolution uses the aka.ms redirect:
 1. Parse the channel: `10.0/daily` → base channel `10.0`, quality `daily`
-2. Construct the aka.ms URL: `https://aka.ms/dotnet/10.0/daily/sdk-productVersion.txt`
-3. Follow the redirect to get the latest version string
-4. Construct the download URL: `{feed}/Sdk/{version}/dotnet-sdk-{version}-{os}-{arch}.{ext}`
+2. Construct the aka.ms URL: `https://aka.ms/dotnet/10.0/daily/dotnet-sdk-{os}-{arch}.tar.gz`
+3. Follow the redirect (301) to get the actual blob storage URL
+4. Extract the version from the redirect URL path
+5. Use the redirect URL directly as the download URL
+
+This matches how the `dotnet-install` scripts work — the aka.ms link resolves directly to the
+archive, and the version is parsed from the redirect target. No separate version-file fetch is
+needed.
 
 For a specific prerelease version that isn't in the release manifest:
 1. Construct the download URL directly from the version string
