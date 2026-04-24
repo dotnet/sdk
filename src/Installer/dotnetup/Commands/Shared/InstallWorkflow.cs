@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
