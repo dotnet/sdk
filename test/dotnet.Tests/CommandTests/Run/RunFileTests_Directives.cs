@@ -276,6 +276,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             </Project>
             """);
 
+        // Duplicate #:project directives are allowed (MSBuild can handle that).
         File.WriteAllText(filePath, """
             #:project dir/
             #:project dir/
@@ -285,8 +286,8 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
         new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(filePath, 2, FileBasedProgramsResources.DuplicateDirective, "#:project dir/"));
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
 
         File.WriteAllText(filePath, """
             #:project dir/
@@ -294,7 +295,6 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             Console.WriteLine("Hello");
             """);
 
-        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
         new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
@@ -307,7 +307,6 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             Console.WriteLine("Hello");
             """);
 
-        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate project reference
         new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
@@ -574,6 +573,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             }
             """);
 
+        // Duplicate #:ref directives are allowed (MSBuild can handle that).
         File.WriteAllText(filePath, """
             #:ref lib.cs
             #:ref lib.cs
@@ -583,8 +583,8 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
         new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(DirectiveError(filePath, 2, FileBasedProgramsResources.DuplicateDirective, "#:ref lib.cs"));
+            .Should().Pass()
+            .And.HaveStdOut("Hello!");
 
         File.WriteAllText(filePath, """
             #:ref lib.cs
@@ -592,7 +592,6 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             Console.WriteLine(MyLib.Greeter.Greet());
             """);
 
-        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate ref
         new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
@@ -605,7 +604,6 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             Console.WriteLine(MyLib.Greeter.Greet());
             """);
 
-        // https://github.com/dotnet/sdk/issues/51139: we should detect the duplicate ref
         new DotnetCommand(Log, "run", relativeFilePath)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
