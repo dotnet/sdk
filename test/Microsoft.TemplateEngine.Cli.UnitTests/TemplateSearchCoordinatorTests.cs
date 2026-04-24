@@ -16,6 +16,7 @@ using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.Common.Providers;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
@@ -57,6 +58,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 .WithTag("language", "F#");
 #pragma warning restore SA1311 // Static readonly fields should begin with upper-case letter
 #pragma warning restore SA1308 // Variable names should not be prefixed
+
+        [Fact]
+        public void CliHostSearchCacheDataReaderReturnsDefaultForEmptyObject()
+        {
+            var result = CliHostSearchCacheData.Reader(new JsonObject());
+
+            Assert.Same(HostSpecificTemplateData.Default, result);
+        }
 
         [Fact]
         public async Task CacheSearchNameMatchTest()
