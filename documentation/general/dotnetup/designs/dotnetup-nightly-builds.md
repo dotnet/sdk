@@ -18,6 +18,40 @@ from `builds.dotnet.microsoft.com`. dotnetup should provide a first-class experi
 
 See: https://github.com/dotnet/sdk/issues/51097
 
+## Proposed user experience
+
+Daily builds are expressed as **channel names** — no new flags or modes needed. The mental model
+is simple: every install is `dotnetup sdk install <channel>`, and daily channels are just another
+kind of channel alongside `latest`, `preview`, `lts`, etc.
+
+```bash
+# Install the latest daily SDK build
+dotnetup sdk install daily
+
+# Install the latest daily SDK for .NET 10.0
+dotnetup sdk install 10.0-daily
+
+# Install the latest daily SDK for the 10.0.1xx feature band
+dotnetup sdk install 10.0.1xx-daily
+
+# Install a specific daily build by its full version string
+dotnetup sdk install 10.0.100-preview.7.25351.1
+
+# Daily runtime builds follow the same pattern
+dotnetup runtime install 10.0-daily
+```
+
+| Channel | Meaning |
+|---------|---------|
+| `daily` | Latest daily build (latest major version) |
+| `10.0-daily` | Latest daily build for .NET 10.0 |
+| `10.0.1xx-daily` | Latest daily build for the 10.0.1xx feature band |
+
+When the user provides a fully-specified prerelease version (e.g., `10.0.100-preview.7.25351.1`),
+dotnetup first checks the release manifest, then falls back to the daily build feed. This fallback
+only applies to **prerelease** version strings — stable versions not in the manifest produce an
+error.
+
 ## Background: How daily builds work today
 
 ### dotnet-install script model
@@ -105,13 +139,7 @@ research shows it resonates better.
 
 ### Channel syntax
 
-Daily channels use a `-daily` suffix: `{version-scope}-daily`:
-
-| Channel | Meaning |
-|---------|---------|
-| `daily` | Latest daily build (latest major version — see below) |
-| `10.0-daily` | Latest daily build for .NET 10.0 |
-| `10.0.1xx-daily` | Latest daily build for the 10.0.1xx feature band |
+Daily channels use a `-daily` suffix: `{version-scope}-daily`.
 
 This reads naturally as "10.0, daily" — the version scope comes first (what you want),
 then the qualifier (what kind of build). It mirrors how existing channels work: you start
@@ -141,37 +169,6 @@ an explicit version scope (`10.0-daily`), the major version is extracted directl
 | `lts` | (not applicable — daily builds aren't LTS) |
 | `10.0` | `10.0-daily` |
 | `10.0.1xx` | `10.0.1xx-daily` |
-
-### CLI examples
-
-```bash
-# Install the latest daily SDK build
-dotnetup sdk install daily
-
-# Install the latest daily SDK for .NET 10.0
-dotnetup sdk install 10.0-daily
-
-# Install the latest daily SDK for the 10.0.1xx feature band
-dotnetup sdk install 10.0.1xx-daily
-
-# Install a specific daily build by its full version string
-dotnetup sdk install 10.0.100-preview.7.25351.1
-
-# Daily runtime builds follow the same pattern
-dotnetup runtime install 10.0-daily
-```
-
-#### Specific version fallback
-
-When the user provides a fully-specified version with a prerelease tag (e.g.,
-`10.0.100-preview.7.25351.1`), dotnetup should:
-1. First, check the release manifest (it may be an officially published preview)
-2. If not found in the release manifest, attempt to download from the daily build feed
-
-**Important constraint**: blob-feed fallback should only be attempted for **prerelease** version
-strings (versions containing a `-` prerelease tag). Stable version strings like `10.0.100` that
-aren't in the release manifest should produce a clear "version not found" error rather than probing
-blob storage — this avoids confusing behavior for typos like `10.0.999`.
 
 ### Version resolution
 
