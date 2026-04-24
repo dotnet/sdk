@@ -31,6 +31,7 @@
     <Compile Include="..\dotnet\Program.cs" Link="Program.cs" />
     <Compile Include="..\dotnet\CommandLineInfo.cs" Link="CommandLineInfo.cs" />
     <Compile Include="..\dotnet\Parser.cs" Link="Parser.cs" />
+    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup>
