@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var settingsFile = Path.Combine(_helper.CreateTemporaryFolder(), "settings.json");
             using var globalSettings1 = new GlobalSettings(envSettings, settingsFile);
             using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
-            var disposable = await globalSettings1.LockAsync(default);
+            var disposable = await globalSettings1.LockAsync(TestContext.Current.CancellationToken);
             bool exceptionThrown = false;
             using var cts = new CancellationTokenSource(50);
             try
@@ -64,15 +64,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     // This handler may fire after globalSettings2 is disposed at end of test.
                 }
             };
-            var mutex = await globalSettings1.LockAsync(default);
+            var mutex = await globalSettings1.LockAsync(TestContext.Current.CancellationToken);
             var newData = new TemplatePackageData(
                 Guid.NewGuid(),
                 "Hi",
                 DateTime.UtcNow,
                 new Dictionary<string, string>() { { "a", "b" } });
-            await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default);
+            await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, TestContext.Current.CancellationToken);
             mutex.Dispose();
-            var timeoutTask = Task.Delay(10000);
+            var timeoutTask = Task.Delay(10000, TestContext.Current.CancellationToken);
             var firstFinishedTask = await Task.WhenAny(timeoutTask, taskSource.Task);
             Assert.Equal(taskSource.Task, firstFinishedTask);
 
@@ -92,14 +92,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             #region Open1AndPopulateAndSave
 
-            using (await globalSettings1.LockAsync(default))
+            using (await globalSettings1.LockAsync(TestContext.Current.CancellationToken))
             {
                 var newData = new TemplatePackageData(
                 Guid.NewGuid(),
                 "Hi",
                 DateTime.UtcNow,
                 new Dictionary<string, string>() { { "a", "b" } });
-                await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default);
+                await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, TestContext.Current.CancellationToken);
             }
 
             #endregion Open1AndPopulateAndSave
@@ -107,15 +107,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             #region Open2LoadAndLock
 
             using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
-            Assert.Equal((await globalSettings1.GetInstalledTemplatePackagesAsync(default))[0].InstallerId, (await globalSettings2.GetInstalledTemplatePackagesAsync(default))[0].InstallerId);
-            var mutex2 = await globalSettings2.LockAsync(default);
+            Assert.Equal((await globalSettings1.GetInstalledTemplatePackagesAsync(TestContext.Current.CancellationToken))[0].InstallerId, (await globalSettings2.GetInstalledTemplatePackagesAsync(TestContext.Current.CancellationToken))[0].InstallerId);
+            var mutex2 = await globalSettings2.LockAsync(TestContext.Current.CancellationToken);
 
             #endregion Open2LoadAndLock
 
             #region Open3Load
 
             using var globalSettings3 = new GlobalSettings(envSettings, settingsFile);
-            Assert.Equal((await globalSettings1.GetInstalledTemplatePackagesAsync(default))[0].InstallerId, (await globalSettings3.GetInstalledTemplatePackagesAsync(default))[0].InstallerId);
+            Assert.Equal((await globalSettings1.GetInstalledTemplatePackagesAsync(TestContext.Current.CancellationToken))[0].InstallerId, (await globalSettings3.GetInstalledTemplatePackagesAsync(TestContext.Current.CancellationToken))[0].InstallerId);
 
             #endregion Open3Load
 
