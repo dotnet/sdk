@@ -399,7 +399,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [Fact]
-        public void ClearsAssetGroupsOnFrameworkAssets()
+        public void PreservesAssetGroupsOnFrameworkAssets()
         {
             var errorMessages = new List<string>();
             var buildEngine = new Mock<IBuildEngine>();
@@ -423,11 +423,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Act
             var result = task.Execute();
 
-            // Assert
+            // Assert — groups are preserved here so FilterByGroup can evaluate them;
+            // clearing happens later during MaterializeFrameworkAsset.
             result.Should().Be(true);
             task.StaticWebAssets.Should().HaveCount(1);
             task.StaticWebAssets[0].GetMetadata("SourceType").Should().Be("Framework");
-            task.StaticWebAssets[0].GetMetadata("AssetGroups").Should().BeEmpty();
+            task.StaticWebAssets[0].GetMetadata("AssetGroups").Should().Be("MyGroup");
         }
 
         private static ITaskItem CreateCandidate(

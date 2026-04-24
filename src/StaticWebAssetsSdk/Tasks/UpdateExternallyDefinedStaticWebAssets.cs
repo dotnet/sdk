@@ -58,24 +58,36 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
 
         var fingerprintExpressions = CreateFingerprintExpressions(FingerprintInferenceExpressions);
 
+        // Filter by group FIRST so that framework assets tagged with groups that the consuming
+        // project doesn't accept are excluded before materialization.
+        var (filteredAssets, excludedAssetFiles) = StaticWebAsset.FilterByGroup(assets, groupLookup, skipDeferred: true);
+
+        // Rebuild the assets array from filtered results for subsequent processing.
+        // Also build a set to identify which original input items survived filtering.
+        var filteredSet = new HashSet<string>(filteredAssets.Select(a => a.Identity), OSPath.PathComparer);
+
         var assetsWithoutEndpoints = new List<StaticWebAsset>();
         var originalFrameworkAssetItems = new List<ITaskItem>();
         var assetMapping = new Dictionary<string, (string NewIdentity, string OldBasePath)>(OSPath.PathComparer);
 
-        for (var i = 0; i < assets.Length; i++)
+        for (var i = 0; i < filteredAssets.Count; i++)
         {
-            var asset = assets[i];
+            var asset = filteredAssets[i];
 
             // Materialize framework assets from P2P references.
             if (StaticWebAsset.SourceTypes.IsFramework(asset.SourceType))
             {
-                // Keep the original input task item before materialization mutates the StaticWebAsset.
-                originalFrameworkAssetItems.Add(Assets[i]);
+                // Find the original task item that corresponds to this filtered asset.
+                var originalIndex = Array.FindIndex(assets, a => OSPath.PathComparer.Equals(a.Identity, asset.Identity));
+                if (originalIndex >= 0)
+                {
+                    originalFrameworkAssetItems.Add(Assets[originalIndex]);
+                }
                 var (materialized, oldIdentity, oldBasePath) = StaticWebAsset.MaterializeFrameworkAsset(
                     asset, IntermediateOutputPath, ProjectPackageId, ProjectBasePath, Log);
                 if (materialized != null)
                 {
-                    assets[i] = materialized;
+                    filteredAssets[i] = materialized;
                     assetMapping[oldIdentity] = (materialized.Identity, oldBasePath);
                 }
                 continue;
@@ -99,9 +111,9 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
         // Update RelatedAsset on compressed/alternative assets that reference materialized framework assets.
         if (assetMapping.Count > 0)
         {
-            for (var i = 0; i < assets.Length; i++)
+            for (var i = 0; i < filteredAssets.Count; i++)
             {
-                var asset = assets[i];
+                var asset = filteredAssets[i];
                 if (!string.IsNullOrEmpty(asset.RelatedAsset) &&
                     assetMapping.TryGetValue(asset.RelatedAsset, out var mapping))
                 {
@@ -109,8 +121,6 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
                 }
             }
         }
-
-        var (filteredAssets, excludedAssetFiles) = StaticWebAsset.FilterByGroup(assets, groupLookup, skipDeferred: true);
 
         UpdatedAssets = StaticWebAsset.ToTaskItems(filteredAssets);
 
