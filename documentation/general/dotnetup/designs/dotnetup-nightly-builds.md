@@ -109,13 +109,30 @@ Daily channels use a suffix pattern `{version-scope}/daily` or `{version-scope}-
 
 | Channel | Meaning |
 |---------|---------|
-| `daily` | Latest daily build (latest major version) |
+| `daily` | Latest daily build (latest major version — see below) |
 | `10.0/daily` | Latest daily build for .NET 10.0 |
 | `10.0.1xx/daily` | Latest daily build for the 10.0.1xx feature band |
 
 This reads naturally as "10.0, daily" — the version scope comes first (what you want),
 then the qualifier (what kind of build). It mirrors how existing channels work: you start
 with the version scope and optionally narrow it.
+
+#### Resolving bare `daily` to a major version
+
+When the user specifies `daily` without a version scope, dotnetup needs to determine which major
+version to target. The approach:
+
+1. Look up the latest major version in the release manifest (e.g., 10)
+2. Probe the `dotnet{major+1}-transport` feed (e.g., `dotnet11-transport`) — if it exists and has
+   matching packages, use major+1 as the daily major version
+3. If the major+1 feed doesn't exist or has no packages, fall back to `dotnet{major}-transport`
+
+This ensures `daily` always tracks the bleeding edge. When a new major version starts producing
+daily builds (but hasn't shipped a release yet), dotnetup automatically picks it up. Once that
+version ships its first release, the manifest updates and the +1 probe moves to the next version.
+
+The same logic applies to feed selection for version listing (Phase 3). When the channel includes
+an explicit version scope (`10.0/daily`), the major version is extracted directly.
 
 | Existing channels | Daily channels |
 |-------------------|---------------|
