@@ -71,7 +71,6 @@ public class ComputeReferenceStaticWebAssetItems : Task
                                 {
                                     groupedAsset.SourceType = StaticWebAsset.SourceTypes.Project;
                                 }
-                                ClearAssetGroupsIfFramework(groupedAsset);
                                 if (MakeReferencedAssetOriginalItemSpecAbsolute)
                                 {
                                     groupedAsset.OriginalItemSpec = Path.GetFullPath(groupedAsset.OriginalItemSpec);
@@ -96,7 +95,6 @@ public class ComputeReferenceStaticWebAssetItems : Task
                     {
                         selected.SourceType = StaticWebAsset.SourceTypes.Project;
                     }
-                    ClearAssetGroupsIfFramework(selected);
                     if (MakeReferencedAssetOriginalItemSpecAbsolute)
                     {
                         selected.OriginalItemSpec = Path.GetFullPath(selected.OriginalItemSpec);
@@ -182,17 +180,6 @@ public class ComputeReferenceStaticWebAssetItems : Task
                 "Asset '{0}' with relative path '{1}' matched framework pattern. Updating SourceType to Framework.",
                 asset.Identity,
                 relativePath);
-        }
-    }
-
-    private static void ClearAssetGroupsIfFramework(StaticWebAsset asset)
-    {
-        // Framework assets have already passed group filtering when adopted by the consuming
-        // project. Clear AssetGroups so downstream consumers (which may not declare matching
-        // StaticWebAssetGroup items) don't inadvertently filter them out.
-        if (StaticWebAsset.SourceTypes.IsFramework(asset.SourceType))
-        {
-            asset.AssetGroups = "";
         }
     }
 

@@ -1187,6 +1187,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         asset.SourceId = projectPackageId;
         asset.BasePath = projectBasePath;
         asset.AssetMode = AssetModes.CurrentProject;
+        asset.AssetGroups = "";
         asset.Normalize();
 
         return (asset, oldIdentity, oldBasePath);
