@@ -320,12 +320,17 @@ Builds on Phase 1's blob-feed download path by adding version discovery:
 
 **Goal**: Users can discover what daily builds are available.
 
-This phase is more exploratory. Options include:
-- Querying the blob storage for available versions (may require an index endpoint)
-- Listing recent builds from the aka.ms redirects
-- An interactive picker in the TUI showing recent daily versions for a channel
+The approach is to query the NuGet package feed where daily builds are published. For each daily
+SDK build, a `Microsoft.NET.Sdk` transport package is published with a version matching the SDK
+version. This package isn't meant for direct consumption — it's an internal transport mechanism —
+but it provides a reliable index of available daily builds.
 
-The feasibility depends on what listing/enumeration APIs are available from the build feeds.
+- Query the NuGet V3 feed for available versions of `Microsoft.NET.Sdk` (for SDK daily builds)
+- For runtime daily builds, use a different transport package (TBD — need to identify the right
+  package name per runtime component)
+- Filter versions to the requested channel scope (e.g., `10.0/daily` → versions matching `10.0.*`)
+- Present available versions in a list, sorted by date/version
+- In interactive mode, offer a picker to select and install a specific daily version
 
 ## Open questions
 
@@ -337,14 +342,16 @@ The feasibility depends on what listing/enumeration APIs are available from the 
    a different feed URL. The `dotnet-install` scripts support `--azure-feed` for this. If added,
    this should be treated as an advanced/untrusted mode.
 
-3. **What about listing daily builds (Phase 3)?** The blob storage doesn't have a natural listing
-   API. We may need to rely on version ranges or a separate index. This needs investigation.
+3. **Runtime transport package**: For SDK daily builds, `Microsoft.NET.Sdk` is the transport
+   package to query for available versions. What is the equivalent package for runtime components
+   (e.g., `Microsoft.NETCore.App`, `Microsoft.AspNetCore.App`)?
 
 4. **Naming**: Should we use "daily" throughout, or offer "nightly" as a user-facing alias?
    User research / PM input would be valuable here.
 
-5. **Runtime daily builds**: Do daily builds of the runtime follow the same feed structure?
-   Need to verify the URL patterns for runtime vs SDK daily downloads.
+5. **Runtime daily builds**: Do daily builds of the runtime follow the same aka.ms URL patterns
+   and blob feed structure as the SDK? The download URLs likely differ (e.g., `dotnet-runtime-`
+   instead of `dotnet-sdk-`), but the version discovery mechanism should be similar.
 
 6. **Host allowlist / redirect policy**: What is the exact set of allowed hosts for aka.ms
    redirects? Need to enumerate all legitimate blob storage hosts used by the .NET build
