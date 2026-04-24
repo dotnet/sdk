@@ -378,7 +378,6 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         new DirectoryInfo(testInstance.Path)
             .Should().HaveSubtree("""
-                Directory.Build.props
                 src/
                 src/A.cs
                 src/A/
