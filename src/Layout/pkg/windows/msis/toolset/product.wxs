@@ -35,7 +35,7 @@
                  Value="&quot;[DOTNETHOME]\dotnet.exe&quot; exec &quot;[DOTNETHOME]\sdk\[NUGETVERSION]\dotnet.dll&quot; internal-reportinstallsuccess &quot;[EXEFULLPATH]&quot;"
                  Execute="immediate" />
     <CustomAction Id="QtExecPrimeCacheAndTelemetryTarget"
-                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  BinaryRef="Wix5UtilCA_$(sys.BUILDARCHSHORT)"
                   DllEntry="WixQuietExec"
                   Execute="deferred"
                   Return="ignore"
