@@ -105,13 +105,13 @@ research shows it resonates better.
 
 ### Channel syntax
 
-Daily channels use a suffix pattern `{version-scope}/daily` or `{version-scope}-daily`:
+Daily channels use a `-daily` suffix: `{version-scope}-daily`:
 
 | Channel | Meaning |
 |---------|---------|
 | `daily` | Latest daily build (latest major version — see below) |
-| `10.0/daily` | Latest daily build for .NET 10.0 |
-| `10.0.1xx/daily` | Latest daily build for the 10.0.1xx feature band |
+| `10.0-daily` | Latest daily build for .NET 10.0 |
+| `10.0.1xx-daily` | Latest daily build for the 10.0.1xx feature band |
 
 This reads naturally as "10.0, daily" — the version scope comes first (what you want),
 then the qualifier (what kind of build). It mirrors how existing channels work: you start
@@ -132,15 +132,15 @@ daily builds (but hasn't shipped a release yet), dotnetup automatically picks it
 version ships its first release, the manifest updates and the +1 probe moves to the next version.
 
 The same logic applies to feed selection for version listing (Phase 3). When the channel includes
-an explicit version scope (`10.0/daily`), the major version is extracted directly.
+an explicit version scope (`10.0-daily`), the major version is extracted directly.
 
 | Existing channels | Daily channels |
 |-------------------|---------------|
 | `latest` | `daily` |
 | `preview` | (already in release manifest) |
 | `lts` | (not applicable — daily builds aren't LTS) |
-| `10.0` | `10.0/daily` |
-| `10.0.1xx` | `10.0.1xx/daily` |
+| `10.0` | `10.0-daily` |
+| `10.0.1xx` | `10.0.1xx-daily` |
 
 ### CLI examples
 
@@ -149,16 +149,16 @@ an explicit version scope (`10.0/daily`), the major version is extracted directl
 dotnetup sdk install daily
 
 # Install the latest daily SDK for .NET 10.0
-dotnetup sdk install 10.0/daily
+dotnetup sdk install 10.0-daily
 
 # Install the latest daily SDK for the 10.0.1xx feature band
-dotnetup sdk install 10.0.1xx/daily
+dotnetup sdk install 10.0.1xx-daily
 
 # Install a specific daily build by its full version string
 dotnetup sdk install 10.0.100-preview.7.25351.1
 
 # Daily runtime builds follow the same pattern
-dotnetup runtime install 10.0/daily
+dotnetup runtime install 10.0-daily
 ```
 
 #### Specific version fallback
@@ -180,7 +180,7 @@ User provides: channel
         │
         ▼
   ┌─────────────────────┐
-  │ Is it a .../daily    │
+  │ Is it a ...-daily    │
   │ channel?            │
   └───────┬───────┬─────┘
           │       │
@@ -194,8 +194,8 @@ User provides: channel
 ```
 
 For daily channels, version resolution uses the aka.ms redirect:
-1. Parse the channel: `10.0/daily` → base channel `10.0`, quality `daily`
-2. Construct the aka.ms URL: `https://aka.ms/dotnet/10.0/daily/dotnet-sdk-{os}-{arch}.tar.gz`
+1. Parse the channel: `10.0-daily` → base channel `10.0`, quality `daily`
+2. Construct the aka.ms URL: `https://aka.ms/dotnet/10.0-daily/dotnet-sdk-{os}-{arch}.tar.gz`
 3. Follow the redirect (301) to get the actual blob storage URL
 4. Extract the version from the redirect URL path
 5. Use the redirect URL directly as the download URL
@@ -211,19 +211,21 @@ For a specific prerelease version that isn't in the release manifest:
 
 ### Channel parsing in `UpdateChannel`
 
-The `UpdateChannel` class gains awareness of the `/daily` suffix:
+The `UpdateChannel` class gains awareness of the `-daily` suffix:
 
 ```csharp
 // New properties
 public bool IsDaily => Name.Equals("daily", StringComparison.OrdinalIgnoreCase)
-    || Name.EndsWith("/daily", StringComparison.OrdinalIgnoreCase);
+    || Name.EndsWith("-daily", StringComparison.OrdinalIgnoreCase);
 public string BaseChannel => IsDaily
-    ? Name.Contains('/') ? Name.Substring(0, Name.LastIndexOf('/')) : "latest"
+    ? Name.Contains('-') && !Name.Equals("daily", StringComparison.OrdinalIgnoreCase)
+        ? Name.Substring(0, Name.LastIndexOf('-'))
+        : "latest"
     : Name;
 ```
 
 The `Matches()` method for daily channels matches any version that would match the base channel.
-For example, `10.0/daily` matches any `10.0.x` version, just like `10.0` does today. The
+For example, `10.0-daily` matches any `10.0.x` version, just like `10.0` does today. The
 difference is only in how versions are **resolved** (blob feed vs release manifest) and
 **tracked** (daily install specs vs release install specs).
 
@@ -233,7 +235,7 @@ Daily builds are tracked in the dotnetup manifest just like any other channel:
 
 ```json
 {
-  "channel": "10.0/daily",
+  "channel": "10.0-daily",
   "version": "10.0.100-preview.7.25351.1",
   "component": "sdk"
 }
@@ -242,7 +244,7 @@ Daily builds are tracked in the dotnetup manifest just like any other channel:
 Because the channel name itself encodes the daily nature, no additional fields are needed.
 The GC, update, and list logic can use the existing `channel` field to determine resolution
 behavior:
-- Channel ends with `/daily` (or is exactly `daily`)? → resolve from blob feed
+- Channel ends with `-daily` (or is exactly `daily`)? → resolve from blob feed
 - Otherwise → resolve from release manifest
 
 This keeps the manifest schema unchanged and avoids needing to update every piece of code that
@@ -251,7 +253,7 @@ reads install specs.
 ### Update behavior
 
 **Daily channel installs support updates**, just like any other tracked channel. Running
-`dotnetup sdk update` will re-resolve the `10.0/daily` channel against the blob feed and install
+`dotnetup sdk update` will re-resolve the `10.0-daily` channel against the blob feed and install
 a newer version if available.
 
 **Specific-version daily installs** (e.g., `dotnetup sdk install 10.0.100-preview.7.25351.1`)
@@ -323,11 +325,11 @@ is needed. We just need the blob-feed download path:
 
 ### Phase 2: Daily channel parsing and latest version resolution
 
-**Goal**: `dotnetup sdk install 10.0/daily` resolves and installs the latest daily build.
+**Goal**: `dotnetup sdk install 10.0-daily` resolves and installs the latest daily build.
 
 Builds on Phase 1's blob-feed download path by adding version discovery:
-- Extend `UpdateChannel` with `IsDaily` / `BaseChannel` properties for `.../daily` suffix parsing
-- Add `IsValidChannelFormat()` support for `.../daily` channels
+- Extend `UpdateChannel` with `IsDaily` / `BaseChannel` properties for `...-daily` suffix parsing
+- Add `IsValidChannelFormat()` support for `...-daily` channels
 - Extend `ChannelVersionResolver.Resolve()` to detect daily channels and query the aka.ms
   redirect to discover the latest version (the `InstallWorkflow` doesn't need to change —
   it already calls `Resolve()` and gets back a version)
@@ -355,7 +357,7 @@ configuration.
 - For runtime daily builds, use a runtime transport package such as
   `Microsoft.NETCore.App.Runtime.{rid}`. With the VMR, all components version together, so any
   VMR-produced package can serve as the version index for a given daily build.
-- Filter versions to the requested channel scope (e.g., `10.0/daily` → versions matching `10.0.*`)
+- Filter versions to the requested channel scope (e.g., `10.0-daily` → versions matching `10.0.*`)
 - Present available versions in a list, sorted by date/version
 - In interactive mode, offer a picker to select and install a specific daily version
 
@@ -389,12 +391,14 @@ configuration.
    `builds.dotnet.microsoft.com` and `ci.dot.net/public`? Should we always try primary first,
    or use both in parallel?
 
-8. **Channel separator**: Is `10.0/daily` the best syntax? Alternatives include `10.0:daily`,
-   `10.0-daily`. The `/` syntax reads naturally ("10.0 slash daily") and mirrors URL path
-   structure, but may conflict with file path parsing on some platforms. The `-` syntax is
-   simpler but could be confused with prerelease version tags.
+8. **Channel separator**: This document uses `-` as the separator (`10.0-daily`). The `-` syntax
+   is simpler and aligns with prerelease version tag conventions. There is no ambiguity with
+   version strings because channels use major.minor (2 components) or feature bands with wildcards
+   (`10.0.1xx`), while versions always have 3+ numeric components. An alternative is `/`
+   (`10.0/daily`), which mirrors URL path structure but may conflict with file path parsing on
+   some platforms.
 
 9. **Other quality levels**: The .NET build pipeline has quality levels beyond `daily`:
-   `daily → signed → validated → preview → ga`. Should dotnetup support `10.0/signed` or
-   `10.0/validated` channels? `signed` builds are code-signed but not fully validated —
+   `daily → signed → validated → preview → ga`. Should dotnetup support `10.0-signed` or
+   `10.0-validated` channels? `signed` builds are code-signed but not fully validated —
    they may be useful for users who want pre-release builds with signature verification.
