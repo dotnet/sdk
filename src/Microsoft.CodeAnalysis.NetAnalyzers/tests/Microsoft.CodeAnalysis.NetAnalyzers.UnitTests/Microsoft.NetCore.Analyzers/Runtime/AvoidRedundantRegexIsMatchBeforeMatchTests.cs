@@ -943,6 +943,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
+        [Fact]
+        public async Task SpanOverloadIsMatch_NoDiagnostic()
+        {
+            // ReadOnlySpan<char> overloads of IsMatch have no corresponding
+            // Match overload returning Match — ParameterTypesMatch rejects.
+            var source = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        ReadOnlySpan<char> span = input.AsSpan();
+                        if (Regex.IsMatch(span, @"\d+"))
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            await new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+            }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
         #endregion
 
         #region Diagnostic but no fix
