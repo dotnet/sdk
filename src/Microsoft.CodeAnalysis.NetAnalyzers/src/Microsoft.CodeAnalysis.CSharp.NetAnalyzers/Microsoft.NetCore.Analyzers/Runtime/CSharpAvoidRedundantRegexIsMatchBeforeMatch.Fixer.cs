@@ -14,7 +14,6 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers;
 using Microsoft.NetCore.Analyzers.Runtime;
 
