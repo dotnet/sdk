@@ -158,7 +158,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title,
-                    createChangedDocument: ct => ApplyFixAsync(doc, ifStatement, matchDeclarationStatement, matchNode, variableName, ct),
+                    createChangedDocument: ct => ApplyFixAsync(doc, ifStatement, matchDeclarationStatement, variableName, ct),
                     equivalenceKey: title),
                 diagnostic);
         }
@@ -167,12 +167,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             Document document,
             IfStatementSyntax ifStatement,
             LocalDeclarationStatementSyntax matchDeclarationStatement,
-            SyntaxNode matchCallNode,
             string variableName,
             CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            var root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
             // Get the Match call expression (the initializer value of the local declaration).
             var matchCallExpression = matchDeclarationStatement.Declaration.Variables[0].Initializer!.Value;
@@ -197,7 +195,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 matchCallExpression.WithoutTrivia(),
                 successPattern)
                 .WithLeadingTrivia(ifStatement.Condition.GetLeadingTrivia())
-                .WithTrailingTrivia(ifStatement.Condition.GetTrailingTrivia());
+                .WithTrailingTrivia(SyntaxFactory.TriviaList());
 
             // Replace the if condition
             editor.ReplaceNode(ifStatement.Condition, newCondition);
@@ -235,6 +233,16 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     return true;
                 }
 
+                // Deconstruction foreach: foreach (var (x, y) in ...)
+                if (descendant is ForEachVariableStatementSyntax forEachVariable &&
+                    forEachVariable.Variable
+                        .DescendantNodesAndSelf()
+                        .OfType<SingleVariableDesignationSyntax>()
+                        .Any(d => d.Identifier.ValueText == variableName))
+                {
+                    return true;
+                }
+
                 if (descendant is CatchDeclarationSyntax catchDecl &&
                     catchDecl.Identifier.ValueText == variableName)
                 {
@@ -249,19 +257,31 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         /// Checks whether any statement after the given if statement in its parent block
         /// declares a variable with the specified name. Pattern variables from the if
         /// condition scope to the entire enclosing block, so later declarations conflict.
+        /// For parent containers other than <see cref="BlockSyntax"/>, conservatively
+        /// assume a conflict because this helper only scans block statements.
         /// </summary>
         private static bool HasConflictingNameInSubsequentSiblings(
             IfStatementSyntax ifStatement, string variableName)
         {
-            if (ifStatement.Parent is not BlockSyntax parentBlock)
+            // Walk up through else-if chains to find the outermost if statement.
+            // Pattern variables scope to the enclosing block, so for an "else if" we
+            // must check siblings after the outermost if in that chain.
+            SyntaxNode current = ifStatement;
+            while (current.Parent is ElseClauseSyntax elseClause &&
+                   elseClause.Parent is IfStatementSyntax parentIf)
             {
-                return false;
+                current = parentIf;
+            }
+
+            if (current.Parent is not BlockSyntax parentBlock)
+            {
+                return true;
             }
 
             bool foundIf = false;
             foreach (var statement in parentBlock.Statements)
             {
-                if (statement == ifStatement)
+                if (statement == current)
                 {
                     foundIf = true;
                     continue;

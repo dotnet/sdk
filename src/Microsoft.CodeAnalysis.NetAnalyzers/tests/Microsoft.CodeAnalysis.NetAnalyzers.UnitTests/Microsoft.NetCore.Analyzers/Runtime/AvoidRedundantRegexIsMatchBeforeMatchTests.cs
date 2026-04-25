@@ -1713,6 +1713,93 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
+        [Fact]
+        public async Task ParenthesizedCondition_Diagnostic()
+        {
+            // Parenthesized IsMatch condition: if ((Regex.IsMatch(input, pattern)))
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (({|CA2028:Regex.IsMatch(input, @"\d+")|})  )
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task DeconstructionForeachNameCollision_ElseBranch_DiagnosticNoFix()
+        {
+            // Deconstruction foreach in else branch with conflicting variable name
+            var source = """
+                using System.Text.RegularExpressions;
+                using System.Collections.Generic;
+
+                class C
+                {
+                    void M(string input, List<(string, int)> items)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                        else
+                        {
+                            foreach (var (m, count) in items) { }
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task NonBlockParent_DiagnosticNoFix()
+        {
+            // If statement whose parent is not a block (e.g., switch section)
+            // — fixer conservatively doesn't offer fix
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, int mode)
+                    {
+                        switch (mode)
+                        {
+                            case 1:
+                                if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                                {
+                                    Match m = Regex.Match(input, @"\d+");
+                                }
+                                break;
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
         #endregion
     }
 }

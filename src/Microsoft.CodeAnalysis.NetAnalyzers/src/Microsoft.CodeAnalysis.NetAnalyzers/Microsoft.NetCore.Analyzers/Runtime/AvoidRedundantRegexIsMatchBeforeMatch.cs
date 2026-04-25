@@ -97,7 +97,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         }
 
         /// <summary>
-        /// Unwraps parenthesized/conversion operations to get the underlying invocation.
+        /// Unwraps parenthesized and conversion operations to get the underlying invocation.
         /// </summary>
         private static IInvocationOperation? GetUnwrappedInvocation(IOperation? operation)
         {
@@ -106,8 +106,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return null;
             }
 
-            // Walk through conversions (e.g., implicit bool conversion)
-            operation = operation.WalkDownConversion();
+            // Walk through parentheses and conversions (e.g., implicit bool conversion)
+            operation = operation.WalkDownParentheses().WalkDownConversion();
 
             return operation as IInvocationOperation;
         }
