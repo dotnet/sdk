@@ -1387,5 +1387,203 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         #endregion
+
+        #region Review round — GPT-5.4 findings
+
+        [Fact]
+        public async Task InterveningRefMutation_NoDiagnostic()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void Normalize(ref string s) { s = s.Trim(); }
+
+                    void M(string input)
+                    {
+                        if (Regex.IsMatch(input, @"\d+"))
+                        {
+                            Normalize(ref input);
+                            var m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task InterveningOutMutation_NoDiagnostic()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    bool TryNormalize(string s, out string result) { result = s.Trim(); return true; }
+
+                    void M(string input)
+                    {
+                        if (Regex.IsMatch(input, @"\d+"))
+                        {
+                            TryNormalize(input, out input);
+                            var m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task NameConflictAfterIfStatement_DiagnosticButNoFix()
+        {
+            // The conflicting 'int m' must be in a sibling block so the original
+            // code compiles (sibling scopes may reuse names). After the fixer
+            // transforms the condition to 'is { } m', the pattern variable scopes
+            // to the entire enclosing block, colliding with the later 'm'.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                        {
+                            int m = 0; // sibling block — valid now, but would conflict with pattern var
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task NameConflictWithPatternInElse_DiagnosticButNoFix()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, object obj)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                        else if (obj is int m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task NameConflictWithForeachInElse_DiagnosticButNoFix()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+                using System.Collections.Generic;
+
+                class C
+                {
+                    void M(string input, List<int> items)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                        else
+                        {
+                            foreach (var m in items) { }
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task DeclaredAsGroupType_DiagnosticButNoFix()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            Group g = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task DeclaredAsObjectType_DiagnosticButNoFix()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            object o = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task DeclaredAsExactMatchType_FixOffered()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        #endregion
     }
 }

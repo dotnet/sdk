@@ -468,8 +468,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         /// <summary>
         /// Checks whether an operation or any of its descendants writes to any of the
-        /// given symbols (via assignment, compound assignment, or increment/decrement).
-        /// Does not recurse into lambdas or local functions.
+        /// given symbols (via assignment, compound assignment, increment/decrement, or
+        /// ref/out argument passing). Does not recurse into lambdas or local functions.
         /// </summary>
         private static bool ContainsWriteToSymbols(IOperation operation, HashSet<ISymbol> symbols)
         {
@@ -477,6 +477,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (writtenSymbol is not null && symbols.Contains(writtenSymbol))
             {
                 return true;
+            }
+
+            // Check for ref/out argument passing which can mutate tracked symbols.
+            if (operation is IArgumentOperation argOp &&
+                argOp.Parameter is not null &&
+                argOp.Parameter.RefKind is RefKind.Ref or RefKind.Out)
+            {
+                var argValue = argOp.Value.WalkDownConversion();
+                ISymbol? argSymbol = argValue switch
+                {
+                    ILocalReferenceOperation localRef => localRef.Local,
+                    IParameterReferenceOperation paramRef => paramRef.Parameter,
+                    _ => null
+                };
+
+                if (argSymbol is not null && symbols.Contains(argSymbol))
+                {
+                    return true;
+                }
             }
 
             foreach (var child in operation.Children)

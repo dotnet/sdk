@@ -103,6 +103,20 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return;
             }
 
+            // Only apply fixer when the declared type is 'var' or exactly
+            // System.Text.RegularExpressions.Match. If the user wrote a wider type
+            // (e.g., Group, Capture, object), the pattern variable would change
+            // the static type and could alter overload resolution.
+            if (!declaration.Type.IsVar)
+            {
+                var typeInfo = model.GetTypeInfo(declaration.Type, context.CancellationToken);
+                if (typeInfo.Type is null ||
+                    typeInfo.Type.ToDisplayString() != "System.Text.RegularExpressions.Match")
+                {
+                    return;
+                }
+            }
+
             // The IsMatch call must be the condition of an if statement.
             var ifStatement = isMatchNode.FirstAncestorOrSelf<IfStatementSyntax>();
             if (ifStatement is null)
@@ -124,11 +138,18 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 }
             }
 
-            // Check for name conflicts: the pattern variable will be scoped to the
-            // entire if statement, including any else branch. If the else branch
-            // declares a variable with the same name, the fix would not compile.
+            // Check for name conflicts: a pattern variable from
+            //   if (expr is { } m)
+            // scopes to the entire enclosing block, not just the if body.
+            // Bail if any else branch or subsequent sibling statement
+            // declares a variable with the same name.
             if (ifStatement.Else is not null &&
-                HasConflictingDeclaration(ifStatement.Else, variableName))
+                HasConflictingName(ifStatement.Else, variableName))
+            {
+                return;
+            }
+
+            if (HasConflictingNameInSubsequentSiblings(ifStatement, variableName))
             {
                 return;
             }
@@ -189,14 +210,64 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         /// <summary>
         /// Checks whether the given syntax node (typically an else clause) contains any
-        /// variable declarator with the specified name, which would conflict with a
-        /// pattern variable introduced in the if condition.
+        /// variable binding with the specified name — including variable declarators,
+        /// pattern designations (is/switch patterns), out var, foreach, and catch.
         /// </summary>
-        private static bool HasConflictingDeclaration(SyntaxNode node, string variableName)
+        private static bool HasConflictingName(SyntaxNode node, string variableName)
         {
-            foreach (var declarator in node.DescendantNodes().OfType<VariableDeclaratorSyntax>())
+            foreach (var descendant in node.DescendantNodes())
             {
-                if (declarator.Identifier.ValueText == variableName)
+                if (descendant is VariableDeclaratorSyntax declarator &&
+                    declarator.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
+
+                if (descendant is SingleVariableDesignationSyntax designation &&
+                    designation.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
+
+                if (descendant is ForEachStatementSyntax forEach &&
+                    forEach.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
+
+                if (descendant is CatchDeclarationSyntax catchDecl &&
+                    catchDecl.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks whether any statement after the given if statement in its parent block
+        /// declares a variable with the specified name. Pattern variables from the if
+        /// condition scope to the entire enclosing block, so later declarations conflict.
+        /// </summary>
+        private static bool HasConflictingNameInSubsequentSiblings(
+            IfStatementSyntax ifStatement, string variableName)
+        {
+            if (ifStatement.Parent is not BlockSyntax parentBlock)
+            {
+                return false;
+            }
+
+            bool foundIf = false;
+            foreach (var statement in parentBlock.Statements)
+            {
+                if (statement == ifStatement)
+                {
+                    foundIf = true;
+                    continue;
+                }
+
+                if (foundIf && HasConflictingName(statement, variableName))
                 {
                     return true;
                 }
