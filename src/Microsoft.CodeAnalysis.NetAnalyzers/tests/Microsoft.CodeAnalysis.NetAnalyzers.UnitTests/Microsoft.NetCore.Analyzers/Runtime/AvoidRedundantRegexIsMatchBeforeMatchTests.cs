@@ -300,7 +300,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            var fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, "hello") is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
         [Fact]
@@ -346,7 +359,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            var fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        var regex = new Regex(@"\d+");
+                        if (regex.Match(input, 0) is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
         #endregion
@@ -974,6 +1001,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         public async Task MultipleMatchCallsInBody_FlagsFirst()
         {
             // Only the first matching Match call should be included in the diagnostic.
+            // Fixer removes only the first Match declaration.
             var source = """
                 using System.Text.RegularExpressions;
 
@@ -989,7 +1017,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            var fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                            Match m2 = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
         [Fact]
