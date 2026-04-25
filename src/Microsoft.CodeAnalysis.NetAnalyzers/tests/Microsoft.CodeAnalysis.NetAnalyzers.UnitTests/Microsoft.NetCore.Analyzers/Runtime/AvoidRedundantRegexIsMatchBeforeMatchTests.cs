@@ -134,9 +134,47 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
+        public async Task StaticWithOptionsAndTimeout_Flags()
+        {
+            // Timeout overload: all four arguments (input, pattern, options, timeout) must be preserved.
+            var source = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        var timeout = TimeSpan.FromSeconds(1);
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+", RegexOptions.IgnoreCase, timeout)|})
+                        {
+                            var m = Regex.Match(input, @"\d+", RegexOptions.IgnoreCase, timeout);
+                        }
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        var timeout = TimeSpan.FromSeconds(1);
+                        if (Regex.Match(input, @"\d+", RegexOptions.IgnoreCase, timeout) is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
         public async Task MatchUsedInlineWithGroupsAccess_FlagsButNoFix()
         {
-            // Real-world pattern from BiliDuang: regex.Match(x).Groups[1].Value
+            // Real-world pattern: regex.Match(x).Groups[1].Value
             // Analyzer should flag, but fixer shouldn't offer a fix (no local declaration).
             var source = """
                 using System.Text.RegularExpressions;
@@ -403,7 +441,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task DifferentPatterns_NoDiagnostic()
         {
-            // Real-world false positive: microsoft/perfview CommandLineUtilities.cs pattern
+            // Real-world false positive: different IsMatch and Match patterns on same input.
             var source = """
                 using System.Text.RegularExpressions;
 
@@ -841,6 +879,70 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
+        [Fact]
+        public async Task ReadonlyFieldReceiverReassigned_NoDiagnostic()
+        {
+            // Receiver is local.ReadonlyField — reassigning the local between IsMatch
+            // and Match means a different field instance, so not redundant.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class Holder
+                {
+                    public readonly Regex Re = new Regex(@"\d+");
+                }
+
+                class C
+                {
+                    Holder GetA() => new Holder();
+                    Holder GetB() => new Holder();
+
+                    void M(string input)
+                    {
+                        Holder h = GetA();
+                        if (h.Re.IsMatch(input))
+                        {
+                            h = GetB();
+                            Match m = h.Re.Match(input);
+                        }
+                    }
+                }
+                """;
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task ReadonlyFieldArgumentReassigned_NoDiagnostic()
+        {
+            // Argument is local.ReadonlyField — reassigning the local between
+            // IsMatch and Match means a different field value, so not redundant.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class Holder
+                {
+                    public readonly string Pattern = @"\d+";
+                }
+
+                class C
+                {
+                    Holder GetA() => new Holder();
+                    Holder GetB() => new Holder();
+
+                    void M(string input)
+                    {
+                        Holder h = GetA();
+                        if (Regex.IsMatch(input, h.Pattern))
+                        {
+                            h = GetB();
+                            Match m = Regex.Match(input, h.Pattern);
+                        }
+                    }
+                }
+                """;
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
         #endregion
 
         #region Diagnostic but no fix
@@ -905,7 +1007,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task RealWorld_MatchUsedForGroupsInline()
         {
-            // Based on BiliDuang Other.cs pattern:
+            // Real-world pattern: inline Groups access on Match result.
             // if (regex.IsMatch(contentype)) { Encoding.GetEncoding(regex.Match(contentype).Groups[1].Value.Trim()); }
             var source = """
                 using System;
@@ -932,7 +1034,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task RealWorld_MultiplePairsWithDifferentPatterns_NoDiagnostic()
         {
-            // Based on OpenLiveWriter pattern: multiple IsMatch/Match pairs but with different patterns.
+            // Real-world pattern: multiple IsMatch/Match pairs but with different patterns.
             var source = """
                 using System.Text.RegularExpressions;
 
@@ -958,7 +1060,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task RealWorld_ElseIfChainWithIsMatchThenMatch_Flags()
         {
-            // Based on NTransit FbpParser.cs: else-if chain where each branch
+            // Real-world pattern: else-if chain where each branch
             // does IsMatch then Match with the same pattern.
             // Uses distinct variable names so "fix all" doesn't hit C# pattern
             // variable scoping conflicts.
@@ -1014,8 +1116,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task RealWorld_IsMatchThenMatchInsideLoop_Flags()
         {
-            // Based on autoscreen Program.cs / NTransit FbpParser.cs:
-            // IsMatch/Match pair inside a foreach loop body.
+            // Real-world pattern: IsMatch/Match pair inside a foreach loop body.
             var source = """
                 using System;
                 using System.Text.RegularExpressions;
@@ -1059,7 +1160,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task RealWorld_ConstStringFieldPattern_Flags()
         {
-            // Based on NTransit FbpParser.cs: const string fields used as regex pattern arg.
+            // Real-world pattern: const string fields used as regex pattern arg.
             var source = """
                 using System;
                 using System.Text.RegularExpressions;

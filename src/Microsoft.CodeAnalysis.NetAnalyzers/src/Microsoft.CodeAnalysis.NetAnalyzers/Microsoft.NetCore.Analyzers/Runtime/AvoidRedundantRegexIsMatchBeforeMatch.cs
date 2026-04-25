@@ -463,6 +463,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     symbols ??= new HashSet<ISymbol>(SymbolEqualityComparer.Default);
                     symbols.Add(paramRef.Parameter);
                 }
+                else if (operation is IFieldReferenceOperation fieldRef && fieldRef.Instance is not null)
+                {
+                    // For h.ReadonlyField, track h so that reassignment of h is detected.
+                    AddMutableSymbol(fieldRef.Instance, ref symbols);
+                }
             }
         }
 
