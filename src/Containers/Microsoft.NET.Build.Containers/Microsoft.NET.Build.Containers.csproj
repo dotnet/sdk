@@ -58,7 +58,6 @@
 
     <!-- References that are also carried in the SDK itself so don't need to be redistributed -->
     <PackageReference Include="Microsoft.Extensions.Logging" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <!-- netframework builds manually import files to compile -->

@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using static Microsoft.Win32.Msi.Error;
 
@@ -56,6 +57,8 @@ internal class InstallResponseMessage : InstallMessageBase
     /// </summary>
     /// <param name="bytes">The raw bytes to be converted.</param>
     /// <returns>A new <see cref="InstallResponseMessage"/>.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Newtonsoft.Json is not used in AOT scenarios.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Newtonsoft.Json is not used in trimmed scenarios.")]
     public static InstallResponseMessage Create(byte[] bytes)
     {
         string json = Encoding.UTF8.GetString(bytes);
