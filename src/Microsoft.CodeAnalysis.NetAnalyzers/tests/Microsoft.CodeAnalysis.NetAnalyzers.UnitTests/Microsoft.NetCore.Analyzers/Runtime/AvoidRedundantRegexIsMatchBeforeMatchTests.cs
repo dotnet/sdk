@@ -1515,6 +1515,95 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
+        [Fact]
+        public async Task NamedArgumentsSameOrder_Diagnostic()
+        {
+            // Named arguments in same order as parameters — should still match.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input: input, pattern: @"\d+")|})
+                        {
+                            Match m = Regex.Match(input: input, pattern: @"\d+");
+                        }
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input: input, pattern: @"\d+") is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task NamedArgumentsReordered_Diagnostic()
+        {
+            // Named arguments reordered between IsMatch and Match — same values, different order.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input: input, pattern: @"\d+")|})
+                        {
+                            Match m = Regex.Match(pattern: @"\d+", input: input);
+                        }
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(pattern: @"\d+", input: input) is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task NamedArgumentsDifferentValues_NoDiagnostic()
+        {
+            // Named arguments with same names but different values — should NOT match.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string input2)
+                    {
+                        if (Regex.IsMatch(input: input, pattern: @"\d+"))
+                        {
+                            Match m = Regex.Match(input: input2, pattern: @"\d+");
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
         #endregion
 
         #region Regression tests for mutation and control-flow edge cases

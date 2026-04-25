@@ -328,11 +328,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            for (int i = 0; i < isMatchInvocation.Arguments.Length; i++)
+            // Compare arguments by parameter ordinal rather than array index,
+            // because named arguments may reorder the Arguments array.
+            foreach (IArgumentOperation isMatchArg in isMatchInvocation.Arguments)
             {
-                if (!AreOperandsEquivalent(
-                        isMatchInvocation.Arguments[i].Value,
-                        matchInvocation.Arguments[i].Value))
+                if (isMatchArg.Parameter is null)
+                {
+                    return false;
+                }
+
+                IArgumentOperation? matchArg = null;
+                foreach (IArgumentOperation candidate in matchInvocation.Arguments)
+                {
+                    if (candidate.Parameter?.Ordinal == isMatchArg.Parameter.Ordinal)
+                    {
+                        matchArg = candidate;
+                        break;
+                    }
+                }
+
+                if (matchArg is null ||
+                    !AreOperandsEquivalent(isMatchArg.Value, matchArg.Value))
                 {
                     return false;
                 }
