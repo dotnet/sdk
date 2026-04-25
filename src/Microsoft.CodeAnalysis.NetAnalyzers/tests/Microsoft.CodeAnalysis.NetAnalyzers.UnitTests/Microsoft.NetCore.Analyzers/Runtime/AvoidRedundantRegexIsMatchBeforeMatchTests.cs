@@ -197,9 +197,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task MatchInExpressionStatement_FlagsButNoFix()
+        public async Task MatchInExpressionStatement_FlagsAndFix()
         {
-            // Match is assigned to an existing variable, not a new declaration.
+            // Match is assigned to an existing variable declared immediately before the if.
             var source = """
                 using System.Text.RegularExpressions;
 
@@ -215,7 +215,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCodeFixCSharp9Async(source, source);
+            var fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
         [Fact]
@@ -2016,6 +2029,284 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
                 """;
             // Fix not applicable — local function parameter 'm' conflicts
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        #endregion
+
+        #region Parenthesized argument tests
+
+        [Fact]
+        public async Task ParenthesizedArguments_MatchesDiagnostic()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch((input), (@"\d+"))|})
+                        {
+                            Match m = Regex.Match((input), (@"\d+"));
+                        }
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match((input), (@"\d+")) is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task MismatchedParentheses_StillMatchesDiagnostic()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch((input), @"\d+")|})
+                        {
+                            Match m = Regex.Match(input, (@"\d+"));
+                        }
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, (@"\d+")) is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task ParenthesizedArgument_InterveningReassignment_NoDiagnostic()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.IsMatch((input), @"\d+"))
+                        {
+                            input = "other";
+                            Match m = Regex.Match((input), @"\d+");
+                        }
+                    }
+                }
+                """;
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        #endregion
+
+        #region Pre-declaration assignment pattern tests
+
+        [Fact]
+        public async Task PreDeclaredAssignment_FixRemovesDeclaration()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        Match m = null;
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            m = Regex.Match(input, @"\d+");
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task PreDeclaredAssignment_NoInitializer_FixRemovesDeclaration()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        Match m;
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            m = Regex.Match(input, @"\d+");
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task PreDeclaredAssignment_DefaultInitializer_FixRemovesDeclaration()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        Match m = default;
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            m = Regex.Match(input, @"\d+");
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task PreDeclaredAssignment_UsedAfterIf_DiagnosticButNoFix()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        Match m = null;
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            m = Regex.Match(input, @"\d+");
+                        }
+                        System.Console.WriteLine(m);
+                    }
+                }
+                """;
+            // Diagnostic fires, but fixer cannot apply because m is used after the if.
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task PreDeclaredAssignment_NonNullInitializer_DiagnosticButNoFix()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        Match m = Regex.Match("", "");
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            m = Regex.Match(input, @"\d+");
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """;
+            // Diagnostic fires, but fixer doesn't apply because initializer is non-null/default.
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task PreDeclaredAssignment_NotImmediatelyBeforeIf_DiagnosticButNoFix()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        Match m = null;
+                        int x = 42;
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            m = Regex.Match(input, @"\d+");
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """;
+            // Diagnostic fires, but fixer doesn't apply because declaration isn't immediately before if.
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task PreDeclaredAssignment_SingleStatementBody_NoBraces_DiagnosticButNoFix()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        Match m = null;
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                            m = Regex.Match(input, @"\d+");
+                    }
+                }
+                """;
+            // Diagnostic fires, but fixer requires block body for assignment path.
             await VerifyCodeFixCSharp9Async(source, source);
         }
 

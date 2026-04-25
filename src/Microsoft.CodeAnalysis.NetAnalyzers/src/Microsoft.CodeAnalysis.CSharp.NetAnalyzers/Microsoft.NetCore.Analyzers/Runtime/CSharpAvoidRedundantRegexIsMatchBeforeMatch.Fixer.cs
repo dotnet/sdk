@@ -82,14 +82,42 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return;
             }
 
-            // The Match call must be in a local declaration statement: Match m = Regex.Match(...);
-            // We only handle single-variable declarations.
-            var matchDeclarationStatement = matchNode.FirstAncestorOrSelf<LocalDeclarationStatementSyntax>();
-            if (matchDeclarationStatement is null)
+            // The IsMatch call must be the condition of an if statement.
+            var ifStatement = isMatchNode.FirstAncestorOrSelf<IfStatementSyntax>();
+            if (ifStatement is null)
             {
                 return;
             }
 
+            // Path 1: Match m = Regex.Match(...); — local declaration in if body
+            var matchDeclarationStatement = matchNode.FirstAncestorOrSelf<LocalDeclarationStatementSyntax>();
+            if (matchDeclarationStatement is not null)
+            {
+                TryRegisterDeclarationFix(context, diagnostic, doc, model, ifStatement, matchDeclarationStatement, matchNode);
+                return;
+            }
+
+            // Path 2: m = Regex.Match(...); — assignment to pre-declared variable
+            var assignmentExpression = matchNode.FirstAncestorOrSelf<AssignmentExpressionSyntax>();
+            if (assignmentExpression is not null)
+            {
+                TryRegisterAssignmentFix(context, diagnostic, doc, model, ifStatement, assignmentExpression, matchNode);
+            }
+        }
+
+        /// <summary>
+        /// Path 1: The Match result is assigned via a local declaration in the if body:
+        /// <c>Match m = Regex.Match(...);</c>
+        /// </summary>
+        private static void TryRegisterDeclarationFix(
+            CodeFixContext context,
+            Diagnostic diagnostic,
+            Document doc,
+            SemanticModel model,
+            IfStatementSyntax ifStatement,
+            LocalDeclarationStatementSyntax matchDeclarationStatement,
+            SyntaxNode matchNode)
+        {
             var declaration = matchDeclarationStatement.Declaration;
             if (declaration.Variables.Count != 1)
             {
@@ -105,18 +133,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             // Verify the initializer is exactly the Match invocation reported by the analyzer
             // (unwrapping any parentheses/casts). If the Match call is embedded inside a larger
             // expression (e.g., SomeMethod(Regex.Match(...))), the fix would change semantics.
-            SyntaxNode coreInitializer = declarator.Initializer.Value;
-            while (coreInitializer is ParenthesizedExpressionSyntax parenExpr)
-            {
-                coreInitializer = parenExpr.Expression;
-            }
-
-            while (coreInitializer is CastExpressionSyntax castExpr)
-            {
-                coreInitializer = castExpr.Expression;
-            }
-
-            if (!coreInitializer.Span.Equals(matchNode.Span))
+            if (!IsMatchNode(declarator.Initializer.Value, matchNode))
             {
                 return;
             }
@@ -125,21 +142,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             // System.Text.RegularExpressions.Match. If the user wrote a wider type
             // (e.g., Group, Capture, object), the pattern variable would change
             // the static type and could alter overload resolution.
-            if (!declaration.Type.IsVar)
-            {
-                var typeInfo = model.GetTypeInfo(declaration.Type, context.CancellationToken);
-                var matchType = model.Compilation.GetTypeByMetadataName("System.Text.RegularExpressions.Match");
-                if (typeInfo.Type is null ||
-                    matchType is null ||
-                    !SymbolEqualityComparer.Default.Equals(typeInfo.Type, matchType))
-                {
-                    return;
-                }
-            }
-
-            // The IsMatch call must be the condition of an if statement.
-            var ifStatement = isMatchNode.FirstAncestorOrSelf<IfStatementSyntax>();
-            if (ifStatement is null)
+            if (!IsVarOrMatchType(declaration.Type, model, context.CancellationToken))
             {
                 return;
             }
@@ -158,18 +161,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 }
             }
 
-            // Check for name conflicts: a pattern variable from
-            //   if (expr is { } m)
-            // scopes to the entire enclosing block, not just the if body.
-            // Bail if any else branch or subsequent sibling statement
-            // declares a variable with the same name.
-            if (ifStatement.Else is not null &&
-                HasConflictingName(ifStatement.Else, variableName))
-            {
-                return;
-            }
-
-            if (HasConflictingNameInSubsequentSiblings(ifStatement, variableName))
+            if (!PassesNameConflictChecks(ifStatement, variableName))
             {
                 return;
             }
@@ -178,12 +170,209 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title,
-                    createChangedDocument: ct => ApplyFixAsync(doc, ifStatement, matchDeclarationStatement, variableName, ct),
+                    createChangedDocument: ct => ApplyDeclarationFixAsync(doc, ifStatement, matchDeclarationStatement, variableName, ct),
                     equivalenceKey: title),
                 diagnostic);
         }
 
-        private static async Task<Document> ApplyFixAsync(
+        /// <summary>
+        /// Path 2: The Match result is assigned to a pre-declared variable in the if body:
+        /// <c>Match m; if (IsMatch(...)) { m = Regex.Match(...); }</c>
+        /// Transforms to: <c>if (Regex.Match(...) is { Success: true } m) { }</c>
+        /// Only applies when the pre-existing declaration is immediately before the if
+        /// and the variable is not referenced after the if statement.
+        /// </summary>
+        private static void TryRegisterAssignmentFix(
+            CodeFixContext context,
+            Diagnostic diagnostic,
+            Document doc,
+            SemanticModel model,
+            IfStatementSyntax ifStatement,
+            AssignmentExpressionSyntax assignmentExpression,
+            SyntaxNode matchNode)
+        {
+            // The left side must be a simple identifier (the variable being assigned).
+            if (assignmentExpression.Left is not IdentifierNameSyntax identName)
+            {
+                return;
+            }
+
+            // Verify the right side is exactly the Match invocation.
+            if (!IsMatchNode(assignmentExpression.Right, matchNode))
+            {
+                return;
+            }
+
+            // The assignment must be in an expression statement.
+            var assignmentStatement = assignmentExpression.FirstAncestorOrSelf<ExpressionStatementSyntax>();
+            if (assignmentStatement is null)
+            {
+                return;
+            }
+
+            // The assignment statement must be the first statement in a block body.
+            if (ifStatement.Statement is not BlockSyntax block ||
+                block.Statements.FirstOrDefault() != assignmentStatement)
+            {
+                return;
+            }
+
+            // The if must be inside a block so we can find the preceding declaration.
+            if (ifStatement.Parent is not BlockSyntax parentBlock)
+            {
+                return;
+            }
+
+            string variableName = identName.Identifier.ValueText;
+
+            // Find the pre-existing declaration of the variable immediately before the if.
+            int ifIndex = parentBlock.Statements.IndexOf(ifStatement);
+            if (ifIndex <= 0)
+            {
+                return;
+            }
+
+            if (parentBlock.Statements[ifIndex - 1] is not LocalDeclarationStatementSyntax preDecl)
+            {
+                return;
+            }
+
+            if (preDecl.Declaration.Variables.Count != 1)
+            {
+                return;
+            }
+
+            var preVar = preDecl.Declaration.Variables[0];
+            if (preVar.Identifier.ValueText != variableName)
+            {
+                return;
+            }
+
+            // The pre-existing declaration must have no initializer, or be initialized to
+            // null/default so removing it doesn't lose meaningful computation.
+            if (preVar.Initializer is not null)
+            {
+                var initValue = preVar.Initializer.Value;
+                if (initValue is not LiteralExpressionSyntax literal ||
+                    (!literal.IsKind(SyntaxKind.NullLiteralExpression) &&
+                     !literal.IsKind(SyntaxKind.DefaultLiteralExpression)))
+                {
+                    return;
+                }
+            }
+
+            // Verify the declared type is 'var' or exactly Match.
+            if (!IsVarOrMatchType(preDecl.Declaration.Type, model, context.CancellationToken))
+            {
+                return;
+            }
+
+            // The variable must not be referenced in any statement after the if,
+            // because the pattern variable won't be definitely assigned there.
+            if (IsVariableReferencedAfterIf(parentBlock, ifIndex, variableName))
+            {
+                return;
+            }
+
+            if (!PassesNameConflictChecks(ifStatement, variableName))
+            {
+                return;
+            }
+
+            string title = MicrosoftNetCoreAnalyzersResources.AvoidRedundantRegexIsMatchBeforeMatchFix;
+            context.RegisterCodeFix(
+                CodeAction.Create(
+                    title,
+                    createChangedDocument: ct => ApplyAssignmentFixAsync(doc, ifStatement, preDecl, assignmentStatement, variableName, ct),
+                    equivalenceKey: title),
+                diagnostic);
+        }
+
+        /// <summary>
+        /// Checks whether <paramref name="expression"/> is exactly the Match invocation
+        /// <paramref name="matchNode"/> after unwrapping parentheses and casts.
+        /// </summary>
+        private static bool IsMatchNode(ExpressionSyntax expression, SyntaxNode matchNode)
+        {
+            SyntaxNode core = expression;
+            while (core is ParenthesizedExpressionSyntax parenExpr)
+            {
+                core = parenExpr.Expression;
+            }
+
+            while (core is CastExpressionSyntax castExpr)
+            {
+                core = castExpr.Expression;
+            }
+
+            return core.Span.Equals(matchNode.Span);
+        }
+
+        /// <summary>
+        /// Returns true when the type syntax is <c>var</c> or exactly
+        /// <c>System.Text.RegularExpressions.Match</c>.
+        /// </summary>
+        private static bool IsVarOrMatchType(
+            TypeSyntax typeSyntax, SemanticModel model, CancellationToken cancellationToken)
+        {
+            if (typeSyntax.IsVar)
+            {
+                return true;
+            }
+
+            var typeInfo = model.GetTypeInfo(typeSyntax, cancellationToken);
+            var matchType = model.Compilation.GetTypeByMetadataName("System.Text.RegularExpressions.Match");
+            return typeInfo.Type is not null &&
+                   matchType is not null &&
+                   SymbolEqualityComparer.Default.Equals(typeInfo.Type, matchType);
+        }
+
+        /// <summary>
+        /// Returns true when the variable name doesn't conflict with bindings in else
+        /// branches or subsequent sibling statements.
+        /// </summary>
+        private static bool PassesNameConflictChecks(
+            IfStatementSyntax ifStatement, string variableName)
+        {
+            if (ifStatement.Else is not null &&
+                HasConflictingName(ifStatement.Else, variableName))
+            {
+                return false;
+            }
+
+            if (HasConflictingNameInSubsequentSiblings(ifStatement, variableName))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks whether the variable is referenced in any statement after
+        /// <paramref name="ifIndex"/> in the parent block.
+        /// </summary>
+        private static bool IsVariableReferencedAfterIf(
+            BlockSyntax parentBlock, int ifIndex, string variableName)
+        {
+            for (int i = ifIndex + 1; i < parentBlock.Statements.Count; i++)
+            {
+                if (parentBlock.Statements[i]
+                    .DescendantNodesAndSelf()
+                    .OfType<IdentifierNameSyntax>()
+                    .Any(id => id.Identifier.ValueText == variableName))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Applies the fix for Path 1 (local declaration in if body).
+        /// </summary>
+        private static async Task<Document> ApplyDeclarationFixAsync(
             Document document,
             IfStatementSyntax ifStatement,
             LocalDeclarationStatementSyntax matchDeclarationStatement,
@@ -191,11 +380,44 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-
-            // Get the Match call expression (the initializer value of the local declaration).
             var matchCallExpression = matchDeclarationStatement.Declaration.Variables[0].Initializer!.Value;
 
-            // Build: Regex.Match(input, pattern) is { Success: true } m
+            editor.ReplaceNode(ifStatement.Condition, BuildIsPatternCondition(ifStatement, matchCallExpression, variableName));
+            editor.RemoveNode(matchDeclarationStatement);
+
+            return editor.GetChangedDocument();
+        }
+
+        /// <summary>
+        /// Applies the fix for Path 2 (assignment to pre-declared variable).
+        /// </summary>
+        private static async Task<Document> ApplyAssignmentFixAsync(
+            Document document,
+            IfStatementSyntax ifStatement,
+            LocalDeclarationStatementSyntax preDeclaration,
+            ExpressionStatementSyntax assignmentStatement,
+            string variableName,
+            CancellationToken cancellationToken)
+        {
+            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            var assignmentExpr = (AssignmentExpressionSyntax)assignmentStatement.Expression;
+            var matchCallExpression = assignmentExpr.Right;
+
+            editor.ReplaceNode(ifStatement.Condition, BuildIsPatternCondition(ifStatement, matchCallExpression, variableName));
+            editor.RemoveNode(assignmentStatement);
+            editor.RemoveNode(preDeclaration);
+
+            return editor.GetChangedDocument();
+        }
+
+        /// <summary>
+        /// Builds: <c>Regex.Match(input, pattern) is { Success: true } m</c>
+        /// </summary>
+        private static IsPatternExpressionSyntax BuildIsPatternCondition(
+            IfStatementSyntax ifStatement,
+            ExpressionSyntax matchCallExpression,
+            string variableName)
+        {
             var successPattern = SyntaxFactory.RecursivePattern()
                 .WithPropertyPatternClause(
                     SyntaxFactory.PropertyPatternClause(
@@ -211,19 +433,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                         SyntaxFactory.Identifier(variableName)))
                 .NormalizeWhitespace();
 
-            var newCondition = SyntaxFactory.IsPatternExpression(
+            return SyntaxFactory.IsPatternExpression(
                 matchCallExpression.WithoutTrivia(),
                 successPattern)
                 .WithLeadingTrivia(ifStatement.Condition.GetLeadingTrivia())
                 .WithTrailingTrivia(SyntaxFactory.TriviaList());
-
-            // Replace the if condition
-            editor.ReplaceNode(ifStatement.Condition, newCondition);
-
-            // Remove the Match declaration statement from the if body
-            editor.RemoveNode(matchDeclarationStatement);
-
-            return editor.GetChangedDocument();
         }
 
         /// <summary>
