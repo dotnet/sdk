@@ -221,7 +221,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             IInvocationOperation isMatchInvocation,
             ImmutableArray<ISymbol> matchMembers)
         {
-            expression = expression.WalkDownConversion();
+            expression = expression.WalkDownParentheses().WalkDownConversion();
 
             // Direct invocation: check if it's a matching Regex.Match call.
             if (expression is IInvocationOperation invocation)

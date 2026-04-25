@@ -128,8 +128,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             if (!declaration.Type.IsVar)
             {
                 var typeInfo = model.GetTypeInfo(declaration.Type, context.CancellationToken);
+                var matchType = model.Compilation.GetTypeByMetadataName("System.Text.RegularExpressions.Match");
                 if (typeInfo.Type is null ||
-                    typeInfo.Type.ToDisplayString() != "System.Text.RegularExpressions.Match")
+                    matchType is null ||
+                    !SymbolEqualityComparer.Default.Equals(typeInfo.Type, matchType))
                 {
                     return;
                 }
