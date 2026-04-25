@@ -257,15 +257,49 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Member access: e.g., Regex.Match(...).Groups[1].Value
             if (expression is IPropertyReferenceOperation propRef)
             {
-                return propRef.Instance is not null
-                    ? FindMatchInExpression(propRef.Instance, isMatchInvocation, matchMembers)
-                    : null;
+                if (propRef.Instance is not null)
+                {
+                    var found = FindMatchInExpression(propRef.Instance, isMatchInvocation, matchMembers);
+                    if (found is not null)
+                    {
+                        return found;
+                    }
+                }
+
+                if (propRef.Property.IsIndexer)
+                {
+                    foreach (var arg in propRef.Arguments)
+                    {
+                        var found = FindMatchInExpression(arg.Value, isMatchInvocation, matchMembers);
+                        if (found is not null)
+                        {
+                            return found;
+                        }
+                    }
+                }
+
+                return null;
             }
 
             // Array/indexer element access
             if (expression is IArrayElementReferenceOperation arrayRef)
             {
-                return FindMatchInExpression(arrayRef.ArrayReference, isMatchInvocation, matchMembers);
+                var found = FindMatchInExpression(arrayRef.ArrayReference, isMatchInvocation, matchMembers);
+                if (found is not null)
+                {
+                    return found;
+                }
+
+                foreach (var index in arrayRef.Indices)
+                {
+                    found = FindMatchInExpression(index, isMatchInvocation, matchMembers);
+                    if (found is not null)
+                    {
+                        return found;
+                    }
+                }
+
+                return null;
             }
 
             // Simple assignment: x = Regex.Match(...)
@@ -391,8 +425,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return left is null && right is null;
             }
 
-            left = left.WalkDownConversion();
-            right = right.WalkDownConversion();
+            left = left.WalkDownParentheses().WalkDownConversion();
+            right = right.WalkDownParentheses().WalkDownConversion();
 
             // Same local variable reference
             if (left is ILocalReferenceOperation leftLocal &&
@@ -467,7 +501,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             static void AddMutableSymbol(IOperation operation, ref HashSet<ISymbol>? symbols)
             {
-                operation = operation.WalkDownConversion();
+                operation = operation.WalkDownParentheses().WalkDownConversion();
 
                 if (operation is ILocalReferenceOperation localRef)
                 {
