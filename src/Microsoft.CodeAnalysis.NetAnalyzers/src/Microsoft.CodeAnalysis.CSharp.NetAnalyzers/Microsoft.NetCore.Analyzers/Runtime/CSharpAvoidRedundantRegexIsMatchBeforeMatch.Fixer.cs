@@ -267,9 +267,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return;
             }
 
-            // The variable must not be referenced in any statement after the if,
-            // because the pattern variable won't be definitely assigned there.
-            if (IsVariableReferencedAfterIf(parentBlock, ifIndex, variableName))
+            // The variable must not be referenced in any statement after the if
+            // or in the else branch, because the pattern variable won't be
+            // definitely assigned there.
+            if (IsVariableReferencedAfterIf(parentBlock, ifIndex, variableName) ||
+                IsVariableReferencedInElse(ifStatement, variableName))
             {
                 return;
             }
@@ -367,6 +369,20 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             }
 
             return false;
+        }
+
+        private static bool IsVariableReferencedInElse(
+            IfStatementSyntax ifStatement, string variableName)
+        {
+            if (ifStatement.Else is null)
+            {
+                return false;
+            }
+
+            return ifStatement.Else
+                .DescendantNodesAndSelf()
+                .OfType<IdentifierNameSyntax>()
+                .Any(id => id.Identifier.ValueText == variableName);
         }
 
         /// <summary>

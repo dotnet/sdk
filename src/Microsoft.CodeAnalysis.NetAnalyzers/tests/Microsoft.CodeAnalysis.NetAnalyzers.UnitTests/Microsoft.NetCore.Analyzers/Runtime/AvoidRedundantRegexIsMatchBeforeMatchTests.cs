@@ -2310,6 +2310,33 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, source);
         }
 
+        [Fact]
+        public async Task PreDeclaredAssignment_UsedInElse_DiagnosticButNoFix()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        Match m = null;
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            m = Regex.Match(input, @"\d+");
+                            System.Console.WriteLine(m.Value);
+                        }
+                        else
+                        {
+                            System.Console.WriteLine(m);
+                        }
+                    }
+                }
+                """;
+            // Variable referenced in else branch — pattern variable wouldn't be
+            // definitely assigned there, so no fix offered.
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
         #endregion
     }
 }
