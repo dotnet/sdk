@@ -102,6 +102,25 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return;
             }
 
+            // Verify the initializer is exactly the Match invocation reported by the analyzer
+            // (unwrapping any parentheses/casts). If the Match call is embedded inside a larger
+            // expression (e.g., SomeMethod(Regex.Match(...))), the fix would change semantics.
+            SyntaxNode coreInitializer = declarator.Initializer.Value;
+            while (coreInitializer is ParenthesizedExpressionSyntax parenExpr)
+            {
+                coreInitializer = parenExpr.Expression;
+            }
+
+            while (coreInitializer is CastExpressionSyntax castExpr)
+            {
+                coreInitializer = castExpr.Expression;
+            }
+
+            if (!coreInitializer.Span.Equals(matchNode.Span))
+            {
+                return;
+            }
+
             // Only apply fixer when the declared type is 'var' or exactly
             // System.Text.RegularExpressions.Match. If the user wrote a wider type
             // (e.g., Group, Capture, object), the pattern variable would change

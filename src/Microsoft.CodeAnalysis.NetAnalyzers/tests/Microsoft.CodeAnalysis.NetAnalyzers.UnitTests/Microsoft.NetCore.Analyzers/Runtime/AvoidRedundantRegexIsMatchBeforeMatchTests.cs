@@ -1517,7 +1517,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #endregion
 
-        #region Review round — GPT-5.4 findings
+        #region Regression tests for mutation and control-flow edge cases
 
         [Fact]
         public async Task InterveningRefMutation_NoDiagnostic()
@@ -1798,6 +1798,60 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
                 """;
             await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        #endregion
+
+        #region Coalesce and deconstruction write tests
+
+        [Fact]
+        public async Task InterveningCoalesceAssignment_NoDiagnostic()
+        {
+            var source = """
+                #nullable enable
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string? input)
+                    {
+                        if (Regex.IsMatch(input!, @"\d+"))
+                        {
+                            input ??= "default";
+                            var m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            // ??= and nullable require C# 8+
+            await new VerifyCS.Test
+            {
+                TestCode = source,
+                LanguageVersion = LanguageVersion.CSharp9,
+            }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Fact]
+        public async Task InterveningDeconstructionAssignment_NoDiagnostic()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    (string, string) Split(string s) => (s, s);
+
+                    void M(string input)
+                    {
+                        if (Regex.IsMatch(input, @"\d+"))
+                        {
+                            (input, _) = Split(input);
+                            var m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
         #endregion

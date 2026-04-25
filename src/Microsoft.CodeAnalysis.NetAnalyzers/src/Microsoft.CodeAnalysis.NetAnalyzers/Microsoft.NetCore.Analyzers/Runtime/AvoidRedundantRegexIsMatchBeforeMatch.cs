@@ -503,6 +503,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
+            // Check for deconstruction assignments: (x, y) = expr
+            // The target tuple elements are written to, but aren't modeled as
+            // individual assignment operations.
+            if (operation is IDeconstructionAssignmentOperation decon &&
+                ContainsTrackedSymbolReference(decon.Target, symbols))
+            {
+                return true;
+            }
+
             foreach (var child in operation.Children)
             {
                 if (child is IAnonymousFunctionOperation or ILocalFunctionOperation)
@@ -529,6 +538,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 ISimpleAssignmentOperation assignment => assignment.Target,
                 ICompoundAssignmentOperation compound => compound.Target,
+                ICoalesceAssignmentOperation coalesce => coalesce.Target,
                 IIncrementOrDecrementOperation incDec => incDec.Target,
                 _ => null
             };
@@ -546,6 +556,36 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IParameterReferenceOperation paramRef => paramRef.Parameter,
                 _ => null
             };
+        }
+        /// <summary>
+        /// Checks whether an operation tree contains a local or parameter reference
+        /// to any of the tracked symbols. Used for deconstruction assignment targets.
+        /// </summary>
+        private static bool ContainsTrackedSymbolReference(IOperation operation, HashSet<ISymbol> symbols)
+        {
+            var unwrapped = operation.WalkDownConversion();
+
+            ISymbol? symbol = unwrapped switch
+            {
+                ILocalReferenceOperation localRef => localRef.Local,
+                IParameterReferenceOperation paramRef => paramRef.Parameter,
+                _ => null
+            };
+
+            if (symbol is not null && symbols.Contains(symbol))
+            {
+                return true;
+            }
+
+            foreach (var child in unwrapped.Children)
+            {
+                if (ContainsTrackedSymbolReference(child, symbols))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
