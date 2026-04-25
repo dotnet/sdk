@@ -548,7 +548,7 @@
     <MSBuild
       Targets="Restore;Publish"
       Projects="$(RepoRoot)/src/Cli/dotnet-aot/dotnet-aot.csproj"
-      Properties="Configuration=$(Configuration);TargetFramework=$(SdkTargetFramework);RuntimeIdentifier=$(TargetRid);PublishDir=$(_DotnetAotPublishDir);IntermediateOutputPath=$(_DotnetAotIntermediateDir)" />
+      Properties="Configuration=$(Configuration);RuntimeIdentifier=$(TargetRid);PublishDir=$(_DotnetAotPublishDir);IntermediateOutputPath=$(_DotnetAotIntermediateDir)" />
 
     <!-- Verify the native library was produced -->
     <Error Condition="!Exists('$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)')"
