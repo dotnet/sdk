@@ -121,10 +121,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             IInvocationOperation isMatchInvocation,
             ImmutableArray<ISymbol> matchMembers)
         {
-            // If WhenTrue is not a block, check the single operation directly
-            // to avoid allocating a one-element ImmutableArray.
+            // If WhenTrue is not a block, check the single operation directly.
+            // Still perform the write check for consistency with the block path —
+            // if the single statement mutates a tracked operand, don't flag it.
             if (whenTrue is not IBlockOperation block)
             {
+                HashSet<ISymbol>? singleTracked = null;
+                CollectReferencedMutableSymbols(isMatchInvocation, ref singleTracked);
+                if (singleTracked is not null && ContainsWriteToSymbols(whenTrue, singleTracked))
+                {
+                    return null;
+                }
+
                 return TryFindMatchInOperation(whenTrue, isMatchInvocation, matchMembers);
             }
 

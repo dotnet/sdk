@@ -1944,5 +1944,81 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         #endregion
+
+        #region Non-block write and lambda parameter conflict tests
+
+        [Fact]
+        public async Task SingleStatementBody_WriteToTrackedSymbol_NoDiagnostic()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        string result = "";
+                        if (Regex.IsMatch(input, @"\d+"))
+                            result = Regex.Match(input = "other", @"\d+").Value;
+                    }
+                }
+                """;
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task LambdaParameterConflictsWithMatchVariable_NoFix()
+        {
+            // Fixer should not offer fix because 'm' is used as a lambda parameter in else branch
+            var source = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                        else
+                        {
+                            Func<int, int> f = m => m + 1;
+                        }
+                    }
+                }
+                """;
+            // Fix not applicable — lambda parameter 'm' conflicts
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionParameterConflictsWithMatchVariable_NoFix()
+        {
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                        else
+                        {
+                            int F(int m) => m + 1;
+                            _ = F(0);
+                        }
+                    }
+                }
+                """;
+            // Fix not applicable — local function parameter 'm' conflicts
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        #endregion
     }
 }

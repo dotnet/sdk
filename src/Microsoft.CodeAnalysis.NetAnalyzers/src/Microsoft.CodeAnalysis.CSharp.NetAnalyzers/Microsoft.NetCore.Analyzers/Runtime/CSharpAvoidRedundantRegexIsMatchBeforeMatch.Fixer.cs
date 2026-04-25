@@ -268,6 +268,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 {
                     return true;
                 }
+
+                // Lambda, anonymous method, and local function parameters
+                if (descendant is ParameterSyntax parameter &&
+                    parameter.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
             }
 
             return false;
