@@ -9,3 +9,4 @@ CA1876 | Performance | Info | DoNotUseAsParallelInForEachLoopAnalyzer, [Document
 CA1877 | Performance | Info | CollapseMultiplePathOperationsAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/cA1877)
 CA2026 | Reliability | Info | PreferJsonElementParse, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2026)
 CA2027 | Reliability | Info | DoNotUseNonCancelableTaskDelayWithWhenAny, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027)
+CA2028 | Reliability | Info | AvoidRedundantRegexIsMatchBeforeMatch, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2028)
