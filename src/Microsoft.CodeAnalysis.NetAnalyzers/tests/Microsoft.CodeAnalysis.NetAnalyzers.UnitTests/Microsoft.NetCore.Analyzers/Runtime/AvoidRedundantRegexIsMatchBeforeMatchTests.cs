@@ -155,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
                 """;
             // No code fix — Match is used inline, not assigned to a local.
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCodeFixCSharp9Async(source, source);
         }
 
         [Fact]
@@ -177,7 +177,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCodeFixCSharp9Async(source, source);
         }
 
         [Fact]
@@ -866,8 +866,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            // Verify diagnostic fires but no code fix changes (analyzer-only test).
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            // Verify diagnostic fires but fixer does not change the code.
+            await VerifyCodeFixCSharp9Async(source, source);
         }
 
         [Fact]
@@ -894,8 +894,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            // Verify diagnostic fires but no code fix changes (analyzer-only test).
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            // Verify diagnostic fires but fixer does not change the code.
+            await VerifyCodeFixCSharp9Async(source, source);
         }
 
         #endregion
@@ -926,7 +926,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
                 """;
             // No fix — Match is used inline, not assigned to a local declaration.
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCodeFixCSharp9Async(source, source);
         }
 
         [Fact]
@@ -953,6 +953,151 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
                 """;
             await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task RealWorld_ElseIfChainWithIsMatchThenMatch_Flags()
+        {
+            // Based on NTransit FbpParser.cs: else-if chain where each branch
+            // does IsMatch then Match with the same pattern.
+            // Uses distinct variable names so "fix all" doesn't hit C# pattern
+            // variable scoping conflicts.
+            var source = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    const string PATTERN_A = @"^\d+\.\d+$";
+                    const string PATTERN_B = @"^\d+$";
+
+                    void M(string text)
+                    {
+                        if ({|CA2028:Regex.IsMatch(text, PATTERN_A)|})
+                        {
+                            Match ma = Regex.Match(text, PATTERN_A);
+                            Console.WriteLine(ma.Value);
+                        }
+                        else if ({|CA2028:Regex.IsMatch(text, PATTERN_B)|})
+                        {
+                            Match mb = Regex.Match(text, PATTERN_B);
+                            Console.WriteLine(mb.Value);
+                        }
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    const string PATTERN_A = @"^\d+\.\d+$";
+                    const string PATTERN_B = @"^\d+$";
+
+                    void M(string text)
+                    {
+                        if (Regex.Match(text, PATTERN_A) is { Success: true } ma)
+                        {
+                            Console.WriteLine(ma.Value);
+                        }
+                        else if (Regex.Match(text, PATTERN_B) is { Success: true } mb)
+                        {
+                            Console.WriteLine(mb.Value);
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task RealWorld_IsMatchThenMatchInsideLoop_Flags()
+        {
+            // Based on autoscreen Program.cs / NTransit FbpParser.cs:
+            // IsMatch/Match pair inside a foreach loop body.
+            var source = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string[] args)
+                    {
+                        foreach (string arg in args)
+                        {
+                            if ({|CA2028:Regex.IsMatch(arg, @"^-config=(.+)$")|})
+                            {
+                                Match m = Regex.Match(arg, @"^-config=(.+)$");
+                                Console.WriteLine(m.Groups[1].Value);
+                            }
+                        }
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string[] args)
+                    {
+                        foreach (string arg in args)
+                        {
+                            if (Regex.Match(arg, @"^-config=(.+)$") is { Success: true } m)
+                            {
+                                Console.WriteLine(m.Groups[1].Value);
+                            }
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task RealWorld_ConstStringFieldPattern_Flags()
+        {
+            // Based on NTransit FbpParser.cs: const string fields used as regex pattern arg.
+            var source = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    const string COMPONENT_PATTERN = @"(\w+)\((\w+)\)";
+
+                    void M(string text)
+                    {
+                        if ({|CA2028:Regex.IsMatch(text, COMPONENT_PATTERN)|})
+                        {
+                            Match m = Regex.Match(text, COMPONENT_PATTERN);
+                            string name = m.Groups[1].Value;
+                            string type = m.Groups[2].Value;
+                        }
+                    }
+                }
+                """;
+            var fixedSource = """
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    const string COMPONENT_PATTERN = @"(\w+)\((\w+)\)";
+
+                    void M(string text)
+                    {
+                        if (Regex.Match(text, COMPONENT_PATTERN) is { Success: true } m)
+                        {
+                            string name = m.Groups[1].Value;
+                            string type = m.Groups[2].Value;
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
         #endregion
@@ -1053,7 +1198,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
                 """;
             // Analyzer flags, but fixer doesn't handle return statements.
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCodeFixCSharp9Async(source, source);
         }
 
         [Fact]
@@ -1072,7 +1217,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCodeFixCSharp9Async(source, source);
         }
 
         [Fact]
