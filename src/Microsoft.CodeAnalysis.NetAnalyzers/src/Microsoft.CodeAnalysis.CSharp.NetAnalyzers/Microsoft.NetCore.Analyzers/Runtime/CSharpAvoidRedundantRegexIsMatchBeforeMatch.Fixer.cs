@@ -47,15 +47,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var diagnostic = context.Diagnostics.FirstOrDefault();
-            if (diagnostic is null)
-            {
-                return;
-            }
+            var diagnostic = context.Diagnostics[0];
 
             Document doc = context.Document;
             SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SemanticModel model = await doc.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
             // Require C# 8.0+ for property patterns (is { Success: true } m)
             if (root.SyntaxTree.Options is CSharpParseOptions parseOptions &&
@@ -88,6 +83,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             {
                 return;
             }
+
+            SemanticModel model = await doc.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
             // Path 1: Match m = Regex.Match(...); — local declaration in if body
             var matchDeclarationStatement = matchNode.FirstAncestorOrSelf<LocalDeclarationStatementSyntax>();

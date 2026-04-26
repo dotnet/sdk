@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -45,29 +44,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            context.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(context =>
             {
-                if (!compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTextRegularExpressionsRegex, out var regexType))
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTextRegularExpressionsRegex, out var regexType))
                 {
                     return;
                 }
 
-                var isMatchMembers = regexType.GetMembers("IsMatch");
-                var matchMembers = regexType.GetMembers("Match");
-
-                if (isMatchMembers.IsEmpty || matchMembers.IsEmpty)
+                context.RegisterOperationAction(context =>
                 {
-                    return;
-                }
-
-                compilationContext.RegisterOperationAction(operationContext =>
-                {
-                    var conditional = (IConditionalOperation)operationContext.Operation;
+                    var conditional = (IConditionalOperation)context.Operation;
 
                     // The condition must be a direct call to Regex.IsMatch (not negated).
-                    if (GetUnwrappedInvocation(conditional.Condition) is not IInvocationOperation isMatchInvocation ||
+                    if (UnwrapInvocationFromCondition(conditional.Condition) is not IInvocationOperation isMatchInvocation ||
                         isMatchInvocation.TargetMethod.Name != "IsMatch" ||
-                        !isMatchMembers.Contains(isMatchInvocation.TargetMethod, SymbolEqualityComparer.Default))
+                        !SymbolEqualityComparer.Default.Equals(isMatchInvocation.TargetMethod.ContainingType, regexType))
                     {
                         return;
                     }
@@ -79,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     // Search direct children of the WhenTrue block for Regex.Match calls.
                     IInvocationOperation? matchInvocation = FindMatchingMatchCall(
-                        conditional.WhenTrue, isMatchInvocation, matchMembers);
+                        conditional.WhenTrue, isMatchInvocation, regexType);
 
                     if (matchInvocation is null)
                     {
@@ -87,7 +78,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
 
                     // Report diagnostic on the IsMatch call, with additional location on the Match call.
-                    operationContext.ReportDiagnostic(
+                    context.ReportDiagnostic(
                         isMatchInvocation.CreateDiagnostic(
                             Rule,
                             ImmutableArray.Create(matchInvocation.Syntax.GetLocation()),
@@ -97,15 +88,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         }
 
         /// <summary>
-        /// Unwraps parenthesized and conversion operations to get the underlying invocation.
+        /// Unwraps parenthesized and conversion operations from a condition to get the underlying invocation.
         /// </summary>
-        private static IInvocationOperation? GetUnwrappedInvocation(IOperation? operation)
+        private static IInvocationOperation? UnwrapInvocationFromCondition(IOperation operation)
         {
-            if (operation is null)
-            {
-                return null;
-            }
-
             // Walk through parentheses and conversions (e.g., implicit bool conversion)
             operation = operation.WalkDownParentheses().WalkDownConversion();
 
@@ -119,7 +105,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static IInvocationOperation? FindMatchingMatchCall(
             IOperation whenTrue,
             IInvocationOperation isMatchInvocation,
-            ImmutableArray<ISymbol> matchMembers)
+            INamedTypeSymbol regexType)
         {
             // If WhenTrue is not a block, check the single operation directly.
             // Still perform the write check for consistency with the block path —
@@ -133,7 +119,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return null;
                 }
 
-                return TryFindMatchInOperation(whenTrue, isMatchInvocation, matchMembers);
+                return TryFindMatchInOperation(whenTrue, isMatchInvocation, regexType);
             }
 
             // Collect local/parameter symbols referenced by the IsMatch arguments.
@@ -153,7 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 // Look for Match calls in direct children only — don't recurse into
                 // lambdas, local functions, or nested blocks (except expression-level nesting).
-                if (TryFindMatchInOperation(op, isMatchInvocation, matchMembers) is { } found)
+                if (TryFindMatchInOperation(op, isMatchInvocation, regexType) is { } found)
                 {
                     return found;
                 }
@@ -170,7 +156,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static IInvocationOperation? TryFindMatchInOperation(
             IOperation operation,
             IInvocationOperation isMatchInvocation,
-            ImmutableArray<ISymbol> matchMembers)
+            INamedTypeSymbol regexType)
         {
             // Handle variable declaration: Match m = Regex.Match(...)
             if (operation is IVariableDeclarationGroupOperation declGroup)
@@ -180,7 +166,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     // In VB, the initializer is on the declaration (not the declarator).
                     if (declaration.Initializer?.Value is { } declInitValue)
                     {
-                        var found = FindMatchInExpression(declInitValue, isMatchInvocation, matchMembers);
+                        var found = FindMatchInExpression(declInitValue, isMatchInvocation, regexType);
                         if (found is not null)
                         {
                             return found;
@@ -192,7 +178,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         if (declarator.Initializer?.Value is { } initValue)
                         {
-                            var found = FindMatchInExpression(initValue, isMatchInvocation, matchMembers);
+                            var found = FindMatchInExpression(initValue, isMatchInvocation, regexType);
                             if (found is not null)
                             {
                                 return found;
@@ -207,13 +193,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Handle expression statements: Regex.Match(...) or m = Regex.Match(...)
             if (operation is IExpressionStatementOperation exprStatement)
             {
-                return FindMatchInExpression(exprStatement.Operation, isMatchInvocation, matchMembers);
+                return FindMatchInExpression(exprStatement.Operation, isMatchInvocation, regexType);
             }
 
             // Handle return statements: return Regex.Match(...)
             if (operation is IReturnOperation returnOp && returnOp.ReturnedValue is not null)
             {
-                return FindMatchInExpression(returnOp.ReturnedValue, isMatchInvocation, matchMembers);
+                return FindMatchInExpression(returnOp.ReturnedValue, isMatchInvocation, regexType);
             }
 
             return null;
@@ -227,14 +213,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static IInvocationOperation? FindMatchInExpression(
             IOperation expression,
             IInvocationOperation isMatchInvocation,
-            ImmutableArray<ISymbol> matchMembers)
+            INamedTypeSymbol regexType)
         {
             expression = expression.WalkDownParentheses().WalkDownConversion();
 
             // Direct invocation: check if it's a matching Regex.Match call.
             if (expression is IInvocationOperation invocation)
             {
-                if (IsMatchingMatchCall(invocation, isMatchInvocation, matchMembers))
+                if (IsMatchingMatchCall(invocation, isMatchInvocation, regexType))
                 {
                     return invocation;
                 }
@@ -243,7 +229,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // and the instance receiver.
                 if (invocation.Instance is not null)
                 {
-                    var found = FindMatchInExpression(invocation.Instance, isMatchInvocation, matchMembers);
+                    var found = FindMatchInExpression(invocation.Instance, isMatchInvocation, regexType);
                     if (found is not null)
                     {
                         return found;
@@ -252,7 +238,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 foreach (var arg in invocation.Arguments)
                 {
-                    var found = FindMatchInExpression(arg.Value, isMatchInvocation, matchMembers);
+                    var found = FindMatchInExpression(arg.Value, isMatchInvocation, regexType);
                     if (found is not null)
                     {
                         return found;
@@ -267,7 +253,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 if (propRef.Instance is not null)
                 {
-                    var found = FindMatchInExpression(propRef.Instance, isMatchInvocation, matchMembers);
+                    var found = FindMatchInExpression(propRef.Instance, isMatchInvocation, regexType);
                     if (found is not null)
                     {
                         return found;
@@ -278,7 +264,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     foreach (var arg in propRef.Arguments)
                     {
-                        var found = FindMatchInExpression(arg.Value, isMatchInvocation, matchMembers);
+                        var found = FindMatchInExpression(arg.Value, isMatchInvocation, regexType);
                         if (found is not null)
                         {
                             return found;
@@ -292,7 +278,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Array/indexer element access
             if (expression is IArrayElementReferenceOperation arrayRef)
             {
-                var found = FindMatchInExpression(arrayRef.ArrayReference, isMatchInvocation, matchMembers);
+                var found = FindMatchInExpression(arrayRef.ArrayReference, isMatchInvocation, regexType);
                 if (found is not null)
                 {
                     return found;
@@ -300,7 +286,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 foreach (var index in arrayRef.Indices)
                 {
-                    found = FindMatchInExpression(index, isMatchInvocation, matchMembers);
+                    found = FindMatchInExpression(index, isMatchInvocation, regexType);
                     if (found is not null)
                     {
                         return found;
@@ -313,13 +299,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Simple assignment: x = Regex.Match(...)
             if (expression is ISimpleAssignmentOperation assignment)
             {
-                return FindMatchInExpression(assignment.Value, isMatchInvocation, matchMembers);
+                return FindMatchInExpression(assignment.Value, isMatchInvocation, regexType);
             }
 
             // Conditional access: Regex.Match(...)?.Groups
             if (expression is IConditionalAccessOperation condAccess)
             {
-                return FindMatchInExpression(condAccess.Operation, isMatchInvocation, matchMembers);
+                return FindMatchInExpression(condAccess.Operation, isMatchInvocation, regexType);
             }
 
             return null;
@@ -332,11 +318,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static bool IsMatchingMatchCall(
             IInvocationOperation matchInvocation,
             IInvocationOperation isMatchInvocation,
-            ImmutableArray<ISymbol> matchMembers)
+            INamedTypeSymbol regexType)
         {
             // Must be a Regex.Match method
             if (matchInvocation.TargetMethod.Name != "Match" ||
-                !matchMembers.Contains(matchInvocation.TargetMethod, SymbolEqualityComparer.Default))
+                !SymbolEqualityComparer.Default.Equals(matchInvocation.TargetMethod.ContainingType, regexType))
             {
                 return false;
             }
