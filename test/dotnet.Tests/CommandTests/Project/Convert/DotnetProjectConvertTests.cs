@@ -1401,7 +1401,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
     [Theory, CombinatorialData]
     public void Directives_EmptyName(
-        [CombinatorialValues("sdk", "property", "package", "project", "include", "exclude")] string directive,
+        [CombinatorialValues("sdk", "property", "package", "project", "item", "include", "exclude")] string directive,
         [CombinatorialValues(" ", "")] string value)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1463,6 +1463,55 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedErrors:
             [
                 (1, string.Format(FileBasedProgramsResources.MissingDirectiveName, "project")),
+            ]);
+    }
+
+    [Fact]
+    public void Directives_Item()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:item EmbeddedResource "Data.txt"
+                Console.WriteLine();
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <EmbeddedResource Include="Data.txt" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.WriteLine();
+                """);
+    }
+
+    [Fact]
+    public void Directives_Item_MissingInclude()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:item EmbeddedResource
+                """,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.InvalidDirectiveName, "item", " ")),
             ]);
     }
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -312,6 +313,117 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Hello");
+    }
+
+    [Fact]
+    public void ItemDirective_EmbeddedResource()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property PublishAot=false
+            #:item EmbeddedResource "Data.txt"
+            using System.Reflection;
+
+            var asm = Assembly.GetExecutingAssembly();
+            using var stream = asm.GetManifestResourceStream($"{asm.GetName().Name}.Data.txt");
+            using var reader = new StreamReader(stream!);
+            Console.WriteLine(reader.ReadToEnd());
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Data.txt"), "Hello from resource");
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from resource");
+    }
+
+    [Fact]
+    public void ItemDirective_Api()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var builder = new VirtualProjectBuilder(
+            entryPointFileFullPath: programPath,
+            targetFramework: VirtualProjectBuildingCommand.TargetFramework,
+            sourceText: SourceText.From("""
+                #:item EmbeddedResource "Data.txt"
+                Console.WriteLine();
+                """, Encoding.UTF8));
+
+        builder.CreateProjectInstance(
+            new Microsoft.Build.Evaluation.ProjectCollection(),
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            out var project,
+            out var directives);
+
+        var item = directives.OfType<CSharpDirective.Item>().Should().ContainSingle().Which;
+        item.ItemType.Should().Be("EmbeddedResource");
+        item.Include.Should().Be("Data.txt");
+        item.Name.Should().Be("EmbeddedResource Data.txt");
+
+        project.GetItems("EmbeddedResource").Select(static i => i.EvaluatedInclude).Should().Contain("Data.txt");
+    }
+
+    [Fact]
+    public void ItemDirective_GrpcProto_NoDirectoryBuildProps()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "grpc.cs"), """
+            #:sdk Microsoft.NET.Sdk.Web
+            #:property PublishAot=false
+            #:package Grpc.AspNetCore@2.76.0
+            #:package Google.Protobuf@3.33.2
+            #:package Grpc.Tools@2.76.0
+            #:item Protobuf "greet.proto"
+            using Grpc.Core;
+
+            var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddGrpc();
+
+            var app = builder.Build();
+            app.MapGrpcService<GreeterService>();
+
+            public class GreeterService(ILogger<GreeterService> logger) : Greeter.GreeterBase
+            {
+                public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
+                {
+                    logger.LogInformation("Saying hello to {Name}", request.Name);
+
+                    return Task.FromResult(new HelloReply
+                    {
+                        Message = "Hello " + request.Name
+                    });
+                }
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "greet.proto"), """
+            syntax = "proto3";
+
+            service Greeter {
+              rpc SayHello (HelloRequest) returns (HelloReply);
+            }
+
+            message HelloRequest {
+              string name = 1;
+            }
+
+            message HelloReply {
+              string message = 1;
+            }
+            """);
+
+        File.Exists(Path.Join(testInstance.Path, "Directory.Build.props")).Should().BeFalse();
+
+        new DotnetCommand(Log, "build", "grpc.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
     }
 
     [Theory, CombinatorialData]
