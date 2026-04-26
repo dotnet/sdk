@@ -42,7 +42,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -76,7 +76,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         var regex = new Regex(@"\d+");
-                        if ({|CA2028:regex.IsMatch(input)|})
+                        if ([|regex.IsMatch(input)|])
                         {
                             Match m = regex.Match(input);
                         }
@@ -110,7 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+", RegexOptions.IgnoreCase)|})
+                        if ([|Regex.IsMatch(input, @"\d+", RegexOptions.IgnoreCase)|])
                         {
                             Match m = Regex.Match(input, @"\d+", RegexOptions.IgnoreCase);
                         }
@@ -146,7 +146,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         var timeout = TimeSpan.FromSeconds(1);
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+", RegexOptions.IgnoreCase, timeout)|})
+                        if ([|Regex.IsMatch(input, @"\d+", RegexOptions.IgnoreCase, timeout)|])
                         {
                             var m = Regex.Match(input, @"\d+", RegexOptions.IgnoreCase, timeout);
                         }
@@ -184,7 +184,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     string M(string input)
                     {
                         var regex = new Regex(@"charset=(.+)");
-                        if ({|CA2028:regex.IsMatch(input)|})
+                        if ([|regex.IsMatch(input)|])
                         {
                             return regex.Match(input).Groups[1].Value;
                         }
@@ -208,7 +208,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         Match m;
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             m = Regex.Match(input, @"\d+");
                         }
@@ -241,7 +241,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             var m = Regex.Match(input, @"\d+");
                         }
@@ -276,7 +276,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     void M(string input)
                     {
-                        if ({|CA2028:_regex.IsMatch(input)|})
+                        if ([|_regex.IsMatch(input)|])
                         {
                             Match m = _regex.Match(input);
                         }
@@ -311,7 +311,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input, string pattern)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, pattern)|})
+                        if ([|Regex.IsMatch(input, pattern)|])
                         {
                             Match m = Regex.Match(input, pattern);
                         }
@@ -344,7 +344,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, "hello")|})
+                        if ([|Regex.IsMatch(input, "hello")|])
                         {
                             Match m = Regex.Match(input, "hello");
                         }
@@ -380,7 +380,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Console.WriteLine("Found a match");
                             Match m = Regex.Match(input, @"\d+");
@@ -389,7 +389,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -403,7 +403,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         var regex = new Regex(@"\d+");
-                        if ({|CA2028:regex.IsMatch(input, 0)|})
+                        if ([|regex.IsMatch(input, 0)|])
                         {
                             Match m = regex.Match(input, 0);
                         }
@@ -448,7 +448,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -469,7 +469,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -491,7 +491,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -511,7 +511,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -532,7 +532,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -555,7 +555,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -578,7 +578,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -603,7 +603,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -626,7 +626,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -649,7 +649,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -672,7 +672,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -693,7 +693,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -716,7 +716,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -739,7 +739,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -761,7 +761,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -782,7 +782,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -806,7 +806,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -821,7 +821,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -843,7 +843,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -866,7 +866,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -889,7 +889,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -921,7 +921,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -953,7 +953,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1001,7 +1001,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Console.WriteLine("before match");
                             Match m = Regex.Match(input, @"\d+");
@@ -1025,7 +1025,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -1060,7 +1060,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     Encoding M(string contentType)
                     {
                         var regex = new Regex(@"charset=(.+)", RegexOptions.IgnoreCase);
-                        if ({|CA2028:regex.IsMatch(contentType)|})
+                        if ([|regex.IsMatch(contentType)|])
                         {
                             return Encoding.GetEncoding(regex.Match(contentType).Groups[1].Value.Trim());
                         }
@@ -1095,7 +1095,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1116,12 +1116,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     void M(string text)
                     {
-                        if ({|CA2028:Regex.IsMatch(text, PATTERN_A)|})
+                        if ([|Regex.IsMatch(text, PATTERN_A)|])
                         {
                             Match ma = Regex.Match(text, PATTERN_A);
                             Console.WriteLine(ma.Value);
                         }
-                        else if ({|CA2028:Regex.IsMatch(text, PATTERN_B)|})
+                        else if ([|Regex.IsMatch(text, PATTERN_B)|])
                         {
                             Match mb = Regex.Match(text, PATTERN_B);
                             Console.WriteLine(mb.Value);
@@ -1168,7 +1168,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     {
                         foreach (string arg in args)
                         {
-                            if ({|CA2028:Regex.IsMatch(arg, @"^-config=(.+)$")|})
+                            if ([|Regex.IsMatch(arg, @"^-config=(.+)$")|])
                             {
                                 Match m = Regex.Match(arg, @"^-config=(.+)$");
                                 Console.WriteLine(m.Groups[1].Value);
@@ -1212,7 +1212,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     void M(string text)
                     {
-                        if ({|CA2028:Regex.IsMatch(text, COMPONENT_PATTERN)|})
+                        if ([|Regex.IsMatch(text, COMPONENT_PATTERN)|])
                         {
                             Match m = Regex.Match(text, COMPONENT_PATTERN);
                             string name = m.Groups[1].Value;
@@ -1254,13 +1254,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                 Class C
                     Sub M(input As String)
-                        If {|CA2028:Regex.IsMatch(input, "\d+")|} Then
+                        If [|Regex.IsMatch(input, "\d+")|] Then
                             Dim m As Match = Regex.Match(input, "\d+")
                         End If
                     End Sub
                 End Class
                 """;
-            await VerifyVB.VerifyAnalyzerAsync(source);
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1277,7 +1277,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     End Sub
                 End Class
                 """;
-            await VerifyVB.VerifyAnalyzerAsync(source);
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
         #endregion
@@ -1296,7 +1296,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                             Match m2 = Regex.Match(input, @"\d+");
@@ -1331,7 +1331,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     Match M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             return Regex.Match(input, @"\d+");
                         }
@@ -1354,7 +1354,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                             Regex.Match(input, @"\d+");
                     }
                 }
@@ -1374,7 +1374,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     void M(string input)
                     {
-                        if ({|CA2028:s_regex.IsMatch(input)|})
+                        if ([|s_regex.IsMatch(input)|])
                         {
                             Match m = s_regex.Match(input);
                         }
@@ -1409,7 +1409,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(Regex regex, string input)
                     {
-                        if ({|CA2028:regex.IsMatch(input)|})
+                        if ([|regex.IsMatch(input)|])
                         {
                             Match m = regex.Match(input);
                         }
@@ -1450,7 +1450,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1466,7 +1466,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, Pattern)|})
+                        if ([|Regex.IsMatch(input, Pattern)|])
                         {
                             Match m = Regex.Match(input, Pattern);
                         }
@@ -1503,7 +1503,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, _pattern)|})
+                        if ([|Regex.IsMatch(input, _pattern)|])
                         {
                             Match m = Regex.Match(input, _pattern);
                         }
@@ -1539,7 +1539,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input: input, pattern: @"\d+")|})
+                        if ([|Regex.IsMatch(input: input, pattern: @"\d+")|])
                         {
                             Match m = Regex.Match(input: input, pattern: @"\d+");
                         }
@@ -1573,7 +1573,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input: input, pattern: @"\d+")|})
+                        if ([|Regex.IsMatch(input: input, pattern: @"\d+")|])
                         {
                             Match m = Regex.Match(pattern: @"\d+", input: input);
                         }
@@ -1641,7 +1641,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1664,7 +1664,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1681,7 +1681,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -1704,7 +1704,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input, object obj)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -1728,7 +1728,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input, List<int> items)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -1752,7 +1752,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Group g = Regex.Match(input, @"\d+");
                         }
@@ -1772,7 +1772,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             object o = Regex.Match(input, @"\d+");
                         }
@@ -1792,7 +1792,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -1826,7 +1826,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if (({|CA2028:Regex.IsMatch(input, @"\d+")|})  )
+                        if (([|Regex.IsMatch(input, @"\d+")|])  )
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -1861,7 +1861,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input, List<(string, int)> items)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -1890,7 +1890,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         switch (mode)
                         {
                             case 1:
-                                if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                                if ([|Regex.IsMatch(input, @"\d+")|])
                                 {
                                     Match m = Regex.Match(input, @"\d+");
                                 }
@@ -1953,7 +1953,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         #endregion
@@ -1976,7 +1976,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -1991,7 +1991,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -2016,7 +2016,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             Match m = Regex.Match(input, @"\d+");
                         }
@@ -2045,7 +2045,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch((input), (@"\d+"))|})
+                        if ([|Regex.IsMatch((input), (@"\d+"))|])
                         {
                             Match m = Regex.Match((input), (@"\d+"));
                         }
@@ -2076,7 +2076,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 {
                     void M(string input)
                     {
-                        if ({|CA2028:Regex.IsMatch((input), @"\d+")|})
+                        if ([|Regex.IsMatch((input), @"\d+")|])
                         {
                             Match m = Regex.Match(input, (@"\d+"));
                         }
@@ -2115,7 +2115,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 }
                 """;
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         #endregion
@@ -2132,7 +2132,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         Match m = null;
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             m = Regex.Match(input, @"\d+");
                             System.Console.WriteLine(m.Value);
@@ -2166,7 +2166,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         Match m;
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             m = Regex.Match(input, @"\d+");
                             System.Console.WriteLine(m.Value);
@@ -2200,7 +2200,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         Match m = default;
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             m = Regex.Match(input, @"\d+");
                             System.Console.WriteLine(m.Value);
@@ -2234,7 +2234,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         Match m = null;
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             m = Regex.Match(input, @"\d+");
                         }
@@ -2256,7 +2256,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         Match m = Regex.Match("", "");
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             m = Regex.Match(input, @"\d+");
                             System.Console.WriteLine(m.Value);
@@ -2279,7 +2279,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     {
                         Match m = null;
                         int x = 42;
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             m = Regex.Match(input, @"\d+");
                             System.Console.WriteLine(m.Value);
@@ -2301,7 +2301,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         Match m = null;
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                             m = Regex.Match(input, @"\d+");
                     }
                 }
@@ -2320,7 +2320,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     void M(string input)
                     {
                         Match m = null;
-                        if ({|CA2028:Regex.IsMatch(input, @"\d+")|})
+                        if ([|Regex.IsMatch(input, @"\d+")|])
                         {
                             m = Regex.Match(input, @"\d+");
                             System.Console.WriteLine(m.Value);
