@@ -33,6 +33,7 @@ namespace GenerateDocumentationAndConfigFiles
         {
             const int expectedArguments = 23;
             const string validateOnlyPrefix = "-validateOnly:";
+            const string analyzerVersionTemplate = "${AnalyzerVersion}";
 
             if (args.Length != expectedArguments)
             {
@@ -451,7 +452,7 @@ namespace GenerateDocumentationAndConfigFiles
 
                     if (!string.IsNullOrWhiteSpace(analyzerVersion))
                     {
-                        writer.Write("version", analyzerVersion);
+                        writer.Write("version", analyzerVersionTemplate);
                     }
 
                     writer.Write("language", culture.Name);
