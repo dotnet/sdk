@@ -2214,6 +2214,18 @@ When Task.Delay is used with Task.WhenAny to implement a timeout, the timer crea
 |CodeFix|False|
 ---
 
+## [CA2028](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2028): Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'
+
+When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.
