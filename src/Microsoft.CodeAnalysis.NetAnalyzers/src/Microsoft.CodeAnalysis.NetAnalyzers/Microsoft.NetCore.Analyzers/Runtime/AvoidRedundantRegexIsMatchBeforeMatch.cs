@@ -302,10 +302,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return FindMatchInExpression(assignment.Value, isMatchInvocation, regexType);
             }
 
-            // Conditional access: Regex.Match(...)?.Groups
+            // Conditional access: Regex.Match(...)?.Groups or obj?.Method(Regex.Match(...))
             if (expression is IConditionalAccessOperation condAccess)
             {
-                return FindMatchInExpression(condAccess.Operation, isMatchInvocation, regexType);
+                return FindMatchInExpression(condAccess.Operation, isMatchInvocation, regexType)
+                    ?? FindMatchInExpression(condAccess.WhenNotNull, isMatchInvocation, regexType);
             }
 
             return null;
@@ -592,7 +593,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return null;
             }
 
-            target = target.WalkDownConversion();
+            target = target.WalkDownParentheses().WalkDownConversion();
 
             return target switch
             {
@@ -607,7 +608,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// </summary>
         private static bool ContainsTrackedSymbolReference(IOperation operation, HashSet<ISymbol> symbols)
         {
-            var unwrapped = operation.WalkDownConversion();
+            var unwrapped = operation.WalkDownParentheses().WalkDownConversion();
 
             ISymbol? symbol = unwrapped switch
             {

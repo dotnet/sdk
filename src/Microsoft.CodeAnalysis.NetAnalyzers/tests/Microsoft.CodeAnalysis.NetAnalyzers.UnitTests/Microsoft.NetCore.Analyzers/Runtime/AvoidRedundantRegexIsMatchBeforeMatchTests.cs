@@ -2118,6 +2118,48 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
+        [Fact]
+        public async Task ParenthesizedAssignmentTarget_WriteDetected_NoDiagnostic()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.IsMatch(input, @"\d+"))
+                        {
+                            (input) = "other";
+                            var m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task ConditionalAccessWhenNotNull_MatchInArgument_Diagnostic()
+        {
+            string source = """
+                using System.Text.RegularExpressions;
+                class C
+                {
+                    string Process(Match m) => m.Value;
+
+                    void M(string input)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            var result = this?.Process(Regex.Match(input, @"\d+"));
+                        }
+                    }
+                }
+                """;
+            // No fix for this pattern (conditional access is not a simple local/assignment)
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
         #endregion
 
         #region Pre-declaration assignment pattern tests
