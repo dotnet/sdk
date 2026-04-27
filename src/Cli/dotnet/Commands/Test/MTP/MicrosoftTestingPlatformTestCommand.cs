@@ -6,6 +6,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -76,7 +77,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
         bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
 
         AnsiMode ansiMode = AnsiMode.AnsiIfPossible;
-        if (noAnsi)
+        // In LLM environments, prefer simple text output so that LLM can parse it easily.
+        // Note that NoAnsi also implies no progress.
+        if (noAnsi || new LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
         {
             // User explicitly specified --no-ansi.
             // We should respect that.

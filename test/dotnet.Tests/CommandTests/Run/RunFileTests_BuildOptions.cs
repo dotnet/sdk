@@ -655,6 +655,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"),
             $"""
+            #!/usr/bin/env dotnet
             #:include *.cs
             {s_programDependingOnUtil}
             """);
