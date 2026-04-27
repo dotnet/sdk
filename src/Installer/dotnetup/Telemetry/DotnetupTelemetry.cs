@@ -8,7 +8,6 @@ using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Telemetry;
 using OpenTelemetry;
-using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -261,7 +260,7 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             errorEventProps[TelemetryTagNames.ErrorCode] = errorCode;
         }
-        TrackEvent("error", errorEventProps);
+        TrackEvent("error", operation.Activity, errorEventProps);
     }
 
     /// <summary>
@@ -293,32 +292,67 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
+    /// Builds the full properties dict from an activity's tags and the stored tags
+    /// accumulated by <see cref="TrackedOperation.Tag"/>, then enriches with
+    /// session ID, event ID, and duration.
+    /// </summary>
+    private Dictionary<string, string?> BuildEventProperties(Activity? activity, IDictionary<string, string?> storedTags)
+    {
+        var properties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        if (activity is not null)
+        {
+            foreach (var tag in activity.TagObjects)
+            {
+                properties[tag.Key] = tag.Value?.ToString();
+            }
+        }
+
+        // Merge explicitly stored tags — ensures tags set via Tag() are always
+        // present even if the Activity.TagObjects enumeration misses them.
+        foreach (var tag in storedTags)
+        {
+            properties[tag.Key] = tag.Value;
+        }
+
+        properties["event id"] = Guid.NewGuid().ToString();
+        properties["SessionId"] = SessionId;
+
+        // Calculate duration before stopping the activity.
+        if (activity is not null)
+        {
+            var durationMs = (DateTimeOffset.UtcNow - new DateTimeOffset(activity.StartTimeUtc)).TotalMilliseconds;
+            properties["operation.duration_ms"] = durationMs.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return properties;
+    }
+
+    /// <summary>
     /// Callback invoked by <see cref="TrackedOperation"/> on dispose (via
     /// <see cref="Metrics.OnTrackEvent"/>) and by <see cref="RecordException"/>.
-    /// Enriches the properties with a unique event ID and session ID, sets them
-    /// as span tags on <c>Activity.Current</c>, and emits an <see cref="ActivityEvent"/>
+    /// Builds the full properties dict from the activity's tags and stored tags,
+    /// emits an <see cref="ActivityEvent"/> on the activity, and then stops it
     /// so the data appears in both the dependencies and traces tables.
     /// </summary>
-    private void TrackEvent(string eventName, IDictionary<string, string?> properties)
+    private void TrackEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
     {
         if (!Enabled)
         {
+            activity?.Stop();
             return;
         }
 
         try
         {
-            properties["event id"] = Guid.NewGuid().ToString();
-            properties["SessionId"] = SessionId;
+            var properties = BuildEventProperties(activity, storedTags);
 
             // Set each property as a span tag so it appears in the span's
             // customDimensions (dependencies/requests tables) as well.
-            var current = Activity.Current;
-            if (current != null)
+            if (activity is not null)
             {
                 foreach (var prop in properties)
                 {
-                    current.SetTag(prop.Key, prop.Value);
+                    activity.SetTag(prop.Key, prop.Value);
                 }
             }
 
@@ -333,8 +367,14 @@ public sealed class DotnetupTelemetry : IDisposable
                 tags.Add(new KeyValuePair<string, object?>(prop.Key, prop.Value));
             }
 
+            // Emit ActivityEvent on the activity reference BEFORE stopping it.
+            // Previously we used Activity.Current which was null for root spans
+            // after Stop(), silently dropping command-level events.
             var @event = new ActivityEvent($"dotnetup/{eventName}", tags: tags);
-            current?.AddEvent(@event);
+            activity?.AddEvent(@event);
+
+            // Now stop the activity — the exporter will see the event we just added.
+            activity?.Stop();
         }
         catch
         {

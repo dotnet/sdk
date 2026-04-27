@@ -59,7 +59,7 @@ internal static class Metrics
     /// ensuring data lands in both spans and events (traces table).
     /// When null, telemetry falls back to span-only (Activity.SetTag).
     /// </summary>
-    public static Action<string, IDictionary<string, string?>>? OnTrackEvent { get; set; }
+    public static Action<string, Activity?, IDictionary<string, string?>>? OnTrackEvent { get; set; }
 
     /// <summary>
     /// Starts a tracked operation that automatically emits a telemetry event on dispose.

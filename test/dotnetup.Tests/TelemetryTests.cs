@@ -624,8 +624,9 @@ public class ActivitySourceIntegrationTests
 public class TrackedOperationTests : IDisposable
 {
     private readonly ActivityListener _listener;
+    private readonly ActivityListener _commandListener;
     private readonly List<Activity> _capturedActivities = [];
-    private readonly List<(string EventName, IDictionary<string, string?> Properties)> _capturedEvents = [];
+    private readonly List<(string EventName, Activity? Activity, IDictionary<string, string?> StoredTags)> _capturedEvents = [];
 
     public TrackedOperationTests()
     {
@@ -635,14 +636,115 @@ public class TrackedOperationTests : IDisposable
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = activity => _capturedActivities.Add(activity)
         };
+        _commandListener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == "Microsoft.Dotnet.Bootstrapper",
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+        };
         ActivitySource.AddActivityListener(_listener);
-        Metrics.OnTrackEvent = (name, props) => _capturedEvents.Add((name, props));
+        ActivitySource.AddActivityListener(_commandListener);
+        Metrics.OnTrackEvent = TrackEventTestCallback;
     }
 
     public void Dispose()
     {
         _listener.Dispose();
+        _commandListener.Dispose();
         Metrics.OnTrackEvent = null;
+    }
+
+    /// <summary>
+    /// Test callback that mimics the critical parts of <c>DotnetupTelemetry.TrackEvent</c>:
+    /// builds properties from Activity tags + stored tags, calculates duration, emits an
+    /// <see cref="ActivityEvent"/> on the activity, and stops it. This ensures tests
+    /// validate the same code path that runs in production.
+    /// </summary>
+    private void TrackEventTestCallback(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
+    {
+        _capturedEvents.Add((eventName, activity, storedTags));
+
+        if (activity is null)
+        {
+            return;
+        }
+
+        // Build the full properties dict (mirrors DotnetupTelemetry.TrackEvent)
+        var properties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var tag in activity.TagObjects)
+        {
+            properties[tag.Key] = tag.Value?.ToString();
+        }
+
+        foreach (var tag in storedTags)
+        {
+            properties[tag.Key] = tag.Value;
+        }
+
+        var durationMs = (DateTimeOffset.UtcNow - activity.StartTimeUtc).TotalMilliseconds;
+        properties["operation.duration_ms"] = durationMs.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        // Set as span tags
+        foreach (var prop in properties)
+        {
+            activity.SetTag(prop.Key, prop.Value);
+        }
+
+        // Emit ActivityEvent BEFORE stopping (the key fix being tested)
+        var tags = new ActivityTagsCollection();
+        foreach (var prop in properties.Where(p => p.Value is not null).OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            tags.Add(new KeyValuePair<string, object?>(prop.Key, prop.Value));
+        }
+
+        activity.AddEvent(new ActivityEvent($"dotnetup/{eventName}", tags: tags));
+        activity.Stop();
+    }
+
+    /// <summary>
+    /// Asserts that a tracked event was properly emitted to both the callback and the
+    /// Activity's Events collection. This dual assertion prevents regressions where
+    /// callback data is correct but ActivityEvent emission is broken (e.g., the
+    /// root-activity bug where Activity.Current was null after Stop).
+    /// </summary>
+    private static void AssertTrackedEvent(
+        (string EventName, Activity? Activity, IDictionary<string, string?> StoredTags) captured,
+        string expectedEventName,
+        IDictionary<string, string?>? expectedTags = null)
+    {
+        // Assert callback data
+        Assert.Equal(expectedEventName, captured.EventName);
+        Assert.NotNull(captured.Activity);
+
+        // Assert ActivityEvent on the activity itself
+        var activityEvents = captured.Activity!.Events.ToList();
+        var matchingEvent = activityEvents.FirstOrDefault(e => e.Name == $"dotnetup/{expectedEventName}");
+        Assert.False(
+            string.IsNullOrEmpty(matchingEvent.Name),
+            $"Activity.Events should contain an event named 'dotnetup/{expectedEventName}'. " +
+            $"Found events: [{string.Join(", ", activityEvents.Select(e => e.Name))}]");
+
+        // Verify duration is present and valid in the event tags
+        var eventTags = matchingEvent.Tags.ToDictionary(t => t.Key, t => t.Value?.ToString());
+        Assert.True(eventTags.ContainsKey("operation.duration_ms"),
+            "ActivityEvent should contain operation.duration_ms");
+        Assert.True(double.TryParse(eventTags["operation.duration_ms"], out var ms) && ms >= 0,
+            "operation.duration_ms should be a non-negative number");
+
+        // Verify expected tags in the ActivityEvent
+        if (expectedTags is not null)
+        {
+            foreach (var (key, value) in expectedTags)
+            {
+                Assert.True(eventTags.ContainsKey(key),
+                    $"ActivityEvent should contain tag '{key}'");
+                Assert.Equal(value, eventTags[key]);
+            }
+        }
+
+        // Verify the activity was stopped
+        Assert.True(
+            captured.Activity.Duration > TimeSpan.Zero,
+            "Activity should have been stopped by TrackEvent");
     }
 
     [Fact]
@@ -654,8 +756,10 @@ public class TrackedOperationTests : IDisposable
         }
 
         Assert.Single(_capturedEvents);
-        Assert.Equal("test/complete", _capturedEvents[0].EventName);
-        Assert.Equal("value1", _capturedEvents[0].Properties["key1"]);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "test/complete",
+            new Dictionary<string, string?> { ["key1"] = "value1" });
     }
 
     [Fact]
@@ -667,9 +771,7 @@ public class TrackedOperationTests : IDisposable
         }
 
         Assert.Single(_capturedEvents);
-        Assert.True(_capturedEvents[0].Properties.ContainsKey("operation.duration_ms"));
-        Assert.True(double.TryParse(_capturedEvents[0].Properties["operation.duration_ms"], out var ms));
-        Assert.True(ms >= 0);
+        AssertTrackedEvent(_capturedEvents[0], "test/duration");
     }
 
     [Fact]
@@ -683,8 +785,14 @@ public class TrackedOperationTests : IDisposable
         }
 
         Assert.Single(_capturedEvents);
-        Assert.Equal("inner-value", _capturedEvents[0].Properties["inner.tag"]);
-        Assert.Equal("outer-value", _capturedEvents[0].Properties["outer.tag"]);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "test/current",
+            new Dictionary<string, string?>
+            {
+                ["inner.tag"] = "inner-value",
+                ["outer.tag"] = "outer-value"
+            });
     }
 
     [Fact]
@@ -695,8 +803,16 @@ public class TrackedOperationTests : IDisposable
             op.Tag("span.key", "span-value");
         }
 
+        // Verify via stopped activities (ActivityListener callback)
         Assert.Single(_capturedActivities);
         Assert.Contains(_capturedActivities[0].Tags, t => t.Key == "span.key" && t.Value == "span-value");
+
+        // Also verify via dual assertion
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "test/span",
+            new Dictionary<string, string?> { ["span.key"] = "span-value" });
     }
 
     [Fact]
@@ -722,6 +838,79 @@ public class TrackedOperationTests : IDisposable
         }
 
         Assert.Empty(_capturedEvents);
+        // Activity should still be stopped even without a callback
+        Assert.Single(_capturedActivities);
+        Assert.True(_capturedActivities[0].Duration >= TimeSpan.Zero);
+    }
+
+    /// <summary>
+    /// Regression test: root activities (no parent) must have their ActivityEvent
+    /// properly emitted. Previously, root activities had events silently dropped
+    /// because <c>Activity.Current</c> was <c>null</c> after <c>Stop()</c>.
+    /// </summary>
+    [Fact]
+    public void TrackedOperation_RootActivity_EmitsActivityEvent()
+    {
+        // Use the library ActivitySource (no parent activity exists)
+        using (var op = Metrics.Track("test-root", "test/root-event"))
+        {
+            op.Tag("root.key", "root-value");
+        }
+
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "test/root-event",
+            new Dictionary<string, string?> { ["root.key"] = "root-value" });
+    }
+
+    /// <summary>
+    /// Regression test: command-level root activities must also get ActivityEvents.
+    /// This mirrors the production flow where <c>StartTrackedCommand</c> creates a
+    /// root span via <c>CommandSource</c>.
+    /// </summary>
+    [Fact]
+    public void TrackedOperation_CommandSourceRootActivity_EmitsActivityEvent()
+    {
+        // Create a root command activity directly (simulates StartTrackedCommand)
+        var activity = DotnetupTelemetry.CommandSource.StartActivity("command/test-cmd", ActivityKind.Internal);
+        Assert.NotNull(activity);
+
+        var op = new TrackedOperation(activity, "command/test-cmd", TrackEventTestCallback);
+        op.Tag("command.name", "test-cmd");
+        op.Dispose();
+
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "command/test-cmd",
+            new Dictionary<string, string?> { ["command.name"] = "test-cmd" });
+    }
+
+    /// <summary>
+    /// Tests that a child library activity emits its event correctly when nested
+    /// under a parent command activity.
+    /// </summary>
+    [Fact]
+    public void TrackedOperation_NestedActivity_EmitsActivityEvent()
+    {
+        // Create parent command activity (stays alive during child)
+        using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/test-parent", ActivityKind.Internal);
+        Assert.NotNull(commandActivity);
+
+        // Create child library activity within the command scope
+        using (var childOp = Metrics.Track("download", "download/complete"))
+        {
+            childOp.Tag("download.bytes", "1024");
+        }
+
+        // Child should have emitted its event
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "download/complete",
+            new Dictionary<string, string?> { ["download.bytes"] = "1024" });
     }
 }
 

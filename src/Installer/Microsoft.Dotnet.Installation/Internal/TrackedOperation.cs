@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Globalization;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -10,18 +9,18 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// Wraps an <see cref="Activity"/> and automatically emits a telemetry event
 /// containing all accumulated tags when disposed. Callers use <see cref="Tag"/>
 /// to set data on both the span and the eventual event. On dispose, the activity
-/// is stopped (capturing duration) and all tags are forwarded to the injected
-/// callback.
+/// reference and stored tags are forwarded to the injected callback, which is
+/// responsible for stopping the activity and emitting the event.
 /// </summary>
 internal sealed class TrackedOperation : IDisposable
 {
     private readonly Activity? _activity;
     private readonly string _eventName;
-    private readonly Action<string, IDictionary<string, string?>>? _onTrackEvent;
+    private readonly Action<string, Activity?, IDictionary<string, string?>>? _onTrackEvent;
     private readonly Dictionary<string, string?> _storedTags = new(StringComparer.OrdinalIgnoreCase);
     private bool _disposed;
 
-    internal TrackedOperation(Activity? activity, string eventName, Action<string, IDictionary<string, string?>>? onTrackEvent)
+    internal TrackedOperation(Activity? activity, string eventName, Action<string, Activity?, IDictionary<string, string?>>? onTrackEvent)
     {
         _activity = activity;
         _eventName = eventName;
@@ -50,29 +49,16 @@ internal sealed class TrackedOperation : IDisposable
         }
 
         _disposed = true;
-        _activity?.Stop();
 
-        if (_activity is null)
+        if (_onTrackEvent is not null)
         {
-            return;
+            // Callback is responsible for stopping the activity and emitting the event.
+            _onTrackEvent.Invoke(_eventName, _activity, _storedTags);
         }
-
-        var properties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var tag in _activity.TagObjects)
+        else
         {
-            properties[tag.Key] = tag.Value?.ToString();
+            // No host callback registered — still stop the activity so the span completes.
+            _activity?.Stop();
         }
-
-        // Merge explicitly stored tags — ensures tags set via Tag() are always
-        // present even if the Activity.TagObjects enumeration misses them.
-        foreach (var tag in _storedTags)
-        {
-            properties[tag.Key] = tag.Value;
-        }
-
-        properties["operation.duration_ms"] = _activity.Duration.TotalMilliseconds
-            .ToString(CultureInfo.InvariantCulture);
-
-        _onTrackEvent?.Invoke(_eventName, properties);
     }
 }
