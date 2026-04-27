@@ -70,10 +70,10 @@
       <MethodLimitMultiplier>5</MethodLimitMultiplier>
     </SDKCustomXUnitProject>
     <SDKCustomXUnitProject Update="TemplateEngine\**\*.csproj;**\Microsoft.TemplateEngine.Cli.UnitTests.csproj">
-      <MethodLimitMultiplier>10</MethodLimitMultiplier>
+      <MethodLimitMultiplier>20</MethodLimitMultiplier>
     </SDKCustomXUnitProject>
-    <SDKCustomXUnitProject Update="**\Microsoft.DotNet.ApiCompatibility.Tests.csproj;**\Microsoft.DotNet.ApiDiff.Tests.csproj;**\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj">
-      <MethodLimitMultiplier>5</MethodLimitMultiplier>
+    <SDKCustomXUnitProject Update="**\Microsoft.DotNet.ApiCompatibility.Tests.csproj;**\Microsoft.DotNet.ApiDiff.Tests.csproj;**\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;**\Microsoft.DotNet.GenAPI.Tests.csproj">
+      <MethodLimitMultiplier>10</MethodLimitMultiplier>
     </SDKCustomXUnitProject>
   </ItemGroup>
 
