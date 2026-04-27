@@ -71,10 +71,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
 #endif
                     }
                 }
-                catch (InvalidOperationException)
-                {
-                }
-                catch (System.ComponentModel.Win32Exception)
+                catch
                 {
                 }
             }
@@ -83,7 +80,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
 #if NETFRAMEWORK
         private static void KillProcessTreeInternal(int pid)
         {
-            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid))
+            using (ManagementObjectSearcher searcher = new("Select * From Win32_Process Where ParentProcessID=" + pid))
             using (ManagementObjectCollection moc = searcher.Get())
             {
                 foreach (ManagementObject mo in moc)
