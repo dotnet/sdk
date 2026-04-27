@@ -57,7 +57,7 @@ class Program
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(2).WithArguments("-"),
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(3).WithArguments("+"),
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(4).WithArguments("-"),
-            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(5).WithArguments("-")).RunAsync();
+            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(5).WithArguments("-")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ class Program
         nint2 = nint1 + 2;
         nuint1 = nuint1 + 2;
     }
-}").RunAsync();
+}").RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ class Program
         intPtr1 = checked((IntPtr)long1);
         intPtr1 = checked((IntPtr)long1 + offset);
     }
-}").RunAsync();
+}").RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -146,7 +146,7 @@ class Program
     }
 }",
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(0).WithArguments("+"),
-            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(1).WithArguments("-")).RunAsync();
+            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(1).WithArguments("-")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -174,7 +174,7 @@ class Program
     }
 }",
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(0).WithArguments("+"),
-            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(2).WithArguments("-")).RunAsync();
+            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(2).WithArguments("-")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -206,7 +206,7 @@ class Program
     }
 }",
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(0).WithArguments("+"),
-            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(1).WithArguments("-")).RunAsync();
+            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.OperatorThrowsRule).WithLocation(1).WithArguments("-")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -249,7 +249,7 @@ class Program
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionThrowsRule).WithLocation(0).WithArguments("(void*)IntPtr"),
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionThrowsRule).WithLocation(1).WithArguments("(IntPtr)void*"),
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionNotThrowRule).WithLocation(2).WithArguments("(IntPtr)Int64"),
-            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionNotThrowRule).WithLocation(3).WithArguments("(Int32)IntPtr")).RunAsync();
+            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionNotThrowRule).WithLocation(3).WithArguments("(Int32)IntPtr")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -284,7 +284,7 @@ class Program
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionThrowsRule).WithLocation(0).WithArguments("(void**)IntPtr"),
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionThrowsRule).WithLocation(1).WithArguments("(IntPtr)void**"),
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionThrowsRule).WithLocation(2).WithArguments("(byte***)IntPtr"),
-            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionThrowsRule).WithLocation(3).WithArguments("(IntPtr)byte***")).RunAsync();
+            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionThrowsRule).WithLocation(3).WithArguments("(IntPtr)byte***")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -319,7 +319,7 @@ class Program
     }
 }",
             VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionNotThrowRule).WithLocation(0).WithArguments("(UIntPtr)UInt64"),
-            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionNotThrowRule).WithLocation(1).WithArguments("(UInt32)UIntPtr")).RunAsync();
+            VerifyCS.Diagnostic(PreventNumericIntPtrUIntPtrBehavioralChanges.ConversionNotThrowRule).WithLocation(1).WithArguments("(UInt32)UIntPtr")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static VerifyCS.Test PopulateTestCs(string sourceCode, params DiagnosticResult[] expected)

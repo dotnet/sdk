@@ -58,7 +58,7 @@ public class CA2237SerializableMissingAttr : ISerializable
 }",
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -106,7 +106,7 @@ Public Class CA2237SerializableMissingAttr
 End Class"
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCA2237CSharpResultAt(int line, int column, string objectName) =>

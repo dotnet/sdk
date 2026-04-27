@@ -33,7 +33,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 Assert.True(holdsMutex);
                 try
                 {
-                    var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object);
+                    var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object, cancellationToken: TestContext.Current.CancellationToken);
 
                     // Assert failure
                     Assert.Equal(1, result);
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 });
 #pragma warning restore xUnit1031
 
-            var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object, keepAlive: TimeSpan.FromSeconds(1));
+            var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object, cancellationToken: TestContext.Current.CancellationToken, keepAlive: TimeSpan.FromSeconds(1));
             Assert.Equal(0, result);
         }
 

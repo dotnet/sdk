@@ -1144,7 +1144,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 FixedCode = expected,
                 TestState = { OutputKind = topLevelStatements ? OutputKind.ConsoleApplication : null },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

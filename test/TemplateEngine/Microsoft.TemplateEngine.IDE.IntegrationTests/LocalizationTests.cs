@@ -27,11 +27,11 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string testTemplateLocation = GetTestTemplateLocation("Invalid/Localization/InvalidFormat");
 
             List<InstallRequest> installRequests = new() { new InstallRequest(testTemplateLocation) };
-            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests);
+            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.Current.CancellationToken);
             Assert.True(installationResults.Single().Success);
 
             loggedMessages.Clear();
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(default);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.Current.CancellationToken);
             Assert.Single(foundTemplates);
 
             (LogLevel level, string message) = Assert.Single(loggedMessages, m => m.Level == LogLevel.Warning);
@@ -75,11 +75,11 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             };
 
             List<InstallRequest> installRequests = new() { new InstallRequest(testTemplateLocation) };
-            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests);
+            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.Current.CancellationToken);
             Assert.True(installationResults.Single().Success);
 
             loggedMessages.Clear();
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(default);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.Current.CancellationToken);
             Assert.Single(foundTemplates);
 
             var errors = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message);
@@ -117,11 +117,11 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 TestUtils.DirectoryCopy(validTestTemplateLocation, tmpTemplateLocation, copySubDirs: true);
 
                 List<InstallRequest> installRequests = new() { new InstallRequest(tmpTemplateLocation) };
-                IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests);
+                IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.Current.CancellationToken);
                 Assert.True(installationResults.Single().Success);
 
                 loggedMessages.Clear();
-                var foundTemplates = await bootstrapper.GetTemplatesAsync(default);
+                var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.Current.CancellationToken);
                 var templateToRun = Assert.Single(foundTemplates);
 
                 Assert.DoesNotContain(loggedMessages, m => m.Level == LogLevel.Error);
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                     Path.Combine(tmpTemplateLocation, ".template.config", "localize", "templatestrings.de-DE.json"),
                     overwrite: true);
 
-                var result = await bootstrapper.CreateAsync(templateToRun, "MyApp.1", output, new Dictionary<string, string?>());
+                var result = await bootstrapper.CreateAsync(templateToRun, "MyApp.1", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
                 Assert.True(result.Status == Edge.Template.CreationResultStatus.Success);
 
@@ -183,11 +183,11 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                     "Lokalisierung „de-DE“ der Vorlage 'name' (TestAssets.TemplateWithLocalization) konnte nicht geladen werden: Die Lokalisierungsdatei ist ungültig. Die Lokalisierung wird übersprungen.",
                 };
                 List<InstallRequest> installRequests = new() { new InstallRequest(tmpTemplateLocation) };
-                IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests);
+                IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.Current.CancellationToken);
                 Assert.True(installationResults.Single().Success);
 
                 loggedMessages.Clear();
-                var foundTemplates = await bootstrapper.GetTemplatesAsync(default);
+                var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.Current.CancellationToken);
                 var templateToRun = Assert.Single(foundTemplates);
 
                 Assert.DoesNotContain(loggedMessages, m => m.Level == LogLevel.Error);
@@ -201,7 +201,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 Path.Combine(tmpTemplateLocation, ".template.config", "localize", "templatestrings.de-DE.json"),
                 overwrite: true);
 
-                var result = await bootstrapper.CreateAsync(templateToRun, "MyApp.1", output, new Dictionary<string, string?>());
+                var result = await bootstrapper.CreateAsync(templateToRun, "MyApp.1", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
                 Assert.True(result.Status == Edge.Template.CreationResultStatus.Success);
 

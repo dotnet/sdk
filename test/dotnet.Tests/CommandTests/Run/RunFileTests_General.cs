@@ -726,6 +726,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
 
         // This can be overridden.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
             #:property EnableDefaultCompileItems=true
             {s_programDependingOnUtil}
             """);
@@ -745,7 +746,10 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     public void MultipleFiles_EnableDefaultCompileItemsViaDirectoryBuildProps()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programDependingOnUtil);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #!/usr/bin/env dotnet
+            {s_programDependingOnUtil}
+            """);
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
             <Project>
@@ -770,6 +774,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "A.cs"), """
+            #!/usr/bin/env dotnet
             Console.WriteLine(B.M());
             #if !DEBUG
             Console.WriteLine("Release config");

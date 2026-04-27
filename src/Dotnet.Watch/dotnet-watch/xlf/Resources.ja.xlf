@@ -95,6 +95,11 @@ Examples:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="Help_Device">
+        <source>The device identifier to run on (e.g. emulator, simulator, or physical device).</source>
+        <target state="translated">実行するデバイス識別子 (エミュレーター、シミュレーター、物理デバイスなど)。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Help_List">
         <source>
       Lists all discovered files without starting the watcher.
@@ -142,6 +147,11 @@ Examples:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="MoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="translated">上下に移動すると、さらに多くのデバイスを表示できます</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
         <target state="translated">上下に移動して、さらに多くのフレームワークを表示</target>
@@ -150,6 +160,11 @@ Examples:
       <trans-unit id="SearchPlaceholderText">
         <source>Type to search</source>
         <target state="translated">入力して検索します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="translated">実行するデバイスを選択します。</target>
         <note />
       </trans-unit>
       <trans-unit id="SelectTargetFrameworkPrompt">

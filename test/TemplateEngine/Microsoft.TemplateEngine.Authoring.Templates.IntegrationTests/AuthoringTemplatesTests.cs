@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             }
             .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             }
             .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -146,7 +146,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -174,7 +174,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -196,7 +196,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
                 ScenarioName = "CLI",
             };
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -218,7 +218,7 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
                 ScenarioName = "CLI",
             };
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
     }
 }

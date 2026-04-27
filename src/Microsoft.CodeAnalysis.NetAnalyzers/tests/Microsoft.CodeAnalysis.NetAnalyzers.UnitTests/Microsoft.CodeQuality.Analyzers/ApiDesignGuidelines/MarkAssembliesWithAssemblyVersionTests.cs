@@ -115,7 +115,7 @@ using System.Reflection;
 "
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
