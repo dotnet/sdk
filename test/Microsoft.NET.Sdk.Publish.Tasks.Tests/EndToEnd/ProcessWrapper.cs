@@ -60,13 +60,22 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
 
             using (process)
             {
-                if (!process.HasExited)
+                try
                 {
+                    if (!process.HasExited)
+                    {
 #if NETFRAMEWORK
-                    KillProcessTreeInternal(process.Id);
+                        KillProcessTreeInternal(process.Id);
 #else
-                    process.Kill(entireProcessTree: true);
+                        process.Kill(entireProcessTree: true);
 #endif
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (System.ComponentModel.Win32Exception)
+                {
                 }
             }
         }
@@ -74,11 +83,16 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
 #if NETFRAMEWORK
         private static void KillProcessTreeInternal(int pid)
         {
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid);
-            ManagementObjectCollection moc = searcher.Get();
-            foreach (ManagementObject mo in moc)
+            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid))
+            using (ManagementObjectCollection moc = searcher.Get())
             {
-                KillProcessTreeInternal(Convert.ToInt32(mo["ProcessID"]));
+                foreach (ManagementObject mo in moc)
+                {
+                    using (mo)
+                    {
+                        KillProcessTreeInternal(Convert.ToInt32(mo["ProcessID"]));
+                    }
+                }
             }
 
             try
