@@ -14,30 +14,29 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// </summary>
 internal sealed class TrackedOperation : IDisposable
 {
-    private readonly Activity? _activity;
     private readonly string _eventName;
     private readonly Action<string, Activity?, IDictionary<string, string?>>? _onTrackEvent;
-    private readonly Dictionary<string, string?> _storedTags = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string?> _storedTags = [];
     private bool _disposed;
 
     internal TrackedOperation(Activity? activity, string eventName, Action<string, Activity?, IDictionary<string, string?>>? onTrackEvent)
     {
-        _activity = activity;
+        Activity = activity;
         _eventName = eventName;
         _onTrackEvent = onTrackEvent;
     }
 
-    public Activity? Activity => _activity;
+    public Activity? Activity { get; }
 
     public void Tag(string key, object? value)
     {
-        _activity?.SetTag(key, value);
+        Activity?.SetTag(key, value);
         _storedTags[key] = value?.ToString();
     }
 
     public void SetStatus(ActivityStatusCode code, string? description = null)
     {
-        _activity?.SetStatus(code, description);
+        Activity?.SetStatus(code, description);
         Tag("command.status", code == ActivityStatusCode.Ok ? "ok" : "error");
     }
 
@@ -53,12 +52,12 @@ internal sealed class TrackedOperation : IDisposable
         if (_onTrackEvent is not null)
         {
             // Callback is responsible for stopping the activity and emitting the event.
-            _onTrackEvent.Invoke(_eventName, _activity, _storedTags);
+            _onTrackEvent.Invoke(_eventName, Activity, _storedTags);
         }
         else
         {
             // No host callback registered — still stop the activity so the span completes.
-            _activity?.Stop();
+            Activity?.Stop();
         }
     }
 }

@@ -294,10 +294,16 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <summary>
     /// Builds the full properties dict from an activity's tags and the stored tags
     /// accumulated by <see cref="TrackedOperation.Tag"/>, then enriches with
-    /// session ID, event ID, and duration.
+    /// session ID, event ID, and duration. Emits an <see cref="ActivityEvent"/> on
+    /// the activity and stops it.
     /// </summary>
-    private Dictionary<string, string?> BuildEventProperties(Activity? activity, IDictionary<string, string?> storedTags)
+    /// <remarks>
+    /// This is <c>internal static</c> so that unit tests can use the real emission
+    /// logic instead of duplicating it in test callbacks.
+    /// </remarks>
+    internal static void EmitActivityEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags, string sessionId)
     {
+        // Build the full properties dict from the activity's tags + stored tags.
         var properties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         if (activity is not null)
         {
@@ -315,7 +321,7 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         properties["event id"] = Guid.NewGuid().ToString();
-        properties["SessionId"] = SessionId;
+        properties["SessionId"] = sessionId;
 
         // Calculate duration before stopping the activity.
         if (activity is not null)
@@ -324,15 +330,42 @@ public sealed class DotnetupTelemetry : IDisposable
             properties["operation.duration_ms"] = durationMs.ToString(CultureInfo.InvariantCulture);
         }
 
-        return properties;
+        // Set each property as a span tag so it appears in the span's
+        // customDimensions (dependencies/requests tables) as well.
+        if (activity is not null)
+        {
+            foreach (var prop in properties)
+            {
+                activity.SetTag(prop.Key, prop.Value);
+            }
+        }
+
+        // Merge common properties as tags (same as SDK's MakeTags)
+        var tags = new ActivityTagsCollection();
+        foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(sessionId))
+        {
+            tags.Add(new KeyValuePair<string, object?>(attr.Key, attr.Value?.ToString()));
+        }
+        foreach (var prop in properties.Where(p => p.Value is not null).OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            tags.Add(new KeyValuePair<string, object?>(prop.Key, prop.Value));
+        }
+
+        // Emit ActivityEvent on the activity reference BEFORE stopping it.
+        // Previously we used Activity.Current which was null for root spans
+        // after Stop(), silently dropping command-level events.
+        var @event = new ActivityEvent($"dotnetup/{eventName}", tags: tags);
+        activity?.AddEvent(@event);
+
+        // Now stop the activity — the exporter will see the event we just added.
+        activity?.Stop();
     }
 
     /// <summary>
     /// Callback invoked by <see cref="TrackedOperation"/> on dispose (via
     /// <see cref="Metrics.OnTrackEvent"/>) and by <see cref="RecordException"/>.
-    /// Builds the full properties dict from the activity's tags and stored tags,
-    /// emits an <see cref="ActivityEvent"/> on the activity, and then stops it
-    /// so the data appears in both the dependencies and traces tables.
+    /// Delegates to <see cref="EmitActivityEvent"/> after checking that telemetry
+    /// is enabled.
     /// </summary>
     private void TrackEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
     {
@@ -344,37 +377,7 @@ public sealed class DotnetupTelemetry : IDisposable
 
         try
         {
-            var properties = BuildEventProperties(activity, storedTags);
-
-            // Set each property as a span tag so it appears in the span's
-            // customDimensions (dependencies/requests tables) as well.
-            if (activity is not null)
-            {
-                foreach (var prop in properties)
-                {
-                    activity.SetTag(prop.Key, prop.Value);
-                }
-            }
-
-            // Merge common properties as tags (same as SDK's MakeTags)
-            var tags = new ActivityTagsCollection();
-            foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(SessionId))
-            {
-                tags.Add(new KeyValuePair<string, object?>(attr.Key, attr.Value?.ToString()));
-            }
-            foreach (var prop in properties.Where(p => p.Value is not null).OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
-            {
-                tags.Add(new KeyValuePair<string, object?>(prop.Key, prop.Value));
-            }
-
-            // Emit ActivityEvent on the activity reference BEFORE stopping it.
-            // Previously we used Activity.Current which was null for root spans
-            // after Stop(), silently dropping command-level events.
-            var @event = new ActivityEvent($"dotnetup/{eventName}", tags: tags);
-            activity?.AddEvent(@event);
-
-            // Now stop the activity — the exporter will see the event we just added.
-            activity?.Stop();
+            EmitActivityEvent(eventName, activity, storedTags, SessionId);
         }
         catch
         {

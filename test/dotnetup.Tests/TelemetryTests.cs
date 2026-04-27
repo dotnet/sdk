@@ -623,6 +623,7 @@ public class ActivitySourceIntegrationTests
 
 public class TrackedOperationTests : IDisposable
 {
+    private const string TestSessionId = "test-session-id";
     private readonly ActivityListener _listener;
     private readonly ActivityListener _commandListener;
     private readonly List<Activity> _capturedActivities = [];
@@ -643,7 +644,7 @@ public class TrackedOperationTests : IDisposable
         };
         ActivitySource.AddActivityListener(_listener);
         ActivitySource.AddActivityListener(_commandListener);
-        Metrics.OnTrackEvent = TrackEventTestCallback;
+        Metrics.OnTrackEvent = TestTrackEvent;
     }
 
     public void Dispose()
@@ -654,50 +655,15 @@ public class TrackedOperationTests : IDisposable
     }
 
     /// <summary>
-    /// Test callback that mimics the critical parts of <c>DotnetupTelemetry.TrackEvent</c>:
-    /// builds properties from Activity tags + stored tags, calculates duration, emits an
-    /// <see cref="ActivityEvent"/> on the activity, and stops it. This ensures tests
-    /// validate the same code path that runs in production.
+    /// Test callback that captures the event data and then delegates to the real
+    /// <see cref="DotnetupTelemetry.EmitActivityEvent"/> so tests exercise the
+    /// actual production code path for building properties, emitting ActivityEvents,
+    /// and stopping the activity.
     /// </summary>
-    private void TrackEventTestCallback(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
+    private void TestTrackEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
     {
         _capturedEvents.Add((eventName, activity, storedTags));
-
-        if (activity is null)
-        {
-            return;
-        }
-
-        // Build the full properties dict (mirrors DotnetupTelemetry.TrackEvent)
-        var properties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var tag in activity.TagObjects)
-        {
-            properties[tag.Key] = tag.Value?.ToString();
-        }
-
-        foreach (var tag in storedTags)
-        {
-            properties[tag.Key] = tag.Value;
-        }
-
-        var durationMs = (DateTimeOffset.UtcNow - activity.StartTimeUtc).TotalMilliseconds;
-        properties["operation.duration_ms"] = durationMs.ToString(System.Globalization.CultureInfo.InvariantCulture);
-
-        // Set as span tags
-        foreach (var prop in properties)
-        {
-            activity.SetTag(prop.Key, prop.Value);
-        }
-
-        // Emit ActivityEvent BEFORE stopping (the key fix being tested)
-        var tags = new ActivityTagsCollection();
-        foreach (var prop in properties.Where(p => p.Value is not null).OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
-        {
-            tags.Add(new KeyValuePair<string, object?>(prop.Key, prop.Value));
-        }
-
-        activity.AddEvent(new ActivityEvent($"dotnetup/{eventName}", tags: tags));
-        activity.Stop();
+        DotnetupTelemetry.EmitActivityEvent(eventName, activity, storedTags, TestSessionId);
     }
 
     /// <summary>
@@ -876,7 +842,7 @@ public class TrackedOperationTests : IDisposable
         var activity = DotnetupTelemetry.CommandSource.StartActivity("command/test-cmd", ActivityKind.Internal);
         Assert.NotNull(activity);
 
-        var op = new TrackedOperation(activity, "command/test-cmd", TrackEventTestCallback);
+        var op = new TrackedOperation(activity, "command/test-cmd", TestTrackEvent);
         op.Tag("command.name", "test-cmd");
         op.Dispose();
 

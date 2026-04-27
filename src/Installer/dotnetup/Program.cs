@@ -43,7 +43,6 @@ internal class DotnetupProgram
         // Show first-run telemetry notice if needed
         FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
 
-
         int processExitCode = 1;
 
         try
