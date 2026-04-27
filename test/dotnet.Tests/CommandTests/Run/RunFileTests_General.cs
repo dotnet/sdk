@@ -453,6 +453,61 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .And.HaveStdErrContaining(errorParts[1]);
     }
 
+    /// <summary>
+    /// <c>dotnet run -</c> with <c>#:ref</c> uses <c>$(MSBuildStartupDirectory)</c> to resolve paths.
+    /// Relative paths don't work from stdin since the file is in an isolated temp directory.
+    /// Analogous to <see cref="ReadFromStdin_ProjectReference"/>.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin_RefDirective()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "mylib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello from lib!";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "app");
+        Directory.CreateDirectory(appDir);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(appDir)
+            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
+            .WithStandardInput("""
+                #:ref $(MSBuildStartupDirectory)/../lib/mylib.cs
+                Console.WriteLine(MyLib.Greeter.Greet());
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from lib!");
+
+        // Relative paths are resolved from the isolated temp directory, hence they don't work.
+
+        var errorParts = DirectiveError("app.cs", 1, FileBasedProgramsResources.InvalidRefDirective,
+            string.Format(FileBasedProgramsResources.CouldNotFindRefFile, "{}")).Split("{}");
+        errorParts.Should().HaveCount(2);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(appDir)
+            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
+            .WithStandardInput("""
+                #:ref ../lib/mylib.cs
+                Console.WriteLine(MyLib.Greeter.Greet());
+                """)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(errorParts[0])
+            .And.HaveStdErrContaining(errorParts[1]);
+    }
+
     [Fact]
     public void ReadFromStdin_NoBuild()
     {
@@ -546,7 +601,8 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining("""
+            .And.NotHaveStdErr()
+            .And.HaveStdOut("""
                 echo args:./App.csproj
                 Hello from App
                 """);
@@ -565,9 +621,8 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining("""
-                Hello from Program
-                """);
+            .And.NotHaveStdErr()
+            .And.HaveStdOut("Hello from Program");
     }
 
     [Fact]
@@ -583,9 +638,261 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining("""
-                Hello from Program
+            .And.NotHaveStdErr()
+            .And.HaveStdOut("Hello from Program");
+    }
+
+    /// <summary>
+    /// <c>dotnet run --project App.csproj Program.cs</c> does not warn
+    /// because <c>--project</c> was explicitly specified.
+    /// </summary>
+    [Fact]
+    public void ProjectInCurrentDirectory_ProjectOption_NoWarning()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "--project", "App.csproj", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.NotHaveStdErr()
+            .And.HaveStdOut("""
+                echo args:Program.cs
+                Hello from App
                 """);
+    }
+
+    /// <summary>
+    /// <c>dotnet run file.cs</c> in a directory with a project file warns
+    /// because <c>file.cs</c> is passed as an application argument to the project instead of running as a file-based program.
+    /// </summary>
+    [Fact]
+    public void ProjectInCurrentDirectory_Warns()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:Program.cs
+                Hello from App
+                """)
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandWarningFileArgumentPassedToProject,
+                "Program.cs",
+                Path.Join(testInstance.Path, "App.csproj")));
+    }
+
+    /// <summary>
+    /// <c>dotnet run nonexistent.cs</c> in a directory with a project file warns
+    /// even though the file does not exist, because the <c>.cs</c> extension suggests it was intended as a file-based program.
+    /// </summary>
+    [Fact]
+    public void ProjectInCurrentDirectory_NonExistentCsFile_Warns()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "nonexistent.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:nonexistent.cs
+                Hello from App
+                """)
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandWarningCsFileArgumentPassedToProject,
+                "nonexistent.cs",
+                Path.Join(testInstance.Path, "App.csproj")));
+    }
+
+    /// <summary>
+    /// <c>dotnet run -- file.cs</c> in a directory with a project file does not warn
+    /// because <c>--</c> signals that the arguments are intentional.
+    /// </summary>
+    [Fact]
+    public void ProjectInCurrentDirectory_DoubleDash_NoWarning()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "--", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:Program.cs
+                Hello from App
+                """)
+            .And.NotHaveStdErr();
+    }
+
+    /// <summary>
+    /// <c>dotnet run file.cs -- other</c> still warns because <c>file.cs</c> appears before <c>--</c>.
+    /// </summary>
+    [Fact]
+    public void ProjectInCurrentDirectory_DoubleDashAfterFile_Warns()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "Program.cs", "--", "otherArg")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:Program.cs;otherArg
+                Hello from App
+                """)
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandWarningFileArgumentPassedToProject,
+                "Program.cs",
+                Path.Join(testInstance.Path, "App.csproj")));
+    }
+
+    /// <summary>
+    /// <c>dotnet run someArg file.cs</c> in a directory with a project warns
+    /// when an unrecognized argument prevents <c>file.cs</c> from being treated as a file-based program entry point.
+    /// </summary>
+    [Fact]
+    public void ProjectInCurrentDirectory_UnrecognizedArg_Warns()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "someArg", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:someArg;Program.cs
+                Hello from App
+                """)
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandWarningFileArgumentPassedToProject,
+                "Program.cs",
+                Path.Join(testInstance.Path, "App.csproj")));
+    }
+
+    /// <summary>
+    /// <c>dotnet run -c Release Program.cs</c> in a directory with a project warns because
+    /// known options like <c>-c</c> don't suppress the warning; only <c>--project</c>, <c>--file</c>, or <c>--</c> do.
+    /// </summary>
+    [Fact]
+    public void ProjectInCurrentDirectory_KnownOption_Warns()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "-c", "Release", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:Program.cs
+                Hello from App
+                Release config
+                """)
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandWarningFileArgumentPassedToProject,
+                "Program.cs",
+                Path.Join(testInstance.Path, "App.csproj")));
+    }
+
+    /// <summary>
+    /// <c>dotnet run someArg -- file.cs</c> does not warn because the <c>.cs</c> file is after <c>--</c>.
+    /// </summary>
+    [Fact]
+    public void ProjectInCurrentDirectory_UnrecognizedArg_DoubleDash_NoWarning()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "someArg", "--", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:someArg;Program.cs
+                Hello from App
+                """)
+            .And.NotHaveStdErr();
+    }
+
+    /// <summary>
+    /// <c>dotnet build someArg Program.cs</c> warns because 'Program.cs' is a valid file-based entry point
+    /// but additional positional arguments cause it to fall back to MSBuild.
+    /// </summary>
+    [Theory]
+    [InlineData("build", "someArg", "Program.cs")]
+    [InlineData("clean", "someArg", "Program.cs")]
+    [InlineData("publish", "someArg", "Program.cs")]
+    [InlineData("build", "Program.cs", "-consoleLoggerParameters:NoSummary")]
+    public void ExtraArgWithFileEntryPoint_Warns(string command, string arg1, string arg2)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, command, arg1, arg2)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.WarningFileArgumentPassedToMSBuild,
+                "Program.cs",
+                command));
+    }
+
+    /// <summary>
+    /// <c>dotnet build nonexistent.cs</c> warns because the <c>.cs</c> extension suggests it was intended as a file-based program.
+    /// </summary>
+    [Theory]
+    [InlineData("build")]
+    [InlineData("clean")]
+    [InlineData("publish")]
+    public void NonExistentCsFile_Warns(string command)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        new DotnetCommand(Log, command, "nonexistent.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.WarningCsFileArgumentPassedToMSBuild,
+                "nonexistent.cs",
+                command));
+    }
+
+    /// <summary>
+    /// <c>dotnet build --no-incremental Program.cs</c> is handled as file-based (known option + single positional arg) and does not warn.
+    /// </summary>
+    [Theory]
+    [InlineData("Program.cs")]
+    [InlineData("--no-incremental", "Program.cs")]
+    public void SingleFileEntryPoint_NoWarning(params string[] extraArgs)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, ["build", .. extraArgs])
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.NotHaveStdErr();
     }
 
     /// <summary>
@@ -789,9 +1096,6 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             """);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
             <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableTransitiveDirectives>true</ExperimentalFileBasedProgramEnableTransitiveDirectives>
-              </PropertyGroup>
               <ItemGroup>
                 <Compile Include="B.cs" />
               </ItemGroup>
