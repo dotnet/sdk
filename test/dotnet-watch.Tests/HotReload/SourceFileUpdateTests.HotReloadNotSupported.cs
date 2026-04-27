@@ -28,7 +28,7 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
 
         App.Start(testAsset, ["--non-interactive"]);
 
-        var message = MessageDescriptor.ProjectDoesNotSupportHotReload.GetMessage($"'{propertyName}' property is '{propertyValue}'");
+        var message = MessageDescriptor.ProjectDoesNotSupportHotReload_Property.GetMessage((propertyName, propertyValue, PropertyNames.StartupHookSupport, "True"));
         await App.WaitForOutputLineContaining($"[{projectDisplay}] {message}");
         await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
         App.Process.ClearOutput();

@@ -1564,6 +1564,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="ProjectConvertDeleteSourceChoiceNo" xml:space="preserve">
     <value>No - keep all source files</value>
   </data>
+  <data name="ProjectConvertDuplicateRefFolderName" xml:space="preserve">
+    <value>Multiple referenced files would be converted into the same directory: '{0}'</value>
+    <comment>{0} is the target directory path.</comment>
+  </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>
   </data>
@@ -1728,6 +1732,22 @@ The default is to publish a framework-dependent application.</value>
   <data name="RunCommandWarningRunJsonNotUsed" xml:space="preserve">
     <value>Warning: Settings from '{0}' are not used because '{1}' has precedence.</value>
     <comment>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</comment>
+  </data>
+  <data name="RunCommandWarningFileArgumentPassedToProject" xml:space="preserve">
+    <value>Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</value>
+    <comment>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</comment>
+  </data>
+  <data name="RunCommandWarningCsFileArgumentPassedToProject" xml:space="preserve">
+    <value>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</value>
+    <comment>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</comment>
+  </data>
+  <data name="WarningFileArgumentPassedToMSBuild" xml:space="preserve">
+    <value>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</value>
+    <comment>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</comment>
+  </data>
+  <data name="WarningCsFileArgumentPassedToMSBuild" xml:space="preserve">
+    <value>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</value>
+    <comment>{0} is the .cs file path argument.</comment>
   </data>
   <data name="RunCommandExceptionMultipleProjects" xml:space="preserve">
     <value>Specify which project file to use because {0} contains more than one project file.</value>

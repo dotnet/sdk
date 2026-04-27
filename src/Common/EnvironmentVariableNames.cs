@@ -17,6 +17,7 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_CLI_FORCE_UTF8_ENCODING = nameof(DOTNET_CLI_FORCE_UTF8_ENCODING);
     public static readonly string TELEMETRY_OPTOUT = "DOTNET_CLI_TELEMETRY_OPTOUT";
     public static readonly string DOTNET_ROOT = nameof(DOTNET_ROOT);
+    public static readonly string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);
     public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG = nameof(DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG);
     public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR = nameof(DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR);
     public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER = nameof(DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER);

@@ -20,9 +20,9 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
         var projectPath = Path.Combine(testAsset.Path, "WatchNoDepsApp.csproj");
 
         var projectRepr = new ProjectRepresentation(projectPath, entryPointFilePath: null);
-        var factory = new ProjectGraphFactory([projectRepr], virtualProjectTargetFramework: null, buildProperties: [], _testLogger);
+        var factory = new ProjectGraphFactory([projectRepr], buildProperties: [], _testLogger, TestOptions.GlobalOptions, TestOptions.GetEnvironmentOptions(asset: testAsset));
 
-        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, CancellationToken.None);
+        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
         Assert.NotNull(graph);
 
         var root = graph.Graph.GraphRoots.Single();
@@ -40,9 +40,9 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
             """);
 
         var projectRepr = new ProjectRepresentation(projectPath: null, entryPointFilePath);
-        var factory = new ProjectGraphFactory([projectRepr], virtualProjectTargetFramework: null, buildProperties: [], _testLogger);
+        var factory = new ProjectGraphFactory([projectRepr], buildProperties: [], _testLogger, TestOptions.GlobalOptions, TestOptions.GetEnvironmentOptions());
 
-        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, CancellationToken.None);
+        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
         Assert.NotNull(graph);
 
         var root = graph.Graph.GraphRoots.Single();
@@ -60,9 +60,9 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
             """);
 
         var projectRepr = new ProjectRepresentation(projectPath: null, entryPointFilePath);
-        var factory = new ProjectGraphFactory([projectRepr], virtualProjectTargetFramework: null, buildProperties: [], _testLogger);
+        var factory = new ProjectGraphFactory([projectRepr], buildProperties: [], _testLogger, TestOptions.GlobalOptions, TestOptions.GetEnvironmentOptions());
 
-        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, CancellationToken.None);
+        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
         Assert.Null(graph);
 
         var message = string.Format(FileBasedProgramsResources.InvalidProjectDirective,
@@ -92,9 +92,9 @@ public class ProjectGraphFactoryTests(ITestOutputHelper output)
             """);
 
         var projectRepr = new ProjectRepresentation(projectPath: null, entryPointFilePath);
-        var factory = new ProjectGraphFactory([projectRepr], virtualProjectTargetFramework: null, buildProperties: [], _testLogger);
+        var factory = new ProjectGraphFactory([projectRepr], buildProperties: [], _testLogger, TestOptions.GlobalOptions, TestOptions.GetEnvironmentOptions(asset: testAsset));
 
-        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, CancellationToken.None);
+        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
         Assert.NotNull(graph);
 
         AssertEx.SequenceEqual(
