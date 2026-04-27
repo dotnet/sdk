@@ -878,6 +878,108 @@ public class TrackedOperationTests : IDisposable
             "download/complete",
             new Dictionary<string, string?> { ["download.bytes"] = "1024" });
     }
+
+    /// <summary>
+    /// Regression test: a mid-flight error event (stopActivity=false) must NOT
+    /// stop the activity. The owning TrackedOperation is still alive and will
+    /// dispose later with the final event.
+    /// </summary>
+    [Fact]
+    public void EmitActivityEvent_MidFlight_DoesNotStopActivity()
+    {
+        var activity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/test-midflight", ActivityKind.Internal);
+        Assert.NotNull(activity);
+
+        // Emit a mid-flight error event (simulates RecordException)
+        var errorTags = new Dictionary<string, string?> { ["error.type"] = "TestError" };
+        DotnetupTelemetry.EmitActivityEvent("error", activity, errorTags, TestSessionId, stopActivity: false);
+
+        // Activity must still be alive — not stopped
+        Assert.Equal(TimeSpan.Zero, activity.Duration);
+        Assert.NotNull(Activity.Current);
+
+        // The error event should be on the activity
+        var events = activity.Events.ToList();
+        Assert.Single(events);
+        Assert.Equal("dotnetup/error", events[0].Name);
+
+        // Now stop it (simulates TrackedOperation.Dispose)
+        activity.Stop();
+        Assert.True(activity.Duration > TimeSpan.Zero);
+    }
+
+    /// <summary>
+    /// Regression test: mirrors the full Program.cs + CommandBase.cs lifecycle.
+    /// Root process activity → command activity → error fires mid-flight →
+    /// command disposes → root disposes. All events must land on the correct
+    /// activities and no activity is stopped prematurely.
+    /// </summary>
+    [Fact]
+    public void TrackedOperation_FullLifecycle_RootPersistsThroughErrorAndCommandDispose()
+    {
+        // Step 1: Start root process activity (Program.Main)
+        var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "dotnetup", ActivityKind.Internal);
+        Assert.NotNull(rootActivity);
+        var rootOp = new TrackedOperation(rootActivity, "process/complete", TestTrackEvent);
+
+        // Step 2: Start command activity (CommandBase.Execute)
+        var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/sdk/install", ActivityKind.Internal);
+        Assert.NotNull(commandActivity);
+        var commandOp = new TrackedOperation(commandActivity, "command/sdk/install", TestTrackEvent);
+        commandOp.Tag("command.name", "sdk/install");
+
+        // Step 3: RecordException fires mid-flight error event on the command activity.
+        // This must NOT stop the command activity.
+        var errorTags = new Dictionary<string, string?> { ["error.type"] = "InstallFailed" };
+        DotnetupTelemetry.EmitActivityEvent("error", commandActivity, errorTags, TestSessionId, stopActivity: false);
+
+        // Verify: command activity still alive, error event attached
+        Assert.Equal(TimeSpan.Zero, commandActivity.Duration);
+        var commandEvents = commandActivity.Events.ToList();
+        Assert.Single(commandEvents);
+        Assert.Equal("dotnetup/error", commandEvents[0].Name);
+
+        // Step 4: CommandBase.finally disposes command operation
+        commandOp.Tag("exit.code", 1);
+        commandOp.SetStatus(ActivityStatusCode.Error);
+        commandOp.Dispose();
+
+        // Verify: command event emitted (callback captured it)
+        Assert.Single(_capturedEvents);
+        Assert.Equal("command/sdk/install", _capturedEvents[0].EventName);
+
+        // Command activity should now have BOTH events: error + command
+        var allCommandEvents = _capturedEvents[0].Activity!.Events.ToList();
+        Assert.Equal(2, allCommandEvents.Count);
+        Assert.Equal("dotnetup/error", allCommandEvents[0].Name);
+        Assert.Equal("dotnetup/command/sdk/install", allCommandEvents[1].Name);
+
+        // Command activity should be stopped
+        Assert.True(_capturedEvents[0].Activity!.Duration > TimeSpan.Zero);
+
+        // Step 5: Program.finally disposes root operation
+        rootOp.Tag("exit.code", 1);
+        rootOp.SetStatus(ActivityStatusCode.Error);
+        rootOp.Dispose();
+
+        // Verify: root event emitted
+        Assert.Equal(2, _capturedEvents.Count);
+        Assert.Equal("process/complete", _capturedEvents[1].EventName);
+
+        // Root activity should have its final event
+        var rootEvents = _capturedEvents[1].Activity!.Events.ToList();
+        Assert.Single(rootEvents);
+        Assert.Equal("dotnetup/process/complete", rootEvents[0].Name);
+
+        // Root activity should be stopped
+        Assert.True(_capturedEvents[1].Activity!.Duration > TimeSpan.Zero);
+
+        // Verify parent-child: command's parent should be the root
+        Assert.Equal(rootActivity.Id, commandActivity.ParentId);
+    }
 }
 
 /// <summary>

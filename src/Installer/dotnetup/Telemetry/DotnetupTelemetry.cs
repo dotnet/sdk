@@ -255,12 +255,14 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         // Emit error as a separate event for data-x-platform (traces table).
+        // Pass stopActivity=false because the owning TrackedOperation is still
+        // alive and will be disposed later (in CommandBase.finally or Program.finally).
         var errorEventProps = ErrorCodeMapper.ToEventProperties(errorInfo);
         if (errorCode is not null)
         {
             errorEventProps[TelemetryTagNames.ErrorCode] = errorCode;
         }
-        TrackEvent("error", operation.Activity, errorEventProps);
+        TrackEventCore("error", operation.Activity, errorEventProps, stopActivity: false);
     }
 
     /// <summary>
@@ -292,18 +294,12 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the full properties dict from an activity's tags and the stored tags
-    /// accumulated by <see cref="TrackedOperation.Tag"/>, then enriches with
-    /// session ID, event ID, and duration. Emits an <see cref="ActivityEvent"/> on
-    /// the activity and stops it.
+    /// Builds the merged properties dict from an activity's span tags, the stored
+    /// tags accumulated by <see cref="TrackedOperation.Tag"/>, and enrichment
+    /// fields (event ID, session ID, duration).
     /// </summary>
-    /// <remarks>
-    /// This is <c>internal static</c> so that unit tests can use the real emission
-    /// logic instead of duplicating it in test callbacks.
-    /// </remarks>
-    internal static void EmitActivityEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags, string sessionId)
+    private static Dictionary<string, string?> BuildProperties(Activity? activity, IDictionary<string, string?> storedTags, string sessionId)
     {
-        // Build the full properties dict from the activity's tags + stored tags.
         var properties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         if (activity is not null)
         {
@@ -313,8 +309,6 @@ public sealed class DotnetupTelemetry : IDisposable
             }
         }
 
-        // Merge explicitly stored tags — ensures tags set via Tag() are always
-        // present even if the Activity.TagObjects enumeration misses them.
         foreach (var tag in storedTags)
         {
             properties[tag.Key] = tag.Value;
@@ -323,15 +317,35 @@ public sealed class DotnetupTelemetry : IDisposable
         properties["event id"] = Guid.NewGuid().ToString();
         properties["SessionId"] = sessionId;
 
-        // Calculate duration before stopping the activity.
         if (activity is not null)
         {
             var durationMs = (DateTimeOffset.UtcNow - new DateTimeOffset(activity.StartTimeUtc)).TotalMilliseconds;
             properties["operation.duration_ms"] = durationMs.ToString(CultureInfo.InvariantCulture);
         }
 
-        // Set each property as a span tag so it appears in the span's
-        // customDimensions (dependencies/requests tables) as well.
+        return properties;
+    }
+
+    /// <summary>
+    /// Emits an <see cref="ActivityEvent"/> on the given activity with all
+    /// properties from the span, stored tags, and common attributes.
+    /// </summary>
+    /// <remarks>
+    /// This is <c>internal static</c> so that unit tests can use the real emission
+    /// logic instead of duplicating it in test callbacks.
+    /// </remarks>
+    /// <param name="eventName">The event name suffix (e.g., "command/sdk/install").</param>
+    /// <param name="activity">The activity to emit the event on. May be null if telemetry is disabled.</param>
+    /// <param name="storedTags">Tags accumulated by <see cref="TrackedOperation.Tag"/>.</param>
+    /// <param name="sessionId">The telemetry session ID.</param>
+    /// <param name="stopActivity">Whether to stop the activity after emitting the event.
+    /// <c>true</c> for final events (TrackedOperation.Dispose); <c>false</c> for
+    /// mid-flight events (RecordException error events) where the activity is still alive.</param>
+    internal static void EmitActivityEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags, string sessionId, bool stopActivity = true)
+    {
+        var properties = BuildProperties(activity, storedTags, sessionId);
+
+        // Set each property as a span tag for the dependencies table.
         if (activity is not null)
         {
             foreach (var prop in properties)
@@ -340,7 +354,7 @@ public sealed class DotnetupTelemetry : IDisposable
             }
         }
 
-        // Merge common properties as tags (same as SDK's MakeTags)
+        // Build ActivityTagsCollection for the event (traces table).
         var tags = new ActivityTagsCollection();
         foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(sessionId))
         {
@@ -352,32 +366,42 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         // Emit ActivityEvent on the activity reference BEFORE stopping it.
-        // Previously we used Activity.Current which was null for root spans
-        // after Stop(), silently dropping command-level events.
         var @event = new ActivityEvent($"dotnetup/{eventName}", tags: tags);
         activity?.AddEvent(@event);
 
-        // Now stop the activity — the exporter will see the event we just added.
-        activity?.Stop();
+        if (stopActivity)
+        {
+            activity?.Stop();
+        }
     }
 
     /// <summary>
-    /// Callback invoked by <see cref="TrackedOperation"/> on dispose (via
-    /// <see cref="Metrics.OnTrackEvent"/>) and by <see cref="RecordException"/>.
-    /// Delegates to <see cref="EmitActivityEvent"/> after checking that telemetry
-    /// is enabled.
+    /// Callback matching the <see cref="TrackedOperation"/> delegate signature.
+    /// Invoked on dispose — always stops the activity.
     /// </summary>
     private void TrackEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
     {
+        TrackEventCore(eventName, activity, storedTags, stopActivity: true);
+    }
+
+    /// <summary>
+    /// Core event emission with control over whether to stop the activity.
+    /// </summary>
+    private void TrackEventCore(string eventName, Activity? activity, IDictionary<string, string?> storedTags, bool stopActivity)
+    {
         if (!Enabled)
         {
-            activity?.Stop();
+            if (stopActivity)
+            {
+                activity?.Stop();
+            }
+
             return;
         }
 
         try
         {
-            EmitActivityEvent(eventName, activity, storedTags, SessionId);
+            EmitActivityEvent(eventName, activity, storedTags, SessionId, stopActivity);
         }
         catch
         {
