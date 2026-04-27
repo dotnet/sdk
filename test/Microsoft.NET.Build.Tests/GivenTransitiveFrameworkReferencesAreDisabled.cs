@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -13,45 +13,23 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void TargetingPacksAreNotDownloadedIfNotDirectlyReferenced(bool referenceAspNet)
-        {
-            TestPackagesNotDownloaded(referenceAspNet, selfContained: false);
-        }
-
         [Fact]
-        public void RuntimePacksAreNotDownloadedIfNotDirectlyReferenced()
+        public void TargetingPacksAreNotDownloadedIfNotDirectlyReferenced()
         {
-            TestPackagesNotDownloaded(referenceAspNet: false, selfContained: true);
-        }
+            // With DisableTransitiveFrameworkReferenceDownloads=true, only targeting packs for
+            // directly referenced frameworks should be downloaded — not for transitive ones.
+            // Since this project only references NETCore.App (implicitly), only that targeting
+            // pack should appear in the packages folder.
+            string nugetPackagesFolder = _testAssetsManager.CreateTestDirectory(identifier: "packages").Path;
 
-        void TestPackagesNotDownloaded(bool referenceAspNet, bool selfContained, [CallerMemberName] string testName = null)
-        {
-            string nugetPackagesFolder = _testAssetsManager.CreateTestDirectory(testName, identifier: "packages_" + referenceAspNet).Path;
-
-            var testProject = new TestProject(testName)
+            var testProject = new TestProject()
             {
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
             };
 
-            if (selfContained)
-            {
-                testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid();
-                testProject.SelfContained = "true";
-            }
-            else
-            {
-                //  Don't use AppHost in order to avoid additional download to packages folder
-                testProject.AdditionalProperties["UseAppHost"] = "False";
-            }
-
-            if (referenceAspNet)
-            {
-                testProject.FrameworkReferences.Add("Microsoft.AspNetCore.App");
-            }
+            //  Don't use AppHost in order to avoid additional download to packages folder
+            testProject.AdditionalProperties["UseAppHost"] = "False";
 
             testProject.AdditionalProperties["DisableTransitiveFrameworkReferenceDownloads"] = "True";
             testProject.AdditionalProperties["RestorePackagesPath"] = nugetPackagesFolder;
@@ -65,7 +43,7 @@ namespace Microsoft.NET.Build.Tests
             //  root, we need to allow it to succeed even if it can't find that data.
             testProject.AdditionalProperties["AllowMissingPrunePackageData"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testName, identifier: referenceAspNet.ToString());
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -78,29 +56,8 @@ namespace Microsoft.NET.Build.Tests
                 "microsoft.netcore.app.ref"
             };
 
-            if (selfContained)
-            {
-                expectedPackages.Add("microsoft.netcore.app.runtime.**RID**");
-                expectedPackages.Add("microsoft.netcore.app.host.**RID**");
-            }
-
-            if (referenceAspNet)
-            {
-                expectedPackages.Add("microsoft.aspnetcore.app.ref");
-            }
-
             Directory.EnumerateDirectories(nugetPackagesFolder)
                 .Select(Path.GetFileName)
-                .Select(package =>
-                {
-                    if (package.Contains(".runtime.") || (package.Contains(".host.")))
-                    {
-                        //  Replace RuntimeIdentifier, which should be the last dotted segment in the package name, with "**RID**"
-                        package = package.Substring(0, package.LastIndexOf('.') + 1) + "**RID**";
-                    }
-
-                    return package;
-                })
                 .Should().BeEquivalentTo(expectedPackages);
         }
 
@@ -178,11 +135,14 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(testAsset);
 
+            //  ProcessFrameworkReferences runs before AddTransitiveFrameworkReferences, so it never
+            //  creates RuntimePack items for the transitive ASP.NET reference.  ResolveRuntimePackAssets
+            //  detects this and reports NETSDK1235, suggesting the user add a direct FrameworkReference.
             buildCommand
                 .Execute()
                 .Should()
                 .Fail()
-                .And.HaveStdOutContaining("NETSDK1185:");
+                .And.HaveStdOutContaining("NETSDK1235:");
         }
 
     }

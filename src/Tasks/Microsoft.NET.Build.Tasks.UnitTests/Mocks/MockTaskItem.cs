@@ -1,9 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -20,16 +19,20 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
         }
 
-        public MockTaskItem(string itemSpec, Dictionary<string, string> metadata)
+        [SetsRequiredMembers]
+        public MockTaskItem(string itemSpec, Dictionary<string, string>? metadata) : this()
         {
             ItemSpec = itemSpec;
-            foreach (var m in metadata)
+            if (metadata != null)
             {
-                _metadata.Add(m.Key, m.Value);
+                foreach (var m in metadata)
+                {
+                    _metadata.Add(m.Key, m.Value);
+                }
             }
         }
 
-        public string ItemSpec { get; set; }
+        public required string ItemSpec { get; set; }
 
         public int MetadataCount
         {
@@ -62,8 +65,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         public string GetMetadata(string metadataName)
         {
-            string metadataValue = null;
-            if (_metadata.TryGetValue(metadataName, out metadataValue))
+            if (_metadata.TryGetValue(metadataName, out string? metadataValue))
             {
                 return metadataValue ?? string.Empty;
             }
@@ -73,8 +75,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         public void RemoveMetadata(string metadataName)
         {
-            string metadataValue = null;
-            if (_metadata.TryGetValue(metadataName, out metadataValue))
+            if (_metadata.TryGetValue(metadataName, out string? metadataValue))
             {
                 _metadata.Remove(metadataName);
             }

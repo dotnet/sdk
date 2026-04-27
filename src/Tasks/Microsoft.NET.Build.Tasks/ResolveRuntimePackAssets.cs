@@ -24,6 +24,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool DisableTransitiveFrameworkReferenceDownloads { get; set; }
 
+        public string RuntimeIdentifier { get; set; }
+
         [Output]
         public ITaskItem[] RuntimePackAssets { get; set; }
 
@@ -42,16 +44,76 @@ namespace Microsoft.NET.Build.Tasks
                         fxReference.ItemSpec.Equals(rtFx.GetMetadata(MetadataKeys.FrameworkName), StringComparison.OrdinalIgnoreCase)))
                         .ToList() : null;
 
-            HashSet<string> frameworkReferenceNames = new(FrameworkReferences.Select(item => item.ItemSpec), StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, ITaskItem> frameworkReferencesByName = new(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in FrameworkReferences)
+            {
+                // Last one wins in case of duplicates, matching prior HashSet behavior
+                frameworkReferencesByName[item.ItemSpec] = item;
+            }
 
+            //  UnavailableRuntimePacks are produced by ProcessFrameworkReferences for directly-referenced
+            //  frameworks whose runtime pack has no matching RID.  PFR runs before transitive framework
+            //  references are added, so these items only cover direct references.
+            HashSet<string> unavailableRuntimePackNames = new(StringComparer.OrdinalIgnoreCase);
             foreach (var unavailableRuntimePack in UnavailableRuntimePacks)
             {
-                if (frameworkReferenceNames.Contains(unavailableRuntimePack.ItemSpec))
+                unavailableRuntimePackNames.Add(unavailableRuntimePack.ItemSpec);
+
+                if (frameworkReferencesByName.ContainsKey(unavailableRuntimePack.ItemSpec))
                 {
-                    //  This is a runtime pack that should be used, but wasn't available for the specified RuntimeIdentifier
                     //  NETSDK1082: There was no runtime pack for {0} available for the specified RuntimeIdentifier '{1}'.
                     Log.LogError(Strings.NoRuntimePackAvailable, unavailableRuntimePack.ItemSpec,
                         unavailableRuntimePack.GetMetadata(MetadataKeys.RuntimeIdentifier));
+                }
+            }
+
+            //  Detect transitive framework references whose runtime packs were never processed.
+            //  ProcessFrameworkReferences runs before AddTransitiveFrameworkReferences, so transitive
+            //  refs never get RuntimePack or UnavailableRuntimePack items.  We detect them here by
+            //  finding FrameworkReferences marked IsTransitiveFrameworkReference=true that:
+            //    - are non-profile frameworks (have a RuntimeFramework where FrameworkName == ItemSpec)
+            //    - have no ResolvedRuntimePack
+            //    - have no UnavailableRuntimePack
+            if (RuntimeFrameworks != null)
+            {
+                //  Build the set of non-profile framework names that should have their own runtime packs.
+                //  A non-profile RuntimeFramework has FrameworkName == ItemSpec (e.g. Microsoft.AspNetCore.App).
+                //  Profiles (e.g. Microsoft.WindowsDesktop.App.WindowsForms) have FrameworkName != ItemSpec
+                //  and share their parent's runtime pack.
+                HashSet<string> frameworksWithOwnRuntimePack = new(StringComparer.OrdinalIgnoreCase);
+                foreach (var rtFx in RuntimeFrameworks)
+                {
+                    var frameworkName = rtFx.GetMetadata(MetadataKeys.FrameworkName);
+                    if (rtFx.ItemSpec.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        frameworksWithOwnRuntimePack.Add(frameworkName);
+                    }
+                }
+
+                //  Build the set of framework names that have a resolved runtime pack
+                HashSet<string> resolvedRuntimePackFrameworkNames = new(StringComparer.OrdinalIgnoreCase);
+                foreach (var runtimePack in ResolvedRuntimePacks)
+                {
+                    resolvedRuntimePackFrameworkNames.Add(runtimePack.GetMetadata(MetadataKeys.FrameworkName));
+                }
+
+                foreach (var kvp in frameworkReferencesByName)
+                {
+                    var fxName = kvp.Key;
+                    var fxItem = kvp.Value;
+
+                    bool isTransitive = fxItem.GetMetadata("IsTransitiveFrameworkReference")
+                        is string val && val.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+                    if (isTransitive
+                        && frameworksWithOwnRuntimePack.Contains(fxName)
+                        && !resolvedRuntimePackFrameworkNames.Contains(fxName)
+                        && !unavailableRuntimePackNames.Contains(fxName))
+                    {
+                        //  NETSDK1235: transitive framework reference has no runtime pack available.
+                        Log.LogError(Strings.NoRuntimePackAvailable_TransitiveReference, fxName,
+                            RuntimeIdentifier ?? string.Empty);
+                    }
                 }
             }
 
@@ -59,11 +121,11 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var runtimePack in ResolvedRuntimePacks)
             {
-                if (!frameworkReferenceNames.Contains(runtimePack.GetMetadata(MetadataKeys.FrameworkName)))
+                if (!frameworkReferencesByName.ContainsKey(runtimePack.GetMetadata(MetadataKeys.FrameworkName)))
                 {
                     var additionalFrameworkReferences = runtimePack.GetMetadata(MetadataKeys.AdditionalFrameworkReferences);
                     if (additionalFrameworkReferences == null ||
-                        !additionalFrameworkReferences.Split(';').Any(afr => frameworkReferenceNames.Contains(afr)))
+                        !additionalFrameworkReferences.Split(';').Any(afr => frameworkReferencesByName.ContainsKey(afr)))
                     {
                         //  This is a runtime pack for a shared framework that ultimately wasn't referenced, so don't include its assets
                         continue;
