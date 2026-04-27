@@ -355,14 +355,23 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         // Build ActivityTagsCollection for the event (traces table).
+        // Use indexer assignment (not Add) because `properties` may already
+        // include the common attributes — `StartTrackedCommand` stamps them
+        // onto the activity tags, and `BuildProperties` echoes
+        // `activity.TagObjects` back into the dict. `ActivityTagsCollection.Add`
+        // throws `InvalidOperationException` on duplicate keys, which
+        // `TrackEventCore`'s `try/catch` then swallows — silently dropping
+        // every `command/<name>` event. Only `process/complete` survived in
+        // production because `StartTrackedProcess` doesn't pre-populate
+        // common attrs.
         var tags = new ActivityTagsCollection();
         foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(sessionId))
         {
-            tags.Add(new KeyValuePair<string, object?>(attr.Key, attr.Value?.ToString()));
+            tags[attr.Key] = attr.Value?.ToString();
         }
         foreach (var prop in properties.Where(p => p.Value is not null).OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
         {
-            tags.Add(new KeyValuePair<string, object?>(prop.Key, prop.Value));
+            tags[prop.Key] = prop.Value;
         }
 
         // Emit ActivityEvent on the activity reference BEFORE stopping it.
