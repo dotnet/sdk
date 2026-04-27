@@ -2333,6 +2333,36 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
+    [Fact]
+    public void Directives_Duplicate_AcrossIncludedFiles()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var utilPath = Path.Join(testInstance.Path, "Util.cs");
+
+        File.WriteAllText(utilPath, """
+            #:package SomePackage@1.0
+            #:property MyProp=Value2
+            static class Util { }
+            """);
+
+        VerifyConversion(
+            inputCSharp: """
+                #:include Util.cs
+                #:package SomePackage@2.0
+                #:property MyProp=Value1
+                Console.WriteLine();
+                """,
+            expectedProject: null,
+            expectedCSharp: """
+                Console.WriteLine();
+                """,
+            filePath: programPath,
+            expectedErrors: [(utilPath, 1, string.Format(FileBasedProgramsResources.DuplicateDirective, "#:package SomePackage")),
+                (utilPath, 2, string.Format(FileBasedProgramsResources.DuplicateDirective, "#:property MyProp"))],
+            evaluateDirectives: true);
+    }
+
     [Fact] // https://github.com/dotnet/sdk/issues/49797
     public void Directives_VersionedSdkFirst()
     {
@@ -2431,6 +2461,23 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         filePath ??= GetProgramPath(baseDirectory);
 
+        VerifyConversion(
+            inputCSharp,
+            expectedProject,
+            expectedCSharp,
+            filePath,
+            expectedErrors?.Select(e => (filePath, e.LineNumber, e.Message)),
+            evaluateDirectives);
+    }
+
+    private static void VerifyConversion(
+        string inputCSharp,
+        string? expectedProject,
+        string? expectedCSharp,
+        string filePath,
+        IEnumerable<(string FilePath, int LineNumber, string Message)>? expectedErrors,
+        bool evaluateDirectives)
+    {
         Convert(
             inputCSharp,
             out var actualProject,
@@ -2452,8 +2499,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         }
         else
         {
-            Assert.All(actualDiagnostics, d => { Assert.Equal(filePath, d.Location.Path); });
-            actualDiagnostics.Select(d => (d.Location.Span.Start.Line + 1, d.Message)).Should().BeEquivalentTo(expectedErrors);
+            actualDiagnostics.Select(d => (d.Location.Path, d.Location.Span.Start.Line + 1, d.Message)).Should().BeEquivalentTo(expectedErrors);
         }
     }
 

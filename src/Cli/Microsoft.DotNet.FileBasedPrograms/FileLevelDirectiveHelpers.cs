@@ -88,7 +88,7 @@ internal static class FileLevelDirectiveHelpers
         ErrorReporter errorReporter,
         ImmutableArray<CSharpDirective>.Builder? builder)
     {
-        var deduplicated = new Dictionary<CSharpDirective.Named, CSharpDirective.Named>(NamedDirectiveComparer.Instance);
+        var deduplicator = new DirectiveDeduplicator();
         TextSpan previousWhiteSpaceSpan = default;
 
         for (var index = 0; index < triviaList.Count; index++)
@@ -156,20 +156,7 @@ internal static class FileLevelDirectiveHelpers
 
                 if (CSharpDirective.Parse(context) is { } directive)
                 {
-                    // Duplicate #:project and #:ref directives are allowed (MSBuild can handle that).
-                    if (directive is not (CSharpDirective.Project or CSharpDirective.Ref))
-                    {
-                        // If the directive is already present, report an error.
-                        if (deduplicated.TryGetValue(directive, out var existingDirective))
-                        {
-                            var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
-                            context.ReportError(directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
-                        }
-                        else
-                        {
-                            deduplicated.Add(directive, directive);
-                        }
-                    }
+                    deduplicator.CheckDirective(directive, errorReporter);
 
                     builder?.Add(directive);
                 }
@@ -877,6 +864,58 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             void ReportError(string message)
                 => errorReporter(sourceFile.Text, sourceFile.Path, default, message);
         }
+    }
+}
+
+/// <summary>
+/// Detects duplicate directives (by type and case-insensitive name)
+/// and reports errors via the provided <see cref="ErrorReporter"/>.
+/// </summary>
+/// <remarks>
+/// <c>#:project</c> and <c>#:ref</c> duplicates are allowed (MSBuild can handle multiple <c>ProjectReference</c>s).
+/// </remarks>
+internal struct DirectiveDeduplicator
+{
+    private Dictionary<CSharpDirective.Named, CSharpDirective.Named>? _seen;
+
+    /// <summary>
+    /// Checks <paramref name="directive"/> for duplication and reports an error if it was already seen.
+    /// </summary>
+    public void CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError)
+    {
+        // Duplicate #:project and #:ref directives are allowed (MSBuild can handle that).
+        if (directive is CSharpDirective.Project or CSharpDirective.Ref)
+        {
+            return;
+        }
+
+        _seen ??= new(NamedDirectiveComparer.Instance);
+
+        if (_seen.TryGetValue(directive, out var existingDirective))
+        {
+            var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
+            reportError(directive.Info.SourceFile.Text, directive.Info.SourceFile.Path, directive.Info.Span,
+                string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
+        }
+        else
+        {
+            _seen.Add(directive, directive);
+        }
+    }
+
+    /// <summary>
+    /// Adds <paramref name="directive"/> to the set of seen directives without reporting errors.
+    /// Used to seed the deduplicator with directives that were already checked elsewhere.
+    /// </summary>
+    public void AddDirective(CSharpDirective.Named directive)
+    {
+        if (directive is CSharpDirective.Project or CSharpDirective.Ref)
+        {
+            return;
+        }
+
+        _seen ??= new(NamedDirectiveComparer.Instance);
+        _seen.TryAdd(directive, directive);
     }
 }
 

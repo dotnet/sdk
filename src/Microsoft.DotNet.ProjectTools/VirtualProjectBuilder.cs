@@ -316,6 +316,8 @@ public sealed class VirtualProjectBuilder
         var seenFiles = new HashSet<string>(1, StringComparer.Ordinal) { EntryPointFileFullPath };
         var filesToProcess = new Queue<string>();
         var evaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>();
+        var deduplicator = new DirectiveDeduplicator();
+        var isFirstFile = true;
 
         do
         {
@@ -327,6 +329,25 @@ public sealed class VirtualProjectBuilder
 
             // Evaluate directives, e.g., determine item types for #:include/#:exclude from their file extension.
             var fileEvaluatedDirectives = EvaluateDirectives(project, directives, reportError);
+
+            // Detect duplicate directives across files (per-file duplicates are already reported by FindDirectives).
+            foreach (var directive in fileEvaluatedDirectives)
+            {
+                if (directive is CSharpDirective.Named named)
+                {
+                    if (isFirstFile)
+                    {
+                        // Seed the deduplicator — the entry point file's duplicates are already reported by FindDirectives.
+                        deduplicator.AddDirective(named);
+                    }
+                    else
+                    {
+                        deduplicator.CheckDirective(named, reportError);
+                    }
+                }
+            }
+
+            isFirstFile = false;
 
             evaluatedDirectiveBuilder.AddRange(fileEvaluatedDirectives);
 

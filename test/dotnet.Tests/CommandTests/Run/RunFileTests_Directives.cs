@@ -1681,4 +1681,55 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             MySecret=MyValue (JsonConfigurationProvider for 'secrets.json' (Optional))
             """);
     }
+
+    /// <summary>
+    /// Duplicate directives across <c>#:include</c>'d files should be reported as errors.
+    /// </summary>
+    [Theory]
+    [InlineData("package")]
+    [InlineData("property")]
+    public void IncludeDirective_DuplicateDirectives(string directiveKind)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var utilPath = Path.Join(testInstance.Path, "Util.cs");
+
+        string programDirective;
+        string utilDirective;
+        string duplicateTypeAndName;
+
+        switch (directiveKind)
+        {
+            case "package":
+                programDirective = "#:package System.CommandLine@2.0.0-beta4.22272.1";
+                utilDirective = "#:package System.CommandLine@2.0.0-beta4.22272.1";
+                duplicateTypeAndName = "#:package System.CommandLine";
+                break;
+            case "property":
+                programDirective = "#:property MyProp=Value1";
+                utilDirective = "#:property MyProp=Value2";
+                duplicateTypeAndName = "#:property MyProp";
+                break;
+            default:
+                throw new ArgumentException(directiveKind);
+        }
+
+        File.WriteAllText(programPath, $"""
+            #:include Util.cs
+            {programDirective}
+            Console.WriteLine("Hello");
+            """);
+
+        File.WriteAllText(utilPath, $$"""
+            {{utilDirective}}
+            static class Util { }
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(utilPath, 1, FileBasedProgramsResources.DuplicateDirective, duplicateTypeAndName));
+    }
 }
