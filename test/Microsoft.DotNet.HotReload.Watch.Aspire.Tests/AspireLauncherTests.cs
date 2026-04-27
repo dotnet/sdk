@@ -83,6 +83,11 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
             "--resource", serviceProjectB,
         ]);
 
+        // Wait until running projects for the services are initialized,
+        // so that we can deterministically test updates to their source code:
+        await server.WaitUntilOutputContains(MessageDescriptor.Capabilities, $"A ({tfm})");
+        await server.WaitUntilOutputContains(MessageDescriptor.Capabilities, $"B ({tfm})");
+
         await server.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // valid code change:

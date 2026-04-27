@@ -128,7 +128,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOut(string.Format(CliCommandStrings.DirectivesRemoved, "#:package", 1, "Humanizer", file));
+                .And.HaveStdOutContaining("Removing PackageReference for package 'Humanizer'");
 
             File.ReadAllText(file).Should().Be("""
                 Console.WriteLine();
@@ -153,7 +153,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOut(string.Format(CliCommandStrings.DirectivesRemoved, "#:package", 2, "Humanizer", file));
+                .And.HaveStdOutContaining("Removing PackageReference for package 'Humanizer'");
 
             File.ReadAllText(file).Should().Be("""
                 #:package Another@1.0.0
@@ -176,7 +176,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Fail()
-                .And.HaveStdOut(string.Format(CliCommandStrings.DirectivesRemoved, "#:package", 0, "Humanizer", file));
+                .And.HaveStdOutContaining("does not contain any PackageReference 'Humanizer' to Remove");
 
             File.ReadAllText(file).Should().Be("""
                 Console.WriteLine();

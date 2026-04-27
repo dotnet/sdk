@@ -72,7 +72,8 @@
       <_LaunchSettingsLines Include="      %22commandLineArgs%22: %22--info%22," />
       <_LaunchSettingsLines Include="      %22workingDirectory%22: %22$(_DnCwdPath.Replace('\','\\'))%22," />
       <_LaunchSettingsLines Include="      %22environmentVariables%22: {" />
-      <_LaunchSettingsLines Include="        %22DOTNET_ROOT%22: %22$(_DotnetRootPath.Replace('\','\\'))%22" />
+      <_LaunchSettingsLines Include="        %22DOTNET_ROOT%22: %22$(_DotnetRootPath.Replace('\','\\'))%22," />
+      <_LaunchSettingsLines Include="        %22DOTNET_CLI_ENABLEAOT%22: %22true%22" />
       <_LaunchSettingsLines Include="      }," />
       <_LaunchSettingsLines Include="      %22nativeDebugging%22: true" />
       <_LaunchSettingsLines Include="    }" />
@@ -93,7 +94,7 @@
       <_VcxUserLines Include="    &lt;LocalDebuggerCommand&gt;$(_DnExePath)&lt;/LocalDebuggerCommand&gt;" />
       <_VcxUserLines Include="    &lt;LocalDebuggerCommandArguments&gt;--info&lt;/LocalDebuggerCommandArguments&gt;" />
       <_VcxUserLines Include="    &lt;LocalDebuggerWorkingDirectory&gt;$(_DnCwdPath)&lt;/LocalDebuggerWorkingDirectory&gt;" />
-      <_VcxUserLines Include="    &lt;LocalDebuggerEnvironment&gt;DOTNET_ROOT=$(_DotnetRootPath)&lt;/LocalDebuggerEnvironment&gt;" />
+      <_VcxUserLines Include="    &lt;LocalDebuggerEnvironment&gt;DOTNET_ROOT=$(_DotnetRootPath)&#xA;DOTNET_CLI_ENABLEAOT=true&lt;/LocalDebuggerEnvironment&gt;" />
       <_VcxUserLines Include="    &lt;DebuggerFlavor&gt;WindowsLocalDebugger&lt;/DebuggerFlavor&gt;" />
       <_VcxUserLines Include="  &lt;/PropertyGroup&gt;" />
       <_VcxUserLines Include="&lt;/Project&gt;" />
@@ -128,6 +129,7 @@
       <_DebugScriptLines Include="REM      (Debug > Windows > Breakpoints > New > Function, Language = All Languages)." />
       <_DebugScriptLines Include="REM" />
       <_DebugScriptLines Include="set DOTNET_ROOT=$(_DotnetRootPath)" />
+      <_DebugScriptLines Include="set DOTNET_CLI_ENABLEAOT=true" />
       <_DebugScriptLines Include="devenv /debugexe %22$(_DnExePath)%22 --info" />
     </ItemGroup>
     <WriteLinesToFile File="$(MSBuildThisFileDirectory)debug-dn.cmd" Lines="@(_DebugScriptLines)" Overwrite="true" WriteOnlyWhenDifferent="true" />

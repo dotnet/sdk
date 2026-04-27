@@ -519,14 +519,59 @@
     <Copy SourceFiles="@(NativeRestoredAppHostNETCore)" DestinationFolder="$(AppHostTemplatePath)" SkipUnchangedFiles="true" />
   </Target>
 
+  <!--
+    Publish the dotnet-aot NativeAOT shared library.
+    This provides fast CLI startup for simple commands (e.g. version, info) by handling
+    them entirely in native code, falling back to the managed dotnet.dll for other commands.
+    The output is placed next to dotnet.dll so it's packaged with the SDK.
+
+    Only runs for native builds (TargetRid == HostRid) on supported platforms.
+    Cross-compilation is not supported as NativeAOT requires native toolchain for target platform.
+  -->
+  <!-- <Target Name="PublishDotnetAot"
+          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))"> -->
+  <Target Name="PublishDotnetAot" Condition="false">
+    <PropertyGroup>
+      <!-- Define platform-specific native library naming -->
+      <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
+      <_DotnetAotNativeLibExtension Condition="'$(OSName)' == 'win'">.dll</_DotnetAotNativeLibExtension>
+      <_DotnetAotNativeLibExtension Condition="'$(OSName)' == 'osx'">.dylib</_DotnetAotNativeLibExtension>
+      <_DotnetAotNativeLibExtension Condition="'$(_DotnetAotNativeLibExtension)' == ''">.so</_DotnetAotNativeLibExtension>
+      <_DotnetAotNativeLibName>$(_DotnetAotNativeLibPrefix)dotnet-aot$(_DotnetAotNativeLibExtension)</_DotnetAotNativeLibName>
+
+      <_DotnetAotPublishDir>$(ArtifactsBinDir)dotnet-aot-redist\$(Configuration)\$(SdkTargetFramework)\$(TargetRid)\publish\</_DotnetAotPublishDir>
+      <!-- Use separate intermediate directory to avoid restore conflicts with main build -->
+      <_DotnetAotIntermediateDir>$(ArtifactsObjDir)dotnet-aot-redist\$(Configuration)\$(TargetRid)\</_DotnetAotIntermediateDir>
+    </PropertyGroup>
+
+    <!-- Restore and publish the dotnet-aot project as a NativeAOT shared library -->
+    <MSBuild
+      Targets="Restore;Publish"
+      Projects="$(RepoRoot)/src/Cli/dotnet-aot/dotnet-aot.csproj"
+      Properties="Configuration=$(Configuration);RuntimeIdentifier=$(TargetRid);PublishDir=$(_DotnetAotPublishDir);IntermediateOutputPath=$(_DotnetAotIntermediateDir)" />
+
+    <!-- Verify the native library was produced -->
+    <Error Condition="!Exists('$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)')"
+           Text="dotnet-aot native library not found at '$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)'. NativeAOT publish may have failed for RID '$(TargetRid)'." />
+
+    <!-- Copy the native library to the SDK output directory -->
+    <Copy
+      SourceFiles="$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)"
+      DestinationFolder="$(OutputPath)"
+      SkipUnchangedFiles="true" />
+  </Target>
+
   <Target Name="ChmodPublishDir"
-          DependsOnTargets="GenerateCliRuntimeConfigurationFiles;CreateMSBuildAppHost"
+          DependsOnTargets="GenerateCliRuntimeConfigurationFiles;CreateMSBuildAppHost;PublishDotnetAot"
           Condition="'$(OSName)' != 'win'">
 
     <Exec Command="find $(OutputPath) -type d -exec chmod 755 {} \;" />
     <Exec Command="find $(OutputPath) -type f -exec chmod 644 {} \;" />
     <Exec Command="chmod 755 %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)" />
     <Exec Command="chmod 755 %(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)" />
+    <!-- Make dotnet-aot native shared library executable (only if it exists for this RID) -->
+    <Exec Command="chmod 755 $(OutputPath)$(_DotnetAotNativeLibName)"
+          Condition="Exists('$(OutputPath)$(_DotnetAotNativeLibName)')" />
   </Target>
 
   <Target Name="DeleteSymbolsFromPublishDir" DependsOnTargets="GenerateCliRuntimeConfigurationFiles">
@@ -574,6 +619,7 @@
                             GeneratePackagePruneData;
                             PublishContainersSdk;
                             GenerateCliRuntimeConfigurationFiles;
+                            PublishDotnetAot;
                             CreateMSBuildAppHost;
                             MakeFscRunnableAndMoveToPublishDir;
                             RemoveFscFilesAfterPublish;
