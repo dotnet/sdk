@@ -180,9 +180,12 @@ taskkill /F /IM msbuild.exe /T
 
 The SDK repository includes GitHub Actions workflows that automate common maintenance tasks directly from pull requests.
 
-### `/xlf or /updatexlf` - Update Translation Files
+### `/xlf` or `/updatexlf` - Update Translation Files
 
-When you modify `.resx` resource files, the corresponding `.xlf` translation files need to be updated. Instead of manually running the build locally, comment `/updatexlf` on the PR and the GitHub Action will:
+- Workflow: [Update XLF files on command](https://github.com/dotnet/sdk/actions/workflows/update-xlf-on-comment.yml)
+- Source: [update-xlf-on-comment.yml](../../.github/workflows/update-xlf-on-comment.yml)
+
+When you modify `.resx` resource files, the corresponding `.xlf` translation files need to be updated. Instead of manually running the build locally, comment `/xlf` or `/updatexlf` on the PR and the GitHub Action will:
 
 1. Check out the PR branch
 2. Run `./build.sh /t:UpdateXlf` (or full build if needed)
@@ -192,9 +195,12 @@ This is useful when you've changed localized strings and the CI build is failing
 
 See also: [Localization documentation](Localization.md)
 
-### `/completions or /fixcompletions` - Update CLI Completion Snapshots
+### `/completions` or `/fixcompletions` - Update CLI Completion Snapshots
 
-The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, etc.). When you add or modify CLI commands, these snapshots need to be updated. Comment `/fixcompletions` on the PR and the GitHub Action will:
+- Workflow: [Fix completion snapshots on command](https://github.com/dotnet/sdk/actions/workflows/fix-completions-on-comment.yml)
+- Source: [fix-completions-on-comment.yml](../../.github/workflows/fix-completions-on-comment.yml)
+
+The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, etc.). When you add or modify CLI commands, these snapshots need to be updated. Comment `/completions` or `/fixcompletions` on the PR and the GitHub Action will:
 
 1. Build the repository
 2. Run the completion tests
@@ -205,12 +211,34 @@ This is useful when you've added new commands or options and the completion snap
 
 See also: [Snapshot-based testing documentation](snapshot-based-testing.md)
 
+### `/backport to <branch>`
 
-### `/backport to {branch}`
+- Workflow: [Backport PR to branch](https://github.com/dotnet/sdk/actions/workflows/backport.yml)
+- Source: [backport.yml](../../.github/workflows/backport.yml)
 
-The SDK team manages many branches.
-You may use /backport to {branch_name} to mimic the process of cherry-picking a PR onto another branch.
+Comment `/backport to <branch>` on a merged PR to create a new pull request that cherry-picks the changes onto the target branch. The backport PR will be labeled with `backport` and will CC the original PR participants.
 
+### `/ba-g <reason>` - Bypass Build Analysis
+
+Comment `/ba-g <reason>` on a PR to unconditionally turn the Build Analysis check green. The reason
+is captured by telemetry and should be descriptive - avoid non-specific justifications like
+"unrelated issues". This is useful when CI failures are caused by known flaky tests or
+infrastructure issues unrelated to the PR.
+
+Example reasons:
+
+- `/ba-g deadletter` - Helix work item crashed with "DeadLetter" status.
+- `/ba-g docs-only change` - PR did not change any source code.
+- `/ba-g insufficient info in logs` - No good unique pattern in the logs to open a known issue.
+- `/ba-g recently fixed known issue #<number>` - The known issue fix was already merged, but CI ran
+  before it.
+- `/ba-g failures are from known issues #<number1>, #<number2>` - All failures have known issues
+  filed, but Build Analysis isn't turning green.
+
+For details on triaging CI failures and filing known issues, see the [runtime failure analysis
+documentation](https://github.com/dotnet/runtime/blob/main/docs/workflow/ci/failure-analysis.md).
+The [Build Analysis Known Issue Helper](https://helix.dot.net/BuildAnalysis/CreateKnownIssues) can
+assist in creating known issue reports with the correct labels and JSON format.
 
 ## Adding a Command
 

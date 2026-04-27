@@ -209,7 +209,7 @@ class TestClass
                     },
                     AdditionalProjectReferences = { "DependencyProject" },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -273,7 +273,7 @@ class TestClass
                     },
                     AdditionalProjectReferences = { "DependencyProject" },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

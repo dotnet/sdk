@@ -24,6 +24,7 @@ namespace Analyzer.Utilities
         public const string InvariantGlobalization = nameof(InvariantGlobalization);
         public const string PlatformNeutralAssembly = nameof(PlatformNeutralAssembly);
         public const string EnforceExtendedAnalyzerRules = nameof(EnforceExtendedAnalyzerRules);
+        public const string EntryPointFilePath = nameof(EntryPointFilePath);
     }
 
     internal static class MSBuildPropertyOptionNamesHelpers

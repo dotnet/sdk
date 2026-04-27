@@ -112,7 +112,7 @@ public sealed class SetterOnlyTestAttribute : Attribute
                     },
                 },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -386,7 +386,7 @@ End Class",
                 },
                 NumberOfIncrementalIterations = 2,
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -454,7 +454,7 @@ End Class",
                     },
                 },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

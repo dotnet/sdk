@@ -1311,7 +1311,7 @@ class DisposableOwnerType
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             source = @"
 Imports System
@@ -1357,7 +1357,7 @@ End Class
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1414,7 +1414,7 @@ class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             source = @"
 Imports System
@@ -1458,7 +1458,7 @@ End Class
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404")]
@@ -1562,7 +1562,7 @@ public class SerialPort : IDisposable
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             source = @"
 Imports System
@@ -1642,7 +1642,7 @@ End Class
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404#issuecomment-446715696")]
@@ -1740,7 +1740,7 @@ End Class
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1946,7 +1946,7 @@ class Test
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1969,7 +1969,7 @@ Class Test
         Await e.DisposeAsync()
     End Function
 End Class"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
@@ -2002,7 +2002,7 @@ class Test
                 {
                     GetCSharpResultAt(17, 17, "new AsyncDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2028,7 +2028,7 @@ End Class",
                 {
                     GetBasicResultAt(15, 17, "New AsyncDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
@@ -2067,7 +2067,7 @@ class Test
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2100,7 +2100,7 @@ Class Test
         End Using
     End Function
 End Class"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
@@ -2137,7 +2137,7 @@ class Test
                 {
                     GetCSharpResultAt(21, 17, "new AsyncDisposableAndDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2167,7 +2167,7 @@ End Class",
                 {
                     GetBasicResultAt(19, 17, "New AsyncDisposableAndDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6765, "https://github.com/dotnet/roslyn-analyzers/issues/6765")]
@@ -2217,7 +2217,7 @@ class Test
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6765, "https://github.com/dotnet/roslyn-analyzers/issues/6765")]
@@ -2265,7 +2265,7 @@ class Test
                     // /0/Test0.cs(26,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'new AsyncDisposableAndDisposable()' before all references to it are out of scope
                     GetCSharpResultAt(26, 18, "new AsyncDisposableAndDisposable()")
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
@@ -2296,7 +2296,7 @@ class Test
                 {
                     GetCSharpResultAt(15, 17, "new RefStructDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
@@ -2327,7 +2327,7 @@ class Test
                 {
                     GetCSharpResultAt(15, 17, "new RefStructDisposable()"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
@@ -2354,7 +2354,7 @@ class Test
         e.Dispose();
     }
 }"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2779,7 +2779,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2810,7 +2810,7 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -2856,7 +2856,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2888,7 +2888,7 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -2934,7 +2934,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2966,7 +2966,7 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -3045,7 +3045,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -3122,7 +3122,7 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -3202,7 +3202,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -3272,7 +3272,7 @@ End Class"
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -6370,7 +6370,7 @@ class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -7385,7 +7385,7 @@ class Test
                         GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(92, 30, "new ResourceReader(stream)"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -7499,7 +7499,7 @@ End Class
                         GetBasicMayBeNotDisposedOnExceptionPathsResultAt(70, 30, "New ResourceReader(stream)"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1580, "https://github.com/dotnet/roslyn-analyzers/issues/1580")]
@@ -7819,7 +7819,7 @@ class Test
                 }
             };
             csharpTest.ExpectedDiagnostics.AddRange(builder);
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             source = @"
 Imports System
@@ -7899,7 +7899,7 @@ End Class
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(builder);
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -8344,7 +8344,7 @@ class Test
                     Sources = { source },
                     AnalyzerConfigFiles = { ("/.editorconfig", GetEditorConfigContent(analysisKind)) },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -8905,7 +8905,7 @@ public class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -9009,7 +9009,7 @@ public class Test
                 });
             }
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -9152,7 +9152,7 @@ public class Test
                 });
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -9207,7 +9207,7 @@ public class Test
                 });
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbCode = @"
 Imports System
@@ -9253,7 +9253,7 @@ End Class
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -9295,7 +9295,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp7_3
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -9332,7 +9332,7 @@ End Class
                     }
                 },
                 LanguageVersion = VisualBasicLanguageVersion.VisualBasic15_3
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -9367,7 +9367,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp7_3
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -9398,7 +9398,7 @@ End Class
                     }
                 },
                 LanguageVersion = VisualBasicLanguageVersion.VisualBasic15_3
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -9473,7 +9473,7 @@ public class Test
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp7_3
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -10317,7 +10317,7 @@ class Test
                         GetCSharpMayBeNotDisposedResultAt(242, 15, "new A(11)"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -10563,7 +10563,7 @@ End Class
                         GetBasicMayBeNotDisposedResultAt(174, 22, "New A(11)"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -10748,7 +10748,7 @@ class MyException: Exception
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -11472,7 +11472,7 @@ class C : IDisposable
 {editorConfigText}
 ") }
 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -11524,7 +11524,7 @@ public class C
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -11785,7 +11785,7 @@ class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -11825,7 +11825,7 @@ End Class"
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -11879,7 +11879,7 @@ class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -11924,7 +11924,7 @@ End Class"
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -12008,7 +12008,7 @@ namespace ConsoleApp1
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -12049,7 +12049,7 @@ namespace ConsoleApp1
                     }
                 },
                 LanguageVersion = CSharpLanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -12100,7 +12100,7 @@ class B : IDisposable
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -12151,7 +12151,7 @@ class B : IDisposable
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -12203,7 +12203,7 @@ class Test
 {editorConfigFile}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -12329,7 +12329,7 @@ namespace MyNamespace
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(22, 21, "new B()"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -12377,7 +12377,7 @@ End Namespace",
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(18, 22, "New B()"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3297, "https://github.com/dotnet/roslyn-analyzers/issues/3297")]
@@ -12477,7 +12477,7 @@ public class C
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -12508,7 +12508,7 @@ End Class"
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact(Skip = "The throw statement prevents the analysis"), WorkItem(3356, "https://github.com/dotnet/roslyn-analyzers/issues/3356")]
@@ -12629,7 +12629,7 @@ public class Class1
         => new A();
 }",
                 LanguageVersion = CSharpLanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3873, "https://github.com/dotnet/roslyn-analyzers/issues/3873")]
@@ -12749,7 +12749,7 @@ class Test
                 TestCode = code,
                 FixedCode = code,
                 LanguageVersion = CSharpLanguageVersion.CSharp9,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -1371,7 +1371,7 @@ End Namespace";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 ExpectedDiagnostics = { diagnostic },
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1406,7 +1406,7 @@ End Namespace";
             if (version != default)
                 test.LanguageVersion = version;
 
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1445,7 +1445,7 @@ End Namespace";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 ExpectedDiagnostics = { diagnostic },
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1470,7 +1470,7 @@ End Namespace";
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static readonly string[] s_DictionaryRefs = {
@@ -1510,7 +1510,7 @@ End Namespace";
                 {
                     TestCode = testCode,
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-                }.RunAsync();
+                }.RunAsync(TestContext.Current.CancellationToken);
             }
 
             string fixedCode = CreateCSharpCode($$"""
@@ -1531,7 +1531,7 @@ End Namespace";
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1556,7 +1556,7 @@ End Namespace";
                 {
                     TestCode = testCode,
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-                }.RunAsync();
+                }.RunAsync(TestContext.Current.CancellationToken);
             }
 
             string fixedCode = CreateVbCode($$"""
@@ -1580,7 +1580,7 @@ End Namespace";
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, CombinatorialData]
@@ -1633,7 +1633,7 @@ class C
     }}
 }}
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1696,7 +1696,7 @@ class C
     }}
 }}",
                 LanguageVersion = LanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1783,7 +1783,7 @@ namespace UnitTests {
                         .WithLocation(0)
                         .WithLocation(1),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7217, "https://github.com/dotnet/roslyn-analyzers/issues/7217")]
