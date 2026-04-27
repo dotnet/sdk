@@ -24,6 +24,7 @@ while [[ $# > 0 ]]; do
     -pack) skip_crossgen=false; skip_installers=false; arguments+=(-pack) ;;
     -test|-t) arguments+=(-test) ;;
     -configuration|-c) arguments+=(-configuration "$2"); shift ;;
+    -skipcrossgen) skip_crossgen=true ;;
     *) arguments+=("$1") ;;
   esac
   shift
