@@ -4,6 +4,7 @@
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -40,7 +41,7 @@ internal class InitWorkflows
     /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
     /// </summary>
     public static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
-        preference == PathPreference.FullPathReplacement;
+        preference is PathPreference.FullPathReplacement;
 
     /// <summary>
     /// Returns true when the user chose to convert existing system-level .NET installs
@@ -86,7 +87,8 @@ internal class InitWorkflows
             BaseConfigurationWalkthrough(
                 [],
                 () => { },
-                command.NoProgress);
+                command.NoProgress,
+                shellProvider: command.ShellProvider);
             return;
         }
 
@@ -98,7 +100,8 @@ internal class InitWorkflows
         BaseConfigurationWalkthrough(
             requests,
             () => InstallExecutor.ExecuteInstalls(requests, command.NoProgress),
-            command.NoProgress);
+            command.NoProgress,
+            shellProvider: command.ShellProvider);
     }
 
     /// <summary>
@@ -114,13 +117,15 @@ internal class InitWorkflows
     /// <param name="interactive">Whether to prompt the user. When false, uses existing config or defaults — no prompts are shown.</param>
     /// <param name="deferAdminMigrationUntilEnd">When true, defers the admin migration prompt until the end of the init flow.</param>
     /// <param name="askEvenIfConfigured">When true, prompts the user even if a preference was previously saved.</param>
+    /// <param name="shellProvider">An optional shell override to use for environment configuration instead of auto-detection.</param>
     public void BaseConfigurationWalkthrough(
         List<ResolvedInstallRequest> requests,
         Action primaryActionAfterConfigured,
         bool noProgress,
         bool interactive = true,
         bool deferAdminMigrationUntilEnd = false,
-        bool askEvenIfConfigured = true)
+        bool askEvenIfConfigured = true,
+        IEnvShellProvider? shellProvider = null)
     {
         // Determine the install root for environment configuration and migration.
         // Use the first request's root if available, otherwise fall back to the default path.
@@ -137,7 +142,7 @@ internal class InitWorkflows
 
         // User chooses how to access .NET
         PathPreference? previousPreference = DotnetupConfig.ReadPathPreference();
-        var pathPreference = GetPathPreference(interactive, askEvenIfConfigured);
+        var pathPreference = GetPathPreference(interactive, askEvenIfConfigured, shellProvider);
         string? manifestPath = requests.Count > 0 ? requests[0].Request.Options.ManifestPath : null;
 
         // (Can Defer) Step 2: Prompt about admin installs before setting up the environment.
@@ -149,8 +154,12 @@ internal class InitWorkflows
         // Step 3: Run the primary action (typically installing the base SDK from global.json/latest).
         RunPrimaryInstall(requests, primaryActionAfterConfigured, predownloadTask);
 
-        // Save config and apply configuration(s) - NOTE: Terminal Profile not yet implemented.
         SaveConfigAndDisplayResult(pathPreference, previousPreference);
+
+        if (pathPreference is PathPreference.ShellProfile)
+        {
+            _dotnetEnvironment.ApplyTerminalProfileModifications(installRoot.Path, shellProvider);
+        }
 
         if (ShouldReplaceSystemConfiguration(pathPreference))
         {
@@ -192,7 +201,7 @@ internal class InitWorkflows
         primaryAction();
     }
 
-    private static PathPreference GetPathPreference(bool interactive, bool askEvenIfConfigured)
+    private static PathPreference GetPathPreference(bool interactive, bool askEvenIfConfigured, IEnvShellProvider? shellProvider)
     {
         // If the user already configured their preference (e.g. prior init), reuse it.
         // In non-interactive mode, use the existing config or default to ShellProfile.
@@ -203,7 +212,19 @@ internal class InitWorkflows
         }
         else if (!interactive)
         {
+            if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
+            {
+                return PathPreference.DotnetupDotnet;
+            }
+
             return PathPreference.ShellProfile;
+        }
+
+        if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
+        {
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
+                $"[{DotnetupTheme.Current.Warning}]Warning:[/] Shell '{ShellDetection.GetCurrentShellDisplayName().EscapeMarkup()}' is not supported for automatic environment configuration. dotnetup will continue without changing your shell profile unless you specify one with --shell."));
+            return PathPreference.DotnetupDotnet;
         }
 
         var preference = PromptPathPreference();

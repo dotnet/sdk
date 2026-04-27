@@ -10,9 +10,9 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal static class TelemetryDiskLogger
 {
-    private static readonly JsonSerializerOptions s_jsonOptions;
+    private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = false };
 
-    private static readonly TelemetryDiskLoggerJsonSerializerContext s_jsonContext;
+    private static readonly TelemetryDiskLoggerJsonSerializerContext s_jsonContext = new(s_jsonOptions);
 
     public record EventModel(
         string name,
@@ -40,12 +40,6 @@ internal static class TelemetryDiskLogger
         SourceModel source,
         Dictionary<string, string?> tags,
         EventModel[] events);
-
-    static TelemetryDiskLogger()
-    {
-        s_jsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = false };
-        s_jsonContext = new(s_jsonOptions);
-    }
 
     public static void WriteLog(string logPath, IEnumerable<Activity> activies)
     {

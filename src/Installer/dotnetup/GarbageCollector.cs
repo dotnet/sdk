@@ -186,7 +186,7 @@ internal class GarbageCollector
                         Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
                         ++failedCount;
                         lastFailedPath = relativePath;
-                        DotnetupTelemetry.Instance.RecordException(op.Activity, ex, errorCode: "gc.delete_failed");
+                        DotnetupTelemetry.Instance.RecordException(op, ex, errorCode: "gc.delete_failed");
                     }
                 }
             }

@@ -2,18 +2,24 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 
 internal class DefaultInstallCommand : CommandBase
 {
     private readonly string _installType;
+    private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly InstallRootManager _installRootManager;
+    private readonly IEnvShellProvider? _shellProvider;
 
     public DefaultInstallCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
     {
+        _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _installType = result.GetValue(DefaultInstallCommandParser.InstallTypeArgument)!;
-        _installRootManager = new InstallRootManager(dotnetEnvironment);
+        _installRootManager = new InstallRootManager(_dotnetEnvironment);
+        _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
 
     protected override string GetCommandName() => "defaultinstall";
@@ -32,7 +38,7 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, "Configuring the user install root is not yet supported on non-Windows platforms.");
+            return SetUnixShellProfile(dotnetupOnly: false);
         }
 
         var changes = _installRootManager.GetUserInstallRootChanges();
@@ -64,7 +70,7 @@ internal class DefaultInstallCommand : CommandBase
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, "Configuring the system install root is only supported on Windows.");
+            return SetUnixShellProfile(dotnetupOnly: true);
         }
 
         var changes = _installRootManager.GetAdminInstallRootChanges();
@@ -88,5 +94,53 @@ internal class DefaultInstallCommand : CommandBase
 
         Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
         return 0;
+    }
+
+    private int SetUnixShellProfile(bool dotnetupOnly, string? dotnetInstallPath = null)
+    {
+        var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
+        var shellProvider = ShellDetection.GetCurrentShellProviderOrThrow(_shellProvider);
+        var profileDotnetInstallPath = GetInstallPathToPassToProfile(dotnetInstallPath);
+
+        var modifiedFiles = ShellProfileManager.AddProfileEntries(
+            shellProvider,
+            dotnetupPath,
+            dotnetupOnly,
+            profileDotnetInstallPath);
+
+        if (modifiedFiles.Count == 0)
+        {
+            Console.WriteLine(dotnetupOnly
+                ? "Shell profile is already configured."
+                : "Shell profile is already configured for dotnetup.");
+        }
+        else
+        {
+            Console.WriteLine(dotnetupOnly
+                ? "Updated shell profile files (dotnetup only, no DOTNET_ROOT or dotnet PATH):"
+                : "Updated shell profile files:");
+
+            foreach (var file in modifiedFiles)
+            {
+                Console.WriteLine($"  {file}");
+            }
+        }
+
+        if (!dotnetupOnly)
+        {
+            Console.WriteLine();
+            Console.WriteLine("To start using .NET in this terminal, run:");
+            Console.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath, dotnetInstallPath: profileDotnetInstallPath)}");
+        }
+
+        return 0;
+    }
+
+    private string? GetInstallPathToPassToProfile(string? dotnetInstallPath)
+    {
+        return dotnetInstallPath is { Length: > 0 } installPath &&
+            !DotnetupUtilities.PathsEqual(installPath, _dotnetEnvironment.GetDefaultDotnetInstallPath())
+            ? installPath
+            : null;
     }
 }

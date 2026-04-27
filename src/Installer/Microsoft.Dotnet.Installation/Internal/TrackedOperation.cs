@@ -18,6 +18,7 @@ internal sealed class TrackedOperation : IDisposable
     private readonly Activity? _activity;
     private readonly string _eventName;
     private readonly Action<string, IDictionary<string, string?>>? _onTrackEvent;
+    private readonly Dictionary<string, string?> _storedTags = new(StringComparer.OrdinalIgnoreCase);
     private bool _disposed;
 
     internal TrackedOperation(Activity? activity, string eventName, Action<string, IDictionary<string, string?>>? onTrackEvent)
@@ -32,12 +33,13 @@ internal sealed class TrackedOperation : IDisposable
     public void Tag(string key, object? value)
     {
         _activity?.SetTag(key, value);
+        _storedTags[key] = value?.ToString();
     }
 
     public void SetStatus(ActivityStatusCode code, string? description = null)
     {
         _activity?.SetStatus(code, description);
-        _activity?.SetTag("operation.status", code == ActivityStatusCode.Ok ? "ok" : "error");
+        Tag("command.status", code == ActivityStatusCode.Ok ? "ok" : "error");
     }
 
     public void Dispose()
@@ -56,7 +58,14 @@ internal sealed class TrackedOperation : IDisposable
         }
 
         var properties = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var tag in _activity.Tags)
+        foreach (var tag in _activity.TagObjects)
+        {
+            properties[tag.Key] = tag.Value?.ToString();
+        }
+
+        // Merge explicitly stored tags — ensures tags set via Tag() are always
+        // present even if the Activity.TagObjects enumeration misses them.
+        foreach (var tag in _storedTags)
         {
             properties[tag.Key] = tag.Value;
         }

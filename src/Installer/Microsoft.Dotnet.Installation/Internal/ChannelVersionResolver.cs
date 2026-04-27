@@ -101,7 +101,7 @@ internal class ChannelVersionResolver
         }
 
         // Check for prerelease suffix (e.g., "10.0.100-preview.1.32640")
-        var dashIndex = channel.IndexOf('-');
+        var dashIndex = channel.IndexOf('-', StringComparison.Ordinal);
         var hasPrerelease = dashIndex >= 0;
         var versionPart = hasPrerelease ? channel.Substring(0, dashIndex) : channel;
 
@@ -248,7 +248,7 @@ internal class ChannelVersionResolver
 
     private static IEnumerable<Product> GetProductsInMajorOrMajorMinor(IEnumerable<Product> index, int major, int? minor = null)
     {
-        var validProducts = index.Where(p => minor is not null ? p.ProductVersion.Equals($"{major}.{minor}") : p.ProductVersion.StartsWith($"{major}.", StringComparison.Ordinal));
+        var validProducts = index.Where(p => minor is not null ? p.ProductVersion.Equals($"{major}.{minor}", StringComparison.Ordinal) : p.ProductVersion.StartsWith($"{major}.", StringComparison.Ordinal));
         return validProducts;
     }
 
@@ -336,8 +336,8 @@ internal class ChannelVersionResolver
     private static int NormalizeFeatureBandInput(string band)
     {
         var bandString = band
-            .Replace("X", "x")
-            .Replace("x", "0")
+            .Replace("X", "x", StringComparison.Ordinal)
+            .Replace("x", "0", StringComparison.Ordinal)
             .PadRight(3, '0')
             .Substring(0, 3);
         return int.Parse(bandString, CultureInfo.InvariantCulture);

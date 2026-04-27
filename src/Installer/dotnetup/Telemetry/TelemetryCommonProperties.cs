@@ -30,6 +30,7 @@ internal static class TelemetryCommonProperties
         {
             ["session.id"] = sessionId,
             ["device.id"] = s_deviceId.Value,
+            ["os.type"] = GetOSType(),
             ["os.platform"] = RuntimeInformation.OSDescription,
             ["os.version"] = Environment.OSVersion.VersionString,
             ["process.arch"] = RuntimeInformation.ProcessArchitecture.ToString(),
@@ -83,6 +84,30 @@ internal static class TelemetryCommonProperties
             // Fallback to empty string if device ID retrieval fails (consistent with SDK behavior)
             return string.Empty;
         }
+    }
+
+    /// <summary>
+    /// Returns a simplified OS family name: "Windows", "macOS", "Linux", or "Unknown".
+    /// Uses RuntimeInformation.IsOSPlatform() so no string-parsing of distro names is needed.
+    /// </summary>
+    private static string GetOSType()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return "Windows";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            return "macOS";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return "Linux";
+        }
+
+        return "Unknown";
     }
 
     private static bool DetectCIEnvironment()
