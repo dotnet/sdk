@@ -9,9 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WatchAspire.ApiService\WatchAspire.ApiService.csproj" Watch="true" />
-    <ProjectReference Include="..\WatchAspire.Web\WatchAspire.Web.csproj" Watch="true" />
-    <ProjectReference Include="..\WatchAspire.Wasm\WatchAspire.Wasm.csproj" Watch="true" />
+    <ProjectReference Include="..\WatchAspire.ApiService\WatchAspire.ApiService.csproj" />
+    <ProjectReference Include="..\WatchAspire.Web\WatchAspire.Web.csproj" />
+    <ProjectReference Include="..\WatchAspire.Wasm\WatchAspire.Wasm.csproj" />
+    <ProjectReference Include="..\WatchAspire.MigrationService\WatchAspire.MigrationService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

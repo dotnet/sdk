@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
 
-        private static readonly string PackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "TestPackages", "cgmanifest.json");
+        private static readonly string PackagesJsonPath = Path.Combine(SdkTestContext.Current.TestPackages, "cgmanifest.json");
 
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
         {
@@ -48,6 +48,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private class NullTestOutputHelper : ITestOutputHelper
         {
+            public string Output => string.Empty;
+
+            public void Write(string message) { }
+
+            public void Write(string format, params object[] args) { }
+
             public void WriteLine(string message) { }
 
             public void WriteLine(string format, params object[] args) { }

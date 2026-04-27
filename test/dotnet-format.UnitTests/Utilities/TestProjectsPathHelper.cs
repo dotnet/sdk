@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -12,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
         {
             if (s_projectsDirectory == null)
             {
-                var assetsDirectory = Path.Combine(TestContext.Current.TestAssetsDirectory, "dotnet-format");
+                var assetsDirectory = Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "dotnet-format");
                 if (Directory.Exists(assetsDirectory))
                 {
                     s_projectsDirectory = assetsDirectory;

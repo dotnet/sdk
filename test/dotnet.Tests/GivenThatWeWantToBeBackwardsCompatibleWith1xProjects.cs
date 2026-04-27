@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
 
             var testAppName = "TestAppSimple";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: target.Replace('.', '_'))
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: target.Replace('.', '_'))
                 .WithSource();
 
             //   Replace the 'TargetFramework'
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
 
             var testAppName = "TestAppSimple";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: target.Replace('.', '_'))
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: target.Replace('.', '_'))
                 .WithSource();
 
             //   Replace the 'TargetFramework'
@@ -62,11 +62,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [RequiresSpecificFrameworkFact("netcoreapp1.0")] // https://github.com/dotnet/cli/issues/6087
         public void ItRunsABackwardsVersionedTool()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset("11TestAppWith10CLIToolReferences")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new RestoreCommand(testInstance)
                 .Execute()
