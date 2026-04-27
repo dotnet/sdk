@@ -380,9 +380,9 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         }
         catch (Win32Exception ex)
         {
-            // Signal returns false when given process has already exited.
-            // So it can throw only when we try to kill non-child process
-            // that we don't have permissions to kill.
+            // A process that has already exited is handled by Signal's non-exception return path.
+            // This catch is for exceptional failures, such as attempting to signal a process
+            // that we don't have permission to kill.
             error = ex.Message;
         }
 

@@ -66,9 +66,9 @@ internal sealed class PhysicalConsole : IConsole
                         }
                         catch (Win32Exception ex)
                         {
-                            // Signal returns false when given process has already exited.
-                            // So it can throw only when we try to kill non-child process
-                            // that we don't have permissions to kill.
+                            // Signal returns false when the given process has already exited.
+                            // So it can throw only when we try to kill a non-child process
+                            // that we don't have permission to kill.
                             error = ex.Message;
                         }
                         catch (ArgumentException)
