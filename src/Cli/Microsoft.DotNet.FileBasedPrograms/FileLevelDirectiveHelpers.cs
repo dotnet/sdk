@@ -36,7 +36,7 @@ internal static class FileLevelDirectiveHelpers
     /// The latter is useful for <c>dotnet run file.cs</c> where if there are app directives after the first token,
     /// compiler reports <see cref="ErrorCode.ERR_PPIgnoredFollowsToken"/> anyway, so we speed up success scenarios by not parsing the whole file up front in the SDK CLI.
     /// </param>
-    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ErrorReporter errorReporter)
+    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ErrorReporter errorReporter, bool checkDuplicates = true)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
         var tokenizer = CreateTokenizer(sourceFile.Text);
@@ -44,7 +44,7 @@ internal static class FileLevelDirectiveHelpers
         var result = tokenizer.ParseLeadingTrivia();
         var triviaList = result.Token.LeadingTrivia;
 
-        FindLeadingDirectives(sourceFile, triviaList, errorReporter, builder);
+        FindLeadingDirectives(sourceFile, triviaList, errorReporter, builder, checkDuplicates);
 
         // In conversion mode, we want to report errors for any invalid directives in the rest of the file
         // so users don't end up with invalid directives in the converted project.
@@ -86,7 +86,8 @@ internal static class FileLevelDirectiveHelpers
         SourceFile sourceFile,
         SyntaxTriviaList triviaList,
         ErrorReporter errorReporter,
-        ImmutableArray<CSharpDirective>.Builder? builder)
+        ImmutableArray<CSharpDirective>.Builder? builder,
+        bool checkDuplicates = true)
     {
         var deduplicator = new DirectiveDeduplicator();
         TextSpan previousWhiteSpaceSpan = default;
@@ -156,7 +157,10 @@ internal static class FileLevelDirectiveHelpers
 
                 if (CSharpDirective.Parse(context) is { } directive)
                 {
-                    deduplicator.CheckDirective(directive, errorReporter);
+                    if (checkDuplicates)
+                    {
+                        deduplicator.CheckDirective(directive, errorReporter);
+                    }
 
                     builder?.Add(directive);
                 }
@@ -901,21 +905,6 @@ internal struct DirectiveDeduplicator
         {
             _seen.Add(directive, directive);
         }
-    }
-
-    /// <summary>
-    /// Adds <paramref name="directive"/> to the set of seen directives without reporting errors.
-    /// Used to seed the deduplicator with directives that were already checked elsewhere.
-    /// </summary>
-    public void AddDirective(CSharpDirective.Named directive)
-    {
-        if (directive is CSharpDirective.Project or CSharpDirective.Ref)
-        {
-            return;
-        }
-
-        _seen ??= new(NamedDirectiveComparer.Instance);
-        _seen.TryAdd(directive, directive);
     }
 }
 

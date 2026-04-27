@@ -290,7 +290,7 @@ public sealed class VirtualProjectBuilder
 
         if (directives.IsDefault)
         {
-            directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, reportError);
+            directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, reportError, checkDuplicates: false);
         }
 
         (string ProjectFileText, ProjectInstance ProjectInstance, ProjectRootElement ProjectRootElement)? lastProject = null;
@@ -317,7 +317,6 @@ public sealed class VirtualProjectBuilder
         var filesToProcess = new Queue<string>();
         var evaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>();
         var deduplicator = new DirectiveDeduplicator();
-        var isFirstFile = true;
 
         do
         {
@@ -330,24 +329,14 @@ public sealed class VirtualProjectBuilder
             // Evaluate directives, e.g., determine item types for #:include/#:exclude from their file extension.
             var fileEvaluatedDirectives = EvaluateDirectives(project, directives, reportError);
 
-            // Detect duplicate directives across files (per-file duplicates are already reported by FindDirectives).
+            // Detect duplicate directives across all files on evaluated directives.
             foreach (var directive in fileEvaluatedDirectives)
             {
                 if (directive is CSharpDirective.Named named)
                 {
-                    if (isFirstFile)
-                    {
-                        // Seed the deduplicator — the entry point file's duplicates are already reported by FindDirectives.
-                        deduplicator.AddDirective(named);
-                    }
-                    else
-                    {
-                        deduplicator.CheckDirective(named, reportError);
-                    }
+                    deduplicator.CheckDirective(named, reportError);
                 }
             }
-
-            isFirstFile = false;
 
             evaluatedDirectiveBuilder.AddRange(fileEvaluatedDirectives);
 
@@ -390,7 +379,7 @@ public sealed class VirtualProjectBuilder
                 }
 
                 var sourceFile = SourceFile.Load(filePath);
-                directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, validateAllDirectives, reportError);
+                directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, validateAllDirectives, reportError, checkDuplicates: false);
                 return true;
             }
 
