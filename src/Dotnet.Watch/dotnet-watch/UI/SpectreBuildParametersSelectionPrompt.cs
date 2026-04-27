@@ -6,9 +6,13 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class SpectreTargetFrameworkSelectionPrompt(IAnsiConsole console) : TargetFrameworkSelectionPrompt
+internal sealed class SpectreBuildParametersSelectionPrompt(IAnsiConsole console) : BuildParametersSelectionPrompt
 {
-    public SpectreTargetFrameworkSelectionPrompt(IConsole watchConsole)
+    private const string CyanMarkup = "[cyan]";
+    private const string GrayMarkup = "[gray]";
+    private const string EndMarkup = "[/]";
+
+    public SpectreBuildParametersSelectionPrompt(IConsole watchConsole)
         : this(CreateConsole(watchConsole))
     {
     }
@@ -16,12 +20,12 @@ internal sealed class SpectreTargetFrameworkSelectionPrompt(IAnsiConsole console
     public override void Dispose()
         => (console as IDisposable)?.Dispose();
 
-    protected override Task<string> PromptAsync(IReadOnlyList<string> targetFrameworks, CancellationToken cancellationToken)
+    protected override Task<string> PromptForTargetFrameworkAsync(IReadOnlyList<string> targetFrameworks, CancellationToken cancellationToken)
     {
         var prompt = new SelectionPrompt<string>()
-            .Title($"[cyan]{Markup.Escape(Resources.SelectTargetFrameworkPrompt)}[/]")
+            .Title($"{CyanMarkup}{Markup.Escape(Resources.SelectTargetFrameworkPrompt)}{EndMarkup}")
             .PageSize(10)
-            .MoreChoicesText($"[gray]({Markup.Escape(Resources.MoreFrameworksText)})[/]")
+            .MoreChoicesText($"{GrayMarkup}({Markup.Escape(Resources.MoreFrameworksText)}){EndMarkup}")
             .AddChoices(targetFrameworks)
             .EnableSearch()
             .SearchPlaceholderText(Resources.SearchPlaceholderText);
@@ -29,17 +33,51 @@ internal sealed class SpectreTargetFrameworkSelectionPrompt(IAnsiConsole console
         return prompt.ShowAsync(console, cancellationToken);
     }
 
-    private static IAnsiConsole CreateConsole(IConsole watchConsole)
+    protected override Task<DeviceInfo> PromptForDeviceAsync(IReadOnlyList<DeviceInfo> devices, CancellationToken cancellationToken)
     {
-        if (!Console.IsInputRedirected)
+        var prompt = new SelectionPrompt<DeviceInfo>()
+            .Title($"{CyanMarkup}{Markup.Escape(Resources.SelectDevicePrompt)}{EndMarkup}")
+            .PageSize(10)
+            .MoreChoicesText($"{GrayMarkup}({Markup.Escape(Resources.MoreDevicesText)}){EndMarkup}")
+            .AddChoices(devices)
+            .UseConverter(FormatDevice)
+            .EnableSearch()
+            .SearchPlaceholderText(Resources.SearchPlaceholderText);
+
+        return prompt.ShowAsync(console, cancellationToken);
+    }
+
+    internal static string FormatDevice(DeviceInfo device)
+    {
+        var display = device.Id;
+        if (!string.IsNullOrWhiteSpace(device.Description))
         {
-            return AnsiConsole.Console;
+            display += $" - {device.Description}";
         }
 
-        // When stdin is redirected (e.g. in integration tests), Spectre.Console detects
-        // non-interactive mode and refuses to prompt. Create a console with forced
-        // interactivity that reads keys from IConsole.KeyPressed (fed by
-        // PhysicalConsole.ListenToStandardInputAsync).
+        if (!string.IsNullOrWhiteSpace(device.Type))
+        {
+            display += $" ({device.Type}";
+            if (!string.IsNullOrWhiteSpace(device.Status))
+            {
+                display += $", {device.Status}";
+            }
+            display += ")";
+        }
+        else if (!string.IsNullOrWhiteSpace(device.Status))
+        {
+            display += $" ({device.Status})";
+        }
+
+        return display;
+    }
+
+    private static IAnsiConsole CreateConsole(IConsole watchConsole)
+    {
+        // Always read keys from IConsole.KeyPressed (fed by PhysicalConsole) instead of
+        // letting Spectre.Console call Console.ReadKey() directly. PhysicalConsole already
+        // owns the Console.ReadKey() loop, so a second reader would race with it and never
+        // receive any key presses, making the selection prompt appear stuck.
         var ansiConsole = AnsiConsole.Create(new AnsiConsoleSettings
         {
             Ansi = AnsiSupport.Yes,

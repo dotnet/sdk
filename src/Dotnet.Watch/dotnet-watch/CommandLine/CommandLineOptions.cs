@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.Extensions.Logging;
 
@@ -20,12 +21,19 @@ internal sealed class CommandLineOptions
 {
     private static readonly ImmutableArray<string> s_binaryLogOptionNames = ["-bl", "/bl", "-binaryLogger", "--binaryLogger", "/binaryLogger"];
 
+    public static readonly ParserConfiguration ParserConfiguration = new()
+    {
+        // To match dotnet command line parsing (see https://github.com/dotnet/sdk/blob/4712b35b94f2ad672e69ec35097cf86fc16c2e5e/src/Cli/dotnet/Parser.cs#L169):
+        EnablePosixBundling = false,
+    };
+
     public bool List { get; init; }
     public required GlobalOptions GlobalOptions { get; init; }
 
     public string? FilePath { get; init; }
     public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
+    public string? Device { get; init; }
     public Optional<string?> LaunchProfileName { get; init; }
 
     /// <summary>
@@ -34,11 +42,16 @@ internal sealed class CommandLineOptions
     public required IReadOnlyList<string> CommandArguments { get; init; }
 
     /// <summary>
+    /// <see cref="CommandArguments"/> excluding binlog options. Workaround for https://github.com/dotnet/sdk/issues/49989.
+    /// </summary>
+    public required IReadOnlyList<string> CommandArgumentsWithoutBinLog { get; init; }
+
+    /// <summary>
     /// Arguments passed to `dotnet build` and to design-time build evaluation.
     /// </summary>
     public required IReadOnlyList<string> BuildArguments { get; init; }
 
-    public required string Command { get; init; }
+    public required Command Command { get; init; }
 
     public required bool IsExplicitCommand { get; init; }
 
@@ -52,14 +65,8 @@ internal sealed class CommandLineOptions
         var rootCommandInvoked = false;
         definition.SetAction(parseResult => rootCommandInvoked = true);
 
-        ParserConfiguration parseConfig = new()
-        {
-            // To match dotnet command line parsing (see https://github.com/dotnet/sdk/blob/4712b35b94f2ad672e69ec35097cf86fc16c2e5e/src/Cli/dotnet/Parser.cs#L169):
-            EnablePosixBundling = false,
-        };
-
         // parse without forwarded options first:
-        var parseResult = definition.Parse(args, parseConfig);
+        var parseResult = definition.Parse(args, ParserConfiguration);
         if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
@@ -79,7 +86,7 @@ internal sealed class CommandLineOptions
         }
 
         // reparse with forwarded options:
-        parseResult = definition.Parse(args, parseConfig);
+        parseResult = definition.Parse(args, ParserConfiguration);
         if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
@@ -115,7 +122,8 @@ internal sealed class CommandLineOptions
             command,
             isExplicitCommand,
             out var binLogToken,
-            out var binLogPath);
+            out var binLogPath,
+            out var commandArgumentsWithoutBinLog);
 
         // We assume that forwarded options, if any, are intended for `dotnet build`.
         // Exclude --target option since we need to control the targets being built.
@@ -154,7 +162,8 @@ internal sealed class CommandLineOptions
             },
 
             CommandArguments = commandArguments,
-            Command = command.Name,
+            CommandArgumentsWithoutBinLog = commandArgumentsWithoutBinLog,
+            Command = command,
             IsExplicitCommand = isExplicitCommand,
 
             ProjectPath = projectValue,
@@ -162,6 +171,7 @@ internal sealed class CommandLineOptions
             LaunchProfileName = launchProfile,
             BuildArguments = buildArguments,
             TargetFramework = parseResult.GetValue(definition.FrameworkOption),
+            Device = parseResult.GetValue(definition.DeviceOption),
         };
     }
 
@@ -187,7 +197,8 @@ internal sealed class CommandLineOptions
         Command command,
         bool isExplicitCommand,
         out string? binLogToken,
-        out string? binLogPath)
+        out string? binLogPath,
+        out IReadOnlyList<string> argumentsWithoutBinLog)
     {
         var definition = (DotnetWatchCommandDefinition)parseResult.CommandResult.Command;
 
@@ -253,9 +264,14 @@ internal sealed class CommandLineOptions
         var seenCommand = false;
         var dashDashInserted = false;
 
+
+        var argumentsWithoutBinLogBuilder = new List<string>();
+        argumentsWithoutBinLogBuilder.AddRange(arguments);
+
         for (int i = 0; i < parseResult.UnmatchedTokens.Count; i++)
         {
             var token = parseResult.UnmatchedTokens[i];
+            var isBinLogToken = false;
 
             if (i < unmatchedTokensBeforeDashDash)
             {
@@ -281,6 +297,9 @@ internal sealed class CommandLineOptions
                             binLogToken = token;
                             binLogPath = token[(name.Length + 1)..];
                         }
+
+                        isBinLogToken = true;
+                        break;
                     }
                 }
             }
@@ -288,12 +307,19 @@ internal sealed class CommandLineOptions
             if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
             {
                 arguments.Add("--");
+                argumentsWithoutBinLogBuilder.Add("--");
                 dashDashInserted = true;
             }
 
             arguments.Add(token);
+
+            if (!isBinLogToken)
+            {
+                argumentsWithoutBinLogBuilder.Add(token);
+            }
         }
 
+        argumentsWithoutBinLog = argumentsWithoutBinLogBuilder;
         return arguments;
     }
 
@@ -360,7 +386,8 @@ internal sealed class CommandLineOptions
             Representation = project,
             WorkingDirectory = workingDirectory,
             TargetFramework = TargetFramework,
-            Command = Command,
+            Device = Device,
+            Command = Command.Name,
             CommandArguments = CommandArguments,
             LaunchEnvironmentVariables = [],
             LaunchProfileName = LaunchProfileName,
