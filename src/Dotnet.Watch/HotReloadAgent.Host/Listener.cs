@@ -34,8 +34,13 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
 
         try
         {
-            // block execution of the app until initial updates are applied:
-            InitializeAsync(cancellationToken).GetAwaiter().GetResult();
+            // block execution of the app until initial updates are applied.
+            // Run on the thread pool (Task.Run) so that awaits inside InitializeAsync
+            // do not capture the calling thread's SynchronizationContext. Otherwise,
+            // on platforms where the startup-hook thread has a sync context (e.g. iOS,
+            // Android), the synchronous wait below would deadlock when an awaited
+            // continuation tries to resume on the same blocked thread.
+            Task.Run(() => InitializeAsync(cancellationToken), cancellationToken).GetAwaiter().GetResult();
         }
         catch (Exception e)
         {
