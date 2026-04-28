@@ -87,9 +87,9 @@ jobs:
       - powershell: |
           $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
           $exe = "$($publishDir.FullName)\${{ parameters.rid }}\publish\dotnetup.exe"
-          & signtool verify /pa "$exe"
-          if ($LASTEXITCODE -ne 0) { Write-Error "SignCheck failed for dotnetup.exe"; exit 1 }
-          Write-Host "✅ Signature verified for dotnetup.exe"
+          $sig = Get-AuthenticodeSignature "$exe"
+          if ($sig.Status -ne 'Valid') { Write-Error "SignCheck failed for dotnetup.exe: $($sig.Status)"; exit 1 }
+          Write-Host "✅ Signature verified for dotnetup.exe (Status: $($sig.Status), Signer: $($sig.SignerCertificate.Subject))"
         displayName: ✅ Verify dotnetup signature (${{ parameters.rid }})
       - powershell: |
           # Copy the published (and signed) output to the artifact staging directory
