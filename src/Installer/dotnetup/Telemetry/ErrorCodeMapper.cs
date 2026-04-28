@@ -93,35 +93,6 @@ public static class ErrorCodeMapper
     }
 
     /// <summary>
-    /// Converts error info to a string dictionary for TrackEvent properties.
-    /// </summary>
-    public static Dictionary<string, string?> ToEventProperties(ExceptionErrorInfo errorInfo)
-    {
-        var props = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
-        {
-            [TelemetryTagNames.ErrorType] = errorInfo.ErrorType,
-            [TelemetryTagNames.ErrorCategory] = errorInfo.Category.ToString().ToLowerInvariant()
-        };
-        if (errorInfo.StatusCode is { } sc)
-        {
-            props[TelemetryTagNames.ErrorHttpStatus] = sc.ToString(CultureInfo.InvariantCulture);
-        }
-        if (errorInfo.HResult is { } hr)
-        {
-            props[TelemetryTagNames.ErrorHResult] = hr.ToString(CultureInfo.InvariantCulture);
-        }
-        if (errorInfo.Details is { } d)
-        {
-            props[TelemetryTagNames.ErrorDetails] = d;
-        }
-        if (errorInfo.StackTrace is { } st)
-        {
-            props[TelemetryTagNames.ErrorStackTrace] = st;
-        }
-        return props;
-    }
-
-    /// <summary>
     /// Extracts error info from an exception.
     /// </summary>
     /// <param name="ex">The exception to analyze.</param>

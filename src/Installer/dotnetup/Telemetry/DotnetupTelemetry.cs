@@ -178,18 +178,19 @@ public sealed class DotnetupTelemetry : IDisposable
             .AddInMemoryExporter(_activities)
             .SetSampler(new AlwaysOnSampler());
 
-        if (enablePerfTrace)
+        // Both OTLP and AzMonitor are network sinks — gate them on the
+        // common `disableExport` switch so tests / CI can opt out of all
+        // network traffic with a single env var, then further gate on the
+        // perf-trace opt-in (data-x ingests logs, not spans).
+        if (enablePerfTrace && !disableExport)
         {
             builder.AddOtlpExporter();
-            if (!disableExport)
+            builder.AddAzureMonitorTraceExporter(o =>
             {
-                builder.AddAzureMonitorTraceExporter(o =>
-                {
-                    o.ConnectionString = ConnectionString;
-                    o.EnableLiveMetrics = false;
-                    o.StorageDirectory = storageDirectory;
-                });
-            }
+                o.ConnectionString = ConnectionString;
+                o.EnableLiveMetrics = false;
+                o.StorageDirectory = storageDirectory;
+            });
         }
 
         if (debugConsole)
@@ -221,6 +222,10 @@ public sealed class DotnetupTelemetry : IDisposable
                 o.ParseStateValues = true;
                 o.SetResourceBuilder(resource);
 
+                // Both AzMonitor (the prod sink for the AppInsights `traces`
+                // table) and OTLP (Aspire / local collector) are network
+                // sinks — gate both on `disableExport` so tests/CI can opt
+                // out of all network traffic with a single env var.
                 if (!disableExport)
                 {
                     o.AddAzureMonitorLogExporter(amo =>
@@ -229,9 +234,8 @@ public sealed class DotnetupTelemetry : IDisposable
                         amo.EnableLiveMetrics = false;
                         amo.StorageDirectory = storageDirectory;
                     });
+                    o.AddOtlpExporter();
                 }
-
-                o.AddOtlpExporter();
 
                 if (debugConsole)
                 {
@@ -257,14 +261,6 @@ public sealed class DotnetupTelemetry : IDisposable
 
         var op = new TrackedOperation(activity, $"command/{commandName}", TrackEvent);
         op.Tag(TelemetryTagNames.CommandName, commandName);
-
-        // Track the active root command so RecordException can walk back to it
-        // even if the failing call site only has a child TrackedOperation.
-        // Activity.Parent walking covers the in-process case; this field
-        // additionally covers the case where the caller passes a TrackedOperation
-        // that wraps a null Activity (telemetry-disabled or sampled-out).
-        CurrentRootCommand = op;
-
         return op;
     }
 
@@ -279,14 +275,6 @@ public sealed class DotnetupTelemetry : IDisposable
 
         return new TrackedOperation(activity, "process/complete", TrackEvent);
     }
-
-    /// <summary>
-    /// The currently active root command operation (set by
-    /// <see cref="StartTrackedCommand"/>). Used by <see cref="RecordException"/>
-    /// to propagate error tags up to the root even when the failing site only
-    /// has a sub-operation reference.
-    /// </summary>
-    internal TrackedOperation? CurrentRootCommand { get; private set; }
 
     /// <summary>
     /// Records an exception on the given operation and propagates the categorical
@@ -322,40 +310,15 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-        MirrorErrorTagsToOperation(operation, errorInfo, errorCode);
+        // ErrorCodeMapper.ApplyErrorTags is the single source of truth for the
+        // shape of the error.* tag bag. PropagateErrorToActivityChain calls it
+        // on the failing activity AND every ancestor, so the failing op's
+        // completion log (which folds Activity.TagObjects into the LogRecord
+        // state via BuildCompletionState) automatically carries every
+        // error.* tag — no separate "mirror onto TrackedOperation" step needed.
         PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
         operation.SetStatus(ActivityStatusCode.Error, ex.Message);
         EmitErrorLog(operation.Activity);
-    }
-
-    /// <summary>
-    /// Mirrors error info onto the failing op's <c>storedTags</c> bag (and
-    /// transitively its activity tags) so its completion log carries them.
-    /// </summary>
-    private static void MirrorErrorTagsToOperation(TrackedOperation operation, ExceptionErrorInfo errorInfo, string? errorCode)
-    {
-        operation.Tag(TelemetryTagNames.ErrorType, errorInfo.ErrorType);
-        operation.Tag(TelemetryTagNames.ErrorCategory, errorInfo.Category.ToString().ToLowerInvariant());
-        if (errorCode is not null)
-        {
-            operation.Tag(TelemetryTagNames.ErrorCode, errorCode);
-        }
-        if (errorInfo.StatusCode is { } sc)
-        {
-            operation.Tag(TelemetryTagNames.ErrorHttpStatus, sc.ToString(CultureInfo.InvariantCulture));
-        }
-        if (errorInfo.HResult is { } hr)
-        {
-            operation.Tag(TelemetryTagNames.ErrorHResult, hr.ToString(CultureInfo.InvariantCulture));
-        }
-        if (errorInfo.Details is { } details)
-        {
-            operation.Tag(TelemetryTagNames.ErrorDetails, details);
-        }
-        if (errorInfo.StackTrace is { } stackTrace)
-        {
-            operation.Tag(TelemetryTagNames.ErrorStackTrace, stackTrace);
-        }
     }
 
     /// <summary>
@@ -418,7 +381,12 @@ public sealed class DotnetupTelemetry : IDisposable
     private static readonly Dictionary<string, string?> s_emptyTags = [];
 
     /// <summary>
-    /// Flushes any pending telemetry.
+    /// Flushes any pending telemetry. The OTel <see cref="ILoggerFactory"/>'s
+    /// <c>BatchLogRecordExportProcessor</c> is only flushed on
+    /// <see cref="Dispose"/> (its shutdown path), so callers using this method
+    /// mid-process rely on the BatchProcessor's <c>ScheduledDelay</c> + the
+    /// AzMonitor exporter's <c>StorageDirectory</c> retry queue to cover
+    /// untimely crashes between flushes.
     /// </summary>
     /// <param name="timeoutMilliseconds">Maximum time to wait for flush (default 5 seconds).</param>
     public void Flush(int timeoutMilliseconds = 5000)
@@ -426,20 +394,6 @@ public sealed class DotnetupTelemetry : IDisposable
         try
         {
             _tracerProvider?.ForceFlush(timeoutMilliseconds);
-        }
-        catch
-        {
-            // Never let telemetry flush failures crash the app
-        }
-
-        try
-        {
-            // Disposing the LoggerFactory triggers a Shutdown on the OTel
-            // logger provider which flushes the BatchLogRecordExportProcessor.
-            // We only do this on Dispose, not Flush, so callers can flush
-            // mid-process without losing the logger. For mid-process flush we
-            // rely on the BatchProcessor's ScheduledDelay + AzMonitor's
-            // StorageDirectory retry queue to cover crashes.
         }
         catch
         {

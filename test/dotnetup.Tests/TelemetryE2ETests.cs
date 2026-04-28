@@ -25,6 +25,12 @@ public class TelemetryE2ETests
     {
         ["DOTNETUP_TELEMETRY_DEBUG"] = "1",
         ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "0",
+        // Disable Azure Monitor exporters in tests. Without this, AzMon's HTTP
+        // export and metric-extractor side-effects produce diagnostic stderr
+        // writes and inject `_MS.*` tags onto LogRecords that interleave with
+        // the console exporter output captured by the test, causing flaky
+        // parse failures under parallel test execution.
+        ["DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT"] = "1",
     };
 
     /// <summary>
@@ -296,40 +302,74 @@ public class TelemetryE2ETests
     }
 
     /// <summary>
-    /// Parses the OpenTelemetry ConsoleExporter output into structured span records.
-    /// The console exporter outputs blocks like:
-    /// <code>
-    /// Activity.TraceId:            abc123
-    /// Activity.SpanId:             def456
-    /// Activity.DisplayName:        dotnetup
-    /// ...
-    /// Activity.Tags:
-    ///     error.type: DotnetInstallException
-    ///     error.category: user
-    /// </code>
+    /// Parses the OpenTelemetry ConsoleExporter output for the
+    /// <see cref="OpenTelemetry.Logs.OpenTelemetryLoggerOptions"/>'s log
+    /// pipeline into structured records.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// We parse <c>LogRecord.*</c> blocks rather than <c>Activity.*</c> blocks
+    /// because LogRecords are the only telemetry surface the data-x ingestion
+    /// pipeline reads (it consumes the AppInsights <c>traces</c> table fed by
+    /// <see cref="Microsoft.Extensions.Logging.ILogger"/>; it does NOT read
+    /// the <c>dependencies</c> / <c>requests</c> tables fed by spans). Asserting on the
+    /// LogRecord shape is therefore a faithful proxy for what the production
+    /// AzMonitor log exporter will send.
+    /// </para>
+    /// <para>
+    /// The console exporter prints blocks like:
+    /// </para>
+    /// <code>
+    /// LogRecord.Timestamp:               2026-04-28T...
+    /// LogRecord.TraceId:                 ...
+    /// LogRecord.SpanId:                  ...
+    /// LogRecord.CategoryName:            Microsoft.Dotnet.Bootstrapper
+    /// LogRecord.Severity:                Info
+    /// LogRecord.SeverityText:            Information
+    /// LogRecord.FormattedMessage:        dotnetup/process/complete
+    /// LogRecord.Body:                    dotnetup/process/complete
+    /// LogRecord.Attributes (Key:Value):
+    ///     exit.code: 1
+    ///     command.status: error
+    ///     error.type: LocalManifestCorrupted
+    ///     error.category: product
+    ///     operation.name: dotnetup/process/complete
+    ///     operation.duration_ms: 339.5037
+    ///
+    /// Resource associated with LogRecord:
+    ///     ...
+    /// </code>
+    /// <para>
+    /// The <see cref="TelemetrySpan.DisplayName"/> field on the returned
+    /// objects is the operation suffix after the leading <c>dotnetup/</c>
+    /// (e.g. <c>process/complete</c>, <c>command/sdk</c>, <c>error</c>) so
+    /// existing per-test filters using <c>StartsWith("command/")</c> still
+    /// work without modification, and the root completion record is found via
+    /// <c>== "process/complete"</c>.
+    /// </para>
+    /// </remarks>
     private static List<TelemetrySpan> ParseTelemetrySpans(string output)
     {
-        var spans = new List<TelemetrySpan>();
+        var records = new List<TelemetrySpan>();
         var lines = output.Split('\n', StringSplitOptions.None);
 
         TelemetrySpan? current = null;
-        bool inTags = false;
+        bool inAttributes = false;
 
         foreach (string rawLine in lines)
         {
             string line = rawLine.TrimEnd('\r');
 
-            // Start of a new span block
-            if (line.StartsWith("Activity.TraceId:", StringComparison.Ordinal))
+            // Start of a new LogRecord block.
+            if (line.StartsWith("LogRecord.Timestamp:", StringComparison.Ordinal))
             {
-                if (current != null)
+                if (current is { DisplayName.Length: > 0 })
                 {
-                    spans.Add(current);
+                    records.Add(current);
                 }
 
                 current = new TelemetrySpan();
-                inTags = false;
+                inAttributes = false;
                 continue;
             }
 
@@ -338,60 +378,73 @@ public class TelemetryE2ETests
                 continue;
             }
 
-            // Parse DisplayName
-            var displayNameMatch = Regex.Match(line, @"^Activity\.DisplayName:\s*(.+)$");
-            if (displayNameMatch.Success)
+            // Parse FormattedMessage and convert to a "DisplayName"-shaped value.
+            var formattedMatch = Regex.Match(line, @"^LogRecord\.FormattedMessage:\s*(.+)$");
+            if (formattedMatch.Success)
             {
-                current.DisplayName = displayNameMatch.Groups[1].Value.Trim();
-                inTags = false;
+                string formatted = formattedMatch.Groups[1].Value.Trim();
+                string trimmed = formatted.StartsWith("dotnetup/", StringComparison.Ordinal)
+                    ? formatted["dotnetup/".Length..]
+                    : formatted;
+
+                // Remap the root completion record's display name from
+                // `process/complete` back to `dotnetup` so existing tests
+                // can keep using `DisplayName == "dotnetup"` as the root
+                // filter. (Command records like `command/sdk` and the
+                // explicit `error` record are unmodified.)
+                current.DisplayName = string.Equals(trimmed, "process/complete", StringComparison.Ordinal)
+                    ? "dotnetup"
+                    : trimmed;
+                inAttributes = false;
                 continue;
             }
 
-            // Parse StatusCode
-            var statusMatch = Regex.Match(line, @"^StatusCode\s*:\s*(.+)$");
-            if (statusMatch.Success)
+            // Parse Severity (Info / Error) into the StatusCode field for
+            // backwards-compatibility with existing assertions.
+            var severityMatch = Regex.Match(line, @"^LogRecord\.SeverityText:\s*(.+)$");
+            if (severityMatch.Success)
             {
-                current.StatusCode = statusMatch.Groups[1].Value.Trim();
-                inTags = false;
+                current.StatusCode = severityMatch.Groups[1].Value.Trim();
+                inAttributes = false;
                 continue;
             }
 
-            // Start of tags section
-            if (line.TrimStart().StartsWith("Activity.Tags:", StringComparison.Ordinal))
+            // Start of attributes section.
+            if (line.StartsWith("LogRecord.Attributes", StringComparison.Ordinal))
             {
-                inTags = true;
+                inAttributes = true;
                 continue;
             }
 
-            // Parse tag key-value pairs (indented lines after Activity.Tags:)
-            if (inTags)
+            // The attributes block ends at the blank line before
+            // "Resource associated with LogRecord:" (or any other top-level
+            // line).
+            if (inAttributes)
             {
-                var tagMatch = Regex.Match(line, @"^\s+([a-z0-9._-]+)\s*:\s*(.*)$", RegexOptions.IgnoreCase);
-                if (tagMatch.Success)
+                if (string.IsNullOrWhiteSpace(line))
                 {
-                    current.Tags[tagMatch.Groups[1].Value.Trim()] = tagMatch.Groups[2].Value.Trim();
+                    inAttributes = false;
+                    continue;
                 }
-                else if (!string.IsNullOrWhiteSpace(line) && !line.StartsWith(" ", StringComparison.Ordinal))
-                {
-                    // No longer in tags section
-                    inTags = false;
-                }
-            }
 
-            // Detect other Activity. sections that end the tags block
-            if (line.StartsWith("Activity.", StringComparison.Ordinal) && !line.StartsWith("Activity.Tags:", StringComparison.Ordinal))
-            {
-                inTags = false;
+                var attrMatch = Regex.Match(line, @"^\s+([a-z0-9._-]+)\s*:\s*(.*)$", RegexOptions.IgnoreCase);
+                if (attrMatch.Success)
+                {
+                    current.Tags[attrMatch.Groups[1].Value.Trim()] = attrMatch.Groups[2].Value.Trim();
+                }
+                else if (!line.StartsWith(" ", StringComparison.Ordinal))
+                {
+                    inAttributes = false;
+                }
             }
         }
 
-        // Don't forget the last span
-        if (current != null)
+        if (current is { DisplayName.Length: > 0 })
         {
-            spans.Add(current);
+            records.Add(current);
         }
 
-        return spans;
+        return records;
     }
 
     /// <summary>
