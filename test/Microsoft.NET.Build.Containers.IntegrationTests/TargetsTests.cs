@@ -486,6 +486,28 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
+    [InlineData("11.0.100", "v10.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled")]
+    [InlineData("11.0.100-preview.2", "v10.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled")]
+    [InlineData("11.0.100", "v9.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:9.0-noble-chiseled")]
+    [Theory]
+    public void AOTAppsUseCodenameMatchingTFMNotSDK(string sdkVersion, string tfm, string rid, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = sdkVersion,
+            ["TargetFrameworkVersion"] = tfm,
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishAot] = true.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = true.ToString()
+        }, projectName: $"{nameof(AOTAppsUseCodenameMatchingTFMNotSDK)}_{sdkVersion}_{tfm}_{rid}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
     [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
     [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
     [Theory]
