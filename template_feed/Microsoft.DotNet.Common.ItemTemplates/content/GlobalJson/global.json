@@ -3,6 +3,9 @@
     //#if (RollForward!="")
     "rollForward": "ROLL_FORWARD_VALUE",
     //#endif
+    //#if (AllowPrerelease!="")
+    "allowPrerelease": ALLOW_PRERELEASE_VALUE,
+    //#endif
     "version": "SDK_VERSION"
   //#if (TestRunner=="")
   }

@@ -18,6 +18,10 @@ Options:
 Template options:
   --sdk-version <sdk-version>                                                                           The version of the .NET SDK to use.
                                                                                                         Type: string
+  --allow-prerelease <false|true>                                                                        Whether prerelease SDK versions should be considered when selecting the SDK version to use.
+                                                                                                        Type: choice
+                                                                                                          true   Consider prerelease SDK versions when selecting the .NET SDK version to use.
+                                                                                                          false  Don't consider prerelease SDK versions when selecting the .NET SDK version to use.
   --roll-forward <disable|feature|latestFeature|latestMajor|latestMinor|latestPatch|major|minor|patch>  The roll-forward policy to use when selecting an SDK version.
                                                                                                         Type: choice
                                                                                                           patch          Uses the specified version. If not found, rolls forward to the latest patch level. If not found, fails. This value is the legacy behavior from the earlier versions of the SDK.
