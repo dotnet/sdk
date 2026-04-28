@@ -143,7 +143,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     private string UbuntuCodenameForSDKVersion(SemanticVersion version)
     {
-        if (version >= SemanticVersion.Parse("11.0.100"))
+        if (version.Major >= 11)
         {
             return "resolute";
         }
