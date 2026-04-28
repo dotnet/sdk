@@ -141,28 +141,16 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         return true;
     }
 
-    private string UbuntuCodenameForVersion(SemanticVersion sdkVersion, SemanticVersion? tfm)
+    // The codename is primarily determined by the TFM to ensure the base OS stays
+    // consistent regardless of which SDK version builds the project.
+    // For net8.0, the SDK patch band matters because 8.0.300 switched from jammy to noble.
+    private string UbuntuCodenameForVersion(SemanticVersion sdkVersion, SemanticVersion? tfm) => tfm switch
     {
-        // The codename is primarily determined by the TFM to ensure the base OS stays
-        // consistent regardless of which SDK version builds the project.
-        // For net8.0, the SDK patch band matters because 8.0.300 switched from jammy to noble.
-        if (tfm is not null && tfm.Major >= 11)
-        {
-            return "resolute";
-        }
-        else if (tfm is not null && tfm.Major >= 9)
-        {
-            return "noble";
-        }
-        else if (sdkVersion >= SemanticVersion.Parse("8.0.300"))
-        {
-            return "noble";
-        }
-        else
-        {
-            return "jammy";
-        }
-    }
+        { Major: >= 11 } => "resolute",
+        { Major: >= 9 } => "noble",
+        _ when sdkVersion >= SemanticVersion.Parse("8.0.300") => "noble",
+        _ => "jammy"
+    };
 
     private bool ComputeRepositoryAndTag([NotNullWhen(true)] out string? repository, [NotNullWhen(true)] out string? tag)
     {
