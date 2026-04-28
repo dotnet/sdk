@@ -28,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

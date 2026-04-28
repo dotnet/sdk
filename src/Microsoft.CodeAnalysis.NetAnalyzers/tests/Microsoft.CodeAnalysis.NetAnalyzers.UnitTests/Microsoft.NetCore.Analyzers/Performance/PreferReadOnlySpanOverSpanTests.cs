@@ -1226,7 +1226,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     (solution, projectId) => solution.WithProjectCompilationOptions(projectId,
                         ((CSharpCompilationOptions)solution.GetProject(projectId)!.CompilationOptions!).WithAllowUnsafe(true))
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -2178,7 +2178,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     (solution, projectId) => solution.WithProjectCompilationOptions(projectId,
                         ((CSharpCompilationOptions)solution.GetProject(projectId)!.CompilationOptions!).WithAllowUnsafe(true))
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyAnalyzerAsync(
@@ -2190,7 +2190,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = languageVersion,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyFixerAsync(
@@ -2204,7 +2204,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 FixedCode = fixedSource,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = languageVersion,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

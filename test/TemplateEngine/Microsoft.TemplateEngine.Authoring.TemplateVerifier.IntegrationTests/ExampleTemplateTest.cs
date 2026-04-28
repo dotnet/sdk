@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                         }));
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -90,7 +90,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                         }));
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
     }
 }

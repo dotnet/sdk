@@ -95,6 +95,11 @@ Examples:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="Help_Device">
+        <source>The device identifier to run on (e.g. emulator, simulator, or physical device).</source>
+        <target state="translated">Identifikátor zařízení pro spuštění (například emulátor, simulátor nebo fyzické zařízení)</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Help_List">
         <source>
       Lists all discovered files without starting the watcher.
@@ -142,6 +147,11 @@ Examples:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="MoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="translated">Posunutím nahoru a dolů zobrazíte další zařízení.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
         <target state="translated">Posunutím nahoru a dolů zobrazíte další architektury.</target>
@@ -150,6 +160,11 @@ Examples:
       <trans-unit id="SearchPlaceholderText">
         <source>Type to search</source>
         <target state="translated">Zadejte hledaný text</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="translated">Vyberte zařízení pro spuštění:</target>
         <note />
       </trans-unit>
       <trans-unit id="SelectTargetFrameworkPrompt">

@@ -1269,6 +1269,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
@@ -1361,6 +1362,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
@@ -1436,6 +1438,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
@@ -1510,6 +1513,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
                         <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content</FileBasedProgramsItemMapping>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
