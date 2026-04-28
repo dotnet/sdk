@@ -1,0 +1,6 @@
+﻿{
+  "sdk": {
+    "allowPrerelease": false,
+    "version": "%CURRENT-VER%"
+  }
+}

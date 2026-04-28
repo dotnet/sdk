@@ -5,6 +5,10 @@
       "longName": "sdk-version",
       "shortName": ""
     },
+    "AllowPrerelease": {
+      "longName": "allow-prerelease",
+      "shortName": ""
+    },
     "RollForward": {
       "longName": "roll-forward",
       "shortName": ""
