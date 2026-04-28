@@ -1302,7 +1302,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend is_success = tostring(Properties[\"command.status\"]) == \"ok\"\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n// Match both the new stable Message (\"dotnetup/command\", subcommand in command.name)\n// and the legacy per-subcommand fan-out (\"dotnetup/command/<sub>\") so dashboards\n// keep rendering historical data through the cutover.\n| where Message == \"dotnetup/command\" or Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command = coalesce(tostring(Properties[\"command.name\"]), substring(Message, strlen(\"dotnetup/command/\"), 256))\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend is_success = tostring(Properties[\"command.status\"]) == \"ok\"\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
@@ -1473,7 +1473,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where Message == \"dotnetup/command/runtime/install\"\n| extend component = coalesce(tostring(Properties[\"install.component\"]), \"Runtime\")\n| summarize Count = count() by component",
+      "text": "_dotnetupCommands\n| where command == \"runtime/install\"\n| extend component = coalesce(tostring(Properties[\"install.component\"]), \"Runtime\")\n| summarize Count = count() by component",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1484,7 +1484,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where Message startswith \"dotnetup/command/\" and Message endswith \"/install\"\n| extend path_source = coalesce(tostring(Properties[\"install.path_source\"]), \"unknown\")\n| summarize Count = count() by path_source",
+      "text": "_dotnetupCommands\n| where command endswith \"/install\"\n| extend path_source = coalesce(tostring(Properties[\"install.path_source\"]), \"unknown\")\n| summarize Count = count() by path_source",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1495,7 +1495,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where Message startswith \"dotnetup/command/\" and Message endswith \"/install\"\n| extend path_type = coalesce(tostring(Properties[\"install.path_type\"]), \"unknown\")\n| summarize Count = count() by path_type",
+      "text": "_dotnetupCommands\n| where command endswith \"/install\"\n| extend path_type = coalesce(tostring(Properties[\"install.path_type\"]), \"unknown\")\n| summarize Count = count() by path_type",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1506,7 +1506,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where Message startswith \"dotnetup/command/\" and Message endswith \"/install\"\n| extend result = coalesce(tostring(Properties[\"install.result\"]), iif(is_success, \"success\", \"failed\"))\n| summarize Count = count() by result",
+      "text": "_dotnetupCommands\n| where command endswith \"/install\"\n| extend result = coalesce(tostring(Properties[\"install.result\"]), iif(is_success, \"success\", \"failed\"))\n| summarize Count = count() by result",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1517,7 +1517,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where Message == \"dotnetup/command/sdk/install\"\n| extend installed_version = coalesce(tostring(Properties[\"install.resolved_version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
+      "text": "_dotnetupCommands\n| where command == \"sdk/install\"\n| extend installed_version = coalesce(tostring(Properties[\"install.resolved_version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1528,7 +1528,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where Message == \"dotnetup/command/runtime/install\"\n| extend installed_version = coalesce(tostring(Properties[\"install.resolved_version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
+      "text": "_dotnetupCommands\n| where command == \"runtime/install\"\n| extend installed_version = coalesce(tostring(Properties[\"install.resolved_version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1539,7 +1539,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where Message in (\"dotnetup/command/sdk/install\", \"dotnetup/command/runtime/install\")\n| extend requested = tostring(Properties[\"dotnet.requested\"]),\n    source = tostring(Properties[\"dotnet.request_source\"])\n| extend display_requested = case(\n    source == \"default-latest\", \"(default: latest)\",\n    source == \"default-globaljson\", strcat(\"(global.json: \", requested, \")\"),\n    source == \"explicit\" and isnotempty(requested), requested,\n    isnotempty(requested), requested,\n    isnotempty(source), strcat(\"(\", source, \")\"),\n    \"(no request data)\")\n| summarize Count = count() by display_requested\n| order by Count desc\n| take 15",
+      "text": "_dotnetupCommands\n| where command in (\"sdk/install\", \"runtime/install\")\n| extend requested = tostring(Properties[\"dotnet.requested\"]),\n    source = tostring(Properties[\"dotnet.request_source\"])\n| extend display_requested = case(\n    source == \"default-latest\", \"(default: latest)\",\n    source == \"default-globaljson\", strcat(\"(global.json: \", requested, \")\"),\n    source == \"explicit\" and isnotempty(requested), requested,\n    isnotempty(requested), requested,\n    isnotempty(source), strcat(\"(\", source, \")\"),\n    \"(no request data)\")\n| summarize Count = count() by display_requested\n| order by Count desc\n| take 15",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1550,7 +1550,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where Message in (\"dotnetup/command/sdk/install\", \"dotnetup/command/runtime/install\")\n| extend source = coalesce(tostring(Properties[\"dotnet.request_source\"]), \"unknown\")\n| summarize Count = count() by source",
+      "text": "_dotnetupCommands\n| where command in (\"sdk/install\", \"runtime/install\")\n| extend source = coalesce(tostring(Properties[\"dotnet.request_source\"]), \"unknown\")\n| summarize Count = count() by source",
       "usedVariables": [
         "_dotnetupCommands"
       ]

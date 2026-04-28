@@ -12,8 +12,9 @@ using Spectre.Console;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Base class for all dotnetup commands with automatic telemetry.
-/// Uses TrackedOperation for automatic event emission on dispose.
+/// Base class for all dotnetup commands. Wires per-command telemetry: starts
+/// a <see cref="TrackedOperation"/>, records exceptions, and disposes the op
+/// (which emits the completion LogRecord) on exit.
 /// </summary>
 public abstract class CommandBase
 {

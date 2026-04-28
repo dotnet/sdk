@@ -78,17 +78,14 @@ internal class DotnetupProgram
 
     private static void DisposeTelemetry()
     {
-        // Best-effort flush + shutdown with a short timeout. The Azure Monitor
-        // exporter has built-in offline storage
-        // (%LOCALAPPDATA%\Microsoft\AzureMonitor) so unsent items survive
-        // process exit and are retried on the next run.
-        //
         // Dispose() is required to flush the OTel LoggerProvider's
-        // BatchLogRecordExportProcessor — Flush() only flushes the
-        // TracerProvider. Without this, every ILogger.Log call queued during
-        // the process is silently dropped on exit because ThreadPool
-        // (background) threads are killed when Main returns before the batch
-        // processor's ScheduledDelay timer fires.
+        // BatchLogRecordExportProcessor — Flush() only covers the
+        // TracerProvider. Without Dispose, ILogger.Log calls queued during
+        // the run are dropped on exit because their background ThreadPool
+        // threads are killed when Main returns before the batch processor's
+        // ScheduledDelay timer fires. The AzMonitor exporter's offline store
+        // (%LOCALAPPDATA%\Microsoft\AzureMonitor) covers anything still in
+        // flight after the bounded shutdown timeout.
         try
         {
             DotnetupTelemetry.Instance.WriteLogIfNecessary();

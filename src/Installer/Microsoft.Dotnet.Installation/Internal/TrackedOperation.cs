@@ -6,11 +6,11 @@ using System.Diagnostics;
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
-/// Wraps an <see cref="Activity"/> and automatically emits a telemetry event
-/// containing all accumulated tags when disposed. Callers use <see cref="Tag"/>
-/// to set data on both the span and the eventual event. On dispose, the activity
-/// reference and stored tags are forwarded to the injected callback, which is
-/// responsible for stopping the activity and emitting the event.
+/// Wraps an <see cref="Activity"/> and, on dispose, hands the activity plus
+/// accumulated tags to the host callback (set via
+/// <see cref="Metrics.OnTrackEvent"/>) which emits the completion log record
+/// and stops the activity. If no callback is registered the activity is
+/// simply stopped.
 /// </summary>
 internal sealed class TrackedOperation : IDisposable
 {

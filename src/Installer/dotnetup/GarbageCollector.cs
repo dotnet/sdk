@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -195,11 +194,6 @@ internal class GarbageCollector
         op.Tag("gc.deleted_count", deleted.Count);
         op.Tag("gc.failed_count", failedCount);
         op.Tag("gc.failed_path", lastFailedPath);
-        op.Tag("gc.status", failedCount > 0 ? "error" : "ok");
-        if (failedCount > 0)
-        {
-            op.SetStatus(ActivityStatusCode.Error, "Some subcomponents could not be deleted");
-        }
 
         return deleted;
     }

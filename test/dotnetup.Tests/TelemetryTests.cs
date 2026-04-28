@@ -825,18 +825,21 @@ public class TrackedOperationTests : IDisposable
     [Fact]
     public void TrackedOperation_CommandSourceRootActivity_EmitsActivityEvent()
     {
-        // Create a root command activity directly (simulates StartTrackedCommand)
+        // Create a root command activity directly (simulates StartTrackedCommand).
+        // Span name keeps the subcommand suffix for in-process correlation;
+        // the emitted event name is the stable "command" so a single GDPR-catalog
+        // entry covers every subcommand.
         var activity = DotnetupTelemetry.CommandSource.StartActivity("command/test-cmd", ActivityKind.Internal);
         Assert.NotNull(activity);
 
-        var op = new TrackedOperation(activity, "command/test-cmd", TestTrackEvent);
+        var op = new TrackedOperation(activity, "command", TestTrackEvent);
         op.Tag("command.name", "test-cmd");
         op.Dispose();
 
         Assert.Single(_capturedEvents);
         AssertTrackedEvent(
             _capturedEvents[0],
-            "command/test-cmd",
+            "command",
             new Dictionary<string, string?> { ["command.name"] = "test-cmd" });
     }
 
@@ -915,7 +918,7 @@ public class TrackedOperationTests : IDisposable
         var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
             "command/sdk/install", ActivityKind.Internal);
         Assert.NotNull(commandActivity);
-        var commandOp = new TrackedOperation(commandActivity, "command/sdk/install", TestTrackEvent);
+        var commandOp = new TrackedOperation(commandActivity, "command", TestTrackEvent);
         commandOp.Tag("command.name", "sdk/install");
 
         // Step 3: Mid-flight error must not stop the command activity, and tags
@@ -936,7 +939,8 @@ public class TrackedOperationTests : IDisposable
         commandOp.Dispose();
 
         Assert.Single(_capturedEvents);
-        Assert.Equal("command/sdk/install", _capturedEvents[0].EventName);
+        Assert.Equal("command", _capturedEvents[0].EventName);
+        Assert.Equal("sdk/install", _capturedEvents[0].StoredTags["command.name"]);
         Assert.True(_capturedEvents[0].Activity!.Duration > TimeSpan.Zero);
 
         // Step 5: Program.finally disposes root operation

@@ -46,13 +46,11 @@ public sealed class DotnetupTelemetry : IDisposable
     private const string DiskLogPathEnvVar = "DOTNET_CLI_TELEMETRY_LOG_PATH";
 
     /// <summary>
-    /// Opt-in env var to enable network export of OTel spans (AzureMonitor /
-    /// OTLP trace exporters). The data-x ingestion pipeline reads only the
-    /// AppInsights <c>traces</c> table (fed by ILogger logs), never the
-    /// <c>dependencies</c> / <c>requests</c> / <c>exceptions</c> tables that
-    /// the trace exporter feeds. Default-off saves bandwidth and storage retry
-    /// blobs; opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> for Aspire-style
-    /// perf debugging.
+    /// Opt-in env var that enables network export of OTel spans via the
+    /// AzMonitor + OTLP trace exporters (Aspire-style perf debugging).
+    /// Default-off because data-x ingests only the AppInsights <c>traces</c>
+    /// table (fed by ILogger), not the span-fed tables; keeping spans
+    /// in-process saves bandwidth, batch overhead, and offline retry blobs.
     /// </summary>
     private const string EnablePerfTraceEnvVar = "DOTNETUP_CLI_GET_PERF_TRACE";
 
@@ -141,10 +139,9 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the single OTel <see cref="Resource"/> shared by the tracer and
-    /// logger. Common process-level attributes (caller, OS, arch, machine id,
-    /// session id, dev.build, ...) live here so every span and log record
-    /// carries them automatically — no per-span loop.
+    /// Builds the OTel <see cref="Resource"/> shared by tracer and logger so
+    /// common process-level attributes (caller, OS, arch, machine id, session
+    /// id, dev.build, ...) auto-stamp every span and log record.
     /// </summary>
     private ResourceBuilder BuildResource()
     {
@@ -163,11 +160,9 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Builds the <see cref="TracerProvider"/>. Spans always run in-process
-    /// (Activity.Current correlation + in-memory test seam) but network
-    /// export is gated behind <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because
-    /// data-x reads only the <c>traces</c> table (logs), not
-    /// <c>dependencies</c> (spans). Default-off saves bandwidth, batch-
-    /// processor overhead, and storage retry blobs on offline machines.
+    /// (Activity.Current correlation + in-memory test seam); network export
+    /// is opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because data-x
+    /// ingests logs, not spans.
     /// </summary>
     private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool enablePerfTrace, bool disableExport, bool debugConsole, string storageDirectory)
     {
@@ -203,12 +198,11 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Builds the <see cref="ILoggerFactory"/>. Every TrackedOperation
-    /// completion (and every explicit error in <see cref="RecordException"/>)
-    /// emits one LogRecord through this factory. The Azure Monitor log
-    /// exporter routes records to the AppInsights <c>traces</c> table — the
-    /// only table data-x ingests. The OTel logger automatically stamps
-    /// Activity.Current's TraceId/SpanId onto each LogRecord, which
-    /// AzMonitor maps to operation_Id/operation_ParentId for cross-row
+    /// completion and every <see cref="RecordException"/> emits one LogRecord
+    /// through this factory; the AzMonitor log exporter routes it to the
+    /// AppInsights <c>traces</c> table — the only table data-x ingests. The
+    /// OTel logger auto-stamps Activity.Current's TraceId/SpanId so AzMonitor
+    /// can map them to operation_Id/operation_ParentId for cross-row
     /// correlation.
     /// </summary>
     private static ILoggerFactory BuildLoggerFactory(ResourceBuilder resource, bool disableExport, bool debugConsole, string storageDirectory)
@@ -246,20 +240,22 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Starts a tracked command operation that emits a completion log on dispose.
+    /// Starts the per-command operation. The Activity OperationName is
+    /// <c>command/{commandName}</c> for in-process correlation; the LogRecord
+    /// Message is the stable string <c>dotnetup/command</c> with the
+    /// subcommand discriminator on the <c>command.name</c> property. A single
+    /// stable Message keeps one GDPR-catalog entry covering every (existing
+    /// and future) subcommand — per-subcommand Messages caused new
+    /// subcommands to silently fall off the classified <c>RawEventsTraces</c>
+    /// table until the catalog was hand-updated.
     /// </summary>
-    /// <remarks>
-    /// Common process-level attributes (caller, OS, arch, machine id, session id)
-    /// live on the OTel Resource (set in the ctor) so they auto-stamp every
-    /// span and log record — no per-span loop needed here.
-    /// </remarks>
     internal TrackedOperation StartTrackedCommand(string commandName)
     {
         var activity = Enabled
             ? CommandSource.StartActivity($"command/{commandName}", ActivityKind.Internal)
             : null;
 
-        var op = new TrackedOperation(activity, $"command/{commandName}", TrackEvent);
+        var op = new TrackedOperation(activity, "command", TrackEvent);
         op.Tag(TelemetryTagNames.CommandName, commandName);
         return op;
     }
@@ -277,27 +273,20 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Records an exception on the given operation and propagates the categorical
-    /// failure signal up the activity ancestor chain so every parent's eventual
-    /// completion log carries it. Emits one explicit error log row in `traces`
-    /// at the failure site.
+    /// Records an exception on the failing operation, propagates the same
+    /// error.* tags up the activity ancestor chain so each parent's
+    /// completion log carries the failure signal, and emits one explicit
+    /// severity=Error LogRecord at the failure site.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// Ancestor propagation is "first-failure-wins per ancestor": once an
-    /// ancestor has <c>error.type</c> set we don't overwrite, so a later
-    /// sibling failure within the same parent doesn't clobber the true root
-    /// cause. The failing op's own tags are always overwritten (last writer
-    /// wins on the failing op itself).
-    /// </para>
-    /// <para>
-    /// Pass <c>exception: null</c> to <c>ILogger.Log</c> deliberately: the
-    /// Azure Monitor log exporter routes any LogRecord with a non-null
-    /// <c>Exception</c> into the AppInsights <c>exceptions</c> table, which
-    /// data-x doesn't ingest. Stack trace and exception type ride as
-    /// structured props in <c>state</c> so the failure is fully described
-    /// in <c>traces</c> alone.
-    /// </para>
+    /// Ancestor propagation is first-failure-wins: once an ancestor has
+    /// <c>error.type</c> set we don't overwrite, preserving the true root
+    /// cause when later siblings fail. The error LogRecord is emitted with
+    /// <c>exception: null</c> on purpose — the AzMonitor log exporter routes
+    /// records with a non-null <see cref="Exception"/> into the AppInsights
+    /// <c>exceptions</c> table, which data-x doesn't ingest. Exception type
+    /// and stack trace ride as structured props so the failure is fully
+    /// described in <c>traces</c>.
     /// </remarks>
     /// <param name="operation">The tracked operation to tag.</param>
     /// <param name="ex">The exception to record.</param>
@@ -310,12 +299,10 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-        // ErrorCodeMapper.ApplyErrorTags is the single source of truth for the
-        // shape of the error.* tag bag. PropagateErrorToActivityChain calls it
-        // on the failing activity AND every ancestor, so the failing op's
-        // completion log (which folds Activity.TagObjects into the LogRecord
-        // state via BuildCompletionState) automatically carries every
-        // error.* tag — no separate "mirror onto TrackedOperation" step needed.
+        // ApplyErrorTags is the single source of truth for the error.* tag
+        // bag; PropagateErrorToActivityChain calls it on the failing activity
+        // AND every ancestor. The completion log picks them up automatically
+        // because BuildCompletionState folds Activity.TagObjects into state.
         PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
         operation.SetStatus(ActivityStatusCode.Error, ex.Message);
         EmitErrorLog(operation.Activity);
@@ -349,10 +336,9 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Emits one explicit <c>dotnetup/error</c> LogRecord at severity
-    /// <see cref="LogLevel.Error"/>. The failing op's completion log carries
-    /// the same tags but at <see cref="LogLevel.Information"/>; this row gives
-    /// data-x a discoverable severity=Error signal.
+    /// Emits one explicit severity=Error LogRecord (<c>dotnetup/error</c>) so
+    /// data-x has a discoverable Error signal in <c>traces</c>. The owning
+    /// op's completion log carries the same tags at severity=Information.
     /// </summary>
     private void EmitErrorLog(Activity? failingActivity)
     {
@@ -381,12 +367,11 @@ public sealed class DotnetupTelemetry : IDisposable
     private static readonly Dictionary<string, string?> s_emptyTags = [];
 
     /// <summary>
-    /// Flushes any pending telemetry. The OTel <see cref="ILoggerFactory"/>'s
-    /// <c>BatchLogRecordExportProcessor</c> is only flushed on
-    /// <see cref="Dispose"/> (its shutdown path), so callers using this method
-    /// mid-process rely on the BatchProcessor's <c>ScheduledDelay</c> + the
-    /// AzMonitor exporter's <c>StorageDirectory</c> retry queue to cover
-    /// untimely crashes between flushes.
+    /// Flushes the tracer provider. The <see cref="ILoggerFactory"/>'s
+    /// <c>BatchLogRecordExportProcessor</c> only flushes on
+    /// <see cref="Dispose"/>; mid-process callers rely on its
+    /// <c>ScheduledDelay</c> and the AzMonitor exporter's
+    /// <c>StorageDirectory</c> retry queue to cover crashes between flushes.
     /// </summary>
     /// <param name="timeoutMilliseconds">Maximum time to wait for flush (default 5 seconds).</param>
     public void Flush(int timeoutMilliseconds = 5000)
@@ -414,25 +399,20 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Dispose callback for <see cref="TrackedOperation"/>. Emits the operation's
-    /// completion log into the AppInsights <c>traces</c> table via ILogger,
-    /// then stops the activity.
+    /// Dispose callback for <see cref="TrackedOperation"/>. Emits the
+    /// completion LogRecord, then stops the activity.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// <strong>Critical ordering:</strong> we Log() <em>before</em> Stop() because:
-    /// </para>
-    /// <list type="number">
-    ///   <item><description><see cref="Activity.Current"/> is this span only until <see cref="Activity.Stop"/> pops it to the parent — the OTel logger needs it to stamp TraceId/SpanId on the LogRecord for correlation.</description></item>
-    ///   <item><description><see cref="Activity.Duration"/> is <see cref="TimeSpan.Zero"/> until <c>Stop()</c>, so we capture <c>elapsedMs</c> manually from <see cref="Activity.StartTimeUtc"/> before logging.</description></item>
-    /// </list>
-    /// <para>
-    /// The manually-captured <c>elapsedMs</c> feeds the <c>operation.duration_ms</c>
-    /// custom dimension on the <c>traces</c> row (data-x signal). The post-Stop
-    /// <see cref="Activity.Duration"/> feeds the OTLP/AzMonitor span envelope
-    /// (Aspire / opt-in <c>DOTNETUP_CLI_GET_PERF_TRACE</c> signal). Different sinks,
-    /// same wall-clock value.
-    /// </para>
+    /// <strong>Critical ordering:</strong> Log() runs <em>before</em> Stop().
+    /// <see cref="Activity.Current"/> is only this span until
+    /// <see cref="Activity.Stop"/> pops it (the OTel logger needs it for
+    /// TraceId/SpanId stamping), and <see cref="Activity.Duration"/> is
+    /// <see cref="TimeSpan.Zero"/> until Stop — so we capture
+    /// <c>elapsedMs</c> manually from <see cref="Activity.StartTimeUtc"/>.
+    /// That manual value feeds <c>operation.duration_ms</c> on the
+    /// <c>traces</c> row (data-x signal); the post-Stop
+    /// <see cref="Activity.Duration"/> feeds the span envelope (Aspire /
+    /// opt-in <c>DOTNETUP_CLI_GET_PERF_TRACE</c>).
     /// </remarks>
     private void TrackEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
     {
@@ -482,27 +462,15 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Single source of truth for what goes into a <c>traces</c> row's structured
-    /// state. Walks the activity ancestor chain so child operations inherit
-    /// <c>command.*</c> / <c>command.args.*</c> tags from the root command, then
-    /// overlays the activity's own tags and the op's stored tags.
+    /// Builds the structured state for one <c>traces</c> row. Walks ancestor
+    /// activities (root first) to inherit <c>command.*</c> tags, then
+    /// overlays the current activity's own tags and the op's stored tags.
+    /// Last writer wins; computed fields (<c>operation.name</c>,
+    /// <c>operation.duration_ms</c>, <c>operation.parent_name</c>) are added
+    /// last. Common process-level attrs (caller, OS, dev.build, machine id,
+    /// session id) live on the OTel <see cref="Resource"/> and auto-stamp —
+    /// they're not added here.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Resolution order (last writer wins):
-    /// </para>
-    /// <list type="number">
-    ///   <item><description>Ancestor activities (root → ... → immediate parent) — closest-to-root applied first so <c>command.*</c> from the root survives unless explicitly overridden.</description></item>
-    ///   <item><description>The current activity's own <see cref="Activity.TagObjects"/>.</description></item>
-    ///   <item><description>The op's <c>storedTags</c> (the bag accumulated via <see cref="TrackedOperation.Tag"/>).</description></item>
-    ///   <item><description>Computed fields: <c>operation.duration_ms</c>, <c>operation.name</c>, <c>operation.parent_name</c>.</description></item>
-    /// </list>
-    /// <para>
-    /// Common process-level attrs (caller, OS, dev.build, machine id, session id)
-    /// are <em>not</em> added here — they live on the OTel <see cref="Resource"/>
-    /// and are auto-stamped by the logger provider.
-    /// </para>
-    /// </remarks>
     private static List<KeyValuePair<string, object?>> BuildCompletionState(
         string eventName,
         Activity activity,
@@ -511,9 +479,9 @@ public sealed class DotnetupTelemetry : IDisposable
     {
         var state = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-        // Walk root → ... → immediate parent. Closest-to-root applied first
-        // so the root command's command.args.* survive unless an inner
-        // activity intentionally overrides them.
+        // Walk root → ... → immediate parent so the root's command.* tags
+        // are written first and survive unless an inner activity explicitly
+        // overrides them.
         var ancestors = new List<Activity>();
         for (var a = activity.Parent; a is not null; a = a.Parent)
         {
@@ -536,9 +504,9 @@ public sealed class DotnetupTelemetry : IDisposable
             state[tag.Key] = tag.Value;
         }
 
-        // Stored tags accumulated via TrackedOperation.Tag — already mirrored
-        // onto Activity.SetTag in production, but this covers tests and any
-        // path that bypasses the mirror.
+        // TrackedOperation.Tag mirrors to Activity.SetTag in production so
+        // these are usually duplicates of TagObjects above; this overlay
+        // covers tests and any path with a null activity.
         foreach (var tag in storedTags)
         {
             state[tag.Key] = tag.Value;
@@ -569,8 +537,9 @@ public sealed class DotnetupTelemetry : IDisposable
             return;
         }
 
-        // Dispose the logger first so its BatchLogRecordExportProcessor
-        // shuts down and flushes any queued log records to AzMonitor.
+        // Dispose the logger before the tracer so its
+        // BatchLogRecordExportProcessor flushes queued LogRecords (the
+        // primary data-x signal) before shutdown begins.
         try { _loggerFactory?.Dispose(); } catch { /* never crash on telemetry */ }
 
         _tracerProvider?.Dispose();

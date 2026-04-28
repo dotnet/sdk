@@ -54,17 +54,21 @@ internal static class Metrics
         typeof(Metrics).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0");
 
     /// <summary>
-    /// Optional callback registered by the host (e.g., dotnetup) to receive telemetry events.
-    /// When set, all library telemetry flows through the host's TrackEvent implementation,
-    /// ensuring data lands in both spans and events (traces table).
-    /// When null, telemetry falls back to span-only (Activity.SetTag).
+    /// Optional callback registered by the host (e.g., dotnetup) to receive
+    /// completion notifications. When set, every <see cref="TrackedOperation"/>
+    /// disposes through this callback so the host can emit a structured log
+    /// record (the AppInsights <c>traces</c> row). When null, library
+    /// activities still complete via <c>Activity.Stop</c> but no log record
+    /// is produced.
     /// </summary>
     public static Action<string, Activity?, IDictionary<string, string?>>? OnTrackEvent { get; set; }
 
     /// <summary>
-    /// Starts a tracked operation that automatically emits a telemetry event on dispose.
-    /// Tags set via the returned <see cref="TrackedOperation"/> are captured on both
-    /// the underlying span and the emitted event.
+    /// Starts a tracked operation that emits a completion log record on
+    /// dispose (via <see cref="OnTrackEvent"/>). Tags set on the returned
+    /// <see cref="TrackedOperation"/> land on the underlying span
+    /// (<see cref="Activity.TagObjects"/>) and are folded into the LogRecord
+    /// state.
     /// </summary>
     public static TrackedOperation Track(string activityName, string eventName)
     {
@@ -73,9 +77,11 @@ internal static class Metrics
     }
 
     /// <summary>
-    /// Sets a tag on the current activity span. Use this instead of
-    /// <c>Activity.Current?.SetTag()</c> so that the data is captured by the
-    /// enclosing <see cref="TrackedOperation"/> on dispose.
+    /// Sets a tag on the current activity. Equivalent to
+    /// <c>Activity.Current?.SetTag(key, value)</c> — the host's completion
+    /// log builder reads <see cref="Activity.TagObjects"/> when the enclosing
+    /// <see cref="TrackedOperation"/> disposes, so any tag set here lands on
+    /// the resulting <c>traces</c> row.
     /// </summary>
     public static void Tag(string key, object? value)
     {
