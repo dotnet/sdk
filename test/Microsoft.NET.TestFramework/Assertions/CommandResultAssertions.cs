@@ -43,7 +43,7 @@ namespace Microsoft.NET.TestFramework.Assertions
         public AndConstraint<CommandResultAssertions> HaveStdOut(string expectedOutput)
         {
             _commandResult.StdOut.Should().NotBeNull()
-                .And.Be(expectedOutput, AppendDiagnosticsTo($"Command did not output with Expected Output. Expected: {expectedOutput}"),StringComparison.Ordinal);
+                .And.Be(expectedOutput, AppendDiagnosticsTo($"Command did not output with Expected Output. Expected: {expectedOutput}"), StringComparison.Ordinal);
             return new AndConstraint<CommandResultAssertions>(this);
         }
 

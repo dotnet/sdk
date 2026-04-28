@@ -249,9 +249,9 @@ stages:
         displayName: Validate
         inputs:
           filePath: $(System.DefaultWorkingDirectory)/eng/common/post-build/sourcelink-validation.ps1
-          arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
-            -ExtractPath $(Agent.BuildDirectory)/Extract/ 
-            -GHRepoName $(Build.Repository.Name) 
+          arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/
+            -ExtractPath $(Agent.BuildDirectory)/Extract/
+            -GHRepoName $(Build.Repository.Name)
             -GHCommit $(Build.SourceVersion)
             -SourcelinkCliVersion $(SourceLinkCLIVersion)
         continueOnError: true
@@ -295,18 +295,13 @@ stages:
           PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
           is1ESPipeline: ${{ parameters.is1ESPipeline }}
 
-      - task: NuGetAuthenticate@1
+      - task: NuGetAuthenticate@1 # Populate internal runtime variables.
 
-      # Populate internal runtime variables.
       - template: /eng/common/templates/steps/enable-internal-sources.yml
         parameters:
           legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
 
       - template: /eng/common/templates/steps/enable-internal-runtimes.yml
-
-      - task: UseDotNet@2
-        inputs:
-          version: 8.0.x
 
       - task: AzureCLI@2
         displayName: Publish Using Darc
@@ -324,5 +319,5 @@ stages:
               -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
               -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
               -SkipAssetsPublishing '${{ parameters.isAssetlessBuild }}'
-              -runtimeSourceFeed https://ci.dot.net/internal 
+              -runtimeSourceFeed https://ci.dot.net/internal
               -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'

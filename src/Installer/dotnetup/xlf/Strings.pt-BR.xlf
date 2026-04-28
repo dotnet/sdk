@@ -1,0 +1,217 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="pt-BR" original="../Strings.resx">
+    <body>
+      <trans-unit id="CommandInteractiveOptionDescription">
+        <source>Allows the command to stop and wait for user input or action.</source>
+        <target state="new">Allows the command to stop and wait for user input or action.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandDescription">
+        <source>Run a command using the dotnetup-managed dotnet installation.</source>
+        <target state="new">Run a command using the dotnetup-managed dotnet installation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandDotnetNotFound">
+        <source>Error: dotnet executable not found at '{0}'.</source>
+        <target state="new">Error: dotnet executable not found at '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandDotnetStartFailed">
+        <source>Error: Failed to start the dotnet process.</source>
+        <target state="new">Error: Failed to start the dotnet process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandForwardedArgsDescription">
+        <source>Arguments to forward to dotnet.</source>
+        <target state="new">Arguments to forward to dotnet.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandInstallFirst">
+        <source>Run 'dotnetup install' to install a .NET SDK first.</source>
+        <target state="new">Run 'dotnetup install' to install a .NET SDK first.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatOptionDescription">
+        <source>Output format (text or json).</source>
+        <target state="new">Output format (text or json).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpConfigCommandsTitle">
+        <source>Configuration Commands:</source>
+        <target state="new">Configuration Commands:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpDescriptionLabel">
+        <source>Description:</source>
+        <target state="new">Description:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpInstallCommandsTitle">
+        <source>Install Commands:</source>
+        <target state="new">Install Commands:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpOptionsTitle">
+        <source>Options:</source>
+        <target state="new">Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpQueryCommandsTitle">
+        <source>Query Commands:</source>
+        <target state="new">Query Commands:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUsageLabel">
+        <source>Usage:</source>
+        <target state="new">Usage:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUtilityCommandsTitle">
+        <source>Utility Commands:</source>
+        <target state="new">Utility Commands:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoCommandDescription">
+        <source>Display dotnetup information.</source>
+        <target state="new">Display dotnetup information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoHeader">
+        <source>dotnetup Information:</source>
+        <target state="new">dotnetup Information:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoNoListOptionDescription">
+        <source>Skip listing installed SDKs (faster).</source>
+        <target state="new">Skip listing installed SDKs (faster).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoOptionDescription">
+        <source>Display dotnetup information.</source>
+        <target state="new">Display dotnetup information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitCommandDescription">
+        <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
+        <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListCommandDescription">
+        <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
+        <target state="new">List installed .NET SDKs and runtimes managed by dotnetup.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListHeaderSubtitle">
+        <source>(managed by dotnetup)</source>
+        <target state="new">(managed by dotnetup)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListHeaderTitle">
+        <source>Installations</source>
+        <target state="new">Installations</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListNoInstallations">
+        <source>(none)</source>
+        <target state="new">(none)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListNoVerifyOptionDescription">
+        <source>Skip verifying that each installation is valid.</source>
+        <target state="new">Skip verifying that each installation is valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListTotal">
+        <source>Total</source>
+        <target state="new">Total</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathDescriptionDotnetupDotnet">
+        <source>Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</source>
+        <target state="new">Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathDescriptionFullReplacement">
+        <source>The system will be configured to use dotnetup installs over any other installs.</source>
+        <target state="new">The system will be configured to use dotnetup installs over any other installs.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathDescriptionShellProfile">
+        <source>Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</source>
+        <target state="new">Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathDescriptionShellProfileBase">
+        <source>Configure the current shell profile to use installs managed by dotnetup.</source>
+        <target state="new">Configure the current shell profile to use installs managed by dotnetup.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceDotnetupDotnet">
+        <source>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</source>
+        <target state="new">You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceFullReplacement">
+        <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
+        <target state="new">PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceShellProfile">
+        <source>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</source>
+        <target state="new">Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathPreferenceDotnetupDotnet">
+        <source>Isolation Mode</source>
+        <target state="new">Isolation Mode</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathPreferenceFullReplacement">
+        <source>Replacement Mode</source>
+        <target state="new">Replacement Mode</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathPreferenceShellProfile">
+        <source>Terminal Mode (Suggested)</source>
+        <target state="new">Terminal Mode (Suggested)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathReplacementModeUnixError">
+        <source>Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</source>
+        <target state="new">Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathTooltipDotnetupDotnet">
+        <source>Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</source>
+        <target state="new">Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathTooltipFullReplacement">
+        <source>Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</source>
+        <target state="new">Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathTooltipShellProfile">
+        <source>Modify the current shell profile file to consume dotnetup on PATH environment variables. Recommended for users who want to develop using dotnetup and launch their IDE through the terminal.</source>
+        <target state="new">Modify the current shell profile file to consume dotnetup on PATH environment variables. Recommended for users who want to develop using dotnetup and launch their IDE through the terminal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathTooltipShellProfileWindowsNote">
+        <source>Only PowerShell will work in this mode. CMD has no profile file.</source>
+        <target state="new">Only PowerShell will work in this mode. CMD has no profile file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RootCommandDescription">
+        <source>.NET installation manager for user level installs.</source>
+        <target state="new">.NET installation manager for user level installs.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TelemetryNotice">
+        <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>
+        <target state="new">dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
