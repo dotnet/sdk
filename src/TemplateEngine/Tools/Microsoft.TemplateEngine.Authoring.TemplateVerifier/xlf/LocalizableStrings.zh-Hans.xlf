@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="VerificationEngine_Error_InstallUnexpectedFail">
+        <source>Template installation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">模板安装应通过，但它具有退出代码 "{0}"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_ScrubberExtension">
+        <source>File extension passed to scrubber should not start with dot.</source>
+        <target state="translated">传递给清理程序的文件扩展名不应以点开头。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_StdOutFolderExists">
+        <source>The folder [{0}] should not exist in the template output - cannot verify stdout/stderr in such case.</source>
+        <target state="translated">模板输出中不应存在文件夹 [{0}] - 在这种情况下无法验证 stdout/stderr。</target>
+        <note>{0} is a folder path</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_TemplateNameMandatory">
+        <source>Template name is mandatory, but was not supplied.</source>
+        <target state="translated">模板名称是必需的，但未提供。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_Unexpected">
+        <source>Unexpected error encountered.</source>
+        <target state="translated">遇到了意外错误。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedFail">
+        <source>Template instantiation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">模板实例化应通过，但它具有退出代码 "{0}"。</target>
+        <note>{0} is an exit code number</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedPass">
+        <source>Template instantiation expected to fail but it passed.</source>
+        <target state="translated">模板实例化预期会失败，但已通过。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedStdErr">
+        <source>Template instantiation expected not to have any stderr output, but stderr output was encountered:{0}{1}</source>
+        <target state="translated">模板实例化预期没有任何 stderr 输出，但遇到了 stderr 输出: {0}{1}</target>
+        <note>{0} is newline, {1} is the standard error content</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_WorkDirExists">
+        <source>The working directory already exists and is not empty.</source>
+        <target state="translated">工作目录已存在且不为空。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

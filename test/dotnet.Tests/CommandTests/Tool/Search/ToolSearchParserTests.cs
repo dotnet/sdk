@@ -29,14 +29,14 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse("dotnet tool search mytool --detail --skip 3 --take 4 --prerelease");
 
-            var packageId = result.GetValue<string>(ToolSearchCommandParser.SearchTermArgument);
+            var definition = Assert.IsType<ToolSearchCommandDefinition>(result.CommandResult.Command);
 
-            packageId.Should().Be("mytool");
+            result.GetValue(definition.SearchTermArgument).Should().Be("mytool");
             result.UnmatchedTokens.Should().BeEmpty();
-            result.GetValue<bool>(ToolSearchCommandParser.DetailOption).Should().Be(true);
-            result.GetValue<string>(ToolSearchCommandParser.SkipOption).Should().Be("3");
-            result.GetValue<string>(ToolSearchCommandParser.TakeOption).Should().Be("4");
-            result.GetValue<bool>(ToolSearchCommandParser.PrereleaseOption).Should().Be(true);
+            result.GetValue(definition.DetailOption).Should().Be(true);
+            result.GetValue(definition.SkipOption).Should().Be("3");
+            result.GetValue(definition.TakeOption).Should().Be("4");
+            result.GetValue(definition.PrereleaseOption).Should().Be(true);
         }
     }
 }

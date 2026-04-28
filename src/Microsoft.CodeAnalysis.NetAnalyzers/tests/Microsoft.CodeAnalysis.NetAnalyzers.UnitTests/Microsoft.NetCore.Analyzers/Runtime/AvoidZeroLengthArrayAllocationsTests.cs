@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Reflection;
@@ -762,6 +763,81 @@ Class C
 End Class
 ";
             await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
+        public async Task NoDiagnosticForCollectionExpression_NonArrayTargetType_CSharpAsync()
+        {
+            const string source = @"
+using System.Collections.Generic;
+
+class C
+{
+    List<string> l1 = [""a"", ""b"", ""c""];
+    List<int> l2 = [];
+    IEnumerable<int> l3 = [1, 2, 3];
+}
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
+                TestCode = source,
+            }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Fact]
+        [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
+        public async Task NoDiagnosticForCollectionExpression_EmptyArrayTargetType_CSharpAsync()
+        {
+
+            const string source = @"
+class C
+{
+    int[] arr = [];
+}
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
+                TestCode = source,
+            }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Fact]
+        [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
+        public async Task DiagnosticForZeroLengthArrayInsideCollectionExpression_CSharpAsync()
+        {
+            const string badSource = @"
+using System;
+using System.Collections.Generic;
+
+class C
+{
+    List<int[]> l1 = [new int[0]];
+}
+";
+            const string fixedSource = @"
+using System;
+using System.Collections.Generic;
+
+class C
+{
+    List<int[]> l1 = [Array.Empty<int>()];
+}
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
+                TestCode = badSource,
+                FixedCode = fixedSource,
+                ExpectedDiagnostics =
+                {
+#pragma warning disable RS0030 // Do not use banned APIs
+                    VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(7, 23).WithArguments("Array.Empty<int>()"),
+#pragma warning restore RS0030 // Do not use banned APIs
+                },
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pt-BR" original="../CliCommandStrings.resx">
     <body>
@@ -92,7 +92,27 @@
         <target state="translated">Construtor do .NET</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildCmdNoLogo">
+      <trans-unit id="CmdTestNoTestProjectsFound">
+        <source>No test projects were found.</source>
+        <target state="new">No test projects were found.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescription">
+        <source>The device identifier to use for running the application.</source>
+        <target state="new">The device identifier to use for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionDeviceHelpName">
+        <source>DEVICE</source>
+        <target state="new">DEVICE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescription">
+        <source>List available devices for running the application.</source>
+        <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
         <note />
@@ -184,11 +204,6 @@ Caminhos pesquisados: "{1}", "{2}".</target>
         <target state="translated">Não é possível usar as opções {0} e {1} juntas.  Escolha uma das opções.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="new">Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
-        <note>{Locked="--force"}</note>
-      </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
         <target state="translated">Não é possível localizar uma ferramenta no arquivo de manifesto com um comando chamado '{0}'.</target>
@@ -232,11 +247,6 @@ Caminhos pesquisados: "{1}", "{2}".</target>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
         <target state="translated">Comando Clean do .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CleanCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
@@ -458,16 +468,6 @@ Se não for especificado, o arquivo será gerado dentro do diretório padrão �
         <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdDirectoryDescription">
-        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Define o caminho do diretório a ser executado. Se não for especificado, o padrão será o diretório atual.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdDirectoryPathName">
-        <source>DIRECTORY_PATH</source>
-        <target state="translated">DIRECTORY_PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
         <source>Prevent restoring multiple projects in parallel.</source>
         <target state="translated">Evite restaurar vários projetos em paralelo.</target>
@@ -574,8 +574,8 @@ Isso equivale a excluir o project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">As propriedades de obtenção de projetos com o MSBuild não foram executadas corretamente com o código de saída: {0}.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">As propriedades de obtenção de projetos com o MSBuild não foram executadas corretamente com o código de saída: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -585,7 +585,7 @@ Isso equivale a excluir o project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <target state="translated">Especifica o número mínimo de testes que devem ser executados.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -743,14 +743,19 @@ Isso equivale a excluir o project.assets.json.</target>
         <target state="translated">Ao procurar pacotes mais novos, considere pacotes com versões de pré-lançamento. Requer a opção '--outdated'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">Define o caminho do arquivo de projeto a ser executado (nome da pasta ou caminho completo). Se não for especificado, o padrão será o diretório atual.</target>
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="translated">Define o caminho do arquivo de projeto a ser executado. Usar o caminho do arquivo de projeto ou o caminho do diretório que contém o arquivo de projeto. Se não for especificado, o padrão será o diretório atual.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectPathName">
-        <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+      <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
+        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="translated">Define o caminho do arquivo de projeto ou de solução a ser testado. Usar o caminho do arquivo de projeto ou o caminho do diretório que contém o arquivo de projeto. Se não for especificado, o padrão será o diretório atual.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectOrSolutionPathName">
+        <source>PROJECT_OR_SOLUTION_PATH</source>
+        <target state="translated">CAMINHO_DO_PROJETO_OU_SOLUÇÃO</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -796,8 +801,8 @@ O diretório especificado será criado se ele ainda não existir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Define o caminho do arquivo de solução a ser executado. Se não for especificado, o padrão será o diretório atual.</target>
+        <source>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="translated">Define o caminho do arquivo de solução a ser testado. Usar o caminho do arquivo de solução ou o caminho do diretório que contém o arquivo de solução. Se não for especificado, o padrão será o diretório atual.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
@@ -883,11 +888,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
-The following test projects are using VSTest test runner:
+        <target state="translated">O global.json define o executor de teste como Microsoft.Testing.Platform. Todos os projetos devem usar esse executor de teste.
+Os seguintes projetos de teste estão usando o executor de teste do VSTest:
 {0}
 
-See https://aka.ms/dotnet-test/mtp for more information.</target>
+Consulte https://aka.ms/dotnet-test/mtp para obter mais informações.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>
@@ -986,11 +991,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Não tente usar launchSettings.json ou [app].run.json para configurar o aplicativo.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">O caminho para o arquivo de projeto a ser executado (usará como padrão o diretório atual se houver apenas um projeto).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
@@ -1071,11 +1071,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Data</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefaultLaunchProfileDisplayName">
-        <source>(Default)</source>
-        <target state="translated">(Padrão)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
         <target state="translated">Instalando o manifesto da carga de trabalho {0} versão {1}...</target>
@@ -1106,11 +1101,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Descrição</target>
         <note />
       </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="translated">Ocorreu um erro ao ler '{0}': {1}</target>
-        <note>{0} is file path. {1} is exception message.</note>
-      </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
         <target state="translated">Mostrar o resultado detalhado da consulta.</target>
@@ -1125,11 +1115,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <source>Enables diagnostic output.</source>
         <target state="translated">Habilita a saída de diagnóstico.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="DirectiveError">
-        <source>error</source>
-        <target state="new">error</target>
-        <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
@@ -1162,39 +1147,39 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Descobrindo testes de</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">Comando de Teste do .NET</target>
-        <note />
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Comando de Teste .NET para Microsoft.Testing.Platform (aceito por meio do arquivo 'global.json'). Isso dá suporte apenas a Microsoft.Testing.Platform e não dá suporte a VSTest. Para obter mais informações, confira https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Comando de Teste .NET para VSTest. Para usar a Microsoft.Testing.Platform, faça a aceitação do comando baseado em Microsoft.Testing.Platform por meio do global.json. Para obter mais informações, confira https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
-        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <target state="translated">As versões de protocolo suportadas enviadas pelo Microsoft.Testing.Platform são '{0}'. O SDK oferece suporte a '{1}', que é incompatível.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMismatchingExecutionId">
         <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
-        <target state="new">Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</target>
+        <target state="translated">Recebido 'ExecutionId' com valor '{0}' para a mensagem '{1}', enquanto o 'ExecutionId' recebido na mensagem de handshake era '{2}'.</target>
         <note>{Locked="ExecutionId"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureHasHandshake">
         <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
-        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <target state="translated">Erro ao descartar 'NamedPipeServer' correspondente ao handshake:</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
         <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
-        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DotnetTestPipeIncompleteSize">
-        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <target state="translated">Erro ao descartar 'NamedPipeServer', e nenhum handshake foi encontrado.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
         <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <target state="translated">O 'dotnet' recebeu inesperadamente mensagens sobrepostas do pipe nomeado 'dotnet test'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1217,25 +1202,21 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Downloads</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
-        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
-{0}
-Make the profile names distinct.</source>
-        <target state="translated">Existem vários perfis de inicialização com nomes que diferenciam maiúsculas de minúsculas, o que não é permitido:
-{0}
-Diferencie os nomes dos perfis.</target>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">duração:</target>
         <note />
       </trans-unit>
-      <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0}</source>
-        <target state="new">Duplicate directives are not supported: {0}</target>
-        <note>{0} is the directive type and name.</note>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">erro:</target>
+        <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
 {2}</source>
-        <target state="new">The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+        <target state="translated">A seguinte exceção ocorreu ao executar o módulo de teste com RunCommand '{0}' e RunArguments '{1}':
 
 {2}</target>
         <note>{Locked="RunCommand"}{Locked="RunArguments"}
@@ -1279,6 +1260,11 @@ Diferencie os nomes dos perfis.</target>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Falha ao atualizar o manifesto de publicidade {0}: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">falhou:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -1568,13 +1554,8 @@ Diferencie os nomes dos perfis.</target>
       </trans-unit>
       <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
         <source>Method '{0}' did not exit successfully</source>
-        <target state="new">Method '{0}' did not exit successfully</target>
+        <target state="translated">O método '{0}' não foi concluído com sucesso</target>
         <note />
-      </trans-unit>
-      <trans-unit id="InvalidDirectiveName">
-        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="new">The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1590,11 +1571,6 @@ Diferencie os nomes dos perfis.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Não é possível especificar a opção '{0}' ao mesmo tempo em que se utiliza '-' para ler o arquivo da entrada padrão.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive is invalid: {0}</source>
-        <target state="new">The '#:project' directive is invalid: {0}</target>
-        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1615,26 +1591,6 @@ Diferencie os nomes dos perfis.</target>
         <source>Latest Version</source>
         <target state="translated">Última Versão</target>
         <note>Table lable</note>
-      </trans-unit>
-      <trans-unit id="LaunchProfileDoesNotExist">
-        <source>A launch profile with the name '{0}' doesn't exist.</source>
-        <target state="translated">Um perfil de lançamento com o nome '{0}' não existe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Não há suporte para o tipo de perfil de inicialização '{0}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name isn't a valid JSON object.</source>
-        <target state="translated">Um perfil com o nome especificado não é um objeto JSON válido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">A propriedade 'perfis' do documento de configurações de inicialização não é um objeto JSON.</target>
-        <note />
       </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
@@ -1730,17 +1686,12 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="MismatchingHandshakeInfo">
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
-        <target state="new">A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</target>
+        <target state="translated">Um novo handshake '{0}' foi recebido para o aplicativo de teste que não corresponde ao handshake anterior '{1}'.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}'.</source>
-        <target state="new">Missing name of '{0}'.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
-        <target state="new">A test session start event was received without a corresponding test session end.</target>
+        <target state="translated">Um evento de início de sessão de teste foi recebido sem um término de sessão de teste correspondente.</target>
         <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
@@ -1955,11 +1906,6 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       <trans-unit id="PackAppFullName">
         <source>.NET Core NuGet Package Packer</source>
         <target state="translated">Empacotador de Pacotes NuGet do .NET Core</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdOutputDir">
@@ -2440,20 +2386,45 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
         <target state="translated">Contexto do projeto</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Excluir todos os arquivos de origem após a conversão?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Converta um programa baseado em arquivo em um programa baseado em projeto.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
-        <source>Specify the output directory ({0}):</source>
-        <target state="translated">Especificar o diretório de saída ({0}):</target>
+        <source>Specify the output directory (press Enter for default: '{0}', directory must not exist):</source>
+        <target state="translated">Especifique o diretório de saída (pressione Enter para o padrão: '{0}', o diretório não deve existir):</target>
         <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">Não - manter todos os arquivos de origem</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Sim - excluir todos os arquivos de origem</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">Arquivo de origem excluído: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">Determina alterações sem modificar o sistema de arquivos</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDuplicateRefFolderName">
+        <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
+        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
@@ -2474,6 +2445,11 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
         <source>Dry run: would create file: {0}</source>
         <target state="translated">Execução de teste: arquivo a ser criado: {0}</target>
         <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Simulação: excluiria o arquivo de origem: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
@@ -2500,24 +2476,9 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
         <target state="translated">Projetos</target>
         <note />
       </trans-unit>
-      <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name: {0}</source>
-        <target state="new">Invalid property name: {0}</target>
-        <note>{0} is an inner exception message.</note>
-      </trans-unit>
-      <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
         <target state="translated">Editor para a Plataforma .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PublishCmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Não exibe a faixa de inicialização ou a mensagem de direitos autorais.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishConfigurationOptionDescription">
@@ -2662,6 +2623,11 @@ O padrão é publicar uma aplicação dependente de framework.</target>
         <target state="translated">Falha na restauração.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RestoreNewVersionAvailable">
+        <source>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</source>
+        <target state="new">A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RestorePartiallyFailed">
         <source>Restore partially failed.</source>
         <target state="translated">Falha parcial na restauração.</target>
@@ -2670,6 +2636,11 @@ O padrão é publicar uma aplicação dependente de framework.</target>
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">A ferramenta '{0}' (versão '{1}') foi restaurada. Comandos disponíveis: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">repetido</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2702,15 +2673,35 @@ O padrão é publicar uma aplicação dependente de framework.</target>
         <target state="translated">Comando Run do .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandAvailableDevices">
+        <source>Available devices:</source>
+        <target state="new">Available devices:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandAvailableTargetFrameworks">
+        <source>Available target frameworks:</source>
+        <target state="translated">Estruturas de destino disponíveis:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="translated">Compilando...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandDeployFailed">
+        <source>Deployment to device failed. Fix any deployment errors and run again.</source>
+        <target state="new">Deployment to device failed. Fix any deployment errors and run again.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
         <target state="translated">Falha na execução do destino {0} para descobrir comandos de execução para este projeto. Corrija os erros e avisos e execute novamente.</target>
         <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExampleText">
+        <source>Example</source>
+        <target state="translated">Exemplo</target>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
@@ -2752,6 +2743,11 @@ Um projeto executável deve ter como destino um TFM executável (por exemplo, o 
 O {1} atual é '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyDevice">
+        <source>Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</source>
+        <target state="new">Unable to run this project because multiple devices are available. Please specify which device to use by passing the {0} argument with one of the following values:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</source>
@@ -2759,15 +2755,55 @@ Your project targets multiple frameworks. Specify which framework to run using '
 Ele tem diversas estruturas como destino. Especifique que estrutura executar usando '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandMoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="new">Move up and down to reveal more devices</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandMoreFrameworksText">
+        <source>Move up and down to reveal more frameworks</source>
+        <target state="translated">Mover para cima e para baixo para ver mais estruturas</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandNoDevicesAvailable">
+        <source>No devices are available for this project.</source>
+        <target state="new">No devices are available for this project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Aviso NETSDK1174: a abreviação de-p para--project é preterida. Use --project.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandSearchPlaceholderText">
+        <source>Type to search</source>
+        <target state="translated">Digite para pesquisar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="new">Select a device to run on:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandSelectTargetFrameworkPrompt">
+        <source>Select the target framework to run:</source>
+        <target state="translated">Selecione a estrutura de destino para executar:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">'{0}' não é um arquivo de projeto válido.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandWarningCsFileArgumentPassedToProject">
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <note>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandWarningFileArgumentPassedToProject">
+        <source>Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <note>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
         <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
@@ -2951,6 +2987,11 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <target state="translated">Ignorar a criação de arquivos de símbolo que podem ser usados para criar o perfil de assemblies otimizados.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">ignorados:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">ignorado</target>
@@ -2989,6 +3030,11 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
       <trans-unit id="SolutionArgumentName">
         <source>SLN_FILE</source>
         <target state="translated">SLN_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
@@ -3046,11 +3092,6 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <target state="translated">Saída padrão</target>
         <note />
       </trans-unit>
-      <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property'.</target>
-        <note>{Locked="#:property"}</note>
-      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">Status</target>
@@ -3086,6 +3127,11 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <target state="translated">O runtime de destino no qual os pacotes serão armazenados.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">concluído com êxito:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">Resumo</target>
@@ -3099,11 +3145,6 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">Especifique um diretório temporário para este comando baixar e extrair pacotes NuGet (deve ser seguro).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">Driver de Teste do .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3557,6 +3598,11 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
         <target state="translated">A ferramenta '{0}' foi atualizada com êxito da versão '{1}' para a versão '{2}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">total:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Try">
         <source>try {0}</source>
         <target state="translated">experimente {0}</target>
@@ -3564,22 +3610,22 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
       </trans-unit>
       <trans-unit id="UnexpectedHelpMessage">
         <source>An unexpected help-related message was received when `--help` wasn't used.</source>
-        <target state="new">An unexpected help-related message was received when `--help` wasn't used.</target>
+        <target state="translated">Uma mensagem inesperada relacionada à ajuda foi recebida quando `--help` não foi usado.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageInHelpMode">
         <source>A message of type '{0}' was received in help mode, which is not expected.</source>
-        <target state="new">A message of type '{0}' was received in help mode, which is not expected.</target>
+        <target state="translated">Uma mensagem do tipo '{0}' foi recebida no modo de ajuda, o que não era esperado.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageWithoutHandshake">
         <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
-        <target state="new">A message of type '{0}' was received before we got any handshakes, which is unexpected.</target>
+        <target state="translated">Uma mensagem do tipo '{0}' foi recebida antes de qualquer handshake, o que é inesperado.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
-        <target state="new">A test session end event was received without a corresponding test session start.</target>
+        <target state="translated">Um evento de término de sessão de teste foi recebido sem um início de sessão de teste correspondente.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
@@ -3596,11 +3642,6 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">As linhas com as alterações Não Registradas representam as alterações de ações diferentes dos comandos de carga de trabalho da CLI do .NET. Geralmente, isso representa uma atualização para o SDK do .NET ou para o Visual Studio.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}'.</source>
-        <target state="new">Unrecognized directive '{0}'.</target>
-        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
@@ -3677,11 +3718,6 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
         <target state="translated">Modo de instalação da carga de trabalho atualizado com êxito para usar {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Um perfil de inicialização utilizável não pôde ser localizado.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Usage">
         <source>Usage</source>
         <target state="translated">Uso</target>
@@ -3725,6 +3761,16 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
       <trans-unit id="ValueMustBeAnObject">
         <source>The property '{0}' must be an object if it is specified.</source>
         <target state="translated">Se especificado, a propriedade '{0}' deve ser um objeto.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
@@ -3771,6 +3817,16 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
         <source>Run Microsoft Test Engine (VSTest) commands.</source>
         <target state="translated">Executar comandos do VSTest (Microsoft Test Engine).</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</target>
+        <note>{0} is the .cs file path argument.</note>
+      </trans-unit>
+      <trans-unit id="WarningFileArgumentPassedToMSBuild">
+        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</target>
+        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>
@@ -4025,8 +4081,8 @@ Para exibir um valor, especifique a opção de linha de comando correspondente s
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Pesquise cargas de trabalho disponíveis.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">Pesquise cargas de trabalho disponíveis.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
@@ -4043,6 +4099,11 @@ Para exibir um valor, especifique a opção de linha de comando correspondente s
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Uma versão de carga de trabalho para exibir ou uma ou mais cargas de trabalho e suas versões unidas pelo caractere ''@''.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">A versão do conjunto de cargas de trabalho {0} tem manifestos ausentes, provavelmente removidos pelo gerenciamento de pacotes. Execute "dotnet workload repair" para corrigir isso.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>

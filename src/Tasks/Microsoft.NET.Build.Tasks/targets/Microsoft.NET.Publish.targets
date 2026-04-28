@@ -268,6 +268,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="_IncrementalCleanPublishDirectory;
                             _CopyResolvedFilesToPublishPreserveNewest;
                             _CopyResolvedFilesToPublishAlways;
+                            _CopyResolvedFilesToPublishIfDifferent;
                             _HandleFileConflictsForPublish" />
 
   <!--
@@ -411,6 +412,33 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
   </Target>
 
+  <!--
+    ============================================================
+                                        _CopyResolvedFilesToPublishIfDifferent
+
+    Copy _ResolvedFileToPublishIfDifferent items to the publish directory
+    ============================================================
+    -->
+  <Target Name="_CopyResolvedFilesToPublishIfDifferent"
+          DependsOnTargets="_ComputeResolvedFilesToPublishTypes">
+
+    <!--
+      Using SkipUnchangedFiles="true" because we want only differing files.
+      -->
+    <Copy SourceFiles = "@(_ResolvedFileToPublishIfDifferent)"
+          DestinationFiles="@(_ResolvedFileToPublishIfDifferent->'$(PublishDir)%(RelativePath)')"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+          UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+          UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+  </Target>
+
   <UsingTask TaskName="ResolveReadyToRunCompilers" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="ResolveReadyToRunCompilers">
     <ResolveReadyToRunCompilers RuntimePacks="@(ResolvedRuntimePack)"
@@ -431,7 +459,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
                                         _ComputeResolvedFilesToPublishTypes
 
-    Splits ResolvedFileToPublish items into 'PreserveNewest' and 'Always' buckets.
+    Splits ResolvedFileToPublish items into 'PreserveNewest', 'Always' and 'IfDifferent' buckets.
     Then further splits those into 'Unbundled' buckets based on the single file setting.
     ============================================================
     -->
@@ -443,6 +471,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <_ResolvedFileToPublishAlways Include="@(ResolvedFileToPublish)"
                                     Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='Always'" />
+
+      <_ResolvedFileToPublishIfDifferent Include="@(ResolvedFileToPublish)"
+                                    Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='IfDifferent'" />
     </ItemGroup>
 
     <ItemGroup>
@@ -456,6 +487,11 @@ Copyright (c) .NET Foundation. All rights reserved.
               Include="@(_ResolvedFileToPublishAlways)"
               Condition="'$(PublishSingleFile)' != 'true' or
                          '%(_ResolvedFileToPublishAlways.ExcludeFromSingleFile)'=='true'" />
+
+      <_ResolvedUnbundledFileToPublishIfDifferent
+              Include="@(_ResolvedFileToPublishIfDifferent)"
+              Condition="'$(PublishSingleFile)' != 'true' or
+                         '%(_ResolvedFileToPublishIfDifferent.ExcludeFromSingleFile)'=='true'" />
     </ItemGroup>
   </Target>
 
@@ -466,13 +502,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     Gathers all the files that need to be copied to the publish directory, including R2R and ILLinker transformations
     ============================================================
     -->
+  <PropertyGroup>
+    <_ComputeFilesToPublishDependsOn>
+      $(_ComputeFilesToPublishDependsOn);
+      PrepareForPublish;
+      ComputeResolvedFilesToPublishList;
+      ILLink;
+      NativeCompile;
+      CreateReadyToRunImages;
+      GeneratePublishDependencyFile;
+      GenerateSingleFileBundle;
+    </_ComputeFilesToPublishDependsOn>
+  </PropertyGroup>
+
   <Target Name="ComputeFilesToPublish"
-          DependsOnTargets="PrepareForPublish;
-                            ComputeResolvedFilesToPublishList;
-                            ILLink;
-                            CreateReadyToRunImages;
-                            GeneratePublishDependencyFile;
-                            GenerateSingleFileBundle">
+          DependsOnTargets="$(_ComputeFilesToPublishDependsOn)">
   </Target>
 
   <!--
@@ -485,6 +529,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="ILLink" />
+
+  <!--
+    ============================================================
+                                        NativeCompile
+
+    Initially an empty placeholder target. When AOT compiling, this
+    will be redefined to perform native compilation of the app.
+    The placeholder exists to allow other targets to depend on it for ordering purposes.
+    =========================================================
+  -->
+  <Target Name="NativeCompile" />
 
   <PropertyGroup>
     <CopyBuildOutputToPublishDirectory Condition="'$(CopyBuildOutputToPublishDirectory)'==''">true</CopyBuildOutputToPublishDirectory>
@@ -703,7 +758,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_ResolvedCopyLocalPublishAssets Include="@(ReferenceCopyLocalPaths)"
                                        Exclude="@(_ResolvedCopyLocalBuildAssets);@(RuntimePackAsset)"
-                                       Condition="('$(PublishReferencesDocumentationFiles)' == 'true' or '%(ReferenceCopyLocalPaths.Extension)' != '.xml') and '%(ReferenceCopyLocalPaths.Private)' != 'false'">
+                                       Condition="(('$(PublishReferencesDocumentationFiles)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.xml')
+                                                  or ('$(PublishReferencesSymbols)' == 'true' and '%(ReferenceCopyLocalPaths.Extension)' == '.pdb')
+                                                  or ('%(ReferenceCopyLocalPaths.Extension)' != '.xml' and '%(ReferenceCopyLocalPaths.Extension)' != '.pdb'))
+                                                  and '%(ReferenceCopyLocalPaths.Private)' != 'false'">
         <DestinationSubPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</DestinationSubPath>
       </_ResolvedCopyLocalPublishAssets>
 
@@ -776,18 +834,48 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectoryAlways)">
         <RelativePath>%(_SourceItemsToCopyToPublishDirectoryAlways.TargetPath)</RelativePath>
         <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectoryAlways.FullPath)' == '$(AppHostIntermediatePath)'">True</IsKeyOutput>
+        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectoryAlways.FullPath)' == '$(AppHostIntermediatePath)' or '%(_SourceItemsToCopyToPublishDirectoryAlways.FullPath)' == '$(SingleFileHostIntermediatePath)'">True</IsKeyOutput>
       </ResolvedFileToPublish>
 
       <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectory)">
         <RelativePath>%(_SourceItemsToCopyToPublishDirectory.TargetPath)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectory.FullPath)' == '$(AppHostIntermediatePath)'">True</IsKeyOutput>
+        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectory.FullPath)' == '$(AppHostIntermediatePath)' or '%(_SourceItemsToCopyToPublishDirectory.FullPath)' == '$(SingleFileHostIntermediatePath)'">True</IsKeyOutput>
+      </ResolvedFileToPublish>
+
+      <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectoryIfDifferent)">
+        <RelativePath>%(_SourceItemsToCopyToPublishDirectoryIfDifferent.TargetPath)</RelativePath>
+        <CopyToPublishDirectory>IfDifferent</CopyToPublishDirectory>
+        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectoryIfDifferent.FullPath)' == '$(AppHostIntermediatePath)' or '%(_SourceItemsToCopyToPublishDirectoryIfDifferent.FullPath)' == '$(SingleFileHostIntermediatePath)'">True</IsKeyOutput>
       </ResolvedFileToPublish>
     </ItemGroup>
 
   </Target>
 
+  <!--
+    ============================================================
+                                        _IncludeContentItemsWithOnlyPublishMetadata
+
+    Content items with CopyToPublishDirectory set but without CopyToOutputDirectory are not
+    included in ContentWithTargetPath by AssignTargetPaths. This target ensures they are included
+    so they can be processed by GetCopyToPublishDirectoryItems.
+    ============================================================
+    -->
+  <Target Name="_IncludeContentItemsWithOnlyPublishMetadata"
+          AfterTargets="AssignTargetPaths">
+    <ItemGroup>
+      <_ContentWithPublishMetadata Include="@(Content)"
+                                   Condition="'%(Content.CopyToPublishDirectory)' != '' and '%(Content.CopyToPublishDirectory)' != 'Never' and '%(Content.CopyToOutputDirectory)' == ''">
+        <!-- Preserve existing TargetPath if already set, otherwise compute it -->
+        <TargetPath Condition="'%(Content.TargetPath)' != ''">%(Content.TargetPath)</TargetPath>
+        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' != ''">%(Content.Link)</TargetPath>
+        <!-- Use MSBuildProjectDirectory as the base for relative path computation. DefiningProjectDirectory can point to sdk targets folder and lead to unexpected paths. -->
+        <TargetPath Condition="'%(Content.TargetPath)' == '' and '%(Content.Link)' == ''">$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '%(Content.FullPath)'))</TargetPath>
+      </_ContentWithPublishMetadata>
+
+      <ContentWithTargetPath Include="@(_ContentWithPublishMetadata)" />
+    </ItemGroup>
+  </Target>
   <!--
     ============================================================
                                         GetCopyToPublishDirectoryItems
@@ -845,6 +933,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                                             KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(_AllChildProjectPublishItemsWithTargetPath->'%(FullPath)')"
                                             Condition="'%(_AllChildProjectPublishItemsWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                            Include="@(_AllChildProjectPublishItemsWithTargetPath->'%(FullPath)')"
+                                            Condition="'%(_AllChildProjectPublishItemsWithTargetPath.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
 
     <!-- Remove items which we will never again use - they just sit around taking up memory otherwise -->
@@ -860,6 +952,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(ContentWithTargetPath->'%(FullPath)')"
                                             Condition="'%(ContentWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                            Include="@(ContentWithTargetPath->'%(FullPath)')"
+                                            Condition="'%(ContentWithTargetPath.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -869,11 +964,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(EmbeddedResource->'%(FullPath)')"
                                             Condition="'%(EmbeddedResource.CopyToPublishDirectory)'=='PreserveNewest'"/>
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                            Include="@(EmbeddedResource->'%(FullPath)')"
+                                            Condition="'%(EmbeddedResource.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
 
     <ItemGroup>
       <_CompileItemsToPublish Include="@(Compile->'%(FullPath)')"
-                              Condition="'%(Compile.CopyToPublishDirectory)'=='Always' or '%(Compile.CopyToPublishDirectory)'=='PreserveNewest'"/>
+                              Condition="'%(Compile.CopyToPublishDirectory)'=='Always' or '%(Compile.CopyToPublishDirectory)'=='PreserveNewest' or '%(Compile.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
 
     <AssignTargetPath Files="@(_CompileItemsToPublish)" RootFolder="$(MSBuildProjectDirectory)">
@@ -887,6 +985,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
                                            Include="@(_CompileItemsToPublishWithTargetPath)"
                                            Condition="'%(_CompileItemsToPublishWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                           Include="@(_CompileItemsToPublishWithTargetPath)"
+                                           Condition="'%(_CompileItemsToPublishWithTargetPath.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -896,12 +997,16 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(_NoneWithTargetPath->'%(FullPath)')"
                                             Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                            Include="@(_NoneWithTargetPath->'%(FullPath)')"
+                                            Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='IfDifferent'"/>
     </ItemGroup>
 
     <ItemGroup Condition="'$(_UseSingleFileHostForPublish)' == 'true' and Exists('$(SingleFileHostIntermediatePath)')">
       <!-- Remove non-single-file apphost from items to publish -->
       <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
       <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent Remove="$(AppHostIntermediatePath)" />
 
       <!-- Add the single-file host created as part of publish -->
       <_SourceItemsToCopyToPublishDirectoryAlways Include="$(SingleFileHostIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
@@ -911,13 +1016,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Remove apphost from build from items to publish -->
       <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
       <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
+      <_SourceItemsToCopyToPublishDirectoryIfDifferent Remove="$(AppHostIntermediatePath)" />
 
       <!-- Add the apphost created as part of publish -->
       <_SourceItemsToCopyToPublishDirectoryAlways Include="$(AppHostForPublishIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
     </ItemGroup>
 
     <ItemGroup>
-      <AllPublishItemsFullPathWithTargetPath Include="@(_SourceItemsToCopyToPublishDirectoryAlways->'%(FullPath)');@(_SourceItemsToCopyToPublishDirectory->'%(FullPath)')"/>
+      <AllPublishItemsFullPathWithTargetPath Include="@(_SourceItemsToCopyToPublishDirectoryAlways->'%(FullPath)');@(_SourceItemsToCopyToPublishDirectory->'%(FullPath)');@(_SourceItemsToCopyToPublishDirectoryIfDifferent->'%(FullPath)')"/>
     </ItemGroup>
 
   </Target>
@@ -927,7 +1033,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                         DefaultCopyToPublishDirectoryMetadata
 
     If CopyToPublishDirectory isn't set on these items, the value should be taken from CopyToOutputDirectory.
-    This way, projects can just set "CopyToOutputDirectory = Always/PreserveNewest" and by default the item will be copied
+    This way, projects can just set "CopyToOutputDirectory = Always/PreserveNewest/IfDifferent" and by default the item will be copied
     to both the build output and publish directories.
     ============================================================
     -->
@@ -942,12 +1048,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ContentWithTargetPath Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest' and '%(ContentWithTargetPath.CopyToPublishDirectory)' == ''">
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ContentWithTargetPath>
+      <ContentWithTargetPath Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='IfDifferent' and '%(ContentWithTargetPath.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>IfDifferent</CopyToPublishDirectory>
+      </ContentWithTargetPath>
 
       <EmbeddedResource Condition="'%(EmbeddedResource.CopyToOutputDirectory)'=='Always' and '%(EmbeddedResource.CopyToPublishDirectory)' == ''">
         <CopyToPublishDirectory>Always</CopyToPublishDirectory>
       </EmbeddedResource>
       <EmbeddedResource Condition="'%(EmbeddedResource.CopyToOutputDirectory)'=='PreserveNewest' and '%(EmbeddedResource.CopyToPublishDirectory)' == ''">
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </EmbeddedResource>
+      <EmbeddedResource Condition="'%(EmbeddedResource.CopyToOutputDirectory)'=='IfDifferent' and '%(EmbeddedResource.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>IfDifferent</CopyToPublishDirectory>
       </EmbeddedResource>
 
       <Compile Condition="'%(Compile.CopyToOutputDirectory)'=='Always' and '%(Compile.CopyToPublishDirectory)' == ''">
@@ -956,12 +1068,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Compile Condition="'%(Compile.CopyToOutputDirectory)'=='PreserveNewest' and '%(Compile.CopyToPublishDirectory)' == ''">
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </Compile>
+      <Compile Condition="'%(Compile.CopyToOutputDirectory)'=='IfDifferent' and '%(Compile.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>IfDifferent</CopyToPublishDirectory>
+      </Compile>
 
       <_NoneWithTargetPath Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='Always' and '%(_NoneWithTargetPath.CopyToPublishDirectory)' == ''">
         <CopyToPublishDirectory>Always</CopyToPublishDirectory>
       </_NoneWithTargetPath>
       <_NoneWithTargetPath Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest' and '%(_NoneWithTargetPath.CopyToPublishDirectory)' == ''">
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </_NoneWithTargetPath>
+      <_NoneWithTargetPath Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='IfDifferent' and '%(_NoneWithTargetPath.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>IfDifferent</CopyToPublishDirectory>
       </_NoneWithTargetPath>
 
     </ItemGroup>
@@ -1059,6 +1177,14 @@ Copyright (c) .NET Foundation. All rights reserved.
         DependsOnTargets="_HandleFileConflictsForPublish"
         Condition="'$(PublishSingleFile)' == 'true'">
 
+    <PropertyGroup>
+      <PublishedSingleFileName>$(AssemblyName)$(_NativeExecutableExtension)</PublishedSingleFileName>
+      <PublishedSingleFilePath>$(PublishDir)$(PublishedSingleFileName)</PublishedSingleFilePath>
+      <IncludeSymbolsInSingleFile Condition="'$(IncludeSymbolsInSingleFile)' == ''">false</IncludeSymbolsInSingleFile>
+      <IncludeAllContentForSelfExtract Condition="'$(IncludeAllContentForSelfExtract)' == ''">false</IncludeAllContentForSelfExtract>
+      <IncludeNativeLibrariesForSelfExtract Condition="'$(IncludeNativeLibrariesForSelfExtract)' == ''">$(IncludeAllContentForSelfExtract)</IncludeNativeLibrariesForSelfExtract>
+    </PropertyGroup>
+
     <ItemGroup>
       <_FilesToBundle Include="@(ResolvedFileToPublish)"
                       Condition="'%(ResolvedFileToPublish.ExcludeFromSingleFile)' != 'true'"/>
@@ -1066,10 +1192,54 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedFileToPublish Remove="@(_FilesToBundle)"/>
     </ItemGroup>
 
-    <PropertyGroup>
-      <PublishedSingleFileName>$(AssemblyName)$(_NativeExecutableExtension)</PublishedSingleFileName>
-      <PublishedSingleFilePath>$(PublishDir)$(PublishedSingleFileName)</PublishedSingleFilePath>
-    </PropertyGroup>
+    <!-- Compute which files from _FilesToBundle will be excluded from the bundle.
+         This logic mirrors what the Bundler does in Microsoft.NET.HostModel:
+         - Always exclude .runtimeconfig.dev.json
+         - For .NET 5+: exclude hostfxr and hostpolicy (statically linked into apphost)
+         - Conditionally exclude based on options:
+           * Native binaries (AssetType=native): only if IncludeNativeLibrariesForSelfExtract=true
+           * Symbols (.pdb): only if IncludeSymbolsInSingleFile=true
+           * Unknown files: only if IncludeAllContentForSelfExtract=true -->
+    <ItemGroup>
+      <!-- Always exclude .runtimeconfig.dev.json -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition="$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.runtimeconfig.dev.json'))" />
+
+      <!-- Exclude hostfxr and hostpolicy for .NET 5+ (they are statically linked into the apphost)
+           In .NET Core 3.x, bundle processing happens in the AppHost, so these can be bundled.
+           In .NET 5+, bundle processing happens in HostFxr and HostPolicy, so they cannot be bundled.
+           See https://github.com/dotnet/runtime/issues/32823 -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition=" $([MSBuild]::VersionGreaterThan($(_TargetFrameworkVersionWithoutV), '3.1' )) and
+                                       (('%(_FilesToBundle.FileName)' == 'hostfxr' or '%(_FilesToBundle.FileName)' == 'libhostfxr' or '%(_FilesToBundle.FileName)' == 'hostpolicy' or '%(_FilesToBundle.FileName)' == 'libhostpolicy') and
+                                        ('%(_FilesToBundle.Extension)' == '.dll' or '%(_FilesToBundle.Extension)' == '.so' or '%(_FilesToBundle.Extension)' == '.dylib'))" />
+
+      <!-- Exclude native binaries unless IncludeNativeLibrariesForSelfExtract=true -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition="'%(_FilesToBundle.AssetType)' == 'native' and '$(IncludeNativeLibrariesForSelfExtract)' != 'true'" />
+
+      <!-- Exclude symbols (.pdb) unless IncludeSymbolsInSingleFile=true -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition="'%(_FilesToBundle.Extension)' == '.pdb' and '$(IncludeSymbolsInSingleFile)' != 'true'" />
+
+      <!-- Exclude unknown file types (not assemblies, not deps.json, not runtimeconfig.json, not native, not symbols)
+           unless IncludeAllContentForSelfExtract=true.
+           We also ensure that we always keep the 'key output' files (the main assembly and its primary dependencies), even if they have an unknown extension, because excluding them would break the app.
+           We identify "unknown" files as those that don't match the known patterns. -->
+      <_BundleExcludedFiles Include="@(_FilesToBundle)"
+                            Condition="'$(IncludeAllContentForSelfExtract)' != 'true' and
+                                       '%(_FilesToBundle.Extension)' != '.dll' and
+                                       '%(_FilesToBundle.Extension)' != '.exe' and
+                                       '%(_FilesToBundle.Extension)' != '.pdb' and
+                                       '%(_FilesToBundle.AssetType)' != 'native' and
+                                       '%(_FilesToBundle.AssetType)' != 'runtime' and
+                                       '%(_FilesToBundle.IsKeyOutput)' != 'true' and
+                                       !$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.deps.json')) and
+                                       !$([MSBuild]::ValueOrDefault('%(_FilesToBundle.RelativePath)', '').EndsWith('.runtimeconfig.json'))" />
+
+                                       <!-- Add excluded files back to ResolvedFileToPublish so they get copied to the publish directory -->
+      <ResolvedFileToPublish Include="@(_BundleExcludedFiles)"/>
+    </ItemGroup>
   </Target>
 
   <Target Name="PrepareForBundle"
@@ -1077,7 +1247,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(PublishSingleFile)' == 'true'">
 
     <ItemGroup>
-      <FilesToBundle Include="@(_FilesToBundle)"/>
+      <!-- FilesToBundle contains only files that will actually be bundled (excluded files removed) -->
+      <FilesToBundle Include="@(_FilesToBundle)" Exclude="@(_BundleExcludedFiles)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -1112,23 +1283,22 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
   <Target Name="GenerateSingleFileBundle"
           Condition="'$(PublishSingleFile)' == 'true' and '$(PublishAot)' != 'true'"
-          DependsOnTargets="_ComputeFilesToBundle;PrepareForBundle;_GenerateSingleFileBundleInputCache"
+          DependsOnTargets="PrepareForBundle;_GenerateSingleFileBundleInputCache"
           Inputs="@(FilesToBundle);$(_GenerateSingleFileBundlePropertyInputsCache)"
           Outputs="$(PublishedSingleFilePath)">
 
     <PropertyGroup>
       <TraceSingleFileBundler Condition="'$(TraceSingleFileBundler)' == ''">false</TraceSingleFileBundler>
-      <IncludeSymbolsInSingleFile Condition="'$(IncludeSymbolsInSingleFile)' == ''">false</IncludeSymbolsInSingleFile>
-      <IncludeAllContentForSelfExtract Condition="'$(IncludeAllContentForSelfExtract)' == ''">false</IncludeAllContentForSelfExtract>
-      <IncludeNativeLibrariesForSelfExtract Condition="'$(IncludeNativeLibrariesForSelfExtract)' == ''">$(IncludeAllContentForSelfExtract)</IncludeNativeLibrariesForSelfExtract>
       <EnableCompressionInSingleFile Condition="'$(EnableCompressionInSingleFile)' == ''">false</EnableCompressionInSingleFile>
     </PropertyGroup>
 
     <NETSdkError Condition="'$(IncludeAllContentForSelfExtract)' == 'true' And '$(IncludeNativeLibrariesForSelfExtract)' != 'true'"
                  ResourceName="CannotIncludeAllContentButNotNativeLibrariesInSingleFile" />
 
+    <!-- Bundle the files in FilesToBundle (excluded files were already filtered out by PrepareForBundle) -->
     <GenerateBundle FilesToBundle="@(FilesToBundle)"
                     AppHostName="$(PublishedSingleFileName)"
                     IncludeSymbols="$(IncludeSymbolsInSingleFile)"
@@ -1140,13 +1310,15 @@ Copyright (c) .NET Foundation. All rights reserved.
                     OutputDir="$(PublishDir)"
                     ShowDiagnosticOutput="$(TraceSingleFileBundler)"
                     EnableMacOSCodeSign="$(_EnableMacOSCodeSign)">
-      <Output TaskParameter="ExcludedFiles" ItemName="_FilesExcludedFromBundle"/>
+      <Output TaskParameter="ExcludedFiles" ItemName="_FilesExcludedFromBundleByTask"/>
     </GenerateBundle>
 
-    <ItemGroup>
-      <ResolvedFileToPublish Include="@(_FilesExcludedFromBundle)"/>
-      <!-- ResolvedFileToPublish shouldn't include PublishedSingleFilePath, since the single-file bundle is written directly to the publish directory -->
-    </ItemGroup>
+    <!-- Note: We don't add _FilesExcludedFromBundleByTask to ResolvedFileToPublish here because
+         those files should have already been added by _ComputeFilesToBundle.
+         This is a safety check to ensure the task's exclusion matches our pre-computation. -->
+    <NETSdkWarning Condition="'@(_FilesExcludedFromBundleByTask)' != ''"
+                   ResourceName="SingleFileBundleUnexpectedExclusion"
+                   FormatArguments="@(_FilesExcludedFromBundleByTask, ', ')" />
 
   </Target>
 

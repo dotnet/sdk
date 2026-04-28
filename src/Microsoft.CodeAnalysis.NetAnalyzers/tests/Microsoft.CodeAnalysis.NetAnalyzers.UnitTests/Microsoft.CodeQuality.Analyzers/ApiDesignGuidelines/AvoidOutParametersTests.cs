@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -95,7 +96,7 @@ public class C
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -118,7 +119,7 @@ End Class"
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -153,7 +154,7 @@ public class C
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             if (accessibility.Equals("internal", System.StringComparison.Ordinal))
             {
@@ -181,7 +182,7 @@ End Class"
 {editorConfigText}
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -488,7 +489,7 @@ public class InterfaceBothImplicitAndExplicitImpl : IInterface
 dotnet_code_quality.CA1021.api_surface = all
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             var vbSource = @"
 Imports System.Runtime.InteropServices
@@ -542,7 +543,7 @@ End Class
 dotnet_code_quality.CA1021.api_surface = all
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -585,7 +586,7 @@ public class Try : ITry
 dotnet_code_quality.CA1021.api_surface = all
 ") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -467,7 +468,7 @@ public class C
 }"
                    }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
@@ -497,7 +498,7 @@ public class C
 }"
                    }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
@@ -552,7 +553,7 @@ public class C
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
@@ -606,7 +607,7 @@ End Class"
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
@@ -650,7 +651,7 @@ public class C2
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -680,7 +681,7 @@ End Class"
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
@@ -712,7 +713,7 @@ public record " + prefix + "R" + suffix + @"(CancellationToken t, int i) {}"
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -4,31 +4,39 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
-internal class ToolInstallCommand(
-    ParseResult parseResult,
-    ToolInstallGlobalOrToolPathCommand toolInstallGlobalOrToolPathCommand = null,
-    ToolInstallLocalCommand toolInstallLocalCommand = null) : CommandBase(parseResult)
+internal sealed class ToolInstallCommand : CommandBase<ToolInstallCommandDefinition>
 {
-    private readonly ToolInstallLocalCommand _toolInstallLocalCommand = toolInstallLocalCommand;
-    private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand = toolInstallGlobalOrToolPathCommand;
-    private readonly bool _global = parseResult.GetValue(ToolInstallCommandParser.GlobalOption);
-    private readonly string _toolPath = parseResult.GetValue(ToolInstallCommandParser.ToolPathOption);
-    private readonly string _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
+    private readonly ToolInstallLocalCommand _toolInstallLocalCommand;
+    private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand;
+    private readonly bool _global;
+    private readonly string _toolPath;
+    private readonly string _framework;
 
+    public ToolInstallCommand(
+        ParseResult parseResult,
+        ToolInstallGlobalOrToolPathCommand toolInstallGlobalOrToolPathCommand = null,
+        ToolInstallLocalCommand toolInstallLocalCommand = null) : base(parseResult)
+    {
+        _toolInstallLocalCommand = toolInstallLocalCommand;
+        _toolInstallGlobalOrToolPathCommand = toolInstallGlobalOrToolPathCommand;
+        _global = parseResult.GetValue(Definition.LocationOptions.GlobalOption);
+        _toolPath = parseResult.GetValue(Definition.LocationOptions.ToolPathOption);
+        _framework = parseResult.GetValue(Definition.FrameworkOption);
+    }
 
     public override int Execute()
     {
-        ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
+        Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
             CliCommandStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
-        ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(
-            _parseResult);
+        Definition.LocationOptions.EnsureToolManifestAndOnlyLocalFlagCombination(
+            _parseResult,
+            Definition.ToolManifestOption);
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {

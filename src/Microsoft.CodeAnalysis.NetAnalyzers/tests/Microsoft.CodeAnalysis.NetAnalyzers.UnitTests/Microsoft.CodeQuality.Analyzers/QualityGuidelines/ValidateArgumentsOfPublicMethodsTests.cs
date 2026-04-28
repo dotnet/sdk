@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -588,7 +589,7 @@ public class Test
     }
 }
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -602,7 +603,7 @@ Public Class Test
     End Sub
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -760,7 +761,7 @@ public class Test
                 });
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbCode = @"
 Imports System
@@ -810,7 +811,7 @@ End Class";
                 });
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -945,7 +946,7 @@ public class Test
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1011,7 +1012,7 @@ End Class"
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1417,7 +1418,7 @@ public class Test
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1470,7 +1471,7 @@ End Class
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
@@ -2028,7 +2029,7 @@ public class Test
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -2062,7 +2063,7 @@ End Class
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(2525, "https://github.com/dotnet/roslyn-analyzers/issues/2525")]
@@ -2115,7 +2116,7 @@ public class C
                     // Test0.cs(14,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2)', validate parameter 'c2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(14, 13, "void C.M1(C c1, C c2)", "c2"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(2525, "https://github.com/dotnet/roslyn-analyzers/issues/2525")]
@@ -2295,7 +2296,7 @@ internal static class Helper<T>
                     // Test0.cs(22,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)', validate parameter 'c6' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(22, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c6"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1707, "https://github.com/dotnet/roslyn-analyzers/issues/1707")]
@@ -4200,7 +4201,7 @@ public class Class1
                     // Test0.cs(156,13): warning CA1062: In externally visible method 'bool Class1.HasUrl(IContext filterContext)', validate parameter 'filterContext' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(156, 13, "bool Class1.HasUrl(IContext filterContext)", "filterContext"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -5597,7 +5598,7 @@ namespace MyComments
 "
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
@@ -6269,7 +6270,7 @@ public class Class1
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
@@ -6293,7 +6294,7 @@ public class Class1
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
@@ -6315,7 +6316,7 @@ public class Class1
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
@@ -6337,7 +6338,7 @@ public class Class1
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3049, "https://github.com/dotnet/roslyn-analyzers/issues/3049")]
@@ -6382,7 +6383,7 @@ public class Test
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -6408,7 +6409,7 @@ public class Test
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -6432,7 +6433,7 @@ public class Test
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -6456,7 +6457,7 @@ public class Test
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -6501,7 +6502,7 @@ public class Test
                 },
             };
             csTest.ExpectedDiagnostics.AddRange(expected);
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
@@ -6535,7 +6536,7 @@ End Class
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(expected);
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -6580,7 +6581,7 @@ public static class Test
                 },
             };
             csTest.ExpectedDiagnostics.AddRange(expected);
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
@@ -6616,7 +6617,7 @@ End Module"
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(expected);
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(2919, "https://github.com/dotnet/roslyn-analyzers/issues/2919")]
@@ -6713,7 +6714,7 @@ public class C
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3634, "https://github.com/dotnet/roslyn-analyzers/issues/3634")]
@@ -6738,7 +6739,7 @@ public class C
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3634, "https://github.com/dotnet/roslyn-analyzers/issues/3634")]
@@ -6762,7 +6763,7 @@ public class C
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(5726, "https://github.com/dotnet/roslyn-analyzers/issues/5726")]
@@ -6813,7 +6814,7 @@ public class Test
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(5726, "https://github.com/dotnet/roslyn-analyzers/issues/5726")]
@@ -6862,7 +6863,7 @@ End Class
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6755, "https://github.com/dotnet/roslyn-analyzers/issues/6755")]
@@ -6897,7 +6898,7 @@ End Class
                 TestCode = code,
                 FixedCode = code,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6755, "https://github.com/dotnet/roslyn-analyzers/issues/6755")]
@@ -6932,7 +6933,7 @@ End Class
                 TestCode = code,
                 FixedCode = code,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

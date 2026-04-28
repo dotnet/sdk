@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Package de modèles",
+  "description": "Projet pour un package de modèles contenant des modèles .NET.",
+  "postActions/instructions/description": "Actions annuelles requises",
+  "postActions/instructions/manualInstructions/default/text": "Ouvrez *.csproj dans l’éditeur et terminez la configuration des métadonnées du package. Copiez les modèles dans le dossier « content ». Renseignez README.md."
+}
