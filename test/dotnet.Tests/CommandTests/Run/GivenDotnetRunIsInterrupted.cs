@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 using Xunit.Sdk;
 
@@ -17,12 +18,94 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
         }
 
+        [WindowsOnlyFact]
+        public void ItTerminatesWinExeAppWithCloseMainWindow()
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WinExeApp")
+                .WithSource();
+
+            var command = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(asset.Path);
+
+            // Launch dotnet run in a new process group so that GenerateConsoleCtrlEvent
+            // targets only the child group and does not propagate to the test host.
+            command.CreateNewProcessGroup = true;
+
+            bool signaled = false;
+            bool sawClosingGracefully = false;
+            Process child = null;
+            Process testProcess = null;
+            command.ProcessStartedHandler = p => { testProcess = p; };
+
+            command.CommandOutputHandler = line =>
+            {
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+
+                if (line.Contains("Closing gracefully:", StringComparison.Ordinal))
+                {
+                    sawClosingGracefully = true;
+                }
+
+                if (signaled)
+                {
+                    return;
+                }
+
+                if (int.TryParse(line, out int pid))
+                {
+                    try
+                    {
+                        child = Process.GetProcessById(pid);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while getting child process Id: {e}");
+                        Assert.Fail($"Failed to get to child process Id: {line}");
+                    }
+                }
+                else if (line == "Started" && child != null)
+                {
+                    // Window is now visible, send Ctrl+C to dotnet run process
+                    // dotnet run should detect it's a WinExe app and call CloseMainWindow() on the child
+                    Log.WriteLine($"Sending Ctrl+C to dotnet run process {testProcess.Id}");
+                    bool sent = GenerateConsoleCtrlEvent(0, (uint)testProcess.Id);
+                    Log.WriteLine($"GenerateConsoleCtrlEvent returned: {sent}");
+                    signaled = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
+            };
+
+            var result = command.Execute();
+            signaled.Should().BeTrue("Ctrl+C should have been sent to dotnet run");
+            sawClosingGracefully.Should().BeTrue("WinExe app should report graceful close output");
+
+            // The app should exit with code 0 when closed gracefully via CloseMainWindow
+            result.ExitCode.Should().Be(0, "WinExe app should exit gracefully when dotnet run receives Ctrl+C and calls CloseMainWindow");
+
+            Assert.NotNull(child);
+            if (!child.WaitForExit(WaitTimeout))
+            {
+                child.Kill();
+                throw new XunitException("child process failed to terminate.");
+            }
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
+        }
+
         // This test is Unix only for the same reason that CoreFX does not test Console.CancelKeyPress on Windows
         // See https://github.com/dotnet/corefx/blob/a10890f4ffe0fadf090c922578ba0e606ebdd16c/src/System.Console/tests/CancelKeyPress.Unix.cs#L63-L67
         [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItIgnoresSIGINT()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run", "-v:q")
@@ -83,7 +166,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItPassesSIGTERMToChild()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")
@@ -144,7 +227,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [WindowsOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/38268")]
         public void ItTerminatesTheChildWhenKilled()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")

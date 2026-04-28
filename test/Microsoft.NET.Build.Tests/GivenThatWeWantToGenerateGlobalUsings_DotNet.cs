@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tests
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -45,7 +45,7 @@ global using System.Threading.Tasks;
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -66,7 +66,7 @@ global using System.Threading.Tasks;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
             testProject.AddItem("Using", new Dictionary<string, string> { ["Remove"] = "System.IO" });
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
 
@@ -111,7 +111,7 @@ global using System.Threading.Tasks;
 </ItemGroup>"));
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -157,7 +157,7 @@ global using static TestStaticNamespace;
 </ItemGroup>"));
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -187,7 +187,7 @@ global using static TestStaticNamespace;
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -227,7 +227,7 @@ global using System.Threading.Tasks;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
             testProject.AdditionalProperties["LangVersion"] = "10.0";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);

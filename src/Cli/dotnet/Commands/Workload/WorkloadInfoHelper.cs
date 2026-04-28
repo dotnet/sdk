@@ -1,8 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
@@ -18,23 +17,23 @@ namespace Microsoft.DotNet.Cli.Commands.Workload;
 internal class WorkloadInfoHelper : IWorkloadInfoHelper
 {
     public readonly SdkFeatureBand _currentSdkFeatureBand;
-    private readonly string _targetSdkVersion;
+    private readonly string? _targetSdkVersion;
     public string DotnetPath { get; }
     public string UserLocalPath { get; }
 
     public WorkloadInfoHelper(
         bool isInteractive,
         VerbosityOptions verbosity = VerbosityOptions.normal,
-        string targetSdkVersion = null,
-        bool? verifySignatures = null,
-        IReporter reporter = null,
-        IWorkloadInstallationRecordRepository workloadRecordRepo = null,
-        string currentSdkVersion = null,
-        string dotnetDir = null,
-        string userProfileDir = null,
-        IWorkloadResolver workloadResolver = null)
+        string? targetSdkVersion = null,
+        bool? verifyMsiSignature = null,
+        IReporter? reporter = null,
+        IWorkloadInstallationRecordRepository? workloadRecordRepo = null,
+        string? currentSdkVersion = null,
+        string? dotnetDir = null,
+        string? userProfileDir = null,
+        IWorkloadResolver? workloadResolver = null)
     {
-        DotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
+        DotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath)!;
         ReleaseVersion currentSdkReleaseVersion = new(currentSdkVersion ?? Product.Version);
         _currentSdkFeatureBand = new SdkFeatureBand(currentSdkReleaseVersion);
 
@@ -52,13 +51,16 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
 
         var restoreConfig = new RestoreActionConfig(Interactive: isInteractive);
 
+        // When verifyMsiSignature is not specified by the caller, we delegate to
+        // WorkloadUtilities.ShouldVerifySignatures() which respects the registry policy
+        // and dotnet host signing status.
         Installer = WorkloadInstallerFactory.GetWorkloadInstaller(
             reporter,
             _currentSdkFeatureBand,
             WorkloadResolver,
             verbosity,
             userProfileDir,
-            verifySignatures ?? !SignCheck.IsDotNetSigned(),
+            verifyMsiSignature: verifyMsiSignature ?? WorkloadUtilities.ShouldVerifySignatures(),
             restoreActionConfig: restoreConfig,
             elevationRequired: false,
             shouldLog: false);
@@ -78,7 +80,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     public InstalledWorkloadsCollection AddInstalledVsWorkloads(IEnumerable<WorkloadId> sdkWorkloadIds)
     {
         InstalledWorkloadsCollection installedWorkloads = new(sdkWorkloadIds, $"SDK {_currentSdkFeatureBand}");
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         if (OperatingSystem.IsWindows())
         {
             VisualStudioWorkloads.GetInstalledWorkloads(WorkloadResolver, installedWorkloads);
@@ -111,4 +113,91 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         }
     }
 
+    internal static string GetWorkloadsVersion(WorkloadInfoHelper? workloadInfoHelper = null)
+    {
+        workloadInfoHelper ??= new WorkloadInfoHelper(false);
+
+        var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+
+        // The explicit space here is intentional, as it's easy to miss in localization and crucial for parsing
+        return versionInfo.Version + (versionInfo.IsInstalled ? string.Empty : ' ' + CliCommandStrings.WorkloadVersionNotInstalledShort);
+    }
+
+    internal void ShowWorkloadsInfo(IReporter? reporter = null, string? dotnetDir = null, bool showVersion = true)
+    {
+        reporter ??= Reporter.Output;
+        var versionInfo = ManifestProvider.GetWorkloadVersion();
+
+        void WriteUpdateModeAndAnyError(string indent = "")
+        {
+            var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_currentSdkFeatureBand, UserLocalPath), "default.json")).ShouldUseWorkloadSets();
+            var configurationMessage = useWorkloadSets
+                ? CliCommandStrings.WorkloadManifestInstallationConfigurationWorkloadSets
+                : CliCommandStrings.WorkloadManifestInstallationConfigurationLooseManifests;
+            reporter.WriteLine(indent + configurationMessage);
+
+            if (!versionInfo.IsInstalled)
+            {
+                reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Version, versionInfo.GlobalJsonPath));
+            }
+            else if (versionInfo.WorkloadSetsEnabledWithoutWorkloadSet)
+            {
+                reporter.WriteLine(indent + CliCommandStrings.ShouldInstallAWorkloadSet);
+            }
+        }
+
+        if (showVersion)
+        {
+            reporter.WriteLine($" Workload version: {GetWorkloadsVersion()}");
+
+            WriteUpdateModeAndAnyError(indent: " ");
+            reporter.WriteLine();
+        }
+
+        if (versionInfo.IsInstalled)
+        {
+            var installedList = InstalledSdkWorkloadIds;
+            var installedWorkloads = AddInstalledVsWorkloads(installedList);
+            var dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
+
+            if (installedWorkloads.Count == 0)
+            {
+                reporter.WriteLine(CliCommandStrings.NoWorkloadsInstalledInfoWarning);
+            }
+            else
+            {
+                var manifestInfoDict = WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var workload in installedWorkloads.AsEnumerable())
+                {
+                    var workloadManifest = WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
+                    var workloadFeatureBand = manifestInfoDict[workloadManifest.Id].ManifestFeatureBand;
+
+                    const int align = 10;
+                    const string separator = "   ";
+
+                    reporter.WriteLine($" [{workload.Key}]");
+
+                    reporter.Write($"{separator}{CliCommandStrings.WorkloadSourceColumn}:");
+                    reporter.WriteLine($" {workload.Value,align}");
+
+                    reporter.Write($"{separator}{CliCommandStrings.WorkloadManifestVersionColumn}:");
+                    reporter.WriteLine($"    {workloadManifest.Version + '/' + workloadFeatureBand,align}");
+
+                    reporter.Write($"{separator}{CliCommandStrings.WorkloadManifestPathColumn}:");
+                    reporter.WriteLine($"       {workloadManifest.ManifestPath,align}");
+
+                    reporter.Write($"{separator}{CliCommandStrings.WorkloadInstallTypeColumn}:");
+                    reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Product.Version), dotnetPath).ToString(),align}"
+                    );
+                    reporter.WriteLine("");
+                }
+            }
+        }
+
+        if (!showVersion)
+        {
+            WriteUpdateModeAndAnyError();
+        }
+    }
 }

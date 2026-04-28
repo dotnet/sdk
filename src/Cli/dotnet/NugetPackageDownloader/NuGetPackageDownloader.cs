@@ -4,9 +4,11 @@
 #nullable disable
 
 using System.Collections.Concurrent;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NugetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -42,9 +44,21 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     private readonly bool _shouldUsePackageSourceMapping;
 
     /// <summary>
-    /// If true, the package downloader will verify the signatures of the packages it downloads.
-    /// Temporarily disabled for macOS and Linux. 
+    /// Controls whether NuGet package (.nupkg) signatures are verified after download.
     /// </summary>
+    /// <remarks>
+    /// <para>This field is the result of two gating levels:</para>
+    /// <list type="number">
+    ///   <item><b>Caller decision</b> — the <c>verifySignatures</c> constructor parameter. For workloads,
+    ///     this comes from <c>WorkloadUtilities.ShouldVerifySignatures()</c>, which returns <see langword="false"/>
+    ///     on non-Windows at compile time. For tools, callers typically pass <see langword="true"/>.</item>
+    ///   <item><b>Platform gate</b> (constructor) — even if the caller requests verification, this field
+    ///     is set to <see langword="false"/> on macOS (unless <c>DOTNET_NUGET_SIGNATURE_VERIFICATION=true</c>)
+    ///     because macOS lacks full support for NuGet's certificate store.</item>
+    /// </list>
+    /// <para>MSI Authenticode verification is a separate system controlled by
+    /// <c>InstallerBase.VerifyMsiSignature</c> (Windows only).</para>
+    /// </remarks>
     private readonly bool _verifySignatures;
     private readonly VerbosityOptions _verbosityOptions;
     private readonly string _currentWorkingDirectory;
@@ -72,9 +86,30 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
         _retryTimer = timer;
         _sourceRepositories = new();
-        // If windows or env variable is set, verify signatures
-        _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true 
-            : bool.TryParse(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), out var shouldVerifySignature) ? shouldVerifySignature : OperatingSystem.IsLinux());
+
+        // Platform gate: when the caller requests verification (verifySignatures == true),
+        // this additional gate may disable it based on OS support:
+        //   - Windows: always enabled (uses the OS certificate store).
+        //   - Linux: enabled by default. Uses TRP root certificate bundles (.pem) shipped with
+        //     the SDK. Disable with DOTNET_NUGET_SIGNATURE_VERIFICATION=false.
+        //   - macOS: disabled by default — lacks full certificate store support (#46857).
+        //     Enable with DOTNET_NUGET_SIGNATURE_VERIFICATION=true.
+        //
+        // For workloads, this gate is moot: ShouldVerifySignatures() returns false on non-Windows,
+        // so verifySignatures is already false before this code runs. This gate primarily affects
+        // non-workload callers (e.g., dotnet tool install).
+        _verifySignatures = verifySignatures
+            && (OperatingSystem.IsWindows()
+                || (bool.TryParse(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), out var shouldVerifySignature)
+                    ? shouldVerifySignature
+                    : OperatingSystem.IsLinux()));
+
+        if (verifySignatures && !_verifySignatures)
+        {
+            _verboseLogger.LogInformationSummary(
+                $"NuGet package signature verification was requested but is not supported on this platform. " +
+                $"Set {NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification}=true to enable.");
+        }
 
         _cacheSettings = new SourceCacheContext
         {
@@ -87,6 +122,38 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             !_restoreActionConfig.Interactive);
         _shouldUsePackageSourceMapping = shouldUsePackageSourceMapping;
         _verbosityOptions = verbosityOptions;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="NuGetPackageDownloader"/> configured for workload operations.
+    /// </summary>
+    /// <remarks>
+    /// Centralizes the common construction pattern used by workload commands, ensuring consistent
+    /// defaults for the first-party signing verifier and package source mapping.
+    /// </remarks>
+    /// <param name="packageInstallDir">Temporary directory for downloaded packages.</param>
+    /// <param name="verifyNuGetSignatures">Whether to verify NuGet package signatures after download.</param>
+    /// <param name="verboseLogger">NuGet logger; defaults to <see cref="NullLogger"/> if not provided.</param>
+    /// <param name="reporter">Reporter for user-facing output; defaults to <see cref="NullReporter"/> if not provided.</param>
+    /// <param name="restoreActionConfig">NuGet restore configuration; defaults to a new instance if not provided.</param>
+    /// <param name="shouldUsePackageSourceMapping">Whether package source mapping is in use; defaults to <see langword="true"/>.</param>
+    public static NuGetPackageDownloader CreateForWorkloads(
+        DirectoryPath packageInstallDir,
+        bool verifyNuGetSignatures,
+        ILogger verboseLogger = null,
+        IReporter reporter = null,
+        RestoreActionConfig restoreActionConfig = null,
+        bool shouldUsePackageSourceMapping = true)
+    {
+        return new NuGetPackageDownloader(
+            packageInstallDir,
+            filePermissionSetter: null,
+            new FirstPartyNuGetPackageSigningVerifier(),
+            verboseLogger ?? new NullLogger(),
+            reporter,
+            restoreActionConfig: restoreActionConfig,
+            verifySignatures: verifyNuGetSignatures,
+            shouldUsePackageSourceMapping: shouldUsePackageSourceMapping);
     }
 
     public async Task<string> DownloadPackageAsync(PackageId packageId,
@@ -120,7 +187,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             throw new ArgumentException($"Package download folder must be specified either via {nameof(NuGetPackageDownloader)} constructor or via {nameof(downloadFolder)} method argument.");
         }
         var pathResolver = new VersionFolderPathResolver(resolvedDownloadFolder);
-        
+
         string nupkgPath = pathResolver.GetPackageFilePath(packageId.ToString(), resolvedPackageVersion);
         Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
 
@@ -161,6 +228,29 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     private bool DiagnosticVerbosity() => _verbosityOptions == VerbosityOptions.diag || _verbosityOptions == VerbosityOptions.diagnostic;
 
+    /// <summary>
+    /// Verifies the NuGet package signature of a downloaded <c>.nupkg</c> file.
+    /// </summary>
+    /// <remarks>
+    /// <para>This method is called after every package download. When <c>_verifySignatures</c> is
+    /// <see langword="false"/>, it logs a skip message (once) and returns immediately.</para>
+    /// <para>When verification is enabled, there are two modes selected by <c>_shouldUsePackageSourceMapping</c>:</para>
+    /// <list type="bullet">
+    ///   <item><b>Without package source mapping</b> (default workload path): calls
+    ///     <see cref="IFirstPartyNuGetPackageSigningVerifier.Verify"/> which requires the NuGet signature
+    ///     to be valid AND the signing certificate to match known Microsoft first-party thumbprints.
+    ///     This is the stricter check — it rejects third-party signed packages.</item>
+    ///   <item><b>With package source mapping</b>: calls
+    ///     <see cref="FirstPartyNuGetPackageSigningVerifier.NuGetVerify"/> which only requires a valid
+    ///     NuGet signature (via <c>dotnet nuget verify --all</c>). Any trusted signer is accepted.
+    ///     The rationale is that package source mapping already constrains which feeds are used,
+    ///     so the first-party requirement can be relaxed.</item>
+    /// </list>
+    /// <para>Verification only runs when the repository reports <c>AllRepositorySigned == true</c>.
+    /// If the repository does not require signing, the package is accepted without signature checks.</para>
+    /// </remarks>
+    /// <param name="nupkgPath">Full path to the downloaded <c>.nupkg</c> file.</param>
+    /// <param name="repository">The NuGet source repository the package was downloaded from.</param>
     private async Task VerifySigning(string nupkgPath, SourceRepository repository)
     {
         if (!_verifySignatures && !_validationMessagesDisplayed)
@@ -182,9 +272,14 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             resource.AllRepositorySigned)
         {
             string commandOutput;
-            // The difference between _firstPartyNuGetPackageSigningVerifier.Verify and FirstPartyNuGetPackageSigningVerifier.NuGetVerify is that while NuGetVerify
-            // just ensures that the package is signed properly, Verify additionally requires that the package be from Microsoft. NuGetVerify does not require that
-            // the package be from Microsoft.
+
+            // Two verification modes based on whether package source mapping is in use:
+            //
+            // Without source mapping: Verify() = valid NuGet signature + Microsoft first-party cert
+            //   -> Rejects packages not signed by Microsoft (stricter).
+            //
+            // With source mapping:    NuGetVerify() = valid NuGet signature (any trusted signer)
+            //   -> Package source mapping already constrains feeds, so first-party requirement is relaxed.
             if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out commandOutput)) ||
                 (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out commandOutput, _currentWorkingDirectory)))
             {
@@ -198,6 +293,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         }
         else if (DiagnosticVerbosity())
         {
+            // Repository does not require signing — no verification performed.
             _reporter.WriteLine(CliStrings.NuGetPackageShouldNotBeSigned, Path.GetFileNameWithoutExtension(nupkgPath));
         }
     }
@@ -369,6 +465,25 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     }
 
+    private void ValidateSourceMappingCompatibility(PackageSourceLocation sourceLocation, PackageSourceMapping mapping)
+    {
+        // When mapping feature is active and user specified extra feeds via CLI, this creates a conflict
+        // because the extra feeds won't be in the mapping configuration
+        if (mapping?.IsEnabled != true)
+        {
+            return;
+        }
+
+        var extraFeeds = sourceLocation?.AdditionalSourceFeed;
+        if (extraFeeds == null || extraFeeds.Length == 0)
+        {
+            return;
+        }
+
+        // Found both mapping and CLI-added feeds - this combination won't work
+        throw new NuGetPackageInstallerException(CliStrings.CannotUseAddSourceWithSourceMapping);
+    }
+
     private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
     {
         List<PackageSource> defaultSources = [];
@@ -392,6 +507,12 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         defaultSources = [.. packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled)];
 
         packageSourceMapping ??= PackageSourceMapping.GetPackageSourceMapping(settings);
+
+        // Ensure compatibility between source mapping configuration and CLI options
+        if (_shouldUsePackageSourceMapping)
+        {
+            ValidateSourceMappingCompatibility(packageSourceLocation, packageSourceMapping);
+        }
 
         // filter package patterns if enabled
         if (_shouldUsePackageSourceMapping && packageSourceMapping?.IsEnabled == true)
@@ -441,16 +562,71 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     public IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
     {
+        if (packageSourceLocation?.PackageSourceOverrides?.Any() ?? false)
+        {
+            return packageSourceLocation.PackageSourceOverrides;
+        }
+
         var sources = (packageSourceLocation?.SourceFeedOverrides.Any() ?? false) ?
             LoadOverrideSources(packageSourceLocation) :
             LoadDefaultSources(packageId, packageSourceLocation, packageSourceMapping);
+
+        // When using override sources, additional sources should still be appended
+        if ((packageSourceLocation?.SourceFeedOverrides.Any() ?? false) &&
+            (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false))
+        {
+            var sourceList = sources.ToList();
+            var existingUris = new HashSet<Uri>(sourceList.Where(s => s.SourceUri != null).Select(s => s.SourceUri));
+
+            foreach (string additionalSource in packageSourceLocation.AdditionalSourceFeed)
+            {
+                if (string.IsNullOrWhiteSpace(additionalSource))
+                {
+                    continue;
+                }
+
+                PackageSource newSource = new(additionalSource);
+                if (newSource.TrySourceAsUri == null)
+                {
+                    _verboseLogger.LogWarning(string.Format(
+                        CliStrings.FailedToLoadNuGetSource,
+                        additionalSource));
+                    continue;
+                }
+
+                // Skip if already present (matches existing pattern in LoadDefaultSources)
+                if (newSource.SourceUri != null && existingUris.Contains(newSource.SourceUri))
+                {
+                    continue;
+                }
+
+                sourceList.Add(newSource);
+                if (newSource.SourceUri != null)
+                {
+                    existingUris.Add(newSource.SourceUri);
+                }
+            }
+            sources = sourceList;
+        }
 
         if (!sources.Any())
         {
             throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
         }
 
+        CheckHttpSources(sources);
         return sources;
+    }
+
+    private void CheckHttpSources(IEnumerable<PackageSource> packageSources)
+    {
+        foreach (var packageSource in packageSources)
+        {
+            if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
+            {
+                throw new NuGetPackageInstallerException(string.Format(CliStrings.Error_NU1302_HttpSourceUsed, packageSource.Source));
+            }
+        }
     }
 
     private async Task<(PackageSource, IPackageSearchMetadata)> GetMatchingVersionInternalAsync(

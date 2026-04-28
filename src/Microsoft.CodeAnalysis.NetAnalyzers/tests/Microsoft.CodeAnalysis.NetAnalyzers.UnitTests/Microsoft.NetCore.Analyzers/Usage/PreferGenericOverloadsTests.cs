@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -526,7 +527,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7245, "https://github.com/dotnet/roslyn-analyzers/issues/7245")]
@@ -554,7 +555,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1282,7 +1283,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1329,7 +1330,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

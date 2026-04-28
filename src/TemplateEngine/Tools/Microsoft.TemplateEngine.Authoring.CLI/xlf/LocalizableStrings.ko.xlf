@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="command_export_help_description">
+        <source>Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</source>
+        <target state="translated">template.config 파일이 지정된 경우 옆에 "localize" 디렉터리를 만들고 지역화 파일을 생성된 디렉터리로 내보냅니다. 지역화 파일이 이미 있는 경우 기존 번역이 유지됩니다.</target>
+        <note>The phrase "localization files" here mean the files that will be given to the translators to be localized.</note>
+      </trans-unit>
+      <trans-unit id="command_export_help_dryrun_description">
+        <source>If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</source>
+        <target state="translated">이 옵션을 지정하면 수정된 파일이 파일 시스템에 저장되지 않고 변경 내용이 콘솔 출력에만 출력됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_help_language_description">
+        <source>The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</source>
+        <target state="translated">이 템플릿에서 지원되는 언어 목록입니다. 이 옵션을 생략하면 다음 언어 목록이 기본값으로 사용됩니다. cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_help_recursive_description">
+        <source>When specified, subdirectories are also searched for template.json files.</source>
+        <target state="translated">지정된 경우 하위 디렉터리에 대해서도 template.json 파일을 검색합니다.</target>
+        <note>Do not localize: "template.json"</note>
+      </trans-unit>
+      <trans-unit id="command_export_help_templatePath_description">
+        <source>Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</source>
+        <target state="translated">template.json 파일의 경로를 지정합니다. 디렉터리가 지정되면 디렉터리 내에서 template.json 파일이 검색됩니다. --recursive 옵션을 지정하면 지정된 디렉터리 아래의 모든 template.json 파일과 해당 하위 디렉터리가 입력으로 간주됩니다.</target>
+        <note>Do not localize: "template.json", "--recursive"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_cancelled">
+        <source>"export" command for the following file was cancelled: "{0}".</source>
+        <target state="translated">다음 파일에 대한 "export" 명령이 취소되었습니다. "{0}".</target>
+        <note>Do not localize: "export"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_executionEnded">
+        <source>Execution of "export" command has completed. {0} files were processed.</source>
+        <target state="translated">"export" 명령 실행이 완료되었습니다. {0} 파일이 처리되었습니다.</target>
+        <note>{0} is the number of files. Do not localize "export"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_templateExportFailedWithError">
+        <source>Generating localization files for a template.json has failed.
+Reason: {0}.
+File Path: {1}.</source>
+        <target state="translated">template.js에 대한 지역화 파일을 생성하지 못했습니다.
+이유: {0}.
+파일 경로: {1}.</target>
+        <note>{0} is a sentence such as "Json property should contain a field 'ID'"
+{1} is a file path such as: C:\temp\template.json
+Do not localize: "template.json"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_templateExportFailedWithException">
+        <source>Generating localization files for the following template.json file has failed: "{0}".</source>
+        <target state="translated">template.json 파일에 대한 지역화 파일을 생성하지 못했습니다. "{0}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_log_templateExportSucceeded">
+        <source>Localization files were successfully generated for the template.json file at path "{0}".</source>
+        <target state="translated">경로 "{0}"에서 template.json 파일에 대한 지역화 파일이 생성되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_log_templateJsonNotFound">
+        <source>Failed to find "template.json" file under the path "{0}".</source>
+        <target state="translated">"{0}” 경로에서 "template.json" 파일을 찾지 못했습니다.</target>
+        <note>Do not localize: "template.json"</note>
+      </trans-unit>
+      <trans-unit id="command_validate_help_description">
+        <source>Validates the templates at given location.</source>
+        <target state="translated">지정된 위치에서 템플릿의 유효성을 검사합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_validate_help_locationArg_description">
+        <source>The location of template(s) to validate.</source>
+        <target state="translated">유효성을 검사할 템플릿의 위치입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_validate_info_no entries">
+        <source>&lt;no entries&gt;</source>
+        <target state="translated">&lt;no entries&gt;</target>
+        <note>used when there is no entries in the list</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_scanning_completed">
+        <source>Location '{0}': found {1} templates.</source>
+        <target state="translated">위치 '{0}': {1} 템플릿을 찾았습니다.</target>
+        <note>{0} - file path to templates to scan; {1} - count of templates found.</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_scanning_in_progress">
+        <source>Scanning location '{0}' for the templates..</source>
+        <target state="translated">템플릿의 위치 '{0}'을(를) 검사하는 중입니다.</target>
+        <note>{0} - file path to templates to scan</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_summary_invalid">
+        <source>Template {0}: the template is not valid.</source>
+        <target state="translated">템플릿 {0}: 템플릿이 잘못되었습니다.</target>
+        <note>{0} - template name and identity in format name (identity)</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_summary_loc_invalid">
+        <source>'{0}' localization for the template {1}: the localization file is not valid. The localization will be skipped.</source>
+        <target state="translated">템플릿 {1}에 대한 지역화 '{0}': 지역화 파일이 잘못되었습니다. 지역화를 건너뜁니다.</target>
+        <note>{1} - template name and identity in format name (identity), {0} - locale in format en-US</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_summary_loc_valid">
+        <source>'{0}' localization for the template {1}: the localization file is valid.</source>
+        <target state="translated">템플릿 {1}에 대한 '{0}' 지역화: 지역화 파일이 유효합니다.</target>
+        <note>{1} - template name and identity in format name (identity), {0} - locale in format en-US</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_summary_valid">
+        <source>Template {0}: the template is valid.</source>
+        <target state="translated">템플릿 {0}: 템플릿이 유효합니다.</target>
+        <note>{0} - template name and identity in format name (identity)</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_template_header">
+        <source>Found template {0}:</source>
+        <target state="translated">찾은 템플릿 {0}:</target>
+        <note>The header is followed by list of issues found in the template. {0} - template name and identity in format name (identity)</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_template_loc_header">
+        <source>Found localization '{0}' for template {1}:</source>
+        <target state="translated">템플릿 {1}에 대한 지역화 '{0}'을(를) 찾았습니다.</target>
+        <note>The header is followed by list of issues found in the template localization. {1} - template name and identity in format name (identity), {0} - locale in format en-US</note>
+      </trans-unit>
+      <trans-unit id="command_verify_error_failed">
+        <source>Verification Failed.</source>
+        <target state="translated">확인에 실패했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_error_unrecognizedArguments">
+        <source>Argument(s) {0} are not recognized. Must be one of: {1}.</source>
+        <target state="translated">{0} 인수를 인식할 수 없습니다. {1} 중 하나여야 합니다.</target>
+        <note>{0} and {1} is both a list of arguments</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_customExcludes_description">
+        <source>Specifies pattern(s) defining files to be excluded from verification.</source>
+        <target state="translated">확인에서 제외할 파일을 정의하는 패턴을 지정합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_customIncludes_description">
+        <source>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</source>
+        <target state="translated">확인에 포함할 파일을 정의하는 패턴을 지정합니다(지정하지 않은 경우 모든 파일이 포함됨).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_description">
+        <source>Runs the template with specified arguments and compares the result with expectations files.</source>
+        <target state="translated">지정된 인수로 템플릿을 실행하고 결과를 예상 파일과 비교합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_disableDefaultExcludes_description">
+        <source>If set to true - all template output files will be verified, unless --exclude-pattern option is used.</source>
+        <target state="translated">true로 설정하면 --exclude-pattern 옵션이 사용되지 않는 한 모든 템플릿 출력 파일이 확인됩니다.</target>
+        <note>Do not translate 'true'. Do not translate '--exclude-pattern'</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_disableDiffTool_description">
+        <source>If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</source>
+        <target state="translated">true로 설정하면 확인 실패 시 검증자가 Diff 도구를 자동으로 시작하지 않습니다.</target>
+        <note>Do not translate 'true'.</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_expectFailure_description">
+        <source>If set to true - 'dotnet new' command is expected to return non-zero return code.</source>
+        <target state="translated">true로 설정하면 'dotnet new' 명령이 0이 아닌 반환 코드를 반환할 것으로 예상됩니다.</target>
+        <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_outputPath_description">
+        <source>Specifies the path to target directory to output the generated template to.</source>
+        <target state="translated">생성된 템플릿을 출력할 대상 디렉터리의 경로를 지정합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_scenarioName_description">
+        <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
+        <target state="translated">스냅샷 폴더 이름에 사용할 선택적 시나리오 이름을 지정합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_snapshotsDirPath_description">
+        <source>Specifies path to the directory with snapshot files.</source>
+        <target state="translated">스냅샷 파일이 있는 디렉터리의 경로를 지정합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_templateName_description">
+        <source>Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</source>
+        <target state="translated">확인할 템플릿의 이름입니다. 이미 설치된 템플릿 또는 -p/--template-path 옵션으로 지정된 로컬 경로 내의 템플릿일 수 있습니다.</target>
+        <note>Do not translate the '-p/--template-path'</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_templatePath_description">
+        <source>Specifies the path to the directory with template to be verified.</source>
+        <target state="translated">확인할 템플릿이 있는 디렉터리의 경로를 지정합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_uniqueFor_description">
+        <source>Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</source>
+        <target state="translated">구별해야 하는 시나리오를 표시하여 검증자 기대 디렉터리 명명 규칙을 설정합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_verifyOutputs_description">
+        <source>If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</source>
+        <target state="translated">true로 설정하면 생성된 템플릿 파일과 함께 'dotnet new' 명령 표준 출력 및 오류 내용이 확인됩니다.</target>
+        <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
+      </trans-unit>
+      <trans-unit id="generic_log_commandExecutionFailed">
+        <source>"{0}" command has encountered an error. See the logs for more details.</source>
+        <target state="translated">"{0}" 명령에 오류가 발생했습니다. 자세한 내용은 로그를 참조하세요.</target>
+        <note>{0} will be replaced by the command name. Such as: "export" command has encountered an error.</note>
+      </trans-unit>
+      <trans-unit id="generic_log_commandExecutionFailedWithErrorMessage">
+        <source>There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</source>
+        <target state="translated">"--{0}" 명령을 실행하는 동안 오류가 발생했습니다. 오류 메시지: "{1}". 자세한 내용은 로그를 참조하세요.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

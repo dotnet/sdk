@@ -1,7 +1,0 @@
-<Project>
-
-  <Target Name="Test"
-          DependsOnTargets="TestAsTool"
-          Condition="'$(IsUnitTestProject)' == 'true' or '$(IsPerformanceTestProject)' == 'true'" />
-
-</Project>

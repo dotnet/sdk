@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void OutputsPackagesToConfigurationSubdirWhenOutputParameterIsNotPassed()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
                                          .WithSource();
 
             var packCommand = new DotnetPackCommand(Log)
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void OutputsPackagesFlatIntoOutputDirWhenOutputParameterIsPassed()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
                 .WithSource();
 
             var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "bin2"));
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void SettingVersionSuffixFlag_ShouldStampAssemblyInfoInOutputAssemblyAndPackage()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void HasIncludedFiles()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("EndToEndTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("EndToEndTestApp")
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void PackAddsCorrectFilesForProjectsWithOutputNameSpecified()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")
+            var testInstance = TestAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")
                     .WithSource();
 
             new DotnetPackCommand(Log)
@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [InlineData("FSharpTestAppSimple")]
         public void PackWorksWithLocalProject(string projectName)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(projectName)
+            var testInstance = TestAssetsManager.CopyTestAsset(projectName)
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void ItImplicitlyRestoresAProjectWhenPackaging()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -168,7 +168,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void ItDoesNotImplicitlyBuildAProjectWhenPackagingWithTheNoBuildOption()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             var result = new DotnetPackCommand(Log)
@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Execute("--no-build");
 
             result.Should().Fail();
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().NotHaveStdOutContaining("Restore")
                     .And.HaveStdOutContaining("project.assets.json");
@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void ItDoesNotImplicitlyRestoreAProjectWhenPackagingWithTheNoRestoreOption()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             new DotnetPackCommand(Log)
@@ -199,7 +199,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void HasServiceableFlagWhenArgumentPassed()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestLibraryWithConfiguration")
                 .WithSource();
 
             var packCommand = new DotnetPackCommand(Log)
@@ -232,7 +232,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void ItPacksAppWhenRestoringToSpecificPackageDirectory()
         {
-            var rootPath = Path.Combine(_testAssetsManager.CreateTestDirectory().Path, "TestProject");
+            var rootPath = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "TestProject");
             Directory.CreateDirectory(rootPath);
             var rootDir = new DirectoryInfo(rootPath);
 
@@ -263,7 +263,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void DotnetPackDoesNotPrintCopyrightInfo()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource();
 
             var result = new DotnetPackCommand(Log)
@@ -272,7 +272,7 @@ namespace Microsoft.DotNet.Pack.Tests
 
             result.Should().Pass();
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.Should().NotHaveStdOutContaining("Copyright (C) Microsoft Corporation. All rights reserved.");
             }
@@ -281,7 +281,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void DotnetPackAcceptsRuntimeOption()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             var result = new DotnetPackCommand(Log)
@@ -295,7 +295,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void DotnetPack_AcceptsVersionOption()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
@@ -324,7 +324,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void DotnetPack_FailsWhenVersionOptionHasNoValue()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
@@ -338,7 +338,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void DotnetPack_AcceptsCustomProperties()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
 
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
@@ -370,7 +370,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [InlineData("Release")]
         public void DotnetPack_AcceptsConfigurationOption(string configuration)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecWithConfigFiles")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecWithConfigFiles")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "TestingPackWithConfig.nuspec");
 
@@ -397,7 +397,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void DotnetPack_AcceptsOutputOption()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             string outputDirPath = Path.Combine(testInstance.Path, "output");
@@ -421,7 +421,7 @@ namespace Microsoft.DotNet.Pack.Tests
         [Fact]
         public void DotnetPack_FailsForNonExistentNuspec()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "NonExistent.nuspec");
 

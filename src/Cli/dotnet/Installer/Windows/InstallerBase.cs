@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -20,9 +17,9 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// </remarks>
 /// <param name="elevationContext"></param>
 /// <param name="logger"></param>
-/// <param name="verifySignatures">Determines whether MSI signatures should be verified</param>
+/// <param name="verifyMsiSignature">Determines whether MSI signatures should be verified.</param>
 [SupportedOSPlatform("windows")]
-internal abstract class InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifySignatures)
+internal abstract class InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifyMsiSignature)
 {
     /// <summary>
     /// The current process.
@@ -43,10 +40,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// The elevation context associated with the process.
     /// </summary>
-    protected InstallElevationContextBase ElevationContext
-    {
-        get;
-    } = elevationContext;
+    protected InstallElevationContextBase ElevationContext => elevationContext;
 
     /// <summary>
     /// Returns true if the current process is 64-bit.
@@ -72,12 +66,12 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// The parent process of this process.
     /// </summary>
-    public static readonly Process ParentProcess;
+    public static readonly Process? ParentProcess;
 
     /// <summary>
     /// Gets the processor architecture.
     /// </summary>
-    protected static readonly string ProcessorArchitecture;
+    protected static readonly string? ProcessorArchitecture;
 
     /// <summary>
     /// Queries WUA to determine if the system has a pending reboot.
@@ -96,15 +90,12 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// The name of the SDK directory, e.g. 6.0.100.
     /// </summary>
-    protected static string SdkDirectory => Path.GetFileName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+    protected static string SdkDirectory => Path.GetFileName(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory));
 
     /// <summary>
-    /// Gets whether signatures for workload packages and installers should be verified.
+    /// Gets whether MSI signatures should be verified.
     /// </summary>
-    protected bool VerifySignatures
-    {
-        get;
-    } = verifySignatures;
+    protected bool VerifyMsiSignature => verifyMsiSignature;
 
     /// <summary>
     /// Starts an elevated process to perform privileged operations.
@@ -117,7 +108,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// Checks the specified error code to determine whether it indicates a success result. If not, additional extended information
     /// is retrieved before throwing a <see cref="WorkloadException"/>.
-    /// 
+    ///
     /// The <see cref="Restart"/> property will be set to <see langword="true" /> if the error is either <see cref="Error.SUCCESS_REBOOT_INITIATED"/>
     /// or <see cref="Error.SUCCESS_REBOOT_REQUIRED"/>.
     /// </summary>
@@ -167,7 +158,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// Logs a message if the specified error code does not indicate a success result. The <see cref="Restart"/>
     /// property will be set to <see langword="true" /> if the error is either <see cref="Error.SUCCESS_REBOOT_INITIATED"/>
     /// or <see cref="Error.SUCCESS_REBOOT_REQUIRED"/>.
-    /// 
+    ///
     /// No exception is thrown by this method. See <see cref="ExitOnError(uint, string)"/> for more detail.
     /// </summary>
     /// <param name="error">The error code to log.</param>
@@ -197,6 +188,6 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     {
         CurrentProcess = Process.GetCurrentProcess();
         ParentProcess = CurrentProcess.GetParentProcess();
-        ProcessorArchitecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLowerInvariant();
+        ProcessorArchitecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")?.ToLowerInvariant();
     }
 }

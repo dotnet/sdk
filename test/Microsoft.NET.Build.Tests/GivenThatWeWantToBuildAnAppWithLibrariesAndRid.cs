@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
                 $"/p:TestRuntimeIdentifier={runtimeIdentifier}"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryAndRid")
                 .WithSource();
 
@@ -64,7 +64,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_builds_a_framework_dependent_RID_specific_runnable_output()
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithLibraryAndRid", "BuildFrameworkDependentRIDSpecific")
                 .WithSource();
 

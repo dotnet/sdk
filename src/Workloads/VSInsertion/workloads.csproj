@@ -50,7 +50,7 @@
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.MonoTargets.Sdk" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Sdk" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Templates.net10" />
+    <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Templates.net11" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Wasi.Sdk" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Sdk.WebAssembly.Pack" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.AOT.win-arm64.Cross.android-arm" />
@@ -80,9 +80,10 @@
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.browser-wasm" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.multithread.browser-wasm" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.wasi-wasm" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-x64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-x86" />
+    <!-- Windows runtime packages don't need MSI wrappers - they're included in the SDK, not installed as workloads -->
+    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" ExcludeAsMsi="true" />
+    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-x64" ExcludeAsMsi="true" />
+    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-x86" ExcludeAsMsi="true" />
 
     <EmsdkWorkloadPacksToDownload Include="Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersionCurrent).Cache.win-x64" />
     <EmsdkWorkloadPacksToDownload Include="Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersionCurrent).Cache.win-arm64" />
@@ -94,13 +95,82 @@
     <EmsdkWorkloadPacksToDownload Include="Microsoft.NET.Runtime.Emscripten.$(EmscriptenVersionCurrent).Sdk.win-arm64" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BuildWorkloads)' == 'true'">
+  <ItemGroup>
+    <!-- Dynamically discover manifest project files -->
+    <_ManifestProjectFiles Include="../Manifests/**/*.proj" Exclude="../Manifests/**/*.Transport.*/*.proj" />
+    <!-- Extract package names from file paths (e.g., Microsoft.NET.Workload.Mono.Toolchain.Current.Manifest.proj -> Microsoft.NET.Workload.Mono.Toolchain.Current.Manifest) -->
+    <ManifestPackagesToDownload Include="@(_ManifestProjectFiles->'%(Filename)')" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' != 'true'">
     <!-- we use MicrosoftNETCoreAppRuntimePackageVersion for both runtime and emsdk packages since they're aligned in VMR builds -->
     <PackageDownload Include="@(RuntimeWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
     <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
   </ItemGroup>
 
-  <Target Name="_CollectDownloadedWorkloadPacks">
+  <Target Name="_AddMsiPackageDownloads"
+          BeforeTargets="CollectPackageDownloads"
+          Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' == 'true'">
+    <ItemGroup>
+      <!-- MSI packages for RuntimeWorkloadPacksToDownload -->
+      <!-- For RID-specific packages, add single MSI with matching architecture -->
+      <PackageDownload Include="%(RuntimeWorkloadPacksToDownload.Identity).Msi.x64" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="$([System.String]::Copy('%(RuntimeWorkloadPacksToDownload.Identity)').Contains('.win-x64')) and '%(RuntimeWorkloadPacksToDownload.ExcludeAsMsi)' != 'true'" />
+      <PackageDownload Include="%(RuntimeWorkloadPacksToDownload.Identity).Msi.x86" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="$([System.String]::Copy('%(RuntimeWorkloadPacksToDownload.Identity)').Contains('.win-x86')) and '%(RuntimeWorkloadPacksToDownload.ExcludeAsMsi)' != 'true'" />
+      <PackageDownload Include="%(RuntimeWorkloadPacksToDownload.Identity).Msi.arm64" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="$([System.String]::Copy('%(RuntimeWorkloadPacksToDownload.Identity)').Contains('.win-arm64')) and '%(RuntimeWorkloadPacksToDownload.ExcludeAsMsi)' != 'true'" />
+      
+      <!-- For non-RID-specific packages, add MSI packages for all three architectures -->
+      <PackageDownload Include="%(RuntimeWorkloadPacksToDownload.Identity).Msi.x86" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="!$([System.String]::Copy('%(RuntimeWorkloadPacksToDownload.Identity)').Contains('.win-')) and '%(RuntimeWorkloadPacksToDownload.ExcludeAsMsi)' != 'true'" />
+      <PackageDownload Include="%(RuntimeWorkloadPacksToDownload.Identity).Msi.x64" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="!$([System.String]::Copy('%(RuntimeWorkloadPacksToDownload.Identity)').Contains('.win-')) and '%(RuntimeWorkloadPacksToDownload.ExcludeAsMsi)' != 'true'" />
+      <PackageDownload Include="%(RuntimeWorkloadPacksToDownload.Identity).Msi.arm64" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="!$([System.String]::Copy('%(RuntimeWorkloadPacksToDownload.Identity)').Contains('.win-')) and '%(RuntimeWorkloadPacksToDownload.ExcludeAsMsi)' != 'true'" />
+
+      <!-- MSI packages for EmsdkWorkloadPacksToDownload -->
+      <!-- For RID-specific packages, add single MSI with matching architecture -->
+      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x64" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-x64'))" />
+      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x86" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-x86'))" />
+      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.arm64" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-arm64'))" />
+      
+      <!-- For non-RID-specific packages, add MSI packages for all three architectures -->
+      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x86" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="!$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-'))" />
+      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.x64" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="!$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-'))" />
+      <PackageDownload Include="%(EmsdkWorkloadPacksToDownload.Identity).Msi.arm64" 
+                       Version="[$(DotNet1xxRuntimeVersion)]"
+                       Condition="!$([System.String]::Copy('%(EmsdkWorkloadPacksToDownload.Identity)').Contains('.win-'))" />
+
+      <!-- MSI packages for ManifestPackagesToDownload -->
+      <!-- Manifest packages are not RID-specific, add MSI packages for all three architectures -->
+      <PackageDownload Include="%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand).Msi.x86" 
+                       Version="[$(DotNet1xxWorkloadManifestVersion)]" />
+      <PackageDownload Include="%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand).Msi.x64" 
+                       Version="[$(DotNet1xxWorkloadManifestVersion)]" />
+      <PackageDownload Include="%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand).Msi.arm64" 
+                       Version="[$(DotNet1xxWorkloadManifestVersion)]" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CollectDownloadedWorkloadPacks"
+          Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' != 'true'">
     <ItemGroup>
       <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(RuntimeWorkloadPacksToDownload.Identity)\$(MicrosoftNETCoreAppRuntimePackageVersion)\*.nupkg" />
       <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(EmsdkWorkloadPacksToDownload.Identity)\$(MicrosoftNETCoreAppRuntimePackageVersion)\*.nupkg" />
@@ -111,7 +181,35 @@
           UseHardlinksIfPossible="true" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="ResolveProjectReferences;GetAssemblyVersion;_GetVersionProps;_GenerateMsiVersionString;_CollectDownloadedWorkloadPacks" Condition="'$(BuildWorkloads)' == 'true'">
+  <Target Name="Build"
+          DependsOnTargets="
+            ResolveProjectReferences;
+            GetAssemblyVersion;
+            _GetVersionProps;
+            _GenerateMsiVersionString;
+            _CollectDownloadedWorkloadPacks;
+            _CollectDownloadedWorkloadMsis;
+            BuildWorkloadMsis"
+          Condition="'$(BuildWorkloads)' == 'true'">
+  </Target>
+
+  <Target Name="_CollectDownloadedWorkloadMsis"
+          Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' == 'true'">
+    <ItemGroup>
+      <DownloadedWorkloadMsis Include="$(NuGetPackageRoot)\%(RuntimeWorkloadPacksToDownload.Identity).Msi.*\$(DotNet1xxRuntimeVersion)\*.nupkg" 
+                              Condition="'%(RuntimeWorkloadPacksToDownload.ExcludeAsMsi)' != 'true'" />
+      <DownloadedWorkloadMsis Include="$(NuGetPackageRoot)\%(EmsdkWorkloadPacksToDownload.Identity).Msi.*\$(DotNet1xxRuntimeVersion)\*.nupkg" />
+      <DownloadedWorkloadMsis Include="$(NuGetPackageRoot)\%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand).Msi.*\$(DotNet1xxWorkloadManifestVersion)\*.nupkg" />
+    </ItemGroup>
+
+    <!-- Copy to shipping packages directory so they appear as build outputs -->
+    <Copy SourceFiles="@(DownloadedWorkloadMsis)"
+          DestinationFolder="$(ArtifactsShippingPackagesDir)"
+          UseHardlinksIfPossible="true" />
+  </Target>
+
+  <Target Name="BuildWorkloadMsis"
+          Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' != 'true'">
     <ItemGroup>
       <!-- Overrides for Visual Studio setup generation. If the workload definition IDs change,
             these must be updated. -->

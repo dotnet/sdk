@@ -7,145 +7,73 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler(BuildOptions buildOptions)
+internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
 {
     private readonly BuildOptions _buildOptions = buildOptions;
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
-    private bool _areTestingPlatformApplications = true;
 
-    public bool RunMSBuild()
+    public bool Initialize()
     {
-        if (!ValidationUtility.ValidateBuildPathOptions(_buildOptions))
-        {
-            return false;
-        }
-
-        int msBuildExitCode;
-        string path;
         PathOptions pathOptions = _buildOptions.PathOptions;
 
-        if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
+        if (!ValidationUtility.ValidateBuildPathOptions(pathOptions, out string? projectOrSolutionFilePath, out bool isSolution))
         {
-            path = PathUtility.GetFullPath(pathOptions.ProjectPath);
-
-            msBuildExitCode = Directory.Exists(path)
-                ? RunBuild(path, expectProject: true)
-                : RunBuild(path, isSolution: false);
-        }
-        else if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
-        {
-            path = PathUtility.GetFullPath(pathOptions.SolutionPath);
-
-            msBuildExitCode = Directory.Exists(path)
-                ? RunBuild(path, expectSolution: true)
-                : RunBuild(path, isSolution: true);
-        }
-        else
-        {
-            path = PathUtility.GetFullPath(Directory.GetCurrentDirectory());
-            msBuildExitCode = RunBuild(path);
-        }
-
-        if (msBuildExitCode != ExitCode.Success)
-        {
-            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
             return false;
         }
 
-        return true;
+        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, int buildExitCode) = isSolution ?
+            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions) :
+            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions);
+
+        LogProjectProperties(projects);
+
+        if (buildExitCode != 0)
+        {
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, buildExitCode));
+            return false;
+        }
+
+        return InitializeTestApplications(projects);
     }
 
-    private int RunBuild(string directoryPath, bool expectProject = false, bool expectSolution = false)
-    {
-        bool solutionOrProjectFileFound;
-        string message;
-        string projectOrSolutionFilePath;
-        bool isSolution;
-
-        if (expectProject)
-        {
-            (solutionOrProjectFileFound, message) = SolutionAndProjectUtility.TryGetProjectFilePath(directoryPath, out projectOrSolutionFilePath);
-            isSolution = false;
-        }
-        else if (expectSolution)
-        {
-            (solutionOrProjectFileFound, message) = SolutionAndProjectUtility.TryGetSolutionFilePath(directoryPath, out projectOrSolutionFilePath);
-            isSolution = true;
-        }
-        else
-        {
-            (solutionOrProjectFileFound, message) = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out projectOrSolutionFilePath, out isSolution);
-        }
-
-        if (!solutionOrProjectFileFound)
-        {
-            Reporter.Error.WriteLine(message);
-            return ExitCode.GenericFailure;
-        }
-
-        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution);
-
-        InitializeTestApplications(projects);
-
-        return restored && !_testApplications.IsEmpty ? ExitCode.Success : ExitCode.GenericFailure;
-    }
-
-    private int RunBuild(string filePath, bool isSolution)
-    {
-        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool restored) = GetProjectsProperties(filePath, isSolution);
-
-        InitializeTestApplications(projects);
-
-        return restored && !_testApplications.IsEmpty ? ExitCode.Success : ExitCode.GenericFailure;
-    }
-
-    private void InitializeTestApplications(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
+    private bool InitializeTestApplications(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
     {
         // If one test app has IsTestingPlatformApplication set to false (VSTest and not MTP), then we will not run any of the test apps
         IEnumerable<TestModule> vsTestTestProjects = moduleGroups.SelectMany(group => group.GetVSTestAndNotMTPModules());
 
         if (vsTestTestProjects.Any())
         {
-            _areTestingPlatformApplications = false;
-
             Reporter.Error.WriteLine(
                 string.Format(
                     CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription,
                     string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath))).Red().Bold()));
 
-            return;
+            return false;
         }
 
         foreach (ParallelizableTestModuleGroupWithSequentialInnerModules moduleGroup in moduleGroups)
         {
             _testApplications.Add(moduleGroup);
         }
-    }
 
-    public bool EnqueueTestApplications(TestApplicationActionQueue queue)
-    {
-        if (!_areTestingPlatformApplications)
+        if (_testApplications.IsEmpty)
         {
+            Reporter.Error.WriteLine(CliCommandStrings.CmdTestNoTestProjectsFound);
             return false;
         }
 
-        foreach (var testApp in _testApplications)
-        {
-            queue.Enqueue(testApp);
-        }
         return true;
     }
 
-    private (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
+    public int RunTestApplications(TestApplicationActionQueue actionQueue)
     {
-        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool isBuiltOrRestored) = isSolution ?
-            MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, _buildOptions) :
-            MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, _buildOptions);
+        foreach (var testApp in _testApplications)
+        {
+            actionQueue.Enqueue(testApp);
+        }
 
-        LogProjectProperties(projects);
-
-        return (projects, isBuiltOrRestored);
+        return actionQueue.CompleteEnqueueAndWait();
     }
 
     private static void LogProjectProperties(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)

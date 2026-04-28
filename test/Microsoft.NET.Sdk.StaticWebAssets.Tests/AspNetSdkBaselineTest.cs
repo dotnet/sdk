@@ -68,7 +68,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private static StaticWebAssetsBaselineFactory CreateBaselineFactory() => StaticWebAssetsBaselineFactory.Instance;
 
         protected virtual string ComputeBaselineFolder() =>
-            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.StaticWebAssets.Tests", "StaticWebAssetsBaselines");
+            Path.Combine(SdkTestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.StaticWebAssets.Tests", "StaticWebAssetsBaselines");
 
         protected virtual string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.StaticWebAssets.Tests", "StaticWebAssetsBaselines");
 
@@ -143,7 +143,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     .Distinct()
                     .OrderBy(f => f, StringComparer.Ordinal)
                     .ToArray(),
-                GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath,
+                GetNuGetCachePath() ?? SdkTestContext.Current.NuGetCachePath,
                 ProjectDirectory.TestRoot,
                 intermediateOutputPath,
                 outputFolder).ToArray();
@@ -239,7 +239,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     .Concat(copyToPublishDirectoryFiles)
                     .Distinct()
                     .OrderBy(f => f, StringComparer.Ordinal)],
-                GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath,
+                GetNuGetCachePath() ?? SdkTestContext.Current.NuGetCachePath,
                 ProjectDirectory.TestRoot,
                 intermediateOutputPath,
                 publishFolder);
@@ -287,14 +287,14 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 _baselineFactory.ToTemplate(
                     actual,
                     ProjectDirectory.Path,
-                    GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath,
+                    GetNuGetCachePath() ?? SdkTestContext.Current.NuGetCachePath,
                     runtimeIdentifier);
 
                 _comparer.AssertManifest(expected, actual);
             }
             else
             {
-                var template = Templatize(actual, ProjectDirectory.Path, GetNuGetCachePath() ?? TestContext.Current.NuGetCachePath, runtimeIdentifier);
+                var template = Templatize(actual, ProjectDirectory.Path, GetNuGetCachePath() ?? SdkTestContext.Current.NuGetCachePath, runtimeIdentifier);
                 if (!Directory.Exists(Path.Combine(BaselinesFolder)))
                 {
                     Directory.CreateDirectory(Path.Combine(BaselinesFolder));

@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -3402,7 +3403,7 @@ class Test
                     // /0/Test0.cs(126,21): warning CA2100: Review if the query string passed to 'Command1.Command1(string cmd, string parameter2)' in 'M1', accepts any user input
                     GetCSharpResultAt(126, 21, "Command1.Command1(string cmd, string parameter2)", "M1"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -3452,7 +3453,7 @@ End Class",
                     // /0/Test0.vb(159,28): warning CA2100: Review if the query string passed to 'Sub Command1.New(cmd As String, parameter2 As String)' in 'M1', accepts any user input
                     GetBasicResultAt(159, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1")
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
@@ -6944,7 +6945,7 @@ class Test
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -6993,7 +6994,7 @@ End Module"
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
@@ -7125,7 +7126,7 @@ dotnet_code_quality.copy_analysis = true") },
                         GetCSharpResultAt(177, 25, "Command7.Command7(string cmd, string parameter2)", "M1"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -7239,7 +7240,7 @@ dotnet_code_quality.copy_analysis = true") },
                         GetBasicResultAt(204, 32, "Sub Command7.New(cmd As String, parameter2 As String)", "M1"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
@@ -8425,7 +8426,7 @@ class Test
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -8477,7 +8478,7 @@ End Module"
 [*]
 dotnet_code_quality.copy_analysis = true") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
