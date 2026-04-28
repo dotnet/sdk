@@ -156,15 +156,19 @@ internal static class FileLevelDirectiveHelpers
 
                 if (CSharpDirective.Parse(context) is { } directive)
                 {
-                    // If the directive is already present, report an error.
-                    if (deduplicated.TryGetValue(directive, out var existingDirective))
+                    // Duplicate #:project and #:ref directives are allowed (MSBuild can handle that).
+                    if (directive is not (CSharpDirective.Project or CSharpDirective.Ref))
                     {
-                        var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
-                        context.ReportError(directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
-                    }
-                    else
-                    {
-                        deduplicated.Add(directive, directive);
+                        // If the directive is already present, report an error.
+                        if (deduplicated.TryGetValue(directive, out var existingDirective))
+                        {
+                            var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
+                            context.ReportError(directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
+                        }
+                        else
+                        {
+                            deduplicated.Add(directive, directive);
+                        }
                     }
 
                     builder?.Add(directive);
