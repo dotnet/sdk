@@ -22,10 +22,10 @@ namespace Microsoft.DotNet.Tests
         [InlineData("AppWithToolDependency")]
         public void TestProjectToolIsAvailableThroughDriver(string appName)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(appName)
+            var testInstance = TestAssetsManager.CopyTestAsset(appName)
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new BuildCommand(testInstance)
                 .Execute()
@@ -44,10 +44,10 @@ namespace Microsoft.DotNet.Tests
         [InlineData(false)]
         public void IfPreviousVersionOfSharedFrameworkIsInstalled_ToolsTargetingItRun(bool toolPrefersCLIRuntime)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("AppWithToolDependency", identifier: toolPrefersCLIRuntime ? "preferCLIRuntime" : "")
+            var testInstance = TestAssetsManager.CopyTestAsset("AppWithToolDependency", identifier: toolPrefersCLIRuntime ? "preferCLIRuntime" : "")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance = testInstance.WithProjectChanges(project =>
             {
@@ -79,10 +79,10 @@ namespace Microsoft.DotNet.Tests
         {
             string toolName = "dotnet-portable-v1";
 
-            var testInstance = _testAssetsManager.CopyTestAsset("AppWithToolDependency")
+            var testInstance = TestAssetsManager.CopyTestAsset("AppWithToolDependency")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             string projectFolder = null;
 
@@ -135,10 +135,10 @@ namespace Microsoft.DotNet.Tests
         [WindowsOnlyFact]
         public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
+            var testInstance = TestAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new BuildCommand(testInstance)
                 .Execute()
@@ -155,7 +155,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ItShowsErrorWhenToolIsNotRestored()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("AppWithNonExistingToolDependency", testAssetSubdirectory: "NonRestoredTestProjects")
+            var testInstance = TestAssetsManager.CopyTestAsset("AppWithNonExistingToolDependency", testAssetSubdirectory: "NonRestoredTestProjects")
                 .WithSource();
 
             new DotnetCommand(Log)
@@ -172,7 +172,7 @@ namespace Microsoft.DotNet.Tests
         [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ItRunsToolRestoredToSpecificPackageDir()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("ToolWithRandomPackageName", testAssetSubdirectory: "NonRestoredTestProjects")
+            var testInstance = TestAssetsManager.CopyTestAsset("ToolWithRandomPackageName", testAssetSubdirectory: "NonRestoredTestProjects")
                 .WithSource();
 
             var appWithDepOnToolDir = new DirectoryInfo(testInstance.Path).Sub("AppWithDepOnTool");
@@ -214,10 +214,10 @@ namespace Microsoft.DotNet.Tests
         [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ToolsCanAccessDependencyContextProperly()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("DependencyContextFromTool")
+            var testInstance = TestAssetsManager.CopyTestAsset("DependencyContextFromTool")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
@@ -230,10 +230,10 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void TestProjectDependencyIsNotAvailableThroughDriver()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("AppWithDirectDep")
+            var testInstance = TestAssetsManager.CopyTestAsset("AppWithDirectDep")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new BuildCommand(testInstance)
                 .Execute()

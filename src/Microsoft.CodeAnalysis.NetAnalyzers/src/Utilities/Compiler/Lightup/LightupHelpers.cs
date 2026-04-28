@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -53,7 +54,7 @@ namespace Analyzer.Utilities.Lightup
             where TSymbol : ISymbol
             => CreatePropertyAccessor<TSymbol, TProperty>(type, "symbol", propertyName, fallbackResult);
 
-        private static Func<T, TProperty> CreatePropertyAccessor<T, TProperty>(Type? type, string parameterName, string propertyName, TProperty fallbackResult)
+        internal static Func<T, TProperty> CreatePropertyAccessor<T, TProperty>(Type? type, string parameterName, string propertyName, TProperty fallbackResult)
         {
             if (!TryGetProperty<T, TProperty>(type, propertyName, out var property))
             {

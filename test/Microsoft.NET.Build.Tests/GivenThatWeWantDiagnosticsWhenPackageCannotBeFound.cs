@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
                 "RestoreAdditionalProjectSources",
                 Path.GetDirectoryName(package.NupkgPath));
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CreateTestProject(project, project.Name)
                 .Restore(Log, project.Name);
 
@@ -56,13 +56,13 @@ namespace Microsoft.NET.Build.Tests
             // only that file here to confirm that behavior and mitigate risk of a typo
             // here resulting in an overly aggressive recursive directory deletion.
             var shaFile = Path.Combine(
-               TestContext.Current.NuGetCachePath,
+               SdkTestContext.Current.NuGetCachePath,
                package.ID,
                package.Version,
                $"{package.ID}.{package.Version}.nupkg.sha512");
 
             var nupkgMetadataFile = Path.Combine(
-               TestContext.Current.NuGetCachePath,
+               SdkTestContext.Current.NuGetCachePath,
                package.ID,
                package.Version,
                $".nupkg.metadata");
@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard1.3",
             };
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                .CreateTestProject(project, project.Name);
 
             var pack = new PackCommand(

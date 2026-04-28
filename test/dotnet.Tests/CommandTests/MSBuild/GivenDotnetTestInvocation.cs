@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Telemetry;
 using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -8,7 +9,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetTestInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "-restore", "-nologo", "-target:VSTest", "-property:NuGetInteractive=false"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "-restore", "-target:VSTest", "-property:NuGetInteractive=false"];
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetTestInvocation));
@@ -26,7 +27,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                Telemetry.Telemetry.DisableForTests();
+                TelemetryClient.DisabledForTests = true;
 
                 expectedAdditionalArgs = expectedAdditionalArgs
                     .Select(arg => arg.Replace("<cwd>", WorkingDirectory))

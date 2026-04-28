@@ -1,22 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class AllowListToSendFirstArgument(
-    HashSet<string> topLevelCommandNameAllowList) : IParseResultLogRule
+internal class AllowListToSendFirstArgument(HashSet<string> topLevelCommandNameAllowList) : IParseResultLogRule
 {
     private HashSet<string> _topLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
 
-    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
+    public List<TelemetryEntryFormat> AllowList(ParseResult parseResult)
     {
-        var result = new List<ApplicationInsightsEntryFormat>();
+        var result = new List<TelemetryEntryFormat>();
         var topLevelCommandNameFromParse = parseResult.RootCommandResult.Children.FirstOrDefault() switch
         {
             System.CommandLine.Parsing.CommandResult commandResult => commandResult.Command.Name,
@@ -28,17 +25,17 @@ internal class AllowListToSendFirstArgument(
         {
             if (_topLevelCommandNameAllowList.Contains(topLevelCommandNameFromParse))
             {
-                var firstArgument = parseResult.RootCommandResult.Children.FirstOrDefault()?.Tokens.Where(t => t.Type.Equals(TokenType.Argument)).FirstOrDefault()?.Value ?? null;
+                var firstArgument = parseResult.RootCommandResult.Children.FirstOrDefault()?.Tokens
+                    .Where(t => t.Type.Equals(TokenType.Argument)).FirstOrDefault()?.Value ?? null;
                 if (firstArgument != null)
                 {
-                    result.Add(new ApplicationInsightsEntryFormat(
+                    result.Add(new TelemetryEntryFormat(
                         "sublevelparser/command",
-                        new Dictionary<string, string>
+                        new Dictionary<string, string?>
                         {
                             {"verb", topLevelCommandNameFromParse},
                             {"argument", firstArgument}
-                        },
-                        measurements));
+                        }));
                 }
             }
         }
