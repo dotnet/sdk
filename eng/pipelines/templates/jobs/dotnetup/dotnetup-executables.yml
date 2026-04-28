@@ -99,6 +99,13 @@ jobs:
           New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}" -Force | Out-Null
           Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\dotnetup.exe" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}\"
         displayName: 📦 Stage dotnetup artifacts (${{ parameters.rid }})
+      - powershell: |
+          $standaloneDir = "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}"
+          $exe = Join-Path $standaloneDir "dotnetup.exe"
+          $hash = (Get-FileHash -Algorithm SHA512 $exe).Hash.ToLowerInvariant()
+          Set-Content -Path "$exe.sha512" -Value $hash -NoNewline
+          Write-Host "✅ SHA-512: $hash"
+        displayName: 🔒 Generate SHA-512 checksum (${{ parameters.rid }})
 
     - ${{ if ne(parameters.pool.os, 'windows') }}:
       - script: |
@@ -148,3 +155,9 @@ jobs:
           mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"
           cp "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup" "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}/"
         displayName: 📦 Stage dotnetup artifacts (${{ parameters.rid }})
+      - script: |
+          STANDALONE_DIR="$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"
+          HASH=$(sha512sum "$STANDALONE_DIR/dotnetup" | awk '{print $1}')
+          printf '%s' "$HASH" > "$STANDALONE_DIR/dotnetup.sha512"
+          echo "✅ SHA-512: $HASH"
+        displayName: 🔒 Generate SHA-512 checksum (${{ parameters.rid }})
