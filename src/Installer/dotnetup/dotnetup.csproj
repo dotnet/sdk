@@ -61,6 +61,7 @@
     <PackageReference Include="Spectre.Console" />
     <!-- Telemetry packages (AOT compatible) — mirrors SDK's dotnet.csproj -->
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="OpenTelemetry" />
     <PackageReference Include="OpenTelemetry.Exporter.Console" />
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />

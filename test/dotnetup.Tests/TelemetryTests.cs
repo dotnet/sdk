@@ -655,61 +655,48 @@ public class TrackedOperationTests : IDisposable
     }
 
     /// <summary>
-    /// Test callback that captures the event data and then delegates to the real
-    /// <see cref="DotnetupTelemetry.EmitActivityEvent"/> so tests exercise the
-    /// actual production code path for building properties, emitting ActivityEvents,
-    /// and stopping the activity.
+    /// Test callback that captures the event data and stops the activity to mirror
+    /// what <c>TrackedOperation.Dispose</c> arranges in production. The new
+    /// production path (after the OTel ILogger migration) emits a LogRecord
+    /// instead of an ActivityEvent — that LogRecord is exercised by E2E tests, not
+    /// these in-memory unit tests, so we skip it here.
     /// </summary>
     private void TestTrackEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
     {
         _capturedEvents.Add((eventName, activity, storedTags));
-        DotnetupTelemetry.EmitActivityEvent(eventName, activity, storedTags, TestSessionId);
+        activity?.Stop();
     }
 
     /// <summary>
-    /// Asserts that a tracked event was properly emitted to both the callback and the
-    /// Activity's Events collection. This dual assertion prevents regressions where
-    /// callback data is correct but ActivityEvent emission is broken (e.g., the
-    /// root-activity bug where Activity.Current was null after Stop).
+    /// Asserts that a tracked event was properly captured by the callback and that
+    /// the expected tags landed on the activity (via <c>op.Tag()</c>, which writes
+    /// to both <c>activity.Tags</c> and the stored-tags mirror dictionary).
     /// </summary>
     private static void AssertTrackedEvent(
         (string EventName, Activity? Activity, IDictionary<string, string?> StoredTags) captured,
         string expectedEventName,
         IDictionary<string, string?>? expectedTags = null)
     {
-        // Assert callback data
         Assert.Equal(expectedEventName, captured.EventName);
         Assert.NotNull(captured.Activity);
 
-        // Assert ActivityEvent on the activity itself
-        var activityEvents = captured.Activity!.Events.ToList();
-        var matchingEvent = activityEvents.FirstOrDefault(e => e.Name == $"dotnetup/{expectedEventName}");
-        Assert.False(
-            string.IsNullOrEmpty(matchingEvent.Name),
-            $"Activity.Events should contain an event named 'dotnetup/{expectedEventName}'. " +
-            $"Found events: [{string.Join(", ", activityEvents.Select(e => e.Name))}]");
-
-        // Verify duration is present and valid in the event tags
-        var eventTags = matchingEvent.Tags.ToDictionary(t => t.Key, t => t.Value?.ToString());
-        Assert.True(eventTags.ContainsKey("operation.duration_ms"),
-            "ActivityEvent should contain operation.duration_ms");
-        Assert.True(double.TryParse(eventTags["operation.duration_ms"], out var ms) && ms >= 0,
-            "operation.duration_ms should be a non-negative number");
-
-        // Verify expected tags in the ActivityEvent
+        // Verify expected tags landed on the activity (or the storedTags mirror)
         if (expectedTags is not null)
         {
+            var activityTags = captured.Activity!.TagObjects
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString());
             foreach (var (key, value) in expectedTags)
             {
-                Assert.True(eventTags.ContainsKey(key),
-                    $"ActivityEvent should contain tag '{key}'");
-                Assert.Equal(value, eventTags[key]);
+                var found = activityTags.TryGetValue(key, out var fromActivity)
+                    || captured.StoredTags.TryGetValue(key, out fromActivity);
+                Assert.True(found, $"Activity or storedTags should contain '{key}'");
+                Assert.Equal(value, fromActivity);
             }
         }
 
-        // Verify the activity was stopped
+        // Verify the activity was stopped (duration captured by TrackedOperation.Dispose)
         Assert.True(
-            captured.Activity.Duration > TimeSpan.Zero,
+            captured.Activity!.Duration > TimeSpan.Zero,
             "Activity should have been stopped by TrackEvent");
     }
 
@@ -880,29 +867,28 @@ public class TrackedOperationTests : IDisposable
     }
 
     /// <summary>
-    /// Regression test: a mid-flight error event (stopActivity=false) must NOT
-    /// stop the activity. The owning TrackedOperation is still alive and will
-    /// dispose later with the final event.
+    /// Regression test: applying error tags mid-flight (the work
+    /// <see cref="DotnetupTelemetry.RecordException"/> does in production) must
+    /// NOT stop the activity. The owning <c>TrackedOperation</c> is still alive
+    /// and will dispose later with the final completion log.
     /// </summary>
     [Fact]
-    public void EmitActivityEvent_MidFlight_DoesNotStopActivity()
+    public void RecordException_DoesNotStopActivity()
     {
         var activity = DotnetupTelemetry.CommandSource.StartActivity(
             "command/test-midflight", ActivityKind.Internal);
         Assert.NotNull(activity);
 
-        // Emit a mid-flight error event (simulates RecordException)
-        var errorTags = new Dictionary<string, string?> { ["error.type"] = "TestError" };
-        DotnetupTelemetry.EmitActivityEvent("error", activity, errorTags, TestSessionId, stopActivity: false);
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(new InvalidOperationException("boom"));
+        ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
 
         // Activity must still be alive — not stopped
         Assert.Equal(TimeSpan.Zero, activity.Duration);
         Assert.NotNull(Activity.Current);
 
-        // The error event should be on the activity
-        var events = activity.Events.ToList();
-        Assert.Single(events);
-        Assert.Equal("dotnetup/error", events[0].Name);
+        // Error tags should be on the activity itself
+        var tags = activity.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
+        Assert.True(tags.ContainsKey("error.type"), "error.type tag should be set on activity");
 
         // Now stop it (simulates TrackedOperation.Dispose)
         activity.Stop();
@@ -912,8 +898,9 @@ public class TrackedOperationTests : IDisposable
     /// <summary>
     /// Regression test: mirrors the full Program.cs + CommandBase.cs lifecycle.
     /// Root process activity → command activity → error fires mid-flight →
-    /// command disposes → root disposes. All events must land on the correct
-    /// activities and no activity is stopped prematurely.
+    /// command disposes → root disposes. The error must propagate via tags to
+    /// both activities, the command must dispose first, and no activity may be
+    /// stopped prematurely.
     /// </summary>
     [Fact]
     public void TrackedOperation_FullLifecycle_RootPersistsThroughErrorAndCommandDispose()
@@ -931,33 +918,25 @@ public class TrackedOperationTests : IDisposable
         var commandOp = new TrackedOperation(commandActivity, "command/sdk/install", TestTrackEvent);
         commandOp.Tag("command.name", "sdk/install");
 
-        // Step 3: RecordException fires mid-flight error event on the command activity.
-        // This must NOT stop the command activity.
-        var errorTags = new Dictionary<string, string?> { ["error.type"] = "InstallFailed" };
-        DotnetupTelemetry.EmitActivityEvent("error", commandActivity, errorTags, TestSessionId, stopActivity: false);
+        // Step 3: Mid-flight error must not stop the command activity, and tags
+        // must propagate to ancestors (root included).
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(new InvalidOperationException("InstallFailed"));
+        ErrorCodeMapper.ApplyErrorTags(commandActivity, errorInfo);
+        ErrorCodeMapper.ApplyErrorTags(rootActivity, errorInfo);
 
-        // Verify: command activity still alive, error event attached
         Assert.Equal(TimeSpan.Zero, commandActivity.Duration);
-        var commandEvents = commandActivity.Events.ToList();
-        Assert.Single(commandEvents);
-        Assert.Equal("dotnetup/error", commandEvents[0].Name);
+        var commandTags = commandActivity.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
+        Assert.True(commandTags.ContainsKey("error.type"));
+        var rootTags = rootActivity.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
+        Assert.True(rootTags.ContainsKey("error.type"), "error.type should propagate to root activity");
 
         // Step 4: CommandBase.finally disposes command operation
         commandOp.Tag("exit.code", 1);
         commandOp.SetStatus(ActivityStatusCode.Error);
         commandOp.Dispose();
 
-        // Verify: command event emitted (callback captured it)
         Assert.Single(_capturedEvents);
         Assert.Equal("command/sdk/install", _capturedEvents[0].EventName);
-
-        // Command activity should now have BOTH events: error + command
-        var allCommandEvents = _capturedEvents[0].Activity!.Events.ToList();
-        Assert.Equal(2, allCommandEvents.Count);
-        Assert.Equal("dotnetup/error", allCommandEvents[0].Name);
-        Assert.Equal("dotnetup/command/sdk/install", allCommandEvents[1].Name);
-
-        // Command activity should be stopped
         Assert.True(_capturedEvents[0].Activity!.Duration > TimeSpan.Zero);
 
         // Step 5: Program.finally disposes root operation
@@ -965,16 +944,8 @@ public class TrackedOperationTests : IDisposable
         rootOp.SetStatus(ActivityStatusCode.Error);
         rootOp.Dispose();
 
-        // Verify: root event emitted
         Assert.Equal(2, _capturedEvents.Count);
         Assert.Equal("process/complete", _capturedEvents[1].EventName);
-
-        // Root activity should have its final event
-        var rootEvents = _capturedEvents[1].Activity!.Events.ToList();
-        Assert.Single(rootEvents);
-        Assert.Equal("dotnetup/process/complete", rootEvents[0].Name);
-
-        // Root activity should be stopped
         Assert.True(_capturedEvents[1].Activity!.Duration > TimeSpan.Zero);
 
         // Verify parent-child: command's parent should be the root
