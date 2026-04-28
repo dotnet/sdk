@@ -21,7 +21,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse("dotnet tool run dotnetsay");
 
-            var packageId = result.GetValue<string>(ToolRunCommandParser.CommandNameArgument);
+            var definition = Assert.IsType<ToolRunCommandDefinition>(result.CommandResult.Command);
+            var packageId = result.GetValue(definition.CommandNameArgument);
 
             packageId.Should().Be("dotnetsay");
         }

@@ -14,7 +14,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void BuildProject_UsingDesktopMSBuild()
         {
             var testAsset = $"Razor{TestProjectName}";
-            var project = _testAssetsManager
+            var project = TestAssetsManager
                 .CopyTestAsset(testAsset)
                 .WithSource();
 

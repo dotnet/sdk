@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="CantSpecifyBothProperties">
         <source>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</source>
-        <target state="new">NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</target>
+        <target state="translated">NETSDK1230: no se pueden especificar las propiedades {0} y {1} a la vez. Quite uno u otra.</target>
         <note>{StrBegins="NETSDK1230: "}</note>
       </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
@@ -373,6 +373,11 @@
         <source>NETSDK1156: .NET host executable '{0}' not found.</source>
         <target state="translated">NETSDK1156: No se encontró el ejecutable del host de .NET "{0}".</target>
         <note>{StrBegins="NETSDK1156: "}</note>
+      </trans-unit>
+      <trans-unit id="DotnetToolDoesNotSupportCustomNuspecFile">
+        <source>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</source>
+        <target state="new">NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</target>
+        <note>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</note>
       </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
         <source>NETSDK1055: DotnetTool does not support target framework lower than netcoreapp2.1.</source>
@@ -661,10 +666,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1225: la compilación nativa no es compatible cuando se invoca directamente al destino al hacer "publish". Intente ejecutar dotnet publish.</target>
         <note>{StrBegins="NETSDK1225: "}</note>
       </trans-unit>
-      <trans-unit id="Net9NotCompatibleWithDev1711">
-        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
-        <target state="translated">NETSDK1223: no se admite el destino de .NET 9.0 o posterior en Visual Studio 2022 17.11.</target>
-        <note>{StrBegins="NETSDK1223: "}</note>
+      <trans-unit id="Net10NotCompatibleWithVS17">
+        <source>NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</source>
+        <target state="translated">NETSDK1233: no se admite la selección de .NET 10.0 o superior en Visual Studio 2022 17.14.</target>
+        <note>{StrBegins="NETSDK1233: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -851,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: No se pueden optimizar los ensamblados para mejorar el rendimiento: no se ha encontrado un paquete en tiempo de ejecución válido. Establezca la propiedad PublishReadyToRun en false o use un identificador en tiempo de ejecución compatible al publicar. Cuando el destino sea .NET 6 o una versión posterior, asegúrese de restaurar los paquetes con la propiedad PublishReadyToRun establecida en true.</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: No se admite la optimización del rendimiento de los ensamblados para la plataforma o la arquitectura de destino seleccionadas. Compruebe que está usando un identificador en tiempo de ejecución compatible o establezca la propiedad PublishReadyToRun en false.</target>
@@ -861,9 +871,14 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1103: La configuración de RollForward solo se admite en .NET Core 3.0 o versiones posteriores.</target>
         <note>{StrBegins="NETSDK1103: "}</note>
       </trans-unit>
+      <trans-unit id="RoslynCompilerTypeFrameworkIsDeprecated">
+        <source>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</source>
+        <target state="translated">NETSDK1234: RoslynCompilerType "Framework" está en desuso y se quitará en una versión futura. Consulte {0} para obtener más información.</target>
+        <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
-        <target state="new">NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</target>
+        <target state="translated">NETSDK1231: el archivo "{0}" no existe. Asegúrese de que la ruta de acceso del grafo en tiempo de ejecución existe.</target>
         <note>{StrBegins="NETSDK1231: "}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
@@ -906,6 +921,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1179: Se requiere una de las opciones "--self-contained" o "--no-self-contained" cuando se usa "--runtime".</target>
         <note>{StrBegins="NETSDK1179: "}{Locked="--self-contained"}{Locked="--no-self-contained"}{Locked="--runtime"}</note>
       </trans-unit>
+      <trans-unit id="SingleFileBundleUnexpectedExclusion">
+        <source>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</source>
+        <target state="new">NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</target>
+        <note>{StrBegins="NETSDK1236: "}</note>
+      </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
         <source>NETSDK1048: 'AdditionalProbingPaths' were specified for GenerateRuntimeConfigurationFiles, but are being skipped because 'RuntimeConfigDevPath' is empty.</source>
         <target state="translated">NETSDK1048: Se especificaron valores adicionales de "AdditionalProbingPaths" para GenerateRuntimeConfigurationFiles, pero se van a omitir porque el valor de "RuntimeConfigDevPath" está vacío.</target>
@@ -914,7 +934,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="SolutionProjectConfigurationsConflict">
         <source>NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
 {1}</source>
-        <target state="needs-review-translation">NETSDK1197: Varios proyectos de solución que contienen valores '{0}' en conflicto; asegúrese de que los valores coinciden. Considere la posibilidad de usar un archivo Directory.build.props para establecer la propiedad para todos los proyectos. Proyectos en conflicto:
+        <target state="translated">NETSDK1197: Varios proyectos de solución que contienen valores '{0}' en conflicto; asegúrese de que los valores coinciden. Considere la posibilidad de usar un archivo Directory.build.props para establecer la propiedad para todos los proyectos. Proyectos en conflicto:
 {1}</target>
         <note>{StrBegins="NETSDK1197: "}</note>
       </trans-unit>
@@ -965,7 +985,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UnableToFindMatchingRid">
         <source>NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
-        <target state="new">NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</target>
+        <target state="translated">NETSDK1232: no se puede encontrar un RID coincidente para "{0}" entre [{1}] en el grafo "{2}".</target>
         <note>{StrBegins="NETSDK1232: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
       </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
@@ -1043,11 +1063,6 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1200: Si UseArtifactsPath se establece en true y ArtifactsPath no está establecido, debe haber un archivo Directory.Build.props para determinar dónde debe ubicarse la carpeta de artefactos.</target>
         <note>{StrBegins="NETSDK1200: "}</note>
       </trans-unit>
-      <trans-unit id="UnsupportedVisualStudioVersion">
-        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
-        <target state="translated">NETSDK1209: La versión actual de Visual Studio no admite {0} {1} de destino. Use el destino {0} {2} o uno inferior, o use la versión {3} o una superior de Visual Studio.</target>
-        <note>{StrBegins="NETSDK1209: "}</note>
-      </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
         <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>
         <target state="translated">NETSDK1208: no se ha reconocido el identificador de la plataforma de destino {0}. Esto se debe a que MSBuildEnableWorkloadResolver está establecido en false, lo que deshabilita las cargas de trabajo del SDK de .NET necesarias para este identificador. Anule esta variable de entorno o propiedad de MSBuild para habilitar las cargas de trabajo.</target>
@@ -1060,7 +1075,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UsingPreviewCsWinRT3_0Feature">
         <source>NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</source>
-        <target state="new">NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</target>
+        <target state="translated">NETSDK1229: si se selecciona una versión del SDK de Windows con "1" como número de revisión, se hará referencia a CsWinRT 3.0, que está actualmente en versión preliminar. El proyecto actual tiene como destino la versión de Windows SDK "{0}". Si esto no está previsto, cambie el número de revisión a "0" para usar CsWinRT 2.x en su lugar.</target>
         <note>{StrBegins="NETSDK1229: "}</note>
       </trans-unit>
       <trans-unit id="UsingPreviewSdk">

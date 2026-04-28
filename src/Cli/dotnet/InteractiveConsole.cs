@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -19,14 +17,14 @@ public static class InteractiveConsole
     /// <see langword="false"/> if the user declined it,
     /// <see langword="null"/> if the user could not answer because <c>--no-interactive</c> was specified.
     /// </returns>
-    public static bool? Confirm(string message, ParseResult parseResult, bool acceptEscapeForFalse)
+    public static bool? Confirm(string message, bool yesOption, bool interactiveOption, bool acceptEscapeForFalse)
     {
-        if (parseResult.GetValue(CommonOptions.YesOption))
+        if (yesOption)
         {
             return true;
         }
 
-        if (!parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
+        if (!interactiveOption)
         {
             return null;
         }
@@ -64,41 +62,6 @@ public static class InteractiveConsole
             //  The resource string should be a single character, but we take the first character just to be sure.
             return pressedKey.KeyChar.ToString().ToLowerInvariant().Equals(
                 valueKey.ToLowerInvariant().Substring(0, 1));
-        }
-    }
-
-    public delegate bool Validator<TResult>(
-        string? answer,
-        out TResult? result,
-        [NotNullWhen(returnValue: false)] out string? error);
-
-    public static bool Ask<TResult>(
-        string question,
-        ParseResult parseResult,
-        Validator<TResult> validate,
-        out TResult? result)
-    {
-        if (!parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
-        {
-            result = default;
-            return false;
-        }
-
-        while (true)
-        {
-            Console.Write(question);
-            Console.Write(' ');
-
-            string? answer = Console.ReadLine();
-            answer = string.IsNullOrWhiteSpace(answer) ? null : answer.Trim();
-            if (!validate(answer, out result, out var error))
-            {
-                Console.WriteLine(error);
-            }
-            else
-            {
-                return true;
-            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Threading.Tasks;
@@ -156,7 +157,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -200,14 +201,14 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 TestCode = spanCode,
                 FixedCode = fixedSpanCode,
                 ExpectedDiagnostics = { DoNotCompareToNullResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyCS.Test
             {
                 TestCode = rosCode,
                 FixedCode = fixedRosCode,
                 ExpectedDiagnostics = { DoNotCompareToNullResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyCsharpCompareToDefaultAsync(string code, string fixedCode)
@@ -223,14 +224,14 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 TestCode = spanCode,
                 FixedCode = fixedSpanCode,
                 ExpectedDiagnostics = { DoNotCompareToDefaultResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyCS.Test
             {
                 TestCode = rosCode,
                 FixedCode = fixedRosCode,
                 ExpectedDiagnostics = { DoNotCompareToDefaultResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyNoDiagnosticVisualBasicAsync(string code)
@@ -255,14 +256,14 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 TestCode = spanCode,
                 FixedCode = fixedSpanCode,
                 ExpectedDiagnostics = { DoNotCompareToNullResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
                 TestCode = rosCode,
                 FixedCode = fixedRosCode,
                 ExpectedDiagnostics = { DoNotCompareToNullResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

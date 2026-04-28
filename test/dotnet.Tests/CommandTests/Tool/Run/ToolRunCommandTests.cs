@@ -44,6 +44,24 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenRunWithRollForwardOptionItShouldPreserveDuplicateArgumentsForwardedToTool()
+        {
+            (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("a");
+            IEnumerable<string> testForwardArgument = ["--var", "a", "--var", "b"];
+
+            var result = localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+            {
+                CommandName = "dotnet-a",
+                CommandArguments = testForwardArgument
+            }, allowRollForward: true);
+
+            result.Should().NotBeNull();
+            result.Args.Should().ContainAll("--roll-forward", "Major", fakeExecutable.Value);
+            // Verify duplicate forwarded arguments are preserved in order.
+            result.Args.Should().Contain("--var a --var b");
+        }
+
+        [Fact]
         public void WhenRunWithoutRollForwardOptionItShouldNotIncludeRollForwardInNativeHost()
         {
             var parseResult = Parser.Parse($"dotnet tool run dotnet-a");
@@ -66,7 +84,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private (FilePath, LocalToolsCommandResolver) DefaultSetup(string toolCommand)
         {
-            var testDirectoryRoot = _testAssetsManager.CreateTestDirectory();
+            var testDirectoryRoot = TestAssetsManager.CreateTestDirectory();
             var fileSystem = new FileSystemWrapper();
             NuGetVersion packageVersionA = NuGetVersion.Parse("1.0.4");
 

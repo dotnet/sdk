@@ -9,7 +9,7 @@
 
     <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
     and a property. -->
-    <Exec Command="$(DotnetTool) --version" ConsoleToMsbuild="true">
+    <Exec Command="&quot;$(DotNetTool)&quot; --version" ConsoleToMsbuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="Stage0SdkVersion"/>
     </Exec>
 
@@ -31,14 +31,61 @@
     </ItemGroup>
 
     <!-- Copy artifacts to the testhost folder. -->
+    <!-- Using hard linking below will cause the SDK testing overlay to create changes in the installer layout.
+         Needs review and fix. https://github.com/dotnet/sdk/issues/51112 -->
     <Copy DestinationFiles="@(InstallerOutputFile)"
           SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
           SkipUnchangedFiles="true"
-          UseHardLinksIfPossible="true" />
+          UseHardLinksIfPossible="false" />
+
+    <!-- When cross-compiling (e.g. building osx-arm64 on an x64 agent), the stage0 shared
+         frameworks have the build machine's architecture, not the target's. Overwrite any
+         stage0 shared framework versions in the current major.minor band with the built SDK's
+         files so that native binaries have the correct architecture. -->
+    <ItemGroup Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)'">
+      <_Stage0NETCoreSharedFxDir Include="$([System.IO.Directory]::GetDirectories('$(TestHostDotNetRoot)shared/Microsoft.NETCore.App', '$(MajorMinorVersion).*'))" />
+      <_Stage0NETCoreSharedFxDir Remove="$(TestHostDotNetRoot)shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+
+      <_BuiltNETCoreSharedFxFile Include="$(TestHostDotNetRoot)shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)/**/*" />
+
+      <_Stage0AspNetCoreSharedFxDir Include="$([System.IO.Directory]::GetDirectories('$(TestHostDotNetRoot)shared/Microsoft.AspNetCore.App', '$(MajorMinorVersion).*'))" />
+      <_Stage0AspNetCoreSharedFxDir Remove="$(TestHostDotNetRoot)shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
+
+      <_BuiltAspNetCoreSharedFxFile Include="$(TestHostDotNetRoot)shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)/**/*" />
+    </ItemGroup>
 
     <OverrideAndCreateBundledNETCoreAppPackageVersion
       Stage0BundledVersionsPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
       Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
+  </Target>
+
+  <!-- Use target batching to avoid qualified metadata references inside item transforms (MSB4043).
+       Each target runs once per stage0 shared framework directory, capturing its Identity in a
+       property that can be safely used inside the item transform. -->
+  <Target Name="OverwriteStage0SharedFxForCrossCompilation"
+          AfterTargets="OverlaySdkOnLKG"
+          Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)' AND '@(_Stage0NETCoreSharedFxDir)' != ''"
+          Outputs="%(_Stage0NETCoreSharedFxDir.Identity)">
+    <PropertyGroup>
+      <_CurrentStage0FxDir>%(_Stage0NETCoreSharedFxDir.Identity)</_CurrentStage0FxDir>
+    </PropertyGroup>
+
+    <Copy SourceFiles="@(_BuiltNETCoreSharedFxFile)"
+          DestinationFiles="@(_BuiltNETCoreSharedFxFile->'$(_CurrentStage0FxDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="false" />
+  </Target>
+
+  <Target Name="OverwriteStage0AspNetCoreSharedFxForCrossCompilation"
+          AfterTargets="OverlaySdkOnLKG"
+          Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)' AND '@(_Stage0AspNetCoreSharedFxDir)' != ''"
+          Outputs="%(_Stage0AspNetCoreSharedFxDir.Identity)">
+    <PropertyGroup>
+      <_CurrentStage0FxDir>%(_Stage0AspNetCoreSharedFxDir.Identity)</_CurrentStage0FxDir>
+    </PropertyGroup>
+
+    <Copy SourceFiles="@(_BuiltAspNetCoreSharedFxFile)"
+          DestinationFiles="@(_BuiltAspNetCoreSharedFxFile->'$(_CurrentStage0FxDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="false" />
   </Target>
 
   <Target Name="PublishTestWorkloads"
