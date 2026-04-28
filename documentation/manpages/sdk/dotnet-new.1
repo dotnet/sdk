@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new" "1" "2025-09-15" "" ".NET Documentation"
+.TH "dotnet-new" "1" "2025-10-30" "" ".NET Documentation"
 .hy
 .SH dotnet new <TEMPLATE>
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-new - Creates a new project, configuration file, or solution based on the specified template.
@@ -81,14 +81,7 @@ For more information, see Template options.
 .PP
 You can run \f[V]dotnet new list\f[R] to see a list of all installed templates.
 .PP
-Starting with .NET Core 3.0 SDK and ending with .NET SDK 5.0.300, the CLI searches for templates in NuGet.org when you invoke the \f[V]dotnet new\f[R] command in the following conditions:
-.IP \[bu] 2
-If the CLI can\[cq]t find a template match when invoking \f[V]dotnet new\f[R], not even partial.
-.IP \[bu] 2
-If there\[cq]s a newer version of the template available.
-In this case, the project or artifact is created but the CLI warns you about an updated version of the template.
-.PP
-Starting with .NET SDK 5.0.300, the \f[V]search\f[R] command should be used to search for templates in NuGet.org.
+The \f[V]search\f[R] command should be used to search for templates in NuGet.org.
 .PP
 For a list of templates that ship with the .NET SDK, see Preinstalled templates.
 .RE
@@ -98,7 +91,6 @@ For a list of templates that ship with the .NET SDK, see Preinstalled templates.
 .RS 2
 .PP
 Displays a summary of what would happen if the given command were run if it would result in a template creation.
-Available since .NET Core 2.2 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--force\f[B]\f[R]

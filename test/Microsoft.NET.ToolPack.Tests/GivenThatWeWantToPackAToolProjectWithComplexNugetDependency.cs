@@ -19,7 +19,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [InlineData(false)]
         public void It_has_native_and_transitive_dependencies_dll(bool multiTarget)
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                                         .CopyTestAsset("PortableTool", identifier: multiTarget.ToString())
                                         .WithSource()
                                         .WithProjectChanges(project =>

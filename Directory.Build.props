@@ -1,34 +1,55 @@
 <!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
 <Project TreatAsLocalProperty="Platform">
 
-  <PropertyGroup>
+  <PropertyGroup Label="CalculateArch">
     <BuildArchitecture Condition="'$(BuildArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND ('$(BuildArchitecture)' == 'arm64')">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</TargetArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND ('$(BuildArchitecture)' == 'arm64' OR '$(BuildArchitecture)' == 's390x' OR '$(BuildArchitecture)' == 'ppc64le' OR '$(BuildArchitecture)' == 'loongarch64')">$(BuildArchitecture)</TargetArchitecture>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
+  </PropertyGroup>
+
+  <!-- Host and target OS detection.
+       Uses full OS names (windows, linux, osx, freebsd, etc.) matching the VMR convention.
+       See https://github.com/dotnet/dotnet/blob/main/docs/VMR-Controls.md#output-controls -->
+  <PropertyGroup Label="CalculateTargetOS">
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">windows</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('OPENBSD'))">openbsd</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('SOLARIS'))">solaris</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('HAIKU'))">haiku</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('LINUX'))">linux</HostOS>
+    <IsLinux Condition="'$(HostOS)' == 'linux'">true</IsLinux>
+
+    <!-- TargetOS defaults to HostOS; overridable via /p:TargetOS from build scripts. -->
+    <TargetOS Condition="'$(TargetOS)' == ''">$(HostOS)</TargetOS>
+
+    <!-- OSName uses RID-style names (win, not windows) for downstream RID construction. -->
+    <OSName Condition="'$(OSName)' == '' AND '$(PortableTargetRid)' != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == '' AND '$(TargetRid)' != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == '' AND '$(TargetOS)' == 'windows'">win</OSName>
+    <OSName Condition="'$(OSName)' == ''">$(TargetOS)</OSName>
+
+    <TargetRid Condition="'$(TargetRid)' == ''">$(OSName)-$(TargetArchitecture)</TargetRid>
+    <PortableTargetRid Condition="'$(PortableTargetRid)' == ''">$(OSName)-$(TargetArchitecture)</PortableTargetRid>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
   <PropertyGroup>
-    <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
-    <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
-
-    <OSName Condition="'$(OSName)' == '' AND $(PortableTargetRid) != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
-    <OSName Condition="'$(OSName)' == '' AND $(TargetRid) != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
-    <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
+    <!-- Workaround for https://github.com/NuGet/Home/issues/14745 -->
+    <SDKAnalysisLevel>10.0.200</SDKAnalysisLevel>
   </PropertyGroup>
 
   <PropertyGroup>
     <SdkSrcRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src'))</SdkSrcRoot>
+    <TemplateEngSrcDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'TemplateEngine'))</TemplateEngSrcDir>
+    <TemplateEngTestDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'test', 'TemplateEngine'))</TemplateEngTestDir>
+    <TemplateEngTestAssetsDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'test', 'TestAssets', 'TestPackages', 'TemplateEngine'))</TemplateEngTestAssetsDir>
     <TestHostFolder>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'redist', '$(Configuration)'))</TestHostFolder>
     <TestHostDotNetRoot>$([MSBuild]::NormalizeDirectory('$(TestHostFolder)', 'dotnet'))</TestHostDotNetRoot>
     <TestHostDotNetTool>$(TestHostDotNetRoot)$([System.IO.Path]::GetFileName('$(DotNetTool)'))</TestHostDotNetTool>
@@ -43,27 +64,20 @@
     <!-- Default to all packages generating a corresponding symbol package -->
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
-    <SdkTargetFramework>net10.0</SdkTargetFramework>
-    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
-    <NetCurrent>net10.0</NetCurrent>
-    <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
-    <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
+
+    <!-- TFMs -->
+    <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
     <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
-    <VisualStudioTargetFramework>net472</VisualStudioTargetFramework>
 
-    <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
-    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
-
-    <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
-         Microsoft.ApplicationInsights) -->
     <!-- NU1507 Disable multi-feed check as .NET uses multiple internal feeds intentionally -->
     <!-- NU5039 Disable NuGet is unable to find the readme file in the package. -->
-    <NoWarn>$(NoWarn);NU1701;NU1507;NU1202;NU5039</NoWarn>
+    <NoWarn>$(NoWarn);NU1507;NU1202;NU5039</NoWarn>
     <!-- do not enable analyzers on source build-->
     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <UseSharedCompilation Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</UseSharedCompilation>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
 
+    <DefineConstants Condition="'$(TargetOS)' == 'windows'">$(DefineConstants),TARGET_WINDOWS</DefineConstants>
     <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants),CI_BUILD</DefineConstants>
     <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants),MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
     <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants),DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
@@ -76,13 +90,21 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <!-- <TestRunnerAdditionalArguments>-parallel none</TestRunnerAdditionalArguments> -->
+  </PropertyGroup>
+
+  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51465 -->
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51466 -->
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <!-- Global usings -->
@@ -99,12 +121,7 @@
     <MicrosoftNETCoreAppHostPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppHostPackageVersion>
     <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
     <MicrosoftAspNetCoreAppRuntimePackageVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</MicrosoftAspNetCoreAppRuntimePackageVersion>
-    <!-- These are set based on the runtime shared framework and internal versions. This is because windowsdesktop is not built in
-         all VMR builds, but its version numbers are used to generate various bits of information. The VMR always aligns the version
-         numbers of the shared frameworks. -->
-    <MicrosoftWindowsDesktopAppRuntimePackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftWindowsDesktopAppRefPackageVersion>
-    <MicrosoftWindowsDesktopAppInternalPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</MicrosoftWindowsDesktopAppInternalPackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimePackageVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
 
     <HostFxrVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostFxrVersion>
     <SharedHostVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedHostVersion>

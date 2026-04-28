@@ -55,9 +55,9 @@ namespace Microsoft.NET.Build.Tests
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};net45", true, "netstandard1.4", true, false, false)]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};net46", true, "net45;netstandard1.6", true, true, true)]
         [InlineData($"{ToolsetInfo.CurrentTargetFramework};net45", true, "net46;netstandard1.6", true, false, false)]
-        [InlineData("v4.5.2", false, "netstandard1.6", true, true, false)]
+        [InlineData("v4.6.2", false, "netstandard1.6", true, true, true)]
         [InlineData("v4.7.2", false, "netstandard1.6;net472", true, true, true)]
-        [InlineData("v4.5.2", false, "netstandard1.6;net472", true, true, false)]
+        [InlineData("v4.6.2", false, "netstandard1.6;net472", true, true, true)]
         public void It_checks_for_valid_references(string referencerTarget, bool referencerIsSdkProject,
             string dependencyTarget, bool dependencyIsSdkProject,
             bool restoreSucceeds, bool buildSucceeds)
@@ -85,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(referencerProject, nameof(It_checks_for_valid_references), identifier);
+            var testAsset = TestAssetsManager.CreateTestProject(referencerProject, nameof(It_checks_for_valid_references), identifier);
 
             var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: "Referencer");
 
@@ -164,7 +164,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = tfm,
                 Name = "ChildProject",
             };
-            var childAsset = _testAssetsManager.CreateTestProject(childProject, identifier: copyConflictingTransitiveContent.ToString() + explicitlySet.ToString())
+            var childAsset = TestAssetsManager.CreateTestProject(childProject, identifier: copyConflictingTransitiveContent.ToString() + explicitlySet.ToString())
                 .WithProjectChanges(project => AddProjectChanges(project));
             File.WriteAllText(Path.Combine(childAsset.Path, childProject.Name, contentName), childProject.Name);
 
@@ -177,7 +177,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 parentProject.AdditionalProperties["CopyConflictingTransitiveContent"] = copyConflictingTransitiveContent.ToString().ToLower();
             }
-            var parentAsset = _testAssetsManager.CreateTestProject(parentProject, identifier: copyConflictingTransitiveContent.ToString() + explicitlySet.ToString())
+            var parentAsset = TestAssetsManager.CreateTestProject(parentProject, identifier: copyConflictingTransitiveContent.ToString() + explicitlySet.ToString())
                 .WithProjectChanges(project => AddProjectChanges(project, Path.Combine(childAsset.Path, childProject.Name, childProject.Name + ".csproj")));
             File.WriteAllText(Path.Combine(parentAsset.Path, parentProject.Name, contentName), parentProject.Name);
 
@@ -257,7 +257,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProjectC.AdditionalProperties.Add("DisableTransitiveProjectReferences", "true");
             testProjectC.ReferencedProjects.Add(testProjectB);
-            var testAsset = _testAssetsManager.CreateTestProject(testProjectC).WithProjectChanges((path, p) =>
+            var testAsset = TestAssetsManager.CreateTestProject(testProjectC).WithProjectChanges((path, p) =>
             {
                 if (Path.GetFileNameWithoutExtension(path) == testProjectA.Name)
                 {
@@ -320,7 +320,7 @@ class Program
             testProjectC.ReferencedProjects.Add(testProjectB);
             testProjectC.SourceFiles.Add("Program.cs", source);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProjectC).WithProjectChanges((path, p) =>
+            var testAsset = TestAssetsManager.CreateTestProject(testProjectC).WithProjectChanges((path, p) =>
             {
                 if (Path.GetFileName(path).Equals("ProjectC.csproj"))
                 {

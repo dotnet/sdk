@@ -1,0 +1,61 @@
+# EditorConfig for TemplateEngine projects
+
+[*.cs]
+# IDE0005: Unnecessary using - TE projects multi-target including net472 which
+# doesn't support implicit usings, so many usings are needed for net472 but
+# flagged as unnecessary for netcoreapp TFMs.
+dotnet_diagnostic.IDE0005.severity = suggestion
+
+dotnet_diagnostic.RS0041.severity = suggestion
+
+dotnet_diagnostic.SA0001.severity = none
+dotnet_diagnostic.SA1005.severity = none
+dotnet_diagnostic.SA1101.severity = none
+dotnet_diagnostic.SA1108.severity = none
+dotnet_diagnostic.SA1118.severity = none
+dotnet_diagnostic.SA1119.severity = none
+dotnet_diagnostic.SA1120.severity = none
+dotnet_diagnostic.SA1123.severity = none
+dotnet_diagnostic.SA1124.severity = none
+dotnet_diagnostic.SA1127.severity = none
+dotnet_diagnostic.SA1128.severity = none
+dotnet_diagnostic.SA1141.severity = warning
+dotnet_diagnostic.SA1142.severity = warning
+dotnet_diagnostic.SA1200.severity = none
+dotnet_diagnostic.SA1201.severity = none
+dotnet_diagnostic.SA1202.severity = none
+dotnet_diagnostic.SA1203.severity = none
+dotnet_diagnostic.SA1204.severity = none
+dotnet_diagnostic.SA1214.severity = none
+dotnet_diagnostic.SA1308.severity = none
+dotnet_diagnostic.SA1309.severity = none
+dotnet_diagnostic.SA1316.severity = warning
+dotnet_diagnostic.SA1400.severity = none
+dotnet_diagnostic.SA1402.severity = none
+dotnet_diagnostic.SA1405.severity = silent
+dotnet_diagnostic.SA1413.severity = none
+dotnet_diagnostic.SA1414.severity = none
+dotnet_diagnostic.SA1501.severity = none
+dotnet_diagnostic.SA1502.severity = none
+dotnet_diagnostic.SA1504.severity = none
+dotnet_diagnostic.SA1508.severity = none
+dotnet_diagnostic.SA1509.severity = none
+dotnet_diagnostic.SA1512.severity = none
+dotnet_diagnostic.SA1513.severity = none
+dotnet_diagnostic.SA1515.severity = none
+dotnet_diagnostic.SA1518.severity = none
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1601.severity = none
+dotnet_diagnostic.SA1602.severity = none
+dotnet_diagnostic.SA1611.severity = none
+dotnet_diagnostic.SA1614.severity = none
+dotnet_diagnostic.SA1615.severity = none
+dotnet_diagnostic.SA1616.severity = none
+dotnet_diagnostic.SA1618.severity = none
+dotnet_diagnostic.SA1622.severity = none
+dotnet_diagnostic.SA1623.severity = none
+dotnet_diagnostic.SA1625.severity = none
+dotnet_diagnostic.SA1627.severity = none
+dotnet_diagnostic.SA1633.severity = none
+dotnet_diagnostic.SA1642.severity = none
+dotnet_diagnostic.SA1649.severity = none

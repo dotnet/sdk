@@ -4,7 +4,7 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
@@ -12,7 +12,6 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -24,23 +23,24 @@ public class PackCommand(
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parseResult = Parser.Parse(["dotnet", "pack", ..args]);
+        var parseResult = Parser.Parse(["dotnet", "pack", .. args]);
         return FromParseResult(parseResult, msbuildPath);
     }
 
     public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
-        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectOrFileArgument) ?? [];
+        var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
+        var args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [];
 
         LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
-        bool noBuild = parseResult.HasOption(PackCommandParser.NoBuildOption);
+        bool noBuild = parseResult.HasOption(definition.NoBuildOption);
 
-        bool noRestore = noBuild || parseResult.HasOption(PackCommandParser.NoRestoreOption);
+        bool noRestore = noBuild || parseResult.HasOption(definition.NoRestoreOption);
 
-        return CommandFactory.CreateVirtualOrPhysicalCommand(
-            PackCommandParser.GetCommand(),
-            PackCommandParser.SlnOrProjectOrFileArgument,
+        return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
+            definition,
+            definition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
                 msbuildArgs: msbuildArgs)
@@ -55,19 +55,20 @@ public class PackCommand(
                 msbuildPath),
             optionsToUseWhenParsingMSBuildFlags:
             [
-                CommonOptions.PropertiesOption,
-                CommonOptions.RestorePropertiesOption,
-                PackCommandParser.TargetOption,
-                PackCommandParser.VerbosityOption,
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
+                PackCommandDefinition.CreateTargetOption(),
+                CommonOptions.CreateVerbosityOption(),
+                CommonOptions.CreateNoLogoOption()
             ],
             parseResult,
             msbuildPath,
-            (msbuildArgs) =>
+            transformer: (msbuildArgs) =>
             {
-                ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
+                ReleasePropertyProjectLocator projectLocator = new(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PACK_RELEASE,
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
                             nonBinLogArgs,
-                            parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
+                            parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null
                         )
                 );
                 return msbuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
@@ -88,22 +89,24 @@ public class PackCommand(
 
     public static int RunPackCommand(ParseResult parseResult)
     {
-        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
+        var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
+
+        var args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
 
         if (args.Count != 1)
         {
-            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed); 
+            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed);
             return 1;
         }
 
         var nuspecPath = args[0];
 
         var packArgs = new PackArgs()
-        { 
+        {
             Logger = new NuGetConsoleLogger(),
             Exclude = new List<string>(),
-            OutputDirectory = parseResult.GetValue(PackCommandParser.OutputOption),
-            LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(BuildCommandParser.VerbosityOption)),
+            OutputDirectory = parseResult.GetValue(definition.OutputOption),
+            LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(definition.VerbosityOption)),
             Arguments = [nuspecPath]
         };
 
@@ -115,11 +118,11 @@ public class PackCommand(
         if (globalProperties != null)
             packArgs.Properties.AddRange(globalProperties);
 
-        var version = parseResult.GetValue(PackCommandParser.VersionOption);
+        var version = parseResult.GetValue(definition.VersionOption);
         if (version != null)
             packArgs.Version = version.ToNormalizedString();
 
-        var configuration = parseResult.GetValue(PackCommandParser.ConfigurationOption) ?? "Debug";
+        var configuration = parseResult.GetValue(definition.ConfigurationOption) ?? "Debug";
         packArgs.Properties["configuration"] = configuration;
 
         var packCommandRunner = new PackCommandRunner(packArgs, null);
@@ -130,10 +133,12 @@ public class PackCommand(
 
     public static int Run(ParseResult parseResult)
     {
+        var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
+
         parseResult.HandleDebugSwitch();
         parseResult.ShowHelpOrErrorIfAppropriate();
 
-        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
+        var args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
 
         if (args.Count > 0 && Path.GetExtension(args[0]).Equals(".nuspec", StringComparison.OrdinalIgnoreCase))
         {

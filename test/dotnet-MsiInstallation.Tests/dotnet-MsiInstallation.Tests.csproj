@@ -8,20 +8,25 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>$(SdkTargetFramework)-windows</TargetFramework>
+    <OutputType Condition="'$(TargetOS)' == 'windows'">Exe</OutputType>
+    <OutputType Condition="'$(TargetOS)' != 'windows'">Library</OutputType>
+    <!-- Use plain TFM on non-Windows so NuGet restore can evaluate the project -->
+    <TargetFramework Condition="'$(TargetOS)' == 'windows'">$(SdkTargetFramework)-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetOS)' != 'windows'">$(SdkTargetFramework)</TargetFramework>
+    <!-- Disable test infrastructure on non-Windows so it doesn't inject usings/entry points -->
+    <IsTestProject Condition="'$(TargetOS)' != 'windows'">false</IsTestProject>
+    <IsUnitTestProject Condition="'$(TargetOS)' != 'windows'">false</IsUnitTestProject>
   </PropertyGroup>
 
   <PropertyGroup>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
     <RootNamespace>Microsoft.DotNet.MsiInstallerTests</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="NuGet.LibraryModel" />
     <PackageReference Include="NuGet.Versioning" />
@@ -31,11 +36,17 @@
     <PackageReference Include="Microsoft.Management.Infrastructure" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- Remove ALL compile items and global usings added by test infrastructure (must be after Sdk.targets) -->
+  <ItemGroup Condition="'$(TargetOS)' != 'windows'">
+    <Compile Remove="@(Compile)" />
+    <Using Remove="@(Using)" />
+  </ItemGroup>
 
 </Project>

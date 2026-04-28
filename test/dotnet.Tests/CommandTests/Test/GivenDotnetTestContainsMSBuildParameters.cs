@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void ItPassesEnvironmentVariablesFromCommandLineParametersWhenRunningViaCsproj(string projectName)
         {
-            var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(TestAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testRoot)
                                     .Execute("--logger", "console;verbosity=detailed", MSBuildParameter);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 1")

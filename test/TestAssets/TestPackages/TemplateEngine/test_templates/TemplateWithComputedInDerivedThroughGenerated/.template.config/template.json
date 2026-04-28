@@ -1,0 +1,120 @@
+{
+  "author": "Test Asset",
+  "classifications": [
+    "Test Asset"
+  ],
+  "name": "TestAssets.TemplateWithComputedInDerivedThroughGenerated",
+  "tags": {
+    "type": "project"
+  },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithComputedInDerivedThroughGenerated",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithComputedInDerivedThroughGenerated",
+  "shortName": "TestAssets.TemplateWithComputedInDerivedThroughGenerated",
+  "defaultName": "theDefaultName",
+  "symbols": {
+    "preset": {
+      "displayName": "Preset",
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "recommended",
+      "description": "Selects setup type",
+      "choices": [
+        {
+          "choice": "recommended",
+          "description": "Recommended set of options to create a production-ready app targeting multiple platforms",
+          "displayName": "Default"
+        },
+        {
+          "choice": "blank",
+          "description": "Smallest set of options, with no extra dependencies, to create an app targeting multiple platforms",
+          "displayName": "Blank"
+        }
+      ]
+    },
+    "navigation": {
+      "displayName": "Navigation",
+      "description": "Configures navigation in the application",
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "regions",
+          "displayName": "Regions",
+          "description": "Uses Uno.Extensions.Navigation to navigate using regions"
+        },
+        {
+          "choice": "blank",
+          "displayName": "Blank",
+          "description": "Provides Blank App experience with default WinUI Frame Navigation"
+        }
+      ]
+    },
+    "presetDependencyInjectionDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "false"
+      }
+    },
+    "presetNavigationDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "blank"
+      }
+    },
+    "dependencyInjection": {
+      "displayName": "Dependency Injection",
+      "description": "Use dependency injection for registering and accessing services",
+      "type": "parameter",
+      "datatype": "bool"
+    },
+    "navigationEvaluator": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "navigation",
+        "fallbackVariableName": "presetNavigationDefault"
+      }
+    },
+    "useDependencyInjection": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "dependencyInjection",
+        "fallbackVariableName": "presetDependencyInjectionDefault"
+      }
+    },
+    "useFrameNav": {
+      "type": "computed",
+      "datatype": "bool",
+      "value": "!useDependencyInjection || navigationEvaluator == 'blank'"
+    },
+    "joinMacroTest": {
+      "type": "generated",
+      "generator": "join",
+      "replaces": "%VAL%",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "const",
+            "value": "STRINGFORJOIN"
+          },
+          {
+            "type": "ref",
+            "value": "useFrameNav"
+          }
+        ]
+      }
+    },
+    "testDerived": {
+      "type": "derived",
+      "valueSource": "joinMacroTest",
+      "valueTransform": "lowerCaseInvariant",
+      "fileRename": "Program",
+      "description": "A value derived from the 'joinMacroTest' param, used to rename Program.cs"
+    }
+  }
+}

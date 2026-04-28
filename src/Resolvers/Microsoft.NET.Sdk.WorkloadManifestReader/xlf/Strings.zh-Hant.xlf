@@ -142,6 +142,11 @@
         <target state="translated">資訊清單 '{2}' [{3}] 中工作負載重新導向 '{1}' 的未解析目標 '{0}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">工作負載集合版本 {0} 缺少資訊清單，其可能已遭套件管理移除。請執行「dotnet workload repair」來修復此問題。</target>
+        <note>{Locked="dotnet workload repair"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadVersionFromGlobalJsonNotFound">
         <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
         <target state="translated">找不到 {1} 中指定的工作負載版本 {0}。執行 "dotnet workload restore" 以安裝此工作負載版本。</target>

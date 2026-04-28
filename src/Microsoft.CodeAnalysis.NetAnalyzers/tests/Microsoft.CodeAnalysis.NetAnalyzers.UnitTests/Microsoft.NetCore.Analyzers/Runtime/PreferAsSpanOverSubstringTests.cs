@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -77,7 +78,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -117,7 +118,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -153,7 +154,7 @@ public partial class Body
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -198,7 +199,7 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_MultipleArguments_WithAvailableSpanOverloads
@@ -260,7 +261,7 @@ public partial class Body
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -297,7 +298,7 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_NamedArguments_CS
@@ -424,7 +425,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_NamedArguments_VB
@@ -559,7 +560,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan
@@ -614,7 +615,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -645,7 +646,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_NestedViolations
@@ -715,7 +716,7 @@ public class C
                 NumberOfIncrementalIterations = incrementalIterations,
             };
             test.TestState.ExpectedDiagnostics.AddRange(locations.Select(CS.DiagnosticAt));
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -749,7 +750,7 @@ public class C
                 NumberOfIncrementalIterations = incrementalIterations,
             };
             test.TestState.ExpectedDiagnostics.AddRange(locations.Select(VB.DiagnosticAt));
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -777,7 +778,7 @@ public class C
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -813,7 +814,7 @@ public class C
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -859,7 +860,7 @@ public class C
                 options = options.WithGlobalImports(globalSystemImport);
                 return solution.WithProjectCompilationOptions(id, options);
             });
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         //  No VB counterpart because imports must precede all declarations in VB.
@@ -893,7 +894,7 @@ namespace Testopolis
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -926,7 +927,7 @@ namespace " + namespaceDeclaration + @"
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -978,7 +979,7 @@ End Namespace";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOverloads_SingleBestCandidate_CS
@@ -1019,7 +1020,7 @@ public void Consume(int n, string b, Roschar c) { }";
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOVerloads_SingleBestCandidate_VB
@@ -1083,7 +1084,7 @@ public class R
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOverloads_Ambiguous_CS
@@ -1122,7 +1123,7 @@ public void Consume(string a, Roschar b, Roschar c) { }";
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOverloads_Ambiguous_VB
@@ -1179,7 +1180,7 @@ public class R
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_NoRoscharOverload_CS
@@ -1227,7 +1228,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_NoRoscharOverload_VB
@@ -1280,7 +1281,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_InvalidOverloads_CS
@@ -1341,7 +1342,7 @@ public class WrongReturnType
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_InvalidOverloads_VB
@@ -1408,7 +1409,7 @@ public class WrongReturnType
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1457,7 +1458,7 @@ public class ExternalSubclass : External
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1505,7 +1506,7 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1561,7 +1562,7 @@ public class ExternalSubclass : External
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1617,7 +1618,7 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         //  No VB counterpart because VB doesn't support ref-like types in APIs.
@@ -1650,7 +1651,7 @@ public class InternalSubclass : Internal
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         //  No VB counterpart because VB doesn't support ref-like types in APIs.
@@ -1695,7 +1696,7 @@ public class InternalSubclass : Internal
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1717,7 +1718,7 @@ public class Body
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1748,7 +1749,7 @@ receiver.Consume(foo?.Substring(1))");
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #region Helpers
