@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = false
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = false
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -78,7 +78,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = false,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -104,7 +104,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["CheckNotRecommendedTargetFramework"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 

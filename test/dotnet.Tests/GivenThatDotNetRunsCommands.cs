@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void UnresolvedPlatformReferencesFailAsExpected()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithUnresolvedPlatformDependency", testAssetSubdirectory: "NonRestoredTestProjects")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithUnresolvedPlatformDependency", testAssetSubdirectory: "NonRestoredTestProjects")
                             .WithSource();
 
             new RestoreCommand(testInstance)
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void GivenASpecifiedDotnetCliHomeVariableItPrintsUsageMessage()
         {
-            var home = _testAssetsManager.CreateTestDirectory(identifier: "DOTNET_HOME").Path;
+            var home = TestAssetsManager.CreateTestDirectory(identifier: "DOTNET_HOME").Path;
 
             new DotnetCommand(Log)
                 .WithEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, home)

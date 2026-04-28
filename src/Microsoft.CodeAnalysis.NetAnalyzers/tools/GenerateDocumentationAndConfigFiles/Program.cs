@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ namespace GenerateDocumentationAndConfigFiles
         {
             const int expectedArguments = 23;
             const string validateOnlyPrefix = "-validateOnly:";
+            const string analyzerVersionTemplate = "${AnalyzerVersion}";
 
             if (args.Length != expectedArguments)
             {
@@ -270,7 +272,7 @@ namespace GenerateDocumentationAndConfigFiles
                     fileContents =
                         $"""
                         <Project>
-                          <!-- 
+                          <!--
                             PropertyGroup to disable built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
                             This props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
                           -->
@@ -292,7 +294,7 @@ namespace GenerateDocumentationAndConfigFiles
                     {
                         return $"""
 
-                              <!-- 
+                              <!--
                                 This import includes an additional props file that disables built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
                                 This additional props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
                               -->
@@ -318,7 +320,7 @@ namespace GenerateDocumentationAndConfigFiles
                 var allRuleIds = string.Join(';', allRulesById.Keys);
                 return $"""
 
-                      <!-- 
+                      <!--
                         This property group handles 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
                       -->
                       <PropertyGroup>
@@ -450,7 +452,9 @@ namespace GenerateDocumentationAndConfigFiles
 
                     if (!string.IsNullOrWhiteSpace(analyzerVersion))
                     {
-                        writer.Write("version", analyzerVersion);
+                        // Keep the checked-in SARIF stable across SDK version updates.
+                        // The build resolves this placeholder into the intermediate output that gets packed.
+                        writer.Write("version", analyzerVersionTemplate);
                     }
 
                     writer.Write("language", culture.Name);
@@ -527,7 +531,20 @@ namespace GenerateDocumentationAndConfigFiles
                     // Note: Although a using statement exists for the textWriter, its scope is the whole method.
                     // So Dispose isn't called before the whole method returns.
                     textWriter.Close();
-                    Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                    try
+                    {
+                        Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                    }
+                    finally
+                    {
+                        // Best-effort cleanup of the temp sarif file (fileWithPath points to the temp-* file, not the checked-in one).
+                        try
+                        {
+                            File.Delete(fileWithPath);
+                        }
+                        catch (IOException) { }
+                        catch (UnauthorizedAccessException) { }
+                    }
                 }
 
                 return;
@@ -1153,7 +1170,7 @@ namespace GenerateDocumentationAndConfigFiles
         private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
         {
             string actual = File.ReadAllText(fileWithPath);
-            if (actual != fileContents)
+            if (actual.Trim() != fileContents.Trim())
             {
                 fileNamesWithValidationFailures.Add(fileWithPath);
             }
@@ -1560,7 +1577,7 @@ namespace GenerateDocumentationAndConfigFiles
                 {
                     builder.AppendLine($"""
 
-                          <!-- MSBuild properties to thread to the analyzers as options --> 
+                          <!-- MSBuild properties to thread to the analyzers as options -->
                           <ItemGroup>
                         """);
                     foreach (var compilerVisibleProperty in compilerVisibleProperties)

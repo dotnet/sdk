@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -177,7 +178,7 @@ End Class
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -195,7 +196,7 @@ End Class",
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -220,7 +221,7 @@ End Class",
 ") },
                     ExpectedDiagnostics = { GetCSharpResultAt(1, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "class", "class"), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -239,7 +240,7 @@ End Class",
 ") },
                     ExpectedDiagnostics = { GetBasicResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Class", "Class"), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -278,7 +279,7 @@ End Class",
                 csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"/folder1/Test0.cs", 1, 22, 1, 28).WithSpan(@"/folder2/Test1.cs", 1, 22, 1, 28).WithArguments("class", "class"));
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -306,7 +307,7 @@ End Class"),
                 vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"/folder1/Test0.vb", 2, 22, 2, 29).WithSpan(@"/folder2/Test1.vb", 2, 22, 2, 29).WithArguments("Class", "Class"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)

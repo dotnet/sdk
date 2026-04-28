@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -160,7 +161,7 @@ public class A
                 csharpTest.ExpectedDiagnostics.Add(GetCA1055CSharpResultAt(6, 19, "A.GetUrl()"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var basicTest = new VerifyVB.Test
             {
@@ -189,7 +190,7 @@ End Module"
                 basicTest.ExpectedDiagnostics.Add(GetCA1055BasicResultAt(5, 14, "A.GetUrl()"));
             }
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCA1055CSharpResultAt(int line, int column, params string[] args)
