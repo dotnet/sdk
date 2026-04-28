@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <!-- Override shared xunit config to use dotnetup-specific settings (longer long-running test threshold) -->
+    <XUnitDesktopSettingsFile>$(MSBuildProjectDirectory)\xunit.runner.json</XUnitDesktopSettingsFile>
+    <XUnitCoreSettingsFile>$(MSBuildProjectDirectory)\xunit.runner.json</XUnitCoreSettingsFile>
+  </PropertyGroup>
+
+  <!-- Exclude test asset apps from test compilation -->
+  <ItemGroup>
+    <Compile Remove="TestAssets\**\*.cs" />
+  </ItemGroup>
+
+  <!-- Embed the test assets path so tests can locate assets regardless of output directory -->
+  <ItemGroup>
+    <AssemblyMetadata Include="TestAssetsDir" Value="$(MSBuildProjectDirectory)\TestAssets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Installer\dotnetup\dotnetup.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -131,7 +131,7 @@ internal class EnvironmentDetectionRuleWithResult<T> where T : class
     public T? GetResult()
     {
         return _rule.IsMatch()
-            ? _result 
+            ? _result
             : null;
     }
 }

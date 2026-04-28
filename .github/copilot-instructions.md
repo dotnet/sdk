@@ -15,16 +15,18 @@ Testing:
 - Large changes should always include test changes.
 - When creating new test projects in test/TestAssets/TestProjects, always use `$(CurrentTargetFramework)` for the `<TargetFramework>` property instead of hard-coding a specific version like `net8.0`.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
-- To run tests in this repo:
-  - Use the repo-local dotnet instance: `./.dotnet/dotnet`
-  - For MSTest-style projects: `dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
-  - For XUnit test assemblies: `dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll -method "*TestMethodName*"`
+- To build and run tests in this repo:
+  - **CRITICAL: Always use the repo-local dotnet instance (`./.dotnet/dotnet` on Linux/Mac, `.\.dotnet\dotnet` on Windows). NEVER fall back to the system-wide `dotnet` — it will cause build hangs, version mismatches, and test failures.**
+  - If `.dotnet/` does not exist, you must bootstrap it first, running `./build.sh --restore` or `.\build.cmd -restore` from the repo root. This downloads the correct SDK version specified in `global.json`.
+  - Most tests outside of dotnetup require a full SDK build first. Run `./build.sh` (Linux/Mac) or `.\build.cmd` (Windows) from the repo root to produce the redist SDK at `artifacts/bin/redist/Debug/dotnet/dotnet.exe`. Without this, tests will fail with "Host not found. Is 'redist.csproj' built?"
+  - For MSTest-style projects: `./.dotnet/dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
+  - For XUnit test assemblies: `./.dotnet/dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll -method "*TestMethodName*"`
   - Examples:
-    - `dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
-    - `dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
+    - `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
+    - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
 - To test CLI command changes:
   - Build the redist SDK: `./build.sh` from repo root
-  - Create a dogfood environment: `source eng/dogfood.sh` 
+  - Create a dogfood environment: `source eng/dogfood.sh`
   - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
   - The dogfood script sets up PATH and environment to use the newly built SDK
 

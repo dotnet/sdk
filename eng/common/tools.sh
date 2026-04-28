@@ -310,7 +310,7 @@ function GetDotNetInstallScript {
     local download_time=$(cat "$timestamp_file" 2>/dev/null || echo "0")
     local current_time=$(date +%s)
     local age_seconds=$((current_time - download_time))
-    
+
     # 30 days = 30 * 24 * 60 * 60 = 2592000 seconds
     if [[ $age_seconds -gt 2592000 ]]; then
       echo "Existing install script is too old, re-downloading..."
@@ -349,7 +349,7 @@ function GetDotNetInstallScript {
         ExitWithExitCode $exit_code
       }
     fi
-    
+
     # Create timestamp file to track download time in seconds from epoch
     date +%s > "$timestamp_file"
   fi

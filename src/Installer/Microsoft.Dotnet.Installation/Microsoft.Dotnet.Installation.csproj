@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Strong naming not needed on .NET Core -->
+    <!-- SYSLIB1054: Suppress for DllImport in shared NativeWrapper code we don't own -->
+    <NoWarn>$(NoWarn);CS8002;CS1591;SYSLIB1054</NoWarn>
+
+    <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build. -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);MA0051</WarningsNotAsErrors>
+
+    <IsPackable>true</IsPackable>
+    <IncludeSymbols>true</IncludeSymbols>
+    <PackageId>Microsoft.Dotnet.Installation</PackageId>
+    <IsShipping>false</IsShipping>
+    <Title>.NET Installation Library</Title>
+    <VersionPrefix>$(DotnetupVersionPrefix)</VersionPrefix>
+    <PreReleaseVersionLabel>$(DotnetupPreReleaseVersionLabel)</PreReleaseVersionLabel>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnetup" />
+    <InternalsVisibleTo Include="dotnetup.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.Dotnet.Installation" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Meziantou.Analyzer" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+  </ItemGroup>
+</Project>

@@ -21,32 +21,137 @@ function InitializeCustomSDKToolset {
 
   InitializeDotNetCli true
 
-  InstallDotNetSharedFramework "6.0.0"
-  InstallDotNetSharedFramework "7.0.0"
-  InstallDotNetSharedFramework "8.0.0"
-  InstallDotNetSharedFramework "9.0.0"
-  InstallDotNetSharedFramework "10.0.0"
+  # Redirect dotnetup data directory under artifacts so build scripts
+  # don't read/write the user's home-folder manifest.
+  export DOTNET_DOTNETUP_DATA_DIR="$artifacts_dir/.dotnetup"
+
+  # The following shared frameworks are only needed for testing.
+  # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
+  # dotnetup is only built when test runtimes are needed (it's the install tool).
+  if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
+    # Build dotnetup if not already present (needs SDK to be installed first)
+    EnsureDotnetupBuilt
+    InstallDotNetSharedFrameworks "6.0.0" "7.0.0" "8.0.0" "9.0.0" "10.0.0"
+  fi
 
   CreateBuildEnvScript
 }
 
-# Installs additional shared frameworks for testing purposes
-function InstallDotNetSharedFramework {
-  local version=$1
-  local dotnet_root=$DOTNET_INSTALL_DIR
-  local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
+# Gets a file's last-modified time as a Unix timestamp.
+function GetFileTimestamp {
+  local path="$1"
+  if [[ "$(uname)" == "Darwin" ]]; then
+    stat -f "%m" "$path"
+  else
+    stat -c "%Y" "$path"
+  fi
+}
 
-  if [[ ! -d "$fx_dir" ]]; then
-    GetDotNetInstallScript "$dotnet_root"
-    local install_script=$_GetDotNetInstallScript
+# Builds dotnetup if the executable is missing or stale
+function EnsureDotnetupBuilt {
+  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local dotnetup_dir="$script_dir/dotnetup"
+  local dotnetup_exe="$dotnetup_dir/dotnetup"
+  local should_build=false
 
-    bash "$install_script" --version $version --install-dir "$dotnet_root" --runtime "dotnet" --skip-non-versioned-files
-    local lastexitcode=$?
+  if [[ ! -f "$dotnetup_exe" ]]; then
+    should_build=true
+  else
+    # eng/dotnetup is an ignored bootstrap artifact, so it can survive branch
+    # switches and fall behind the current checkout. Rebuild it if either:
+    # 1. the current HEAD commit is newer than the bootstrap executable, or
+    # 2. there are local uncommitted changes with newer timestamps.
+    local bootstrap_ts
+    bootstrap_ts=$(GetFileTimestamp "$dotnetup_exe")
+    local latest_repo_change_ts=0
 
-    if [[ $lastexitcode != 0 ]]; then
-      echo "Failed to install Shared Framework $version to '$dotnet_root' (exit code '$lastexitcode')."
-      ExitWithExitCode $lastexitcode
+    if command -v git &> /dev/null && git -C "$repo_root" rev-parse --is-inside-work-tree &> /dev/null; then
+      local head_commit_ts
+      head_commit_ts=$(git -C "$repo_root" log -1 --format=%ct HEAD 2>/dev/null || echo 0)
+      if [[ "$head_commit_ts" =~ ^[0-9]+$ ]]; then
+        latest_repo_change_ts=$head_commit_ts
+      fi
+
+      while IFS= read -r relative_path; do
+        [[ -z "$relative_path" ]] && continue
+        local full_path="$repo_root/$relative_path"
+        if [[ -f "$full_path" ]]; then
+          local file_ts
+          file_ts=$(GetFileTimestamp "$full_path")
+          if (( file_ts > latest_repo_change_ts )); then
+            latest_repo_change_ts=$file_ts
+          fi
+        fi
+      done < <(
+        {
+          git -C "$repo_root" diff --name-only --relative HEAD 2>/dev/null
+          git -C "$repo_root" ls-files --others --exclude-standard 2>/dev/null
+        } | sort -u
+      )
     fi
+
+    if (( latest_repo_change_ts > bootstrap_ts )); then
+      should_build=true
+    fi
+  fi
+
+  if [[ "$should_build" == true ]]; then
+    echo "Building dotnetup..."
+    local dotnetup_project="$repo_root/src/Installer/dotnetup/dotnetup.csproj"
+    mkdir -p "$dotnetup_dir"
+
+    # Determine RID based on OS
+    local rid
+    if [[ "$(uname)" == "Darwin" ]]; then
+      if [[ "$(uname -m)" == "arm64" ]]; then
+        rid="osx-arm64"
+      else
+        rid="osx-x64"
+      fi
+    else
+      if [[ "$(uname -m)" == "aarch64" ]]; then
+        rid="linux-arm64"
+      else
+        rid="linux-x64"
+      fi
+    fi
+
+    "$DOTNET_INSTALL_DIR/dotnet" publish "$dotnetup_project" -c Release -r "$rid" -o "$dotnetup_dir"
+
+    if [[ $? -ne 0 ]]; then
+      echo "Failed to build dotnetup."
+      ExitWithExitCode 1
+    fi
+
+    echo "dotnetup built successfully"
+  fi
+}
+
+# Installs additional shared frameworks for testing purposes (batched, concurrent)
+function InstallDotNetSharedFrameworks {
+  local dotnet_root=$DOTNET_INSTALL_DIR
+  local versions_to_install=()
+
+  for version in "$@"; do
+    local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
+    if [[ ! -d "$fx_dir" ]]; then
+      versions_to_install+=("$version")
+    fi
+  done
+
+  if [[ ${#versions_to_install[@]} -eq 0 ]]; then
+    return
+  fi
+
+  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local dotnetup_exe="$script_dir/dotnetup/dotnetup"
+
+  "$dotnetup_exe" runtime install "${versions_to_install[@]}" --install-path "$dotnet_root" --no-progress --set-default-install false --untracked --interactive false
+  local lastexitcode=$?
+
+  if [[ $lastexitcode != 0 ]]; then
+    echo "Failed to install shared frameworks (${versions_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
+    ExitWithExitCode $lastexitcode
   fi
 }
 

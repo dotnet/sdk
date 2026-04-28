@@ -1,0 +1,469 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.DotNet.Tools.Bootstrapper;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
+
+public class ParserTests
+{
+    public static IEnumerable<object[]> ShellOverrideCommandArgs =>
+    [
+        [new[] { "defaultinstall", "user", "--shell", "bash" }],
+        [new[] { "init", "--shell", "bash" }]
+    ];
+
+    [Fact]
+    public void Parser_ShouldParseValidCommands()
+    {
+        // Arrange
+        var args = new[] { "sdk", "install", "8.0" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldHandleInvalidCommands()
+    {
+        // Arrange
+        var args = new[] { "invalid-command" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldHandleSdkHelp()
+    {
+        // Arrange
+        var args = new[] { "sdk", "--help" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldHandleRootHelp()
+    {
+        // Arrange
+        var args = new[] { "--help" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseInitCommand()
+    {
+        var args = new[] { "init", "--help" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldRejectWalkthroughCommand()
+    {
+        var args = new[] { "walkthrough", "--help" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseElevatedAdminPathCommand()
+    {
+        // Arrange
+        var args = new[] { "elevatedadminpath", "removedotnet", @"C:\Users\User\AppData\Local\Temp\dotnetup_elevated\output.txt" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseDefaultInstallCommand()
+    {
+        // Arrange
+        var args = new[] { "defaultinstall", "user" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [MemberData(nameof(ShellOverrideCommandArgs))]
+    public void Parser_ShouldParseCommandsWithShellOverride(string[] args)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("sdk", "install", "9.0", "--shell", "zsh")]
+    [InlineData("runtime", "install", "aspnetcore@9.0", "--shell", "pwsh")]
+    public void Parser_ShouldRejectShellOverrideOnInstallCommands(params string[] args)
+    {
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().NotBeEmpty();
+        parseResult.Errors.Select(error => error.Message)
+            .Should().Contain(message => message.Contains("--shell"));
+    }
+
+    [Theory]
+    [InlineData("bash")]
+    [InlineData("zsh")]
+    [InlineData("pwsh")]
+    public void Parser_ShouldParseEnvCommandWithValidShell(string shell)
+    {
+        // Arrange
+        var args = new[] { "print-env-script", "--shell", shell };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseEnvCommandWithCustomPath()
+    {
+        // Arrange
+        var args = new[] { "print-env-script", "--shell", "bash", "--dotnet-install-path", "/custom/path" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+    [Fact]
+    public void Parser_ShouldHandleVersionOption()
+    {
+        // Arrange
+        var args = new[] { "--version" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseEnvCommandWithShortOptions()
+    {
+        // Arrange
+        var args = new[] { "print-env-script", "-s", "bash", "-d", "/custom/path" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseEnvCommandHelp()
+    {
+        // Arrange
+        var args = new[] { "print-env-script", "--help" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_Version_ShouldBeDotnetupVersion()
+    {
+        // Parser.Version should return the dotnetup assembly version, not any other assembly
+        var version = Parser.Version;
+
+        // Should be a valid version format (not "unknown")
+        version.Should().NotBe("unknown");
+        version.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void DotnetupProcess_Version_ShouldOutputExpectedVersion()
+    {
+        // Run dotnetup --version as a process
+        // Use AppContext.BaseDirectory as working directory to avoid race conditions
+        // with other tests that may delete temp directories
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "--version" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        // Should succeed
+        exitCode.Should().Be(0);
+
+        // Output should match Parser.Version
+        output.Trim().Should().Be(Parser.Version);
+    }
+
+    [Fact]
+    public void DotnetupProcess_RootHelp_ShouldListInitCommand()
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("init");
+        output.Should().NotContain("walkthrough");
+    }
+
+    #region Runtime Command Parser Tests
+
+    [Theory]
+    [InlineData("9.0")]           // Version only - installs core runtime
+    [InlineData("latest")]        // Channel - installs core runtime
+    [InlineData("aspnetcore@9.0")]
+    [InlineData("windowsdesktop@lts")]
+    [InlineData("runtime@10.0.1")]
+    public void Parser_ShouldParseRuntimeInstallCommand(string componentSpec)
+    {
+        // Arrange
+        var args = new[] { "runtime", "install", componentSpec };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseRuntimeInstallWithOptions()
+    {
+        // Arrange
+        var args = new[] { "runtime", "install", "aspnetcore@9.0", "--install-path", @"C:\dotnet", "--no-progress" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldHandleRuntimeHelp()
+    {
+        // Arrange
+        var args = new[] { "runtime", "--help" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldHandleRuntimeInstallHelp()
+    {
+        // Arrange
+        var args = new[] { "runtime", "install", "--help" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_RuntimeInstallAllowsNoArgument()
+    {
+        // Arrange - no argument is valid (will use default behavior)
+        var args = new[] { "runtime", "install" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert - should parse without errors (argument is optional)
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty("component-spec argument is optional");
+    }
+
+    [Fact]
+    public void Parser_ShouldParseRuntimeInstallWithManifestPath()
+    {
+        // Arrange
+        var args = new[] { "runtime", "install", "9.0", "--manifest-path", @"C:\test\manifest.json" };
+
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region Untracked Option Parser Tests
+
+    [Fact]
+    public void Parser_ShouldParseSdkInstallWithUntracked()
+    {
+        var args = new[] { "sdk", "install", "9.0", "--untracked" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseSdkInstallWithoutUntracked()
+    {
+        var args = new[] { "sdk", "install", "9.0" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseRuntimeInstallWithUntracked()
+    {
+        var args = new[] { "runtime", "install", "aspnetcore@9.0", "--untracked" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseRootInstallWithUntracked()
+    {
+        var args = new[] { "install", "9.0", "--untracked" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Help Differentiation Tests
+
+    [Fact]
+    public void Help_RootCommand_ShowsGroupedLayout()
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("Install Commands:");
+        output.Should().Contain("Query Commands:");
+        output.Should().Contain("Configuration Commands:");
+        output.Should().Contain("Utility Commands:");
+    }
+
+    [Theory]
+    [InlineData("sdk")]
+    [InlineData("runtime")]
+    [InlineData("list")]
+    public void Help_Subcommand_DoesNotShowGroupedLayout(string subcommand)
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { subcommand, "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().NotContain("Install Commands:");
+        output.Should().NotContain("Query Commands:");
+        output.Should().NotContain("Configuration Commands:");
+        output.Should().NotContain("Utility Commands:");
+    }
+
+    [Fact]
+    public void Help_SdkSubcommand_ShowsOwnContent()
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "sdk", "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().Contain("sdk");
+        output.Should().Contain("install");
+        output.Should().Contain("update");
+        output.Should().Contain("uninstall");
+    }
+
+    [Fact]
+    public void Help_NestedSubcommand_DoesNotShowGroupedLayout()
+    {
+        var (exitCode, output) = Utilities.DotnetupTestUtilities.RunDotnetupProcess(
+            new[] { "sdk", "install", "--help" },
+            captureOutput: true,
+            workingDirectory: AppContext.BaseDirectory);
+
+        exitCode.Should().Be(0);
+        output.Should().NotContain("Install Commands:");
+        output.Should().NotContain("Query Commands:");
+        output.Should().Contain("install");
+    }
+
+    #endregion
+}

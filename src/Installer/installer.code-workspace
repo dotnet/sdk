@@ -1,0 +1,282 @@
+{
+    "folders": [
+        {
+            "path": ".",
+            "name": "installer"
+        },
+        {
+            "path": "../../test/dotnetup.Tests",
+            "name": "dotnetup.Tests"
+        },
+        {
+            "path": "../.."
+        }
+    ],
+    "settings": {
+        "dotnet.defaultSolution": "../../dotnetup.slnf",
+        "csharp.debug.console": "integratedTerminal",
+        "debug.terminal.clearBeforeReusing": true,
+        "editor.formatOnSave": true,
+        "omnisharp.useModernNet": true
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "Launch dotnetup",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "build-and-link",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/current/dotnetup.dll",
+                "args": "${input:dotnetupArgs}",
+                "cwd": "${workspaceFolder:installer}/dotnetup",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
+                },
+                "env": {
+                    "DOTNETUP_DEV_BUILD": "1"
+                }
+            },
+            {
+                "name": "Run dotnetup tests (launch)",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "publish-aot",
+                "program": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "test",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "/p:ContinuousIntegrationBuild=false",
+                ],
+                "cwd": "${workspaceFolder:dotnetup.Tests}",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "env": {
+                    "DOTNETUP_TEST_DEBUG": "0"
+                }
+            },
+            {
+                "name": "Run style check",
+                "type": "coreclr",
+                "request": "launch",
+                "program": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "build",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "-warnaserror",
+                    "/p:EnforceCodeStyleInBuild=true",
+                    "/p:CodeAnalysisTreatWarningsAsErrors=true"
+                ],
+                "cwd": "${workspaceFolder:sdk}",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
+                }
+            },
+            {
+                "name": "Debug dotnetup test",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "publish-aot",
+                "program": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "test",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "--filter",
+                    "FullyQualifiedName~${input:testName}",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "cwd": "${workspaceFolder:dotnetup.Tests}",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
+                },
+                "env": {
+                    "DOTNETUP_TEST_DEBUG": "1"
+                }
+            }
+        ],
+        "compounds": [],
+        "inputs": [
+            {
+                "id": "dotnetupArgs",
+                "type": "promptString",
+                "description": "Command line arguments (e.g., --info, sdk install latest)",
+                "default": "--info"
+            },
+            {
+                "id": "testName",
+                "type": "promptString",
+                "description": "Enter test name or partial test name to debug (e.g., 'InstallChannelVersionTest', 'Install', etc.)"
+            }
+        ]
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "build",
+                "type": "shell",
+                "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "build",
+                    "dotnetup/dotnetup.csproj",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": "$msCompile",
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                }
+            },
+            {
+                "label": "link-current-tfm",
+                "type": "shell",
+                "command": "pwsh",
+                "args": [
+                    "-NoProfile",
+                    "-File",
+                    "${workspaceFolder:installer}/hooks/link-current-tfm.ps1",
+                    "-BinDir",
+                    "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                ],
+                "windows": {
+                    "command": "pwsh",
+                    "args": [
+                        "-NoProfile",
+                        "-File",
+                        "${workspaceFolder:installer}/hooks/link-current-tfm.ps1",
+                        "-BinDir",
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                    ]
+                },
+                "linux": {
+                    "command": "bash",
+                    "args": [
+                        "${workspaceFolder:installer}/hooks/link-current-tfm.sh",
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                    ]
+                },
+                "osx": {
+                    "command": "bash",
+                    "args": [
+                        "${workspaceFolder:installer}/hooks/link-current-tfm.sh",
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                    ]
+                },
+                "presentation": {
+                    "reveal": "silent",
+                    "panel": "shared",
+                    "showReuseMessage": false
+                },
+                "problemMatcher": []
+            },
+            {
+                "label": "build-and-link",
+                "dependsOn": [
+                    "build",
+                    "link-current-tfm"
+                ],
+                "dependsOrder": "sequence",
+                "problemMatcher": []
+            },
+            {
+                "label": "publish-aot",
+                "type": "process",
+                "command": "dotnet",
+                "args": [
+                    "publish",
+                    "dotnetup/dotnetup.csproj",
+                    "--self-contained",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": "$msCompile"
+            },
+            {
+                "label": "dotnetup-style-check",
+                "type": "shell",
+                "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "build",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "-warnaserror",
+                    "/p:EnforceCodeStyleInBuild=true",
+                    "/p:CodeAnalysisTreatWarningsAsErrors=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:sdk}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": "$msCompile"
+            },
+            {
+                "label": "test",
+                "type": "shell",
+                "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
+                "args": [
+                    "test",
+                    "${workspaceFolder:dotnetup.Tests}/dotnetup.Tests.csproj",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": false,
+                    "clear": true
+                },
+                "problemMatcher": "$msCompile",
+                "group": {
+                    "kind": "test",
+                    "isDefault": true
+                }
+            },
+        ]
+    }
+}
