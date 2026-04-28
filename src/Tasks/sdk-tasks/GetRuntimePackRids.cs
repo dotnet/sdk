@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
@@ -19,8 +19,8 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             string runtimeJsonPath = Path.Combine(MetapackagePath, "runtime.json");
             string runtimeJsonContents = File.ReadAllText(runtimeJsonPath);
-            var runtimeJsonRoot = JObject.Parse(runtimeJsonContents);
-            string [] runtimeIdentifiers = ((JObject)runtimeJsonRoot["runtimes"]).Properties().Select(p => p.Name).ToArray();
+            var runtimeJsonRoot = JsonNode.Parse(runtimeJsonContents)!.AsObject();
+            string [] runtimeIdentifiers = runtimeJsonRoot["runtimes"]!.AsObject().Select(p => p.Key).ToArray();
             AvailableRuntimePackRuntimeIdentifiers = runtimeIdentifiers.Select(rid => new TaskItem(rid)).ToArray();
 
             return true;
