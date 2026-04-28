@@ -94,13 +94,87 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
         task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
     }
 
+    [Fact]
+    public void AppliesBasePathWhenRouteStartsWithBasePathButNotAsPathSegment()
+    {
+        // This test verifies the fix for a bug where routes like "App1.styles.css"
+        // were incorrectly skipped because they start with the BasePath "App1".
+        // The correct behavior is that the base path should only be considered
+        // "already applied" if the route starts with "App1/" (as a path segment),
+        // not just any string starting with "App1".
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        // Create an asset with BasePath "App1" and a route "App1.styles.css"
+        // The route starts with "App1" but NOT "App1/", so the base path should still be applied
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = buildEngine.Object,
+            Assets = [CreateCandidate(
+                Path.Combine("obj", "scopedcss", "bundle", "App1.styles.css"),
+                "App1",
+                "Project",
+                "App1.styles.css",
+                "All",
+                "CurrentProject",
+                basePath: "App1")],
+            CandidateEndpoints = [CreateCandidateEndpoint("App1.styles.css", Path.Combine("obj", "scopedcss", "bundle", "App1.styles.css"))]
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        task.Endpoints.Should().ContainSingle();
+        // The route should be "App1/App1.styles.css", not just "App1.styles.css"
+        task.Endpoints[0].ItemSpec.Should().Be("App1/App1.styles.css");
+    }
+
+    [Fact]
+    public void SkipsBasePathApplicationWhenRouteAlreadyHasBasePathAsPathSegment()
+    {
+        // This test verifies that routes already starting with "BasePath/" are correctly skipped
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = buildEngine.Object,
+            Assets = [CreateCandidate(
+                Path.Combine("wwwroot", "css", "app.css"),
+                "App1",
+                "Discovered",
+                "css/app.css",
+                "All",
+                "All",
+                basePath: "App1")],
+            // Route already has the base path as a path segment
+            CandidateEndpoints = [CreateCandidateEndpoint("App1/css/app.css", Path.Combine("wwwroot", "css", "app.css"))]
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        task.Endpoints.Should().ContainSingle();
+        // Should remain "App1/css/app.css", not become "App1/App1/css/app.css"
+        task.Endpoints[0].ItemSpec.Should().Be("App1/css/app.css");
+    }
+
     private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
         string sourceType,
         string relativePath,
         string assetKind,
-        string assetMode)
+        string assetMode,
+        string basePath = "base")
     {
         var result = new StaticWebAsset()
         {
@@ -108,7 +182,7 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
             SourceId = sourceId,
             SourceType = sourceType,
             ContentRoot = Directory.GetCurrentDirectory(),
-            BasePath = "base",
+            BasePath = basePath,
             RelativePath = relativePath,
             AssetKind = assetKind,
             AssetMode = assetMode,

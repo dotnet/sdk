@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -442,14 +443,14 @@ public class Test
         {
             var test = PopulateTestCs(sourceCode);
             test.ExpectedDiagnostics.AddRange(expectedDiagnostics);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyAnalyzerCsAsync(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestCs(sourceCode);
             test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", editorconfigText));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static VerifyCS.Test PopulateTestCs(string sourceCode)
@@ -465,14 +466,14 @@ public class Test
         private static async Task VerifyAnalyzerAsyncVbAsync(string sourceCode)
         {
             var task = PopulateTestVb(sourceCode);
-            await task.RunAsync();
+            await task.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyAnalyzerAsyncVbAsync(string sourceCode, string editorconfigText)
         {
             var test = PopulateTestVb(sourceCode);
             test.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", editorconfigText));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static VerifyVB.Test PopulateTestVb(string sourceCode)

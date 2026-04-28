@@ -1,6 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
 
@@ -77,20 +76,15 @@ public class PackageTests
               "containerize/containerize.dll",
               "containerize/containerize.runtimeconfig.json",
               "containerize/Microsoft.DotNet.Cli.Utils.dll",
-              "containerize/Microsoft.Extensions.Configuration.Abstractions.dll",
               "containerize/Microsoft.Extensions.Configuration.Binder.dll",
               "containerize/Microsoft.Extensions.Configuration.dll",
-              "containerize/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
               "containerize/Microsoft.Extensions.DependencyInjection.dll",
               "containerize/Microsoft.Extensions.DependencyModel.dll",
-              "containerize/Microsoft.Extensions.Logging.Abstractions.dll",
               "containerize/Microsoft.Extensions.Logging.Configuration.dll",
               "containerize/Microsoft.Extensions.Logging.Console.dll",
               "containerize/Microsoft.Extensions.Logging.MSBuild.dll",
               "containerize/Microsoft.Extensions.Logging.dll",
               "containerize/Microsoft.Extensions.Options.ConfigurationExtensions.dll",
-              "containerize/Microsoft.Extensions.Options.dll",
-              "containerize/Microsoft.Extensions.Primitives.dll",
               "containerize/Microsoft.NET.Build.Containers.dll",
               "containerize/Newtonsoft.Json.dll",
               "containerize/NuGet.Common.dll",
@@ -108,13 +102,9 @@ public class PackageTests
               "Microsoft.NET.Build.Containers.nuspec",
               "README.md",
               $"tasks/{netTFM}/Microsoft.DotNet.Cli.Utils.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.Logging.Abstractions.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.MSBuild.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.Options.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.Primitives.dll",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.deps.json",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.dll",
               $"tasks/{netTFM}/Newtonsoft.Json.dll",

@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Cli;
 
-static class EnvironmentVariableNames
+internal static class EnvironmentVariableNames
 {
     public static readonly string ALLOW_TARGETING_PACK_CACHING = "DOTNETSDK_ALLOW_TARGETING_PACK_CACHING";
     public static readonly string WORKLOAD_PACK_ROOTS = "DOTNETSDK_WORKLOAD_PACK_ROOTS";
@@ -13,19 +13,26 @@ static class EnvironmentVariableNames
     public static readonly string WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS = "DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS";
     public static readonly string WORKLOAD_DISABLE_PACK_GROUPS = "DOTNET_CLI_WORKLOAD_DISABLE_PACK_GROUPS";
     public static readonly string DISABLE_PUBLISH_AND_PACK_RELEASE = "DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE";
-    public static readonly string DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS = "DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS";
+    public static readonly string DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS = nameof(DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS);
     public static readonly string DOTNET_CLI_FORCE_UTF8_ENCODING = nameof(DOTNET_CLI_FORCE_UTF8_ENCODING);
     public static readonly string TELEMETRY_OPTOUT = "DOTNET_CLI_TELEMETRY_OPTOUT";
-    public static readonly string DOTNET_ROOT = "DOTNET_ROOT";
-    public static readonly string DOTNET_HOST_PATH = "DOTNET_HOST_PATH";
-    public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG = "DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG";
-    public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR = "DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR";
-    public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER = "DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER";
-    public static readonly string DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT = "DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT";
+    public static readonly string DOTNET_ROOT = nameof(DOTNET_ROOT);
+    public static readonly string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);
+    public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG = nameof(DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG);
+    public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR = nameof(DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR);
+    public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER = nameof(DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER);
+    public static readonly string DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT = nameof(DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT);
     public static readonly string DOTNET_GENERATE_ASPNET_CERTIFICATE = nameof(DOTNET_GENERATE_ASPNET_CERTIFICATE);
     public static readonly string DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = nameof(DOTNET_ADD_GLOBAL_TOOLS_TO_PATH);
     public static readonly string DOTNET_NOLOGO = nameof(DOTNET_NOLOGO);
     public static readonly string DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK = nameof(DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK);
+    public static readonly string DOTNET_CLI_ENABLEAOT = nameof(DOTNET_CLI_ENABLEAOT);
+    public static readonly string DOTNET_CLI_TELEMETRY_SESSIONID = nameof(DOTNET_CLI_TELEMETRY_SESSIONID);
+    public static readonly string DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING = nameof(DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING);
+    // Telemetry logging/debug/testing.
+    public static readonly string DOTNET_CLI_TELEMETRY_STORAGE_PATH = nameof(DOTNET_CLI_TELEMETRY_STORAGE_PATH);
+    public static readonly string DOTNET_CLI_TELEMETRY_LOG_PATH = nameof(DOTNET_CLI_TELEMETRY_LOG_PATH);
+    public static readonly string DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT = nameof(DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
 
 #if NET7_0_OR_GREATER
     private static readonly Version s_version6_0 = new(6, 0);

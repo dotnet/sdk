@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [WindowsOnlyFact]
         public void MStestMultiTFM()
         {
-            var testProjectDirectory = _testAssetsManager.CopyTestAsset("VSTestMulti", identifier: "1")
+            var testProjectDirectory = TestAssetsManager.CopyTestAsset("VSTestMulti", identifier: "1")
                 .WithSource()
                 .WithVersionVariables()
                 .Path;
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             // Copy XunitMulti project in output directory of project dotnet-test.Tests
             string testAppName = "XunitMulti";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: "2")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: "2")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             // Copy XunitMulti project in output directory of project dotnet-test.Tests
             string testAppName = "XunitMulti";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: "3")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: "3")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ItCanTestAMultiTFMProjectWithImplicitRestore()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(
+            var testInstance = TestAssetsManager.CopyTestAsset(
                     "MultiTFMXunitProject",
                     testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             testProject.ReferencedProjects.Add(libraryProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new DotnetNewCommand(Log, "sln")
                 .WithVirtualHive()

@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 // squashing snapshots by creating output unique for template (but not alias) and preventing item to have name by alias
                 TemplateSpecificArgs = new[] { "-o", itemName, "-n", "item" }.Concat(args ?? Enumerable.Empty<string>()),
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 VerifyCommandOutput = true,
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
                 SettingsDirectory = _fixture.HomeDirectory,
@@ -80,6 +80,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomScrubbers(
                 ScrubbersDefinition.Empty
                     .AddScrubber(sb => sb.UnixifyNewlines(), "out")
+                    .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
                     .AddScrubber((path, content) =>
                     {
                         if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
@@ -94,12 +95,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             if (expectedTemplateName.Equals("global.json file") &&
                 (args == null || !args.Contains("--sdk-version")))
             {
-                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(default);
+                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(TestContext.Current.CancellationToken);
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");
             }
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         //
@@ -112,7 +113,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         //{
         //    TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
         //    {
-        //        SnapshotsDirectory = "Approvals",
+        //        SnapshotsDirectory = ApprovalsDirectory,
         //        SettingsDirectory = _fixture.HomeDirectory,
         //    }
         //    .WithCustomDirectoryVerifier(async (content, contentFetcher) =>
@@ -209,7 +210,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
                 TemplateSpecificArgs = args,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDir,
                 SettingsDirectory = _fixture.HomeDirectory,
                 VerifyCommandOutput = true,
@@ -224,10 +225,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 ScrubbersDefinition.Empty
                     .AddScrubber(sb => sb.Replace($"<TargetFramework>{currentDefaultFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
+                    .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
             );
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
 
             Directory.Delete(workingDir, true);
         }
@@ -404,7 +406,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
                 TemplateSpecificArgs = args,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDir,
                 SettingsDirectory = _fixture.HomeDirectory,
                 VerifyCommandOutput = true,
@@ -424,10 +426,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     .AddScrubber(sb => sb.Replace($"<LangVersion>{langVersion}</LangVersion>", "<LangVersion>%LANG%</LangVersion>"))
                     .AddScrubber(sb => sb.Replace($"<TargetFramework>{framework ?? currentDefaultFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
+                    .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
             );
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
 
             if (buildPass)
             {

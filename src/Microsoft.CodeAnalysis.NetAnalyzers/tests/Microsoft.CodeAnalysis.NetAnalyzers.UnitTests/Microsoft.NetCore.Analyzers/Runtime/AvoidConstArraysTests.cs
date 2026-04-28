@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -520,7 +521,7 @@ namespace Z
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -803,7 +804,7 @@ public class Test
     }
 }",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6686")]
@@ -818,7 +819,7 @@ public class MyClass
     public List<object> Cases => new() { new object[0] };
 }",
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6697")]
@@ -1021,7 +1022,7 @@ public class MyClass
             {
                 TestCode = source,
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7111, "https://github.com/dotnet/roslyn-analyzers/issues/7111")]
@@ -1051,7 +1052,7 @@ public class MyClass
                 {
                     OutputKind = OutputKind.ConsoleApplication
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7216, "https://github.com/dotnet/roslyn-analyzers/issues/7216")]

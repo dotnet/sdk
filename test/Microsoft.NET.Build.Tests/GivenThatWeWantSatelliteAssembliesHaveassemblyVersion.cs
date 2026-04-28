@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
 
         private void RestoreAndBuildTestAssets([CallerMemberName] string callingMethod = "")
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
               .CopyTestAsset("AllResourcesInSatelliteDisableVersionGenerate", callingMethod)
               .WithSource();
 

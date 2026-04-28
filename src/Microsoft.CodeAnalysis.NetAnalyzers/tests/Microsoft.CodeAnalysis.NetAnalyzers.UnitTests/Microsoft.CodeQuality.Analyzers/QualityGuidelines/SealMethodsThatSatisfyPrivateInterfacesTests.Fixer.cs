@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -159,7 +160,7 @@ public sealed class C : B, IFace
                 },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeSealed",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -213,7 +214,7 @@ internal class C : B, IFace
                 },
                 CodeActionIndex = 2,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -267,7 +268,7 @@ internal abstract class C : B, IFace
                 },
                 CodeActionIndex = 1, // sealed option is not available because class is abstract
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -356,7 +357,7 @@ internal class C : B, IFace
                 },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -404,7 +405,7 @@ internal abstract class C : B, IFace
                 },
                 CodeActionIndex = 0, // sealed option is not available because type is abstract
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
