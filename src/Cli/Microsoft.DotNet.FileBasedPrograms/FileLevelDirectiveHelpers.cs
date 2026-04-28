@@ -364,6 +364,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
     public abstract override string ToString();
 
+    public virtual string KindToString() => GetType().Name.ToLowerInvariant();
+
     /// <summary>
     /// <c>#!</c> directive.
     /// </summary>
@@ -800,7 +802,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             };
         }
 
-        public string KindToString()
+        public override string KindToString()
         {
             return Kind switch
             {
@@ -897,7 +899,7 @@ internal struct DirectiveDeduplicator
 
         if (_seen.TryGetValue(directive, out var existingDirective))
         {
-            var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
+            var typeAndName = $"#:{existingDirective.KindToString()} {existingDirective.Name}";
             reportError(directive.Info.SourceFile.Text, directive.Info.SourceFile.Path, directive.Info.Span,
                 string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
         }

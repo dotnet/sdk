@@ -1712,7 +1712,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
                 duplicateTypeAndName = "#:property MyProp";
                 break;
             default:
-                throw new ArgumentException(directiveKind);
+                throw new ArgumentException($"Unsupported directive kind '{directiveKind}'.", nameof(directiveKind));
         }
 
         File.WriteAllText(programPath, $"""
