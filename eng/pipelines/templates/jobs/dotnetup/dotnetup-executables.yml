@@ -82,8 +82,15 @@ jobs:
       - powershell: |
           $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
           $dotnetupPublishDir = "$($publishDir.FullName)\${{ parameters.rid }}\publish\"
-          & .\.dotnet\dotnet build .\src\Installer\dotnetup.sign.proj /t:Sign "/p:DotnetupPublishDir=$dotnetupPublishDir" -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+          & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign "/p:DotnetupPublishDir=$dotnetupPublishDir" -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
         displayName: 🖋️ Sign dotnetup executable (${{ parameters.rid }})
+      - powershell: |
+          $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
+          $exe = "$($publishDir.FullName)\${{ parameters.rid }}\publish\dotnetup.exe"
+          & signtool verify /pa "$exe"
+          if ($LASTEXITCODE -ne 0) { Write-Error "SignCheck failed for dotnetup.exe"; exit 1 }
+          Write-Host "✅ Signature verified for dotnetup.exe"
+        displayName: ✅ Verify dotnetup signature (${{ parameters.rid }})
       - powershell: |
           # Copy the published (and signed) output to the artifact staging directory
           $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
@@ -126,8 +133,13 @@ jobs:
       - script: |
           PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
           DOTNETUP_PUBLISH_DIR="$PUBLISH_DIR/${{ parameters.rid }}/publish/"
-          ./.dotnet/dotnet build ./src/Installer/dotnetup.sign.proj /t:Sign "/p:DotnetupPublishDir=$DOTNETUP_PUBLISH_DIR" /p:TargetOS=osx -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+          ./.dotnet/dotnet build ./src/Installer/Installer.sign.proj /t:Sign "/p:DotnetupPublishDir=$DOTNETUP_PUBLISH_DIR" /p:TargetOS=osx -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
         displayName: 🖋️ Sign dotnetup executable (${{ parameters.rid }})
+      - script: |
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          codesign --verify --deep --strict "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup"
+          echo "✅ Signature verified for dotnetup"
+        displayName: ✅ Verify dotnetup signature (${{ parameters.rid }})
 
     - ${{ if ne(parameters.pool.os, 'windows') }}:
       - script: |
