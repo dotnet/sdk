@@ -44,7 +44,9 @@ internal sealed class WebSocketClientTransport : ClientTransport
     }
 
     public override bool IsExpectedConnectionTermination(Exception exception, CancellationToken cancellationToken)
-        => cancellationToken.IsCancellationRequested;
+        => cancellationToken.IsCancellationRequested
+        || exception is ObjectDisposedException
+        || (exception is System.Net.WebSockets.WebSocketException && _handler.IsClientSocketAborted);
 
     /// <summary>
     /// Creates and starts a new <see cref="WebSocketClientTransport"/> instance.
@@ -86,6 +88,9 @@ internal sealed class WebSocketClientTransport : ClientTransport
 
         private WebSocket? _clientSocket;
 
+        public bool IsClientSocketAborted
+            => _clientSocket?.State is System.Net.WebSockets.WebSocketState.Aborted;
+
         // Reused across WriteAsync calls to avoid allocations.
         // WriteAsync is invoked under a semaphore in DefaultHotReloadClient.
         private MemoryStream? _sendBuffer;
@@ -95,7 +100,17 @@ internal sealed class WebSocketClientTransport : ClientTransport
             logger.LogDebug("Disposing agent websocket transport");
 
             _sendBuffer?.Dispose();
-            _clientSocket?.Dispose();
+
+            try
+            {
+                _clientSocket?.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // The underlying HTTP context may already be disposed when the
+                // child process was terminated (e.g. Ctrl+R restart).
+            }
+
             SharedSecretProvider.Dispose();
         }
 
