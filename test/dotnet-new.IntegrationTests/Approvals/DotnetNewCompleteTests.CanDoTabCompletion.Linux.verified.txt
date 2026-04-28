@@ -25,6 +25,7 @@ proto
 razorclasslib
 razorcomponent
 sln
+slnf
 tool-manifest
 view
 viewimports
@@ -34,6 +35,7 @@ webapi
 webapiaot
 webapp
 webconfig
+webworker
 winforms
 winformscontrollib
 winformslib

@@ -8,7 +8,6 @@ using System.IO;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
-using Xunit;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -18,7 +17,7 @@ public class TestProgressStateTests
     public void ReportSkippedTest_MultipleCalls_DifferentInstanceId()
     {
         var stopwatchMock = new Mock<IStopwatch>();
-        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
         string testUid = "test1";
         string instanceA = "instanceA";
         string instanceB = "instanceB";
@@ -48,7 +47,7 @@ public class TestProgressStateTests
     public void ReportSkippedTest_RepeatedInstanceAfterRetry_ThrowsInvalidOperationException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
-        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
         string testUid = "test1";
         string instanceA = "instanceA";
         string instanceB = "instanceB";
@@ -75,7 +74,7 @@ public class TestProgressStateTests
     public void ReportFailedTest_RepeatedCalls_IncrementsFailedTests(int callCount)
     {
         var stopwatchMock = new Mock<IStopwatch>();
-        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
         state.NotifyHandshake("instance1");
         for (int i = 0; i < callCount; i++)
         {
@@ -95,7 +94,7 @@ public class TestProgressStateTests
     public void ReportFailedTest_DifferentInstanceId_RetriesFailureAndResetsCount()
     {
         var stopwatchMock = new Mock<IStopwatch>();
-        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
         state.NotifyHandshake("id1");
         state.ReportFailedTest("testUid", "id1");
         state.ReportFailedTest("testUid", "id1");
@@ -114,7 +113,7 @@ public class TestProgressStateTests
     public void ReportFailedTest_ReusingOldInstanceId_ThrowsInvalidOperationException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
-        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
         state.NotifyHandshake("id1");
         state.ReportFailedTest("testUid", "id1");
         state.NotifyHandshake("id2");
@@ -134,7 +133,7 @@ public class TestProgressStateTests
     public void ReportTest_WithNewInstanceId_ClearsOldReports()
     {
         var stopwatchMock = new Mock<IStopwatch>();
-        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
         state.NotifyHandshake("id1");
         state.ReportFailedTest("testUid", "id1");
         state.ReportFailedTest("testUid", "id1");
@@ -154,6 +153,7 @@ public class TestProgressStateTests
         state.SkippedTests.Should().Be(1);
         state.RetriedFailedTests.Should().Be(3);
     }
+
     /// <summary>
     /// Tests that DiscoverTest increments PassedTests and adds the displayName and uid to DiscoveredTests.
     /// </summary>
@@ -173,14 +173,15 @@ public class TestProgressStateTests
             assembly: "assembly.dll",
             targetFramework: null,
             architecture: null,
-            stopwatch: stopwatchMock.Object);
+            stopwatch: stopwatchMock.Object,
+            isDiscovery: true);
 
         state.DiscoverTest(displayName, uid);
 
-        state.PassedTests.Should().Be(1);
-        state.DiscoveredTests.Count.Should().Be(1);
-        state.DiscoveredTests[0].DisplayName.Should().Be(displayName);
-        state.DiscoveredTests[0].UID.Should().Be(uid);
+        state.DiscoveredTests.Should().Be(1);
+        state.DiscoveredTestNames.Count.Should().Be(1);
+        state.DiscoveredTestNames[0].DisplayName.Should().Be(displayName);
+        state.DiscoveredTestNames[0].UID.Should().Be(uid);
     }
 
     [Fact]
@@ -188,7 +189,7 @@ public class TestProgressStateTests
     {
         // Tests are retried, total test count stays 3 to give use comparable counts, no matter how many times we retry.
         var stopwatchMock = new Mock<IStopwatch>();
-        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
 
         // First run
         state.NotifyHandshake("run1");
@@ -227,7 +228,7 @@ public class TestProgressStateTests
     {
         // This is special test for dynamic tests where we don't know how many tests will be produced in the second run.
         var stopwatchMock = new Mock<IStopwatch>();
-        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
 
         // First run
         state.NotifyHandshake("run1");
@@ -259,7 +260,7 @@ public class TestProgressStateTests
     {
         // This is special test for dynamic tests where we cannot avoid re-running even non-failing tests from dynamic tests.
         var stopwatchMock = new Mock<IStopwatch>();
-        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
 
         // First run
         state.NotifyHandshake("run1");

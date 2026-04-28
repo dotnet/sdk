@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
-        private const string DOTNET_HOST = nameof(DOTNET_HOST);
+        private const string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
         private const string SdkResolverHonoredGlobalJson = "SdkResolverHonoredGlobalJson";
@@ -234,9 +234,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string? fullPathToMuxer =
-                    TryResolveMuxerFromSdkResolution(dotnetSdkDir)
-                    ?? Path.Combine(dotnetRoot, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet);
+                string? fullPathToMuxer = TryResolveMuxerFromSdkResolution(dotnetSdkDir) ?? Path.Combine(dotnetRoot, Constants.DotNetFileName);
                 if (File.Exists(fullPathToMuxer))
                 {
                     // keeping this in until this component no longer needs to handle 17.14.
@@ -245,12 +243,12 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                     // this is the future-facing implementation.
                     environmentVariablesToAdd ??= new Dictionary<string, string?>(1)
                     {
-                        [DOTNET_HOST] = fullPathToMuxer
+                        [DOTNET_HOST_PATH] = fullPathToMuxer
                     };
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{DOTNET_HOST}' environment variable because dotnet executable '{fullPathToMuxer}' does not exist.");
+                    logger?.LogMessage($"Could not set '{DOTNET_HOST_PATH}' environment variable because dotnet executable '{fullPathToMuxer}' does not exist.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
@@ -308,7 +306,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             };
 
             //  First check if requested SDK resolves to a workload SDK pack
-            string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
+            string? userProfileDir = new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath();
             ResolutionResult? workloadResult = null;
             if (dotnetRoot is not null && netcoreSdkVersion is not null)
             {
@@ -349,10 +347,9 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         /// </remarks>
         private static string? TryResolveMuxerFromSdkResolution(string resolvedSdkDirectory)
         {
-            var expectedFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet;
             var currentDir = resolvedSdkDirectory;
             var expectedDotnetRoot = Path.GetDirectoryName(Path.GetDirectoryName(currentDir));
-            var expectedMuxerPath = Path.Combine(expectedDotnetRoot, expectedFileName);
+            var expectedMuxerPath = Path.Combine(expectedDotnetRoot, Constants.DotNetFileName);
             if (File.Exists(expectedMuxerPath))
             {
                 return expectedMuxerPath;

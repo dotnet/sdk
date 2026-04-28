@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("MyProject.fsproj", "Specifying a project for 'dotnet test' should be via '--project'.")]
         public void TestCommandShouldValidateFileArgumentsAndProvideHelpfulMessages(string filename, string expectedErrorStart)
         {
-            var testDir = _testAssetsManager.CreateTestDirectory();
+            var testDir = TestAssetsManager.CreateTestDirectory();
 
             // Create the test file
             var testFilePath = Path.Combine(testDir.Path, filename);
@@ -32,10 +32,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testDir.Path)
-                .Execute(filename);
+                .Execute("--my-arg", filename);
 
             result.ExitCode.Should().NotBe(0);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain(expectedErrorStart);
             }
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void TestCommandShouldValidateDirectoryArgumentAndProvideHelpfulMessage()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory();
+            var testDir = TestAssetsManager.CreateTestDirectory();
             var subDir = Path.Combine(testDir.Path, "test_directory");
             Directory.CreateDirectory(subDir);
             File.WriteAllText(Path.Combine(testDir.Path, "global.json"),
@@ -58,10 +58,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testDir.Path)
-                .Execute("test_directory");
+                .Execute("--myarg", "test_directory");
 
             result.ExitCode.Should().NotBe(0);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain("Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.");
             }
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void TestCommandShouldValidateDllArgumentAndProvideHelpfulMessage()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory();
+            var testDir = TestAssetsManager.CreateTestDirectory();
 
             // Create a dummy dll file
             var dllPath = Path.Combine(testDir.Path, "test.dll");
@@ -86,10 +86,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testDir.Path)
-                .Execute("test.dll");
+                .Execute("--my-arg", "test.dll");
 
             result.ExitCode.Should().NotBe(0);
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdErr.Should().Contain("Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.");
             }

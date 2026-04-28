@@ -19,7 +19,7 @@ public class GivenDotnetRunUsesTargetExtension : SdkTest
     public void ItInvokesTheTargetAndRunsCustomLogic()
     {
         var testAppName = "DotnetRunTargetExtension";
-        var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+        var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
             .WithSource();
         var testProjectDirectory = testInstance.Path;
 
@@ -45,7 +45,7 @@ public class GivenDotnetRunUsesTargetExtension : SdkTest
     public void ItShowsErrorsDuringCustomLogicExecution()
     {
         var testAppName = "DotnetRunTargetExtensionWithError";
-        var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+        var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
             .WithSource();
         var testProjectDirectory = testInstance.Path;
 

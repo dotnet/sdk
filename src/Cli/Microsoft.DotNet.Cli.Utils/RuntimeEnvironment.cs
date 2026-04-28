@@ -12,7 +12,8 @@ internal enum Platform
     FreeBSD = 4,
     illumos = 5,
     Solaris = 6,
-    Haiku = 7
+    Haiku = 7,
+    OpenBSD = 8
 }
 
 internal static class RuntimeEnvironment
@@ -42,6 +43,8 @@ internal static class RuntimeEnvironment
                 return "Mac OS X";
             case Platform.FreeBSD:
                 return nameof(Platform.FreeBSD);
+            case Platform.OpenBSD:
+                return nameof(Platform.OpenBSD);
             case Platform.illumos:
                 return GetDistroId() ?? nameof(Platform.illumos);
             case Platform.Solaris:
@@ -69,6 +72,7 @@ internal static class RuntimeEnvironment
                 // we only need the major version; 11
                 return RuntimeInformation.OSDescription.Split(' ')[2].Split('.')[0];
             case Platform.FreeBSD:
+            case Platform.OpenBSD:
             case Platform.Haiku:
                 // only the major version
                 return Environment.OSVersion.Version.ToString(1);
@@ -230,6 +234,10 @@ internal static class RuntimeEnvironment
         if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
         {
             return Platform.FreeBSD;
+        }
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("OPENBSD")))
+        {
+            return Platform.OpenBSD;
         }
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ILLUMOS")))
         {
