@@ -1,6 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -95,7 +97,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task TestCatchPreviewException()
         {
-            var csInput = @" 
+            var csInput = @"
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
@@ -125,13 +127,13 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("DerivedException", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestCustomMessageCustomURL()
         {
-            var csInput = @" 
+            var csInput = @"
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
         {
@@ -154,13 +156,13 @@ namespace Preview_Feature_Scratch
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(0).WithArguments("Lib", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(1).WithArguments("Lib", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestCustomMessageDefaultURL()
         {
-            var csInput = @" 
+            var csInput = @"
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
         {
@@ -181,13 +183,13 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(0).WithArguments("Lib", DetectPreviewFeatureAnalyzer.DefaultURL, "Lib is in preview."));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestDefaultMessageCustomURL()
         {
-            var csInput = @" 
+            var csInput = @"
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
         {
@@ -208,13 +210,13 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Lib", "https://aka.ms/aspnet/kestrel/http3reqs"));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestArrayOfPreviewTypes()
         {
-            var csInput = @" 
+            var csInput = @"
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
         {
@@ -237,13 +239,13 @@ namespace Preview_Feature_Scratch
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Lib", "https://aka.ms/aspnet/kestrel/http3reqs"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("Lib", "https://aka.ms/aspnet/kestrel/http3reqs"));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestArrayOfArraysOfPreviewTypes()
         {
-            var csInput = @" 
+            var csInput = @"
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
         {
@@ -264,13 +266,13 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Lib", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestPreviewLanguageFeaturesHeirarchy()
         {
-            var csInput = @" 
+            var csInput = @"
                 using System.Runtime.Versioning; using System;
                 namespace Preview_Feature_Scratch
                 {
@@ -298,13 +300,13 @@ namespace Preview_Feature_Scratch
                     ";
 
             var test = TestCSPreview(csInput);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestPreviewLanguageFeatures()
         {
-            var csInput = @" 
+            var csInput = @"
                 using System.Runtime.Versioning; using System;
                 namespace Preview_Feature_Scratch
                 {
@@ -333,13 +335,13 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.StaticAbstractIsPreviewFeatureRule).WithLocation(0).WithArguments("StaticMethod"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.StaticAbstractIsPreviewFeatureRule).WithLocation(1).WithArguments("AProperty"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.StaticAbstractIsPreviewFeatureRule).WithLocation(2).WithArguments("get"));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestInterfaceMethodInvocation()
         {
-            var csInput = @" 
+            var csInput = @"
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
         {
@@ -395,13 +397,13 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("AProperty", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(3).WithArguments("AnotherInterfaceProperty", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(4).WithArguments("FooDelegate", "IProgram.FooDelegate", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestDelegate()
         {
-            var csInput = @" 
+            var csInput = @"
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
         {
@@ -420,13 +422,13 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Del", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestTypeOf()
         {
-            var csInput = @" 
+            var csInput = @"
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
@@ -438,20 +440,20 @@ namespace Preview_Feature_Scratch
             Console.WriteLine({|#0:typeof(IFoo)|});
         }
     }
-    
+
     [RequiresPreviewFeatures]
     interface IFoo { }
 }";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("IFoo", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestSimpleCustomAttributeOnPreviewClass()
         {
-            var csInput = @" 
+            var csInput = @"
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
@@ -479,13 +481,13 @@ class MyAttribute : Attribute
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("A", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestSimpleCustomAttribute()
         {
-            var csInput = @" 
+            var csInput = @"
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
@@ -512,13 +514,13 @@ class MyAttribute : Attribute
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("MyAttribute", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/6134")]
         public async Task TestCustomAttribute()
         {
-            var csInput = @" 
+            var csInput = @"
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
@@ -587,13 +589,13 @@ class MyAttribute : Attribute
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("MyAttribute", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("PreviewFeature", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestDeepNesting()
         {
-            var csInput = @" 
+            var csInput = @"
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
@@ -632,13 +634,13 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("AMethod", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("AProperty", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(3).WithArguments("AField", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestNestedInvocation()
         {
-            var csInput = @" 
+            var csInput = @"
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
@@ -660,13 +662,13 @@ class A
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("B", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestNestedClass()
         {
-            var csInput = @" 
+            var csInput = @"
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
@@ -688,13 +690,13 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("NestedClass", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestCallback()
         {
-            var csInput = @" 
+            var csInput = @"
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {" +
@@ -734,13 +736,13 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(2).WithArguments("AFoo", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(4).WithArguments("Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(5).WithArguments("CallBackMethod", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
         public async Task TestVbCaseInsensitiveCsharpSensitive()
         {
-            var csInput = @" 
+            var csInput = @"
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
         {
@@ -773,9 +775,9 @@ namespace Preview_Feature_Scratch
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(0).WithArguments("UnmarkedMethodInMarkedInterface", "IProgram.UnmarkedMethodInMarkedInterface", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(1).WithArguments("Program", "IProgram", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
 
-            var vbInput = @" 
+            var vbInput = @"
         Imports System
         Imports System.Runtime.Versioning
         Module Preview_Feature_Scratch
@@ -800,7 +802,95 @@ namespace Preview_Feature_Scratch
             var testVb = TestVB(vbInput);
             testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(0).WithArguments("MarkedMethodInInterface", "Iprogram.MarkedMethodInInterface", DetectPreviewFeatureAnalyzer.DefaultURL));
             testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(1).WithArguments("Program", "Iprogram", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await testVb.RunAsync();
+            await testVb.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Fact]
+        public async Task VerifyRuntimeAsyncReportsDiagnostic()
+        {
+            var csInput = """
+                using System.Threading.Tasks;
+                class C
+                {
+                    async Task M()
+                    {
+                        await Task.CompletedTask;
+                    }
+                }
+                """;
+
+            var test = new RuntimeAsyncFixVerifier
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        csInput
+                    }
+                },
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(6,9): error CA2252: Using 'Await' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.
+                    VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithSpan(6, 9, 6, 33).WithArguments("Await", DetectPreviewFeatureAnalyzer.DefaultURL)
+                }
+            };
+
+            await test.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Fact]
+        public async Task VerifyRuntimeAsyncReportsDiagnostic_CustomAwaiter()
+        {
+            var csInput = """
+                using System.Threading.Tasks;
+                class C
+                {
+                    async Task M()
+                    {
+                        await Task.Yield();
+                    }
+                }
+                """;
+
+            var test = new RuntimeAsyncFixVerifier
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        csInput
+                    }
+                },
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(6,9): error CA2252: Using 'UnsafeAwaitAwaiter' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.
+                    VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithSpan(6, 9, 6, 27).WithArguments("UnsafeAwaitAwaiter", DetectPreviewFeatureAnalyzer.DefaultURL)
+                }
+            };
+            await test.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        private class RuntimeAsyncFixVerifier : VerifyCS.Test
+        {
+            public static readonly ReferenceAssemblies Net100 = new("net10.0", new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0-rc.1.25451.107"), Path.Combine("ref", "net10.0"));
+
+            public RuntimeAsyncFixVerifier()
+            {
+                ReferenceAssemblies = Net100;
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10;
+            }
+
+            protected override ParseOptions CreateParseOptions()
+            {
+                var options = base.CreateParseOptions();
+                return options.WithFeatures([new("runtime-async", "on")]);
+            }
+
+            protected override CompilationOptions CreateCompilationOptions()
+            {
+                var options = base.CreateCompilationOptions();
+                return options.WithSpecificDiagnosticOptions([new("SYSLIB5007", ReportDiagnostic.Suppress)]);
+            }
         }
     }
 }

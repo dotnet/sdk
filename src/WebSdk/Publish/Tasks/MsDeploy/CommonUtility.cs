@@ -339,7 +339,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-#if NET472
+#if NETFRAMEWORK
         /// <summary>
         /// Return the current machine's IIS version
         /// </summary>
@@ -440,7 +440,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <param name="document"></param>
         public static void SaveDocument(XmlDocument document, string outputFileName, Encoding encode)
         {
-#if NET472
+#if NETFRAMEWORK
             XmlTextWriter textWriter = new(outputFileName, encode)
             {
                 Formatting = Formatting.Indented
@@ -487,7 +487,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 currentMinVersion = new Version(7, 1, 614); // current drop
                 {
                     string strMinimumVersion = string.Empty;
-#if NET472
+#if NETFRAMEWORK
                     using (Win32.RegistryKey registryKeyVs = Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\11.0\WebDeploy"))
                     {
                         if (registryKeyVs != null)
@@ -544,7 +544,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
             else
             {
-#if NET472
+#if NETFRAMEWORK
                 _strErrorMessage = string.Format(CultureInfo.CurrentCulture, Resources.VSMSDEPLOY_MSDEPLOYLOADFAIL,
                  Resources.VSMSDEPLOY_MSDEPLOY32bit,
                  Resources.VSMSDEPLOY_MSDEPLOY64bit,
@@ -561,7 +561,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-#if NET472
+#if NETFRAMEWORK
         /// <summary>
         /// Return a search path for the data
         /// </summary>
@@ -605,7 +605,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 if (!string.IsNullOrEmpty(data))
                 {
                     string valueData = PutValueInQuote(data, valueQuote);
-#if NET472
+#if NETFRAMEWORK
                     arguments.Add(string.Concat(enumName.ToLower(CultureInfo.InvariantCulture), "=", valueData));
 #else
                     arguments.Add(string.Concat(enumName.ToLower(), "=", valueData));
@@ -684,7 +684,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             string[] ArchiveDirOnly = new string[] { MSDeploy.Provider.ArchiveDir };
             if (bSuccess)
             {
-#if NET472
+#if NETFRAMEWORK
                 if (IsOneOf(destType, packageArchivedir, StringComparison.InvariantCultureIgnoreCase))
 #else
                 if (IsOneOf(destType, packageArchivedir, StringComparison.OrdinalIgnoreCase))
@@ -695,7 +695,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
                     string dir = Path.GetDirectoryName(destRoot) ?? string.Empty;
                     string dirUri = ConvertAbsPhysicalPathToAbsUriPath(dir);
-#if NET472
+#if NETFRAMEWORK
                     if (IsOneOf(destType, ArchiveDirOnly, StringComparison.InvariantCultureIgnoreCase))
 #else
                     if (IsOneOf(destType, ArchiveDirOnly, StringComparison.OrdinalIgnoreCase))
@@ -712,7 +712,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
             else
             {
-#if NET472
+#if NETFRAMEWORK
                 if (IsOneOf(destType, packageArchivedir, StringComparison.InvariantCultureIgnoreCase))
 #else
                 if (IsOneOf(destType, packageArchivedir, StringComparison.OrdinalIgnoreCase))
@@ -745,7 +745,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             // Deployment.DeploymentWellKnownProvider wellKnownProvider =  Deployment.DeploymentWellKnownProvider.Unknown;
             Type? DeploymentWellKnownProviderType = MSWebDeploymentAssembly.DynamicAssembly?.GetType(MSDeploy.TypeName.DeploymentWellKnownProvider);
             dynamic? wellKnownProvider = MSWebDeploymentAssembly.DynamicAssembly?.GetEnumValue(MSDeploy.TypeName.DeploymentWellKnownProvider, "Unknown");
-#if NET472
+#if NETFRAMEWORK
             if (string.Compare(destType, MSDeploy.Provider.DbDacFx, StringComparison.InvariantCultureIgnoreCase) != 0)
 #else
             if (string.Compare(destType, MSDeploy.Provider.DbDacFx, StringComparison.OrdinalIgnoreCase) != 0)
@@ -1337,7 +1337,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public static bool IsDeploymentWellKnownProvider(string strProvider)
         {
-#if NET472
+#if NETFRAMEWORK
             if (string.Compare(strProvider, MSDeploy.Provider.DbDacFx, StringComparison.InvariantCultureIgnoreCase) == 0)
 #else
             if (string.Compare(strProvider, MSDeploy.Provider.DbDacFx, StringComparison.OrdinalIgnoreCase) == 0)
@@ -1513,7 +1513,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         internal static bool IsType(Type type, Type? checkType)
         {
-#if NET472
+#if NETFRAMEWORK
             if (checkType != null && (type == checkType || type.IsSubclassOf(checkType)))
             {
                 return true;
@@ -1566,7 +1566,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                         lastDeploymentException = rootException;
                 }
 
-#if NET472
+#if NETFRAMEWORK
                 bool isWebException = rootException is System.Net.WebException;
                 if (isWebException)
                 {
@@ -1820,7 +1820,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     MSWebDeploymentAssembly.SetVersion(version);
 
                     Version webDelegationAssemblyVersion = version;
-#if NET472
+#if NETFRAMEWORK
                     if (MSWebDeploymentAssembly.DynamicAssembly != null && MSWebDeploymentAssembly.DynamicAssembly.Assembly != null)
                     {
                         foreach (AssemblyName assemblyName in MSWebDeploymentAssembly.DynamicAssembly.Assembly.GetReferencedAssemblies())
@@ -1894,7 +1894,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// </summary>
         public static string? GetFullUserAgentString(string? userAgent)
         {
-#if NET472
+#if NETFRAMEWORK
             if(string.IsNullOrEmpty(userAgent))
                 return null;
             try
@@ -1920,7 +1920,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         public static bool ItemFilterPipelineMetadata(Framework.ITaskItem item, string metadataName, string metadataValue, bool fIgnoreCase)
         {
-#if NET472
+#if NETFRAMEWORK
             return (string.Compare(item.GetMetadata(metadataName), metadataValue, fIgnoreCase, CultureInfo.InvariantCulture) == 0);
 #else
             return (string.Compare(item.GetMetadata(metadataName), metadataValue, fIgnoreCase) == 0);
