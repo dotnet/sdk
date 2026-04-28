@@ -141,13 +141,20 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         return true;
     }
 
-    private string UbuntuCodenameForSDKVersion(SemanticVersion version)
+    private string UbuntuCodenameForVersion(SemanticVersion sdkVersion, SemanticVersion? tfm)
     {
-        if (version.Major >= 11)
+        // The codename is primarily determined by the TFM to ensure the base OS stays
+        // consistent regardless of which SDK version builds the project.
+        // For net8.0, the SDK patch band matters because 8.0.300 switched from jammy to noble.
+        if (tfm is not null && tfm.Major >= 11)
         {
             return "resolute";
         }
-        else if (version >= SemanticVersion.Parse("8.0.300"))
+        else if (tfm is not null && tfm.Major >= 9)
+        {
+            return "noble";
+        }
+        else if (sdkVersion >= SemanticVersion.Parse("8.0.300"))
         {
             return "noble";
         }
@@ -161,7 +168,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     {
         if (ComputeVersionPart() is (string baseVersionPart, SemanticVersion parsedVersion, bool versionAllowsUsingAOTAndExtrasImages))
         {
-            var defaultUbuntuVersion = UbuntuCodenameForSDKVersion(parsedVersion);
+            SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm);
+            var defaultUbuntuVersion = UbuntuCodenameForVersion(parsedVersion, tfm);
             Log.LogMessage("Computed base version tag of {0} from TFM {1} and SDK {2}", baseVersionPart, TargetFrameworkVersion, SdkVersion);
             if (baseVersionPart is null)
             {
