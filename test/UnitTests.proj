@@ -61,6 +61,21 @@
     <SDKCustomXUnitProject Include="**\*.AoT.Tests.csproj" />
   </ItemGroup>
 
+  <!-- Consolidate Helix shards for assemblies with very short test durations.
+       MethodLimitMultiplier increases the methods-per-shard threshold, producing
+       fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
+  <ItemGroup>
+    <SDKCustomXUnitProject Update="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj">
+      <MethodLimitMultiplier>5</MethodLimitMultiplier>
+    </SDKCustomXUnitProject>
+    <SDKCustomXUnitProject Update="TemplateEngine\**\*.csproj;**\Microsoft.TemplateEngine.Cli.UnitTests.csproj">
+      <MethodLimitMultiplier>20</MethodLimitMultiplier>
+    </SDKCustomXUnitProject>
+    <SDKCustomXUnitProject Update="**\Microsoft.DotNet.ApiCompatibility.Tests.csproj;**\Microsoft.DotNet.ApiDiff.Tests.csproj;**\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;**\Microsoft.DotNet.GenAPI.Tests.csproj">
+      <MethodLimitMultiplier>10</MethodLimitMultiplier>
+    </SDKCustomXUnitProject>
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(CustomHelixTargetQueue)' != '' ">
     <HelixTargetQueue Include="$(CustomHelixTargetQueue)" />
   </ItemGroup>

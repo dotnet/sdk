@@ -153,7 +153,19 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
 
             var isFullMSBuild = string.Equals(Environment.GetEnvironmentVariable("TestFullMSBuild"), "true", StringComparison.OrdinalIgnoreCase);
-            var scheduler = new AssemblyScheduler(methodLimit: isFullMSBuild ? 32 : 16);
+            var baseMethodLimit = isFullMSBuild ? 32 : 16;
+            if (xunitProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
+            {
+                if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
+                {
+                    baseMethodLimit *= multiplier;
+                }
+                else
+                {
+                    Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
+                }
+            }
+            var scheduler = new AssemblyScheduler(methodLimit: baseMethodLimit);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
