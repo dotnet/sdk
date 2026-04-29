@@ -1302,7 +1302,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n// Command-completion rows. The new stable Message is \"dotnetup/command\" with the\n// subcommand carried in the command.name property. The legacy per-subcommand\n// fan-out (\"dotnetup/command/<sub>\") is kept so dashboards keep rendering\n// historical data through the cutover and can be removed once aged out.\n| where Message == \"dotnetup/command\" or Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command = coalesce(tostring(Properties[\"command.name\"]), substring(Message, strlen(\"dotnetup/command/\"), 256))\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend command_status = tostring(Properties[\"command.status\"])\n// A command run is successful when the process exited 0 AND no error was\n// attached to the activity chain. Older rows without exit.code fall back to\n// command.status (\"ok\"/\"error\") set via TrackedOperation.SetStatus.\n| extend is_success = isempty(error_type) and iif(isnotempty(exit_code), exit_code == \"0\", command_status == \"ok\")\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n// Command-completion rows. The new stable Message is \"dotnetup/command\" with the\n// subcommand carried in the command.name property. The legacy per-subcommand\n// fan-out (\"dotnetup/command/<sub>\") is kept so dashboards keep rendering\n// historical data through the cutover and can be removed once aged out.\n| where Message == \"dotnetup/command\" or Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend version = tostring(Properties[\"dotnetup.version\"])\n// tostring() on a missing dynamic property returns \"\" (not null), so coalesce()\n// short-circuits on the empty string and never reaches the fallback. Use iif +\n// isnotempty so legacy rows without command.name fall back to the substring of\n// the Message (\"dotnetup/command/<sub>\").\n| extend command_name_prop = tostring(Properties[\"command.name\"])\n| extend command = iif(isnotempty(command_name_prop), command_name_prop, substring(Message, strlen(\"dotnetup/command/\"), 256))\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend command_status = tostring(Properties[\"command.status\"])\n// A command run is successful when the process exited 0 AND no error was\n// attached to the activity chain. Older rows without exit.code fall back to\n// command.status (\"ok\"/\"error\") set via TrackedOperation.SetStatus.\n| extend is_success = isempty(error_type) and iif(isnotempty(exit_code), exit_code == \"0\", command_status == \"ok\")\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
@@ -1473,7 +1473,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where command == \"runtime/install\"\n| extend component = coalesce(tostring(Properties[\"install.component\"]), \"Runtime\")\n| summarize Count = count() by component",
+      "text": "_dotnetupCommands\n| where command == \"runtime/install\"\n| extend component_prop = tostring(Properties[\"install.component\"])\n| extend component = iif(isnotempty(component_prop), component_prop, \"Runtime\")\n| summarize Count = count() by component",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1484,7 +1484,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where command endswith \"/install\"\n| extend path_source = coalesce(tostring(Properties[\"install.path_source\"]), \"unknown\")\n| summarize Count = count() by path_source",
+      "text": "_dotnetupCommands\n| where command endswith \"/install\"\n| extend path_source_prop = tostring(Properties[\"install.path_source\"])\n| extend path_source = iif(isnotempty(path_source_prop), path_source_prop, \"unknown\")\n| summarize Count = count() by path_source",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1495,7 +1495,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where command endswith \"/install\"\n| extend path_type = coalesce(tostring(Properties[\"install.path_type\"]), \"unknown\")\n| summarize Count = count() by path_type",
+      "text": "_dotnetupCommands\n| where command endswith \"/install\"\n| extend path_type_prop = tostring(Properties[\"install.path_type\"])\n| extend path_type = iif(isnotempty(path_type_prop), path_type_prop, \"unknown\")\n| summarize Count = count() by path_type",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1506,7 +1506,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where command endswith \"/install\"\n| extend result = coalesce(tostring(Properties[\"install.result\"]), iif(is_success, \"success\", \"failed\"))\n| summarize Count = count() by result",
+      "text": "_dotnetupCommands\n| where command endswith \"/install\"\n| extend result_prop = tostring(Properties[\"install.result\"])\n| extend result = iif(isnotempty(result_prop), result_prop, iif(is_success, \"success\", \"failed\"))\n| summarize Count = count() by result",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1517,7 +1517,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where command == \"sdk/install\"\n| extend installed_version = coalesce(tostring(Properties[\"install.resolved_version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
+      "text": "_dotnetupCommands\n| where command == \"sdk/install\"\n// tostring() on a missing dynamic property returns \"\" (not null), so coalesce()\n// would short-circuit on the empty string and never reach the fallback. Use iif\n// + isnotempty so rows missing install.resolved_version fall through to\n// dotnet.requested.\n| extend resolved = tostring(Properties[\"install.resolved_version\"])\n| extend requested = tostring(Properties[\"dotnet.requested\"])\n| extend installed_version = iif(isnotempty(resolved), resolved, requested)\n| where isnotempty(installed_version)\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1528,7 +1528,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where command == \"runtime/install\"\n| extend installed_version = coalesce(tostring(Properties[\"install.resolved_version\"]), tostring(Properties[\"dotnet.requested\"]), \"unknown\")\n| where isnotempty(installed_version) and installed_version != \"unknown\"\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
+      "text": "_dotnetupCommands\n| where command == \"runtime/install\"\n// tostring() on a missing dynamic property returns \"\" (not null), so coalesce()\n// would short-circuit on the empty string and never reach the fallback. Use iif\n// + isnotempty so rows missing install.resolved_version fall through to\n// dotnet.requested.\n| extend resolved = tostring(Properties[\"install.resolved_version\"])\n| extend requested = tostring(Properties[\"dotnet.requested\"])\n| extend installed_version = iif(isnotempty(resolved), resolved, requested)\n| where isnotempty(installed_version)\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1550,7 +1550,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where command in (\"sdk/install\", \"runtime/install\")\n| extend source = coalesce(tostring(Properties[\"dotnet.request_source\"]), \"unknown\")\n| summarize Count = count() by source",
+      "text": "_dotnetupCommands\n| where command in (\"sdk/install\", \"runtime/install\")\n| extend source_prop = tostring(Properties[\"dotnet.request_source\"])\n| extend source = iif(isnotempty(source_prop), source_prop, \"unknown\")\n| summarize Count = count() by source",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1561,7 +1561,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = coalesce(tostring(Properties[\"error.type\"]), \"(no error.type)\")\n| extend error_code = tostring(Properties[\"error.code\"])\n| extend display_error = iif(error_type == \"Exception\" and isnotempty(error_code) and error_code != \"Exception\", error_code, error_type)\n| summarize Count = count() by display_error\n| order by Count desc",
+      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type_prop = tostring(Properties[\"error.type\"])\n| extend error_type = iif(isnotempty(error_type_prop), error_type_prop, \"(no error.type)\")\n| extend error_code = tostring(Properties[\"error.code\"])\n| extend display_error = iif(error_type == \"Exception\" and isnotempty(error_code) and error_code != \"Exception\", error_code, error_type)\n| summarize Count = count() by display_error\n| order by Count desc",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1616,7 +1616,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"user\"\n| extend error_type = coalesce(tostring(Properties[\"error.type\"]), \"Unknown\")\n| summarize Count = count() by error_type",
+      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"user\"\n| extend error_type_prop = tostring(Properties[\"error.type\"])\n| extend error_type = iif(isnotempty(error_type_prop), error_type_prop, \"Unknown\")\n| summarize Count = count() by error_type",
       "usedVariables": [
         "_dotnetupCommands"
       ]

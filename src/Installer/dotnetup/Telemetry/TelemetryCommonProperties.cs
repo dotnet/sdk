@@ -17,6 +17,15 @@ internal static class TelemetryCommonProperties
     private static readonly Lazy<bool> s_isDevBuild = new(DetectDevBuild);
 
     /// <summary>
+    /// True when this process is running in a CI environment, as detected by
+    /// <see cref="CIEnvironmentDetectorForTelemetry"/>. Surfaces the existing
+    /// <see cref="s_isCIEnvironment"/> lazy so callers (e.g.
+    /// <see cref="DotnetupTelemetry.IsOneAndDoneEnvironment"/>) can decide
+    /// CI-specific shutdown behavior without re-running the detector.
+    /// </summary>
+    internal static bool IsCIEnvironment => s_isCIEnvironment.Value;
+
+    /// <summary>
     /// Environment variable to mark telemetry as coming from a dev build.
     /// </summary>
     private const string DevBuildEnvVar = "DOTNETUP_DEV_BUILD";

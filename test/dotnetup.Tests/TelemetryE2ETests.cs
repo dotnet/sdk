@@ -280,6 +280,48 @@ public class TelemetryE2ETests
         }
     }
 
+    /// <summary>
+    /// Regression coverage for Cat-3 throw conversion: paths that historically
+    /// returned 1 without throwing (here: <c>UninstallWorkflow</c> when no
+    /// matching install spec exists) must now throw <c>DotnetInstallException</c>
+    /// so <c>CommandBase</c> calls <c>RecordException</c> and stamps
+    /// <c>error.type</c> / <c>error.category</c> onto BOTH the root
+    /// (<c>dotnetup/process/complete</c>) and command (<c>dotnetup/command</c>)
+    /// LogRecords — those are the only telemetry surfaces the data-x ingestion
+    /// pipeline reads.
+    /// </summary>
+    [Fact]
+    public void Uninstall_NoMatchingTarget_StampsUserErrorTags_OnRootAndCommandLogs()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        // Empty test manifest — no installs to uninstall, so the workflow
+        // throws DotnetInstallException(UninstallTargetNotFound).
+        var args = DotnetupTestUtilities.BuildSdkUninstallArguments("9.0", testEnv.InstallPath, testEnv.ManifestPath);
+        var envVars = GetTelemetryEnvVars(testEnv.TempRoot);
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: envVars);
+
+        exitCode.Should().NotBe(0, "uninstall against an empty manifest must fail");
+
+        var spans = ParseTelemetrySpans(output);
+        spans.Should().NotBeEmpty("console exporter should emit LogRecords");
+
+        var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
+        rootSpan.Should().NotBeNull("root LogRecord (dotnetup/process/complete) should be emitted");
+        rootSpan!.Tags.Should().ContainKey("error.type", "Cat-3 throw must stamp error.type on root LogRecord");
+        rootSpan.Tags["error.type"].Should().Be("UninstallTargetNotFound");
+        rootSpan.Tags.Should().ContainKey("error.category");
+        rootSpan.Tags["error.category"].Should().Be("user");
+
+        var commandSpan = spans.FirstOrDefault(s => s.DisplayName == "command");
+        commandSpan.Should().NotBeNull("command LogRecord (dotnetup/command) should be emitted");
+        commandSpan!.Tags.Should().ContainKey("error.type", "Cat-3 throw must stamp error.type on command LogRecord");
+        commandSpan.Tags["error.type"].Should().Be("UninstallTargetNotFound");
+        commandSpan.Tags.Should().ContainKey("error.category");
+        commandSpan.Tags["error.category"].Should().Be("user");
+    }
+
     [Fact]
     public void TelemetryDisabled_ProducesNoSpans()
     {

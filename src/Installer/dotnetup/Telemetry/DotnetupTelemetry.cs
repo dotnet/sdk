@@ -7,6 +7,7 @@ using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -77,6 +78,8 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     private readonly TracerProvider? _tracerProvider;
+    private readonly ServiceProvider? _services;
+    private readonly LoggerProvider? _loggerProvider;
     private readonly ILoggerFactory? _loggerFactory;
     private readonly ILogger? _logger;
     private readonly List<Activity> _activities = [];
@@ -102,9 +105,20 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </summary>
     public string SessionId { get; }
 
+    /// <summary>
+    /// True when this process is running in a CI environment, as detected by
+    /// <see cref="TelemetryCommonProperties.IsCIEnvironment"/>. CI runs are
+    /// one-and-done — there's no follow-up invocation to drain the
+    /// AzMonitor offline store — so callers can use this to allocate a
+    /// larger flush budget on exit. Interactive (non-CI) runs stay on the
+    /// default budget so user exit performance is unaffected.
+    /// </summary>
+    public bool IsOneAndDoneEnvironment { get; }
+
     private DotnetupTelemetry()
     {
         SessionId = Guid.NewGuid().ToString();
+        IsOneAndDoneEnvironment = TelemetryCommonProperties.IsCIEnvironment;
 
         // Check opt-out (same env var as SDK).
         // Unlike the SDK, dotnetup sends telemetry from dev/test builds too —
@@ -132,7 +146,9 @@ public sealed class DotnetupTelemetry : IDisposable
             var resource = BuildResource(commonAttrs);
 
             _tracerProvider = BuildTracerProvider(resource, enablePerfTrace, disableExport, debugConsole, storageDirectory);
-            _loggerFactory = BuildLoggerFactory(resource, disableExport, debugConsole, storageDirectory);
+            _services = BuildLoggingServices(resource, disableExport, debugConsole, storageDirectory);
+            _loggerProvider = _services.GetService<LoggerProvider>();
+            _loggerFactory = _services.GetRequiredService<ILoggerFactory>();
             _logger = _loggerFactory.CreateLogger("Microsoft.Dotnet.Bootstrapper");
         }
         catch (Exception)
@@ -243,9 +259,21 @@ public sealed class DotnetupTelemetry : IDisposable
     /// can map them to operation_Id/operation_ParentId for cross-row
     /// correlation.
     /// </summary>
-    private static ILoggerFactory BuildLoggerFactory(ResourceBuilder resource, bool disableExport, bool debugConsole, string storageDirectory)
+    /// <remarks>
+    /// Built via <see cref="ServiceCollection"/> (rather than
+    /// <c>LoggerFactory.Create</c>) so the underlying
+    /// <see cref="OpenTelemetry.Logs.LoggerProvider"/> is resolvable via DI.
+    /// We need a direct handle on the provider so <see cref="Flush"/> can
+    /// call <c>ForceFlush</c> on it — without that, the
+    /// <c>BatchLogRecordExportProcessor</c> only drains on
+    /// <see cref="Dispose"/>, and CI runs (one-and-done — no follow-up
+    /// invocation to retry from the AzMonitor offline store) need a
+    /// pre-shutdown drain with an extended budget.
+    /// </remarks>
+    private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool disableExport, bool debugConsole, string storageDirectory)
     {
-        return LoggerFactory.Create(lb =>
+        var services = new ServiceCollection();
+        services.AddLogging(lb =>
         {
             lb.AddOpenTelemetry(o =>
             {
@@ -275,6 +303,7 @@ public sealed class DotnetupTelemetry : IDisposable
                 }
             });
         });
+        return services.BuildServiceProvider();
     }
 
     /// <summary>
@@ -405,11 +434,12 @@ public sealed class DotnetupTelemetry : IDisposable
     private static readonly Dictionary<string, string?> s_emptyTags = [];
 
     /// <summary>
-    /// Flushes the tracer provider. The <see cref="ILoggerFactory"/>'s
-    /// <c>BatchLogRecordExportProcessor</c> only flushes on
-    /// <see cref="Dispose"/>; mid-process callers rely on its
-    /// <c>ScheduledDelay</c> and the AzMonitor exporter's
-    /// <c>StorageDirectory</c> retry queue to cover crashes between flushes.
+    /// Drains both the tracer and logger batch export processors out to
+    /// their network exporters within <paramref name="timeoutMilliseconds"/>.
+    /// Returns as soon as the queues are empty — the timeout is just a
+    /// ceiling — so passing a larger budget in CI never adds latency on
+    /// happy-path runs. Whatever doesn't drain in time falls back to the
+    /// AzMonitor exporter's <c>StorageDirectory</c> retry queue.
     /// </summary>
     /// <param name="timeoutMilliseconds">Maximum time to wait for flush (default 5 seconds).</param>
     public void Flush(int timeoutMilliseconds = 5000)
@@ -417,6 +447,21 @@ public sealed class DotnetupTelemetry : IDisposable
         try
         {
             _tracerProvider?.ForceFlush(timeoutMilliseconds);
+        }
+        catch
+        {
+            // Never let telemetry flush failures crash the app
+        }
+
+        try
+        {
+            // Also drain the LogRecord batch processor — this is the
+            // primary data-x signal (AppInsights `traces` table) and was
+            // previously only flushed on Dispose with the OTel default
+            // budget. Each LogRecord is fully decorated by
+            // BuildCompletionState at _logger.Log(...) time, so ForceFlush
+            // only has to drain an already-self-described queue.
+            _loggerProvider?.ForceFlush(timeoutMilliseconds);
         }
         catch
         {
@@ -603,10 +648,25 @@ public sealed class DotnetupTelemetry : IDisposable
             return;
         }
 
-        // Dispose the logger before the tracer so its
+        // Belt-and-braces drain on paths that reach Dispose without
+        // calling Flush first. Idempotent and cheap when the queue is
+        // already empty (the common case after Program.DisposeTelemetry
+        // calls Flush). LogRecords are stamped with their full state at
+        // _logger.Log(...) time, so a hard crash before this point still
+        // loses only the in-memory batch — same as before this change.
+        try { _loggerProvider?.ForceFlush(5000); } catch { /* never crash on telemetry */ }
+
+        // Dispose the logging service provider before the tracer so its
         // BatchLogRecordExportProcessor flushes queued LogRecords (the
-        // primary data-x signal) before shutdown begins.
+        // primary data-x signal) before shutdown begins. Disposing the
+        // ServiceProvider disposes both the ILoggerFactory and the OTel
+        // LoggerProvider it owns; the explicit field disposes below
+        // satisfy CA2213 (the analyzer can't see the transitive
+        // ownership) and are idempotent thanks to the standard
+        // double-dispose guard on both types.
         try { _loggerFactory?.Dispose(); } catch { /* never crash on telemetry */ }
+        try { _loggerProvider?.Dispose(); } catch { /* never crash on telemetry */ }
+        try { _services?.Dispose(); } catch { /* never crash on telemetry */ }
 
         _tracerProvider?.Dispose();
         _disposed = true;
