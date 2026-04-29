@@ -15,16 +15,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class GetAssemblyVersion : TaskBase, IMultiThreadableTask
     {
-#if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment;
-            set => _taskEnvironment = value;
-        }
-#else
         public TaskEnvironment TaskEnvironment { get; set; }
-#endif
 
         /// <summary>
         /// The nuget version from which to get an assembly version portion.
