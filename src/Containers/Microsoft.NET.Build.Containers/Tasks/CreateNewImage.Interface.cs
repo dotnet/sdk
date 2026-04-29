@@ -9,14 +9,6 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 partial class CreateNewImage
 {
     /// <summary>
-    /// The path to the folder containing `containerize.dll`.
-    /// </summary>
-    /// <remarks>
-    /// Used only for the ToolTask implementation of this task.
-    /// </remarks>
-    public string ContainerizeDirectory { get; set; }
-
-    /// <summary>
     /// The base registry to pull from.
     /// Ex: mcr.microsoft.com
     /// </summary>
@@ -197,9 +189,6 @@ partial class CreateNewImage
 
     public CreateNewImage()
     {
-        ContainerizeDirectory = "";
-        ToolExe = "";
-        ToolPath = "";
         BaseRegistry = "";
         BaseImageName = "";
         BaseImageTag = "";

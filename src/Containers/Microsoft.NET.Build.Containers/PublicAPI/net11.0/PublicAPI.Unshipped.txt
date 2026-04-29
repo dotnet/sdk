@@ -197,8 +197,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Cancel() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerEnvironmentVariables.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerizeDirectory.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerizeDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerRuntimeIdentifier.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerRuntimeIdentifier.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerUser.get -> string!
@@ -245,10 +243,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.get -> stri
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolExe.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolExe.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolPath.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool

@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
-    <ImplicitUsings Condition="'$(TargetFramework)' != '$(NetFrameworkToolCurrent)'">enable</ImplicitUsings>
+    <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
 
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage
     </TargetsForTfmSpecificBuildOutput>
 
     <!-- Tell the SDK to generate a deps.json file to be used by .NET SDK MSBuild -->
-    <GenerateDependencyFile Condition=" '$(TargetFramework)' != '$(NetFrameworkToolCurrent)'">true</GenerateDependencyFile>
+    <GenerateDependencyFile>true</GenerateDependencyFile>
 
     <!-- Allow the packaging project to use the name `Microsoft.NET.Build.Containers` for the nuget package -->
     <Packageid>.</Packageid>
@@ -26,14 +26,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj"
-                      Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'"
                       GlobalPropertiesToRemove="PublishDir">
       <!-- This is referenced by the core CLI as well so it doesn't need to be redistributed
            in the containers task folder. -->
       <IncludeAssets>build</IncludeAssets>
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\Microsoft.Extensions.Logging.MSBuild\Microsoft.Extensions.Logging.MSBuild.csproj" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'" />
+    <ProjectReference Include="..\..\Microsoft.Extensions.Logging.MSBuild\Microsoft.Extensions.Logging.MSBuild.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,47 +43,20 @@
     </PackageReference>
     <PackageReference Include="Nuget.Packaging">
       <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
-      <ExcludeAssets Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">runtime</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
-      <!-- For the netframework flavor, lock back to a System.Text.Json equal to or older than MSBuild will provide
-           so it doesn't have to be redistributed. -->
-      <VersionOverride Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">$(SystemTextJsonToolsetPackageVersion)</VersionOverride>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Common\VSHostObject.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Valleysoft.DockerCredsProvider" />
 
     <!-- References that are also carried in the SDK itself so don't need to be redistributed -->
     <PackageReference Include="Microsoft.Extensions.Logging" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" ExcludeAssets="runtime" />
-  </ItemGroup>
-
-  <!-- netframework builds manually import files to compile -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <Compile Remove="**/*.*" />
-    <Compile Include="ReferenceParser.cs" />
-    <Compile Include="KnownStrings.cs" />
-    <Compile Include="DockerLoadException.cs" />
-    <Compile Include="Registry/RegistryConstants.cs" />
-    <Compile Include="Tasks/ParseContainerProperties.cs" />
-    <Compile Include="Tasks/CreateNewImage.Interface.cs" />
-    <Compile Include="Tasks/CreateNewImageToolTask.cs" />
-    <Compile Include="Tasks/ComputeDotnetBaseImageAndTag.cs" />
-    <Compile Include="ContainerHelpers.cs" />
-    <Compile Include="netframeworkDefinitions.cs" />
-    <Compile Include="VSHostObject.cs" />
-    <Compile Include="Port.cs" />
-    <Compile Include="Resources\Resource.cs" />
-    <Compile Include="Resources\Strings.Designer.cs" />
-    <Compile Include="Globals.cs" />
-  </ItemGroup>
-
-  <!-- core remove files specific to netframework workarounds -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
-    <Compile Remove="Tasks/CreateNewImageToolTask.cs" />
-    <Compile Remove="netframeworkDefinitions.cs" />
   </ItemGroup>
 
   <ItemGroup>
