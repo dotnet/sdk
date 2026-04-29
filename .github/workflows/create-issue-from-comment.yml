@@ -1,0 +1,300 @@
+name: Create issue from PR comment
+
+# This workflow allows contributors to create follow-up issues from PR comments.
+# Usage: Comment `/newissue` followed by the issue description in a PR.
+# The workflow will create a new issue with the `pr-followup` label containing
+# the comment content and context from the PR discussion.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+env:
+  RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+jobs:
+  authorize:
+    name: Authorize Request
+    # Only run on PR comments
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    outputs:
+      should_run: ${{ steps.command-filter.outputs.should_run }}
+      pr_number: ${{ github.event.issue.number }}
+      pr_title: ${{ steps.metadata.outputs.pr_title }}
+      pr_url: ${{ steps.metadata.outputs.pr_url }}
+      comment_url: ${{ steps.metadata.outputs.comment_url }}
+      comment_author: ${{ steps.metadata.outputs.comment_author }}
+
+    steps:
+      - name: Evaluate comment command
+        id: command-filter
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        with:
+          script: |
+            const body = (process.env.COMMENT_BODY || '').trim().toLowerCase();
+            const shouldRun = body.startsWith('/newissue');
+            core.setOutput('should_run', String(shouldRun));
+            if (!shouldRun) {
+              core.info('Comment does not invoke /newissue. Skipping workflow.');
+            }
+
+      - name: Ensure commenter is trusted
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const username = context.payload.comment.user.login;
+
+            if (!username) {
+              throw new Error('Unable to resolve commenter username from event payload.');
+            }
+
+            try {
+              const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner,
+                repo,
+                username,
+              });
+
+              const allowed = ['admin', 'write'];
+              if (!allowed.includes(permission.permission)) {
+                throw new Error(`@${username} has "${permission.permission}" access.`);
+              }
+
+              core.info(`Verified ${username} has ${permission.permission} access.`);
+            } catch (error) {
+              throw new Error(`Only collaborators with write access may trigger this workflow. ${error.message || error}`);
+            }
+
+      - name: React to comment
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commentId = context.payload.comment?.id;
+            if (!commentId) {
+              core.warning('No comment ID found on payload; skipping reaction.');
+              return;
+            }
+
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: Number(commentId),
+              content: 'eyes',
+            });
+
+      - name: Capture PR metadata
+        id: metadata
+        if: steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: context.payload.issue.number,
+            });
+
+            const commentUrl = context.payload.comment.html_url;
+            const commentAuthor = context.payload.comment.user.login;
+
+            core.setOutput('pr_title', pr.data.title);
+            core.setOutput('pr_url', pr.data.html_url);
+            core.setOutput('comment_url', commentUrl);
+            core.setOutput('comment_author', commentAuthor);
+
+  create-issue:
+    name: Create Follow-up Issue
+    needs: authorize
+    if: needs.authorize.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Extract issue content from comment
+        id: extract-content
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        with:
+          script: |
+            const commentBody = process.env.COMMENT_BODY || '';
+
+            // Remove the /newissue command from the body
+            const lines = commentBody.split('\n');
+            const contentLines = [];
+            let foundCommand = false;
+
+            for (const line of lines) {
+              const trimmedLine = line.trim().toLowerCase();
+              if (trimmedLine.startsWith('/newissue')) {
+                foundCommand = true;
+                // Check if there's content after the command on the same line
+                const afterCommand = line.substring(line.toLowerCase().indexOf('/newissue') + 9).trim();
+                if (afterCommand) {
+                  contentLines.push(afterCommand);
+                }
+              } else if (foundCommand) {
+                // Include all content after the /newissue command
+                contentLines.push(line);
+              }
+            }
+
+            let issueContent = contentLines.join('\n').trim();
+
+            // If no content after command, use a default message
+            if (!issueContent) {
+              issueContent = 'Follow-up item from PR discussion.';
+            }
+
+            core.setOutput('content', issueContent);
+
+      - name: Create new issue
+        id: create
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          PR_TITLE: ${{ needs.authorize.outputs.pr_title }}
+          PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
+          PR_URL: ${{ needs.authorize.outputs.pr_url }}
+          COMMENT_URL: ${{ needs.authorize.outputs.comment_url }}
+          COMMENT_AUTHOR: ${{ needs.authorize.outputs.comment_author }}
+          ISSUE_CONTENT: ${{ steps.extract-content.outputs.content }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            
+            // Construct the issue body with context
+            const separator = '---';
+            const issueBody = `${process.env.ISSUE_CONTENT}
+
+${separator}
+
+**Context:** This issue was created from a comment in PR #${process.env.PR_NUMBER}: ${process.env.PR_TITLE}
+
+**Original comment by @${process.env.COMMENT_AUTHOR}:** ${process.env.COMMENT_URL}
+
+**PR:** ${process.env.PR_URL}
+`;
+
+            // Create the issue title based on PR context
+            const issueTitle = `Follow-up from PR #${process.env.PR_NUMBER}: ${process.env.PR_TITLE}`;
+            
+            // Create the issue
+            const issue = await github.rest.issues.create({
+              owner,
+              repo,
+              title: issueTitle,
+              body: issueBody,
+              labels: ['pr-followup'],
+            });
+            
+            core.setOutput('issue_number', String(issue.data.number));
+            core.setOutput('issue_url', issue.data.html_url);
+
+      - name: Comment on PR with new issue link
+        if: steps.create.outputs.issue_number
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          ISSUE_NUMBER: ${{ steps.create.outputs.issue_number }}
+          ISSUE_URL: ${{ steps.create.outputs.issue_url }}
+          PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commentBody = `✅ Follow-up issue created: #${process.env.ISSUE_NUMBER}
+
+View the issue at: ${process.env.ISSUE_URL}`;
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              body: commentBody,
+            });
+
+      - name: React to original comment - Success
+        if: steps.create.outputs.issue_number
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commentId = context.payload.comment?.id;
+            if (!commentId) {
+              core.warning('No comment ID found on payload; skipping reaction.');
+              return;
+            }
+
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: Number(commentId),
+              content: '+1',
+            });
+
+  report-failure:
+    name: Report Failure
+    needs: [authorize, create-issue]
+    if: needs.authorize.outputs.should_run == 'true' && needs.authorize.result == 'success' && failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Comment on PR - Failure
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commentBody = `❌ Failed to create follow-up issue. Please check [the workflow run](${process.env.RUN_URL}) for details.`;
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              body: commentBody,
+            });
+
+      - name: React to original comment - Failure
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commentId = context.payload.comment?.id;
+            if (!commentId) {
+              core.warning('No comment ID found on payload; skipping reaction.');
+              return;
+            }
+
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: Number(commentId),
+              content: 'confused',
+            });
