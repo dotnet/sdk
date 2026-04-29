@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
@@ -14,32 +13,28 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class ShowPreviewMessage : TaskBase, IMultiThreadableTask
     {
-#if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
-            set => _taskEnvironment = value;
-        }
-#else
         public TaskEnvironment TaskEnvironment { get; set; } = null!;
-#endif
+
+        private static readonly object s_previewMessageLock = new();
 
         protected override void ExecuteCore()
         {
             const string previewMessageKey = "Microsoft.NET.Build.Tasks.DisplayPreviewMessageKey";
 
-            object messageDisplayed =
-                BuildEngine4.GetRegisteredTaskObject(previewMessageKey, RegisteredTaskObjectLifetime.Build);
-            if (messageDisplayed == null)
+            lock (s_previewMessageLock)
             {
-                Log.LogMessage(MessageImportance.High, Strings.UsingPreviewSdk);
+                object messageDisplayed =
+                    BuildEngine4.GetRegisteredTaskObject(previewMessageKey, RegisteredTaskObjectLifetime.Build);
+                if (messageDisplayed == null)
+                {
+                    Log.LogMessage(MessageImportance.High, Strings.UsingPreviewSdk);
 
-                BuildEngine4.RegisterTaskObject(
-                    previewMessageKey,
-                    new object(),
-                    RegisteredTaskObjectLifetime.Build,
-                    true);
+                    BuildEngine4.RegisterTaskObject(
+                        previewMessageKey,
+                        new object(),
+                        RegisteredTaskObjectLifetime.Build,
+                        true);
+                }
             }
         }
     }
