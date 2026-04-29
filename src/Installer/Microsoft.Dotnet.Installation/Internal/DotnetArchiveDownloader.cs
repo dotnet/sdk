@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
@@ -212,7 +213,17 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
     private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
-        var targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
+        ReleaseFile? targetFile;
+        try
+        {
+            targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
+        }
+        catch (DotnetInstallException ex) when (ShouldFallbackToBlobFeed(ex, installRequest, resolvedVersion))
+        {
+            // Manifest doesn't list this version (typical for daily/preview builds).
+            // Fall back to constructed blob feed URLs.
+            return ResolveBlobFeedEntry(installRequest, resolvedVersion);
+        }
 
         if (targetFile == null)
         {
@@ -245,6 +256,104 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         }
 
         return (downloadUrl, expectedHash);
+    }
+
+    /// <summary>
+    /// Returns true if the manifest miss should fall back to the blob feeds.
+    /// We only fall back when the user gave us an exact prerelease version
+    /// (e.g. <c>10.0.100-preview.4.25216.37</c>) and the manifest doesn't yet
+    /// know about it. Stable versions and named channels (e.g. "preview") are
+    /// served only from the manifest so that real misses surface as errors.
+    /// </summary>
+    private static bool ShouldFallbackToBlobFeed(
+        DotnetInstallException ex,
+        DotnetInstallRequest installRequest,
+        ReleaseVersion resolvedVersion)
+    {
+        if (ex.ErrorCode != DotnetInstallErrorCode.VersionNotFound &&
+            ex.ErrorCode != DotnetInstallErrorCode.ReleaseNotFound)
+        {
+            return false;
+        }
+
+        if (!installRequest.Channel.IsFullySpecifiedVersion())
+        {
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(resolvedVersion.Prerelease))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Resolves a download URL + SHA-512 by probing the public dotnet blob feeds
+    /// for the given component/version/RID.
+    /// </summary>
+    private (string DownloadUrl, string ExpectedHash) ResolveBlobFeedEntry(
+        DotnetInstallRequest installRequest,
+        ReleaseVersion resolvedVersion)
+    {
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
+        string extension = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
+
+        var attemptedUrls = new List<string>();
+        foreach (var location in BlobFeedUrlBuilder.GetFeedLocations(installRequest.Component, resolvedVersion, rid, extension))
+        {
+            attemptedUrls.Add(location.ChecksumUrl);
+            string? hash = TryGetHashFromUrl(location.ChecksumUrl, resolvedVersion, installRequest.Component);
+            if (hash != null)
+            {
+                return (location.ArchiveUrl, hash);
+            }
+        }
+
+        throw new DotnetInstallException(
+            DotnetInstallErrorCode.VersionNotFound,
+            $"Version {resolvedVersion} for {installRequest.Component} was not found in the release manifest or any known blob feed. Tried: {string.Join(", ", attemptedUrls)}",
+            version: resolvedVersion.ToString(),
+            component: installRequest.Component.ToString());
+    }
+
+    /// <summary>
+    /// Downloads and parses a .sha512 hash file. Returns null if the URL 404s
+    /// (try the next feed). Throws for any other error.
+    /// </summary>
+    private string? TryGetHashFromUrl(string checksumUrl, ReleaseVersion resolvedVersion, InstallComponent component)
+    {
+        try
+        {
+            using var response = _httpClient.GetAsync(checksumUrl).GetAwaiter().GetResult();
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            response.EnsureSuccessStatusCode();
+            string contents = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            return BlobFeedUrlBuilder.ParseHashFile(contents);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.NetworkError,
+                $"Failed to fetch hash file from {checksumUrl}: {ex.Message}",
+                ex,
+                version: resolvedVersion.ToString(),
+                component: component.ToString());
+        }
+        catch (FormatException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Hash file at {checksumUrl} is malformed: {ex.Message}",
+                ex,
+                version: resolvedVersion.ToString(),
+                component: component.ToString());
+        }
     }
 
     private bool TryServeCachedArchive(string downloadUrl, string expectedHash, string destinationPath, IProgress<DownloadProgress>? progress)

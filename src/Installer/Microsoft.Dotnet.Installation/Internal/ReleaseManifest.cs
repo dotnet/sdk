@@ -22,7 +22,7 @@ internal class ReleaseManifest
     /// <param name="installRequest">The .NET installation request details</param>
     /// <param name="resolvedVersion">The resolved release version to find</param>
     /// <returns>The matching ReleaseFile, throws if none are available.</returns>
-    public ReleaseFile? FindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+    public virtual ReleaseFile? FindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
         try
         {
