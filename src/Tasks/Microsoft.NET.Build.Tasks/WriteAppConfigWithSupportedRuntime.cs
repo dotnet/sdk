@@ -4,23 +4,16 @@
 #nullable disable
 
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
     [MSBuildMultiThreadableTask]
     public sealed class WriteAppConfigWithSupportedRuntime : TaskBase, IMultiThreadableTask
     {
-#if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
-            set => _taskEnvironment = value;
-        }
-#else
-        public TaskEnvironment TaskEnvironment { get; set; } = null!;
-#endif
+        public TaskEnvironment TaskEnvironment { get; set; }
+
+        private TaskEnvironment RequiredTaskEnvironment =>
+            TaskEnvironment ?? throw new InvalidOperationException($"{nameof(TaskEnvironment)} must be provided by MSBuild.");
 
         /// <summary>
         /// Path to the app.config source file.
@@ -47,7 +40,7 @@ namespace Microsoft.NET.Build.Tasks
 
             AddSupportedRuntimeToAppconfig(doc, TargetFrameworkIdentifier, TargetFrameworkVersion, TargetFrameworkProfile);
 
-            AbsolutePath outputPath = TaskEnvironment?.GetAbsolutePath(OutputAppConfigFile.ItemSpec) ?? new AbsolutePath(Path.GetFullPath(OutputAppConfigFile.ItemSpec));
+            AbsolutePath outputPath = RequiredTaskEnvironment.GetAbsolutePath(OutputAppConfigFile.ItemSpec);
             var fileStream = new FileStream(
                 outputPath.Value,
                 FileMode.Create,
@@ -58,8 +51,6 @@ namespace Microsoft.NET.Build.Tasks
             {
                 doc.Save(stream);
             }
-
-            OutputAppConfigFile.SetMetadata("FullPath", outputPath.Value);
         }
 
         public static void AddSupportedRuntimeToAppconfig(
@@ -172,7 +163,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                AbsolutePath appConfigPath = TaskEnvironment?.GetAbsolutePath(appConfigItem.ItemSpec) ?? new AbsolutePath(Path.GetFullPath(appConfigItem.ItemSpec));
+                AbsolutePath appConfigPath = RequiredTaskEnvironment.GetAbsolutePath(appConfigItem.ItemSpec);
                 document = XDocument.Load(appConfigPath.Value);
                 if (document.Root == null || document.Root.Name != "configuration")
                 {
