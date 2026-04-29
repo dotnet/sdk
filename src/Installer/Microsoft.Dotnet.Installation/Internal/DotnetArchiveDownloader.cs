@@ -290,7 +290,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     }
 
     /// <summary>
-    /// Resolves a download URL + SHA-512 by probing the public dotnet blob feeds
+    /// Resolves a download URL + SHA-512 by probing the public dotnet blob feed
     /// for the given component/version/RID.
     /// </summary>
     private (string DownloadUrl, string ExpectedHash) ResolveBlobFeedEntry(
@@ -300,20 +300,16 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         string extension = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
 
-        var attemptedUrls = new List<string>();
-        foreach (var location in BlobFeedUrlBuilder.GetFeedLocations(installRequest.Component, resolvedVersion, rid, extension))
+        var location = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, extension);
+        string? hash = TryGetHashFromUrl(location.ChecksumUrl, resolvedVersion, installRequest.Component);
+        if (hash != null)
         {
-            attemptedUrls.Add(location.ChecksumUrl);
-            string? hash = TryGetHashFromUrl(location.ChecksumUrl, resolvedVersion, installRequest.Component);
-            if (hash != null)
-            {
-                return (location.ArchiveUrl, hash);
-            }
+            return (location.ArchiveUrl, hash);
         }
 
         throw new DotnetInstallException(
             DotnetInstallErrorCode.VersionNotFound,
-            $"Version {resolvedVersion} for {installRequest.Component} was not found in the release manifest or any known blob feed. Tried: {string.Join(", ", attemptedUrls)}",
+            $"Version {resolvedVersion} for {installRequest.Component} was not found in the release manifest or blob feed at {location.ChecksumUrl}",
             version: resolvedVersion.ToString(),
             component: installRequest.Component.ToString());
     }

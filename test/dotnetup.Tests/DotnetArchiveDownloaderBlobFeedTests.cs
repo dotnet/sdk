@@ -31,25 +31,19 @@ public class DotnetArchiveDownloaderBlobFeedTests
     [InlineData(InstallComponent.Runtime, "Runtime", "dotnet-runtime")]
     [InlineData(InstallComponent.ASPNETCore, "aspnetcore/Runtime", "aspnetcore-runtime")]
     [InlineData(InstallComponent.WindowsDesktop, "WindowsDesktop", "windowsdesktop-runtime")]
-    public void GetFeedLocations_BuildsExpectedUrls(InstallComponent component, string expectedDir, string expectedPrefix)
+    public void GetFeedLocation_BuildsExpectedUrls(InstallComponent component, string expectedDir, string expectedPrefix)
     {
         var version = new ReleaseVersion("10.0.100-preview.4.25216.37");
         const string rid = "win-x64";
         const string ext = ".zip";
 
-        var locations = BlobFeedUrlBuilder.GetFeedLocations(component, version, rid, ext).ToList();
-        locations.Should().HaveCount(2, "should produce primary then fallback locations");
+        var location = BlobFeedUrlBuilder.GetFeedLocation(component, version, rid, ext);
 
         string expectedFile = $"{expectedPrefix}-10.0.100-preview.4.25216.37-win-x64.zip";
 
-        locations[0].ArchiveUrl.Should().Be(
-            $"https://builds.dotnet.microsoft.com/dotnet/{expectedDir}/10.0.100-preview.4.25216.37/{expectedFile}");
-        locations[0].ChecksumUrl.Should().Be(
-            $"https://builds.dotnet.microsoft.com/dotnet/{expectedDir}/10.0.100-preview.4.25216.37/{expectedFile}.sha512");
-
-        locations[1].ArchiveUrl.Should().Be(
+        location.ArchiveUrl.Should().Be(
             $"https://ci.dot.net/public/{expectedDir}/10.0.100-preview.4.25216.37/{expectedFile}");
-        locations[1].ChecksumUrl.Should().Be(
+        location.ChecksumUrl.Should().Be(
             $"https://ci.dot.net/public-checksums/{expectedDir}/10.0.100-preview.4.25216.37/{expectedFile}.sha512");
     }
 
@@ -107,7 +101,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
 
     /// <summary>
     /// When the user supplies a fully specified prerelease version that is not
-    /// in the release manifest, the downloader should fall back to the blob feeds.
+    /// in the release manifest, the downloader should fall back to the blob feed.
     /// </summary>
     [Fact]
     public void ResolveManifestEntry_FallsBackToBlobFeed_ForUnknownPrerelease()
@@ -118,9 +112,6 @@ public class DotnetArchiveDownloaderBlobFeedTests
         string expectedHash = new string('d', 128);
         var (handler, history) = BuildHandler(new()
         {
-            // Primary feed checksum: 404
-            [$"https://builds.dotnet.microsoft.com/dotnet/Sdk/{version}/dotnet-sdk-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.NotFound, ""),
-            // Fallback feed checksum: 200
             [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.OK, expectedHash + "\n"),
         });
 
@@ -130,7 +121,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
 
         url.Should().Be($"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-{version}-{rid}{ext}");
         hash.Should().Be(expectedHash);
-        history.Should().HaveCount(2, "should probe primary then fallback");
+        history.Should().HaveCount(1, "should probe blob feed once");
     }
 
     /// <summary>
@@ -176,16 +167,10 @@ public class DotnetArchiveDownloaderBlobFeedTests
     /// If both feeds 404 the .sha512 file, surface a clear VersionNotFound error.
     /// </summary>
     [Fact]
-    public void ResolveManifestEntry_BothFeeds404_ThrowsVersionNotFound()
+    public void ResolveManifestEntry_BlobFeed404_ThrowsVersionNotFound()
     {
         const string version = "10.0.100-preview.4.25216.37";
-        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
-        string ext = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
-        var (handler, history) = BuildHandler(new()
-        {
-            [$"https://builds.dotnet.microsoft.com/dotnet/Sdk/{version}/dotnet-sdk-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.NotFound, ""),
-            [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.NotFound, ""),
-        });
+        var (handler, history) = BuildHandler(new());
 
         using var downloader = CreateDownloader(handler, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
@@ -194,7 +179,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
         ex.Message.Should().Contain(version);
-        history.Should().HaveCount(2);
+        history.Should().HaveCount(1);
     }
 
     /// <summary>
@@ -209,7 +194,6 @@ public class DotnetArchiveDownloaderBlobFeedTests
         string expectedHash = new string('e', 128);
         var (handler, _) = BuildHandler(new()
         {
-            [$"https://builds.dotnet.microsoft.com/dotnet/Runtime/{version}/dotnet-runtime-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.NotFound, ""),
             [$"https://ci.dot.net/public-checksums/Runtime/{version}/dotnet-runtime-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.OK, expectedHash),
         });
 

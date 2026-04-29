@@ -7,34 +7,33 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
 /// Builds URLs for downloading .NET archives and their SHA-512 checksum files
-/// from the public dotnet blob feeds. Used when a version is not present in the
-/// release manifest (e.g. daily/preview builds).
+/// from the public dotnet blob feed at ci.dot.net. Used when a version is not
+/// present in the release manifest (e.g. daily/preview builds). Versions that
+/// are served by builds.dotnet.microsoft.com are also listed in the release
+/// manifest, so they don't reach this fallback path.
 /// </summary>
 internal static class BlobFeedUrlBuilder
 {
     /// <summary>
-    /// Primary blob feed where stable/serviced builds are hosted. Archives and
-    /// their .sha512 companions are co-located at the same path.
+    /// Blob feed root for archive downloads (daily/preview builds).
     /// </summary>
-    public const string PrimaryFeedBaseUrl = "https://builds.dotnet.microsoft.com/dotnet";
+    public const string ArchiveBaseUrl = "https://ci.dot.net/public";
 
     /// <summary>
-    /// Fallback blob feed where daily/preview builds are hosted. Archives and
-    /// checksums live on different path roots ("public" vs "public-checksums").
+    /// Blob feed root for SHA-512 checksum files. Hosted on a separate path from
+    /// the archives so that checksums aren't tampered alongside the artifacts.
     /// </summary>
-    public const string FallbackFeedArchiveBaseUrl = "https://ci.dot.net/public";
-    public const string FallbackFeedChecksumBaseUrl = "https://ci.dot.net/public-checksums";
+    public const string ChecksumBaseUrl = "https://ci.dot.net/public-checksums";
 
     /// <summary>
-    /// Describes a candidate blob feed location (archive URL + matching .sha512 URL).
+    /// A candidate blob feed location (archive URL + matching .sha512 URL).
     /// </summary>
     public readonly record struct BlobFeedLocation(string ArchiveUrl, string ChecksumUrl);
 
     /// <summary>
-    /// Returns the primary then fallback feed locations to try, in order, for the
-    /// given component/version/RID/extension.
+    /// Returns the blob feed location for the given component/version/RID/extension.
     /// </summary>
-    public static IEnumerable<BlobFeedLocation> GetFeedLocations(
+    public static BlobFeedLocation GetFeedLocation(
         InstallComponent component,
         ReleaseVersion version,
         string rid,
@@ -44,16 +43,9 @@ internal static class BlobFeedUrlBuilder
         string fileName = GetArchiveFileName(component, version, rid, extension);
         string versionString = version.ToString();
 
-        // Primary feed: archive + checksum co-located.
-        string primaryDir = $"{PrimaryFeedBaseUrl}/{componentDir}/{versionString}";
-        yield return new BlobFeedLocation(
-            ArchiveUrl: $"{primaryDir}/{fileName}",
-            ChecksumUrl: $"{primaryDir}/{fileName}.sha512");
-
-        // Fallback feed: archive on /public, checksum on /public-checksums.
-        yield return new BlobFeedLocation(
-            ArchiveUrl: $"{FallbackFeedArchiveBaseUrl}/{componentDir}/{versionString}/{fileName}",
-            ChecksumUrl: $"{FallbackFeedChecksumBaseUrl}/{componentDir}/{versionString}/{fileName}.sha512");
+        return new BlobFeedLocation(
+            ArchiveUrl: $"{ArchiveBaseUrl}/{componentDir}/{versionString}/{fileName}",
+            ChecksumUrl: $"{ChecksumBaseUrl}/{componentDir}/{versionString}/{fileName}.sha512");
     }
 
     /// <summary>
