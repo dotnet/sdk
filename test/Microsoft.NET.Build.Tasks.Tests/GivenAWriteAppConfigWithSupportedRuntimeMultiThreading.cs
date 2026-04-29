@@ -269,7 +269,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
 
-            bool allWorkersReady = readyGate.Wait(TimeSpan.FromSeconds(30));
+            bool allWorkersReady = readyGate.Wait(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
             startGate.Set();
 
             await Task.WhenAll(executeTasks);
