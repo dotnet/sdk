@@ -140,7 +140,14 @@ static class Program
 
             var exePath = Path.Combine(publishDirectory.FullName, testProject.Name + ".dll");
 
-            string rollForwardVersion = "8.0.0";
+            //  Find the actual installed 8.0.x runtime version.  With dotnetup, only the latest patch
+            //  (e.g. 8.0.22) may be installed rather than 8.0.0, so we need to discover it dynamically.
+            string dotnetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
+            string sharedFxDir = Path.Combine(dotnetRoot, "shared", "Microsoft.NETCore.App");
+            string rollForwardVersion = Directory.GetDirectories(sharedFxDir, "8.0.*")
+                .Select(d => Path.GetFileName(d))
+                .OrderByDescending(v => v)
+                .FirstOrDefault() ?? "8.0.0";
 
             var runAppCommand = new DotnetCommand(Log, "exec", "--fx-version", rollForwardVersion, exePath);
 
