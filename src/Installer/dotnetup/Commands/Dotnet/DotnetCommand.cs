@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
@@ -38,7 +39,12 @@ internal class DotnetCommand : CommandBase
         {
             Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.DotnetCommandDotnetNotFound, dotnetExe));
             Console.Error.WriteLine(Strings.DotnetCommandInstallFirst);
-            return 1;
+            // User-level error: they invoked `dotnetup dotnet ...` before installing
+            // a .NET SDK/runtime. Tag for telemetry so it doesn't show as an unknown
+            // product failure.
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ContextResolutionFailed,
+                $"dotnet executable not found at '{dotnetExe}'.");
         }
 
         return RunDotnet(dotnetExe, dotnetPath, _forwardedArgs);
@@ -101,7 +107,11 @@ internal class DotnetCommand : CommandBase
         if (process is null)
         {
             Console.Error.WriteLine(Strings.DotnetCommandDotnetStartFailed);
-            return 1;
+            // Process.Start returning null is a system-level failure we should be
+            // able to act on; classify as a product error via the default mapping.
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.Unknown,
+                $"Failed to start process '{dotnetExe}'.");
         }
 
         process.WaitForExit();

@@ -50,6 +50,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.ContextResolutionFailed => ErrorCategory.User,
             DotnetInstallErrorCode.InstallFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.PlatformNotSupported => ErrorCategory.User,
+            DotnetInstallErrorCode.UninstallTargetNotFound => ErrorCategory.User,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
             _ => ErrorCategory.Product

@@ -1341,7 +1341,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where isnotempty(command)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by command, version\n| where version != \"unknown\" or Total >= 25\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n| order by command asc, version desc\n| project Command = command, Version = version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors",
+      "text": "_dotnetupCommands\n| where isnotempty(command)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by command, version\n| where version != \"unknown\" or Total >= 25\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n// Sort latest version first, then within a version best success rate first\n// (worst rates fall to the bottom), breaking ties by total volume.\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, SuccessRate desc, Total desc\n| project Command = command, Version = version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors",
       "usedVariables": [
         "_dotnetupCommands"
       ]

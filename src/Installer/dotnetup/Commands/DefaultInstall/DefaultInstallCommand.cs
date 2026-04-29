@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
@@ -59,7 +60,9 @@ internal class DefaultInstallCommand : CommandBase
         if (!succeeded)
         {
             // UAC prompt was cancelled
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PermissionDenied,
+                "User cancelled the elevation prompt while configuring the user install root.");
         }
 
         Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
@@ -89,7 +92,9 @@ internal class DefaultInstallCommand : CommandBase
         if (!succeeded)
         {
             // Elevation was cancelled
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PermissionDenied,
+                "User cancelled the elevation prompt while configuring the system install root.");
         }
 
         Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
 
@@ -57,7 +58,9 @@ internal class UninstallWorkflow
         if (matchingSpecs.Count == 0)
         {
             ReportNoMatchingSpecs(allMatchingSpecs, matchingSpecs, sourceFilter, componentFilter, versionOrChannel, resolvedInstallPath);
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.UninstallTargetNotFound,
+                $"No tracked installations matched component={componentFilter}, version='{versionOrChannel}', source={sourceFilter} at {resolvedInstallPath}.");
         }
 
         // Snapshot installations matching the target component/channel before GC

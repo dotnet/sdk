@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
@@ -26,16 +27,24 @@ internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
             ? [InstallComponent.Runtime, InstallComponent.ASPNETCore, InstallComponent.WindowsDesktop]
             : (InstallComponent[])[InstallComponent.Runtime, InstallComponent.ASPNETCore];
 
-        int exitCode = 0;
+        // Try every component so a single failure doesn't mask updates to the others.
+        // Capture the first failure and rethrow at the end so CommandBase can record
+        // it via RecordException — that's what stamps error.type / error.category /
+        // error.details on the command telemetry row.
+        ExceptionDispatchInfo? firstFailure = null;
         foreach (var component in components)
         {
-            int componentExitCode = workflow.Execute(_manifestPath, _installPath, component, _noProgress, verbosity: _verbosity);
-            if (componentExitCode != 0)
+            try
             {
-                exitCode = componentExitCode;
+                workflow.Execute(_manifestPath, _installPath, component, _noProgress, verbosity: _verbosity);
+            }
+            catch (DotnetInstallException ex)
+            {
+                firstFailure ??= ExceptionDispatchInfo.Capture(ex);
             }
         }
 
-        return exitCode;
+        firstFailure?.Throw();
+        return 0;
     }
 }

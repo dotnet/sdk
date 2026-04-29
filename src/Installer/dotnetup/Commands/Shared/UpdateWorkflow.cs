@@ -41,47 +41,77 @@ internal class UpdateWorkflow
             return 0;
         }
 
+        // Capture the first failure so we can rethrow it after best-effort processing
+        // of remaining specs. Rethrowing (rather than returning a non-zero exit code)
+        // gives CommandBase a real DotnetInstallException to feed into RecordException
+        // so error.type / error.category / error.details land on the telemetry row.
+        ExceptionDispatchInfo? firstFailure = null;
+        int failureCount = 0;
         bool anyUpdated = false;
-        List<DotnetInstallException> failures = [];
 
         foreach (var root in rootsList)
         {
-            bool rootUpdated = false;
-            var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
-
-            foreach (var spec in root.InstallSpecs.ToList())
-            {
-                if (componentFilter is not null && spec.Component != componentFilter.Value)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    bool updated = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson, verbosity);
-                    if (updated) { anyUpdated = true; rootUpdated = true; }
-                }
-                catch (DotnetInstallException ex)
-                {
-                    AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()}."));
-                    failures.Add(ex);
-                }
-            }
-
-            // Run garbage collection
-            if (rootUpdated)
-            {
-                GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot);
-            }
+            UpdateRoot(root, manifestPath, componentFilter, noProgress, updateGlobalJson, verbosity, ref anyUpdated, ref firstFailure, ref failureCount);
         }
 
-        if (!anyUpdated)
+        if (!anyUpdated && firstFailure is null)
         {
             AnsiConsole.MarkupLine("Everything is up to date.");
         }
 
-        return failures.Count > 0 ? 1 : 0;
+        if (firstFailure is not null)
+        {
+            if (failureCount > 1)
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"{failureCount} update(s) failed; reporting the first failure."));
+            }
+            firstFailure.Throw();
+        }
+
+        return 0;
     }
+
+    private void UpdateRoot(
+        DotnetRootEntry root,
+        string? manifestPath,
+        InstallComponent? componentFilter,
+        bool noProgress,
+        bool updateGlobalJson,
+        Verbosity verbosity,
+        ref bool anyUpdated,
+        ref ExceptionDispatchInfo? firstFailure,
+        ref int failureCount)
+    {
+        bool rootUpdated = false;
+        var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
+
+        foreach (var spec in root.InstallSpecs.ToList())
+        {
+            if (componentFilter is not null && spec.Component != componentFilter.Value)
+            {
+                continue;
+            }
+
+            try
+            {
+                bool updated = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson, verbosity);
+                if (updated) { anyUpdated = true; rootUpdated = true; }
+            }
+            catch (DotnetInstallException ex)
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()}."));
+                failureCount++;
+                firstFailure ??= ExceptionDispatchInfo.Capture(ex);
+            }
+        }
+
+        // Run garbage collection
+        if (rootUpdated)
+        {
+            GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot);
+        }
+    }
+
 
     /// <summary>
     /// Reads the manifest and returns the list of dotnet roots to update,
