@@ -6,10 +6,16 @@
 using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Microsoft.Build.Framework;
+using TaskItem = Microsoft.Build.Utilities.TaskItem;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [CollectionDefinition("CwdSensitive", DisableParallelization = true)]
+    public sealed class CwdSensitiveCollection
+    {
+    }
+
     [Collection("CwdSensitive")]
     public class GivenAWriteAppConfigWithSupportedRuntimeMultiThreading : IDisposable
     {
@@ -21,12 +27,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string realWorkDir = CreateTempDirectory();
             string decoyWorkDir = CreateTempDirectory();
 
-            string appConfigPath = Path.Combine(realWorkDir, "input.config");
+            string relativeAppConfigPath = "input.config";
+            string appConfigPath = Path.Combine(realWorkDir, relativeAppConfigPath);
             File.WriteAllText(appConfigPath, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>");
 
-            string outputPath = Path.Combine(realWorkDir, "output.config");
+            string relativeOutputPath = Path.Combine("obj", "Debug", "output.config");
+            string outputPath = Path.Combine(realWorkDir, relativeOutputPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var taskEnv = TaskEnvironmentHelper.CreateForTest(realWorkDir);
             taskEnv.SetEnvironmentVariable("CWD_DECOY_TEST", decoyWorkDir);
@@ -36,8 +45,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 BuildEngine = engine,
                 TaskEnvironment = taskEnv,
-                AppConfigFile = new MockTaskItem(appConfigPath, new Dictionary<string, string>()),
-                OutputAppConfigFile = new MockTaskItem(outputPath, new Dictionary<string, string>()),
+                AppConfigFile = new MockTaskItem(relativeAppConfigPath, new Dictionary<string, string>()),
+                OutputAppConfigFile = new MockTaskItem(relativeOutputPath, new Dictionary<string, string>()),
                 TargetFrameworkIdentifier = ".NETFramework",
                 TargetFrameworkVersion = "v4.7.2"
             };
@@ -48,7 +57,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 Directory.SetCurrentDirectory(decoyWorkDir);
                 task.Execute().Should().BeTrue("task should succeed even with decoy CWD");
                 File.Exists(outputPath).Should().BeTrue("output should be written to TaskEnvironment-resolved path");
-                File.Exists(Path.Combine(decoyWorkDir, "output.config")).Should().BeFalse("output should not be written to process CWD");
+                File.Exists(Path.Combine(decoyWorkDir, relativeOutputPath)).Should().BeFalse("output should not be written to process CWD");
             }
             finally
             {
@@ -62,18 +71,20 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string dir1 = CreateTempDirectory();
             string dir2 = CreateTempDirectory();
 
-            string appConfig1 = Path.Combine(dir1, "app1.config");
+            string relativeAppConfigPath = "app.config";
+            string appConfig1 = Path.Combine(dir1, relativeAppConfigPath);
             File.WriteAllText(appConfig1, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>");
 
-            string appConfig2 = Path.Combine(dir2, "app2.config");
+            string appConfig2 = Path.Combine(dir2, relativeAppConfigPath);
             File.WriteAllText(appConfig2, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>");
 
-            string output1 = Path.Combine(dir1, "out1.config");
-            string output2 = Path.Combine(dir2, "out2.config");
+            string relativeOutputPath = "out.config";
+            string output1 = Path.Combine(dir1, relativeOutputPath);
+            string output2 = Path.Combine(dir2, relativeOutputPath);
 
             var env1 = TaskEnvironmentHelper.CreateForTest(dir1);
             var env2 = TaskEnvironmentHelper.CreateForTest(dir2);
@@ -82,8 +93,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 BuildEngine = new MockBuildEngine(),
                 TaskEnvironment = env1,
-                AppConfigFile = new MockTaskItem(appConfig1, new Dictionary<string, string>()),
-                OutputAppConfigFile = new MockTaskItem(output1, new Dictionary<string, string>()),
+                AppConfigFile = new MockTaskItem(relativeAppConfigPath, new Dictionary<string, string>()),
+                OutputAppConfigFile = new MockTaskItem(relativeOutputPath, new Dictionary<string, string>()),
                 TargetFrameworkIdentifier = ".NETFramework",
                 TargetFrameworkVersion = "v4.5"
             };
@@ -92,8 +103,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 BuildEngine = new MockBuildEngine(),
                 TaskEnvironment = env2,
-                AppConfigFile = new MockTaskItem(appConfig2, new Dictionary<string, string>()),
-                OutputAppConfigFile = new MockTaskItem(output2, new Dictionary<string, string>()),
+                AppConfigFile = new MockTaskItem(relativeAppConfigPath, new Dictionary<string, string>()),
+                OutputAppConfigFile = new MockTaskItem(relativeOutputPath, new Dictionary<string, string>()),
                 TargetFrameworkIdentifier = ".NETFramework",
                 TargetFrameworkVersion = "v4.6.2"
             };
@@ -120,7 +131,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void MultiProcessParityWithAndWithoutTaskEnvironment()
+        public void TaskEnvironmentMustBeInjected()
         {
             string workDir = CreateTempDirectory();
 
@@ -129,50 +140,30 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 <configuration>
 </configuration>");
 
-            string output1 = Path.Combine(workDir, "out1.config");
-            string output2 = Path.Combine(workDir, "out2.config");
+            string outputPath = Path.Combine(workDir, "out.config");
 
-            var task1 = new WriteAppConfigWithSupportedRuntime
+            var task = new WriteAppConfigWithSupportedRuntime
             {
                 BuildEngine = new MockBuildEngine(),
                 AppConfigFile = new MockTaskItem(appConfigPath, new Dictionary<string, string>()),
-                OutputAppConfigFile = new MockTaskItem(output1, new Dictionary<string, string>()),
+                OutputAppConfigFile = new MockTaskItem(outputPath, new Dictionary<string, string>()),
                 TargetFrameworkIdentifier = ".NETFramework",
                 TargetFrameworkVersion = "v4.7.1"
             };
 
-            var task2 = new WriteAppConfigWithSupportedRuntime
-            {
-                BuildEngine = new MockBuildEngine(),
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(workDir),
-                AppConfigFile = new MockTaskItem(appConfigPath, new Dictionary<string, string>()),
-                OutputAppConfigFile = new MockTaskItem(output2, new Dictionary<string, string>()),
-                TargetFrameworkIdentifier = ".NETFramework",
-                TargetFrameworkVersion = "v4.7.1"
-            };
-
-            task1.Execute().Should().BeTrue("task1 should succeed");
-            task2.Execute().Should().BeTrue("task2 should succeed");
-
-            string content1 = File.ReadAllText(output1);
-            string content2 = File.ReadAllText(output2);
-
-            var doc1 = XDocument.Parse(content1);
-            var doc2 = XDocument.Parse(content2);
-
-            var runtime1 = doc1.Descendants("supportedRuntime").Single();
-            var runtime2 = doc2.Descendants("supportedRuntime").Single();
-
-            runtime1.Attribute("version").Value.Should().Be(runtime2.Attribute("version").Value);
-            runtime1.Attribute("sku").Value.Should().Be(runtime2.Attribute("sku").Value);
+            Action execute = () => task.Execute();
+            execute.Should().Throw<InvalidOperationException>()
+                .WithMessage("*TaskEnvironment*");
+            File.Exists(outputPath).Should().BeFalse("the task should not fall back to process CWD without TaskEnvironment");
         }
 
         [Fact]
-        public void TaskWritesFileUsingTaskEnvironmentResolvedPath()
+        public void TaskWritesFileUsingTaskEnvironmentResolvedPathWithRealTaskItems()
         {
             string workDir = CreateTempDirectory();
 
-            string appConfigPath = Path.Combine(workDir, "app.config");
+            string relativeAppConfigPath = "app.config";
+            string appConfigPath = Path.Combine(workDir, relativeAppConfigPath);
             File.WriteAllText(appConfigPath, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>");
@@ -184,21 +175,22 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var taskEnv = TaskEnvironmentHelper.CreateForTest(workDir);
 
-            var outputItem = new MockTaskItem(relativeOutputPath, new Dictionary<string, string>());
+            var outputItem = new TaskItem(relativeOutputPath);
 
             var task = new WriteAppConfigWithSupportedRuntime
             {
                 BuildEngine = new MockBuildEngine(),
                 TaskEnvironment = taskEnv,
-                AppConfigFile = new MockTaskItem(appConfigPath, new Dictionary<string, string>()),
+                AppConfigFile = new TaskItem(relativeAppConfigPath),
                 OutputAppConfigFile = outputItem,
                 TargetFrameworkIdentifier = ".NETFramework",
                 TargetFrameworkVersion = "v4.8"
             };
 
-            task.Execute().Should().BeTrue("task should succeed");
+            task.Execute().Should().BeTrue("task should succeed with real MSBuild task items");
 
             File.Exists(expectedAbsolutePath).Should().BeTrue("output should exist at TaskEnvironment-resolved absolute path");
+            outputItem.ItemSpec.Should().Be(relativeOutputPath, "the original output item path should be preserved");
 
             string content = File.ReadAllText(expectedAbsolutePath);
             content.Should().Contain("v4.8", "output should contain the target framework version");
@@ -232,22 +224,35 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public async Task ConcurrentExecutionWithDifferentFrameworkVersions()
         {
-            const int concurrency = 8;
+            const int concurrency = 64;
+            const string relativeAppConfigPath = "app.config";
+            string relativeOutputPath = Path.Combine("obj", "Debug", "output.config");
             var tasks = new WriteAppConfigWithSupportedRuntime[concurrency];
             var executeTasks = new Task<bool>[concurrency];
-            var versions = new[] { "v4.0", "v4.5", "v4.5.1", "v4.5.2", "v4.6", "v4.6.1", "v4.6.2", "v4.7" };
+            using var readyGate = new CountdownEvent(concurrency);
+            using var startGate = new ManualResetEventSlim(false);
+            var versions = Enumerable.Range(0, concurrency).Select(i => $"v4.{i}").ToArray();
 
             for (int i = 0; i < concurrency; i++)
             {
                 string workDir = CreateTempDirectory();
-                string outputPath = Path.Combine(workDir, $"out{i}.config");
+                string appConfigPath = Path.Combine(workDir, relativeAppConfigPath);
+                File.WriteAllText(appConfigPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <appSettings>
+    <add key=""Project"" value=""{i}"" />
+  </appSettings>
+</configuration>");
+
+                string outputPath = Path.Combine(workDir, relativeOutputPath);
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
                 tasks[i] = new WriteAppConfigWithSupportedRuntime
                 {
                     BuildEngine = new MockBuildEngine(),
                     TaskEnvironment = TaskEnvironmentHelper.CreateForTest(workDir),
-                    AppConfigFile = null,
-                    OutputAppConfigFile = new MockTaskItem(outputPath, new Dictionary<string, string>()),
+                    AppConfigFile = new MockTaskItem(relativeAppConfigPath, new Dictionary<string, string>()),
+                    OutputAppConfigFile = new MockTaskItem(relativeOutputPath, new Dictionary<string, string>()),
                     TargetFrameworkIdentifier = ".NETFramework",
                     TargetFrameworkVersion = versions[i]
                 };
@@ -256,20 +261,31 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             for (int i = 0; i < concurrency; i++)
             {
                 var t = tasks[i];
-                executeTasks[i] = Task.Run(() => t.Execute());
+                executeTasks[i] = Task.Factory.StartNew(() =>
+                {
+                    readyGate.Signal();
+                    startGate.Wait();
+                    return t.Execute();
+                }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
 
+            bool allWorkersReady = readyGate.Wait(TimeSpan.FromSeconds(30));
+            startGate.Set();
+
             await Task.WhenAll(executeTasks);
+            allWorkersReady.Should().BeTrue("all workers should be ready before the start gate opens");
 
             for (int i = 0; i < concurrency; i++)
             {
                 (await executeTasks[i]).Should().BeTrue($"task {i} should succeed");
 
                 string outputPath = tasks[i].OutputAppConfigFile.ItemSpec;
+                Path.IsPathRooted(outputPath).Should().BeFalse($"task {i} should keep the shared relative output ItemSpec");
                 AbsolutePath resolvedPath = tasks[i].TaskEnvironment.GetAbsolutePath(outputPath);
                 File.Exists(resolvedPath.Value).Should().BeTrue($"output {i} should exist");
 
                 string content = File.ReadAllText(resolvedPath.Value);
+                content.Should().Contain($@"value=""{i}""", $"output {i} should come from its own ProjectDirectory");
                 var doc = XDocument.Parse(content);
                 var supportedRuntime = doc.Descendants("supportedRuntime").Single();
 
