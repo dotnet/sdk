@@ -37,14 +37,18 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     // Wraps an ITask item and adds lazy evaluated properties used by Conflict resolution.
     internal class ConflictItem : IConflictItem
     {
-        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType)
+        private readonly Func<string, string> _sourcePathResolver;
+
+        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType, Func<string, string> sourcePathResolver)
         {
+            _sourcePathResolver = sourcePathResolver ?? throw new ArgumentNullException(nameof(sourcePathResolver));
             OriginalItem = originalItem;
             ItemType = itemType;
         }
 
         public ConflictItem(string fileName, string packageId, Version? assemblyVersion, Version? fileVersion)
         {
+            _sourcePathResolver = ThrowForPlatformSourcePathResolution;
             OriginalItem = null;
             ItemType = ConflictItemType.Platform;
             FileName = fileName;
@@ -72,7 +76,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePath ?? string.Empty);
+                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(ResolvedSourcePath ?? string.Empty);
                     }
 
                     // assemblyVersion may be null but don't try to recalculate it
@@ -97,7 +101,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 if (_exists == null)
                 {
-                    _exists = ItemType == ConflictItemType.Platform || File.Exists(SourcePath);
+                    _exists = ItemType == ConflictItemType.Platform || File.Exists(ResolvedSourcePath);
                 }
 
                 return _exists.Value;
@@ -136,7 +140,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _fileVersion = FileUtilities.GetFileVersion(SourcePath);
+                        _fileVersion = FileUtilities.GetFileVersion(ResolvedSourcePath);
                     }
 
                     // fileVersion may be null but don't try to recalculate it
@@ -213,6 +217,27 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 return _sourcePath.Length == 0 ? null : _sourcePath;
             }
             private set { _sourcePath = value; }
+        }
+
+        private string? _resolvedSourcePath;
+        private string? ResolvedSourcePath
+        {
+            get
+            {
+                var sourcePath = SourcePath;
+
+                if (sourcePath == null)
+                {
+                    return null;
+                }
+
+                return _resolvedSourcePath ??= _sourcePathResolver(sourcePath);
+            }
+        }
+
+        private static string ThrowForPlatformSourcePathResolution(string path)
+        {
+            throw new InvalidOperationException("Platform conflict items should not resolve source paths.");
         }
 
         private string? _displayName;
