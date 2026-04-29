@@ -49,7 +49,6 @@
       Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj;
       Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj;
       Microsoft.DotNet.TemplateLocator.Tests\Microsoft.DotNet.TemplateLocator.Tests.csproj;
-      Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj;
       Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj;
       Microsoft.NET.Sdk.WorkloadManifestReader.Tests\Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj;
       Microsoft.Win32.Msi.Tests\Microsoft.Win32.Msi.Tests.csproj"
