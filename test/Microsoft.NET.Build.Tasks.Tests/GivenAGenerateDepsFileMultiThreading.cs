@@ -3,7 +3,9 @@
 
 #nullable disable
 
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
@@ -15,6 +17,11 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [CollectionDefinition("CwdSensitive", DisableParallelization = true)]
+    public sealed class CwdSensitiveCollection
+    {
+    }
+
     [Collection("CwdSensitive")]
     public class GivenAGenerateDepsFileMultiThreading : IDisposable
     {
@@ -40,38 +47,45 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void ProjectPathIsAbsolutized()
+        public void TaskEnvironmentIsRequired()
         {
             string projectDir = CreateTestProjectDirectory();
-            string relativeProjectPath = "TestApp.csproj";
-            string absoluteDepsPath = Path.Combine(projectDir, "bin", "Debug", "net8.0", "TestApp.deps.json");
+            string relativeDepsPath = Path.Combine("bin", "Debug", "net8.0", "TestApp.deps.json");
+
+            var task = CreateMinimalTask(Path.Combine(projectDir, "TestApp.csproj"), relativeDepsPath, projectDir);
+
+            Action act = () => task.Execute();
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage($"*{nameof(TaskEnvironment)}*");
+        }
+
+        [Fact]
+        public void AssetsFilePathIsResolvedThroughTaskEnvironment()
+        {
+            string projectDir = CreateTestProjectDirectory();
+            string decoyCwd = CreateTestProjectDirectory("AssetsDecoy");
+            string relativeAssetsPath = Path.Combine("obj", "project.assets.json");
+            CreateAssetsFile(projectDir, relativeAssetsPath);
 
             var originalCwd = Directory.GetCurrentDirectory();
             try
             {
-                Directory.SetCurrentDirectory(projectDir);
+                Directory.SetCurrentDirectory(decoyCwd);
 
-                var task = CreateMinimalTask(relativeProjectPath, absoluteDepsPath);
+                var task = CreateMinimalTask("TestApp.csproj", "assets.deps.json", projectDir);
+                task.AssetsFilePath = relativeAssetsPath;
                 task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
 
                 bool result = task.Execute();
 
-                result.Should().BeTrue("task should succeed");
-                
-                // Verify the deps.json was written to the correct absolute path
-                File.Exists(absoluteDepsPath).Should().BeTrue("deps file should be created");
-                
-                // Parse and check that mainProject has absolute path
-                var depsJson = JObject.Parse(File.ReadAllText(absoluteDepsPath));
-                string projectPath = depsJson.SelectToken("targets..TestApp/1.0.0")?.Parent?.Parent?.Parent?.Parent?
-                    .SelectToken("libraries['TestApp/1.0.0'].path")?.ToString();
-                
-                // The path stored should be absolute because we absolutized ProjectPath
-                if (!string.IsNullOrEmpty(projectPath))
-                {
-                    Path.IsPathRooted(projectPath).Should().BeTrue(
-                        "ProjectPath should be absolutized internally even when passed as relative");
-                }
+                result.Should().BeTrue(
+                    "AssetsFilePath should be resolved from TaskEnvironment.ProjectDirectory, not process CWD. Errors: {0}",
+                    GetLoggedErrors(task));
+                File.Exists(Path.Combine(projectDir, "assets.deps.json")).Should().BeTrue(
+                    "deps file should be written under the task environment project directory");
+                File.Exists(Path.Combine(decoyCwd, "assets.deps.json")).Should().BeFalse(
+                    "deps file should not be written under the process CWD");
             }
             finally
             {
@@ -80,35 +94,81 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void DecoyCwdDoesNotAffectPathResolution()
+        public void RuntimeGraphPathIsResolvedThroughTaskEnvironment()
+        {
+            string projectDir = CreateTestProjectDirectory();
+            string decoyCwd = CreateTestProjectDirectory("RuntimeGraphDecoy");
+            string decoyRuntimeGraphPath = Path.Combine(decoyCwd, "runtime.json");
+            File.Delete(decoyRuntimeGraphPath);
+            string relativeAssetsPath = Path.Combine("obj", "project.assets.json");
+            CreateAssetsFile(projectDir, relativeAssetsPath);
+
+            var originalCwd = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(decoyCwd);
+                File.Exists(decoyRuntimeGraphPath).Should().BeFalse(
+                    "the process CWD must not contain a runtime graph that could satisfy RuntimeGraphPath");
+
+                var task = CreateMinimalTask("TestApp.csproj", "selfcontained.deps.json", projectDir);
+                task.AssetsFilePath = relativeAssetsPath;
+                task.RuntimeGraphPath = "runtime.json";
+                task.IsSelfContained = true;
+                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+
+                bool result = task.Execute();
+
+                result.Should().BeTrue(
+                    "RuntimeGraphPath should be resolved from TaskEnvironment.ProjectDirectory, not process CWD. Errors: {0}",
+                    GetLoggedErrors(task));
+                File.Exists(Path.Combine(projectDir, "selfcontained.deps.json")).Should().BeTrue(
+                    "the relative runtime graph should be read from the task environment project directory");
+                File.Exists(Path.Combine(decoyCwd, "selfcontained.deps.json")).Should().BeFalse(
+                    "deps file should not be written under the process CWD");
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalCwd);
+            }
+        }
+
+        [Fact]
+        public void GenerateDepsFileHasMSBuildMultiThreadableMarkers()
+        {
+            typeof(GenerateDepsFile).Should().BeAssignableTo<IMultiThreadableTask>();
+            typeof(GenerateDepsFile)
+                .GetCustomAttributes(typeof(MSBuildMultiThreadableTaskAttribute), inherit: false)
+                .Should()
+                .ContainSingle("MSBuild should recognize GenerateDepsFile as multi-threadable through the marker attribute");
+        }
+
+        [Fact]
+        public void ProjectDirectoryControlsRelativePathResolution()
         {
             string projectDir = CreateTestProjectDirectory();
             string decoyCwd = CreateTestProjectDirectory("DecoyDir");
+            string relativeProjectPath = "TestApp.csproj";
             string relativeDepsPath = Path.Combine("bin", "Debug", "net8.0", "TestApp.deps.json");
-            string absoluteProjectPath = Path.Combine(projectDir, "TestApp.csproj");
 
             var originalCwd = Directory.GetCurrentDirectory();
             try
             {
-                // Set CWD to a decoy directory - task should still resolve relative to projectDir
                 Directory.SetCurrentDirectory(decoyCwd);
 
-                var task = CreateMinimalTask(absoluteProjectPath, relativeDepsPath);
+                var task = CreateMinimalTask(relativeProjectPath, relativeDepsPath, projectDir);
                 task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
 
                 bool result = task.Execute();
 
-                result.Should().BeTrue("task should succeed");
-                
-                // File should be written relative to project directory, not decoy CWD
+                result.Should().BeTrue("task should resolve relative paths from TaskEnvironment.ProjectDirectory");
+
                 string expectedPath = Path.Combine(projectDir, relativeDepsPath);
                 File.Exists(expectedPath).Should().BeTrue(
                     "deps file should be written relative to TaskEnvironment.ProjectDirectory, not process CWD");
-                
-                // Verify it was NOT written to the decoy directory
+
                 string decoyPath = Path.Combine(decoyCwd, relativeDepsPath);
                 File.Exists(decoyPath).Should().BeFalse(
-                    "deps file should NOT be written to the decoy CWD");
+                    "deps file should not be written to the process CWD");
             }
             finally
             {
@@ -117,108 +177,110 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task CrossThreadEnvVarIsolation()
-        {
-            string projectDir1 = CreateTestProjectDirectory("Project1");
-            string projectDir2 = CreateTestProjectDirectory("Project2");
-
-            var env1 = TaskEnvironmentHelper.CreateForTest(projectDir1);
-            env1.SetEnvironmentVariable("TEST_GENERATE_DEPS_VAR", "value1");
-
-            var env2 = TaskEnvironmentHelper.CreateForTest(projectDir2);
-            env2.SetEnvironmentVariable("TEST_GENERATE_DEPS_VAR", "value2");
-
-            var task1 = CreateMinimalTask(
-                Path.Combine(projectDir1, "TestApp.csproj"),
-                Path.Combine(projectDir1, "TestApp.deps.json"));
-            task1.TaskEnvironment = env1;
-
-            var task2 = CreateMinimalTask(
-                Path.Combine(projectDir2, "TestApp.csproj"),
-                Path.Combine(projectDir2, "TestApp.deps.json"));
-            task2.TaskEnvironment = env2;
-
-            var task1Execution = Task.Run(() => task1.Execute());
-            var task2Execution = Task.Run(() => task2.Execute());
-
-            await Task.WhenAll(task1Execution, task2Execution);
-
-            (await task1Execution).Should().BeTrue("task1 should succeed");
-            (await task2Execution).Should().BeTrue("task2 should succeed");
-
-            // Verify each task operated in its own environment
-            env1.GetEnvironmentVariable("TEST_GENERATE_DEPS_VAR").Should().Be("value1");
-            env2.GetEnvironmentVariable("TEST_GENERATE_DEPS_VAR").Should().Be("value2");
-        }
-
-        [Fact]
-        public void MultiProcessParity()
+        public void InjectedTaskEnvironmentProducesSameDepsJsonForAbsoluteAndRelativeProjectPathInputs()
         {
             string projectDir = CreateTestProjectDirectory();
-            string projectPath = Path.Combine(projectDir, "TestApp.csproj");
-            string depsPath = Path.Combine(projectDir, "TestApp.deps.json");
+            string decoyCwd = CreateTestProjectDirectory("ParityDecoy");
+            string absoluteDepsPath = Path.Combine(projectDir, "absolute.deps.json");
+            string relativeDepsPath = "relative.deps.json";
+            string assetsPath = CreateAssetsFile(projectDir, Path.Combine("obj", "project.assets.json"), includeProjectReference: true);
+            ITaskItem projectReference = CreateProjectReference(projectDir);
 
-            // Run without TaskEnvironment (legacy)
-            var task1 = CreateMinimalTask(projectPath, depsPath);
-            bool result1 = task1.Execute();
-            result1.Should().BeTrue("legacy task should succeed");
-            string deps1 = File.ReadAllText(depsPath);
-            File.Delete(depsPath);
+            var originalCwd = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(decoyCwd);
 
-            // Run with TaskEnvironment
-            var task2 = CreateMinimalTask(projectPath, depsPath);
-            task2.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-            bool result2 = task2.Execute();
-            result2.Should().BeTrue("multi-threadable task should succeed");
-            string deps2 = File.ReadAllText(depsPath);
+                var absoluteTask = CreateMinimalTask(
+                    Path.Combine(projectDir, "TestApp.csproj"),
+                    absoluteDepsPath,
+                    projectDir);
+                absoluteTask.AssetsFilePath = assetsPath;
+                absoluteTask.ReferencePaths = [projectReference];
+                absoluteTask.UserRuntimeAssemblies = [projectReference];
+                absoluteTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+                absoluteTask.Execute().Should().BeTrue("absolute input task should succeed");
 
-            // Normalize JSON for comparison (whitespace/formatting may differ)
-            var json1 = JsonConvert.DeserializeObject<JObject>(deps1);
-            var json2 = JsonConvert.DeserializeObject<JObject>(deps2);
+                var relativeTask = CreateMinimalTask("TestApp.csproj", relativeDepsPath, projectDir);
+                relativeTask.AssetsFilePath = assetsPath;
+                relativeTask.ReferencePaths = [projectReference];
+                relativeTask.UserRuntimeAssemblies = [projectReference];
+                relativeTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+                relativeTask.Execute().Should().BeTrue("relative input task should succeed");
 
-            JToken.DeepEquals(json1, json2).Should().BeTrue(
-                "deps.json content should be identical whether using TaskEnvironment or not");
+                var absoluteJson = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(absoluteDepsPath));
+                var relativeJson = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(Path.Combine(projectDir, relativeDepsPath)));
+
+                FindTargetLibrary(relativeJson, "ReferenceProject/1.0.0").Should().NotBeNull(
+                    "relative ProjectPath should be absolutized before project-reference lookup");
+                JToken.DeepEquals(absoluteJson, relativeJson).Should().BeTrue(
+                    "relative paths should be absolutized through TaskEnvironment before deps generation");
+                relativeTask.FilesWritten[0].ItemSpec.Should().Be(relativeDepsPath,
+                    "FilesWritten should preserve the caller's original relative output path");
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalCwd);
+            }
         }
 
         [Fact]
-        public async Task ConcurrentExecutionProducesCorrectResults()
+        public async Task ConcurrentExecutionWithRelativePathsKeepsCwdStable()
         {
-            const int concurrency = 4;
+            const int concurrency = 64;
+            string decoyCwd = CreateTestProjectDirectory("StressDecoy");
             var projectDirs = new string[concurrency];
-            var tasks = new GenerateDepsFile[concurrency];
-            var executionTasks = new Task<bool>[concurrency];
 
             for (int i = 0; i < concurrency; i++)
             {
-                projectDirs[i] = CreateTestProjectDirectory($"ConcurrentProject{i}");
-                string projectPath = Path.Combine(projectDirs[i], "TestApp.csproj");
-                string depsPath = Path.Combine(projectDirs[i], "TestApp.deps.json");
-
-                tasks[i] = CreateMinimalTask(projectPath, depsPath);
-                tasks[i].TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDirs[i]);
+                projectDirs[i] = CreateTestProjectDirectory($"StressProject{i}");
             }
 
-            for (int i = 0; i < concurrency; i++)
+            using var startBarrier = new Barrier(concurrency);
+            var failures = new ConcurrentBag<Exception>();
+            var executionTasks = new Task[concurrency];
+            var originalCwd = Directory.GetCurrentDirectory();
+
+            try
             {
-                var t = tasks[i];
-                executionTasks[i] = Task.Run(() => t.Execute());
+                Directory.SetCurrentDirectory(decoyCwd);
+
+                for (int i = 0; i < concurrency; i++)
+                {
+                    int taskIndex = i;
+                    executionTasks[i] = Task.Factory.StartNew(() =>
+                    {
+                        string relativeDepsPath = Path.Combine("bin", "Debug", "net8.0", $"TestApp{taskIndex}.deps.json");
+                        try
+                        {
+                            startBarrier.SignalAndWait(TimeSpan.FromSeconds(30));
+
+                            var task = CreateMinimalTask("TestApp.csproj", relativeDepsPath, projectDirs[taskIndex]);
+                            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDirs[taskIndex]);
+
+                            task.Execute().Should().BeTrue($"task {taskIndex} should succeed");
+                            File.Exists(Path.Combine(projectDirs[taskIndex], relativeDepsPath)).Should().BeTrue(
+                                $"task {taskIndex} should write under its project directory");
+                            File.Exists(Path.Combine(decoyCwd, relativeDepsPath)).Should().BeFalse(
+                                $"task {taskIndex} should not write under the process CWD");
+                            task.FilesWritten[0].ItemSpec.Should().Be(relativeDepsPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            failures.Add(ex);
+                        }
+                    }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                }
+
+                await Task.WhenAll(executionTasks);
+
+                failures.Should().BeEmpty();
+                Directory.GetCurrentDirectory().Should().Be(decoyCwd,
+                    "GenerateDepsFile must not mutate process CWD during concurrent execution");
             }
-
-            await Task.WhenAll(executionTasks);
-
-            for (int i = 0; i < concurrency; i++)
+            finally
             {
-                (await executionTasks[i]).Should().BeTrue($"task {i} should succeed");
-                string depsPath = Path.Combine(projectDirs[i], "TestApp.deps.json");
-                File.Exists(depsPath).Should().BeTrue($"task {i} should create deps file");
-            }
-
-            // Verify all created valid JSON
-            for (int i = 0; i < concurrency; i++)
-            {
-                string depsPath = Path.Combine(projectDirs[i], "TestApp.deps.json");
-                var json = JObject.Parse(File.ReadAllText(depsPath));
-                json.Should().NotBeNull($"task {i} should produce valid JSON");
+                Directory.SetCurrentDirectory(originalCwd);
             }
         }
 
@@ -228,7 +290,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Directory.CreateDirectory(testDir);
             Directory.CreateDirectory(Path.Combine(testDir, "bin", "Debug", "net8.0"));
             _tempDirs.Add(testDir);
-            
+
             // Create a minimal runtime.json
             string runtimeJsonPath = Path.Combine(testDir, "runtime.json");
             File.WriteAllText(runtimeJsonPath, @"{
@@ -237,13 +299,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     ""win-x64"": { ""#import"": [ ""win"" ] }
   }
 }");
-            
+
             return testDir;
         }
 
-        private GenerateDepsFile CreateMinimalTask(string projectPath, string depsFilePath)
+        private GenerateDepsFile CreateMinimalTask(string projectPath, string depsFilePath, string projectDirectory = null)
         {
-            string projectDir = Path.GetDirectoryName(projectPath);
+            string projectDir = projectDirectory ?? Path.GetDirectoryName(projectPath);
+            projectDir.Should().NotBeNull("relative project paths require the test project directory to be provided");
+
             return new GenerateDepsFile
             {
                 BuildEngine = new MockBuildEngine(),
@@ -259,6 +323,142 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ResolvedRuntimeTargetsFiles = Array.Empty<ITaskItem>(),
                 RuntimeGraphPath = Path.Combine(projectDir, "runtime.json"),
             };
+        }
+
+        private static ITaskItem CreateProjectReference(string projectDir)
+        {
+            string referenceProjectDir = Path.Combine(projectDir, "ReferenceProject");
+            string referenceProjectPath = Path.Combine(referenceProjectDir, "ReferenceProject.csproj");
+            string referenceAssemblyPath = Path.Combine(referenceProjectDir, "bin", "Debug", "net8.0", "ReferenceProject.dll");
+            Directory.CreateDirectory(Path.GetDirectoryName(referenceAssemblyPath));
+            File.WriteAllText(referenceProjectPath, "<Project />");
+            File.WriteAllText(referenceAssemblyPath, string.Empty);
+
+            var reference = new TaskItem(referenceAssemblyPath);
+            reference.SetMetadata(MetadataKeys.ReferenceSourceTarget, "ProjectReference");
+            reference.SetMetadata(MetadataKeys.MSBuildSourceProjectFile, referenceProjectPath);
+            reference.SetMetadata("Version", "1.0.0");
+            return reference;
+        }
+
+        private static string CreateAssetsFile(
+            string projectDir,
+            string relativeAssetsPath,
+            string targetName = "net8.0",
+            bool includeProjectReference = false)
+        {
+            string assetsPath = Path.Combine(projectDir, relativeAssetsPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(assetsPath));
+
+            var targetLibraries = new JObject();
+            var libraries = new JObject();
+            var projectFileDependencies = new JArray();
+            var frameworkDependencies = new JObject();
+            var restoreProjectReferences = new JObject();
+
+            if (includeProjectReference)
+            {
+                string relativeProjectReferencePath = Path.Combine("ReferenceProject", "ReferenceProject.csproj");
+                string projectReferenceName = "ReferenceProject/1.0.0";
+
+                targetLibraries[projectReferenceName] = new JObject
+                {
+                    ["type"] = "project",
+                    ["compile"] = new JObject
+                    {
+                        ["bin/ReferenceProject.dll"] = new JObject()
+                    },
+                    ["runtime"] = new JObject
+                    {
+                        ["bin/ReferenceProject.dll"] = new JObject()
+                    }
+                };
+                libraries[projectReferenceName] = new JObject
+                {
+                    ["type"] = "project",
+                    ["path"] = relativeProjectReferencePath,
+                    ["msbuildProject"] = relativeProjectReferencePath
+                };
+                projectFileDependencies.Add("ReferenceProject >= 1.0.0");
+                frameworkDependencies["ReferenceProject"] = new JObject
+                {
+                    ["target"] = "Project",
+                    ["version"] = "[1.0.0, )"
+                };
+                restoreProjectReferences[relativeProjectReferencePath] = new JObject
+                {
+                    ["projectPath"] = Path.Combine(projectDir, relativeProjectReferencePath)
+                };
+            }
+
+            var assets = new JObject
+            {
+                ["version"] = 3,
+                ["targets"] = new JObject
+                {
+                    [targetName] = targetLibraries
+                },
+                ["libraries"] = libraries,
+                ["projectFileDependencyGroups"] = new JObject
+                {
+                    ["net8.0"] = projectFileDependencies
+                },
+                ["packageFolders"] = new JObject(),
+                ["project"] = new JObject
+                {
+                    ["version"] = "1.0.0",
+                    ["restore"] = new JObject
+                    {
+                        ["projectUniqueName"] = Path.Combine(projectDir, "TestApp.csproj"),
+                        ["projectName"] = "TestApp",
+                        ["projectPath"] = Path.Combine(projectDir, "TestApp.csproj"),
+                        ["packagesPath"] = Path.Combine(projectDir, ".nuget", "packages"),
+                        ["outputPath"] = Path.Combine(projectDir, "obj"),
+                        ["projectStyle"] = "PackageReference",
+                        ["fallbackFolders"] = new JArray(),
+                        ["configFilePaths"] = new JArray(),
+                        ["originalTargetFrameworks"] = new JArray("net8.0"),
+                        ["sources"] = new JObject(),
+                        ["frameworks"] = new JObject
+                        {
+                            ["net8.0"] = new JObject
+                            {
+                                ["targetAlias"] = "net8.0",
+                                ["projectReferences"] = restoreProjectReferences
+                            }
+                        },
+                        ["warningProperties"] = new JObject
+                        {
+                            ["warnAsError"] = new JArray("NU1605")
+                        }
+                    },
+                    ["frameworks"] = new JObject
+                    {
+                        ["net8.0"] = new JObject
+                        {
+                            ["targetAlias"] = "net8.0",
+                            ["dependencies"] = frameworkDependencies,
+                            ["runtimeIdentifierGraphPath"] = Path.Combine(projectDir, "runtime.json")
+                        }
+                    }
+                }
+            };
+
+            File.WriteAllText(assetsPath, assets.ToString(Formatting.Indented));
+            return assetsPath;
+        }
+
+        private static JToken FindTargetLibrary(JObject depsJson, string libraryName)
+        {
+            return ((JObject)depsJson["targets"])
+                .Properties()
+                .Select(target => target.Value[libraryName])
+                .FirstOrDefault(library => library != null);
+        }
+
+        private static string GetLoggedErrors(GenerateDepsFile task)
+        {
+            return string.Join(Environment.NewLine, ((MockBuildEngine)task.BuildEngine).Errors.Select(e => e.Message));
         }
 
         public void Dispose()
