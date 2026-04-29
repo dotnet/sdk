@@ -189,7 +189,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <see cref="BuildCompletionState"/> to reach the <c>traces</c> table.
     /// On spans (opt-in perf trace) Resource attrs auto-stamp normally.
     /// </summary>
-    private ResourceBuilder BuildResource(List<KeyValuePair<string, object>> commonAttrs)
+    private static ResourceBuilder BuildResource(List<KeyValuePair<string, object>> commonAttrs)
     {
         return ResourceBuilder.CreateDefault()
             .AddService("dotnetup", serviceVersion: GetVersion())
