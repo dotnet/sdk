@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
 
@@ -157,6 +157,7 @@ internal class InstallRequestMessage : InstallMessageBase
     public static InstallRequestMessage Create(byte[] bytes)
     {
         string json = Encoding.UTF8.GetString(bytes);
-        return JsonConvert.DeserializeObject<InstallRequestMessage>(json, DefaultSerializerSettings);
+        return JsonSerializer.Deserialize(json, InstallerJsonSerializerContext.Default.InstallRequestMessage)
+            ?? throw new JsonException("The install request message payload deserialized to null.");
     }
 }
