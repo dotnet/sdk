@@ -283,6 +283,14 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
         CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
 
+        // Delete any stale RID-specific package asset file from a previous installation to prevent it
+        // from being incorrectly picked up if this package does not need a RID-specific package.
+        var ridSpecificAssetFilePath = Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName);
+        if (_fileSystem.File.Exists(ridSpecificAssetFilePath))
+        {
+            _fileSystem.File.Delete(ridSpecificAssetFilePath);
+        }
+
         //  Also download RID-specific package if needed
         if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory, verbosity) is PackageId ridSpecificPackage)
         {
@@ -309,6 +317,14 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             return false;
         }
         CreateAssetFile(packageId, packageVersion, _localToolDownloadDir, Path.Combine(_localToolAssetDir.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
+
+        // Delete any stale RID-specific package asset file from a previous installation to prevent it
+        // from being incorrectly picked up if this package does not need a RID-specific package.
+        var ridSpecificAssetFilePath = Path.Combine(_localToolAssetDir.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName);
+        if (_fileSystem.File.Exists(ridSpecificAssetFilePath))
+        {
+            _fileSystem.File.Delete(ridSpecificAssetFilePath);
+        }
 
         if (ResolveRidSpecificPackage(packageId, packageVersion, _localToolDownloadDir, _localToolAssetDir, verbosity) is PackageId ridSpecificPackage)
         {

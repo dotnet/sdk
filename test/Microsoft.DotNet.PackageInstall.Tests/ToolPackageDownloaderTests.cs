@@ -1028,5 +1028,63 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .WithMessage("*requires a higher version of .NET*")
                 .WithMessage("*.NET 99*");
         }
+
+        [Fact]
+        public void GivenStaleRidSpecificAssetFileLocalToolInstallDeletesItAndReturnsCorrectCommand()
+        {
+            // Regression test for https://github.com/dotnet/sdk/issues/46059
+            // When restoring multiple local tools, the first tool (e.g. dotnet-ef) may use a
+            // RID-specific package and leave a project.assets.ridpackage.json in the shared
+            // _localToolAssetDir. If the second tool does not need a RID-specific package,
+            // the stale file must be deleted so ToolPackageInstance reads the correct
+            // project.assets.json instead of the stale one from the first tool.
+
+            var testDir = TestAssetsManager.CreateTestDirectory();
+            var fileSystem = new FileSystemMockBuilder().Build();
+            var toolsRoot = new DirectoryPath(testDir.Path).WithSubDirectories("tools");
+            var storeAndQuery = new ToolPackageStoreAndQuery(toolsRoot, fileSystem);
+
+            var downloader = new ExposingLocalToolAssetDirDownloader(
+                storeAndQuery,
+                runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
+                currentWorkingDirectory: testDir.Path,
+                fileSystem);
+
+            // Simulate a stale project.assets.ridpackage.json left by a previous tool installation
+            // (e.g., the first tool in the manifest used RID-specific packages).
+            var staleFilePath = Path.Combine(
+                downloader.LocalToolAssetDir.Value,
+                ToolPackageInstance.RidSpecificPackageAssetsFileName);
+            fileSystem.File.WriteAllText(staleFilePath, "stale content from a previous tool");
+            fileSystem.File.Exists(staleFilePath).Should().BeTrue("precondition: stale RID-specific asset file must exist");
+
+            // Act: install a local tool (this simulates the second tool in a manifest restore).
+            var package = downloader.InstallPackage(
+                new PackageLocation(),
+                packageId: new PackageId("test.local.tool"),
+                verbosity: new VerbosityOptions(),
+                versionRange: VersionRange.Parse(ToolPackageDownloaderMock2.DefaultPackageVersion));
+
+            // Assert: the stale file must be deleted so ToolPackageInstance reads the correct assets.
+            fileSystem.File.Exists(staleFilePath).Should().BeFalse(
+                "the stale project.assets.ridpackage.json must be cleaned up before creating ToolPackageInstance");
+
+            // And the installed package must report the correct command (not from the stale file).
+            package.Command.Name.Value.Should().Be(ToolPackageDownloaderMock2.DefaultToolCommandName);
+        }
+
+        private sealed class ExposingLocalToolAssetDirDownloader : ToolPackageDownloaderMock2
+        {
+            public ExposingLocalToolAssetDirDownloader(
+                IToolPackageStore store,
+                string runtimeJsonPathForTests,
+                string currentWorkingDirectory,
+                IFileSystem fileSystem)
+                : base(store, runtimeJsonPathForTests, currentWorkingDirectory, fileSystem)
+            {
+            }
+
+            public DirectoryPath LocalToolAssetDir => _localToolAssetDir;
+        }
     }
 }
