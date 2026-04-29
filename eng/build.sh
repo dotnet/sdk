@@ -13,7 +13,8 @@ ScriptRoot="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 arguments=(--restore --build)
 target_os=""
 target_arch=""
-skip_crossgen=true
+pack=false
+skip_crossgen=""
 skip_installers=true
 
 while [[ $# > 0 ]]; do
@@ -21,13 +22,21 @@ while [[ $# > 0 ]]; do
   case "$opt" in
     -os) target_os="$2"; shift ;;
     -arch|-a) target_arch="$2"; shift ;;
-    -pack) skip_crossgen=false; skip_installers=false; arguments+=(-pack) ;;
+    -pack) pack=true; skip_installers=false; arguments+=(-pack) ;;
     -test|-t) arguments+=(-test) ;;
     -configuration|-c) arguments+=(-configuration "$2"); shift ;;
+    -skipcrossgen) skip_crossgen=true ;;
     *) arguments+=("$1") ;;
   esac
   shift
 done
+
+if [ "$pack" = true ] && [ -z "$skip_crossgen" ]; then
+  skip_crossgen=false
+fi
+if [ -z "$skip_crossgen" ]; then
+  skip_crossgen=true
+fi
 
 if [ -n "$target_os" ]; then
   arguments+=("/p:TargetOS=$target_os")
