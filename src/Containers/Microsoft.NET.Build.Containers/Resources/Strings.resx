@@ -401,10 +401,6 @@
     <value>Cannot create image index because at least one of the provided images' config is missing 'os'.</value>
     <comment/>
   </data>
-  <data name="ImageIndex_PodmanNotSupported" xml:space="preserve">
-    <value>Image index creation for Podman is not supported.</value>
-    <comment/>
-  </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">
     <value>Error while reading daemon config: {0}</value>
     <comment>{0} is the exception message that ends with period</comment>
