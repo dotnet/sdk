@@ -141,7 +141,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ResolveTargetingPackAssets
             {
                 BuildEngine = buildEngine,
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(mockPackageDirectory),
                 FrameworkReferences = DefaultFrameworkReferences(),
                 ResolvedTargetingPacks = DefaultTargetingPacks(mockPackageDirectory),
                 ProjectLanguage = "C#"
@@ -238,7 +238,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var requiredProperties = inputProperties
                 .Where(p => p.IsDefined(typeof(RequiredAttribute)));
 
-            ResolveTargetingPackAssets task = new();
+            ResolveTargetingPackAssets task = new()
+            {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
+            };
 
             // Initialize all required properties as a genuine task invocation would. We do this
             // because HashSettings need not defend against required parameters being null.
@@ -306,7 +309,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 nuGetRestoreSupported: true,
                 disableTransitiveFrameworkReferences: false,
             netCoreTargetingPackRoot: "netCoreTargetingPackRoot",
-            projectLanguage: "C#");
+            projectLanguage: "C#",
+            taskEnvironment: TaskEnvironmentHelper.CreateForTest());
 
             List<string> seenKeys = new();
 
@@ -375,11 +379,26 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                             if (subproperty.PropertyType == typeof(ITaskItem))
                             {
-                                // Used to store original items but not cache-relevant
+                                var item = (ITaskItem)subproperty.GetValue(currentValue[0]);
+                                item.SetMetadata("Profile", $"{subproperty.Name}_changed");
+                                yield return ($"{property.Name}.{subproperty.Name}.Profile", input);
                                 continue;
                             }
 
                             Assert.Fail($"update test to understand fields of type {subproperty.PropertyType} in {nameof(RuntimeFramework)}");
+                        }
+
+                        foreach (var subfield in typeof(RuntimeFramework).GetFields(BindingFlags.Public | BindingFlags.Instance))
+                        {
+                            if (subfield.FieldType == typeof(ITaskItem))
+                            {
+                                var item = (ITaskItem)subfield.GetValue(currentValue[0]);
+                                item.SetMetadata("Profile", $"{subfield.Name}_changed");
+                                yield return ($"{property.Name}.{subfield.Name}.Profile", input);
+                                continue;
+                            }
+
+                            Assert.Fail($"update test to understand fields of type {subfield.FieldType} in {nameof(RuntimeFramework)}");
                         }
                     }
                     else if (property.PropertyType == typeof(string))
