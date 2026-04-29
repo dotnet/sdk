@@ -34,8 +34,8 @@ internal sealed class NamedPipeTransport(string pipeName, Action<string> log, in
             }
         }
 
-        await _pipeClient.WriteAsync((byte)response.Type, cancellationToken);
-        await response.WriteAsync(_pipeClient, cancellationToken);
+        await _pipeClient.WriteAsync((byte)response.Type, cancellationToken).ConfigureAwait(false);
+        await response.WriteAsync(_pipeClient, cancellationToken).ConfigureAwait(false);
     }
 
     public override ValueTask<RequestStream> ReceiveAsync(CancellationToken cancellationToken)
