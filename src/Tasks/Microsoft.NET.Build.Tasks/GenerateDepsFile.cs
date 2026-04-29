@@ -16,8 +16,11 @@ namespace Microsoft.NET.Build.Tasks
     /// <summary>
     /// Generates the $(project).deps.json file.
     /// </summary>
-    public class GenerateDepsFile : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GenerateDepsFile : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         [Required]
         public string ProjectPath { get; set; }
 
@@ -133,13 +136,14 @@ namespace Microsoft.NET.Build.Tasks
             return filteredPackages;
         }
 
-        private void WriteDepsFile(string depsFilePath)
+        private void WriteDepsFile(AbsolutePath projectPath, AbsolutePath depsFilePath, TaskEnvironment taskEnvironment)
         {
             ProjectContext projectContext = null;
             LockFileLookup lockFileLookup = null;
             if (AssetsFilePath != null)
             {
-                LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
+                AbsolutePath absoluteAssetsFilePath = taskEnvironment.GetAbsolutePath(AssetsFilePath);
+                LockFile lockFile = new LockFileCache(this).GetLockFile(absoluteAssetsFilePath);
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
                     EffectiveRuntimeIdentifier,
@@ -153,7 +157,7 @@ namespace Microsoft.NET.Build.Tasks
             CompilationOptions compilationOptions = CompilationOptionsConverter.ConvertFrom(CompilerOptions);
 
             SingleProjectInfo mainProject = SingleProjectInfo.Create(
-                ProjectPath,
+                projectPath,
                 AssemblyName,
                 AssemblyExtension,
                 AssemblyVersion,
@@ -218,8 +222,12 @@ namespace Microsoft.NET.Build.Tasks
                 // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback
                 // graph with respect to the target RuntimeIdentifier.
 
-                RuntimeGraph runtimeGraph =
-                    IsSelfContained ? new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath) : null;
+                RuntimeGraph runtimeGraph = null;
+                if (IsSelfContained)
+                {
+                    AbsolutePath absoluteRuntimeGraphPath = taskEnvironment.GetAbsolutePath(RuntimeGraphPath);
+                    runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(absoluteRuntimeGraphPath);
+                }
 
                 builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup);
             }
@@ -265,11 +273,11 @@ namespace Microsoft.NET.Build.Tasks
             DependencyContext dependencyContext = builder.Build(userRuntimeAssemblies);
 
             var writer = new DependencyContextWriter();
-            using (var fileStream = File.Create(depsFilePath))
+            using (var fileStream = File.Create(depsFilePath.Value))
             {
                 writer.Write(dependencyContext, fileStream);
             }
-            _filesWritten.Add(new TaskItem(depsFilePath));
+            _filesWritten.Add(new TaskItem(depsFilePath.OriginalValue));
 
             if (ValidRuntimeIdentifierPlatformsForAssets != null)
             {
@@ -310,7 +318,12 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            WriteDepsFile(DepsFilePath);
+            TaskEnvironment taskEnvironment = TaskEnvironment
+                ?? throw new InvalidOperationException($"{nameof(GenerateDepsFile)} requires MSBuild to provide a {nameof(TaskEnvironment)}.");
+
+            AbsolutePath absoluteProjectPath = taskEnvironment.GetAbsolutePath(ProjectPath);
+            AbsolutePath absoluteDepsFilePath = taskEnvironment.GetAbsolutePath(DepsFilePath);
+            WriteDepsFile(absoluteProjectPath, absoluteDepsFilePath, taskEnvironment);
         }
     }
 }
