@@ -85,7 +85,11 @@ public class TelemetryCommonPropertiesTests
         Assert.Contains("device.id", attributes.Keys);
         Assert.Contains("os.platform", attributes.Keys);
         Assert.Contains("os.version", attributes.Keys);
+        Assert.Contains("os.type", attributes.Keys);
+        Assert.Contains("os.arch", attributes.Keys);
         Assert.Contains("process.arch", attributes.Keys);
+        Assert.Contains("runtime.id", attributes.Keys);
+        Assert.Contains("output.redirected", attributes.Keys);
         Assert.Contains("ci.detected", attributes.Keys);
         Assert.Contains("dotnetup.version", attributes.Keys);
         Assert.Contains("dev.build", attributes.Keys);
@@ -513,6 +517,182 @@ public class DotnetupTelemetryTests : IDisposable
         SimulateRecordException(activity, new Exception("something unexpected"));
 
         Assert.Equal("product", activity.GetTagItem("error.category"));
+    }
+
+    /// <summary>
+    /// Returns a synthetic snapshot of common properties that mirrors what
+    /// production builds via <see cref="TelemetryCommonProperties.GetCommonAttributes(string)"/>.
+    /// Driving the tests with this snapshot keeps the assertions stable even
+    /// if production wiring changes (e.g., AOT / disabled telemetry path).
+    /// </summary>
+    private static IReadOnlyList<KeyValuePair<string, object?>> BuildSyntheticCommonProperties(string sessionId = "test-session")
+    {
+        var list = new List<KeyValuePair<string, object?>>
+        {
+            new("caller", "dotnetup"),
+        };
+        foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(sessionId))
+        {
+            list.Add(new KeyValuePair<string, object?>(attr.Key, attr.Value));
+        }
+        return list;
+    }
+
+    [Fact]
+    public void BuildCompletionState_RootEvent_StampsCommonProperties()
+    {
+        // Root event = a top-level Activity with no parent (e.g., the
+        // process-wide "dotnetup" span). Common properties must land on
+        // every emitted row, including the root, because data-x ingests
+        // each row independently.
+        using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "dotnetup", ActivityKind.Internal);
+        Assert.NotNull(rootActivity);
+
+        var common = BuildSyntheticCommonProperties();
+        var state = DotnetupTelemetry.BuildCompletionState(
+            "process/complete",
+            rootActivity,
+            new Dictionary<string, string?>(),
+            elapsedMs: 12.34,
+            commonProperties: common);
+
+        var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        // All common properties should be present on the root event.
+        Assert.Equal("dotnetup", asDict["caller"]);
+        Assert.Contains("session.id", asDict.Keys);
+        Assert.Contains("device.id", asDict.Keys);
+        Assert.Contains("os.type", asDict.Keys);
+        Assert.Contains("os.platform", asDict.Keys);
+        Assert.Contains("os.version", asDict.Keys);
+        Assert.Contains("os.arch", asDict.Keys);
+        Assert.Contains("process.arch", asDict.Keys);
+        Assert.Contains("runtime.id", asDict.Keys);
+        Assert.Contains("output.redirected", asDict.Keys);
+        Assert.Contains("ci.detected", asDict.Keys);
+        Assert.Contains("dotnetup.version", asDict.Keys);
+        Assert.Contains("dev.build", asDict.Keys);
+
+        // Computed fields must also be stamped.
+        Assert.Equal("dotnetup/process/complete", asDict["operation.name"]);
+        Assert.Equal("12.34", asDict["operation.duration_ms"]);
+
+        // Root has no parent — operation.parent_name must be absent.
+        Assert.DoesNotContain("operation.parent_name", asDict.Keys);
+    }
+
+    [Fact]
+    public void BuildCompletionState_CommandEvent_StampsCommonPropertiesAndParent()
+    {
+        // command/{name} runs as a child of the root "dotnetup" span. Its
+        // emitted row should carry all common properties AND
+        // operation.parent_name pointing at its parent.
+        using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "dotnetup", ActivityKind.Internal);
+        Assert.NotNull(rootActivity);
+
+        using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/runtime/install", ActivityKind.Internal);
+        Assert.NotNull(commandActivity);
+        commandActivity.SetTag("command.name", "runtime/install");
+        commandActivity.SetTag("command.status", "ok");
+
+        var common = BuildSyntheticCommonProperties("session-abc");
+        var state = DotnetupTelemetry.BuildCompletionState(
+            "command",
+            commandActivity,
+            new Dictionary<string, string?>(),
+            elapsedMs: 1050.5,
+            commonProperties: common);
+
+        var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        // Common properties present on the command row too.
+        Assert.Equal("dotnetup", asDict["caller"]);
+        Assert.Equal("session-abc", asDict["session.id"]);
+        Assert.Contains("os.type", asDict.Keys);
+        Assert.Contains("device.id", asDict.Keys);
+        Assert.Contains("dotnetup.version", asDict.Keys);
+        Assert.Contains("dev.build", asDict.Keys);
+
+        // Activity tags surface in the row.
+        Assert.Equal("runtime/install", asDict["command.name"]);
+        Assert.Equal("ok", asDict["command.status"]);
+
+        // Computed fields.
+        Assert.Equal("dotnetup/command", asDict["operation.name"]);
+        Assert.Equal("1050.5", asDict["operation.duration_ms"]);
+        Assert.Equal("dotnetup", asDict["operation.parent_name"]);
+    }
+
+    [Fact]
+    public void BuildCompletionState_StoredTags_OverrideCommonProperties()
+    {
+        // If a per-event tag collides with a common property, the per-event
+        // tag wins (last writer). Today nothing in dotnetup deliberately
+        // collides, but we lock in the contract so future code can override
+        // a default safely.
+        using var activity = DotnetupTelemetry.CommandSource.StartActivity(
+            "test-override", ActivityKind.Internal);
+        Assert.NotNull(activity);
+
+        var common = new List<KeyValuePair<string, object?>>
+        {
+            new("caller", "dotnetup"),
+            new("os.type", "Windows"),
+        };
+        var stored = new Dictionary<string, string?>
+        {
+            ["os.type"] = "Linux",
+        };
+
+        var state = DotnetupTelemetry.BuildCompletionState(
+            "command",
+            activity,
+            stored,
+            elapsedMs: 1.0,
+            commonProperties: common);
+
+        var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        Assert.Equal("Linux", asDict["os.type"]);
+        Assert.Equal("dotnetup", asDict["caller"]);
+    }
+
+    [Fact]
+    public void BuildCompletionState_ChildInheritsCommandTagsFromAncestor()
+    {
+        // A child activity (e.g., a single download) emits its own row, and
+        // that row should inherit command.* tags from its ancestor command
+        // span so data-x can attribute the work without joining traces.
+        using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "dotnetup", ActivityKind.Internal);
+        Assert.NotNull(rootActivity);
+
+        using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/runtime/install", ActivityKind.Internal);
+        Assert.NotNull(commandActivity);
+        commandActivity.SetTag("command.name", "runtime/install");
+
+        using var childActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "download", ActivityKind.Internal);
+        Assert.NotNull(childActivity);
+
+        var state = DotnetupTelemetry.BuildCompletionState(
+            "process/complete",
+            childActivity,
+            new Dictionary<string, string?>(),
+            elapsedMs: 5.0,
+            commonProperties: BuildSyntheticCommonProperties());
+
+        var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        Assert.Equal("runtime/install", asDict["command.name"]);
+        Assert.Equal("command/runtime/install", asDict["operation.parent_name"]);
+        // Common props still land.
+        Assert.Contains("os.type", asDict.Keys);
+        Assert.Contains("session.id", asDict.Keys);
     }
 }
 

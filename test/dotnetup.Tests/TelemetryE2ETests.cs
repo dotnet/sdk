@@ -78,8 +78,12 @@ public class TelemetryE2ETests
         exitCode.Should().NotBe(0);
 
         var spans = ParseTelemetrySpans(output);
-        var commandSpan = spans.FirstOrDefault(s => s.DisplayName.StartsWith("command/", StringComparison.Ordinal));
-        commandSpan.Should().NotBeNull("a command/* span should be emitted");
+        // The command completion record is emitted as `dotnetup/command` (DisplayName
+        // == "command" after the parser strips the `dotnetup/` prefix). The
+        // subcommand identity (e.g. "sdk/install") is carried in the `command.name`
+        // attribute, not in the message.
+        var commandSpan = spans.FirstOrDefault(s => s.DisplayName == "command");
+        commandSpan.Should().NotBeNull("a `dotnetup/command` record should be emitted");
 
         commandSpan!.Tags.Should().ContainKey("error.type", "command span should have error.type tag");
     }
@@ -107,7 +111,7 @@ public class TelemetryE2ETests
         }
 
         // The error.type should be present and match between command and root spans
-        var commandSpan = spans.FirstOrDefault(s => s.DisplayName.StartsWith("command/", StringComparison.Ordinal));
+        var commandSpan = spans.FirstOrDefault(s => s.DisplayName == "command");
         if (commandSpan != null &&
             commandSpan.Tags.TryGetValue("error.type", out string? commandErrorType) &&
             rootSpan.Tags.TryGetValue("error.type", out string? rootErrorType))
@@ -162,9 +166,13 @@ public class TelemetryE2ETests
         var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
         rootSpan.Should().NotBeNull("root span should have DisplayName 'dotnetup'");
 
-        var commandSpan = spans.FirstOrDefault(s => s.DisplayName.StartsWith("command/", StringComparison.Ordinal));
-        commandSpan.Should().NotBeNull("command span should start with 'command/'");
-        commandSpan!.DisplayName.Should().Contain("sdk", "SDK command span should contain 'sdk'");
+        // The command completion record uses the stable message `dotnetup/command`
+        // (DisplayName == "command" after `dotnetup/` is stripped). The subcommand
+        // identity is carried in the `command.name` attribute (e.g. "sdk/install").
+        var commandSpan = spans.FirstOrDefault(s => s.DisplayName == "command");
+        commandSpan.Should().NotBeNull("a `dotnetup/command` completion record should be emitted");
+        commandSpan!.Tags.Should().ContainKey("command.name", "command record should carry the subcommand in command.name");
+        commandSpan.Tags["command.name"].Should().Contain("sdk", "SDK command should set command.name to a value containing 'sdk'");
     }
 
     [Fact]
@@ -341,11 +349,11 @@ public class TelemetryE2ETests
     /// </code>
     /// <para>
     /// The <see cref="TelemetrySpan.DisplayName"/> field on the returned
-    /// objects is the operation suffix after the leading <c>dotnetup/</c>
-    /// (e.g. <c>process/complete</c>, <c>command/sdk</c>, <c>error</c>) so
-    /// existing per-test filters using <c>StartsWith("command/")</c> still
-    /// work without modification, and the root completion record is found via
-    /// <c>== "process/complete"</c>.
+    /// objects is the operation suffix after the leading <c>dotnetup/</c>:
+    /// the root completion record becomes <c>"dotnetup"</c> (remapped from
+    /// <c>process/complete</c>) and the command completion record is
+    /// <c>"command"</c> — the subcommand identity (e.g. <c>sdk/install</c>) is
+    /// carried in the <c>command.name</c> attribute, not in the message.
     /// </para>
     /// </remarks>
     private static List<TelemetrySpan> ParseTelemetrySpans(string output)

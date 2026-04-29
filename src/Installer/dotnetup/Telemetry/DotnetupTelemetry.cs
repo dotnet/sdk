@@ -86,7 +86,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <see cref="Resource"/>, but the AzMonitor log exporter only maps a
     /// fixed subset of Resource attrs to AppInsights envelope fields and
     /// drops the rest — so we re-stamp them on every LogRecord state in
-    /// <see cref="BuildCompletionState"/> to ensure they reach the
+    /// <c>BuildCompletionState</c> to ensure they reach the
     /// <c>traces</c> table (the data-x signal).
     /// </summary>
     private readonly KeyValuePair<string, object?>[] _commonProperties = [];
@@ -186,7 +186,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// attrs (<c>service.name</c>, <c>service.version</c>,
     /// <c>service.instance.id</c>) to AppInsights envelope fields and drops
     /// the rest — so common attrs are also stamped per-LogRecord in
-    /// <see cref="BuildCompletionState"/> to reach the <c>traces</c> table.
+    /// <c>BuildCompletionState</c> to reach the <c>traces</c> table.
     /// On spans (opt-in perf trace) Resource attrs auto-stamp normally.
     /// </summary>
     private static ResourceBuilder BuildResource(List<KeyValuePair<string, object>> commonAttrs)
@@ -500,6 +500,17 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
+    /// Builds the structured state for one <c>traces</c> row. See
+    /// <see cref="BuildCompletionState(string, Activity, IDictionary{string, string?}, double, IReadOnlyList{KeyValuePair{string, object?}})"/>.
+    /// </summary>
+    private List<KeyValuePair<string, object?>> BuildCompletionState(
+        string eventName,
+        Activity activity,
+        IDictionary<string, string?> storedTags,
+        double elapsedMs)
+        => BuildCompletionState(eventName, activity, storedTags, elapsedMs, _commonProperties);
+
+    /// <summary>
     /// Builds the structured state for one <c>traces</c> row. Stamps the
     /// process-level common properties first (so per-event Activity tags can
     /// override on collision), walks ancestor activities (root first) to
@@ -515,18 +526,21 @@ public sealed class DotnetupTelemetry : IDisposable
     /// AppInsights envelope fields and drops the rest from
     /// <c>customDimensions</c>. We re-stamp them on each LogRecord state so
     /// they reach the <c>traces</c> table that data-x ingests.
+    /// Exposed as <c>internal</c> for tests so they can verify common
+    /// properties land on every event without spinning up an exporter.
     /// </remarks>
-    private List<KeyValuePair<string, object?>> BuildCompletionState(
+    internal static List<KeyValuePair<string, object?>> BuildCompletionState(
         string eventName,
         Activity activity,
         IDictionary<string, string?> storedTags,
-        double elapsedMs)
+        double elapsedMs,
+        IReadOnlyList<KeyValuePair<string, object?>> commonProperties)
     {
         var state = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
         // Process-level common properties first — Activity tags below may
         // override on key collision (currently no overlap by design).
-        foreach (var kv in _commonProperties)
+        foreach (var kv in commonProperties)
         {
             state[kv.Key] = kv.Value;
         }

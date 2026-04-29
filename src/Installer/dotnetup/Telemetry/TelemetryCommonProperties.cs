@@ -22,6 +22,13 @@ internal static class TelemetryCommonProperties
     private const string DevBuildEnvVar = "DOTNETUP_DEV_BUILD";
 
     /// <summary>
+    /// Environment variable used by the .NET CLI to tag the user's telemetry
+    /// profile (mirrored here so dotnetup runs are correlatable with SDK
+    /// runs in the same environment).
+    /// </summary>
+    private const string TelemetryProfileEnvVar = "DOTNET_CLI_TELEMETRY_PROFILE";
+
+    /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.
     /// </summary>
     public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId)
@@ -33,11 +40,22 @@ internal static class TelemetryCommonProperties
             ["os.type"] = GetOSType(),
             ["os.platform"] = RuntimeInformation.OSDescription,
             ["os.version"] = Environment.OSVersion.VersionString,
+            ["os.arch"] = RuntimeInformation.OSArchitecture.ToString(),
             ["process.arch"] = RuntimeInformation.ProcessArchitecture.ToString(),
+            ["runtime.id"] = RuntimeInformation.RuntimeIdentifier,
+            ["output.redirected"] = Console.IsOutputRedirected,
             ["ci.detected"] = s_isCIEnvironment.Value,
             ["dotnetup.version"] = GetVersion(),
             ["dev.build"] = s_isDevBuild.Value
         };
+
+        // Mirror the .NET CLI's DOTNET_CLI_TELEMETRY_PROFILE (same env var
+        // the SDK's TelemetryCommonProperties stamps as "Telemetry Profile").
+        var telemetryProfile = Environment.GetEnvironmentVariable(TelemetryProfileEnvVar);
+        if (!string.IsNullOrEmpty(telemetryProfile))
+        {
+            attributes["telemetry.profile"] = telemetryProfile;
+        }
 
         // Add LLM environment if detected (same detection as .NET SDK)
         var llmEnv = s_llmEnvironment.Value;
