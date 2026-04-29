@@ -54,15 +54,15 @@ public class TelemetryE2ETests
 
         exitCode.Should().NotBe(0, "requesting a nonexistent SDK version should fail");
 
-        var spans = ParseTelemetrySpans(output);
-        spans.Should().NotBeEmpty("console exporter should emit telemetry spans");
+        var logRecords = ParseLogRecords(output);
+        logRecords.Should().NotBeEmpty("console exporter should emit telemetry LogRecords");
 
-        var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
-        rootSpan.Should().NotBeNull("root 'dotnetup' span should be emitted");
+        var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
+        rootRecord.Should().NotBeNull("root 'dotnetup' LogRecord should be emitted");
 
-        rootSpan!.Tags.Should().ContainKey("error.type", "root span should have error.type tag");
-        rootSpan.Tags.Should().ContainKey("error.category", "root span should have error.category tag");
-        rootSpan.Tags["error.category"].Should().Be("user", "requesting a nonexistent SDK version should be a user error");
+        rootRecord!.Attributes.Should().ContainKey("error.type", "root record should have error.type attribute");
+        rootRecord.Attributes.Should().ContainKey("error.category", "root record should have error.category attribute");
+        rootRecord.Attributes["error.category"].Should().Be("user", "requesting a nonexistent SDK version should be a user error");
     }
 
     [Fact]
@@ -77,15 +77,15 @@ public class TelemetryE2ETests
 
         exitCode.Should().NotBe(0);
 
-        var spans = ParseTelemetrySpans(output);
+        var logRecords = ParseLogRecords(output);
         // The command completion record is emitted as `dotnetup/command` (DisplayName
         // == "command" after the parser strips the `dotnetup/` prefix). The
         // subcommand identity (e.g. "sdk/install") is carried in the `command.name`
         // attribute, not in the message.
-        var commandSpan = spans.FirstOrDefault(s => s.DisplayName == "command");
-        commandSpan.Should().NotBeNull("a `dotnetup/command` record should be emitted");
+        var commandRecord = logRecords.FirstOrDefault(s => s.DisplayName == "command");
+        commandRecord.Should().NotBeNull("a `dotnetup/command` LogRecord should be emitted");
 
-        commandSpan!.Tags.Should().ContainKey("error.type", "command span should have error.type tag");
+        commandRecord!.Attributes.Should().ContainKey("error.type", "command record should have error.type attribute");
     }
 
     [Fact]
@@ -100,23 +100,23 @@ public class TelemetryE2ETests
 
         exitCode.Should().NotBe(0);
 
-        var spans = ParseTelemetrySpans(output);
-        var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
-        rootSpan.Should().NotBeNull();
+        var logRecords = ParseLogRecords(output);
+        var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
+        rootRecord.Should().NotBeNull();
 
-        // The root span should have error details propagated from the command span
-        if (rootSpan!.Tags.TryGetValue("error.details", out string? details))
+        // The root record should have error details propagated from the command record
+        if (rootRecord!.Attributes.TryGetValue("error.details", out string? details))
         {
             details.Should().NotBeNullOrWhiteSpace("error.details should contain a meaningful message");
         }
 
-        // The error.type should be present and match between command and root spans
-        var commandSpan = spans.FirstOrDefault(s => s.DisplayName == "command");
-        if (commandSpan != null &&
-            commandSpan.Tags.TryGetValue("error.type", out string? commandErrorType) &&
-            rootSpan.Tags.TryGetValue("error.type", out string? rootErrorType))
+        // The error.type should be present and match between command and root records
+        var commandRecord = logRecords.FirstOrDefault(s => s.DisplayName == "command");
+        if (commandRecord != null &&
+            commandRecord.Attributes.TryGetValue("error.type", out string? commandErrorType) &&
+            rootRecord.Attributes.TryGetValue("error.type", out string? rootErrorType))
         {
-            rootErrorType.Should().Be(commandErrorType, "error.type should match between command and root spans");
+            rootErrorType.Should().Be(commandErrorType, "error.type should match between command and root records");
         }
     }
 
@@ -136,14 +136,14 @@ public class TelemetryE2ETests
 
             exitCode.Should().Be(0, "dotnetup --help should succeed");
 
-            var spans = ParseTelemetrySpans(output);
+            var logRecords = ParseLogRecords(output);
 
-            // If telemetry emits spans (it may not for --help), they should have no error tags
-            var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
-            if (rootSpan != null)
+            // If telemetry emits LogRecords (it may not for --help), they should have no error attributes
+            var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
+            if (rootRecord != null)
             {
-                rootSpan.Tags.Should().NotContainKey("error.type", "--help should not produce error tags");
-                rootSpan.Tags.Should().NotContainKey("error.category", "--help should not produce error tags");
+                rootRecord.Attributes.Should().NotContainKey("error.type", "--help should not produce error attributes");
+                rootRecord.Attributes.Should().NotContainKey("error.category", "--help should not produce error attributes");
             }
         }
         finally
@@ -162,17 +162,17 @@ public class TelemetryE2ETests
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
             args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: envVars);
 
-        var spans = ParseTelemetrySpans(output);
-        var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
-        rootSpan.Should().NotBeNull("root span should have DisplayName 'dotnetup'");
+        var logRecords = ParseLogRecords(output);
+        var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
+        rootRecord.Should().NotBeNull("root LogRecord should have DisplayName 'dotnetup'");
 
         // The command completion record uses the stable message `dotnetup/command`
         // (DisplayName == "command" after `dotnetup/` is stripped). The subcommand
         // identity is carried in the `command.name` attribute (e.g. "sdk/install").
-        var commandSpan = spans.FirstOrDefault(s => s.DisplayName == "command");
-        commandSpan.Should().NotBeNull("a `dotnetup/command` completion record should be emitted");
-        commandSpan!.Tags.Should().ContainKey("command.name", "command record should carry the subcommand in command.name");
-        commandSpan.Tags["command.name"].Should().Contain("sdk", "SDK command should set command.name to a value containing 'sdk'");
+        var commandRecord = logRecords.FirstOrDefault(s => s.DisplayName == "command");
+        commandRecord.Should().NotBeNull("a `dotnetup/command` completion LogRecord should be emitted");
+        commandRecord!.Attributes.Should().ContainKey("command.name", "command record should carry the subcommand in command.name");
+        commandRecord.Attributes["command.name"].Should().Contain("sdk", "SDK command should set command.name to a value containing 'sdk'");
     }
 
     [Fact]
@@ -193,14 +193,14 @@ public class TelemetryE2ETests
         exitCode.Should().NotBe(0, "install-path pointing to a file should fail");
         output.Should().Contain("existing file", "error message should mention it's a file");
 
-        var spans = ParseTelemetrySpans(output);
-        var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
-        rootSpan.Should().NotBeNull("root span should be emitted");
+        var logRecords = ParseLogRecords(output);
+        var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
+        rootRecord.Should().NotBeNull("root LogRecord should be emitted");
 
-        rootSpan!.Tags.Should().ContainKey("error.type");
-        rootSpan.Tags["error.type"].Should().Be("InstallPathIsFile");
-        rootSpan.Tags.Should().ContainKey("error.category");
-        rootSpan.Tags["error.category"].Should().Be("user");
+        rootRecord!.Attributes.Should().ContainKey("error.type");
+        rootRecord.Attributes["error.type"].Should().Be("InstallPathIsFile");
+        rootRecord.Attributes.Should().ContainKey("error.category");
+        rootRecord.Attributes["error.category"].Should().Be("user");
     }
 
     [Fact]
@@ -223,14 +223,14 @@ public class TelemetryE2ETests
 
             exitCode.Should().NotBe(0, "corrupt manifest should cause list to fail");
 
-            var spans = ParseTelemetrySpans(output);
-            var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
-            rootSpan.Should().NotBeNull("root span should be emitted");
+            var logRecords = ParseLogRecords(output);
+            var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
+            rootRecord.Should().NotBeNull("root LogRecord should be emitted");
 
-            rootSpan!.Tags.Should().ContainKey("error.type");
-            rootSpan.Tags["error.type"].Should().Be("LocalManifestUserCorrupted");
-            rootSpan.Tags.Should().ContainKey("error.category");
-            rootSpan.Tags["error.category"].Should().Be("user");
+            rootRecord!.Attributes.Should().ContainKey("error.type");
+            rootRecord.Attributes["error.type"].Should().Be("LocalManifestUserCorrupted");
+            rootRecord.Attributes.Should().ContainKey("error.category");
+            rootRecord.Attributes["error.category"].Should().Be("user");
         }
         finally
         {
@@ -265,14 +265,14 @@ public class TelemetryE2ETests
 
             exitCode.Should().NotBe(0, "corrupt manifest should cause list to fail");
 
-            var spans = ParseTelemetrySpans(output);
-            var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
-            rootSpan.Should().NotBeNull("root span should be emitted");
+            var logRecords = ParseLogRecords(output);
+            var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
+            rootRecord.Should().NotBeNull("root LogRecord should be emitted");
 
-            rootSpan!.Tags.Should().ContainKey("error.type");
-            rootSpan.Tags["error.type"].Should().Be("LocalManifestCorrupted");
-            rootSpan.Tags.Should().ContainKey("error.category");
-            rootSpan.Tags["error.category"].Should().Be("product");
+            rootRecord!.Attributes.Should().ContainKey("error.type");
+            rootRecord.Attributes["error.type"].Should().Be("LocalManifestCorrupted");
+            rootRecord.Attributes.Should().ContainKey("error.category");
+            rootRecord.Attributes["error.category"].Should().Be("product");
         }
         finally
         {
@@ -304,22 +304,22 @@ public class TelemetryE2ETests
 
         exitCode.Should().NotBe(0, "uninstall against an empty manifest must fail");
 
-        var spans = ParseTelemetrySpans(output);
-        spans.Should().NotBeEmpty("console exporter should emit LogRecords");
+        var logRecords = ParseLogRecords(output);
+        logRecords.Should().NotBeEmpty("console exporter should emit LogRecords");
 
-        var rootSpan = spans.FirstOrDefault(s => s.DisplayName == "dotnetup");
-        rootSpan.Should().NotBeNull("root LogRecord (dotnetup/process/complete) should be emitted");
-        rootSpan!.Tags.Should().ContainKey("error.type", "Cat-3 throw must stamp error.type on root LogRecord");
-        rootSpan.Tags["error.type"].Should().Be("UninstallTargetNotFound");
-        rootSpan.Tags.Should().ContainKey("error.category");
-        rootSpan.Tags["error.category"].Should().Be("user");
+        var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
+        rootRecord.Should().NotBeNull("root LogRecord (dotnetup/process/complete) should be emitted");
+        rootRecord!.Attributes.Should().ContainKey("error.type", "Cat-3 throw must stamp error.type on root LogRecord");
+        rootRecord.Attributes["error.type"].Should().Be("UninstallTargetNotFound");
+        rootRecord.Attributes.Should().ContainKey("error.category");
+        rootRecord.Attributes["error.category"].Should().Be("user");
 
-        var commandSpan = spans.FirstOrDefault(s => s.DisplayName == "command");
-        commandSpan.Should().NotBeNull("command LogRecord (dotnetup/command) should be emitted");
-        commandSpan!.Tags.Should().ContainKey("error.type", "Cat-3 throw must stamp error.type on command LogRecord");
-        commandSpan.Tags["error.type"].Should().Be("UninstallTargetNotFound");
-        commandSpan.Tags.Should().ContainKey("error.category");
-        commandSpan.Tags["error.category"].Should().Be("user");
+        var commandRecord = logRecords.FirstOrDefault(s => s.DisplayName == "command");
+        commandRecord.Should().NotBeNull("command LogRecord (dotnetup/command) should be emitted");
+        commandRecord!.Attributes.Should().ContainKey("error.type", "Cat-3 throw must stamp error.type on command LogRecord");
+        commandRecord.Attributes["error.type"].Should().Be("UninstallTargetNotFound");
+        commandRecord.Attributes.Should().ContainKey("error.category");
+        commandRecord.Attributes["error.category"].Should().Be("user");
     }
 
     [Fact]
@@ -342,8 +342,8 @@ public class TelemetryE2ETests
 
             exitCode.Should().Be(0);
 
-            var spans = ParseTelemetrySpans(output);
-            spans.Should().BeEmpty("no telemetry spans should be emitted when telemetry is opted out");
+            var logRecords = ParseLogRecords(output);
+            logRecords.Should().BeEmpty("no telemetry LogRecords should be emitted when telemetry is opted out");
         }
         finally
         {
@@ -390,7 +390,7 @@ public class TelemetryE2ETests
     ///     ...
     /// </code>
     /// <para>
-    /// The <see cref="TelemetrySpan.DisplayName"/> field on the returned
+    /// The <see cref="TelemetryLogRecord.DisplayName"/> field on the returned
     /// objects is the operation suffix after the leading <c>dotnetup/</c>:
     /// the root completion record becomes <c>"dotnetup"</c> (remapped from
     /// <c>process/complete</c>) and the command completion record is
@@ -398,12 +398,12 @@ public class TelemetryE2ETests
     /// carried in the <c>command.name</c> attribute, not in the message.
     /// </para>
     /// </remarks>
-    private static List<TelemetrySpan> ParseTelemetrySpans(string output)
+    private static List<TelemetryLogRecord> ParseLogRecords(string output)
     {
-        var records = new List<TelemetrySpan>();
+        var records = new List<TelemetryLogRecord>();
         var lines = output.Split('\n', StringSplitOptions.None);
 
-        TelemetrySpan? current = null;
+        TelemetryLogRecord? current = null;
         bool inAttributes = false;
 
         foreach (string rawLine in lines)
@@ -418,7 +418,7 @@ public class TelemetryE2ETests
                     records.Add(current);
                 }
 
-                current = new TelemetrySpan();
+                current = new TelemetryLogRecord();
                 inAttributes = false;
                 continue;
             }
@@ -454,7 +454,7 @@ public class TelemetryE2ETests
             var severityMatch = Regex.Match(line, @"^LogRecord\.SeverityText:\s*(.+)$");
             if (severityMatch.Success)
             {
-                current.StatusCode = severityMatch.Groups[1].Value.Trim();
+                current.SeverityText = severityMatch.Groups[1].Value.Trim();
                 inAttributes = false;
                 continue;
             }
@@ -480,7 +480,7 @@ public class TelemetryE2ETests
                 var attrMatch = Regex.Match(line, @"^\s+([a-z0-9._-]+)\s*:\s*(.*)$", RegexOptions.IgnoreCase);
                 if (attrMatch.Success)
                 {
-                    current.Tags[attrMatch.Groups[1].Value.Trim()] = attrMatch.Groups[2].Value.Trim();
+                    current.Attributes[attrMatch.Groups[1].Value.Trim()] = attrMatch.Groups[2].Value.Trim();
                 }
                 else if (!line.StartsWith(" ", StringComparison.Ordinal))
                 {
@@ -498,12 +498,12 @@ public class TelemetryE2ETests
     }
 
     /// <summary>
-    /// Represents a parsed telemetry span from console exporter output.
+    /// Represents a parsed telemetry LogRecord from the OTel console exporter output.
     /// </summary>
-    private sealed class TelemetrySpan
+    private sealed class TelemetryLogRecord
     {
         public string DisplayName { get; set; } = string.Empty;
-        public string StatusCode { get; set; } = string.Empty;
-        public Dictionary<string, string> Tags { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public string SeverityText { get; set; } = string.Empty;
+        public Dictionary<string, string> Attributes { get; } = new(StringComparer.OrdinalIgnoreCase);
     }
 }
