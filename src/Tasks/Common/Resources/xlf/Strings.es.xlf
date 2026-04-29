@@ -911,6 +911,21 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1185: El paquete en tiempo de ejecución para FrameworkReference "{0}" no estaba disponible. Esto puede deberse a que DisableTransitiveFrameworkReferenceDownloads se ha establecido en true.</target>
         <note>{StrBegins="NETSDK1185: "}</note>
       </trans-unit>
+      <trans-unit id="SdkVersionHasVulnerabilities">
+        <source>NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</source>
+        <target state="new">NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</target>
+        <note>{StrBegins="NETSDK1238: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
+      </trans-unit>
+      <trans-unit id="SdkVersionIsEol">
+        <source>NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</source>
+        <target state="new">NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</target>
+        <note>{StrBegins="NETSDK1239: "}{Locked="{0}"}{Locked="{1}"}</note>
+      </trans-unit>
+      <trans-unit id="SdkVersionUpdateRecommendation_Info">
+        <source>Update to version {0}.</source>
+        <target state="new">Update to version {0}.</target>
+        <note>{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="SelfContainedExeCannotReferenceNonSelfContained">
         <source>NETSDK1150: The referenced project '{0}' is a non self-contained executable.  A non self-contained executable cannot be referenced by a self-contained executable.  For more information, see https://aka.ms/netsdk1150</source>
         <target state="translated">NETSDK1150: El proyecto al que se hace referencia '{0}' es un ejecutable no independiente. Un archivo ejecutable independiente no puede hacer referencia a un ejecutable que no es independiente.  Para obtener más información, consulte https://aka.ms/netsdk1150</target>
