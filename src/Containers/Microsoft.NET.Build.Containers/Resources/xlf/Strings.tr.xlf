@@ -400,8 +400,8 @@
         <note>{1} is the registry name</note>
       </trans-unit>
       <trans-unit id="RepositoryNotFound">
-        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</source>
-        <target state="translated">CONTAINER1015: '{2}' kayıt defterindeki '{1}' etiketinde bulunan '{0}' deposuna erişilemiyor. Lütfen bu ad ve etiketin kayıt defterinde mevcut olduğunu onaylayın.</target>
+        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' (digest: '{2}') in the registry '{3}'. Please confirm that this name and tag are present in the registry.</source>
+        <target state="new">CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' (digest: '{2}') in the registry '{3}'. Please confirm that this name and tag are present in the registry.</target>
         <note>{StrBegins="CONTAINER1015: "}</note>
       </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">

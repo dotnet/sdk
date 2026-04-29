@@ -458,7 +458,7 @@
     <comment>{StrBegins="CONTAINER1017:" }</comment>
   </data>
   <data name="RepositoryNotFound" xml:space="preserve">
-    <value>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</value>
+    <value>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' (digest: '{2}') in the registry '{3}'. Please confirm that this name and tag are present in the registry.</value>
     <comment>{StrBegins="CONTAINER1015: "}</comment>
   </data>
   <data name="UnableToDownloadFromRepository" xml:space="preserve">
