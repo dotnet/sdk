@@ -11,6 +11,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- Automatically set the TargetFramework property if not set to the TFM that is bundled with the SDK.
+       Provide an opt-out property if for some reason a project shouldn't set a TargetFramework. -->
+  <PropertyGroup Condition="'$(AutomaticallySetTargetFrameworkIfUnset)' != 'false'">
+    <TargetFramework Condition="'$(TargetFrameworks)' == '' and '$(TargetFramework)' == ''">$(BundledNETCoreAppTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
   <!-- For projects that aren't using Microsoft.NET.Sdk, these props files won't have been imported yet.
        So import them here. -->
   <ImportGroup Condition="'$(UsingNETSdkDefaults)' != 'true'">
