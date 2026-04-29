@@ -19,16 +19,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class GenerateDepsFile : TaskBase, IMultiThreadableTask
     {
-#if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
-            set => _taskEnvironment = value;
-        }
-#else
-        public TaskEnvironment TaskEnvironment { get; set; } = null!;
-#endif
+        public TaskEnvironment TaskEnvironment { get; set; }
 
         [Required]
         public string ProjectPath { get; set; }
@@ -151,7 +142,7 @@ namespace Microsoft.NET.Build.Tasks
             LockFileLookup lockFileLookup = null;
             if (AssetsFilePath != null)
             {
-                AbsolutePath absoluteAssetsFilePath = taskEnvironment?.GetAbsolutePath(AssetsFilePath) ?? new AbsolutePath(Path.GetFullPath(AssetsFilePath));
+                AbsolutePath absoluteAssetsFilePath = taskEnvironment.GetAbsolutePath(AssetsFilePath);
                 LockFile lockFile = new LockFileCache(this).GetLockFile(absoluteAssetsFilePath);
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
@@ -234,7 +225,7 @@ namespace Microsoft.NET.Build.Tasks
                 RuntimeGraph runtimeGraph = null;
                 if (IsSelfContained)
                 {
-                    AbsolutePath absoluteRuntimeGraphPath = taskEnvironment?.GetAbsolutePath(RuntimeGraphPath) ?? new AbsolutePath(Path.GetFullPath(RuntimeGraphPath));
+                    AbsolutePath absoluteRuntimeGraphPath = taskEnvironment.GetAbsolutePath(RuntimeGraphPath);
                     runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(absoluteRuntimeGraphPath);
                 }
 
@@ -327,9 +318,12 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            AbsolutePath absoluteProjectPath = TaskEnvironment?.GetAbsolutePath(ProjectPath) ?? new AbsolutePath(Path.GetFullPath(ProjectPath));
-            AbsolutePath absoluteDepsFilePath = TaskEnvironment?.GetAbsolutePath(DepsFilePath) ?? new AbsolutePath(Path.GetFullPath(DepsFilePath));
-            WriteDepsFile(absoluteProjectPath, absoluteDepsFilePath, TaskEnvironment);
+            TaskEnvironment taskEnvironment = TaskEnvironment
+                ?? throw new InvalidOperationException($"{nameof(GenerateDepsFile)} requires MSBuild to provide a {nameof(TaskEnvironment)}.");
+
+            AbsolutePath absoluteProjectPath = taskEnvironment.GetAbsolutePath(ProjectPath);
+            AbsolutePath absoluteDepsFilePath = taskEnvironment.GetAbsolutePath(DepsFilePath);
+            WriteDepsFile(absoluteProjectPath, absoluteDepsFilePath, taskEnvironment);
         }
     }
 }
