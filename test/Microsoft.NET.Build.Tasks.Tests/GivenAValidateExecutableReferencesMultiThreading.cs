@@ -11,55 +11,81 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     // This file intentionally contains minimal multithreading-specific coverage.
     // ValidateExecutableReferences is a pure metadata-validation task with no
-    // filesystem, environment-variable, or CWD dependencies, so the only
-    // migration-specific behavior worth asserting here is:
-    //   - The TaskEnvironment property is accessible (interface compliance).
-    //   - The task can be executed concurrently without interference.
+    // filesystem, environment-variable, or CWD dependencies, so the
+    // migration-specific behavior worth asserting here is that MSBuild can
+    // recognize the task as multithreadable and execute it concurrently without
+    // interference.
     // Behavioral correctness of the validation logic is covered by the
     // end-to-end tests in the SDK test suite.
     public class GivenAValidateExecutableReferencesMultiThreading
     {
-        /// <summary>
-        /// TaskEnvironment property must be settable and gettable.
-        /// </summary>
+        private const string MSBuildMultiThreadableTaskAttributeFullName =
+            "Microsoft.Build.Framework.MSBuildMultiThreadableTaskAttribute";
+
+        private static readonly TimeSpan ConcurrencyTimeout = TimeSpan.FromSeconds(30);
+
         [Fact]
-        public void TaskEnvironmentPropertyIsAccessible()
+        public void TaskIsRecognizedAsMSBuildMultiThreadable()
         {
-            var task = new ValidateExecutableReferences();
-            var env = TaskEnvironmentHelper.CreateForTest(Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar));
-            task.TaskEnvironment = env;
-            Assert.Same(env, task.TaskEnvironment);
+            Assert.Contains(
+                typeof(ValidateExecutableReferences).GetCustomAttributes(inherit: false),
+                attribute => attribute.GetType().FullName == MSBuildMultiThreadableTaskAttributeFullName);
         }
 
         /// <summary>
         /// Concurrent execution: multiple task instances run in parallel without interference.
         /// </summary>
         [Fact]
-        public void ConcurrentExecution_ProducesConsistentResults()
+        public async System.Threading.Tasks.Task ConcurrentExecution_ProducesConsistentResults()
         {
-            const int concurrency = 8;
+            const int concurrency = 64;
+            CancellationToken cancellationToken = TestContext.Current.CancellationToken;
             var results = new ConcurrentBag<(bool success, int errorCount)>();
+            using var allWorkersReady = new CountdownEvent(concurrency);
+            using var start = new ManualResetEventSlim();
+            using var executionOverlap = new Barrier(concurrency);
 
-            Parallel.For(0, concurrency, _ =>
-            {
-                var referencedProject = CreateReferencedProject(
-                    referencedIsExecutable: true,
-                    referencedIsSelfContained: false);
+            var tasks = Enumerable.Range(0, concurrency)
+                .Select(_ => System.Threading.Tasks.Task.Factory.StartNew(
+                    () =>
+                    {
+                        var engine = new MockBuildEngine6(() =>
+                        {
+                            if (!executionOverlap.SignalAndWait(ConcurrencyTimeout, cancellationToken))
+                            {
+                                throw new TimeoutException("Timed out waiting for task executions to overlap.");
+                            }
+                        });
+                        var task = new ValidateExecutableReferences
+                        {
+                            BuildEngine = engine,
+                            SelfContained = true,
+                            IsExecutable = true,
+                            ReferencedProjects = new[]
+                            {
+                                CreateReferencedProject(
+                                    referencedIsExecutable: true,
+                                    referencedIsSelfContained: false)
+                            },
+                        };
 
-                var engine = new MockBuildEngine6();
-                var task = new ValidateExecutableReferences
-                {
-                    BuildEngine = engine,
-                    SelfContained = true,
-                    IsExecutable = true,
-                    ReferencedProjects = new[] { referencedProject },
-                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(
-                        Path.Combine(Path.GetTempPath(), "concurrent-" + Guid.NewGuid().ToString("N"))),
-                };
+                        allWorkersReady.Signal();
+                        if (!start.Wait(ConcurrencyTimeout, cancellationToken))
+                        {
+                            throw new TimeoutException("Timed out waiting for all workers to start.");
+                        }
 
-                bool success = task.Execute();
-                results.Add((success, engine.Errors.Count));
-            });
+                        bool success = task.Execute();
+                        results.Add((success, engine.Errors.Count));
+                    },
+                    cancellationToken,
+                    System.Threading.Tasks.TaskCreationOptions.LongRunning,
+                    System.Threading.Tasks.TaskScheduler.Default))
+                .ToArray();
+
+            Assert.True(allWorkersReady.Wait(ConcurrencyTimeout, cancellationToken), "Timed out waiting for all workers to be ready.");
+            start.Set();
+            await System.Threading.Tasks.Task.WhenAll(tasks);
 
             Assert.Equal(concurrency, results.Count);
             // All should fail with exactly 1 error (self-contained referencing non-self-contained)
@@ -87,8 +113,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 SelfContained = true,
                 IsExecutable = false,
                 ReferencedProjects = new[] { referencedProject },
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(
-                    Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar)),
             };
 
             Assert.True(task.Execute());
@@ -127,11 +151,18 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         internal class MockBuildEngine6 : MockBuildEngine, IBuildEngine6
         {
             private readonly Dictionary<string, string> _globalProperties = new(StringComparer.OrdinalIgnoreCase);
+            private readonly Action? _onGetGlobalProperties;
+
+            public MockBuildEngine6(Action? onGetGlobalProperties = null)
+            {
+                _onGetGlobalProperties = onGetGlobalProperties;
+            }
 
             public void LogTelemetry(string eventName, IDictionary<string, string> properties) { }
 
             public IReadOnlyDictionary<string, string> GetGlobalProperties()
             {
+                _onGetGlobalProperties?.Invoke();
                 return _globalProperties;
             }
 
