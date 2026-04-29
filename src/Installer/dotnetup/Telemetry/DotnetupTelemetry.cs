@@ -80,6 +80,16 @@ public sealed class DotnetupTelemetry : IDisposable
     private readonly ILoggerFactory? _loggerFactory;
     private readonly ILogger? _logger;
     private readonly List<Activity> _activities = [];
+    /// <summary>
+    /// Snapshot of process-level common properties (os.type, device.id,
+    /// session.id, dev.build, ...). These also live on the OTel
+    /// <see cref="Resource"/>, but the AzMonitor log exporter only maps a
+    /// fixed subset of Resource attrs to AppInsights envelope fields and
+    /// drops the rest — so we re-stamp them on every LogRecord state in
+    /// <see cref="BuildCompletionState"/> to ensure they reach the
+    /// <c>traces</c> table (the data-x signal).
+    /// </summary>
+    private readonly KeyValuePair<string, object?>[] _commonProperties = [];
     private bool _disposed;
 
     /// <summary>
@@ -117,7 +127,9 @@ public sealed class DotnetupTelemetry : IDisposable
             var enablePerfTrace = IsTruthy(Environment.GetEnvironmentVariable(EnablePerfTraceEnvVar));
             var debugConsole = Environment.GetEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
             var storageDirectory = ResolveStorageDirectory();
-            var resource = BuildResource();
+            var commonAttrs = BuildCommonAttributes();
+            _commonProperties = ToLogStateProperties(commonAttrs);
+            var resource = BuildResource(commonAttrs);
 
             _tracerProvider = BuildTracerProvider(resource, enablePerfTrace, disableExport, debugConsole, storageDirectory);
             _loggerFactory = BuildLoggerFactory(resource, disableExport, debugConsole, storageDirectory);
@@ -139,11 +151,13 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the OTel <see cref="Resource"/> shared by tracer and logger so
-    /// common process-level attributes (caller, OS, arch, machine id, session
-    /// id, dev.build, ...) auto-stamp every span and log record.
+    /// Builds the list of common process-level attributes (caller, os.type,
+    /// device.id, session.id, dev.build, ...). Used both as OTel
+    /// <see cref="Resource"/> attributes (for spans / opt-in perf trace
+    /// export) and as per-LogRecord state stamps (for the AppInsights
+    /// <c>traces</c> table that data-x ingests).
     /// </summary>
-    private ResourceBuilder BuildResource()
+    private List<KeyValuePair<string, object>> BuildCommonAttributes()
     {
         var commonAttrs = new List<KeyValuePair<string, object>>
         {
@@ -153,6 +167,30 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             commonAttrs.Add(attr);
         }
+        return commonAttrs;
+    }
+
+    private static KeyValuePair<string, object?>[] ToLogStateProperties(List<KeyValuePair<string, object>> commonAttrs)
+    {
+        var arr = new KeyValuePair<string, object?>[commonAttrs.Count];
+        for (int i = 0; i < commonAttrs.Count; i++)
+        {
+            arr[i] = new KeyValuePair<string, object?>(commonAttrs[i].Key, commonAttrs[i].Value);
+        }
+        return arr;
+    }
+
+    /// <summary>
+    /// Builds the OTel <see cref="Resource"/> shared by tracer and logger.
+    /// Note: the AzMonitor log exporter only maps a fixed subset of Resource
+    /// attrs (<c>service.name</c>, <c>service.version</c>,
+    /// <c>service.instance.id</c>) to AppInsights envelope fields and drops
+    /// the rest — so common attrs are also stamped per-LogRecord in
+    /// <see cref="BuildCompletionState"/> to reach the <c>traces</c> table.
+    /// On spans (opt-in perf trace) Resource attrs auto-stamp normally.
+    /// </summary>
+    private ResourceBuilder BuildResource(List<KeyValuePair<string, object>> commonAttrs)
+    {
         return ResourceBuilder.CreateDefault()
             .AddService("dotnetup", serviceVersion: GetVersion())
             .AddAttributes(commonAttrs);
@@ -462,22 +500,36 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Builds the structured state for one <c>traces</c> row. Walks ancestor
-    /// activities (root first) to inherit <c>command.*</c> tags, then
-    /// overlays the current activity's own tags and the op's stored tags.
-    /// Last writer wins; computed fields (<c>operation.name</c>,
-    /// <c>operation.duration_ms</c>, <c>operation.parent_name</c>) are added
-    /// last. Common process-level attrs (caller, OS, dev.build, machine id,
-    /// session id) live on the OTel <see cref="Resource"/> and auto-stamp —
-    /// they're not added here.
+    /// Builds the structured state for one <c>traces</c> row. Stamps the
+    /// process-level common properties first (so per-event Activity tags can
+    /// override on collision), walks ancestor activities (root first) to
+    /// inherit <c>command.*</c> tags, then overlays the current activity's
+    /// own tags and the op's stored tags. Last writer wins; computed fields
+    /// (<c>operation.name</c>, <c>operation.duration_ms</c>,
+    /// <c>operation.parent_name</c>) are added last.
     /// </summary>
-    private static List<KeyValuePair<string, object?>> BuildCompletionState(
+    /// <remarks>
+    /// Common properties (caller, os.type, device.id, session.id, dev.build,
+    /// ...) also live on the OTel <see cref="Resource"/>, but the AzMonitor
+    /// log exporter only maps a fixed subset of Resource attrs to
+    /// AppInsights envelope fields and drops the rest from
+    /// <c>customDimensions</c>. We re-stamp them on each LogRecord state so
+    /// they reach the <c>traces</c> table that data-x ingests.
+    /// </remarks>
+    private List<KeyValuePair<string, object?>> BuildCompletionState(
         string eventName,
         Activity activity,
         IDictionary<string, string?> storedTags,
         double elapsedMs)
     {
         var state = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+
+        // Process-level common properties first — Activity tags below may
+        // override on key collision (currently no overlap by design).
+        foreach (var kv in _commonProperties)
+        {
+            state[kv.Key] = kv.Value;
+        }
 
         // Walk root → ... → immediate parent so the root's command.* tags
         // are written first and survive unless an inner activity explicitly
