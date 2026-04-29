@@ -283,7 +283,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         if (bearerAuthInfo.Scope is not null)
         {
             parameters["scope"] = bearerAuthInfo.Scope;
-        };
+        }
+        ;
         HttpRequestMessage postMessage = new(HttpMethod.Post, uri)
         {
             Content = new FormUrlEncodedContent(parameters)
