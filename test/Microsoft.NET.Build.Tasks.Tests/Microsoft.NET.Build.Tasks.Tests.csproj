@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions.Json" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
