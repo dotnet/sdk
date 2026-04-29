@@ -249,11 +249,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     Directory.Delete(path, true);
                     return;
                 }
-                catch (UnauthorizedAccessException) when (i < maxRetries - 1)
-                {
-                    Thread.Sleep(100 * (i + 1));
-                }
-                catch (IOException) when (i < maxRetries - 1)
+                catch (Exception ex) when ((ex is UnauthorizedAccessException or IOException) && i < maxRetries - 1)
                 {
                     Thread.Sleep(100 * (i + 1));
                 }
