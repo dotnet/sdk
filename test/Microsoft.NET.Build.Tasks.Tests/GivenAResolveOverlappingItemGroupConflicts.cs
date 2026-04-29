@@ -207,6 +207,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var results = new bool[concurrency];
             var exceptions = new Exception?[concurrency];
             var currentDirectory = Directory.GetCurrentDirectory();
+            var cancellationToken = TestContext.Current.CancellationToken;
 
             for (int i = 0; i < concurrency; i++)
             {
@@ -241,7 +242,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 {
                     try
                     {
-                        if (!barrier.SignalAndWait(TimeSpan.FromSeconds(30)))
+                        if (!barrier.SignalAndWait(TimeSpan.FromSeconds(30), cancellationToken))
                         {
                             throw new TimeoutException("Timed out waiting for concurrent task start.");
                         }
@@ -256,7 +257,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 workers[i].Start();
             }
 
-            barrier.SignalAndWait(TimeSpan.FromSeconds(30)).Should().BeTrue();
+            barrier.SignalAndWait(TimeSpan.FromSeconds(30), cancellationToken).Should().BeTrue();
 
             foreach (var worker in workers)
             {
