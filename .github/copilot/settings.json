@@ -6,8 +6,5 @@
         "repo": "dotnet/arcade-skills"
       }
     }
-  },
-  "enabledPlugins": {
-    "dotnet-dnceng@dotnet-arcade-skills": true
   }
 }
