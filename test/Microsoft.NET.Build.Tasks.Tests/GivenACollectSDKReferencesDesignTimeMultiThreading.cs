@@ -3,96 +3,217 @@
 
 #nullable disable
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [Collection(nameof(CurrentDirectoryMutatingTestCollection))]
     public class GivenACollectSDKReferencesDesignTimeMultiThreading
     {
         [Fact]
-        public async Task ConcurrentExecutionProducesCorrectResults()
+        public async Task ConcurrentExecutionWithInjectedTaskEnvironmentsProducesCorrectResults()
         {
-            const int concurrency = 8;
+            const int concurrency = 64;
+            var originalCurrentDirectory = Directory.GetCurrentDirectory();
+            var sharedSdkReferences = new ITaskItem[]
+            {
+                new MockTaskItem(@"relative\SharedSDK", new Dictionary<string, string>
+                {
+                    { "RelativeMetadata", @"metadata\value" }
+                })
+            };
+            var sharedPackageReferences = new ITaskItem[]
+            {
+                new MockTaskItem(@"relative\ImplicitByMetadata", new Dictionary<string, string>
+                {
+                    { MetadataKeys.IsImplicitlyDefined, "True" },
+                    { MetadataKeys.Version, "1.0.0" }
+                }),
+                new MockTaskItem(@"relative\ImplicitByDefaultList", new Dictionary<string, string>
+                {
+                    { MetadataKeys.Version, "2.0.0" }
+                }),
+                new MockTaskItem(@"relative\ExplicitPackage", new Dictionary<string, string>
+                {
+                    { MetadataKeys.Version, "3.0.0" }
+                })
+            };
             var taskInstances = new CollectSDKReferencesDesignTime[concurrency];
             var executeTasks = new Task<bool>[concurrency];
-            var startGate = new ManualResetEventSlim(false);
+            using var startBarrier = new Barrier(concurrency);
 
-            // Create unique inputs for each task instance
             for (int i = 0; i < concurrency; i++)
             {
-                var engine = new MockBuildEngine();
-                var task = CreateTask(i, engine);
-                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest();
+                var uniqueSdkReference = $@"relative\UniqueSDK\{i}";
+                var uniqueImplicitByMetadata = $@"relative\UniqueImplicitByMetadata\{i}";
+                var uniqueImplicitByDefaultList = $@"relative\UniqueImplicitByDefaultList\{i}";
+                var uniqueExplicitPackage = $@"relative\UniqueExplicitPackage\{i}";
+                var task = new CollectSDKReferencesDesignTime
+                {
+                    BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(Path.Combine(
+                        originalCurrentDirectory,
+                        "non-default-project",
+                        i.ToString())),
+                    SdkReferences = sharedSdkReferences.Concat(new ITaskItem[]
+                    {
+                        new MockTaskItem(uniqueSdkReference, new Dictionary<string, string>
+                        {
+                            { "RelativeMetadata", $@"metadata\unique\{i}" }
+                        })
+                    }).ToArray(),
+                    PackageReferences = sharedPackageReferences.Concat(new ITaskItem[]
+                    {
+                        new MockTaskItem(uniqueImplicitByMetadata, new Dictionary<string, string>
+                        {
+                            { MetadataKeys.IsImplicitlyDefined, "True" },
+                            { MetadataKeys.Version, $"4.0.{i}" }
+                        }),
+                        new MockTaskItem(uniqueImplicitByDefaultList, new Dictionary<string, string>
+                        {
+                            { MetadataKeys.Version, $"5.0.{i}" }
+                        }),
+                        new MockTaskItem(uniqueExplicitPackage, new Dictionary<string, string>
+                        {
+                            { MetadataKeys.Version, $"6.0.{i}" }
+                        })
+                    }).ToArray(),
+                    DefaultImplicitPackages = $@"relative\ImplicitByDefaultList;{uniqueImplicitByDefaultList}"
+                };
                 taskInstances[i] = task;
             }
 
-            // Start all tasks using explicit Task.Run with a start gate
             for (int i = 0; i < concurrency; i++)
             {
                 int localI = i;
                 var t = taskInstances[localI];
-                executeTasks[localI] = Task.Run(() =>
-                {
-                    startGate.Wait();
-                    return t.Execute();
-                });
+                executeTasks[localI] = Task.Factory.StartNew(
+                    () =>
+                    {
+                        startBarrier.SignalAndWait();
+                        return t.Execute();
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default);
             }
 
-            // Release all tasks simultaneously
-            startGate.Set();
-            await Task.WhenAll(executeTasks);
-            startGate.Dispose();
+            var executionResults = await Task.WhenAll(executeTasks);
 
-            // Verify all tasks succeeded
+            Directory.GetCurrentDirectory().Should().Be(originalCurrentDirectory);
             for (int i = 0; i < concurrency; i++)
             {
-                (await executeTasks[i]).Should().BeTrue($"task {i} should succeed");
-            }
+                executionResults[i].Should().BeTrue($"task {i} should succeed");
 
-            // Verify each task produced the expected output based on its unique inputs
-            for (int i = 0; i < concurrency; i++)
-            {
                 var task = taskInstances[i];
-                int expectedCount = 2; // 1 from SdkReferences + 1 implicit package based on IsImplicitlyDefined
-
                 task.SDKReferencesDesignTime.Should().NotBeNull($"task {i} should produce output");
-                task.SDKReferencesDesignTime.Length.Should().Be(expectedCount, $"task {i} should aggregate SDK refs and implicit packages");
+                task.SDKReferencesDesignTime.Length.Should().Be(6, $"task {i} should aggregate shared and unique SDK refs and implicit packages");
 
-                // Verify the SDK reference is present
                 task.SDKReferencesDesignTime.Should().Contain(
-                    item => item.ItemSpec == $"TestSDK{i}",
-                    $"task {i} should include its SDK reference");
+                    item => item.ItemSpec == @"relative\SharedSDK",
+                    $"task {i} should preserve the shared relative SDK reference");
+                task.SDKReferencesDesignTime.Should().Contain(
+                    item => item.ItemSpec == $@"relative\UniqueSDK\{i}",
+                    $"task {i} should preserve its unique relative SDK reference");
 
-                // Verify the implicit package reference is present with correct metadata
-                var implicitPackage = task.SDKReferencesDesignTime.FirstOrDefault(item => item.ItemSpec == $"ImplicitPackage{i}");
-                implicitPackage.Should().NotBeNull($"task {i} should include implicit package");
-                implicitPackage.GetMetadata(MetadataKeys.SDKPackageItemSpec).Should().Be(string.Empty);
-                implicitPackage.GetMetadata(MetadataKeys.Name).Should().Be($"ImplicitPackage{i}");
-                implicitPackage.GetMetadata(MetadataKeys.IsImplicitlyDefined).Should().Be("True");
-                implicitPackage.GetMetadata(MetadataKeys.Version).Should().Be($"1.0.{i}");
+                var implicitByMetadata = task.SDKReferencesDesignTime.FirstOrDefault(item => item.ItemSpec == @"relative\ImplicitByMetadata");
+                implicitByMetadata.Should().NotBeNull($"task {i} should include implicit package from metadata");
+                implicitByMetadata.GetMetadata(MetadataKeys.SDKPackageItemSpec).Should().Be(string.Empty);
+                implicitByMetadata.GetMetadata(MetadataKeys.Name).Should().Be(@"relative\ImplicitByMetadata");
+                implicitByMetadata.GetMetadata(MetadataKeys.IsImplicitlyDefined).Should().Be("True");
+                implicitByMetadata.GetMetadata(MetadataKeys.Version).Should().Be("1.0.0");
+
+                var implicitByDefaultList = task.SDKReferencesDesignTime.FirstOrDefault(item => item.ItemSpec == @"relative\ImplicitByDefaultList");
+                implicitByDefaultList.Should().NotBeNull($"task {i} should include implicit package from DefaultImplicitPackages");
+                implicitByDefaultList.GetMetadata(MetadataKeys.Name).Should().Be(@"relative\ImplicitByDefaultList");
+                implicitByDefaultList.GetMetadata(MetadataKeys.IsImplicitlyDefined).Should().Be("True");
+                implicitByDefaultList.GetMetadata(MetadataKeys.Version).Should().Be("2.0.0");
+
+                var uniqueImplicitByMetadata = $@"relative\UniqueImplicitByMetadata\{i}";
+                var uniqueImplicitByMetadataItem = task.SDKReferencesDesignTime.FirstOrDefault(item => item.ItemSpec == uniqueImplicitByMetadata);
+                uniqueImplicitByMetadataItem.Should().NotBeNull($"task {i} should include its unique implicit package from metadata");
+                uniqueImplicitByMetadataItem.GetMetadata(MetadataKeys.Name).Should().Be(uniqueImplicitByMetadata);
+                uniqueImplicitByMetadataItem.GetMetadata(MetadataKeys.IsImplicitlyDefined).Should().Be("True");
+                uniqueImplicitByMetadataItem.GetMetadata(MetadataKeys.Version).Should().Be($"4.0.{i}");
+
+                var uniqueImplicitByDefaultList = $@"relative\UniqueImplicitByDefaultList\{i}";
+                var uniqueImplicitByDefaultListItem = task.SDKReferencesDesignTime.FirstOrDefault(item => item.ItemSpec == uniqueImplicitByDefaultList);
+                uniqueImplicitByDefaultListItem.Should().NotBeNull($"task {i} should include its unique implicit package from DefaultImplicitPackages");
+                uniqueImplicitByDefaultListItem.GetMetadata(MetadataKeys.Name).Should().Be(uniqueImplicitByDefaultList);
+                uniqueImplicitByDefaultListItem.GetMetadata(MetadataKeys.IsImplicitlyDefined).Should().Be("True");
+                uniqueImplicitByDefaultListItem.GetMetadata(MetadataKeys.Version).Should().Be($"5.0.{i}");
+
+                task.SDKReferencesDesignTime.Should().NotContain(
+                    item => item.ItemSpec == $@"relative\UniqueExplicitPackage\{i}",
+                    $"task {i} should not include its unique explicit package");
             }
         }
 
         [Fact]
-        public void TaskProducesSameOutputsWithAndWithoutExplicitTaskEnvironment()
+        public void NonDefaultProjectDirectoryDoesNotChangeRelativeOutputsOrCurrentDirectory()
         {
-            // Run without explicitly setting TaskEnvironment (uses default)
-            var engine1 = new MockBuildEngine();
-            var task1 = CreateTask(1, engine1);
-            task1.Execute().Should().BeTrue();
+            var originalCurrentDirectory = Directory.GetCurrentDirectory();
+            var testRoot = Path.Combine(
+                originalCurrentDirectory,
+                $"{nameof(NonDefaultProjectDirectoryDoesNotChangeRelativeOutputsOrCurrentDirectory)}-{Guid.NewGuid():N}");
+            var processCurrentDirectory = Path.Combine(testRoot, "current-directory");
+            var projectDirectory = Path.Combine(testRoot, "project-directory");
 
-            // Run with explicitly set TaskEnvironment
-            var engine2 = new MockBuildEngine();
-            var task2 = CreateTask(1, engine2);
-            task2.TaskEnvironment = TaskEnvironmentHelper.CreateForTest();
-            task2.Execute().Should().BeTrue();
+            try
+            {
+                Directory.CreateDirectory(processCurrentDirectory);
+                Directory.CreateDirectory(projectDirectory);
+                Directory.SetCurrentDirectory(processCurrentDirectory);
 
-            // Outputs should be identical
-            task1.SDKReferencesDesignTime.Length.Should().Be(task2.SDKReferencesDesignTime.Length);
-            task1.SDKReferencesDesignTime.Select(r => r.ItemSpec).Should()
-                .BeEquivalentTo(task2.SDKReferencesDesignTime.Select(r => r.ItemSpec));
+                var task = new CollectSDKReferencesDesignTime
+                {
+                    BuildEngine = new MockBuildEngine(),
+                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDirectory),
+                    SdkReferences = new[]
+                    {
+                        new MockTaskItem(@"relative\ExistingSDK", new Dictionary<string, string>())
+                    },
+                    PackageReferences = new[]
+                    {
+                        new MockTaskItem(@"relative\ImplicitPackage", new Dictionary<string, string>
+                        {
+                            { MetadataKeys.Version, @"relative\version.txt" }
+                        })
+                    },
+                    DefaultImplicitPackages = @"relative\ImplicitPackage"
+                };
+
+                Directory.GetCurrentDirectory().Should().Be(processCurrentDirectory);
+                task.TaskEnvironment.ProjectDirectory.Value.Should().Be(projectDirectory);
+                task.TaskEnvironment.ProjectDirectory.Value.Should().NotBe(Directory.GetCurrentDirectory());
+
+                task.Execute().Should().BeTrue();
+
+                Directory.GetCurrentDirectory().Should().Be(processCurrentDirectory);
+                task.SDKReferencesDesignTime.Select(r => r.ItemSpec).Should().Equal(
+                    @"relative\ExistingSDK",
+                    @"relative\ImplicitPackage");
+
+                var implicitPackage = task.SDKReferencesDesignTime.Single(i => i.ItemSpec == @"relative\ImplicitPackage");
+                implicitPackage.GetMetadata(MetadataKeys.Name).Should().Be(@"relative\ImplicitPackage");
+                implicitPackage.GetMetadata(MetadataKeys.Version).Should().Be(@"relative\version.txt");
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalCurrentDirectory);
+                if (Directory.Exists(testRoot))
+                {
+                    Directory.Delete(testRoot, recursive: true);
+                }
+            }
         }
 
         [Fact]
@@ -127,12 +248,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeTrue();
 
             task.SDKReferencesDesignTime.Length.Should().Be(2, "should include 1 SDK ref + 1 implicit package");
-            
+
             var implicitPkg = task.SDKReferencesDesignTime.FirstOrDefault(i => i.ItemSpec == "PackageA");
             implicitPkg.Should().NotBeNull("PackageA should be included as implicit");
             implicitPkg.GetMetadata(MetadataKeys.IsImplicitlyDefined).Should().Be("True");
             implicitPkg.GetMetadata(MetadataKeys.Version).Should().Be("2.0.0");
-            
+
             task.SDKReferencesDesignTime.Should().NotContain(i => i.ItemSpec == "PackageB",
                 "PackageB should not be included as it's not implicit");
         }
@@ -168,13 +289,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeTrue();
 
             task.SDKReferencesDesignTime.Length.Should().Be(2, "should include 1 SDK ref + 1 implicit package");
-            
+
             var implicitPkg = task.SDKReferencesDesignTime.FirstOrDefault(i => i.ItemSpec == "Microsoft.NETCore.App");
             implicitPkg.Should().NotBeNull("Microsoft.NETCore.App should be included as implicit");
             implicitPkg.GetMetadata(MetadataKeys.IsImplicitlyDefined).Should().Be("True");
             implicitPkg.GetMetadata(MetadataKeys.Name).Should().Be("Microsoft.NETCore.App");
             implicitPkg.GetMetadata(MetadataKeys.Version).Should().Be("5.0.0");
-            
+
             task.SDKReferencesDesignTime.Should().NotContain(i => i.ItemSpec == "Newtonsoft.Json",
                 "Newtonsoft.Json should not be included as it's not implicit");
         }
@@ -301,36 +422,17 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.SDKReferencesDesignTime.Length.Should().Be(4,
                 "should include 2 SDK refs + 2 implicit packages");
-            
+
             task.SDKReferencesDesignTime.Select(i => i.ItemSpec).Should().Contain(new[]
             {
                 "SDK1", "SDK2", "Microsoft.NETCore.App", "CustomImplicit"
             });
         }
 
-        private static CollectSDKReferencesDesignTime CreateTask(int instanceId, IBuildEngine buildEngine)
-        {
-            return new CollectSDKReferencesDesignTime
-            {
-                BuildEngine = buildEngine,
-                SdkReferences = new[]
-                {
-                    new MockTaskItem($"TestSDK{instanceId}", new Dictionary<string, string>())
-                },
-                PackageReferences = new[]
-                {
-                    new MockTaskItem($"ImplicitPackage{instanceId}", new Dictionary<string, string>
-                    {
-                        { MetadataKeys.IsImplicitlyDefined, "True" },
-                        { MetadataKeys.Version, $"1.0.{instanceId}" }
-                    }),
-                    new MockTaskItem($"ExplicitPackage{instanceId}", new Dictionary<string, string>
-                    {
-                        { MetadataKeys.Version, $"2.0.{instanceId}" }
-                    })
-                },
-                DefaultImplicitPackages = $"SomeOtherPackage{instanceId}"
-            };
-        }
+    }
+
+    [CollectionDefinition(nameof(CurrentDirectoryMutatingTestCollection), DisableParallelization = true)]
+    public sealed class CurrentDirectoryMutatingTestCollection
+    {
     }
 }

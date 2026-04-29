@@ -22,11 +22,11 @@ namespace Microsoft.NET.Build.Tasks
         private TaskEnvironment _taskEnvironment;
         public TaskEnvironment TaskEnvironment
         {
-            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
             set => _taskEnvironment = value;
         }
 #else
-        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+        public TaskEnvironment TaskEnvironment { get; set; }
 #endif
 
         [Required]
@@ -41,14 +41,12 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] SDKReferencesDesignTime { get; set; }
 
-        private HashSet<string> ImplicitPackageReferences { get; set; }
-
         protected override void ExecuteCore()
         {
-            ImplicitPackageReferences = GetImplicitPackageReferences(DefaultImplicitPackages);
+            var implicitPackageReferences = GetImplicitPackageReferences(DefaultImplicitPackages);
 
             var sdkDesignTimeList = new List<ITaskItem>(SdkReferences);
-            sdkDesignTimeList.AddRange(GetImplicitPackageReferences());
+            sdkDesignTimeList.AddRange(GetImplicitPackageReferences(implicitPackageReferences));
 
             SDKReferencesDesignTime = sdkDesignTimeList.ToArray();
         }
@@ -75,7 +73,7 @@ namespace Microsoft.NET.Build.Tasks
             return implicitPackageReferences;
         }
 
-        private IEnumerable<ITaskItem> GetImplicitPackageReferences()
+        private IEnumerable<ITaskItem> GetImplicitPackageReferences(HashSet<string> implicitPackageReferences)
         {
             var implicitPackages = new List<ITaskItem>();
             foreach (var packageReference in PackageReferences)
@@ -84,7 +82,7 @@ namespace Microsoft.NET.Build.Tasks
                 var isImplicitlyDefinedString = packageReference.GetMetadata(MetadataKeys.IsImplicitlyDefined);
                 if (string.IsNullOrEmpty(isImplicitlyDefinedString))
                 {
-                    isImplicitlyDefined = ImplicitPackageReferences.Contains(packageReference.ItemSpec);
+                    isImplicitlyDefined = implicitPackageReferences.Contains(packageReference.ItemSpec);
                 }
                 else
                 {
