@@ -12,6 +12,22 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     public class GivenACreateWindowsSdkKnownFrameworkReferencesMultiThreading
     {
         [Fact]
+        public void TaskDeclaresMSBuildMultiThreadableContract()
+        {
+            var taskType = typeof(CreateWindowsSdkKnownFrameworkReferences);
+
+            taskType.CustomAttributes
+                .Select(attribute => attribute.AttributeType.FullName)
+                .Should().Contain("Microsoft.Build.Framework.MSBuildMultiThreadableTaskAttribute",
+                    "MSBuild only runs tasks concurrently when they are marked as multi-threadable");
+
+            taskType.GetInterfaces()
+                .Select(interfaceType => interfaceType.FullName)
+                .Should().Contain("Microsoft.Build.Framework.IMultiThreadableTask",
+                    "multi-threadable tasks must receive isolated task execution environments");
+        }
+
+        [Fact]
         public void TaskProducesSameOutputsWithAndWithoutExplicitTaskEnvironment()
         {
             // Run without explicitly setting TaskEnvironment (uses default null)
@@ -38,10 +54,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public async Task ConcurrentExecutionWithDifferentInputsProducesCorrectResults()
         {
-            const int concurrency = 8;
+            const int scenarioCount = 8;
+            const int repetitionsPerScenario = 8;
+            const int concurrency = scenarioCount * repetitionsPerScenario;
             var taskInstances = new CreateWindowsSdkKnownFrameworkReferences[concurrency];
             var executeTasks = new Task<bool>[concurrency];
-            var startGate = new ManualResetEventSlim(false);
+            using var readyGate = new CountdownEvent(concurrency);
+            using var startGate = new ManualResetEventSlim(false);
 
             // Scenario 1: WindowsSdkPackageVersion directly specified
             taskInstances[0] = new CreateWindowsSdkKnownFrameworkReferences
@@ -154,24 +173,32 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 TargetPlatformVersion = "10.0.22621.0",
             };
 
+            for (int i = scenarioCount; i < concurrency; i++)
+            {
+                taskInstances[i] = CloneTask(taskInstances[i % scenarioCount]);
+            }
+
             for (int i = 0; i < concurrency; i++)
             {
                 var taskIndex = i;
-                executeTasks[i] = Task.Run(() =>
+                executeTasks[i] = Task.Factory.StartNew(() =>
                 {
+                    readyGate.Signal();
                     startGate.Wait();
                     return taskInstances[taskIndex].Execute();
-                });
+                }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
 
+            var allTasksReady = readyGate.Wait(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
             startGate.Set();
 
-            await Task.WhenAll(executeTasks);
+            var results = await Task.WhenAll(executeTasks);
+            allTasksReady.Should().BeTrue("all concurrent tasks should be waiting before the shared start gate opens");
 
             // Verify all tasks succeeded
             for (int i = 0; i < concurrency; i++)
             {
-                (await executeTasks[i]).Should().BeTrue($"task {i} should succeed");
+                results[i].Should().BeTrue($"task {i} should succeed");
             }
 
             // Scenario 1: WindowsSdkPackageVersion directly specified
@@ -243,6 +270,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             scenario8Base.GetMetadata("DefaultRuntimeFrameworkVersion").Should().Be(
                 scenario2Base.GetMetadata("DefaultRuntimeFrameworkVersion"),
                 "duplicate scenario should produce identical preview version");
+
+            var expectedReferenceIdentities = Enumerable.Range(0, scenarioCount)
+                .Select(i => GetReferenceIdentities(taskInstances[i]))
+                .ToArray();
+
+            for (int i = scenarioCount; i < concurrency; i++)
+            {
+                GetReferenceIdentities(taskInstances[i]).Should().Equal(expectedReferenceIdentities[i % scenarioCount],
+                    $"repeated task {i} should match scenario {i % scenarioCount}");
+            }
         }
 
         [Fact]
@@ -311,6 +348,51 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 TargetFrameworkVersion = "8.0",
                 TargetPlatformVersion = "10.0.19041.0",
             };
+        }
+
+        private static CreateWindowsSdkKnownFrameworkReferences CloneTask(CreateWindowsSdkKnownFrameworkReferences task)
+        {
+            return new CreateWindowsSdkKnownFrameworkReferences
+            {
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
+                UseWindowsSDKPreview = task.UseWindowsSDKPreview,
+                WindowsSdkPackageVersion = task.WindowsSdkPackageVersion,
+                WindowsSdkPackageMinimumRevision = task.WindowsSdkPackageMinimumRevision,
+                TargetFrameworkIdentifier = task.TargetFrameworkIdentifier,
+                TargetFrameworkVersion = task.TargetFrameworkVersion,
+                TargetPlatformIdentifier = task.TargetPlatformIdentifier,
+                TargetPlatformVersion = task.TargetPlatformVersion,
+                WindowsSdkSupportedTargetPlatformVersions = CloneTaskItems(task.WindowsSdkSupportedTargetPlatformVersions),
+            };
+        }
+
+        private static ITaskItem[] CloneTaskItems(ITaskItem[] items)
+        {
+            return items?.Select(item => new MockTaskItem(
+                item.ItemSpec,
+                item.MetadataNames.Cast<string>().ToDictionary(name => name, name => item.GetMetadata(name)))).ToArray();
+        }
+
+        private static string[] GetReferenceIdentities(CreateWindowsSdkKnownFrameworkReferences task)
+        {
+            return task.KnownFrameworkReferences
+                .Select(reference => string.Join(
+                    "|",
+                    reference.ItemSpec,
+                    reference.GetMetadata(MetadataKeys.TargetFramework),
+                    reference.GetMetadata(MetadataKeys.RuntimeFrameworkName),
+                    reference.GetMetadata("DefaultRuntimeFrameworkVersion"),
+                    reference.GetMetadata("LatestRuntimeFrameworkVersion"),
+                    reference.GetMetadata("TargetingPackName"),
+                    reference.GetMetadata("TargetingPackVersion"),
+                    reference.GetMetadata(MetadataKeys.RuntimePackAlwaysCopyLocal),
+                    reference.GetMetadata("RuntimePackNamePatterns"),
+                    reference.GetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers),
+                    reference.GetMetadata("IsWindowsOnly"),
+                    reference.GetMetadata("Profile")))
+                .OrderBy(identity => identity)
+                .ToArray();
         }
     }
 }
