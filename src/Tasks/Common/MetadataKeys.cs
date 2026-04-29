@@ -47,6 +47,7 @@ namespace Microsoft.NET.Build.Tasks
 
         // Diagnostics
         public const string DiagnosticCode = "DiagnosticCode";
+        public const string DisplayName = "DisplayName";
         public const string Message = "Message";
         public const string FilePath = "FilePath";
         public const string Severity = "Severity";
