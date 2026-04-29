@@ -148,6 +148,13 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
                     _reporter.WriteLine();
                     _reporter.WriteLine(string.Join(Environment.NewLine, warnings).Yellow());
                 }
+
+                // Display deprecation warnings to stderr
+                var deprecationWarnings = toolRestoreResults.Where(r => r.IsSuccess && !string.IsNullOrEmpty(r.DeprecationWarning)).Select(r => r.DeprecationWarning);
+                if (deprecationWarnings.Any())
+                {
+                    _errorReporter.WriteLine(string.Join(Environment.NewLine, deprecationWarnings));
+                }
             }
 
             _errorReporter.WriteLine(Environment.NewLine +
@@ -168,6 +175,13 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
             {
                 _reporter.WriteLine();
                 _reporter.WriteLine(string.Join(Environment.NewLine, warnings).Yellow());
+            }
+
+            // Display deprecation warnings to stderr
+            var deprecationWarnings = toolRestoreResults.Where(r => r.IsSuccess && !string.IsNullOrEmpty(r.DeprecationWarning)).Select(r => r.DeprecationWarning);
+            if (deprecationWarnings.Any())
+            {
+                _errorReporter.WriteLine(string.Join(Environment.NewLine, deprecationWarnings));
             }
             
             _reporter.WriteLine();
@@ -220,10 +234,11 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         public bool IsSuccess { get; }
         public string Message { get; }
         public string Warning { get; }
+        public string DeprecationWarning { get; }
 
         private ToolRestoreResult(
             (RestoredCommandIdentifier, ToolCommand)? saveToCache,
-            bool isSuccess, string message, string warning = null)
+            bool isSuccess, string message, string warning = null, string deprecationWarning = null)
         {
             if (string.IsNullOrWhiteSpace(message))
             {
@@ -234,14 +249,16 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
             IsSuccess = isSuccess;
             Message = message;
             Warning = warning;
+            DeprecationWarning = deprecationWarning;
         }
 
         public static ToolRestoreResult Success(
             (RestoredCommandIdentifier, ToolCommand)? saveToCache,
             string message,
-            string warning = null)
+            string warning = null,
+            string deprecationWarning = null)
         {
-            return new ToolRestoreResult(saveToCache, true, message, warning);
+            return new ToolRestoreResult(saveToCache, true, message, warning, deprecationWarning);
         }
 
         public static ToolRestoreResult Failure(string message)

@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -21,7 +22,9 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
     private readonly IToolManifestEditor _toolManifestEditor;
     private readonly ILocalToolsResolverCache _localToolsResolverCache;
     private readonly ToolInstallLocalInstaller _toolLocalPackageInstaller;
+    private readonly IToolPackageDownloader _toolPackageDownloader;
     private readonly IReporter _reporter;
+    private readonly IReporter _errorReporter;
     private readonly PackageIdentityWithRange? _packageIdentityWithRange;
     private readonly bool _allowPackageDowngrade;
 
@@ -29,6 +32,9 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
     private readonly bool _createManifestIfNeeded;
     private readonly bool _allowRollForward;
     private readonly bool _updateAll;
+
+    private readonly PackageLocation _packageLocation;
+    private readonly VerbosityOptions _verbosity;
 
     internal RestoreActionConfig restoreActionConfig;
 
@@ -58,6 +64,7 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         _explicitManifestFile = parseResult.GetValue(Definition.ToolManifestOption);
 
         _reporter = reporter ?? Reporter.Output;
+        _errorReporter = reporter ?? Reporter.Error;
 
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
         _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
@@ -65,12 +72,25 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
 
         restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(parseResult);
 
+        var configFilePath = parseResult.GetValue(Definition.ConfigOption);
+        var sources = parseResult.GetValue(Definition.AddSourceOption);
+        var sourceFeedOverrides = parseResult.GetValue(Definition.SourceOption);
+        _verbosity = parseResult.GetValue(Definition.VerbosityOption);
+
+        _packageLocation = new PackageLocation(
+            nugetConfig: string.IsNullOrEmpty(configFilePath) ? null : new FilePath(configFilePath),
+            additionalFeeds: sources,
+            sourceFeedOverrides: sourceFeedOverrides);
+
+        _toolPackageDownloader = toolPackageDownloader
+            ?? ToolPackageFactory.CreateToolPackageStoresAndDownloader(runtimeJsonPathForTests: runtimeJsonPathForTests).downloader;
+
         _toolLocalPackageInstaller = new ToolInstallLocalInstaller(
-            configFilePath: parseResult.GetValue(Definition.ConfigOption),
-            sources: parseResult.GetValue(Definition.AddSourceOption),
-            sourceFeedOverrides: parseResult.GetValue(Definition.SourceOption),
-            verbosity: parseResult.GetValue(Definition.VerbosityOption),
-            toolPackageDownloader,
+            configFilePath: configFilePath,
+            sources: sources,
+            sourceFeedOverrides: sourceFeedOverrides,
+            verbosity: _verbosity,
+            _toolPackageDownloader,
             runtimeJsonPathForTests,
             restoreActionConfig);
 
@@ -176,6 +196,14 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
             toolDownloadedPackage,
             _toolLocalPackageInstaller.TargetFrameworkToInstall);
 
+        var deprecationMetadata = _toolPackageDownloader.GetPackageDeprecationMetadata(
+            _packageLocation,
+            packageId,
+            toolDownloadedPackage.Version,
+            _verbosity,
+            restoreActionConfig);
+        ToolDeprecationWarning.PrintDeprecationWarning(_errorReporter, packageId, deprecationMetadata);
+
         return 0;
     }
 
@@ -202,6 +230,14 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version.ToNormalizedString(),
                 manifestFile.Value).Green());
+
+        var deprecationMetadata = _toolPackageDownloader.GetPackageDeprecationMetadata(
+            _packageLocation,
+            packageId,
+            toolDownloadedPackage.Version,
+            _verbosity,
+            restoreActionConfig);
+        ToolDeprecationWarning.PrintDeprecationWarning(_errorReporter, packageId, deprecationMetadata);
 
         return 0;
     }

@@ -12,6 +12,7 @@ using System.Text.Json.Nodes;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -423,5 +424,34 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             basePath: _currentWorkingDirectory);
 
         return nugetPackageDownloader.GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
+    }
+
+    public virtual PackageDeprecationMetadata? GetPackageDeprecationMetadata(
+        PackageLocation packageLocation,
+        PackageId packageId,
+        NuGetVersion version,
+        VerbosityOptions verbosity,
+        RestoreActionConfig? restoreActionConfig = null)
+    {
+        var nugetPackageDownloader = CreateNuGetPackageDownloader(
+            false,
+            verbosity,
+            restoreActionConfig);
+
+        var packageSourceLocation = new PackageSourceLocation(
+            nugetConfig: packageLocation.NugetConfig,
+            rootConfigDirectory: packageLocation.RootConfigDirectory,
+            sourceFeedOverrides: packageLocation.SourceFeedOverrides,
+            additionalSourceFeeds: packageLocation.AdditionalFeeds,
+            basePath: _currentWorkingDirectory);
+
+        try
+        {
+            return nugetPackageDownloader.GetPackageDeprecationMetadataAsync(packageId, version, packageSourceLocation).GetAwaiter().GetResult();
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
