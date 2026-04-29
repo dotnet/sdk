@@ -112,7 +112,6 @@ internal class UpdateWorkflow
         }
     }
 
-
     /// <summary>
     /// Reads the manifest and returns the list of dotnet roots to update,
     /// optionally filtered by <paramref name="installPath"/>.

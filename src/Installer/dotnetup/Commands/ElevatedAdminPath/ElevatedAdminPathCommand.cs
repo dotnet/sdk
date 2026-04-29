@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using System.Runtime.Versioning;
-using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
 

@@ -4,7 +4,6 @@
 using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
