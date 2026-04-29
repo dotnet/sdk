@@ -1,16 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.NET.Build.Tasks.ConflictResolution;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [Collection(nameof(WorkingDirectoryCollection))]
     public class GivenAResolveOverlappingItemGroupConflicts : IDisposable
     {
+        private static readonly MetadataReference[] s_compilerReferences = GetCompilerReferences();
         private readonly string _tempDir;
 
         public GivenAResolveOverlappingItemGroupConflicts()
@@ -27,108 +32,140 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        /// <summary>
-        /// The task must produce identical results regardless of whether TaskEnvironment
-        /// is set (multithreaded mode) or left null (legacy single-threaded mode).
-        /// </summary>
         [Fact]
-        public void ParityBetweenLegacyAndMultithreadedModes()
+        public void ResolvePublishOutputConflictsIsRecognizedAsMSBuildMultiThreadable()
         {
-            var sharedPath1 = CreateTempFile("Shared_A.dll");
-            var unique1Path = CreateTempFile("Unique1.dll");
-            var sharedPath2 = CreateTempFile("Shared_B.dll");
-            var unique2Path = CreateTempFile("Unique2.dll");
+            typeof(ResolveOverlappingItemGroupConflicts)
+                .GetCustomAttributes(inherit: false)
+                .Select(attribute => attribute.GetType().FullName)
+                .Should()
+                .Contain("Microsoft.Build.Framework.MSBuildMultiThreadableTaskAttribute");
+        }
+
+        [Fact]
+        public void RelativeSourcePathsResolveAgainstProjectDirectory()
+        {
+            var projectDir = CreateProjectDirectory(nameof(RelativeSourcePathsResolveAgainstProjectDirectory));
+            var relativePath1 = CreateProjectFile(projectDir, Path.Combine("refs", "SharedA.dll"));
+            var relativePath2 = CreateProjectFile(projectDir, Path.Combine("refs", "SharedB.dll"));
+
+            var group1 = new ITaskItem[]
+            {
+                CreateItem(relativePath1, targetPath: "Shared.dll", assemblyVersion: "2.0.0.0", packageId: "PackageA"),
+            };
+
+            var group2 = new ITaskItem[]
+            {
+                CreateItem(relativePath2, targetPath: "Shared.dll", assemblyVersion: "1.0.0.0", packageId: "PackageB"),
+            };
+
+            var task = CreateTask(group1, group2, projectDir);
+
+            task.Execute().Should().BeTrue();
+
+            task.RemovedItemGroup2.Should().ContainSingle()
+                .Which.Should().BeSameAs(group2[0]);
+            task.RemovedItemGroup2![0]!.ItemSpec.Should().Be(relativePath2);
+            task.RemovedItemGroup1.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void RelativeSourcePathAssemblyVersionReadsResolveAgainstProjectDirectoryWhenCurrentDirectoryDiffers()
+        {
+            var projectDir = CreateProjectDirectory(nameof(RelativeSourcePathAssemblyVersionReadsResolveAgainstProjectDirectoryWhenCurrentDirectoryDiffers));
+            var hostileCurrentDirectory = CreateProjectDirectory("hostile_cwd");
+            var relativePath1 = Path.Combine("refs", "SharedA.dll");
+            var relativePath2 = Path.Combine("refs", "SharedB.dll");
+
+            CreateVersionedAssembly(projectDir, relativePath1, assemblyVersion: "2.0.0.0", fileVersion: "1.0.0.0");
+            CreateVersionedAssembly(projectDir, relativePath2, assemblyVersion: "1.0.0.0", fileVersion: "1.0.0.0");
+            CreateVersionedAssembly(hostileCurrentDirectory, relativePath1, assemblyVersion: "1.0.0.0", fileVersion: "1.0.0.0");
+            CreateVersionedAssembly(hostileCurrentDirectory, relativePath2, assemblyVersion: "3.0.0.0", fileVersion: "1.0.0.0");
+
+            var group1 = new ITaskItem[]
+            {
+                CreateItem(relativePath1, targetPath: "Shared.dll", packageId: "PackageA"),
+            };
+
+            var group2 = new ITaskItem[]
+            {
+                CreateItem(relativePath2, targetPath: "Shared.dll", packageId: "PackageB"),
+            };
+
+            var task = CreateTask(group1, group2, projectDir);
+
+            ExecuteWithCurrentDirectory(hostileCurrentDirectory, () => task.Execute().Should().BeTrue());
+
+            task.RemovedItemGroup2.Should().ContainSingle()
+                .Which.Should().BeSameAs(group2[0]);
+            task.RemovedItemGroup2![0]!.ItemSpec.Should().Be(relativePath2);
+            task.RemovedItemGroup1.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void RelativeSourcePathFileVersionReadsResolveAgainstProjectDirectoryWhenCurrentDirectoryDiffers()
+        {
+            var projectDir = CreateProjectDirectory(nameof(RelativeSourcePathFileVersionReadsResolveAgainstProjectDirectoryWhenCurrentDirectoryDiffers));
+            var hostileCurrentDirectory = CreateProjectDirectory("hostile_cwd");
+            var relativePath1 = Path.Combine("refs", "SharedA.dll");
+            var relativePath2 = Path.Combine("refs", "SharedB.dll");
+
+            CreateVersionedAssembly(projectDir, relativePath1, assemblyVersion: "1.0.0.0", fileVersion: "3.0.0.0");
+            CreateVersionedAssembly(projectDir, relativePath2, assemblyVersion: "1.0.0.0", fileVersion: "1.0.0.0");
+            CreateVersionedAssembly(hostileCurrentDirectory, relativePath1, assemblyVersion: "1.0.0.0", fileVersion: "1.0.0.0");
+            CreateVersionedAssembly(hostileCurrentDirectory, relativePath2, assemblyVersion: "1.0.0.0", fileVersion: "3.0.0.0");
+
+            var group1 = new ITaskItem[]
+            {
+                CreateItem(relativePath1, targetPath: "Shared.dll", packageId: "PackageA"),
+            };
+
+            var group2 = new ITaskItem[]
+            {
+                CreateItem(relativePath2, targetPath: "Shared.dll", packageId: "PackageB"),
+            };
+
+            var task = CreateTask(group1, group2, projectDir);
+
+            ExecuteWithCurrentDirectory(hostileCurrentDirectory, () => task.Execute().Should().BeTrue());
+
+            task.RemovedItemGroup2.Should().ContainSingle()
+                .Which.Should().BeSameAs(group2[0]);
+            task.RemovedItemGroup2![0]!.ItemSpec.Should().Be(relativePath2);
+            task.RemovedItemGroup1.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void AbsoluteSourcePathsAreNotRebasedToProjectDirectory()
+        {
+            var projectDir = CreateProjectDirectory(nameof(AbsoluteSourcePathsAreNotRebasedToProjectDirectory));
+            var sharedPath1 = CreateTempFile("SharedA.dll");
+            var sharedPath2 = CreateTempFile("SharedB.dll");
 
             var group1 = new ITaskItem[]
             {
                 CreateItem(sharedPath1, targetPath: "Shared.dll", assemblyVersion: "2.0.0.0", packageId: "PackageA"),
-                CreateItem(unique1Path, targetPath: "Unique1.dll", assemblyVersion: "1.0.0.0", packageId: "PackageA"),
             };
 
             var group2 = new ITaskItem[]
             {
                 CreateItem(sharedPath2, targetPath: "Shared.dll", assemblyVersion: "1.0.0.0", packageId: "PackageB"),
-                CreateItem(unique2Path, targetPath: "Unique2.dll", assemblyVersion: "1.0.0.0", packageId: "PackageB"),
             };
 
-            // Legacy mode (no TaskEnvironment)
-            var legacyTask = CreateTask(group1, group2);
-            legacyTask.Execute().Should().BeTrue();
+            var task = CreateTask(group1, group2, projectDir);
 
-            // Multithreaded mode (with TaskEnvironment)
-            var mtTask = CreateTask(group1, group2);
-            ((IMultiThreadableTask)mtTask).TaskEnvironment = TaskEnvironmentHelper.CreateForTest(_tempDir);
-            mtTask.Execute().Should().BeTrue();
+            task.Execute().Should().BeTrue();
 
-            // Both should produce the same removed items
-            var legacyRemoved1 = legacyTask.RemovedItemGroup1?.Select(i => i?.ItemSpec) ?? Enumerable.Empty<string?>();
-            var mtRemoved1 = mtTask.RemovedItemGroup1?.Select(i => i?.ItemSpec) ?? Enumerable.Empty<string?>();
-            mtRemoved1.Should().BeEquivalentTo(legacyRemoved1);
-
-            var legacyRemoved2 = legacyTask.RemovedItemGroup2?.Select(i => i?.ItemSpec) ?? Enumerable.Empty<string?>();
-            var mtRemoved2 = mtTask.RemovedItemGroup2?.Select(i => i?.ItemSpec) ?? Enumerable.Empty<string?>();
-            mtRemoved2.Should().BeEquivalentTo(legacyRemoved2);
+            task.RemovedItemGroup2.Should().ContainSingle()
+                .Which.Should().BeSameAs(group2[0]);
+            task.RemovedItemGroup2![0]!.ItemSpec.Should().Be(sharedPath2);
+            task.RemovedItemGroup1.Should().BeNullOrEmpty();
         }
 
-        /// <summary>
-        /// When the task runs from a decoy CWD that differs from the project directory,
-        /// it should still produce correct results because it doesn't rely on process CWD.
-        /// </summary>
-        [Fact]
-        public void PathResolutionUsesProjectDirectoryNotProcessCwd()
-        {
-            var decoyCwd = Path.Combine(Path.GetTempPath(), "decoy_" + Guid.NewGuid().ToString("N"));
-            var projectDir = Path.Combine(Path.GetTempPath(), "project_" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(decoyCwd);
-            Directory.CreateDirectory(projectDir);
-
-            try
-            {
-                var sharedPath1 = CreateTempFile("SharedA.dll");
-                var sharedPath2 = CreateTempFile("SharedB.dll");
-
-                var group1 = new ITaskItem[]
-                {
-                    CreateItem(sharedPath1, targetPath: "Shared.dll", assemblyVersion: "2.0.0.0", packageId: "PackageA"),
-                };
-
-                var group2 = new ITaskItem[]
-                {
-                    CreateItem(sharedPath2, targetPath: "Shared.dll", assemblyVersion: "1.0.0.0", packageId: "PackageB"),
-                };
-
-                var task = CreateTask(group1, group2);
-                ((IMultiThreadableTask)task).TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-
-                var oldCwd = Directory.GetCurrentDirectory();
-                Directory.SetCurrentDirectory(decoyCwd);
-                try
-                {
-                    task.Execute().Should().BeTrue();
-
-                    // The lower version (1.0.0.0 from group2) should be removed
-                    task.RemovedItemGroup2.Should().NotBeNull();
-                    task.RemovedItemGroup2!.Length.Should().Be(1);
-                    task.RemovedItemGroup1.Should().BeNullOrEmpty();
-                }
-                finally
-                {
-                    Directory.SetCurrentDirectory(oldCwd);
-                }
-            }
-            finally
-            {
-                Directory.Delete(decoyCwd, true);
-                Directory.Delete(projectDir, true);
-            }
-        }
-
-        /// <summary>
-        /// Output items must be a subset of the corresponding input items (by reference).
-        /// </summary>
         [Fact]
         public void OutputsAreSubsetsOfInputs()
         {
+            var projectDir = CreateProjectDirectory(nameof(OutputsAreSubsetsOfInputs));
             var sharedPath1 = CreateTempFile("SharedA.dll");
             var only1Path = CreateTempFile("OnlyInGroup1.dll");
             var sharedPath2 = CreateTempFile("SharedB.dll");
@@ -146,19 +183,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 CreateItem(only2Path, targetPath: "OnlyInGroup2.dll", assemblyVersion: "1.0.0.0", packageId: "PackageB"),
             };
 
-            var task = CreateTask(group1, group2);
-            ((IMultiThreadableTask)task).TaskEnvironment = TaskEnvironmentHelper.CreateForTest(_tempDir);
+            var task = CreateTask(group1, group2, projectDir);
             task.Execute().Should().BeTrue();
 
-            // Group1's Shared.dll (v1.0) should lose to Group2's Shared.dll (v2.0)
-            task.RemovedItemGroup1.Should().NotBeNull();
-            task.RemovedItemGroup1!.Length.Should().Be(1);
-
-            // Each removed item should be reference-equal to one of the original input items
-            foreach (var removed in task.RemovedItemGroup1!)
-            {
-                group1.Should().Contain(removed!);
-            }
+            task.RemovedItemGroup1.Should().ContainSingle()
+                .Which.Should().BeSameAs(group1[0]);
 
             if (task.RemovedItemGroup2 != null)
             {
@@ -169,22 +198,23 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        /// <summary>
-        /// Multiple task instances should execute correctly in parallel without interference.
-        /// </summary>
         [Fact]
         public void ConcurrentExecutionProducesCorrectResults()
         {
-            const int concurrency = 8;
+            const int concurrency = 64;
             var tasks = new ResolveOverlappingItemGroupConflicts[concurrency];
+            var itemGroups2 = new ITaskItem[concurrency][];
             var results = new bool[concurrency];
+            var exceptions = new Exception?[concurrency];
+            var currentDirectory = Directory.GetCurrentDirectory();
 
             for (int i = 0; i < concurrency; i++)
             {
-                var sharedPath1 = CreateTempFile($"SharedA_{i}.dll");
-                var unique1Path = CreateTempFile($"Unique1_{i}.dll");
-                var sharedPath2 = CreateTempFile($"SharedB_{i}.dll");
-                var unique2Path = CreateTempFile($"Unique2_{i}.dll");
+                var projectDir = CreateProjectDirectory($"parallel_{i}");
+                var sharedPath1 = CreateProjectFile(projectDir, Path.Combine("refs", "SharedA.dll"));
+                var unique1Path = CreateProjectFile(projectDir, Path.Combine("refs", "Unique1.dll"));
+                var sharedPath2 = CreateProjectFile(projectDir, Path.Combine("refs", "SharedB.dll"));
+                var unique2Path = CreateProjectFile(projectDir, Path.Combine("refs", "Unique2.dll"));
 
                 var group1 = new ITaskItem[]
                 {
@@ -198,28 +228,55 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     CreateItem(unique2Path, targetPath: $"Unique2_{i}.dll", assemblyVersion: "1.0.0.0", packageId: "PackageB"),
                 };
 
-                tasks[i] = CreateTask(group1, group2);
-                ((IMultiThreadableTask)tasks[i]).TaskEnvironment = TaskEnvironmentHelper.CreateForTest(
-                    Path.Combine(Path.GetTempPath(), $"proj_{i}").TrimEnd(Path.DirectorySeparatorChar));
+                itemGroups2[i] = group2;
+                tasks[i] = CreateTask(group1, group2, projectDir);
             }
 
-            Parallel.For(0, concurrency, i =>
+            using var barrier = new Barrier(concurrency + 1);
+            var workers = new Thread[concurrency];
+            for (int i = 0; i < concurrency; i++)
             {
-                results[i] = tasks[i].Execute();
-            });
+                var index = i;
+                workers[i] = new Thread(() =>
+                {
+                    try
+                    {
+                        if (!barrier.SignalAndWait(TimeSpan.FromSeconds(30)))
+                        {
+                            throw new TimeoutException("Timed out waiting for concurrent task start.");
+                        }
+                        results[index] = tasks[index].Execute();
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions[index] = ex;
+                    }
+                });
+                workers[i].IsBackground = true;
+                workers[i].Start();
+            }
+
+            barrier.SignalAndWait(TimeSpan.FromSeconds(30)).Should().BeTrue();
+
+            foreach (var worker in workers)
+            {
+                worker.Join(TimeSpan.FromSeconds(30)).Should().BeTrue();
+            }
+
+            exceptions.Where(e => e != null).Should().BeEmpty();
+
+            Directory.GetCurrentDirectory().Should().Be(currentDirectory);
 
             for (int i = 0; i < concurrency; i++)
             {
                 results[i].Should().BeTrue($"task {i} should succeed");
-
-                // The lower version from group2 should be removed in each instance
-                tasks[i].RemovedItemGroup2.Should().NotBeNull($"task {i} should have removed items from group2");
-                tasks[i].RemovedItemGroup2!.Length.Should().Be(1, $"task {i} should remove exactly one item from group2");
+                tasks[i].RemovedItemGroup2.Should().ContainSingle($"task {i} should remove exactly one item from group2")
+                    .Which.Should().BeSameAs(itemGroups2[i][0]);
                 tasks[i].RemovedItemGroup1.Should().BeNullOrEmpty($"task {i} should not remove items from group1");
             }
         }
 
-        private static ResolveOverlappingItemGroupConflicts CreateTask(ITaskItem[] group1, ITaskItem[] group2)
+        private static ResolveOverlappingItemGroupConflicts CreateTask(ITaskItem[] group1, ITaskItem[] group2, string projectDirectory)
         {
             var task = new ResolveOverlappingItemGroupConflicts
             {
@@ -227,6 +284,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ItemGroup1 = group1,
                 ItemGroup2 = group2,
             };
+            ((IMultiThreadableTask)task).TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDirectory);
             return task;
         }
 
@@ -235,6 +293,79 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var path = Path.Combine(_tempDir, name);
             File.WriteAllBytes(path, Array.Empty<byte>());
             return path;
+        }
+
+        private string CreateProjectDirectory(string name)
+        {
+            var path = Path.Combine(_tempDir, name + "_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(path);
+            return path;
+        }
+
+        private static string CreateProjectFile(string projectDirectory, string relativePath)
+        {
+            var path = Path.Combine(projectDirectory, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllBytes(path, Array.Empty<byte>());
+            return relativePath;
+        }
+
+        private static void CreateVersionedAssembly(string projectDirectory, string relativePath, string assemblyVersion, string fileVersion)
+        {
+            var path = Path.Combine(projectDirectory, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+
+            var source = $$"""
+                using System.Reflection;
+
+                [assembly: AssemblyVersion("{{assemblyVersion}}")]
+                [assembly: AssemblyFileVersion("{{fileVersion}}")]
+
+                public class VersionedAssembly
+                {
+                }
+                """;
+
+            var emitResult = CSharpCompilation.Create(
+                    Path.GetFileNameWithoutExtension(path),
+                    new[] { CSharpSyntaxTree.ParseText(source) },
+                    s_compilerReferences,
+                    new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+                .Emit(path);
+
+            emitResult.Success.Should().BeTrue(string.Join(Environment.NewLine, emitResult.Diagnostics));
+        }
+
+        private static void ExecuteWithCurrentDirectory(string currentDirectory, Action action)
+        {
+            var originalCurrentDirectory = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                action();
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalCurrentDirectory);
+            }
+        }
+
+        private static MetadataReference[] GetCompilerReferences()
+        {
+            var trustedPlatformAssemblies = (string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES");
+            if (!string.IsNullOrEmpty(trustedPlatformAssemblies))
+            {
+                return trustedPlatformAssemblies
+                    .Split(Path.PathSeparator)
+                    .Select(path => MetadataReference.CreateFromFile(path))
+                    .ToArray();
+            }
+
+            return new[]
+            {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(AssemblyVersionAttribute).Assembly.Location),
+            };
         }
 
         private static ITaskItem CreateItem(string itemSpec, string? targetPath = null, string? assemblyVersion = null, string? packageId = null)
@@ -254,5 +385,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
             return item;
         }
+    }
+
+    [CollectionDefinition(nameof(WorkingDirectoryCollection), DisableParallelization = true)]
+    public sealed class WorkingDirectoryCollection
+    {
     }
 }
