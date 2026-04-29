@@ -9,16 +9,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class GenerateBundle : TaskBase, ICancelableTask, IMultiThreadableTask
     {
-#if NETFRAMEWORK
-        private TaskEnvironment? _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
-            set => _taskEnvironment = value;
-        }
-#else
         public TaskEnvironment TaskEnvironment { get; set; } = null!;
-#endif
 
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly Random _jitter =
@@ -97,17 +88,26 @@ namespace Microsoft.NET.Build.Tasks
 #endif
                                       throw new ArgumentException(nameof(RuntimeIdentifier));
 
+            // Resolve OutputDir to an absolute path using TaskEnvironment so that relative
+            // paths are interpreted against the project directory, not the process CWD.
+            string resolvedOutputDir = ResolveOutputDir(TaskEnvironment, OutputDir);
+
+            Version version = new(TargetFrameworkVersion);
+            await RunBundler(resolvedOutputDir, targetOS, targetArch, version);
+        }
+
+        internal virtual async System.Threading.Tasks.Task RunBundler(
+            string resolvedOutputDir,
+            OSPlatform targetOS,
+            Architecture targetArch,
+            Version version)
+        {
             BundleOptions options = BundleOptions.None;
             options |= IncludeNativeLibraries ? BundleOptions.BundleNativeBinaries : BundleOptions.None;
             options |= IncludeAllContent ? BundleOptions.BundleAllContent : BundleOptions.None;
             options |= IncludeSymbols ? BundleOptions.BundleSymbolFiles : BundleOptions.None;
             options |= EnableCompressionInSingleFile ? BundleOptions.EnableCompression : BundleOptions.None;
 
-            // Resolve OutputDir to an absolute path using TaskEnvironment so that relative
-            // paths are interpreted against the project directory, not the process CWD.
-            string resolvedOutputDir = ResolveOutputDir(TaskEnvironment, OutputDir);
-
-            Version version = new(TargetFrameworkVersion);
             var bundler = new Bundler(
                 AppHostName,
                 resolvedOutputDir,
