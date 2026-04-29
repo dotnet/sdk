@@ -114,17 +114,26 @@ internal class UpdateChannel
         // Feature band match (e.g., "10.0.1xx" matches "10.0.103")
         if (parts.Length == 3 && parts[2].EndsWith("xx", StringComparison.OrdinalIgnoreCase))
         {
-            if (int.TryParse(parts[0], out var fbMajor) && int.TryParse(parts[1], out var fbMinor))
-            {
-                var bandPrefix = parts[2].Substring(0, parts[2].Length - 2);
-                if (int.TryParse(bandPrefix, out var band))
-                {
-                    return version.Major == fbMajor && version.Minor == fbMinor &&
-                           version.Patch / 100 == band;
-                }
-            }
+            return MatchesFeatureBand(parts, version);
         }
 
         return false;
+    }
+
+    private static bool MatchesFeatureBand(string[] parts, ReleaseVersion version)
+    {
+        if (!int.TryParse(parts[0], out var fbMajor) || !int.TryParse(parts[1], out var fbMinor))
+        {
+            return false;
+        }
+
+        var bandPrefix = parts[2].Substring(0, parts[2].Length - 2);
+        if (!int.TryParse(bandPrefix, out var band))
+        {
+            return false;
+        }
+
+        return version.Major == fbMajor && version.Minor == fbMinor &&
+               version.Patch / 100 == band;
     }
 }
