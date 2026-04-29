@@ -33,7 +33,8 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
                         (path.StartsWithSegments(ApplicationPaths.ClearSiteData) ||
                         path.StartsWithSegments(ApplicationPaths.BlazorHotReloadMiddleware) ||
                         path.StartsWithSegments(ApplicationPaths.BrowserRefreshJS) ||
-                        path.StartsWithSegments(ApplicationPaths.BlazorHotReloadJS));
+                        path.StartsWithSegments(ApplicationPaths.BlazorHotReloadJS) ||
+                        path.StartsWithSegments(ApplicationPaths.BrowserRefreshConfig));
                 },
                 static app =>
                 {
@@ -53,6 +54,19 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
                     // backwards compat only:
                     app.Map(ApplicationPaths.BlazorHotReloadJS,
                         static app => app.UseMiddleware<BrowserScriptMiddleware>(ApplicationPaths.BlazorHotReloadJS, BrowserScriptMiddleware.GetBlazorHotReloadJS()));
+
+                    app.Map(ApplicationPaths.BrowserRefreshConfig, static app => app.Run(context =>
+                    {
+                        var endpoint = Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT") ?? string.Empty;
+                        var serverKey = Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_KEY") ?? string.Empty;
+
+                        context.Response.Headers["Cache-Control"] = "no-store";
+                        context.Response.Headers["Content-Type"] = "application/json; charset=utf-8";
+
+                        var json = "{\"webSocketUrls\":\"" + endpoint.Replace("\"", "\\\"") + "\",\"serverKey\":\"" + serverKey.Replace("\"", "\\\"") + "\"}";
+                        var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+                        return context.Response.Body.WriteAsync(bytes, 0, bytes.Length, context.RequestAborted);
+                    }));
                 });
 
             app.UseMiddleware<BrowserRefreshMiddleware>();
