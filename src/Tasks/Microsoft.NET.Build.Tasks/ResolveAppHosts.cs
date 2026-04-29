@@ -12,16 +12,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class ResolveAppHosts : TaskBase, IMultiThreadableTask
     {
-#if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= new TaskEnvironment(new ProcessTaskEnvironmentDriver(Directory.GetCurrentDirectory()));
-            set => _taskEnvironment = value;
-        }
-#else
         public TaskEnvironment TaskEnvironment { get; set; } = null!;
-#endif
 
         public string TargetFrameworkIdentifier { get; set; }
 
@@ -299,29 +290,24 @@ namespace Microsoft.NET.Build.Tasks
                     hostNameWithoutExtension + (isExecutable ? ExecutableExtension.ForRuntimeIdentifier(bestAppHostRuntimeIdentifier) : ".dll"));
 
                 TaskItem appHostItem = new(itemName);
-                
+
                 // AR-May Fix: Store both original and resolved paths to preserve relativity in outputs
                 string originalPackDirectory = null;
                 string originalFullPath = null;
                 string resolvedPackDirectoryValue = null;
-                
+
                 if (!string.IsNullOrEmpty(TargetingPackRoot))
                 {
                     // Compute the original (possibly relative) paths before resolution
                     originalPackDirectory = Path.Combine(TargetingPackRoot, hostPackName, appHostPackVersion);
                     originalFullPath = Path.Combine(originalPackDirectory, hostRelativePathInPackage);
-                    
+
                     // Resolve to absolute path for file system operations (via TaskEnvironment)
-#if NETFRAMEWORK
-                    AbsolutePath resolvedPackDirectory = TaskEnvironment?.GetAbsolutePath(originalPackDirectory) 
-                        ?? new AbsolutePath(Path.GetFullPath(originalPackDirectory));
-                    resolvedPackDirectoryValue = resolvedPackDirectory.Value;
-#else
-                    resolvedPackDirectoryValue = TaskEnvironment?.GetAbsolutePath(originalPackDirectory).Value 
-                        ?? Path.GetFullPath(originalPackDirectory);
-#endif
+                    TaskEnvironment taskEnvironment = TaskEnvironment
+                        ?? throw new BuildErrorException($"NETSDK1236: {nameof(TaskEnvironment)} must be supplied by MSBuild for {nameof(IMultiThreadableTask)} tasks.");
+                    resolvedPackDirectoryValue = taskEnvironment.GetAbsolutePath(originalPackDirectory).Value;
                 }
-                
+
                 if (resolvedPackDirectoryValue != null && Directory.Exists(resolvedPackDirectoryValue))
                 {
                     //  Use AppHost from packs folder
