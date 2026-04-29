@@ -16,8 +16,19 @@ namespace Microsoft.NET.Build.Tasks
     /// Tracking issue https://github.com/dotnet/roslyn-project-system/issues/587
     /// </summary>
     [MSBuildMultiThreadableTask]
-    public class CollectSDKReferencesDesignTime : TaskBase
+    public class CollectSDKReferencesDesignTime : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         [Required]
         public ITaskItem[] SdkReferences { get; set; }
 
@@ -30,14 +41,12 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] SDKReferencesDesignTime { get; set; }
 
-        private HashSet<string> ImplicitPackageReferences { get; set; }
-
         protected override void ExecuteCore()
         {
-            ImplicitPackageReferences = GetImplicitPackageReferences(DefaultImplicitPackages);
+            var implicitPackageReferences = GetImplicitPackageReferences(DefaultImplicitPackages);
 
             var sdkDesignTimeList = new List<ITaskItem>(SdkReferences);
-            sdkDesignTimeList.AddRange(GetImplicitPackageReferences());
+            sdkDesignTimeList.AddRange(GetImplicitPackageReferences(implicitPackageReferences));
 
             SDKReferencesDesignTime = sdkDesignTimeList.ToArray();
         }
@@ -64,7 +73,7 @@ namespace Microsoft.NET.Build.Tasks
             return implicitPackageReferences;
         }
 
-        private IEnumerable<ITaskItem> GetImplicitPackageReferences()
+        private IEnumerable<ITaskItem> GetImplicitPackageReferences(HashSet<string> implicitPackageReferences)
         {
             var implicitPackages = new List<ITaskItem>();
             foreach (var packageReference in PackageReferences)
@@ -73,7 +82,7 @@ namespace Microsoft.NET.Build.Tasks
                 var isImplicitlyDefinedString = packageReference.GetMetadata(MetadataKeys.IsImplicitlyDefined);
                 if (string.IsNullOrEmpty(isImplicitlyDefinedString))
                 {
-                    isImplicitlyDefined = ImplicitPackageReferences.Contains(packageReference.ItemSpec);
+                    isImplicitlyDefined = implicitPackageReferences.Contains(packageReference.ItemSpec);
                 }
                 else
                 {
