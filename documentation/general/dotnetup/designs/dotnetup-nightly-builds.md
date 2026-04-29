@@ -50,7 +50,9 @@ dotnetup runtime install 10.0-daily
 When the user provides a fully-specified prerelease version (e.g., `10.0.100-preview.7.25351.1`),
 dotnetup first checks the release manifest, then falls back to the daily build feed. This fallback
 only applies to **prerelease** version strings — stable versions not in the manifest produce an
-error.
+error. This means `global.json` files specifying daily build versions work naturally — dotnetup
+detects the prerelease version and falls back to the daily feed without requiring explicit
+configuration.
 
 ## Background: How daily builds work today
 
@@ -73,12 +75,21 @@ that points directly to the **archive file** (not a version file):
 https://aka.ms/dotnet/{channel}/{quality}/dotnet-sdk-{os}-{arch}.tar.gz
 ```
 
+The same pattern applies to all components, with different archive prefixes:
+- SDK: `dotnet-sdk-{os}-{arch}.{ext}`
+- .NET Runtime: `dotnet-runtime-{os}-{arch}.{ext}`
+- ASP.NET Core: `aspnetcore-runtime-{os}-{arch}.{ext}`
+- Windows Desktop: `windowsdesktop-runtime-{os}-{arch}.{ext}`
+
 This aka.ms link returns a 301 redirect to the actual blob storage URL, which embeds the
 resolved version in the path:
 ```
 https://builds.dotnet.microsoft.com/dotnet/Sdk/{version}/dotnet-sdk-{version}-{os}-{arch}.tar.gz
+https://ci.dot.net/public/Runtime/{version}/dotnet-runtime-{version}-{os}-{arch}.zip
 ```
 
+Note that runtime versions differ from SDK versions (e.g., SDK `10.0.109` corresponds to
+runtime `10.0.9`), so version extraction from the redirect URL must account for the component.
 The script extracts the version from the redirect URL path. This is the **only** mechanism used
 when `--quality` is specified — there is no fallback to `latest.version` files.
 
@@ -360,42 +371,34 @@ configuration.
 
 ## Open questions
 
-1. **How should `global.json` interact with daily builds?** If a `global.json` specifies a daily
-   build version, should `dotnetup` automatically try the daily feed? Or should it require explicit
-   configuration?
-
-2. **Should there be a `--feed` override?** For internal scenarios, users might want to point at
+1. **Should there be a `--feed` override?** For internal scenarios, users might want to point at
    a different feed URL. The `dotnet-install` scripts support `--azure-feed` for this. If added,
    this should be treated as an advanced/untrusted mode.
 
-3. **Runtime transport package**: With the VMR, all components version together, so any
+2. **Runtime transport package**: With the VMR, all components version together, so any
    VMR-produced package can serve as the version index. A candidate like
    `Microsoft.NETCore.App.Runtime.{rid}` would work — the specific choice just needs to be
    a package reliably published for every daily build.
 
-4. **Naming**: Should we use "daily" throughout, or offer "nightly" as a user-facing alias?
+3. **Naming**: Should we use "daily" throughout, or offer "nightly" as a user-facing alias?
    User research / PM input would be valuable here.
 
-5. **Runtime daily builds**: Do daily builds of the runtime follow the same aka.ms URL patterns
-   and blob feed structure as the SDK? The download URLs likely differ (e.g., `dotnet-runtime-`
-   instead of `dotnet-sdk-`), but the version discovery mechanism should be similar.
-
-6. **Host allowlist / redirect policy**: What is the exact set of allowed hosts for aka.ms
+4. **Host allowlist / redirect policy**: What is the exact set of allowed hosts for aka.ms
    redirects? Need to enumerate all legitimate blob storage hosts used by the .NET build
    infrastructure.
 
-7. **Feed retry order**: What is the exact primary/fallback retry order across
+5. **Feed retry order**: What is the exact primary/fallback retry order across
    `builds.dotnet.microsoft.com` and `ci.dot.net/public`? Should we always try primary first,
    or use both in parallel?
 
-8. **Channel separator**: This document uses `-` as the separator (`10.0-daily`). The `-` syntax
+6. **Channel separator**: This document uses `-` as the separator (`10.0-daily`). The `-` syntax
    is simpler and aligns with prerelease version tag conventions. There is no ambiguity with
    version strings because channels use major.minor (2 components) or feature bands with wildcards
    (`10.0.1xx`), while versions always have 3+ numeric components. An alternative is `/`
    (`10.0/daily`), which mirrors URL path structure but may conflict with file path parsing on
    some platforms.
 
-9. **Other quality levels**: The .NET build pipeline has quality levels beyond `daily`:
+7. **Other quality levels**: The .NET build pipeline has quality levels beyond `daily`:
    `daily → signed → validated → preview → ga`. Should dotnetup support `10.0-signed` or
    `10.0-validated` channels? `signed` builds are code-signed but not fully validated —
    they may be useful for users who want pre-release builds with signature verification.
