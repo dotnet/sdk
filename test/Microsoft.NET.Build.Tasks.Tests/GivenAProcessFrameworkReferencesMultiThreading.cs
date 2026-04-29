@@ -261,6 +261,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             using var setupBarrier = new System.Threading.Barrier(threadCount + 1);
             using var processEnvMutatedSignal = new System.Threading.ManualResetEventSlim(false);
             using var executeBarrier = new System.Threading.Barrier(threadCount);
+            var cancellationToken = TestContext.Current.CancellationToken;
 
             try
             {
@@ -278,8 +279,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                             // Wait until all threads have seeded their TaskEnvironments, then
                             // wait until the process-level env var has been poisoned before
                             // executing the task.
-                            setupBarrier.SignalAndWait();
-                            processEnvMutatedSignal.Wait();
+                            setupBarrier.SignalAndWait(cancellationToken);
+                            processEnvMutatedSignal.Wait(cancellationToken);
 
                             var task = new ProcessFrameworkReferences
                             {
@@ -302,7 +303,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                                         ToolsetInfo.CurrentTargetFramework, packVersion)
                                 },
                             };
-                            executeBarrier.SignalAndWait();
+                            executeBarrier.SignalAndWait(cancellationToken);
                             results[idx] = task.Execute();
 
                             if (task.TargetingPacks is { Length: > 0 })
@@ -320,7 +321,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 // Wait until every thread has seeded its TaskEnvironment, then poison the
                 // process-level env var. The threads only proceed to Execute() afterwards.
-                setupBarrier.SignalAndWait();
+                setupBarrier.SignalAndWait(cancellationToken);
                 Environment.SetEnvironmentVariable(envVarName, processDecoyRoot);
                 processEnvMutatedSignal.Set();
 
