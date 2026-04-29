@@ -52,5 +52,12 @@ cmake/
 # Live Unit Testing
 *.lutconfig
 
-# Claude code config files
+###############################################################################
+# Coding agents
+###############################################################################
+
+# Claude Code user-local settings
 .claude/settings.local.json
+# GitHub Copilot CLI user-local settings
+# See https://docs.github.com/copilot/reference/copilot-cli-reference/cli-config-dir-reference#configuration-file-settings
+.github/copilot/settings.local.json
