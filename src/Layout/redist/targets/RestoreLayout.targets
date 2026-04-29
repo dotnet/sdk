@@ -311,9 +311,10 @@
       </UrisToDownload>
     </ItemGroup>
 
-    <DownloadFile Condition="'@(UrisToDownload)' != '' and %(ShouldDownload)"
-                  Uris="@(UrisToDownload)"
-                  DestinationPath="%(DownloadDestination)" />
+    <Microsoft.DotNet.Arcade.Sdk.DownloadFile
+      Condition="'@(UrisToDownload)' != '' and %(ShouldDownload)"
+      Uris="@(UrisToDownload)"
+      DestinationPath="%(DownloadDestination)" />
   </Target>
 
 </Project>
