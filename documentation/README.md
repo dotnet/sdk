@@ -15,6 +15,7 @@ Documents Index
 
 - [Developer Guide](project-docs/developer-guide.md)
 - [How to file issues](project-docs/issue-filing-guide.md)
+- [Project Capabilities](project-docs/project-capabilities.md)
 
 ## Troubleshooting and issues reporting
 
