@@ -9,26 +9,28 @@ using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests;
 
-[Collection("CwdSensitive")]
+[CollectionDefinition(CwdSensitiveCollection.Name, DisableParallelization = true)]
+public sealed class CwdSensitiveCollection
+{
+    public const string Name = "CwdSensitive";
+}
+
+[Collection(CwdSensitiveCollection.Name)]
 public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
 {
-    private readonly List<string> _tempDirs = new();
     private readonly string _originalCwd = Directory.GetCurrentDirectory();
+    private readonly string _testRoot = Path.Combine(AppContext.BaseDirectory, "rpfc_test_" + Guid.NewGuid().ToString("N"));
 
     public void Dispose()
     {
         Directory.SetCurrentDirectory(_originalCwd);
-        foreach (var dir in _tempDirs)
-        {
-            try { Directory.Delete(dir, true); } catch { }
-        }
+        try { Directory.Delete(_testRoot, true); } catch { }
     }
 
     private string CreateTempDir()
     {
-        var dir = Path.Combine(Path.GetTempPath(), "rpfc_test_" + Guid.NewGuid().ToString("N")[..8]);
+        var dir = Path.Combine(_testRoot, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dir);
-        _tempDirs.Add(dir);
         return dir;
     }
 
@@ -38,11 +40,35 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         File.WriteAllBytes(path, Array.Empty<byte>());
     }
 
+    private static void CreateFrameworkList(string targetFrameworkDirectory, string assemblyName, string version)
+    {
+        var redistListDir = Path.Combine(targetFrameworkDirectory, "RedistList");
+        Directory.CreateDirectory(redistListDir);
+        File.WriteAllText(Path.Combine(redistListDir, "FrameworkList.xml"),
+            $"<FileList><File AssemblyName=\"{assemblyName}\" Version=\"{version}\" /></FileList>");
+    }
+
     private static ResolvePackageFileConflicts CreateTask(MockBuildEngine engine)
     {
         var task = new ResolvePackageFileConflicts();
         task.BuildEngine = engine;
         return task;
+    }
+
+    [Fact]
+    public void ResolvePackageFileConflicts_IsRecognizedByMsBuildAsMultiThreadableTask()
+    {
+        var taskType = typeof(ResolvePackageFileConflicts);
+
+        taskType.GetCustomAttributes(inherit: false)
+            .Select(attribute => attribute.GetType().FullName)
+            .Should().Contain("Microsoft.Build.Framework.MSBuildMultiThreadableTaskAttribute",
+                "MSBuild recognizes multi-threadable tasks by the marker attribute full name");
+
+        taskType.GetInterfaces()
+            .Select(interfaceType => interfaceType.FullName)
+            .Should().Contain("Microsoft.Build.Framework.IMultiThreadableTask",
+                "MSBuild injects TaskEnvironment through the multi-threadable task interface");
     }
 
     /// <summary>
@@ -157,12 +183,65 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         var projectDir = CreateTempDir();
         var decoyDir = CreateTempDir();
 
-        var relPath = Path.Combine("packages", "Unique.dll");
-        CreateFile(Path.Combine(projectDir, relPath));
+        var lowRelPath = Path.Combine("packages", "low", "Conflict.dll");
+        var highRelPath = Path.Combine("packages", "high", "Conflict.dll");
+        var targetPath = "lib/Conflict.dll";
+        CreateFile(Path.Combine(projectDir, lowRelPath));
+        CreateFile(Path.Combine(projectDir, highRelPath));
 
-        var item = new MockTaskItem(relPath, new Dictionary<string, string>
+        var lowItem = new MockTaskItem(lowRelPath, new Dictionary<string, string>
         {
-            { "NuGetPackageId", "Unique.Package" },
+            { "NuGetPackageId", "Low.Package" },
+            { "AssemblyVersion", "1.0.0.0" },
+            { "FileVersion", "1.0.0.0" },
+            { "TargetPath", targetPath }
+        });
+        var highItem = new MockTaskItem(highRelPath, new Dictionary<string, string>
+        {
+            { "NuGetPackageId", "High.Package" },
+            { "AssemblyVersion", "2.0.0.0" },
+            { "FileVersion", "2.0.0.0" },
+            { "TargetPath", targetPath }
+        });
+
+        Directory.SetCurrentDirectory(decoyDir);
+
+        var engine = new MockBuildEngine();
+        var task = CreateTask(engine);
+        task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+        task.ReferenceCopyLocalPaths = new ITaskItem[] { lowItem, highItem };
+
+        task.Execute().Should().BeTrue();
+
+        task.ReferenceCopyLocalPathsWithoutConflicts.Should().NotBeNull();
+        task.ReferenceCopyLocalPathsWithoutConflicts!.Should().ContainSingle()
+            .Which.Should().BeSameAs(highItem, "the higher version should win while preserving original item metadata");
+        task.ReferenceCopyLocalPathsWithoutConflicts[0].ItemSpec.Should().Be(highRelPath);
+        task.ReferenceCopyLocalPathsWithoutConflicts[0].GetMetadata("TargetPath").Should().Be(targetPath);
+
+        var conflict = task.Conflicts.Should().ContainSingle().Which;
+        conflict.ItemSpec.Should().Be(lowRelPath,
+            "conflict output should preserve the original relative source path");
+        conflict.GetMetadata("NuGetPackageId").Should().Be("Low.Package");
+        conflict.GetMetadata(nameof(ConflictItemType)).Should().Be(ConflictItemType.CopyLocal.ToString());
+    }
+
+    [Fact]
+    public void PlatformManifest_ResolvesRelativePathAgainstProjectDir()
+    {
+        var projectDir = CreateTempDir();
+        var decoyDir = CreateTempDir();
+
+        var manifestRelPath = Path.Combine("manifests", "PlatformManifest.txt");
+        var manifestPath = Path.Combine(projectDir, manifestRelPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
+        File.WriteAllText(manifestPath, "System.Runtime.dll|Platform.Package|9.0.0.0|9.0.0.0");
+
+        var copyLocalRelPath = Path.Combine("packages", "System.Runtime.dll");
+        CreateFile(Path.Combine(projectDir, copyLocalRelPath));
+        var copyLocalItem = new MockTaskItem(copyLocalRelPath, new Dictionary<string, string>
+        {
+            { "NuGetPackageId", "Package.Low" },
             { "AssemblyVersion", "1.0.0.0" },
             { "FileVersion", "1.0.0.0" }
         });
@@ -172,15 +251,63 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         var engine = new MockBuildEngine();
         var task = CreateTask(engine);
         task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-        task.References = new ITaskItem[] { item };
+        task.PlatformManifests = new ITaskItem[] { new MockTaskItem(manifestRelPath, new Dictionary<string, string>()) };
+        task.ReferenceCopyLocalPaths = new ITaskItem[] { copyLocalItem };
 
-        task.Execute().Should().BeTrue();
+        task.Execute().Should().BeTrue("relative PlatformManifests should resolve against ProjectDirectory");
+        engine.Errors.Should().BeEmpty();
+        task.ReferenceCopyLocalPathsWithoutConflicts.Should().NotBeNull();
+        task.ReferenceCopyLocalPathsWithoutConflicts!.Should().BeEmpty(
+            "the platform manifest item from ProjectDirectory should win the runtime conflict");
+        var conflict = task.Conflicts.Should().ContainSingle().Which;
+        conflict.ItemSpec.Should().Be(copyLocalRelPath);
+        conflict.GetMetadata("NuGetPackageId").Should().Be("Package.Low");
+        conflict.GetMetadata(nameof(ConflictItemType)).Should().Be(ConflictItemType.CopyLocal.ToString());
+    }
 
-        // With a single item there's no conflict, so it should pass through unchanged
-        task.ReferencesWithoutConflicts.Should().NotBeNull();
-        task.ReferencesWithoutConflicts!.Length.Should().Be(1);
-        task.ReferencesWithoutConflicts[0].ItemSpec.Should().Be(relPath,
-            "output should preserve the original relative path");
+    [Fact]
+    public void TargetFrameworkDirectories_ResolveRelativePathAgainstProjectDir()
+    {
+        var projectDir = CreateTempDir();
+        var decoyDir = CreateTempDir();
+
+        var referenceRelPath = Path.Combine("packages", "System.Runtime.dll");
+        CreateFile(Path.Combine(projectDir, referenceRelPath));
+
+        var targetFrameworkRelPath = "refpack";
+        CreateFrameworkList(Path.Combine(projectDir, targetFrameworkRelPath), "System.Runtime", "9.0.0.0");
+
+        Directory.SetCurrentDirectory(decoyDir);
+
+        var engine = new MockBuildEngine();
+        var task = CreateTask(engine);
+        task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+        task.TargetFrameworkDirectories = new ITaskItem[] { new MockTaskItem(targetFrameworkRelPath, new Dictionary<string, string>()) };
+        task.References = new ITaskItem[]
+        {
+            new MockTaskItem(referenceRelPath, new Dictionary<string, string>
+            {
+                { "NuGetPackageId", "Package.Low" },
+                { "AssemblyVersion", "1.0.0.0" },
+                { "FileVersion", "1.0.0.0" }
+            })
+        };
+
+        task.Execute().Should().BeTrue("relative TargetFrameworkDirectories should resolve against ProjectDirectory");
+        task.ReferencesWithoutConflicts.Should().ContainSingle();
+        task.ReferencesWithoutConflicts![0].ItemSpec.Should().Be("System.Runtime");
+    }
+
+    [Fact]
+    public void Execute_WithoutTaskEnvironment_ThrowsClearError()
+    {
+        var task = CreateTask(new MockBuildEngine());
+        task.PlatformManifests = new ITaskItem[] { new MockTaskItem("PlatformManifest.txt", new Dictionary<string, string>()) };
+
+        var execute = () => task.Execute();
+
+        execute.Should().Throw<InvalidOperationException>()
+            .WithMessage($"*{nameof(ResolvePackageFileConflicts.TaskEnvironment)}*{nameof(ResolvePackageFileConflicts)}*");
     }
 
     /// <summary>
@@ -190,7 +317,7 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     [Fact]
     public void ConcurrentExecution_IsolatedProjectDirsProduceCorrectResults()
     {
-        const int threadCount = 4;
+        const int threadCount = 64;
         var decoyDir = CreateTempDir();
         Directory.SetCurrentDirectory(decoyDir);
 
@@ -201,46 +328,37 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         {
             try
             {
-                var projectDir = Path.Combine(Path.GetTempPath(), "rpfc_concurrent_" + Guid.NewGuid().ToString("N")[..8]);
-                Directory.CreateDirectory(projectDir);
+                var projectDir = CreateTempDir();
+                var relPath1 = Path.Combine("lib", $"Conflict{i}.dll");
+                var relPath2 = Path.Combine("lib2", $"Conflict{i}.dll");
+                CreateFile(Path.Combine(projectDir, relPath1));
+                CreateFile(Path.Combine(projectDir, relPath2));
 
-                try
+                var refs = new ITaskItem[]
                 {
-                    var relPath1 = Path.Combine("lib", $"Conflict{i}.dll");
-                    var relPath2 = Path.Combine("lib2", $"Conflict{i}.dll");
-                    CreateFile(Path.Combine(projectDir, relPath1));
-                    CreateFile(Path.Combine(projectDir, relPath2));
-
-                    var refs = new ITaskItem[]
+                    new MockTaskItem(relPath1, new Dictionary<string, string>
                     {
-                        new MockTaskItem(relPath1, new Dictionary<string, string>
-                        {
-                            { "NuGetPackageId", "Pkg.Low" },
-                            { "AssemblyVersion", "1.0.0.0" },
-                            { "FileVersion", "1.0.0.0" }
-                        }),
-                        new MockTaskItem(relPath2, new Dictionary<string, string>
-                        {
-                            { "NuGetPackageId", "Pkg.High" },
-                            { "AssemblyVersion", "5.0.0.0" },
-                            { "FileVersion", "5.0.0.0" }
-                        }),
-                    };
+                        { "NuGetPackageId", "Pkg.Low" },
+                        { "AssemblyVersion", "1.0.0.0" },
+                        { "FileVersion", "1.0.0.0" }
+                    }),
+                    new MockTaskItem(relPath2, new Dictionary<string, string>
+                    {
+                        { "NuGetPackageId", "Pkg.High" },
+                        { "AssemblyVersion", "5.0.0.0" },
+                        { "FileVersion", "5.0.0.0" }
+                    }),
+                };
 
-                    var engine = new MockBuildEngine();
-                    var task = CreateTask(engine);
-                    task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-                    task.References = refs;
+                var engine = new MockBuildEngine();
+                var task = CreateTask(engine);
+                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+                task.References = refs;
 
-                    var success = task.Execute();
-                    results[i] = (success,
-                        task.ReferencesWithoutConflicts?.Length ?? 0,
-                        task.Conflicts?.Length ?? 0);
-                }
-                finally
-                {
-                    try { Directory.Delete(projectDir, true); } catch { }
-                }
+                var success = task.Execute();
+                results[i] = (success,
+                    task.ReferencesWithoutConflicts?.Length ?? 0,
+                    task.Conflicts?.Length ?? 0);
             }
             catch (Exception ex)
             {
