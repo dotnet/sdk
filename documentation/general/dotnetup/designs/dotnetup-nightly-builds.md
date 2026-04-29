@@ -192,7 +192,7 @@ User provides: channel
 
 For daily channels, version resolution uses the aka.ms redirect:
 1. Parse the channel: `10.0-daily` → base channel `10.0`, quality `daily`
-2. Construct the aka.ms URL: `https://aka.ms/dotnet/10.0-daily/dotnet-sdk-{os}-{arch}.tar.gz`
+2. Construct the aka.ms URL: `https://aka.ms/dotnet/10.0/daily/dotnet-sdk-{os}-{arch}.tar.gz`
 3. Follow the redirect (301) to get the actual blob storage URL
 4. Extract the version from the redirect URL path
 5. Use the redirect URL directly as the download URL
@@ -215,9 +215,9 @@ The `UpdateChannel` class gains awareness of the `-daily` suffix:
 public bool IsDaily => Name.Equals("daily", StringComparison.OrdinalIgnoreCase)
     || Name.EndsWith("-daily", StringComparison.OrdinalIgnoreCase);
 public string BaseChannel => IsDaily
-    ? Name.Contains('-') && !Name.Equals("daily", StringComparison.OrdinalIgnoreCase)
-        ? Name.Substring(0, Name.LastIndexOf('-'))
-        : "latest"
+    ? Name.Equals("daily", StringComparison.OrdinalIgnoreCase)
+        ? "daily"
+        : Name.Substring(0, Name.LastIndexOf('-'))
     : Name;
 ```
 
@@ -232,15 +232,15 @@ Daily builds are tracked in the dotnetup manifest just like any other channel:
 
 ```json
 {
-  "channel": "10.0-daily",
-  "version": "10.0.100-preview.7.25351.1",
-  "component": "sdk"
+  "component": "sdk",
+  "versionOrChannel": "10.0-daily",
+  "installSource": "explicit"
 }
 ```
 
 Because the channel name itself encodes the daily nature, no additional fields are needed.
-The GC, update, and list logic can use the existing `channel` field to determine resolution
-behavior:
+The GC, update, and list logic can use the existing `versionOrChannel` field to determine
+resolution behavior:
 - Channel ends with `-daily` (or is exactly `daily`)? → resolve from blob feed
 - Otherwise → resolve from release manifest
 
@@ -326,7 +326,7 @@ is needed. We just need the blob-feed download path:
 
 Builds on Phase 1's blob-feed download path by adding version discovery:
 - Extend `UpdateChannel` with `IsDaily` / `BaseChannel` properties for `...-daily` suffix parsing
-- Add `IsValidChannelFormat()` support for `...-daily` channels
+- Add `IsValidChannelFormat()` support for `...-daily` channels and bare `daily`
 - Extend `ChannelVersionResolver.Resolve()` to detect daily channels and query the aka.ms
   redirect to discover the latest version (the `InstallWorkflow` doesn't need to change —
   it already calls `Resolve()` and gets back a version)
