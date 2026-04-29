@@ -58,7 +58,7 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
                 }
 
                 Log($"Connecting to {serverUrl}...");
-                await _webSocket.ConnectAsync(new Uri(serverUrl), connectCts.Token);
+                await _webSocket.ConnectAsync(new Uri(serverUrl), connectCts.Token).ConfigureAwait(false);
                 Log("Connected.");
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -71,8 +71,8 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
         _sendBuffer ??= new MemoryStream();
         _sendBuffer.SetLength(0);
 
-        await _sendBuffer.WriteAsync((byte)response.Type, cancellationToken);
-        await response.WriteAsync(_sendBuffer, cancellationToken);
+        await _sendBuffer.WriteAsync((byte)response.Type, cancellationToken).ConfigureAwait(false);
+        await response.WriteAsync(_sendBuffer, cancellationToken).ConfigureAwait(false);
 
         Log($"Sending {response.Type} ({_sendBuffer.Length} bytes)");
 
@@ -81,7 +81,7 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
             new ArraySegment<byte>(_sendBuffer.GetBuffer(), 0, (int)_sendBuffer.Length),
             WebSocketMessageType.Binary,
             endOfMessage: true,
-            cancellationToken);
+            cancellationToken).ConfigureAwait(false);
     }
 
     public override async ValueTask<RequestStream> ReceiveAsync(CancellationToken cancellationToken)
@@ -101,7 +101,7 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
             WebSocketReceiveResult result;
             do
             {
-                result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken).ConfigureAwait(false);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
