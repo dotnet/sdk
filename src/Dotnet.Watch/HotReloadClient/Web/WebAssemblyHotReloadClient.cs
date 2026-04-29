@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.DotNet.Watch;
 
 namespace Microsoft.DotNet.HotReload;
 
@@ -79,7 +80,12 @@ internal sealed class WebAssemblyHotReloadClient(
 
     public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
     {
-        // the environment is configued via browser refesh server
+        // For .NET 11+ WASM apps, lib.module.js handles the WebSocket connection directly,
+        // so the middleware can skip injecting the browser refresh script tag into HTML responses.
+        if (projectTargetFrameworkVersion >= Versions.Version11_0)
+        {
+            environmentBuilder[MiddlewareEnvironmentVariables.SuppressScriptInjection] = "true";
+        }
     }
 
     public override void InitiateConnection(CancellationToken cancellationToken)

@@ -23,6 +23,8 @@ public sealed class BrowserRefreshMiddleware
     private readonly ILogger<BrowserRefreshMiddleware> _logger;
     private string? _dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
     private string? _aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
+    private bool _suppressScriptInjection = string.Equals(
+        Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_SUPPRESS_SCRIPT_INJECTION"), "true", StringComparison.OrdinalIgnoreCase);
 
     public BrowserRefreshMiddleware(RequestDelegate next, ILogger<BrowserRefreshMiddleware> logger)
     {
@@ -42,7 +44,7 @@ public sealed class BrowserRefreshMiddleware
             AttachWebAssemblyHeaders(context);
             await _next(context);
         }
-        else if (IsBrowserDocumentRequest(context))
+        else if (!_suppressScriptInjection && IsBrowserDocumentRequest(context))
         {
             // Use a custom StreamWrapper to rewrite output on Write/WriteAsync
             using var responseStreamWrapper = new ResponseStreamWrapper(context, _logger);
@@ -214,6 +216,11 @@ public sealed class BrowserRefreshMiddleware
     {
         _dotnetModifiableAssemblies = dotnetModifiableAssemblies;
         _aspnetcoreBrowserTools = aspnetcoreBrowserTools;
+    }
+
+    internal void Test_SetSuppressScriptInjection(bool suppress)
+    {
+        _suppressScriptInjection = suppress;
     }
 
     internal static class Log

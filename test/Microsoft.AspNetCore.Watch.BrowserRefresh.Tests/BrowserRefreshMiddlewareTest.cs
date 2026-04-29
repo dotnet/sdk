@@ -603,6 +603,42 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             Assert.DoesNotContain("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", responseContent);
         }
 
+        [Fact]
+        public async Task InvokeAsync_DoesNotAddScript_WhenScriptInjectionIsSuppressed()
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var context = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Method = "GET",
+                    Headers = { ["Accept"] = "text/html" },
+                },
+                Response =
+                {
+                    Body = stream
+                },
+            };
+
+            var middleware = new BrowserRefreshMiddleware(async (context) =>
+            {
+                context.Response.StatusCode = 200;
+                context.Response.ContentType = "text/html";
+                await context.Response.WriteAsync("<html><body><h1>Test</h1></body></html>");
+            }, NullLogger<BrowserRefreshMiddleware>.Instance);
+
+            middleware.Test_SetSuppressScriptInjection(true);
+
+            // Act
+            await middleware.InvokeAsync(context);
+
+            // Assert
+            var responseContent = Encoding.UTF8.GetString(stream.ToArray());
+            Assert.DoesNotContain("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", responseContent);
+            Assert.Contains("<body>", responseContent);
+        }
+
         private async Task<string> TestBrowserRefreshMiddleware(int statusCode, string contentType, string content, bool includeHtmlWrapper = true)
         {
             // Arrange

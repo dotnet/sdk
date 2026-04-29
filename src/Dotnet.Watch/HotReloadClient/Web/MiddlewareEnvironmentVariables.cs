@@ -40,4 +40,10 @@ internal static class MiddlewareEnvironmentVariables
     /// Variable used to set the logging level of the middleware logger.
     /// </summary>
     public const string LoggingLevel = "Logging__LogLevel__Microsoft.AspNetCore.Watch";
+
+    /// <summary>
+    /// When set to "true", the middleware will skip injecting the browser refresh script tag into HTML responses.
+    /// Used for .NET 11+ WASM apps where lib.module.js handles the WebSocket connection directly.
+    /// </summary>
+    public const string SuppressScriptInjection = "ASPNETCORE_AUTO_RELOAD_SUPPRESS_SCRIPT_INJECTION";
 }
