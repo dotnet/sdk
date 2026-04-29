@@ -17,33 +17,40 @@ internal class ReleaseManifest
     }
 
     /// <summary>
-    /// Finds the appropriate release file for the given installation.
+    /// Attempts to find the appropriate release file for the given installation.
     /// </summary>
-    /// <param name="installRequest">The .NET installation request details</param>
-    /// <param name="resolvedVersion">The resolved release version to find</param>
-    /// <returns>The matching ReleaseFile, throws if none are available.</returns>
-    public virtual ReleaseFile? FindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+    /// <param name="installRequest">The .NET installation request details.</param>
+    /// <param name="resolvedVersion">The resolved release version to find.</param>
+    /// <param name="file">
+    /// On return: the matching <see cref="ReleaseFile"/> if one was found, or
+    /// <c>null</c> if the release exists in the manifest but has no archive
+    /// matching the requested platform/architecture.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if the release for <paramref name="resolvedVersion"/> exists in
+    /// the manifest (regardless of whether a matching platform file was found);
+    /// <c>false</c> if the manifest does not list this version. Real failures
+    /// (network/parse errors) are thrown as <see cref="DotnetInstallException"/>.
+    /// </returns>
+    public virtual bool TryFindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, out ReleaseFile? file)
     {
         try
         {
             var productCollection = GetReleasesIndex();
-            var product = FindProduct(productCollection, resolvedVersion)
-                ?? throw new DotnetInstallException(
-                    DotnetInstallErrorCode.VersionNotFound,
-                    $"No product found for version {resolvedVersion}",
-                    version: resolvedVersion.ToString(),
-                    component: installRequest.Component.ToString());
-            var release = FindRelease(product, resolvedVersion, installRequest.Component)
-                ?? throw new DotnetInstallException(
-                    DotnetInstallErrorCode.ReleaseNotFound,
-                    $"No release found for version {resolvedVersion}. Daily build versions are not yet supported.",
-                    version: resolvedVersion.ToString(),
-                    component: installRequest.Component.ToString());
-            return FindMatchingFile(release, installRequest);
-        }
-        catch (DotnetInstallException)
-        {
-            throw;
+            var product = FindProduct(productCollection, resolvedVersion);
+            if (product is null)
+            {
+                file = null;
+                return false;
+            }
+            var release = FindRelease(product, resolvedVersion, installRequest.Component);
+            if (release is null)
+            {
+                file = null;
+                return false;
+            }
+            file = FindMatchingFile(release, installRequest);
+            return true;
         }
         catch (HttpRequestException ex)
         {

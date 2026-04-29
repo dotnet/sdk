@@ -289,11 +289,20 @@ public class DotnetArchiveDownloaderBlobFeedTests
             _code = code;
         }
 
-        public override ReleaseFile? FindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+        public override bool TryFindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, out ReleaseFile? file)
         {
+            // Existing tests pass VersionNotFound to model "manifest does not have this version".
+            // For that case we now indicate the miss via the bool return rather than throwing.
+            if (_code == DotnetInstallErrorCode.VersionNotFound ||
+                _code == DotnetInstallErrorCode.ReleaseNotFound)
+            {
+                file = null;
+                return false;
+            }
+
             throw new DotnetInstallException(
                 _code,
-                $"Test stub: manifest does not contain {resolvedVersion}",
+                $"Test stub: manifest failure for {resolvedVersion}",
                 version: resolvedVersion.ToString(),
                 component: installRequest.Component.ToString());
         }

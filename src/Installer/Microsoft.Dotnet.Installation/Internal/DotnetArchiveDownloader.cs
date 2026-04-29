@@ -213,16 +213,20 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
     private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
-        ReleaseFile? targetFile;
-        try
+        if (!_releaseManifest.TryFindReleaseFile(installRequest, resolvedVersion, out var targetFile))
         {
-            targetFile = _releaseManifest.FindReleaseFile(installRequest, resolvedVersion);
-        }
-        catch (DotnetInstallException ex) when (ShouldFallbackToBlobFeed(ex, installRequest, resolvedVersion))
-        {
-            // Manifest doesn't list this version (typical for daily/preview builds).
-            // Fall back to constructed blob feed URLs.
-            return ResolveBlobFeedEntry(installRequest, resolvedVersion);
+            // Manifest doesn't list this version. For fully-specified prerelease
+            // versions, try the public blob feed (typical for daily/preview builds).
+            if (ShouldFallbackToBlobFeed(installRequest, resolvedVersion))
+            {
+                return ResolveBlobFeedEntry(installRequest, resolvedVersion);
+            }
+
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.VersionNotFound,
+                $"No release found for version {resolvedVersion}",
+                version: resolvedVersion.ToString(),
+                component: installRequest.Component.ToString());
         }
 
         if (targetFile == null)
@@ -259,23 +263,16 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     }
 
     /// <summary>
-    /// Returns true if the manifest miss should fall back to the blob feeds.
+    /// Returns true if a manifest miss should fall back to the blob feed.
     /// We only fall back when the user gave us an exact prerelease version
     /// (e.g. <c>10.0.100-preview.4.25216.37</c>) and the manifest doesn't yet
     /// know about it. Stable versions and named channels (e.g. "preview") are
     /// served only from the manifest so that real misses surface as errors.
     /// </summary>
     private static bool ShouldFallbackToBlobFeed(
-        DotnetInstallException ex,
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion)
     {
-        if (ex.ErrorCode != DotnetInstallErrorCode.VersionNotFound &&
-            ex.ErrorCode != DotnetInstallErrorCode.ReleaseNotFound)
-        {
-            return false;
-        }
-
         if (!installRequest.Channel.IsFullySpecifiedVersion())
         {
             return false;
