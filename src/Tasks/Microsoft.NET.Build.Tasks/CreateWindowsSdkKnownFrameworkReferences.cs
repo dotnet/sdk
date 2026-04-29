@@ -14,8 +14,10 @@ namespace Microsoft.NET.Build.Tasks
     //  Otherwise, create KnownFrameworkReference items based on WindowsSdkSupportedTargetPlatformVersion items, using WindowsSdkPackageVersion and MinimumNETVersion metadata
 
     [MSBuildMultiThreadableTask]
-    public class CreateWindowsSdkKnownFrameworkReferences : TaskBase
+    public class CreateWindowsSdkKnownFrameworkReferences : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; }
+
         public bool UseWindowsSDKPreview { get; set; }
 
         public string WindowsSdkPackageVersion { get; set; }
@@ -151,15 +153,15 @@ namespace Microsoft.NET.Build.Tasks
                 : $"Microsoft.Windows.SDK.NET.Ref.{profile}";
 
             var knownFrameworkReference = new TaskItem(itemSpec);
-            knownFrameworkReference.SetMetadata("TargetFramework", $"net{targetFrameworkVersion}-windows{targetPlatformVersion}");
-            knownFrameworkReference.SetMetadata("RuntimeFrameworkName", "Microsoft.Windows.SDK.NET.Ref");
+            knownFrameworkReference.SetMetadata(MetadataKeys.TargetFramework, $"net{targetFrameworkVersion}-windows{targetPlatformVersion}");
+            knownFrameworkReference.SetMetadata(MetadataKeys.RuntimeFrameworkName, "Microsoft.Windows.SDK.NET.Ref");
             knownFrameworkReference.SetMetadata("DefaultRuntimeFrameworkVersion", windowsSdkPackageVersion);
             knownFrameworkReference.SetMetadata("LatestRuntimeFrameworkVersion", windowsSdkPackageVersion);
             knownFrameworkReference.SetMetadata("TargetingPackName", "Microsoft.Windows.SDK.NET.Ref");
             knownFrameworkReference.SetMetadata("TargetingPackVersion", windowsSdkPackageVersion);
-            knownFrameworkReference.SetMetadata("RuntimePackAlwaysCopyLocal", "true");
+            knownFrameworkReference.SetMetadata(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
             knownFrameworkReference.SetMetadata("RuntimePackNamePatterns", "Microsoft.Windows.SDK.NET.Ref");
-            knownFrameworkReference.SetMetadata("RuntimePackRuntimeIdentifiers", "any");
+            knownFrameworkReference.SetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers, "any");
             knownFrameworkReference.SetMetadata("IsWindowsOnly", "true");
             
             if (!string.IsNullOrEmpty(profile))
