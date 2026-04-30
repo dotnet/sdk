@@ -79,6 +79,22 @@ namespace Microsoft.DotNet.Tests
             Assert.Equal("Shutting down!", r2.Message);
         }
 
+        [WindowsOnlyFact]
+        public void InstallRequestMessageCreateThrowsForNullPayload()
+        {
+            Action action = () => InstallRequestMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
+
+            action.Should().Throw<System.Text.Json.JsonException>();
+        }
+
+        [WindowsOnlyFact]
+        public void InstallResponseMessageCreateThrowsForNullPayload()
+        {
+            Action action = () => InstallResponseMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
+
+            action.Should().Throw<System.Text.Json.JsonException>();
+        }
+
         [WindowsOnlyTheory]
         [InlineData("1033,1041,1049", UpgradeAttributes.MigrateFeatures, 1041, false)]
         [InlineData(null, UpgradeAttributes.LanguagesExclusive, 3082, false)]

@@ -856,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: Nie można zoptymalizować zestawów pod kątem wydajności: nie znaleziono prawidłowego pakietu środowiska uruchomieniowego. Ustaw właściwość PublishReadyToRun na wartość false lub użyj obsługiwanego identyfikatora środowiska uruchomieniowego podczas publikowania. W przypadku określania wartości docelowej platformy .NET 6 lub nowszej należy przywrócić pakiety z właściwością PublishReadyToRun ustawioną na wartość true.</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: Optymalizacja zestawów pod kątem wydajności nie jest obsługiwana dla wybranej platformy lub architektury docelowej. Upewnij się, że używasz identyfikatora obsługiwanego środowiska uruchomieniowego, lub ustaw właściwość PublishReadyToRun na wartość false.</target>

@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             //Workaround needed
             //A.CallTo(() => sdkInfoProvider.GetVersionAsync(A<CancellationToken>._)).Returns(Task.Run(() => sdkVersion));
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(allowed ? TemplateConstraintResult.Status.Allowed : TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
         }
 
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             //Workaround needed
             //A.CallTo(() => sdkInfoProvider.GetVersionAsync(A<CancellationToken>._)).Returns(t);
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(allowed ? TemplateConstraintResult.Status.Allowed : TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(settings);
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
             Assert.StartsWith(
                 hasAlternativeInstalled

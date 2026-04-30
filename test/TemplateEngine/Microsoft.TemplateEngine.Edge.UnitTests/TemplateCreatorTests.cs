@@ -767,7 +767,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                     name: "test",
                     fallbackName: "test",
                     inputParameters: new Dictionary<string, string?>(),
-                    outputPath: targetDir);
+                    outputPath: targetDir, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.TemplateIssueDetected, instantiateResult.Status);
             Assert.Equal("The template is invalid and cannot be instantiated.", instantiateResult.ErrorMessage);
@@ -853,7 +853,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                     name: "test",
                     fallbackName: "test",
                     inputParameters: new Dictionary<string, string?>(),
-                    outputPath: targetDir);
+                    outputPath: targetDir, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, instantiateResult.Status);
             Assert.Null(instantiateResult.ErrorMessage);

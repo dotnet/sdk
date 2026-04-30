@@ -1,9 +1,5 @@
 <Project>
 
-  <!-- This file uses TargetOS (a unified build control) instead of TargetsWindows because it is
-       evaluated from Arcade's Build.proj where OSArch.props is not imported.
-       See https://github.com/dotnet/dotnet/blob/main/docs/VMR-Controls.md -->
-
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <ProjectToBuild Include="$(RepoRoot)source-build.slnf" />
   </ItemGroup>

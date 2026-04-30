@@ -55,6 +55,7 @@ internal static class TargetNames
     public const string ResolveReferencedProjectsStaticWebAssets = nameof(ResolveReferencedProjectsStaticWebAssets);
     public const string GenerateComputedBuildStaticWebAssets = nameof(GenerateComputedBuildStaticWebAssets);
     public const string ReferenceCopyLocalPathsOutputGroup = nameof(ReferenceCopyLocalPathsOutputGroup);
+    public const string ComputeAvailableDevices = nameof(ComputeAvailableDevices);
 }
 
 internal static class ProjectCapability

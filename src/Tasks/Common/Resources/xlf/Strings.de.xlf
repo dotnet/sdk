@@ -856,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: Assemblys können nicht für Leistung optimiert werden: Es wurde kein gültiges Runtimepaket gefunden. Legen Sie entweder die PublishReadyToRun-Eigenschaft auf FALSE fest, oder verwenden Sie beim Veröffentlichen einen unterstützten Runtimebezeichner. Wenn Sie .NET 6 oder höher verwenden, stellen Sie sicher, dass Sie Pakete wiederherstellen, bei denen die PublishReadyToRun-Eigenschaft auf TRUE festgelegt ist.</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: Die Leistungsoptimierung von Assemblys wird für die ausgewählte Zielplattform oder -architektur nicht unterstützt. Überprüfen Sie, ob Sie einen unterstützten Runtimebezeichner verwenden, oder legen Sie die PublishReadyToRun-Eigenschaft auf FALSE fest.</target>

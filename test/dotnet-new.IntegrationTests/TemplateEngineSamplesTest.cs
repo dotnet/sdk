@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt"));
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         private string GetScenarioName(string[]? args)

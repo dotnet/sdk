@@ -409,7 +409,7 @@ public struct S
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             var vbCode = @"
 Public Structure S
@@ -426,7 +426,7 @@ End Structure";
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

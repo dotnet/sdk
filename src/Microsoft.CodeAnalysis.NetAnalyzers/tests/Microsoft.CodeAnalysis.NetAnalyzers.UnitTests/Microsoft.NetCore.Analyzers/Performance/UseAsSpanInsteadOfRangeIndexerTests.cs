@@ -853,7 +853,7 @@ public class TestClass
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static Task TestCSAsync(string source, params DiagnosticResult[] expected)
@@ -866,7 +866,7 @@ public class TestClass
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

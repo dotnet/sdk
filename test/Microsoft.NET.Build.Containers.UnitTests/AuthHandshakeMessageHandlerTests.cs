@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 var authHandler = new AuthHandshakeMessageHandler(TestRegistryName, new ServerMessageHandler(server), NullLogger.Instance, RegistryMode.Push);
                 using var httpClient = new HttpClient(authHandler);
 
-                var response = await httpClient.GetAsync(RequestUrl);
+                var response = await httpClient.GetAsync(RequestUrl, TestContext.Current.CancellationToken);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
             finally
