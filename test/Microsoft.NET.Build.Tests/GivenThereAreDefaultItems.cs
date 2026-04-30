@@ -883,6 +883,32 @@ public class Class1
             noneItems.Should().NotContain(item => item.Contains("appsettings.json"));
         }
 
+        [Fact]
+        public void It_does_not_exclude_source_files_when_publish_dir_is_project_root()
+        {
+            Action<GetValuesCommand> setup = getValuesCommand =>
+            {
+                WriteFile(Path.Combine(getValuesCommand.ProjectRootPath, "Code", "Class1.cs"),
+                    "public class Class1 {}");
+            };
+
+            Action<XDocument> projectChanges = project =>
+            {
+                var ns = project.Root.Name.Namespace;
+
+                var propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.Add(propertyGroup);
+                // PublishDir set to the project directory itself (simulates 'dotnet publish -o .')
+                propertyGroup.Add(new XElement(ns + "PublishDir", ".\\"));
+            };
+
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Compile", setup, projectChanges: projectChanges);
+
+            RemoveGeneratedCompileItems(compileItems);
+
+            compileItems.Should().BeEquivalentTo(new[] { Path.Combine("Code", "Class1.cs"), "Helper.cs" });
+        }
+
         void RemoveGeneratedCompileItems(List<string> compileItems)
         {
             //  Remove auto-generated compile items.
