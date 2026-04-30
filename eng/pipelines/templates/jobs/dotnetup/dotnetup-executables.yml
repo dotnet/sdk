@@ -23,6 +23,7 @@ jobs:
     helixRepo: dotnet/sdk
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     enableMicrobuild: true
+    enableMicrobuildForMacAndLinux: true
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
@@ -77,13 +78,34 @@ jobs:
       - powershell: |
           New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}" -Force
           & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained -p:EnforceCodeStyleInBuild=false -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
-          # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
+        displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
+      - powershell: |
+          $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
+          $dotnetupPublishDir = "$($publishDir.FullName)\${{ parameters.rid }}\publish\"
+          & .\.dotnet\dotnet build .\src\Installer\Installer.sign.proj /t:Sign "/p:DotnetupPublishDir=$dotnetupPublishDir" -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+        displayName: 🖋️ Sign dotnetup executable (${{ parameters.rid }})
+      - powershell: |
+          $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
+          $exe = "$($publishDir.FullName)\${{ parameters.rid }}\publish\dotnetup.exe"
+          $sig = Get-AuthenticodeSignature "$exe"
+          if ($sig.Status -ne 'Valid') { Write-Error "SignCheck failed for dotnetup.exe: $($sig.Status)"; exit 1 }
+          Write-Host "✅ Signature verified for dotnetup.exe (Status: $($sig.Status), Signer: $($sig.SignerCertificate.Subject))"
+        displayName: ✅ Verify dotnetup signature (${{ parameters.rid }})
+      - powershell: |
+          # Copy the published (and signed) output to the artifact staging directory
           $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
           Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\*" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup\${{ parameters.rid }}\" -Recurse -Force
           # Copy just the binary to the standalone artifact staging directory
           New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}" -Force | Out-Null
           Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\dotnetup.exe" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}\"
-        displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
+        displayName: 📦 Stage dotnetup artifacts (${{ parameters.rid }})
+      - powershell: |
+          $standaloneDir = "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}"
+          $exe = Join-Path $standaloneDir "dotnetup.exe"
+          $hash = (Get-FileHash -Algorithm SHA512 $exe).Hash.ToLowerInvariant()
+          Set-Content -Path "$exe.sha512" -Value $hash -NoNewline
+          Write-Host "✅ SHA-512: $hash"
+        displayName: 🔒 Generate SHA-512 checksum (${{ parameters.rid }})
 
     - ${{ if ne(parameters.pool.os, 'windows') }}:
       - script: |
@@ -110,11 +132,32 @@ jobs:
             CROSS_ARGS="-p:SysRoot=$ROOTFS_DIR -p:LinkerFlavor=lld"
           fi
           ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -r ${{ parameters.rid }} --self-contained $CROSS_ARGS -p:EnforceCodeStyleInBuild=false -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-publish-${{ parameters.rid }}.binlog $(_officialBuildProperties)
-          # Copy the published output to the artifact staging directory (use wildcard for TFM to avoid hardcoding)
-          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
-          cp -r "$PUBLISH_DIR/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
-          # Copy just the binary to the standalone artifact staging directory
-          mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"
-          cp "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup" "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}/"
         displayName: 🚀 Publish dotnetup (${{ parameters.rid }})
         retryCountOnTaskFailure: 2
+
+    # Sign macOS binaries with MacDeveloperHarden (requires MicroBuild for Mac)
+    - ${{ if startsWith(parameters.rid, 'osx') }}:
+      - script: |
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          DOTNETUP_PUBLISH_DIR="$PUBLISH_DIR/${{ parameters.rid }}/publish/"
+          ./.dotnet/dotnet build ./src/Installer/Installer.sign.proj /t:Sign "/p:DotnetupPublishDir=$DOTNETUP_PUBLISH_DIR" /p:TargetOS=osx -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
+        displayName: 🖋️ Sign dotnetup executable (${{ parameters.rid }})
+      - script: |
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          codesign --verify --deep --strict "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup"
+          echo "✅ Signature verified for dotnetup"
+        displayName: ✅ Verify dotnetup signature (${{ parameters.rid }})
+
+    - ${{ if ne(parameters.pool.os, 'windows') }}:
+      - script: |
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          cp -r "$PUBLISH_DIR/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
+          mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"
+          cp "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup" "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}/"
+        displayName: 📦 Stage dotnetup artifacts (${{ parameters.rid }})
+      - script: |
+          STANDALONE_DIR="$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"
+          HASH=$(sha512sum "$STANDALONE_DIR/dotnetup" | awk '{print $1}')
+          printf '%s' "$HASH" > "$STANDALONE_DIR/dotnetup.sha512"
+          echo "✅ SHA-512: $HASH"
+        displayName: 🔒 Generate SHA-512 checksum (${{ parameters.rid }})
