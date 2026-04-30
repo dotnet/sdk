@@ -87,10 +87,10 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>9.0.16</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.16-servicing.26228.17</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.16-servicing.26229.23</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>9.0.16</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>9.0.16</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETHostModelVersion>9.0.16-servicing.26228.17</MicrosoftNETHostModelVersion>
+    <MicrosoftNETHostModelVersion>9.0.16-servicing.26229.23</MicrosoftNETHostModelVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>9.0.16</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.16</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>9.0.16</MicrosoftExtensionsLoggingConsoleVersion>
@@ -98,8 +98,8 @@
     <MicrosoftNETILLinkTasksPackageVersion>9.0.16</MicrosoftNETILLinkTasksPackageVersion>
     <SystemServiceProcessServiceControllerVersion>9.0.16</SystemServiceProcessServiceControllerVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>9.0.16-servicing.26228.17</MicrosoftNETCorePlatformsPackageVersion>
-    <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.16-servicing.26228.17</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>9.0.16-servicing.26229.23</MicrosoftNETCorePlatformsPackageVersion>
+    <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.16-servicing.26229.23</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
     <MicrosoftNETCoreAppHostwinx64PackageVersion>9.0.16</MicrosoftNETCoreAppHostwinx64PackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>9.0.16</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>9.0.16</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
