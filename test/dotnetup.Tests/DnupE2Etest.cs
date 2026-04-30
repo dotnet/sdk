@@ -768,6 +768,73 @@ public class LifecycleEndToEndTests
     }
 
     [Fact]
+    public void InstallViaGlobalJson_PathsDirectsSdkToLocalDirectory()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        // Create a project subdirectory with a global.json that includes a "paths" entry.
+        // The "paths" field tells dotnetup where to install the SDK relative to the global.json.
+        string projectDir = Path.Combine(testEnv.TempRoot, "my-project");
+        Directory.CreateDirectory(projectDir);
+
+        string globalJsonPath = Path.Combine(projectDir, "global.json");
+        string globalJsonContent = """
+            {
+              "sdk": {
+                "version": "9.0.103",
+                "rollForward": "disable",
+                "paths": [".dotnet"]
+              }
+            }
+            """;
+        File.WriteAllText(globalJsonPath, globalJsonContent);
+
+        // The expected install path is ".dotnet" resolved relative to the global.json directory.
+        string expectedInstallPath = Path.GetFullPath(Path.Combine(projectDir, ".dotnet"));
+
+        // Install SDK without providing --install-path so dotnetup resolves the install directory
+        // from the "paths" field in global.json.
+        var sdkArgs = new List<string>(["sdk", "install",
+            "--interactive", "false",
+            "--no-progress"]);
+        if (!string.IsNullOrEmpty(testEnv.ManifestPath))
+        {
+            sdkArgs.AddRange(["--manifest-path", testEnv.ManifestPath]);
+        }
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            [.. sdkArgs], captureOutput: true, workingDirectory: projectDir);
+        exitCode.Should().Be(0, $"SDK install via global.json paths failed. Output:\n{output}");
+
+        // Verify the SDK was installed into the directory specified by the "paths" field.
+        var sdkVersionDir = Path.Combine(expectedInstallPath, "sdk", "9.0.103");
+        Directory.Exists(sdkVersionDir).Should().BeTrue(
+            $"SDK should be installed in the directory specified by global.json paths: {sdkVersionDir}");
+
+        // Verify the manifest records the install spec with GlobalJson source under the correct root.
+        List<InstallSpec> installSpecs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            installSpecs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, expectedInstallPath))
+                .SelectMany(r => r.InstallSpecs)
+                .ToList();
+        }
+
+        installSpecs.Should().ContainSingle(s => s.Component == InstallComponent.SDK,
+            "SDK should be tracked in the manifest under the global.json-specified install path");
+        var sdkSpec = installSpecs.First(s => s.Component == InstallComponent.SDK);
+        sdkSpec.InstallSource.Should().Be(InstallSource.GlobalJson,
+            "SDK installed via global.json paths should have GlobalJson source");
+        sdkSpec.GlobalJsonPath.Should().NotBeNullOrEmpty(
+            "SDK install spec should record the global.json path");
+        sdkSpec.GlobalJsonPath.Should().Be(globalJsonPath,
+            "SDK install spec should record the correct global.json path");
+    }
+
+    [Fact]
     public void InstallThenUninstall_FolderIsCleanedUp()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
