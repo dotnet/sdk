@@ -1139,6 +1139,59 @@ class C
 ");
         }
 
+        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        public async Task CA1826_CSharp8_EnumerableLastExtensionCall_UsesIndexExpressionAsync()
+        {
+            var test = new VerifyCS.Test
+        {
+        TestCode = @"
+using System;
+using System.Collections.Generic;
+#pragma warning disable CS8019 //Unnecessary using directive
+using System.Linq;
+#pragma warning restore CS8019
+class C
+{
+    void M()
+    {
+        var list = GetList();
+        var f1 = [|list.Last()|];
+        Console.WriteLine([|list.Last()|]);
+    }
+
+    IReadOnlyList<int> GetList()
+    {
+        return new List<int> { 1, 2, 3 };
+    }
+}
+",
+        FixedCode = @"
+using System;
+using System.Collections.Generic;
+#pragma warning disable CS8019 //Unnecessary using directive
+using System.Linq;
+#pragma warning restore CS8019
+class C
+{
+    void M()
+    {
+        var list = GetList();
+        var f1 = list[^1];
+        Console.WriteLine(list[^1]);
+    }
+
+    IReadOnlyList<int> GetList()
+    {
+        return new List<int> { 1, 2, 3 };
+    }
+}
+",
+        LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+    };
+
+    await test.RunAsync();
+}
+
         [Fact, WorkItem(5795, "https://github.com/dotnet/roslyn-analyzers/issues/5795")]
         public async Task CA1826_CSharp_NullForgivingOperator()
         {
@@ -1170,7 +1223,7 @@ public class Test
 
     public static string Method()
     {
-        return Strings![Strings.Count - 1];
+        return Strings![^1];
     }
 }
 ";
