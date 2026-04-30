@@ -67,6 +67,12 @@ internal static class CommonOptionsExtensions
             verbosity.Equals(VerbosityOptions.n);
     }
 
+    public static bool IsDiagnostic(this VerbosityOptions verbosity)
+    {
+        return verbosity.Equals(VerbosityOptions.diag) ||
+            verbosity.Equals(VerbosityOptions.diagnostic);
+    }
+
     /// <summary>
     /// Converts <see cref="VerbosityOptions"/> to Microsoft.Extensions.Logging.<see cref="LogLevel"/>.
     /// </summary>
