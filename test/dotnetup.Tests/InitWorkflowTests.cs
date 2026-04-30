@@ -65,24 +65,6 @@ public class InitWorkflowTests : IDisposable
             .Should().BeTrue();
     }
 
-    [Fact]
-    public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_WhenDisabledInConfig()
-    {
-        DotnetupConfig.Write(new DotnetupConfigData { DisableInstallConversion = true });
-
-        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.ShellProfile)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void ShouldPromptToConvertSystemInstalls_ReturnsTrue_WhenDisabledInConfig_ButIgnoreConfigIsTrue()
-    {
-        DotnetupConfig.Write(new DotnetupConfigData { DisableInstallConversion = true });
-
-        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.ShellProfile, ignoreConfig: true)
-            .Should().BeTrue();
-    }
-
     // ── PromptInstallsToMigrateIfDesired — early-exit paths ──
 
     [Fact]
@@ -123,22 +105,278 @@ public class InitWorkflowTests : IDisposable
     }
 
     [Fact]
-    public void BaseConfigurationWalkthrough_PassesInstallRootToTerminalProfileModifications()
+    public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenInteractiveIsFalse()
     {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
         var mock = new MockDotnetInstallManager(
             defaultInstallPath: _tempDir,
-            existingSystemInstalls: []);
-        var workflow = new InitWorkflows(mock, null!);
+            existingSystemInstalls:
+            [
+                new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+            ]);
 
-        workflow.BaseConfigurationWalkthrough(
-            requests: [],
-            primaryActionAfterConfigured: () => { },
-            noProgress: true,
-            interactive: false,
-            shellProvider: new TestShellProvider());
+        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
+            mock,
+            PathPreference.ShellProfile,
+            installRoot,
+            interactive: false);
 
-        mock.ApplyTerminalProfileModificationsCallCount.Should().Be(1);
-        mock.LastDotnetRootForTerminalProfileModifications.Should().Be(_tempDir);
+        result.Should().BeEmpty();
+        mock.GetExistingSystemInstallsCallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void GetMigrationCandidates_CanFilterToRequestedComponents()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        var sdkInstall = new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK);
+        var runtimeInstall = new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime);
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls: [sdkInstall, runtimeInstall]);
+
+        var result = InitWorkflows.GetMigrationCandidates(
+            mock,
+            components: [InstallComponent.SDK]);
+
+        result.Should().Equal([sdkInstall]);
+    }
+
+    [Fact]
+    public void GetMigrationCandidates_CanFilterToRuntimeFamily()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        var sdkInstall = new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK);
+        var runtimeInstall = new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime);
+        var aspNetInstall = new DotnetInstall(installRoot, new ReleaseVersion("9.0.5"), InstallComponent.ASPNETCore);
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls: [sdkInstall, runtimeInstall, aspNetInstall]);
+
+        var result = InitWorkflows.GetMigrationCandidates(
+            mock,
+            components: [InstallComponent.Runtime, InstallComponent.ASPNETCore, InstallComponent.WindowsDesktop]);
+
+        result.Should().HaveCount(2);
+        result.Should().OnlyContain(i => i.Component != InstallComponent.SDK);
+        result.Should().Contain(i => i.Component == InstallComponent.Runtime);
+        result.Should().Contain(i => i.Component == InstallComponent.ASPNETCore);
+    }
+
+    [Fact]
+    public void BuildMigrationSelections_DeduplicatesChannelsAndSkipsExistingSpecs()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+
+        List<DotnetInstall> systemInstalls =
+        [
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.101"), InstallComponent.SDK),
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.4"), InstallComponent.Runtime),
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
+            new DotnetInstall(installRoot, new ReleaseVersion("9.0.5"), InstallComponent.ASPNETCore),
+        ];
+
+        List<ResolvedInstallRequest> existingRequests =
+        [
+            new ResolvedInstallRequest(
+                new DotnetInstallRequest(
+                    installRoot,
+                    new UpdateChannel("10.0"),
+                    InstallComponent.Runtime,
+                    new InstallRequestOptions()),
+                new ReleaseVersion("10.0.5")),
+        ];
+
+        var result = InitWorkflows.BuildMigrationSelections(systemInstalls, installRoot, existingRequests: existingRequests);
+
+        result.Should().HaveCount(2);
+        result.Should().ContainSingle(r => r.Component == InstallComponent.SDK && r.Channel.Name == "10.0.1xx");
+        result.Should().ContainSingle(r => r.Component == InstallComponent.ASPNETCore && r.Channel.Name == "9.0");
+    }
+
+    [Fact]
+    public void BuildMigrationSelections_UsesInstallSpecChannelsForExistingRequests()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+
+        List<DotnetInstall> systemInstalls =
+        [
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+            new DotnetInstall(installRoot, new ReleaseVersion("9.0.306"), InstallComponent.SDK),
+        ];
+
+        List<ResolvedInstallRequest> existingRequests =
+        [
+            new ResolvedInstallRequest(
+                new DotnetInstallRequest(
+                    installRoot,
+                    new UpdateChannel(ChannelVersionResolver.LatestChannel),
+                    InstallComponent.SDK,
+                    new InstallRequestOptions()),
+                new ReleaseVersion("10.0.100")),
+        ];
+
+        var result = InitWorkflows.BuildMigrationSelections(systemInstalls, installRoot, existingRequests: existingRequests);
+
+        result.Should().HaveCount(2);
+        result.Should().ContainSingle(r => r.Component == InstallComponent.SDK && r.Channel.Name == "10.0.1xx");
+        result.Should().ContainSingle(r => r.Component == InstallComponent.SDK && r.Channel.Name == "9.0.3xx");
+    }
+
+    [Fact]
+    public void BuildMigrationSelections_ExcludesChannelsAlreadyTrackedInManifest()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        string manifestPath = Path.Combine(_tempDir, "manifest.json");
+
+        using (new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(manifestPath);
+            manifest.WriteManifest(new DotnetupManifestData
+            {
+                DotnetRoots =
+                [
+                    new DotnetRootEntry
+                    {
+                        Path = installRoot.Path,
+                        Architecture = installRoot.Architecture,
+                        InstallSpecs =
+                        [
+                            new InstallSpec { Component = InstallComponent.SDK, VersionOrChannel = "10.0.1xx" },
+                            new InstallSpec { Component = InstallComponent.Runtime, VersionOrChannel = "10.0" },
+                        ],
+                    },
+                ],
+            });
+        }
+
+        List<DotnetInstall> systemInstalls =
+        [
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.101"), InstallComponent.SDK),
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.4"), InstallComponent.Runtime),
+            new DotnetInstall(installRoot, new ReleaseVersion("9.0.5"), InstallComponent.ASPNETCore),
+        ];
+
+        var result = InitWorkflows.BuildMigrationSelections(systemInstalls, installRoot, manifestPath);
+
+        result.Should().ContainSingle();
+        result[0].Component.Should().Be(InstallComponent.ASPNETCore);
+        result[0].Channel.Name.Should().Be("9.0");
+    }
+
+    [Fact]
+    public void BuildMigrationSelections_TreatsRuntimeChannels9And90AsEquivalent()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        string manifestPath = Path.Combine(_tempDir, "manifest.json");
+
+        using (new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(manifestPath);
+            manifest.WriteManifest(new DotnetupManifestData
+            {
+                DotnetRoots =
+                [
+                    new DotnetRootEntry
+                    {
+                        Path = installRoot.Path,
+                        Architecture = installRoot.Architecture,
+                        InstallSpecs =
+                        [
+                            new InstallSpec { Component = InstallComponent.Runtime, VersionOrChannel = "9" },
+                        ],
+                    },
+                ],
+            });
+        }
+
+        List<DotnetInstall> systemInstalls =
+        [
+            new DotnetInstall(installRoot, new ReleaseVersion("9.0.5"), InstallComponent.Runtime),
+        ];
+
+        var result = InitWorkflows.BuildMigrationSelections(systemInstalls, installRoot, manifestPath);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void BuildMigrationSelections_DoesNotUseTrackedInstallationsForChannelExclusion()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        string manifestPath = Path.Combine(_tempDir, "manifest.json");
+
+        using (new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(manifestPath);
+            manifest.WriteManifest(new DotnetupManifestData
+            {
+                DotnetRoots =
+                [
+                    new DotnetRootEntry
+                    {
+                        Path = installRoot.Path,
+                        Architecture = installRoot.Architecture,
+                        Installations =
+                        [
+                            new Installation { Component = InstallComponent.Runtime, Version = "10.0.4" },
+                        ],
+                    },
+                ],
+            });
+        }
+
+        List<DotnetInstall> systemInstalls =
+        [
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.4"), InstallComponent.Runtime),
+        ];
+
+        var result = InitWorkflows.BuildMigrationSelections(systemInstalls, installRoot, manifestPath);
+
+        result.Should().ContainSingle();
+        result[0].Component.Should().Be(InstallComponent.Runtime);
+        result[0].Channel.Name.Should().Be("10.0");
+    }
+
+    [Fact]
+    public void MergeInstallRequests_AddsMigrationRequestsWithoutDuplicatingExistingChannels()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+
+        List<ResolvedInstallRequest> existingRequests =
+        [
+            new ResolvedInstallRequest(
+                new DotnetInstallRequest(
+                    installRoot,
+                    new UpdateChannel("10.0.1xx"),
+                    InstallComponent.SDK,
+                    new InstallRequestOptions()),
+                new ReleaseVersion("10.0.100")),
+        ];
+
+        List<DotnetInstall> systemInstalls =
+        [
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.101"), InstallComponent.SDK),
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.4"), InstallComponent.Runtime),
+            new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
+        ];
+
+        var toMigrate = InitWorkflows.BuildMigrationSelections(systemInstalls, installRoot, existingRequests: existingRequests);
+        var result = InitWorkflows.MergeInstallRequests(existingRequests, toMigrate, installRoot);
+
+        result.Should().HaveCount(2);
+        result.Should().ContainSingle(r => r.Request.Component == InstallComponent.SDK && r.Request.Channel.Name == "10.0.1xx");
+        result.Should().ContainSingle(r => r.Request.Component == InstallComponent.Runtime && r.Request.Channel.Name == "10.0" && r.ResolvedVersion.ToString() == "10.0.4");
     }
 
     // ── GetExistingSystemInstalls — architecture filtering ──
@@ -172,62 +410,42 @@ public class InitWorkflowTests : IDisposable
     }
 
     [Fact]
-    public void PromptInstallsToMigrateIfDesired_DoesNotQuerySystemInstalls_WhenConversionDisabled()
+    public void GetExistingSystemInstalls_DeduplicatesSameComponentVersionAndArch()
     {
-        DotnetupConfig.Write(new DotnetupConfigData { DisableInstallConversion = true });
-
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+
         var mock = new MockDotnetInstallManager(
             defaultInstallPath: _tempDir,
             existingSystemInstalls:
             [
                 new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+                new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+                new DotnetInstall(installRoot, new ReleaseVersion("8.0.22"), InstallComponent.Runtime),
+                new DotnetInstall(installRoot, new ReleaseVersion("8.0.22"), InstallComponent.Runtime),
             ]);
 
-        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock, PathPreference.ShellProfile, installRoot);
+        var result = mock.GetExistingSystemInstalls();
 
-        result.Should().BeEmpty();
-        mock.GetExistingSystemInstallsCallCount.Should().Be(0);
+        result.Should().HaveCount(2);
+        result.Should().ContainSingle(i => i.Component == InstallComponent.SDK && i.Version.ToString() == "10.0.100");
+        result.Should().ContainSingle(i => i.Component == InstallComponent.Runtime && i.Version.ToString() == "8.0.22");
     }
 
     [Fact]
-    public void PromptInstallsToMigrateIfDesired_QueriesSystemInstalls_WhenConversionDisabled_ButIgnoreConfigIsTrue()
+    public void FormatMigrationDisplayItems_IncludesArchitecture_WhenMultipleArchitecturesArePresent()
     {
-        DotnetupConfig.Write(new DotnetupConfigData { DisableInstallConversion = true });
+        List<InitWorkflows.MigrationSelection> migrationSelections =
+        [
+            new(InstallComponent.SDK, new UpdateChannel("10.0.1xx"), new ReleaseVersion("10.0.100"), InstallArchitecture.x64),
+            new(InstallComponent.SDK, new UpdateChannel("10.0.1xx"), new ReleaseVersion("10.0.100"), InstallArchitecture.arm64),
+        ];
 
-        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
-        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
-        var mock = new MockDotnetInstallManager(
-            defaultInstallPath: _tempDir,
-            existingSystemInstalls: []);
+        var items = InitWorkflows.FormatMigrationDisplayItems(migrationSelections);
 
-        string manifestPath = Path.Combine(_tempDir, "manifest.json");
-        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock, PathPreference.ShellProfile, installRoot, manifestPath, askEvenIfConfigured: true);
-
-        result.Should().BeEmpty();
-        // Should still query system installs because ignoreConfig overrides the disabled flag
-        mock.GetExistingSystemInstallsCallCount.Should().Be(1);
+        items.Should().HaveCount(2);
+        items.Should().OnlyContain(i => i.Contains("10.0.1xx") && i.Contains("["));
     }
 
-    private sealed class TestShellProvider : IEnvShellProvider
-    {
-        public string ArgumentName => "test";
-        public string Extension => "test";
-        public string? HelpDescription => "Test shell provider";
 
-        public string GenerateEnvScript(string dotnetInstallPath, string dotnetupDir = "", bool includeDotnet = true)
-            => string.Empty;
-
-        public IReadOnlyList<string> GetProfilePaths()
-            => [];
-
-        public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
-            => string.Empty;
-
-        public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
-            => string.Empty;
-    }
 }

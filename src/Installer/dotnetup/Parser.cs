@@ -69,7 +69,7 @@ internal class Parser
 
         rootCommand.SetAction(parseResult =>
         {
-            return new InitCommand(parseResult).Execute();
+            return new SdkInstallCommand(parseResult).Execute();
         });
 
         return rootCommand;

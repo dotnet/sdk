@@ -42,6 +42,7 @@ internal static class SdkInstallCommandParser
 
         command.Options.Add(CommonOptions.InstallPathOption);
         command.Options.Add(CommonOptions.SetDefaultInstallOption);
+        command.Options.Add(CommonOptions.MigrateFromSystemOption);
         command.Options.Add(UpdateGlobalJsonOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
 

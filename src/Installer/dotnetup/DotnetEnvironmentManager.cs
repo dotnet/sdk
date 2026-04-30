@@ -143,10 +143,11 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var filtered = installs
             .Where(i => i.InstallRoot.Architecture == nativeArch)
+            .DistinctBy(i => (i.Component, Version: i.Version.ToString(), i.InstallRoot.Architecture))
             .ToList();
 
-        // Sort descending so newest versions appear first
-        filtered.Sort((a, b) => string.Compare(b.Version.ToString(), a.Version.ToString(), StringComparison.OrdinalIgnoreCase));
+        // Sort descending so newest versions appear first.
+        filtered.Sort((a, b) => b.Version.CompareTo(a.Version));
         return filtered;
     }
 

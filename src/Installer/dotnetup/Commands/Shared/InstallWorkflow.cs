@@ -34,31 +34,36 @@ internal class InstallWorkflow
     /// Executes the install workflow for the given component specifications.
     /// Each spec is a (component, channel) pair where channel may be null (defaults to global.json or "latest").
     /// When an explicit install path is provided, installs directly.
-    /// When interactive and no explicit path, wraps execution in the init flow
-    /// for environment configuration (path preference, admin migration, etc.).
+    /// When interactive and no explicit path, routes through dotnetup onboarding/setup:
+    /// first-use installs show the intro flow, while later installs reuse saved configuration.
     /// Otherwise, installs to the default/resolved path without prompting.
     /// </summary>
     public void Execute(MinimalInstallSpec[] componentSpecs)
     {
-        var requests = GenerateInstallRequests(componentSpecs);
+        bool runOnboarding = ShouldRunFirstUseOnboarding(_command.Interactive, _command.InstallPath, _command.MigrateFromSystem);
+        bool promptForStarterChannel = ShouldPromptForStarterChannel(runOnboarding, componentSpecs);
+        List<ResolvedInstallRequest> requests;
 
-        if (_command.InstallPath is not null || !_command.Interactive)
+        if (runOnboarding && !promptForStarterChannel)
         {
-            // Explicit path or non-interactive — skip the init flow entirely
-            ExecuteInstallRequests(requests);
+            requests = GenerateInstallRequests(componentSpecs);
+            var workflows = new InitWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
+            requests = workflows.InitWalkthrough(_command, requests);
+        }
+        else if (runOnboarding)
+        {
+            var workflows = new InitWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
+            requests = workflows.InitWalkthrough(_command);
         }
         else
         {
-            // Interactive with no explicit path — init flow for path preference, admin migration, etc.
-            var workflows = new InitWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
-            workflows.BaseConfigurationWalkthrough(
-                requests,
-                () => ExecuteInstallRequests(requests),
-                _command.NoProgress,
-                _command.Interactive,
-                true,
-                false,
-                _command.ShellProvider);
+            requests = GenerateInstallRequests(componentSpecs);
+            if (_command.MigrateFromSystem)
+            {
+                requests = MergeRequestedMigration(requests);
+            }
+
+            ExecuteInstallRequests(requests);
         }
 
         // Global.json update runs after install in all code paths, but only when
@@ -69,6 +74,41 @@ internal class InstallWorkflow
         {
             _command.DotnetEnvironment.ApplyGlobalJsonModifications(requests);
         }
+
+    }
+
+    private List<ResolvedInstallRequest> MergeRequestedMigration(List<ResolvedInstallRequest> requests)
+    {
+        if (requests.Count == 0)
+        {
+            return requests;
+        }
+
+        var installRoot = requests[0].Request.InstallRoot;
+        var toMigrate = InitWorkflows.GetMigrationCandidates(
+            _command.DotnetEnvironment,
+            _command.MigrationComponents);
+        var migrationSelections = InitWorkflows.BuildMigrationSelections(
+            toMigrate,
+            installRoot,
+            _command.ManifestPath,
+            requests);
+
+        if (migrationSelections.Count == 0)
+        {
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
+                "No matching untracked system .NET installs were found to migrate."));
+            return requests;
+        }
+
+        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
+            $"Migrating {migrationSelections.Count} matching system .NET channel(s) because --migrate-from-system was specified."));
+
+        return InitWorkflows.MergeInstallRequests(
+            requests,
+            migrationSelections,
+            installRoot,
+            _command.ManifestPath);
     }
 
     /// <summary>
@@ -101,6 +141,20 @@ internal class InstallWorkflow
         }
 
         return requests;
+    }
+
+    internal static bool ShouldRunFirstUseOnboarding(bool interactive, string? installPath, bool migrateFromSystem = false)
+    {
+        return !migrateFromSystem &&
+            interactive &&
+            installPath is null &&
+            DotnetupConfig.ReadPathPreference() is null;
+    }
+
+    internal static bool ShouldPromptForStarterChannel(bool runOnboarding, MinimalInstallSpec[] componentSpecs)
+    {
+        return runOnboarding &&
+            componentSpecs is [{ VersionOrChannel: null }];
     }
 
     /// <summary>

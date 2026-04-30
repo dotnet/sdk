@@ -24,6 +24,7 @@ internal static class RuntimeInstallCommandParser
         command.Arguments.Add(ComponentSpecsArgument);
         command.Options.Add(CommonOptions.InstallPathOption);
         command.Options.Add(CommonOptions.SetDefaultInstallOption);
+        command.Options.Add(CommonOptions.MigrateFromSystemOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.InteractiveOption);
         // Intentionally do not expose --shell on install commands.

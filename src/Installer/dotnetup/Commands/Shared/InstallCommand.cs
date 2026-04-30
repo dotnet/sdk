@@ -22,7 +22,9 @@ internal abstract class InstallCommand : CommandBase
     public bool RequireMuxerUpdate { get; }
     public bool Untracked { get; }
     public IEnvShellProvider? ShellProvider { get; }
+    public bool MigrateFromSystem { get; }
     public virtual bool UpdateGlobalJson => false;
+    public virtual IReadOnlyCollection<InstallComponent> MigrationComponents => [];
 
     public IDotnetEnvironmentManager DotnetEnvironment { get; }
     public ChannelVersionResolver ChannelVersionResolver { get; }
@@ -38,6 +40,7 @@ internal abstract class InstallCommand : CommandBase
         RequireMuxerUpdate = parseResult.GetValue(CommonOptions.RequireMuxerUpdateOption);
         Untracked = parseResult.GetValue(CommonOptions.UntrackedOption);
         ShellProvider = parseResult.GetValue(CommonOptions.ShellOption);
+        MigrateFromSystem = parseResult.GetValue(CommonOptions.MigrateFromSystemOption);
 
         DotnetEnvironment = new DotnetEnvironmentManager();
         ChannelVersionResolver = new ChannelVersionResolver();
