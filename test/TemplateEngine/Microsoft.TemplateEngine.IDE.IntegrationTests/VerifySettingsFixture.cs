@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using VerifyTests.DiffPlex;
+using Microsoft.TemplateEngine.Tests;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
@@ -19,7 +20,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             DerivePathInfo(
                 (_, _, type, method) => new(
-                    directory: "Approvals",
+                    directory: TestBase.ApprovalsDirectory,
                     typeName: type.Name,
                     methodName: method.Name));
 

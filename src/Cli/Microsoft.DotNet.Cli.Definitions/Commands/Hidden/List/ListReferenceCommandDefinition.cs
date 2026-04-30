@@ -19,7 +19,7 @@ internal sealed class ListReferenceCommandDefinition : ListReferenceCommandDefin
     public ListCommandDefinition Parent => (ListCommandDefinition)Parents.Single();
 
     internal override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.SlnOrProjectArgument);
+        => parseResult.GetValue(Parent.SlnOrProjectOrFileArgument);
 }
 
 internal abstract class ListReferenceCommandDefinitionBase : Command

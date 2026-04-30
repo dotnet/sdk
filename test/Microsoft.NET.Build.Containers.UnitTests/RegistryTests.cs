@@ -457,7 +457,7 @@ public class RegistryTests : IDisposable
                 catch
                 { }
             }
-        });
+        }, TestContext.Current.CancellationToken);
 
         RegistrySettings settings = new()
         {
@@ -553,7 +553,7 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
@@ -593,7 +593,7 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_ThrowsAfterMaxRetries));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
@@ -689,7 +689,8 @@ public class RegistryTests : IDisposable
         public string GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
             => throw new NotImplementedException();
 
-        public bool TryGetEnvironmentVariable(string name, [NotNullWhen(true)] out string? value) => _environmentVariables.TryGetValue(name, out value);
+        public bool TryGetEnvironmentVariable(string name, [NotNullWhen(true)] out string? value) => _environmentVariables.TryGetValue(name, out value!);
+
         public bool TryGetEnvironmentVariableAsBool(string name, [NotNullWhen(true)] out bool value)
         {
             if (TryGetEnvironmentVariable(name, out string? strValue) && bool.TryParse(strValue, out bool boolValue))

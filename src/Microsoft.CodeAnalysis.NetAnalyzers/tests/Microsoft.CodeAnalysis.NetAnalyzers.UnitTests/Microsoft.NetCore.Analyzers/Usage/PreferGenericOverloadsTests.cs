@@ -527,7 +527,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7245, "https://github.com/dotnet/roslyn-analyzers/issues/7245")]
@@ -555,7 +555,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1283,7 +1283,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1330,7 +1330,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

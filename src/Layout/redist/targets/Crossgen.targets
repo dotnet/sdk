@@ -65,7 +65,7 @@
       <!-- Removing Microsoft.Diagnostics.NETCore.Client from crossgen as its EmbeddedAttribute causes code generation failures -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.Diagnostics.NETCore.Client.dll" />
 
-      <!-- Removing Containers as containerize .DLLs and netframework components shouldn't be crossgenned. -->
+      <!-- Removing Containers as containerize .DLLs shouldn't be crossgenned. -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Containers\**\*" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->

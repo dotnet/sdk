@@ -2,42 +2,6 @@
 <Dependencies>
   <Source Uri="https://github.com/dotnet/dotnet" Mapping="sdk" Sha="0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2" BarId="309569" />
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="11.0.100-preview.4.26208.110">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="11.0.100-preview.4.26208.110">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="11.0.100-preview.4.26208.110">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="11.0.100-preview.4.26208.110">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.Common" Version="11.0.100-preview.4.26208.110">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks.XunitV3" Version="11.0.100-preview.4.26208.110">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper.XunitV3" Version="11.0.100-preview.4.26208.110">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3" Version="11.0.100-preview.4.26208.110">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="11.0.100-preview.4.26208.110">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="11.0.0-preview.4.26208.110">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
@@ -569,13 +533,13 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>0cf6b19ed68d2d52e097e6af6d6046b4eeefefe2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.3.0-preview.26203.3">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.3.0-preview.26219.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>1ddd2f1a558e9c79b5327c5ccc0e9e89df39d4da</Sha>
+      <Sha>2f487896471027b0c37c24b2d5b58cd20a195427</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.3.0-preview.26203.3">
+    <Dependency Name="MSTest" Version="4.3.0-preview.26219.1">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>1ddd2f1a558e9c79b5327c5ccc0e9e89df39d4da</Sha>
+      <Sha>2f487896471027b0c37c24b2d5b58cd20a195427</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="11.0.0-preview.4.26208.110">
       <Uri>https://github.com/dotnet/dotnet</Uri>
