@@ -86,7 +86,7 @@ internal class DotnetupProgram
         // latency on happy-path runs; it only matters when the queue is
         // backed up against a slow network. Interactive (non-CI) runs keep
         // the smaller budget so user-perceived exit time is unaffected.
-        var flushTimeoutMs = DotnetupTelemetry.Instance.IsOneAndDoneEnvironment ? 30_000 : 5_000;
+        var flushTimeoutMs = DotnetupTelemetry.Instance.IsOneAndDoneEnvironment ? 30_000 : 100;
 
         try
         {
