@@ -59,7 +59,9 @@ internal class DefaultInstallCommand : CommandBase
         if (!succeeded)
         {
             // UAC prompt was cancelled
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PermissionDenied,
+                "User cancelled the elevation prompt while configuring the user install root.");
         }
 
         Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
@@ -89,7 +91,9 @@ internal class DefaultInstallCommand : CommandBase
         if (!succeeded)
         {
             // Elevation was cancelled
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PermissionDenied,
+                "User cancelled the elevation prompt while configuring the system install root.");
         }
 
         Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");

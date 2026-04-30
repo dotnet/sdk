@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
@@ -188,12 +187,12 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         string destinationPath,
         IProgress<DownloadProgress>? progress = null)
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("download");
-        activity?.SetTag("download.version", resolvedVersion.ToString());
+        using var op = Metrics.Track("download", "download/complete");
+        op.Tag("download.version", resolvedVersion.ToString());
 
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
 
-        activity?.SetTag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
+        op.Tag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
 
         if (TryServeCachedArchive(downloadUrl, expectedHash, destinationPath, progress))
         {
@@ -204,8 +203,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         VerifyFileHash(destinationPath, expectedHash);
 
         var fileInfo = new FileInfo(destinationPath);
-        activity?.SetTag("download.bytes", fileInfo.Length);
-        activity?.SetTag("download.from_cache", false);
+        op.Tag("download.bytes", fileInfo.Length);
+        op.Tag("download.from_cache", false);
 
         try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
         catch { /* Ignore errors adding to cache - it's not critical */ }
@@ -264,8 +263,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             var cachedFileSize = new FileInfo(cachedFilePath).Length;
             progress?.Report(new DownloadProgress(cachedFileSize, cachedFileSize));
 
-            Activity.Current?.SetTag("download.bytes", cachedFileSize);
-            Activity.Current?.SetTag("download.from_cache", true);
+            Metrics.Tag("download.bytes", cachedFileSize);
+            Metrics.Tag("download.from_cache", true);
             return true;
         }
         catch

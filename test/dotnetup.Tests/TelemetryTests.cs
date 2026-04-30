@@ -85,7 +85,11 @@ public class TelemetryCommonPropertiesTests
         Assert.Contains("device.id", attributes.Keys);
         Assert.Contains("os.platform", attributes.Keys);
         Assert.Contains("os.version", attributes.Keys);
+        Assert.Contains("os.type", attributes.Keys);
+        Assert.Contains("os.arch", attributes.Keys);
         Assert.Contains("process.arch", attributes.Keys);
+        Assert.Contains("runtime.id", attributes.Keys);
+        Assert.Contains("output.redirected", attributes.Keys);
         Assert.Contains("ci.detected", attributes.Keys);
         Assert.Contains("dotnetup.version", attributes.Keys);
         Assert.Contains("dev.build", attributes.Keys);
@@ -514,6 +518,182 @@ public class DotnetupTelemetryTests : IDisposable
 
         Assert.Equal("product", activity.GetTagItem("error.category"));
     }
+
+    /// <summary>
+    /// Returns a synthetic snapshot of common properties that mirrors what
+    /// production builds via <see cref="TelemetryCommonProperties.GetCommonAttributes(string)"/>.
+    /// Driving the tests with this snapshot keeps the assertions stable even
+    /// if production wiring changes (e.g., AOT / disabled telemetry path).
+    /// </summary>
+    private static IReadOnlyList<KeyValuePair<string, object?>> BuildSyntheticCommonProperties(string sessionId = "test-session")
+    {
+        var list = new List<KeyValuePair<string, object?>>
+        {
+            new("caller", "dotnetup"),
+        };
+        foreach (var attr in TelemetryCommonProperties.GetCommonAttributes(sessionId))
+        {
+            list.Add(new KeyValuePair<string, object?>(attr.Key, attr.Value));
+        }
+        return list;
+    }
+
+    [Fact]
+    public void BuildCompletionState_RootEvent_StampsCommonProperties()
+    {
+        // Root event = a top-level Activity with no parent (e.g., the
+        // process-wide "dotnetup" span). Common properties must land on
+        // every emitted row, including the root, because data-x ingests
+        // each row independently.
+        using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "dotnetup", ActivityKind.Internal);
+        Assert.NotNull(rootActivity);
+
+        var common = BuildSyntheticCommonProperties();
+        var state = DotnetupTelemetry.BuildCompletionState(
+            "process/complete",
+            rootActivity,
+            new Dictionary<string, string?>(),
+            elapsedMs: 12.34,
+            commonProperties: common);
+
+        var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        // All common properties should be present on the root event.
+        Assert.Equal("dotnetup", asDict["caller"]);
+        Assert.Contains("session.id", asDict.Keys);
+        Assert.Contains("device.id", asDict.Keys);
+        Assert.Contains("os.type", asDict.Keys);
+        Assert.Contains("os.platform", asDict.Keys);
+        Assert.Contains("os.version", asDict.Keys);
+        Assert.Contains("os.arch", asDict.Keys);
+        Assert.Contains("process.arch", asDict.Keys);
+        Assert.Contains("runtime.id", asDict.Keys);
+        Assert.Contains("output.redirected", asDict.Keys);
+        Assert.Contains("ci.detected", asDict.Keys);
+        Assert.Contains("dotnetup.version", asDict.Keys);
+        Assert.Contains("dev.build", asDict.Keys);
+
+        // Computed fields must also be stamped.
+        Assert.Equal("dotnetup/process/complete", asDict["operation.name"]);
+        Assert.Equal("12.34", asDict["operation.duration_ms"]);
+
+        // Root has no parent — operation.parent_name must be absent.
+        Assert.DoesNotContain("operation.parent_name", asDict.Keys);
+    }
+
+    [Fact]
+    public void BuildCompletionState_CommandEvent_StampsCommonPropertiesAndParent()
+    {
+        // command/{name} runs as a child of the root "dotnetup" span. Its
+        // emitted row should carry all common properties AND
+        // operation.parent_name pointing at its parent.
+        using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "dotnetup", ActivityKind.Internal);
+        Assert.NotNull(rootActivity);
+
+        using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/runtime/install", ActivityKind.Internal);
+        Assert.NotNull(commandActivity);
+        commandActivity.SetTag("command.name", "runtime/install");
+        commandActivity.SetTag("command.status", "ok");
+
+        var common = BuildSyntheticCommonProperties("session-abc");
+        var state = DotnetupTelemetry.BuildCompletionState(
+            "command",
+            commandActivity,
+            new Dictionary<string, string?>(),
+            elapsedMs: 1050.5,
+            commonProperties: common);
+
+        var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        // Common properties present on the command row too.
+        Assert.Equal("dotnetup", asDict["caller"]);
+        Assert.Equal("session-abc", asDict["session.id"]);
+        Assert.Contains("os.type", asDict.Keys);
+        Assert.Contains("device.id", asDict.Keys);
+        Assert.Contains("dotnetup.version", asDict.Keys);
+        Assert.Contains("dev.build", asDict.Keys);
+
+        // Activity tags surface in the row.
+        Assert.Equal("runtime/install", asDict["command.name"]);
+        Assert.Equal("ok", asDict["command.status"]);
+
+        // Computed fields.
+        Assert.Equal("dotnetup/command", asDict["operation.name"]);
+        Assert.Equal("1050.5", asDict["operation.duration_ms"]);
+        Assert.Equal("dotnetup", asDict["operation.parent_name"]);
+    }
+
+    [Fact]
+    public void BuildCompletionState_StoredTags_OverrideCommonProperties()
+    {
+        // If a per-event tag collides with a common property, the per-event
+        // tag wins (last writer). Today nothing in dotnetup deliberately
+        // collides, but we lock in the contract so future code can override
+        // a default safely.
+        using var activity = DotnetupTelemetry.CommandSource.StartActivity(
+            "test-override", ActivityKind.Internal);
+        Assert.NotNull(activity);
+
+        var common = new List<KeyValuePair<string, object?>>
+        {
+            new("caller", "dotnetup"),
+            new("os.type", "Windows"),
+        };
+        var stored = new Dictionary<string, string?>
+        {
+            ["os.type"] = "Linux",
+        };
+
+        var state = DotnetupTelemetry.BuildCompletionState(
+            "command",
+            activity,
+            stored,
+            elapsedMs: 1.0,
+            commonProperties: common);
+
+        var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        Assert.Equal("Linux", asDict["os.type"]);
+        Assert.Equal("dotnetup", asDict["caller"]);
+    }
+
+    [Fact]
+    public void BuildCompletionState_ChildInheritsCommandTagsFromAncestor()
+    {
+        // A child activity (e.g., a single download) emits its own row, and
+        // that row should inherit command.* tags from its ancestor command
+        // span so data-x can attribute the work without joining traces.
+        using var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "dotnetup", ActivityKind.Internal);
+        Assert.NotNull(rootActivity);
+
+        using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/runtime/install", ActivityKind.Internal);
+        Assert.NotNull(commandActivity);
+        commandActivity.SetTag("command.name", "runtime/install");
+
+        using var childActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "download", ActivityKind.Internal);
+        Assert.NotNull(childActivity);
+
+        var state = DotnetupTelemetry.BuildCompletionState(
+            "process/complete",
+            childActivity,
+            new Dictionary<string, string?>(),
+            elapsedMs: 5.0,
+            commonProperties: BuildSyntheticCommonProperties());
+
+        var asDict = state.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        Assert.Equal("runtime/install", asDict["command.name"]);
+        Assert.Equal("command/runtime/install", asDict["operation.parent_name"]);
+        // Common props still land.
+        Assert.Contains("os.type", asDict.Keys);
+        Assert.Contains("session.id", asDict.Keys);
+    }
 }
 
 [Collection("DotnetupEnvironmentMutationTests")]
@@ -609,7 +789,7 @@ public class ActivitySourceIntegrationTests
         ActivitySource.AddActivityListener(listener);
 
         // Act - create an activity using the library's ActivitySource
-        using (var activity = InstallationActivitySource.ActivitySource.StartActivity("test-activity"))
+        using (var activity = Metrics.ActivitySource.StartActivity("test-activity"))
         {
             activity?.SetTag("test.key", "test-value");
         }
@@ -618,5 +798,437 @@ public class ActivitySourceIntegrationTests
         Assert.Single(capturedActivities);
         Assert.Equal("test-activity", capturedActivities[0].DisplayName);
         Assert.Contains(capturedActivities[0].Tags, t => t.Key == "test.key" && t.Value == "test-value");
+    }
+}
+
+public class TrackedOperationTests : IDisposable
+{
+    private const string TestSessionId = "test-session-id";
+    private readonly ActivityListener _listener;
+    private readonly ActivityListener _commandListener;
+    private readonly List<Activity> _capturedActivities = [];
+    private readonly List<(string EventName, Activity? Activity, IDictionary<string, string?> StoredTags)> _capturedEvents = [];
+
+    public TrackedOperationTests()
+    {
+        _listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == Metrics.SourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => _capturedActivities.Add(activity)
+        };
+        _commandListener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == "Microsoft.Dotnet.Bootstrapper",
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+        };
+        ActivitySource.AddActivityListener(_listener);
+        ActivitySource.AddActivityListener(_commandListener);
+        Metrics.OnTrackEvent = TestTrackEvent;
+    }
+
+    public void Dispose()
+    {
+        _listener.Dispose();
+        _commandListener.Dispose();
+        Metrics.OnTrackEvent = null;
+    }
+
+    /// <summary>
+    /// Test callback that captures the event data and stops the activity to mirror
+    /// what <c>TrackedOperation.Dispose</c> arranges in production. The new
+    /// production path (after the OTel ILogger migration) emits a LogRecord
+    /// instead of an ActivityEvent — that LogRecord is exercised by E2E tests, not
+    /// these in-memory unit tests, so we skip it here.
+    /// </summary>
+    private void TestTrackEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
+    {
+        _capturedEvents.Add((eventName, activity, storedTags));
+        activity?.Stop();
+    }
+
+    /// <summary>
+    /// Asserts that a tracked event was properly captured by the callback and that
+    /// the expected tags landed on the activity (via <c>op.Tag()</c>, which writes
+    /// to both <c>activity.Tags</c> and the stored-tags mirror dictionary).
+    /// </summary>
+    private static void AssertTrackedEvent(
+        (string EventName, Activity? Activity, IDictionary<string, string?> StoredTags) captured,
+        string expectedEventName,
+        IDictionary<string, string?>? expectedTags = null)
+    {
+        Assert.Equal(expectedEventName, captured.EventName);
+        Assert.NotNull(captured.Activity);
+
+        // Verify expected tags landed on the activity (or the storedTags mirror)
+        if (expectedTags is not null)
+        {
+            var activityTags = captured.Activity!.TagObjects
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString());
+            foreach (var (key, value) in expectedTags)
+            {
+                var found = activityTags.TryGetValue(key, out var fromActivity)
+                    || captured.StoredTags.TryGetValue(key, out fromActivity);
+                Assert.True(found, $"Activity or storedTags should contain '{key}'");
+                Assert.Equal(value, fromActivity);
+            }
+        }
+
+        // Verify the activity was stopped (duration captured by TrackedOperation.Dispose)
+        Assert.True(
+            captured.Activity!.Duration > TimeSpan.Zero,
+            "Activity should have been stopped by TrackEvent");
+    }
+
+    [Fact]
+    public void TrackedOperation_EmitsEventOnDispose()
+    {
+        using (var op = Metrics.Track("test-op", "test/complete"))
+        {
+            op.Tag("key1", "value1");
+        }
+
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "test/complete",
+            new Dictionary<string, string?> { ["key1"] = "value1" });
+    }
+
+    [Fact]
+    public void TrackedOperation_IncludesDuration()
+    {
+        using (var op = Metrics.Track("test-duration", "test/duration"))
+        {
+            op.Tag("foo", "bar");
+        }
+
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(_capturedEvents[0], "test/duration");
+    }
+
+    [Fact]
+    public void TrackedOperation_CapturesTagsSetViaActivityCurrent()
+    {
+        using (var op = Metrics.Track("test-current", "test/current"))
+        {
+            // Simulate code deeper in the call stack setting tags via Activity.Current
+            Activity.Current?.SetTag("inner.tag", "inner-value");
+            op.Tag("outer.tag", "outer-value");
+        }
+
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "test/current",
+            new Dictionary<string, string?>
+            {
+                ["inner.tag"] = "inner-value",
+                ["outer.tag"] = "outer-value"
+            });
+    }
+
+    [Fact]
+    public void TrackedOperation_SetsTagOnUnderlyingActivity()
+    {
+        using (var op = Metrics.Track("test-span-tags", "test/span"))
+        {
+            op.Tag("span.key", "span-value");
+        }
+
+        // Verify via stopped activities (ActivityListener callback)
+        Assert.Single(_capturedActivities);
+        Assert.Contains(_capturedActivities[0].Tags, t => t.Key == "span.key" && t.Value == "span-value");
+
+        // Also verify via dual assertion
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "test/span",
+            new Dictionary<string, string?> { ["span.key"] = "span-value" });
+    }
+
+    [Fact]
+    public void TrackedOperation_SetStatus_SetsOnActivity()
+    {
+        using (var op = Metrics.Track("test-status", "test/status"))
+        {
+            op.SetStatus(ActivityStatusCode.Error, "test failure");
+        }
+
+        Assert.Single(_capturedActivities);
+        Assert.Equal(ActivityStatusCode.Error, _capturedActivities[0].Status);
+    }
+
+    [Fact]
+    public void TrackedOperation_NoEventWhenCallbackNotRegistered()
+    {
+        Metrics.OnTrackEvent = null;
+
+        using (var op = Metrics.Track("test-no-callback", "test/no-callback"))
+        {
+            op.Tag("key", "value");
+        }
+
+        Assert.Empty(_capturedEvents);
+        // Activity should still be stopped even without a callback
+        Assert.Single(_capturedActivities);
+        Assert.True(_capturedActivities[0].Duration >= TimeSpan.Zero);
+    }
+
+    /// <summary>
+    /// Regression test: root activities (no parent) must have their ActivityEvent
+    /// properly emitted. Previously, root activities had events silently dropped
+    /// because <c>Activity.Current</c> was <c>null</c> after <c>Stop()</c>.
+    /// </summary>
+    [Fact]
+    public void TrackedOperation_RootActivity_EmitsActivityEvent()
+    {
+        // Use the library ActivitySource (no parent activity exists)
+        using (var op = Metrics.Track("test-root", "test/root-event"))
+        {
+            op.Tag("root.key", "root-value");
+        }
+
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "test/root-event",
+            new Dictionary<string, string?> { ["root.key"] = "root-value" });
+    }
+
+    /// <summary>
+    /// Regression test: command-level root activities must also get ActivityEvents.
+    /// This mirrors the production flow where <c>StartTrackedCommand</c> creates a
+    /// root span via <c>CommandSource</c>.
+    /// </summary>
+    [Fact]
+    public void TrackedOperation_CommandSourceRootActivity_EmitsActivityEvent()
+    {
+        // Create a root command activity directly (simulates StartTrackedCommand).
+        // Span name keeps the subcommand suffix for in-process correlation;
+        // the emitted event name is the stable "command" so a single GDPR-catalog
+        // entry covers every subcommand.
+        var activity = DotnetupTelemetry.CommandSource.StartActivity("command/test-cmd", ActivityKind.Internal);
+        Assert.NotNull(activity);
+
+        var op = new TrackedOperation(activity, "command", TestTrackEvent);
+        op.Tag("command.name", "test-cmd");
+        op.Dispose();
+
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "command",
+            new Dictionary<string, string?> { ["command.name"] = "test-cmd" });
+    }
+
+    /// <summary>
+    /// Tests that a child library activity emits its event correctly when nested
+    /// under a parent command activity.
+    /// </summary>
+    [Fact]
+    public void TrackedOperation_NestedActivity_EmitsActivityEvent()
+    {
+        // Create parent command activity (stays alive during child)
+        using var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/test-parent", ActivityKind.Internal);
+        Assert.NotNull(commandActivity);
+
+        // Create child library activity within the command scope
+        using (var childOp = Metrics.Track("download", "download/complete"))
+        {
+            childOp.Tag("download.bytes", "1024");
+        }
+
+        // Child should have emitted its event
+        Assert.Single(_capturedEvents);
+        AssertTrackedEvent(
+            _capturedEvents[0],
+            "download/complete",
+            new Dictionary<string, string?> { ["download.bytes"] = "1024" });
+    }
+
+    /// <summary>
+    /// Regression test: applying error tags mid-flight (the work
+    /// <see cref="DotnetupTelemetry.RecordException"/> does in production) must
+    /// NOT stop the activity. The owning <c>TrackedOperation</c> is still alive
+    /// and will dispose later with the final completion log.
+    /// </summary>
+    [Fact]
+    public void RecordException_DoesNotStopActivity()
+    {
+        var activity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/test-midflight", ActivityKind.Internal);
+        Assert.NotNull(activity);
+
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(new InvalidOperationException("boom"));
+        ErrorCodeMapper.ApplyErrorTags(activity, errorInfo);
+
+        // Activity must still be alive — not stopped
+        Assert.Equal(TimeSpan.Zero, activity.Duration);
+        Assert.NotNull(Activity.Current);
+
+        // Error tags should be on the activity itself
+        var tags = activity.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
+        Assert.True(tags.ContainsKey("error.type"), "error.type tag should be set on activity");
+
+        // Now stop it (simulates TrackedOperation.Dispose)
+        activity.Stop();
+        Assert.True(activity.Duration > TimeSpan.Zero);
+    }
+
+    /// <summary>
+    /// Regression test: mirrors the full Program.cs + CommandBase.cs lifecycle.
+    /// Root process activity → command activity → error fires mid-flight →
+    /// command disposes → root disposes. The error must propagate via tags to
+    /// both activities, the command must dispose first, and no activity may be
+    /// stopped prematurely.
+    /// </summary>
+    [Fact]
+    public void TrackedOperation_FullLifecycle_RootPersistsThroughErrorAndCommandDispose()
+    {
+        // Step 1: Start root process activity (Program.Main)
+        var rootActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "dotnetup", ActivityKind.Internal);
+        Assert.NotNull(rootActivity);
+        var rootOp = new TrackedOperation(rootActivity, "process/complete", TestTrackEvent);
+
+        // Step 2: Start command activity (CommandBase.Execute)
+        var commandActivity = DotnetupTelemetry.CommandSource.StartActivity(
+            "command/sdk/install", ActivityKind.Internal);
+        Assert.NotNull(commandActivity);
+        var commandOp = new TrackedOperation(commandActivity, "command", TestTrackEvent);
+        commandOp.Tag("command.name", "sdk/install");
+
+        // Step 3: Mid-flight error must not stop the command activity, and tags
+        // must propagate to ancestors (root included).
+        var errorInfo = ErrorCodeMapper.GetErrorInfo(new InvalidOperationException("InstallFailed"));
+        ErrorCodeMapper.ApplyErrorTags(commandActivity, errorInfo);
+        ErrorCodeMapper.ApplyErrorTags(rootActivity, errorInfo);
+
+        Assert.Equal(TimeSpan.Zero, commandActivity.Duration);
+        var commandTags = commandActivity.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
+        Assert.True(commandTags.ContainsKey("error.type"));
+        var rootTags = rootActivity.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
+        Assert.True(rootTags.ContainsKey("error.type"), "error.type should propagate to root activity");
+
+        // Step 4: CommandBase.finally disposes command operation
+        commandOp.Tag("exit.code", 1);
+        commandOp.SetStatus(ActivityStatusCode.Error);
+        commandOp.Dispose();
+
+        Assert.Single(_capturedEvents);
+        Assert.Equal("command", _capturedEvents[0].EventName);
+        Assert.Equal("sdk/install", _capturedEvents[0].StoredTags["command.name"]);
+        Assert.True(_capturedEvents[0].Activity!.Duration > TimeSpan.Zero);
+
+        // Step 5: Program.finally disposes root operation
+        rootOp.Tag("exit.code", 1);
+        rootOp.SetStatus(ActivityStatusCode.Error);
+        rootOp.Dispose();
+
+        Assert.Equal(2, _capturedEvents.Count);
+        Assert.Equal("process/complete", _capturedEvents[1].EventName);
+        Assert.True(_capturedEvents[1].Activity!.Duration > TimeSpan.Zero);
+
+        // Verify parent-child: command's parent should be the root
+        Assert.Equal(rootActivity.Id, commandActivity.ParentId);
+    }
+}
+
+/// <summary>
+/// Enforces that production code uses <c>TrackedOperation.Tag()</c> or
+/// <c>InstallationActivitySource.Tag()</c> instead of the raw
+/// <c>Activity.SetTag()</c> API. Only the telemetry infrastructure files
+/// that wrap the raw API are allowed to call <c>.SetTag()</c> directly.
+/// </summary>
+public class TelemetryDualWriteEnforcementTests
+{
+    /// <summary>
+    /// Telemetry infrastructure files that legitimately call the raw
+    /// <c>Activity.SetTag()</c> API internally. Every other source file
+    /// must use the <c>.Tag()</c> wrapper instead.
+    /// </summary>
+    private static readonly HashSet<string> s_infrastructureFiles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "DotnetupTelemetry.cs",           // TrackEvent / StartCommand internals
+        "ErrorCodeMapper.cs",             // Applies error tags to specific activity instances
+        "InstallationActivitySource.cs",  // Tag() static helper wraps Activity.Current
+        "TrackedOperation.cs",            // Tag() instance method wraps _activity
+    };
+
+    [Fact]
+    public void DotnetupSource_ShouldNotCallSetTagDirectly()
+    {
+        var installerDir = FindInstallerSourceDirectory();
+        if (installerDir is null)
+        {
+            // Skip if source directory not found (e.g., running from packaged test)
+            return;
+        }
+
+        var violations = new List<string>();
+
+        // Scan both dotnetup and the installation library
+        var searchDirs = new[]
+        {
+            Path.Combine(installerDir, "dotnetup"),
+            Path.Combine(installerDir, "Microsoft.Dotnet.Installation")
+        };
+
+        foreach (var searchDir in searchDirs.Where(Directory.Exists))
+        {
+            var csFiles = Directory.GetFiles(searchDir, "*.cs", SearchOption.AllDirectories);
+
+            foreach (var file in csFiles)
+            {
+                var fileName = Path.GetFileName(file);
+                if (s_infrastructureFiles.Contains(fileName))
+                {
+                    continue;
+                }
+
+                var lines = File.ReadAllLines(file);
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    var line = lines[i];
+                    if (line.Contains(".SetTag(", StringComparison.Ordinal))
+                    {
+                        violations.Add($"{Path.GetRelativePath(installerDir, file)}:{i + 1}: {line.Trim()}");
+                    }
+                }
+            }
+        }
+
+        Assert.True(
+            violations.Count == 0,
+            $"Found {violations.Count} direct .SetTag() call(s) outside infrastructure files. " +
+            "Use TrackedOperation.Tag() or InstallationActivitySource.Tag() instead.\n\n" +
+            string.Join("\n", violations));
+    }
+
+    private static string? FindInstallerSourceDirectory()
+    {
+        // Walk up from test assembly location to find src/Installer
+        var dir = AppContext.BaseDirectory;
+        for (int i = 0; i < 10; i++)
+        {
+            var candidate = Path.Combine(dir, "src", "Installer");
+            if (Directory.Exists(candidate) && Directory.Exists(Path.Combine(candidate, "dotnetup")))
+            {
+                return candidate;
+            }
+
+            var parent = Directory.GetParent(dir);
+            if (parent is null)
+            {
+                break;
+            }
+
+            dir = parent.FullName;
+        }
+
+        return null;
     }
 }

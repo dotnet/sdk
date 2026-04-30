@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -145,9 +144,10 @@ internal class GarbageCollector
     /// </summary>
     private static List<string> DeleteOrphanedSubcomponents(string dotnetRootPath, HashSet<string> referencedSubcomponents)
     {
-        using var activity = InstallationActivitySource.ActivitySource.StartActivity("gc.delete-orphaned-subcomponents");
+        using var op = Metrics.Track("gc.delete-orphaned-subcomponents", "gc/delete-orphaned-subcomponents");
         var deleted = new List<string>();
         var failedCount = 0;
+        string? lastFailedPath = null;
 
         if (!Directory.Exists(dotnetRootPath))
         {
@@ -184,19 +184,16 @@ internal class GarbageCollector
                     {
                         Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
                         ++failedCount;
-                        DotnetupTelemetry.Instance.RecordException(activity, ex, errorCode: "gc.delete_failed");
-                        activity?.SetTag("gc.failed_path", relativePath);
+                        lastFailedPath = relativePath;
+                        DotnetupTelemetry.Instance.RecordException(op, ex, errorCode: "gc.delete_failed");
                     }
                 }
             }
         }
 
-        activity?.SetTag("gc.deleted_count", deleted.Count);
-        activity?.SetTag("gc.failed_count", failedCount);
-        if (failedCount > 0)
-        {
-            activity?.SetStatus(ActivityStatusCode.Error, "Some subcomponents could not be deleted");
-        }
+        op.Tag("gc.deleted_count", deleted.Count);
+        op.Tag("gc.failed_count", failedCount);
+        op.Tag("gc.failed_path", lastFailedPath);
 
         return deleted;
     }

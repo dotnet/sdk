@@ -25,46 +25,41 @@ internal class PrintEnvScriptCommand : CommandBase
 
     protected override int ExecuteCore()
     {
-        try
+        // Check if shell provider was successfully determined
+        if (_shellProvider == null)
         {
-            // Check if shell provider was successfully determined
-            if (_shellProvider == null)
+            var shellPath = Environment.GetEnvironmentVariable("SHELL");
+            if (shellPath is null)
             {
-                var shellPath = Environment.GetEnvironmentVariable("SHELL");
-                if (shellPath is null)
-                {
-                    Console.Error.WriteLine("Error: Unable to detect current shell. The SHELL environment variable is not set.");
-                    Console.Error.WriteLine($"Please specify the shell using --shell option. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
-                }
-                else
-                {
-                    var shellName = Path.GetFileName(shellPath);
-                    Console.Error.WriteLine($"Error: Unsupported shell '{shellName}'.");
-                    Console.Error.WriteLine($"Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
-                    Console.Error.WriteLine("Please specify the shell using --shell option.");
-                }
-                return 1;
+                Console.Error.WriteLine("Error: Unable to detect current shell. The SHELL environment variable is not set.");
+                Console.Error.WriteLine($"Please specify the shell using --shell option. Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.PlatformNotSupported,
+                    "SHELL environment variable is not set; cannot detect shell.");
             }
 
-            // Determine the dotnet install path
-            string installPath = _dotnetInstallPath ?? _dotnetEnvironment.GetDefaultDotnetInstallPath();
-
-            // Determine the dotnetup directory so it can be added to PATH
-            string dotnetupDir = ShellProviderHelpers.GetDotnetupDirectoryOrThrow();
-
-            // Generate the shell script
-            bool includeDotnet = !_dotnetupOnly;
-            string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet);
-
-            WriteScriptToStandardOutput(script);
-
-            return 0;
+            var shellName = Path.GetFileName(shellPath);
+            Console.Error.WriteLine($"Error: Unsupported shell '{shellName}'.");
+            Console.Error.WriteLine($"Supported shells: {string.Join(", ", ShellDetection.s_supportedShells.Select(s => s.ArgumentName))}");
+            Console.Error.WriteLine("Please specify the shell using --shell option.");
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PlatformNotSupported,
+                $"Unsupported shell '{shellName}'.");
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error generating environment script: {ex.Message}");
-            return 1;
-        }
+
+        // Determine the dotnet install path
+        string installPath = _dotnetInstallPath ?? _dotnetEnvironment.GetDefaultDotnetInstallPath();
+
+        // Determine the dotnetup directory so it can be added to PATH
+        string dotnetupDir = ShellProviderHelpers.GetDotnetupDirectoryOrThrow();
+
+        // Generate the shell script
+        bool includeDotnet = !_dotnetupOnly;
+        string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet);
+
+        WriteScriptToStandardOutput(script);
+
+        return 0;
     }
 
     internal static void WriteScriptToStandardOutput(string script)
