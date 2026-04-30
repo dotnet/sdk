@@ -234,7 +234,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="GenerateNETCompatibleDefineConstants"
           Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' or '$(TargetFrameworkIdentifier)' == '.NETFramework' or '$(TargetFrameworkIdentifier)' == '.NETStandard')" >
     <ItemGroup>
-      <_SupportedFrameworkVersions Include="@(SupportedNETCoreAppTargetFramework->'%(Identity)'->TrimStart('.NETCoreApp,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' " />
+      <_SupportedFrameworkVersions Include="@(_NETCoreAppVersionsForDefines->'%(Identity)'->TrimStart('.NETCoreApp,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' " />
       <_SupportedFrameworkVersions Include="@(SupportedNETFrameworkTargetFramework->'%(Identity)'->TrimStart('.NETFramework,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " />
       <_SupportedFrameworkVersions Include="@(SupportedNETStandardTargetFramework->'%(Identity)'->TrimStart('.NETStandard,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETStandard' " />
       <_CompatibleFrameworkVersions Include="@(_SupportedFrameworkVersions)" Condition=" $([MSBuild]::VersionLessThanOrEquals(%(Identity), $(TargetFrameworkVersion))) " />
