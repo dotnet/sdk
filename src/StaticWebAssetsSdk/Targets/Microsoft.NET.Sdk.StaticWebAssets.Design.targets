@@ -4,6 +4,7 @@
       $(CollectUpToDateCheckInputDesignTimeDependsOn);
       ResolveStaticWebAssetsConfiguration;
       ResolveProjectStaticWebAssets;
+      ResolveReferencedProjectsStaticWebAssetsConfiguration;
       CollectStaticWebAssetInputsDesignTime;
     </CollectUpToDateCheckInputDesignTimeDependsOn>
     <CollectUpToDateCheckOutputDesignTimeDependsOn>
@@ -61,6 +62,7 @@
 
     <ItemGroup>
       <UpToDateCheckOutput Include="$(StaticWebAssetBuildManifestPath)" Set="StaticWebAssets" />
+      <UpToDateCheckOutput Include="$(StaticWebAssetEndpointsBuildManifestPath)" Set="StaticWebAssets" />
     </ItemGroup>
 
   </Target>
