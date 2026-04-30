@@ -14,6 +14,11 @@
     <MicroBuild_SigningEnabled>true</MicroBuild_SigningEnabled>
   </PropertyGroup>
 
+  <!-- On macOS, SignToolTask requires PkgToolPath even when no .pkg/.app items are being signed. -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <PackageDownload Include="Microsoft.DotNet.MacOsPkg.Cli" Version="[$(MicrosoftDotNetSignToolPackageVersion)]" />
+  </ItemGroup>
+
   <Import Project="$(NuGetPackageRoot)microsoft.dotnet.signtool\$(MicrosoftDotNetSignToolVersion)\build\Microsoft.DotNet.SignTool.props" />
 
   <ItemGroup>
@@ -46,6 +51,9 @@
 
 
   <Target Name="Sign" AfterTargets="Build">
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+      <MacOSPkgCliItem Include="$(NuGetPackageRoot)microsoft.dotnet.macospkg.cli\$(MicrosoftDotNetSignToolPackageVersion)\tools\net*\any\Microsoft.Dotnet.MacOsPkg.Cli.dll" />
+    </ItemGroup>
     <Microsoft.DotNet.SignTool.SignToolTask
         DryRun="false"
         TestSign="$(TestSign)"
@@ -58,6 +66,7 @@
         DotNetPath="$(DotNetPath)"
         MicroBuildCorePath="$(NuGetPackageRoot)microsoft.visualstudioeng.microbuild.core\$(MicrosoftVisualStudioEngMicroBuildCoreVersion)"
         SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
+        PkgToolPath="@(MacOSPkgCliItem)"
         >
     </Microsoft.DotNet.SignTool.SignToolTask>
   </Target>

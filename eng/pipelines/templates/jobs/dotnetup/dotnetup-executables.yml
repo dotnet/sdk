@@ -138,6 +138,10 @@ jobs:
     # Sign macOS binaries with MacDeveloperHarden (requires MicroBuild for Mac)
     - ${{ if startsWith(parameters.rid, 'osx') }}:
       - script: |
+          ./.dotnet/dotnet restore ./src/Installer/Installer.sign.proj $(_officialBuildProperties)
+        displayName: 🍱 Restore signing project (${{ parameters.rid }})
+        retryCountOnTaskFailure: 2
+      - script: |
           PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
           DOTNETUP_PUBLISH_DIR="$PUBLISH_DIR/${{ parameters.rid }}/publish/"
           ./.dotnet/dotnet build ./src/Installer/Installer.sign.proj /t:Sign "/p:DotnetupPublishDir=$DOTNETUP_PUBLISH_DIR" /p:TargetOS=osx -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
