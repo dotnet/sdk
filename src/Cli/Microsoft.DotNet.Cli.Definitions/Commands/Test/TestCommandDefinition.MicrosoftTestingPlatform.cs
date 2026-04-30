@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.ObjectModel;
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -78,7 +78,7 @@ internal abstract partial class TestCommandDefinition
 
         public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.CreateEnvOption();
 
-        public readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.CreatePropertyOption();
+        public readonly ImplicitRestoreOptions ImplicitRestoreOptions = new(showHelp: false, useShortOptions: false);
 
         public readonly Option<bool> NoRestoreOption = CommonOptions.CreateNoRestoreOption();
 
@@ -145,7 +145,6 @@ internal abstract partial class TestCommandDefinition
             Options.Add(MaxParallelTestModulesOption);
             Options.Add(MinimumExpectedTestsOption);
             Options.Add(EnvOption);
-            Options.Add(PropertiesOption);
             Options.Add(ConfigurationOption);
             Options.Add(FrameworkOption);
             TargetPlatformOptions.AddTo(Options);
@@ -153,6 +152,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
             Options.Add(ArtifactsPathOption);
+            ImplicitRestoreOptions.AddTo(Options);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);
             Options.Add(OutputOption);
