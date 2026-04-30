@@ -87,11 +87,13 @@ internal sealed class HotReloadDotNetWatcher
             using var iterationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
             var iterationCancellationToken = iterationCancellationSource.Token;
 
+            var runningProjectsManager = new RunningProjectsManager(_context.ProcessRunner, _context.Logger);
+
             var suppressWaitForFileChange = false;
             EvaluationResult? evaluationResult = null;
             RunningProject? mainRunningProject = null;
             IRuntimeProcessLauncher? runtimeProcessLauncher = null;
-            CompilationHandler? compilationHandler = null;
+            ManagedCodeWorkspace? workspace = null;
             Action<ChangedPath>? fileChangedCallback = null;
             LoadedProjectGraph? projectGraph = null;
             BuildProjectsResult? rootProjectsBuildResult = null;
@@ -132,7 +134,7 @@ internal sealed class HotReloadDotNetWatcher
                     continue;
                 }
 
-                compilationHandler = new CompilationHandler(_context);
+                workspace = new ManagedCodeWorkspace(_context.Logger, runningProjectsManager);
 
                 // The session must start after the project is built and design time build completes,
                 // so that the EnC service can read document checksums from the PDB and the solution
@@ -141,9 +143,9 @@ internal sealed class HotReloadDotNetWatcher
                 // Starting the session hydrates the contents of solution documents from disk.
                 // Session must be started before we start accepting file changes to avoid race condition
                 // when the EnC session hydrates solution documents with their file content after the changes have already been observed.
-                await compilationHandler.StartSessionAsync(evaluationResult.ProjectGraph.Graph, iterationCancellationToken);
+                await workspace.StartSessionAsync(evaluationResult.ProjectGraph.Graph, iterationCancellationToken);
 
-                var projectLauncher = new ProjectLauncher(_context, projectGraph, compilationHandler, iteration);
+                var projectLauncher = new ProjectLauncher(_context, projectGraph, runningProjectsManager, iteration);
 
                 var runtimeProcessLauncherFactory = _runtimeProcessLauncherFactory;
 
@@ -248,13 +250,19 @@ internal sealed class HotReloadDotNetWatcher
                     }
                     while (changedFiles is []);
 
-                    var updates = new HotReloadProjectUpdatesBuilder();
+                    var updatesBuilder = new ProjectUpdatesBuilder()
+                    {
+                        Logger = _context.Logger,
+                        HotReloadService = workspace.HotReloadService,
+                        ManagedCodeSnapshot = workspace.CurrentSnapshot,
+                        RunningProjects = runningProjectsManager.CurrentRunningProjects
+                    };
+
                     var stopwatch = Stopwatch.StartNew();
 
-                    await compilationHandler.GetStaticAssetUpdatesAsync(updates, changedFiles, evaluationResult, stopwatch, iterationCancellationToken);
+                    await updatesBuilder.AddStaticAssetUpdatesAsync(changedFiles, evaluationResult, stopwatch, iterationCancellationToken);
 
-                    await compilationHandler.GetManagedCodeUpdatesAsync(
-                        updates,
+                    await updatesBuilder.AddManagedCodeUpdatesAsync(
                         restartPrompt: async (projectNames, cancellationToken) =>
                         {
                             // stop before waiting for user input:
@@ -266,22 +274,27 @@ internal sealed class HotReloadDotNetWatcher
                         autoRestart: _context.Options.NonInteractive || _rudeEditRestartPrompt?.AutoRestartPreference is true,
                         iterationCancellationToken);
 
+                    if (updatesBuilder.ProjectsToRestart is not [])
+                    {
+                        await runningProjectsManager.TerminatePeripheralProcessesAsync(updatesBuilder.ProjectsToRestart, iterationCancellationToken);
+                    }
+
                     // Terminate root process if it had rude edits or is non-reloadable.
-                    if (updates.ProjectsToRestart.Any(static project => project.Options.IsMainProject))
+                    if (updatesBuilder.ProjectsToRestart.Any(static project => project.Options.IsMainProject))
                     {
                         Debug.Assert(mainRunningProject != null);
                         mainRunningProject.InitiateRestart();
                         break;
                     }
 
-                    if (updates.ProjectsToRebuild is not [])
+                    if (updatesBuilder.ProjectsToRebuild is not [])
                     {
                         while (true)
                         {
                             iterationCancellationToken.ThrowIfCancellationRequested();
 
                             var result = await BuildProjectsAsync(
-                                [.. updates.ProjectsToRebuild.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath)],
+                                [.. updatesBuilder.ProjectsToRebuild.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath)],
                                 fileWatcher,
                                 mainProjectOptions,
                                 frameworkSelector: null,
@@ -301,24 +314,24 @@ internal sealed class HotReloadDotNetWatcher
 
                         // Changes made since last snapshot of the accumulator shouldn't be included in next Hot Reload update.
                         // Apply them to the workspace.
-                        _ = await CaptureChangedFilesSnapshot(updates.ProjectsToRebuild);
+                        _ = await CaptureChangedFilesSnapshot(updatesBuilder.ProjectsToRebuild);
 
-                        _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, updates.ProjectsToRebuild.Count);
+                        _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, updatesBuilder.ProjectsToRebuild.Count);
                     }
 
                     // Deploy dependencies after rebuilding and before restarting.
-                    if (updates.ProjectsToRedeploy is not [])
+                    if (updatesBuilder.ProjectsToRedeploy is not [])
                     {
-                        await DeployProjectDependenciesAsync(evaluationResult, updates.ProjectsToRedeploy, iterationCancellationToken);
-                        _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, updates.ProjectsToRedeploy.Count);
+                        await DeployProjectDependenciesAsync(evaluationResult, updatesBuilder.ProjectsToRedeploy, iterationCancellationToken);
+                        _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, updatesBuilder.ProjectsToRedeploy.Count);
                     }
 
                     // Apply updates only after dependencies have been deployed,
                     // so that updated code doesn't attempt to access the dependency before it has been deployed.
-                    await compilationHandler.ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(updates.ManagedCodeUpdates, updates.StaticAssetsToUpdate, changedFiles, evaluationResult.ProjectGraph, stopwatch, iterationCancellationToken);
-                    if (updates.ProjectsToRestart is not [])
+                    await runningProjectsManager.ApplyManagedCodeAndStaticAssetUpdatesAndRelaunchAsync(updatesBuilder, changedFiles, evaluationResult.ProjectGraph, stopwatch, iterationCancellationToken);
+                    if (updatesBuilder.ProjectsToRestart is not [])
                     {
-                        await compilationHandler.RestartPeripheralProjectsAsync(updates.ProjectsToRestart, shutdownCancellationToken);
+                        await runningProjectsManager.RestartPeripheralProjectsAsync(updatesBuilder.ProjectsToRestart, shutdownCancellationToken);
                     }
 
                     async Task<ImmutableArray<ChangedFile>> CaptureChangedFilesSnapshot(IReadOnlyList<string> rebuiltProjects)
@@ -391,7 +404,7 @@ internal sealed class HotReloadDotNetWatcher
                             // additional files/directories may have been added:
                             evaluationResult.WatchFileItems(fileWatcher);
 
-                            await compilationHandler.UpdateProjectGraphAsync(evaluationResult.ProjectGraph.Graph, iterationCancellationToken);
+                            await workspace.UpdateProjectGraphAsync(evaluationResult.ProjectGraph.Graph, iterationCancellationToken);
 
                             if (shutdownCancellationToken.IsCancellationRequested)
                             {
@@ -443,7 +456,7 @@ internal sealed class HotReloadDotNetWatcher
                         {
                             // Update the workspace to reflect changes in the file content:.
                             // If the project was re-evaluated the Roslyn solution is already up to date.
-                            await compilationHandler.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
+                            await workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
                         }
 
                         return [.. changedFiles];
@@ -473,11 +486,10 @@ internal sealed class HotReloadDotNetWatcher
                     await runtimeProcessLauncher.DisposeAsync();
                 }
 
-                if (compilationHandler != null)
-                {
-                    // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
-                    await compilationHandler.TerminatePeripheralProcessesAndDispose(CancellationToken.None);
-                }
+                // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
+                await runningProjectsManager.TerminatePeripheralProcesses(CancellationToken.None);
+
+                workspace?.Dispose();
 
                 if (mainRunningProject != null)
                 {

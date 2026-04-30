@@ -22,8 +22,8 @@ public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
 
         App.Start(testAsset, []);
 
-        await App.WaitForOutputLineContaining("Started");
-        await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains("Started");
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // Verify the app is detected as requiring WebSocket transport with a dynamically assigned port
         await App.WaitUntilOutputContains(MessageDescriptor.ApplicationKind_WebSockets);
