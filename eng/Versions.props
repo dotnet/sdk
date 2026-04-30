@@ -7,7 +7,7 @@
     <VersionMajor>10</VersionMajor>
     <VersionMinor>0</VersionMinor>
     <VersionSDKMinor>1</VersionSDKMinor>
-    <VersionSDKMinorPatch>7</VersionSDKMinorPatch>
+    <VersionSDKMinorPatch>8</VersionSDKMinorPatch>
     <VersionFeature>$([System.String]::Copy('$(VersionSDKMinorPatch)').PadLeft(2, '0'))</VersionFeature>
     <!-- This property powers the SdkAnalysisLevel property in end-user MSBuild code.
          It should always be the hundreds-value of the current SDK version, never any
@@ -145,8 +145,8 @@
     
     <!--
       Updates to any of these versions will require the updating of that package version in the
-      source-build-reference-packages repo as a text-only package.
-      See https://github.com/dotnet/source-build-reference-packages?tab=readme-ov-file#text-only
+      source-build-assets repo as a text-only package.
+      See https://github.com/dotnet/source-build-assets?tab=readme-ov-file#text-only
     -->
     <MauiWorkloadManifestVersion>10.0.0</MauiWorkloadManifestVersion>
     <XamarinAndroidWorkloadManifestVersion>36.1.2</XamarinAndroidWorkloadManifestVersion>
