@@ -22,6 +22,11 @@
         <target state="translated">Wersja {0} zestawu .NET SDK wymaga co najmniej wersji {1} platformy MSBuild. Obecnie dostępna wersja platformy MSBuild to {2}. Zmień zestaw .NET SDK określony w pliku global.json na starszą wersję, która wymaga aktualnie dostępnej wersji platformy MSBuild.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MSBuildSmallerThanMinimumVersionWithGlobalJsonRollforward">
+        <source>Version {0} of the .NET SDK requires at least version {1} of MSBuild. The current available version of MSBuild is {2}. The .NET SDK {0} was automatically selected via the rollforward policy applied to version '{3}' as specified in global.json ('{4}'). Consider changing the rollForward setting in global.json to prevent automatically selecting a .NET SDK version that is incompatible with the installed MSBuild.</source>
+        <target state="new">Version {0} of the .NET SDK requires at least version {1} of MSBuild. The current available version of MSBuild is {2}. The .NET SDK {0} was automatically selected via the rollforward policy applied to version '{3}' as specified in global.json ('{4}'). Consider changing the rollForward setting in global.json to prevent automatically selecting a .NET SDK version that is incompatible with the installed MSBuild.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NETCoreSDKSmallerThanMinimumRequestedVersion">
         <source>Version {0} of the .NET SDK is smaller than the minimum version {1} requested. Check that a recent enough .NET SDK is installed, increase the minimum version specified in the project, or increase the version specified in global.json.</source>
         <target state="translated">Wersja {0} zestawu .NET SDK jest starsza niż żądana wersja minimalna {1}. Sprawdź, czy zainstalowano wystarczająco aktualny zestaw .NET SDK, zwiększ wersję minimalną określoną w projekcie lub zwiększ wersję określoną w pliku global.json.</target>
@@ -30,6 +35,11 @@
       <trans-unit id="NETCoreSDKSmallerThanMinimumVersionRequiredByVisualStudio">
         <source>Version {0} of the .NET SDK is smaller than the minimum version {1} required by Visual Studio. Check that a recent enough .NET SDK is installed or increase the version specified in global.json.</source>
         <target state="translated">Wersja {0} zestawu .NET SDK jest starsza niż minimalna wersja {1} wymagana przez program Visual Studio. Sprawdź, czy zainstalowano wystarczająco aktualny zestaw .NET SDK lub zwiększ wersję określoną w pliku global.json.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NETCoreSDKSmallerThanMinimumVersionRequiredByVisualStudioWithGlobalJsonRollforward">
+        <source>Version {0} of the .NET SDK is smaller than the minimum version {1} required by Visual Studio. The .NET SDK {0} was automatically selected via the rollforward policy applied to version '{2}' as specified in global.json ('{3}'). Consider changing the rollForward setting in global.json to prevent automatically selecting a .NET SDK version that is incompatible with the installed version of Visual Studio.</source>
+        <target state="new">Version {0} of the .NET SDK is smaller than the minimum version {1} required by Visual Studio. The .NET SDK {0} was automatically selected via the rollforward policy applied to version '{2}' as specified in global.json ('{3}'). Consider changing the rollForward setting in global.json to prevent automatically selecting a .NET SDK version that is incompatible with the installed version of Visual Studio.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocateNETCoreSdk">

@@ -138,4 +138,10 @@
   <data name="GlobalJsonResolutionFailedSpecificVersion" xml:space="preserve">
     <value>Unable to locate the .NET SDK version '{0}' as specified by global.json, please check that the specified version is installed.</value>
   </data>
+  <data name="MSBuildSmallerThanMinimumVersionWithGlobalJsonRollforward" xml:space="preserve">
+    <value>Version {0} of the .NET SDK requires at least version {1} of MSBuild. The current available version of MSBuild is {2}. The .NET SDK {0} was automatically selected via the rollforward policy applied to version '{3}' as specified in global.json ('{4}'). Consider changing the rollForward setting in global.json to prevent automatically selecting a .NET SDK version that is incompatible with the installed MSBuild.</value>
+  </data>
+  <data name="NETCoreSDKSmallerThanMinimumVersionRequiredByVisualStudioWithGlobalJsonRollforward" xml:space="preserve">
+    <value>Version {0} of the .NET SDK is smaller than the minimum version {1} required by Visual Studio. The .NET SDK {0} was automatically selected via the rollforward policy applied to version '{2}' as specified in global.json ('{3}'). Consider changing the rollForward setting in global.json to prevent automatically selecting a .NET SDK version that is incompatible with the installed version of Visual Studio.</value>
+  </data>
 </root>

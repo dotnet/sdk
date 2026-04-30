@@ -212,6 +212,20 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 Version minimumMSBuildVersion = _netCoreSdkResolver.GetMinimumMSBuildVersion(resolverResult.ResolvedSdkDirectory);
                 if (context.MSBuildVersion < minimumMSBuildVersion)
                 {
+                    if (IsGlobalJsonRollforward(resolverResult, netcoreSdkVersion))
+                    {
+                        return Failure(
+                            factory,
+                            logger,
+                            context.Logger,
+                            Strings.MSBuildSmallerThanMinimumVersionWithGlobalJsonRollforward,
+                            netcoreSdkVersion,
+                            minimumMSBuildVersion,
+                            context.MSBuildVersion,
+                            resolverResult.RequestedVersion,
+                            resolverResult.GlobalJsonPath);
+                    }
+
                     return Failure(
                         factory,
                         logger,
@@ -225,6 +239,19 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 string minimumVSDefinedSDKVersion = GetMinimumVSDefinedSDKVersion();
                 if (IsNetCoreSDKSmallerThanTheMinimumVersion(netcoreSdkVersion, minimumVSDefinedSDKVersion))
                 {
+                    if (IsGlobalJsonRollforward(resolverResult, netcoreSdkVersion))
+                    {
+                        return Failure(
+                            factory,
+                            logger,
+                            context.Logger,
+                            Strings.NETCoreSDKSmallerThanMinimumVersionRequiredByVisualStudioWithGlobalJsonRollforward,
+                            netcoreSdkVersion,
+                            minimumVSDefinedSDKVersion,
+                            resolverResult.RequestedVersion,
+                            resolverResult.GlobalJsonPath);
+                    }
+
                     return Failure(
                         factory,
                         logger,
@@ -443,6 +470,13 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             return File.ReadLines(minimumVSDefinedSdkVersionFilePath).First().Trim();
+        }
+
+        private static bool IsGlobalJsonRollforward(SdkResolutionResult resolverResult, string? netcoreSdkVersion)
+        {
+            return !string.IsNullOrEmpty(resolverResult.GlobalJsonPath)
+                && !string.IsNullOrEmpty(resolverResult.RequestedVersion)
+                && !string.Equals(resolverResult.RequestedVersion, netcoreSdkVersion, StringComparison.Ordinal);
         }
 
         private bool IsNetCoreSDKSmallerThanTheMinimumVersion(string? netcoreSdkVersion, string minimumVersion)
