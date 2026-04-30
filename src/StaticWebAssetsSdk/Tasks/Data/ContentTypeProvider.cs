@@ -404,7 +404,9 @@ internal sealed class ContentTypeProvider
 
     private readonly Dictionary<string, ContentTypeMapping> _customMappings;
 
-    public ContentTypeProvider(ContentTypeMapping[] customMappings)
+    private readonly string[] _compressedExtensions;
+
+    internal ContentTypeProvider(ContentTypeMapping[] customMappings, string[] compressedExtensions = null)
     {
         _customMappings ??= [];
         foreach (var mapping in customMappings)
@@ -412,15 +414,16 @@ internal sealed class ContentTypeProvider
             _customMappings[mapping.Pattern] = mapping;
         }
 
+        _compressedExtensions = compressedExtensions ?? [".gz", ".br"];
+
         _matcher = new StaticWebAssetGlobMatcherBuilder()
             .AddIncludePatternsList(_builtInMappings.Keys)
             .AddIncludePatternsList(_customMappings.Keys)
             .Build();
     }
 
-    // First we strip any compressed extension (e.g. .gz, .br) from the file name
-    // and then we try to match the file name with the existing mappings.
-    // If we don't find a match, we fallback to trying the entire file name.
+    // Strip any known compressed extension (e.g. .gz, .br, .zst, .dcz) from the file name
+    // and then try to match with existing mappings. Fall back to the full file name.
     internal ContentTypeMapping ResolveContentTypeMapping(StaticWebAssetGlobMatcher.MatchContext context, TaskLoggingHelper log)
     {
 #if NET9_0_OR_GREATER
@@ -431,7 +434,7 @@ internal sealed class ContentTypeProvider
         var relativePath = context.PathString;
         var fileName = Path.GetFileName(relativePath);
 #endif
-        var fileNameNoCompressionExt = ResolvePathWithoutCompressedExtension(fileName, out var hasCompressedExtension);
+        var fileNameNoCompressionExt = ResolvePathWithoutCompressedExtension(fileName, _compressedExtensions, out var hasCompressedExtension);
 
         context.SetPathAndReinitialize(fileNameNoCompressionExt);
         if (TryGetMapping(context, log, relativePath, out var mapping))
@@ -441,7 +444,7 @@ internal sealed class ContentTypeProvider
         else if (hasCompressedExtension)
         {
             context.SetPathAndReinitialize(fileName);
-            if (hasCompressedExtension && TryGetMapping(context, log, relativePath, out mapping))
+            if (TryGetMapping(context, log, relativePath, out mapping))
             {
                 return mapping;
             }
@@ -475,13 +478,22 @@ internal sealed class ContentTypeProvider
     }
 
 #if NET9_0_OR_GREATER
-    private static ReadOnlySpan<char> ResolvePathWithoutCompressedExtension(ReadOnlySpan<char> fileName, out bool hasCompressedExtension)
+    private static ReadOnlySpan<char> ResolvePathWithoutCompressedExtension(ReadOnlySpan<char> fileName, string[] compressedExtensions, out bool hasCompressedExtension)
 #else
-    private static string ResolvePathWithoutCompressedExtension(string fileName, out bool hasCompressedExtension)
+    private static string ResolvePathWithoutCompressedExtension(string fileName, string[] compressedExtensions, out bool hasCompressedExtension)
 #endif
     {
         var extension = Path.GetExtension(fileName);
-        hasCompressedExtension = extension.Equals(".gz", StringComparison.OrdinalIgnoreCase) || extension.Equals(".br", StringComparison.OrdinalIgnoreCase);
+        hasCompressedExtension = false;
+        foreach (var compressedExt in compressedExtensions)
+        {
+            if (extension.Equals(compressedExt, StringComparison.OrdinalIgnoreCase))
+            {
+                hasCompressedExtension = true;
+                break;
+            }
+        }
+
         if (hasCompressedExtension)
         {
             var fileNameNoExtension = Path.GetFileNameWithoutExtension(fileName);

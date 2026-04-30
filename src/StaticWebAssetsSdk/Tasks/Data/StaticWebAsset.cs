@@ -1444,6 +1444,12 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return pattern.ComputePatternLabel();
     }
 
+    public string ComputeMatchPattern(string pathWithTokens)
+    {
+        var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
+        return pattern.ComputeMatchPattern();
+    }
+
     public override string ToString() =>
         $"Identity: {Identity}, " +
         $"SourceType: {SourceType}, " +

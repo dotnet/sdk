@@ -1,0 +1,152 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+public class ZstdCompress : ToolTask
+{
+    private string _dotnetPath;
+
+    [Required]
+    public ITaskItem[] FilesToCompress { get; set; }
+
+    public string CompressionLevel { get; set; }
+
+    [Required]
+    public string ToolAssembly { get; set; }
+
+    protected override string ToolName => Path.GetFileName(DotNetPath);
+
+    private string DotNetPath
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(_dotnetPath))
+            {
+                return _dotnetPath;
+            }
+
+            // Prefer ToolPath/ToolExe set by the targets; fall back to DOTNET_HOST_PATH.
+            if (!string.IsNullOrEmpty(ToolPath) && !string.IsNullOrEmpty(ToolExe))
+            {
+                _dotnetPath = Path.Combine(ToolPath, ToolExe);
+                return _dotnetPath;
+            }
+
+            _dotnetPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+            if (string.IsNullOrEmpty(_dotnetPath))
+            {
+                throw new InvalidOperationException("DOTNET_HOST_PATH is not set");
+            }
+
+            return _dotnetPath;
+        }
+    }
+
+    private static string Quote(string path)
+    {
+#if NET9_0_OR_GREATER
+        if (string.IsNullOrEmpty(path) || (path[0] == '\"' && path[^1] == '\"'))
+#else
+        if (string.IsNullOrEmpty(path) || (path[0] == '\"' && path[path.Length - 1] == '\"'))
+#endif
+        {
+            // it's already quoted
+            return path;
+        }
+
+        return $"\"{path}\"";
+    }
+
+    protected override string GenerateCommandLineCommands() => Quote(ToolAssembly);
+
+    protected override string GenerateResponseFileCommands()
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine("zstd");
+
+        if (!string.IsNullOrEmpty(CompressionLevel))
+        {
+            builder.AppendLine("-c");
+            builder.AppendLine(CompressionLevel);
+        }
+
+        var outputDirectories = FilesToCompress
+            .Select(f => Path.GetDirectoryName(f.ItemSpec))
+            .Where(td => !string.IsNullOrWhiteSpace(td))
+            .Distinct();
+
+        foreach (var outputDirectory in outputDirectories)
+        {
+            Directory.CreateDirectory(outputDirectory);
+            Log.LogMessage(MessageImportance.Low, "Created directory '{0}'.", outputDirectory);
+        }
+
+        for (var i = 0; i < FilesToCompress.Length; i++)
+        {
+            var file = FilesToCompress[i];
+            var outputRelativePath = file.ItemSpec;
+            var outputFullPath = Path.GetFullPath(outputRelativePath);
+
+            if (!AssetToCompress.TryFindInputFilePath(file, Log, out var inputFullPath))
+            {
+                continue;
+            }
+
+            if (!File.Exists(outputRelativePath))
+            {
+                Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because compressed file '{1}' does not exist.", inputFullPath, outputRelativePath);
+            }
+            else if (File.GetLastWriteTimeUtc(inputFullPath) >= File.GetLastWriteTimeUtc(outputRelativePath))
+            {
+                Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because file is newer than '{1}'.", inputFullPath, outputRelativePath);
+            }
+            else if (IsDictionaryNewer(file, outputRelativePath))
+            {
+                var dictionaryPath = file.GetMetadata("DictionaryPath");
+                Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because dictionary '{1}' is newer than '{2}'.", inputFullPath, dictionaryPath, outputRelativePath);
+            }
+            else
+            {
+                Log.LogMessage(MessageImportance.Low, "Skipping '{0}' because '{1}' is newer than '{2}'.", inputFullPath, outputRelativePath, inputFullPath);
+                continue;
+            }
+
+            builder.AppendLine("-s");
+            builder.AppendLine(Quote(inputFullPath));
+
+            builder.AppendLine("-o");
+            builder.AppendLine(Quote(outputFullPath));
+
+            var dictPath = file.GetMetadata("DictionaryPath");
+            builder.AppendLine("-d");
+            if (!string.IsNullOrEmpty(dictPath))
+            {
+                builder.AppendLine(Quote(Path.GetFullPath(dictPath)));
+            }
+            else
+            {
+                builder.AppendLine("\"\"");
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool IsDictionaryNewer(ITaskItem file, string outputPath)
+    {
+        var dictionaryPath = file.GetMetadata("DictionaryPath");
+        return !string.IsNullOrEmpty(dictionaryPath) &&
+               File.Exists(dictionaryPath) &&
+               File.GetLastWriteTimeUtc(dictionaryPath) >= File.GetLastWriteTimeUtc(outputPath);
+    }
+
+    protected override string GenerateFullPathToTool() => DotNetPath;
+}
