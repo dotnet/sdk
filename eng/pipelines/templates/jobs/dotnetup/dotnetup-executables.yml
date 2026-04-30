@@ -154,6 +154,8 @@ jobs:
           DOTNETUP_PUBLISH_DIR="$PUBLISH_DIR/${{ parameters.rid }}/publish/"
           ./.dotnet/dotnet build ./src/Installer/Installer.sign.proj /t:Sign "/p:DotnetupPublishDir=$DOTNETUP_PUBLISH_DIR" /p:TargetOS=osx -bl:$(Build.SourcesDirectory)/artifacts/binlogs/dotnetup-sign-${{ parameters.rid }}.binlog $(_officialBuildProperties)
         displayName: 🖋️ Sign dotnetup executable (${{ parameters.rid }})
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
       - script: |
           PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
           codesign --verify --deep --strict "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup"
