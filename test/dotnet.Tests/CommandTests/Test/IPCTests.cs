@@ -29,7 +29,7 @@ public class IPCTests
                     {
                         var singleConnectionNamedPipeServer = new NamedPipeServer(
                             pipeName,
-                            (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
+                            (_, _) => VoidResponse.CachedInstance,
                             maxNumberOfServerInstances: 1,
                             cancellationToken,
                             skipUnknownMessages: false);
@@ -103,7 +103,7 @@ public class IPCTests
             (_, request) =>
             {
                 receivedMessages.Enqueue((BaseMessage)request);
-                return Task.FromResult<IResponse>(VoidResponse.CachedInstance);
+                return VoidResponse.CachedInstance;
             },
             NamedPipeServerStream.MaxAllowedServerInstances,
             cancellationToken,
@@ -164,7 +164,7 @@ public class IPCTests
         {
             pipes.Add(new NamedPipeServer(
                 pipeName,
-                (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
+                (_, _) => VoidResponse.CachedInstance,
                 maxNumberOfServerInstances: 3,
                 cancellationToken,
                 skipUnknownMessages: false));
@@ -173,7 +173,7 @@ public class IPCTests
         IOException exception = Assert.Throws<IOException>(() =>
              new NamedPipeServer(
                 pipeName,
-                (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
+                (_, _) => VoidResponse.CachedInstance,
                 maxNumberOfServerInstances: 3,
                 cancellationToken,
                 skipUnknownMessages: false));

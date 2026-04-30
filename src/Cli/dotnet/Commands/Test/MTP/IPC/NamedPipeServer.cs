@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO.Pipes;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
@@ -13,7 +10,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
 {
     private static bool IsUnix => Path.DirectorySeparatorChar == '/';
 
-    private readonly Func<NamedPipeServer, IRequest, Task<IResponse>> _callback;
+    private readonly Func<NamedPipeServer, IRequest, IResponse> _callback;
     private readonly NamedPipeServerStream _namedPipeServerStream;
     private readonly CancellationToken _cancellationToken;
     private readonly MemoryStream _serializationBuffer = new();
@@ -26,7 +23,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
 
     public NamedPipeServer(
         string pipeName,
-        Func<NamedPipeServer, IRequest, Task<IResponse>> callback,
+        Func<NamedPipeServer, IRequest, IResponse> callback,
         int maxNumberOfServerInstances,
         CancellationToken cancellationToken,
         bool skipUnknownMessages)
@@ -51,19 +48,26 @@ internal sealed class NamedPipeServer : NamedPipeBase
     {
         await _namedPipeServerStream.WaitForConnectionAsync(cancellationToken);
         WasConnected = true;
-        _loopTask = Task.Run(
-            async () =>
+        _loopTask = Task.Factory.StartNew(
+            () =>
             {
                 try
                 {
-                    await InternalLoopAsync(_cancellationToken);
+                    // This is intentionally not running on thread pool and is not async (to avoid getting back to TP unintentionally)
+                    // Running this on ThreadPool is problematic as it means we might end up keep TP threads busy doing synchronous
+                    // I/O work (via TerminalTestReporter to write to console, or via PipeStream.WriteAsync which appears to block on kernel WriteFile)
+                    // which reduces the ability for TP to take more important work like starting new test applications.
+                    // So, we intentionally run this on a dedicated thread and run synchronously.
+                    // It also goes the other way around. If many TP threads are busy with lock contention in Process.Start,
+                    // we want to still be able to process messages received from the MTP test apps.
+                    InternalLoop(_cancellationToken);
                 }
                 catch (OperationCanceledException ex) when (ex.CancellationToken == _cancellationToken)
                 {
                     // We are being cancelled, so we don't need to wait anymore
                     return;
                 }
-            }, cancellationToken);
+            }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
     }
 
     /// <summary>
@@ -72,7 +76,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
     /// 4 bytes = serializer id
     /// x bytes = object buffer.
     /// </summary>
-    private async Task InternalLoopAsync(CancellationToken cancellationToken)
+    private void InternalLoop(CancellationToken cancellationToken)
     {
         // This is an indicator when reading from the pipe whether we are at the start of a new message (i.e, we should read 4 bytes as message size)
         // Note that the implementation assumes no overlapping messages in the pipe.
@@ -88,8 +92,8 @@ internal sealed class NamedPipeServer : NamedPipeBase
         {
             // If we are at the start of a new message, we need to read at least the message size.
             int currentReadBytes = isStartOfNewMessage
-                ? await _namedPipeServerStream.ReadAtLeastAsync(_readBuffer, minimumBytes: sizeof(int), throwOnEndOfStream: false, cancellationToken)
-                : await _namedPipeServerStream.ReadAsync(_readBuffer, cancellationToken);
+                ? _namedPipeServerStream.ReadAtLeast(_readBuffer, minimumBytes: sizeof(int), throwOnEndOfStream: false)
+                : _namedPipeServerStream.Read(_readBuffer);
 
             if (currentReadBytes == 0 || (isStartOfNewMessage && currentReadBytes < sizeof(int)))
             {
@@ -121,7 +125,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
             if (remainingBytesToProcess.Length > 0)
             {
                 // We need to read the rest of the message
-                await _messageBuffer.WriteAsync(remainingBytesToProcess, cancellationToken);
+                _messageBuffer.Write(remainingBytesToProcess.Span);
                 remainingBytesToReadOfWholeMessage -= remainingBytesToProcess.Length;
 
                 // At this point, we have read everything in the remainingBytesToProcess.
@@ -152,7 +156,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 var deserializedObject = (IRequest)requestNamedPipeSerializer.Deserialize(_messageBuffer);
 
                 // Call the callback
-                IResponse response = await _callback(this, deserializedObject);
+                IResponse response = _callback(this, deserializedObject);
 
                 // Write the message size
                 _messageBuffer.Position = 0;
@@ -177,7 +181,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
                     throw new UnreachableException();
                 }
 
-                await _messageBuffer.WriteAsync(bytes, cancellationToken);
+                _messageBuffer.Write(bytes);
 
                 // Write the serializer id
                 bytes = _sizeOfIntArray;
@@ -186,16 +190,16 @@ internal sealed class NamedPipeServer : NamedPipeBase
                     throw new UnreachableException();
                 }
 
-                await _messageBuffer.WriteAsync(bytes.AsMemory(0, sizeof(int)), cancellationToken);
+                _messageBuffer.Write(bytes.AsSpan(0, sizeof(int)));
 
                 // Write the message
-                await _messageBuffer.WriteAsync(_serializationBuffer.GetBuffer().AsMemory(0, (int)_serializationBuffer.Position), cancellationToken);
+                _messageBuffer.Write(_serializationBuffer.GetBuffer().AsSpan(0, (int)_serializationBuffer.Position));
 
                 // Send the message
                 try
                 {
-                    await _namedPipeServerStream.WriteAsync(_messageBuffer.GetBuffer().AsMemory(0, (int)_messageBuffer.Position), cancellationToken);
-                    await _namedPipeServerStream.FlushAsync(cancellationToken);
+                    _namedPipeServerStream.Write(_messageBuffer.GetBuffer().AsSpan(0, (int)_messageBuffer.Position));
+                    _namedPipeServerStream.Flush();
                 }
                 finally
                 {
