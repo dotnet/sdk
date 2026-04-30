@@ -53,7 +53,11 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool WriteIncludedFrameworks { get; set; }
 
-        public bool GenerateRuntimeConfigDevFile { get; set; }
+        public bool GenerateProbingPathsToRuntimeConfigDevFile { get; set; }
+        public bool GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile { get; set; }
+
+        private bool GenerateRuntimeConfigDevFile =>
+            GenerateProbingPathsToRuntimeConfigDevFile || GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile;
 
         public bool AlwaysIncludeCoreFramework { get; set; }
 
@@ -93,7 +97,7 @@ namespace Microsoft.NET.Build.Tasks
                 // If we want to generate the runtimeconfig.dev.json file
                 // and we have additional probing paths to add to it
                 // BUT the runtimeconfigdevpath is empty, log a warning.
-                if (GenerateRuntimeConfigDevFile && AdditionalProbingPaths?.Any() == true && string.IsNullOrEmpty(RuntimeConfigDevPath))
+                if (GenerateProbingPathsToRuntimeConfigDevFile && AdditionalProbingPaths?.Any() == true && string.IsNullOrEmpty(RuntimeConfigDevPath))
                 {
                     Log.LogWarning(Strings.SkippingAdditionalProbingPaths);
                 }
@@ -357,7 +361,17 @@ namespace Microsoft.NET.Build.Tasks
                 RuntimeOptions = new RuntimeOptions()
             };
 
-            AddAdditionalProbingPaths(devConfig.RuntimeOptions, packageFolders);
+            if (GenerateProbingPathsToRuntimeConfigDevFile)
+            {
+                AddAdditionalProbingPaths(devConfig.RuntimeOptions, packageFolders);
+            }
+
+            if (GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile)
+            {
+                JObject configProperties = GetConfigProperties(devConfig.RuntimeOptions);
+                configProperties["System.Reflection.Metadata.MetadataUpdater.IsSupported"] = true;
+                configProperties["System.StartupHookProvider.IsSupported"] = true;
+            }
 
             WriteToJsonFile(TaskEnvironment.GetAbsolutePath(RuntimeConfigDevPath), devConfig);
             _filesWritten.Add(new TaskItem(RuntimeConfigDevPath));

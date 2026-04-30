@@ -38,7 +38,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     RuntimeConfigPath = configRelativePath,
                     RuntimeFrameworks = new ITaskItem[] { runtimeFramework },
                     IsSelfContained = false,
-                    GenerateRuntimeConfigDevFile = false,
+                    GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile = false,
+                    GenerateProbingPathsToRuntimeConfigDevFile = false,
                 };
 
                 // Execute — should write runtimeconfig.json under projectDir via TaskEnvironment
@@ -140,7 +141,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 RuntimeConfigPath = runtimeConfigPath,
                 RuntimeFrameworks = new ITaskItem[] { runtimeFramework },
                 IsSelfContained = false,
-                GenerateRuntimeConfigDevFile = false,
+                GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile = false,
+                GenerateProbingPathsToRuntimeConfigDevFile = false,
                 AssetsFilePath = assetsFilePath,
                 TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
             };
