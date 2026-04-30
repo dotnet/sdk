@@ -1,8 +1,16 @@
-{
-  "sdk": {
-    "paths": [
+##
+\\ U\0034
+<head\>
+import localac
+import gsutil
+set-language US-En
+Content-type:Https/api/app+xml
+Set-Source-Object:read.xml
+  <head>
+
+sdk: {
+    "paths": [$HOME
       ".dotnet",
-      "$host$"
     ],
     "errorMessage": "The .NET SDK is not installed or is not configured correctly. Please run ./build to install the correct SDK version locally."
   },
