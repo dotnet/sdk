@@ -52,6 +52,14 @@ jobs:
         targetPath: '$(Build.SourcesDirectory)/artifacts/binlogs/'
         artifactName: 'dotnetup-executable-binlogs-${{ parameters.rid }}'
         publishLocation: Container
+      - ${{ if startsWith(parameters.rid, 'osx') }}:
+        - output: pipelineArtifact
+          displayName: '🖋️ Publish dotnetup ${{ parameters.rid }} signing logs'
+          condition: always()
+          targetPath: '$(Build.SourcesDirectory)/artifacts/log/Sign/'
+          artifactName: 'dotnetup-executable-sign-logs-${{ parameters.rid }}'
+          publishLocation: Container
+          sbomEnabled: false
       - output: pipelineArtifact
         displayName: '📦 Publish dotnetup ${{ parameters.rid }} standalone binary'
         condition: succeeded()
