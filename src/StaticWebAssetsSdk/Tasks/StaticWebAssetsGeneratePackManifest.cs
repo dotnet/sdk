@@ -27,8 +27,6 @@ public class StaticWebAssetsGeneratePackManifest : Task
     [Required]
     public ITaskItem[] AdditionalPackageFiles { get; set; }
 
-    public ITaskItem[] AdditionalElementsToRemoveFromPacking { get; set; } = [];
-
     [Required]
     public string ManifestPath { get; set; }
 
@@ -65,8 +63,7 @@ public class StaticWebAssetsGeneratePackManifest : Task
 
         var manifest = new StaticWebAssetsPackManifest
         {
-            Files = [.. packageFiles],
-            ElementsToRemove = [.. AdditionalElementsToRemoveFromPacking.Select(e => e.ItemSpec).OrderBy(id => id)]
+            Files = [.. packageFiles]
         };
 
         PersistManifest(manifest);
@@ -118,7 +115,5 @@ public class StaticWebAssetsGeneratePackManifest : Task
     private sealed class StaticWebAssetsPackManifest
     {
         public StaticWebAssetPackageFile[] Files { get; set; }
-
-        public string[] ElementsToRemove { get; set; }
     }
 }

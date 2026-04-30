@@ -93,29 +93,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">6.0</_RazorLangVersion>
       </PropertyGroup>
     </When>
-    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">
-      <PropertyGroup>
-        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
-        <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
-        <_RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">5.0</_RazorLangVersion>
-      </PropertyGroup>
-    </When>
-    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')) ">
-      <PropertyGroup>
-        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
-        <_RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">3.0</_RazorLangVersion>
-      </PropertyGroup>
-    </When>
-    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '2.1')) ">
-      <PropertyGroup>
-        <_TargetingNETStandard21OrLater>true</_TargetingNETStandard21OrLater>
-      </PropertyGroup>
-    </When>
-    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '2.0')) ">
-      <PropertyGroup>
-        <_TargetingNETStandard20OrLater>true</_TargetingNETStandard20OrLater>
-      </PropertyGroup>
-    </When>
   </Choose>
 
   <PropertyGroup>
@@ -139,17 +116,15 @@ Copyright (c) .NET Foundation. All rights reserved.
         applications and RazorLangVersion 3 or above. -->
     <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</StaticWebAssetsEnabled>
 
-    <UseStaticWebAssetsV2>$(_TargetingNET60OrLater)</UseStaticWebAssetsV2>
-
-    <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net5.0 applications and RazorLangVersion 5 or above -->
-    <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_TargetingNET50OrLater)</ScopedCssEnabled>
+    <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net6.0 applications and above -->
+    <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_TargetingNET60OrLater)</ScopedCssEnabled>
 
     <JSModulesEnabled Condition="'$(JSModulesEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_TargetingNET60OrLater)</JSModulesEnabled>
 
     <CompressionEnabled Condition="'$(CompressionEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_TargetingNET60OrLater)</CompressionEnabled>
   </PropertyGroup>
 
-  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.SingleTargeting.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true' And '$(IsCrossTargetingBuild)' != 'true'" />
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true' And '$(IsCrossTargetingBuild)' != 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.CrossTargeting.targets" Condition="'$(IsCrossTargetingBuild)' == 'true'" />
 
