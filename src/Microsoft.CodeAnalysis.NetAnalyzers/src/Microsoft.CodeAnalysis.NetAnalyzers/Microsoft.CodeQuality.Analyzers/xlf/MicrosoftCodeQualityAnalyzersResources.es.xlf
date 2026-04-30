@@ -357,6 +357,11 @@
         <target state="translated">Los marcadores de posición con nombre no deben ser valores numéricos</target>
         <note />
       </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesCodeFixTitle">
+        <source>Generate strongly-typed logging method</source>
+        <target state="new">Generate strongly-typed logging method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
         <source>For improved performance, use the LoggerMessage delegates.</source>
         <target state="translated">Para mejorar el rendimiento, use los delegados LoggerMessage.</target>
