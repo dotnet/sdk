@@ -43,31 +43,8 @@ public class CollectStaticWebAssetsToCopy : Task
                 {
                     // We have an asset we want to copy to the output folder.
                     fileOutputPath = Path.Combine(normalizedOutputPath, asset.ComputeTargetPath("", Path.DirectorySeparatorChar, StaticWebAssetTokenResolver.Instance));
-                    string source = null;
-                    if (asset.IsComputed())
-                    {
-                        if (asset.Identity.StartsWith(normalizedOutputPath, StringComparison.Ordinal))
-                        {
-                            Log.LogMessage(MessageImportance.Low, "Source for asset '{0}' is '{1}' since the identity points to the output path.", asset.Identity, asset.OriginalItemSpec);
-                            source = asset.OriginalItemSpec;
-                        }
-                        else if (File.Exists(asset.Identity))
-                        {
-                            Log.LogMessage(MessageImportance.Low, "Source for asset '{0}' is '{0}' since the asset exists.", asset.Identity);
-                            source = asset.Identity;
-                        }
-                        else
-                        {
-                            Log.LogMessage(MessageImportance.Low, "Source for asset '{0}' is '{1}' since the asset does not exist.", asset.Identity, asset.OriginalItemSpec);
-                            source = asset.OriginalItemSpec;
-                        }
-                    }
-                    else
-                    {
-                        source = asset.Identity;
-                    }
 
-                    copyToOutputFolder.Add(new TaskItem(source, new Dictionary<string, string>
+                    copyToOutputFolder.Add(new TaskItem(asset.Identity, new Dictionary<string, string>
                     {
                         ["OriginalItemSpec"] = asset.Identity,
                         ["TargetPath"] = fileOutputPath,
