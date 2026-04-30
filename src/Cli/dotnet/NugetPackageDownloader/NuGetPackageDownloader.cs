@@ -39,7 +39,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     /// </summary>
     private readonly IReporter _reporter;
     private readonly IFirstPartyNuGetPackageSigningVerifier _firstPartyNuGetPackageSigningVerifier;
-    private bool _validationMessagesDisplayed = false;
+    private static bool _validationMessagesDisplayed = false;
     private readonly ConcurrentDictionary<PackageSource, SourceRepository> _sourceRepositories;
     private readonly bool _shouldUsePackageSourceMapping;
 

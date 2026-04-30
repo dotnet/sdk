@@ -51,6 +51,12 @@ internal static class CommonOptionsExtensions
             verbosity.Equals(VerbosityOptions.detailed);
     }
 
+    public static bool IsDiagnostic(this VerbosityOptions verbosity)
+    {
+        return verbosity.Equals(VerbosityOptions.diag) ||
+            verbosity.Equals(VerbosityOptions.diagnostic);
+    }
+
     public static bool IsQuiet(this VerbosityOptions verbosity)
     {
         return verbosity.Equals(VerbosityOptions.q) ||

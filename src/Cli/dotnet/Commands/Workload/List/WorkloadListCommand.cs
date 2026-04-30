@@ -57,7 +57,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
         string userProfileDir1 = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
         _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(resolvedReporter,
-            _workloadListHelper.WorkloadResolver, PackageDownloader, userProfileDir1, _workloadListHelper.WorkloadRecordRepo, _workloadListHelper.Installer);
+            _workloadListHelper.WorkloadResolver, PackageDownloader, userProfileDir1, _workloadListHelper.WorkloadRecordRepo, _workloadListHelper.Installer, displayManifestUpdates: Verbosity.IsDiagnostic());
     }
 
     public override int Execute()
