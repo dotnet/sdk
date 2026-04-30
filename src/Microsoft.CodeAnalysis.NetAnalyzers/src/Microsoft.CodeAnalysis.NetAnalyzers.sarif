@@ -3969,6 +3969,26 @@
             ]
           }
         },
+        "CA2028": {
+          "id": "CA2028",
+          "shortDescription": "Avoid redundant 'Regex.IsMatch' call before 'Regex.Match'",
+          "fullDescription": "When 'Regex.IsMatch' is used to check for a match and then 'Regex.Match' is called with the same arguments, the regular expression is evaluated twice. Call 'Regex.Match' once and check 'Match.Success' to avoid redundant work.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2028",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidRedundantRegexIsMatchBeforeMatch",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",
