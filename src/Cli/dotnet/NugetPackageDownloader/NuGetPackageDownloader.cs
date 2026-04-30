@@ -222,10 +222,6 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         return nupkgPath;
     }
 
-    private bool VerbosityGreaterThanMinimal() =>
-        _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q &&
-        _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
-
     private bool DiagnosticVerbosity() => _verbosityOptions == VerbosityOptions.diag || _verbosityOptions == VerbosityOptions.diagnostic;
 
     /// <summary>
@@ -255,10 +251,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     {
         if (!_verifySignatures && !_validationMessagesDisplayed)
         {
-            if (VerbosityGreaterThanMinimal())
-            {
-                _reporter.WriteLine(CliStrings.NuGetPackageSignatureVerificationSkipped);
-            }
+            Reporter.Verbose.WriteLine(CliStrings.NuGetPackageSignatureVerificationSkipped);
             _validationMessagesDisplayed = true;
         }
 
