@@ -1,6 +1,7 @@
 ﻿apicontroller
 blazor
 blazorwasm
+blazorwebworker
 buildprops
 buildtargets
 classlib
@@ -35,7 +36,6 @@ webapi
 webapiaot
 webapp
 webconfig
-webworker
 winforms
 winformscontrollib
 winformslib
