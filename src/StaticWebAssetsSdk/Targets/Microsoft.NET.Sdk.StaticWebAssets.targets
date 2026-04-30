@@ -840,6 +840,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="UpdatedAssets" ItemName="_UpdatedPackageAssets" />
       <Output TaskParameter="OriginalAssets" ItemName="_OriginalPackageAssets" />
       <Output TaskParameter="RemappedEndpoints" ItemName="_RemappedFrameworkEndpoints" />
+      <Output TaskParameter="OriginalFrameworkEndpoints" ItemName="_OriginalFrameworkEndpoints" />
     </UpdatePackageStaticWebAssets>
 
     <ItemGroup>
@@ -857,8 +858,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Remove="@(_OriginalPackageAssets)"/>
       <StaticWebAsset Include="@(_UpdatedPackageAssets)" />
       <StaticWebAssetEndpoint Include="@(_UpdatedPackageAssetsEndpoint)" />
-      <!-- Remap endpoints for materialized framework assets -->
-      <StaticWebAssetEndpoint Remove="@(_RemappedFrameworkEndpoints)" />
+      <!-- Remove original framework endpoints (with old routes) and add remapped ones (with new routes) -->
+      <StaticWebAssetEndpoint Remove="@(_OriginalFrameworkEndpoints)" />
       <StaticWebAssetEndpoint Include="@(_RemappedFrameworkEndpoints)" />
     </ItemGroup>
 
