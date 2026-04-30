@@ -81,6 +81,7 @@
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Runtime" />
     <PackageReference Include="Microsoft.NET.HostModel" />
     <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" GlobalPropertiesToRemove="PublishDir" />
     <PackageReference Include="Spectre.Console" />

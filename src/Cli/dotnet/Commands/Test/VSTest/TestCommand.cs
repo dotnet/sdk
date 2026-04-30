@@ -434,30 +434,29 @@ public class TerminalLoggerDetector
 
         string? FindDefaultValue(IReadOnlyList<string> unmatchedTokens)
         {
-            // Find default configuration so it is part of telemetry even when default is not used.
-            // Default can be stored in /tlp:default=true|false|on|off|auto
-            Switch? terminalLoggerDefault = TryFind(unmatchedTokens, "tlp", "terminalloggerparameters");
-            if (terminalLoggerDefault == null)
+            var parser = new Microsoft.Build.CommandLine.Experimental.CommandLineParser();
+            var switches = parser.Parse(unmatchedTokens);
+
+            string[]? tlpValues = switches.TerminalLoggerParameters;
+            if (tlpValues is not { Length: > 0 })
             {
                 return null;
             }
 
-            if (terminalLoggerDefault.Value == null)
+            foreach (string tlpValue in tlpValues)
             {
-                return null;
-            }
-
-            foreach (string parameter in terminalLoggerDefault.Value.Split(':'))
-            {
-                if (string.IsNullOrWhiteSpace(parameter))
+                foreach (string parameter in tlpValue.Split(';'))
                 {
-                    continue;
-                }
+                    if (string.IsNullOrWhiteSpace(parameter))
+                    {
+                        continue;
+                    }
 
-                string[] parameterAndValue = parameter.Split('=');
-                if (parameterAndValue[0].Equals("default", StringComparison.InvariantCultureIgnoreCase) && parameterAndValue.Length > 1)
-                {
-                    return parameterAndValue[1];
+                    string[] parameterAndValue = parameter.Split('=');
+                    if (parameterAndValue[0].Equals("default", StringComparison.OrdinalIgnoreCase) && parameterAndValue.Length > 1)
+                    {
+                        return parameterAndValue[1];
+                    }
                 }
             }
 
@@ -466,21 +465,19 @@ public class TerminalLoggerDetector
 
         bool TryFromCommandLine(IReadOnlyList<string> unmatchedTokens, [NotNullWhen(true)] out string? value)
         {
-            Switch? terminalLogger = TryFind(unmatchedTokens, ["tl", "terminalLogger", "ll", "livelogger"]);
-            if (terminalLogger == null)
+            var parser = new Microsoft.Build.CommandLine.Experimental.CommandLineParser();
+            var switches = parser.Parse(unmatchedTokens);
+
+            string[]? tlValues = switches.TerminalLogger;
+            if (tlValues is not { Length: > 0 })
             {
                 value = null;
                 return false;
             }
 
-            if (terminalLogger.Value == null)
-            {
-                // if the switch was set but not to an explicit value, the value is "auto"
-                value = "auto";
-                return true;
-            }
-
-            value = terminalLogger.Value;
+            string lastValue = tlValues[^1];
+            // An empty value (e.g. bare "-tl") means "auto".
+            value = string.IsNullOrEmpty(lastValue) ? "auto" : lastValue;
             return true;
         }
 
@@ -518,32 +515,6 @@ public class TerminalLoggerDetector
 
             return terminalLoggerArg;
         }
-    }
-
-    private static Switch? TryFind(IReadOnlyList<string> unmatchedTokens, params string[] names)
-    {
-        foreach (string prefix in new string[] { "-", "--", "/" })
-        {
-            foreach (var name in names)
-            {
-                var found = unmatchedTokens.FirstOrDefault(t => t.StartsWith(prefix + name, StringComparison.OrdinalIgnoreCase));
-                if (found != null)
-                {
-                    var param = found.Substring(prefix.Length);
-                    if (!param.Contains(":"))
-                    {
-                        return new Switch(param, null);
-                    }
-                    else
-                    {
-                        var parts = param.Split(":", 2);
-                        return new Switch(parts[0], parts[1]);
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
     internal static class NativeMethods
@@ -691,7 +662,6 @@ public class TerminalLoggerDetector
             => !string.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
     }
 
-    private record class Switch(string Name, string? Value);
 }
 
 public enum TerminalLoggerMode
