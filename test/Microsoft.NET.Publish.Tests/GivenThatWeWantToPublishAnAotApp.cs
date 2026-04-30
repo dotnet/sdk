@@ -550,6 +550,22 @@ namespace Microsoft.NET.Publish.Tests
                     new XElement(ns + "ILCompilerPortableRuntimeIdentifiers", runtimeIdentifiers))));
         }
 
+        [MacOsOnlyFact]
+        public void NativeAot_publishes_for_ios_arm64_on_macos()
+        {
+            var projectName = "HelloWorldNativeAotIos";
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute("/p:RuntimeIdentifier=ios-arm64", "/p:SelfContained=true")
+                .Should().Pass()
+                .And.NotHaveStdErrContaining("warning")
+                .And.NotHaveStdOutContaining("warning");
+        }
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void Only_Aot_warnings_are_produced_if_EnableAotAnalyzer_is_set(string targetFramework)
