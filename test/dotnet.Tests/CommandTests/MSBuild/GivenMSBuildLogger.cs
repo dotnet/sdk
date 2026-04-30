@@ -214,5 +214,30 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties.Should().NotContainKey("InvalidProperty");
             fakeTelemetry.LogEntry.Properties.Should().NotContainKey("InvalidProperty2");
         }
+
+        [Fact]
+        public void ItForwardsTaskDetailsEvent()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            var telemetryEventArgs = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.TasksDetailsTelemetryEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "Tasks", "[{\"Name\":\"Copy\",\"ExecutionsCount\":10}]" },
+                    { "TaskCount", "1" },
+                    { "TotalTaskCount", "1" }
+                }
+            };
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
+
+            fakeTelemetry.LogEntry.Should().NotBeNull();
+            fakeTelemetry.LogEntry.EventName.Should().Be($"msbuild/{MSBuildLogger.TasksDetailsTelemetryEventName}");
+            fakeTelemetry.LogEntry.Properties.Keys.Count.Should().Be(3);
+            fakeTelemetry.LogEntry.Properties["Tasks"].Should().Be("[{\"Name\":\"Copy\",\"ExecutionsCount\":10}]");
+            fakeTelemetry.LogEntry.Properties["TaskCount"].Should().Be("1");
+            fakeTelemetry.LogEntry.Properties["TotalTaskCount"].Should().Be("1");
+        }
     }
 }
