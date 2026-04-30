@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO;
+using System.Text;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -299,6 +301,75 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
     }
   }
 }", "And original tools entry order is preserved.");
+        }
+
+        [Fact]
+        public void GivenManifestFileWithUtf8BomAndTrailingNewlineItPreservesThem()
+        {
+            string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            string content = _jsonContent + Environment.NewLine;
+            var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+            using (var stream = _fileSystem.File.OpenFile(manifestFile, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.None))
+            using (var writer = new StreamWriter(stream, encoding))
+            {
+                writer.Write(content);
+            }
+
+            var toolManifestFileEditor = new ToolManifestEditor(_fileSystem, new FakeDangerousFileDetector());
+
+            toolManifestFileEditor.Add(new FilePath(manifestFile),
+                new PackageId("new-tool"),
+                NuGetVersion.Parse("3.0.0"),
+                new[] { new ToolCommandName("newtool") });
+
+            byte[] bytes;
+            using (var stream = _fileSystem.File.OpenRead(manifestFile))
+            {
+                bytes = new byte[stream.Length];
+                stream.ReadExactly(bytes, 0, (int)stream.Length);
+            }
+
+            // Check BOM (EF BB BF)
+            bytes[0].Should().Be(0xEF);
+            bytes[1].Should().Be(0xBB);
+            bytes[2].Should().Be(0xBF);
+
+            // Check Trailing Newline
+            Encoding.UTF8.GetString(bytes).Should().EndWith(Environment.NewLine);
+        }
+
+        [Fact]
+        public void GivenManifestFileWithUtf16AndTrailingNewlineItPreservesThem()
+        {
+            string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            string content = _jsonContent + Environment.NewLine;
+            var encoding = Encoding.Unicode; // UTF-16 LE
+            using (var stream = _fileSystem.File.OpenFile(manifestFile, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.None))
+            using (var writer = new StreamWriter(stream, encoding))
+            {
+                writer.Write(content);
+            }
+
+            var toolManifestFileEditor = new ToolManifestEditor(_fileSystem, new FakeDangerousFileDetector());
+
+            toolManifestFileEditor.Add(new FilePath(manifestFile),
+                new PackageId("new-tool"),
+                NuGetVersion.Parse("3.0.0"),
+                new[] { new ToolCommandName("newtool") });
+
+            byte[] bytes;
+            using (var stream = _fileSystem.File.OpenRead(manifestFile))
+            {
+                bytes = new byte[stream.Length];
+                stream.ReadExactly(bytes, 0, (int)stream.Length);
+            }
+
+            // Check UTF-16 LE BOM (FF FE)
+            bytes[0].Should().Be(0xFF);
+            bytes[1].Should().Be(0xFE);
+
+            // Check Trailing Newline in UTF-16 LE
+            Encoding.Unicode.GetString(bytes).Should().EndWith(Environment.NewLine);
         }
 
         private string _jsonContent =
