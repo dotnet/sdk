@@ -79,7 +79,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />

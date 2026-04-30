@@ -3,7 +3,9 @@
 
 using System.Text.Json;
 using Basic.CompilerLog.Util;
+using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -280,6 +282,50 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         File.WriteAllText(libPath, libCode);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v2", programFileName: programFileName);
+    }
+
+    /// <summary>
+    /// <see cref="UpToDate"/> optimization currently does not support <c>#:ref</c> references and hence is disabled if those are present.
+    /// Analogous to <see cref="UpToDate_ProjectReferences"/>.
+    /// </summary>
+    [Fact]
+    public void UpToDate_RefDirectives()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
+
+        var libPath = Path.Join(testInstance.Path, "lib.cs");
+        var libCode = """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "v1";
+            }
+            """;
+        File.WriteAllText(libPath, libCode);
+
+        var programCode = """
+            #:ref lib.cs
+            Console.WriteLine("Hello " + MyLib.Greeter.Greet());
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, programCode);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello v1");
+
+        // We cannot detect changes in referenced files, so we always rebuild.
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello v1");
+
+        libCode = libCode.Replace("v1", "v2");
+        File.WriteAllText(libPath, libCode);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello v2");
     }
 
     /// <summary>
@@ -991,6 +1037,52 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
     /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// This optimization currently does not support <c>#:ref</c> references and hence is disabled if those are present.
+    /// Analogous to <see cref="CscOnly_AfterMSBuild_ProjectReferences"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_RefDirectives()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
+
+        var libPath = Path.Join(testInstance.Path, "lib.cs");
+        var libCode = """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "v1";
+            }
+            """;
+        File.WriteAllText(libPath, libCode);
+
+        var programCode = """
+            #:ref lib.cs
+            Console.WriteLine("Hello " + MyLib.Greeter.Greet());
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, programCode);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hello v1");
+
+        programCode = programCode.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, programCode);
+
+        libCode = libCode.Replace("v1", "v2");
+        File.WriteAllText(libPath, libCode);
+
+        // Cannot use CSC because we cannot detect updates in the referenced file.
+        Build(testInstance, BuildLevel.All, expectedOutput: "Hi v2");
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// If users have more complex build customizations, they can opt out of the optimization.
     /// </summary>
     [Theory, CombinatorialData]
@@ -1325,14 +1417,6 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-              </PropertyGroup>
-            </Project>
-            """);
-
         var programPath = Path.Join(testInstance.Path, "A.cs");
         File.WriteAllText(programPath, """
             #:property P1=cs
@@ -1603,6 +1687,57 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                 """);
     }
 
+    [Fact]
+    public void Api_VirtualProjectBuilder_CreateProjectRootElement()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.cs"), """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        var appPath = Path.Join(appDir, "Program.cs");
+        File.WriteAllText(appPath, """
+            #:project ../$(LibProjectName)
+            #:property LibProjectName=Lib
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        using var projectCollection = new ProjectCollection();
+        var projectRootElement = NuGetVirtualProjectBuilder.Instance.CreateProjectRootElement(appPath, projectCollection);
+
+        var xml = projectRootElement.RawXml;
+        Log.WriteLine(xml);
+
+        xml.Should()
+            // directives are evaluated
+            .Contain("""<ProjectReference Include="..\Lib\Lib.csproj" />""".Replace('\\', Path.DirectorySeparatorChar))
+            // it's the virtual project
+            .And.Contain("<FileBasedProgram>true</FileBasedProgram>")
+            // correct target framework is used
+            .And.Contain($"<TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>");
+
+        projectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
+    }
+
     [Theory, CombinatorialData]
     public void EntryPointFilePath(bool cscOnly)
     {
@@ -1831,6 +1966,109 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
             return result;
         }
+    }
+
+    /// <summary>
+    /// Regression test for https://github.com/dotnet/sdk/issues/52714.
+    /// The virtual project's <see cref="ProjectRootElement"/> must survive GC
+    /// even after being evicted from MSBuild's strong cache (LRU of size N).
+    /// We force eviction via <c>MSBUILDPROJECTROOTELEMENTCACHESIZE=1</c>
+    /// and trigger GC via an inline task during NuGet restore.
+    /// Without the fix (strong reference in <c>VirtualProjectBuilder._projectRootElement</c>),
+    /// this fails with MSB4025 "The project file could not be loaded".
+    /// </summary>
+    [Fact]
+    public void VirtualProject_SurvivesGCDuringRestore()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("Hello from virtual project");
+            """);
+
+        // Directory.Build.targets that forces GC during restore,
+        // after SDK imports have already evicted the virtual PRE from the strong cache.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <UsingTask TaskName="_ForceGCTask"
+                         TaskFactory="RoslynCodeTaskFactory"
+                         AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+                <Task>
+                  <Code Type="Fragment" Language="cs"><![CDATA[
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                    System.GC.WaitForPendingFinalizers();
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                  ]]></Code>
+                </Task>
+              </UsingTask>
+              <Target Name="_ForceGC" BeforeTargets="_FilterRestoreGraphProjectInputItems">
+                <_ForceGCTask />
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs")
+            // A cache size of 1 ensures the virtual PRE is evicted from the strong cache
+            // as soon as any SDK .targets/.props file is loaded during evaluation.
+            .WithEnvironmentVariable("MSBUILDPROJECTROOTELEMENTCACHESIZE", "1")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from virtual project");
+    }
+
+    /// <summary>
+    /// Same as <see cref="VirtualProject_SurvivesGCDuringRestore"/> but for <c>#:ref</c> referenced projects.
+    /// The referenced project's <see cref="ProjectRootElement"/> must also survive GC.
+    /// </summary>
+    [Fact]
+    public void VirtualProject_SurvivesGCDuringRestore_RefDirective()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Lib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet() => "Hello from ref";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:ref Lib.cs
+            Console.WriteLine(MyLib.Greeter.Greet());
+            """);
+
+        // Directory.Build.targets that forces GC during restore,
+        // after SDK imports have already evicted the virtual PRE from the strong cache.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <UsingTask TaskName="_ForceGCTask"
+                         TaskFactory="RoslynCodeTaskFactory"
+                         AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+                <Task>
+                  <Code Type="Fragment" Language="cs"><![CDATA[
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                    System.GC.WaitForPendingFinalizers();
+                    System.GC.Collect(2, System.GCCollectionMode.Forced, blocking: true);
+                  ]]></Code>
+                </Task>
+              </UsingTask>
+              <Target Name="_ForceGC" BeforeTargets="_FilterRestoreGraphProjectInputItems">
+                <_ForceGCTask />
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs")
+            // A cache size of 1 ensures the virtual PRE is evicted from the strong cache
+            // as soon as any SDK .targets/.props file is loaded during evaluation.
+            .WithEnvironmentVariable("MSBUILDPROJECTROOTELEMENTCACHESIZE", "1")
+            .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from ref");
     }
 
     /// <summary>
