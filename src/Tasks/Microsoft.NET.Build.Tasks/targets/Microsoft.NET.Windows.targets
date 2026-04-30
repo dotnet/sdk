@@ -373,4 +373,36 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="@(CsWinRTGeneratorInteropAssemblyPath)"/>
     </ItemGroup>
   </Target>
+
+  <!--
+    ============================================================
+                        _FixGeneratedXbfFilesLink
+
+    When UseArtifactsOutput is enabled, the IntermediateOutputPath is redirected to a location
+    outside the project directory. The AppX Package Targets process _GeneratedXbfFiles items
+    and compute their relative paths for resources.pri generation. When XBF files reside outside
+    the project directory, the path computation loses the subdirectory structure, causing XBF
+    files to appear at the root of resources.pri instead of their correct subdirectory paths.
+
+    This target fixes the issue by setting the Link metadata on _GeneratedXbfFiles items to the
+    correct path relative to $(IntermediateOutputPath), which preserves subdirectory structure
+    (e.g., "Resources\Styles.xbf" rather than just "Styles.xbf").
+
+    See: https://github.com/dotnet/sdk/issues/53556
+    ============================================================
+  -->
+  <Target Name="_FixGeneratedXbfFilesLink"
+          AfterTargets="MarkupCompilePass2"
+          Condition="'$(UseUwp)' == 'true'">
+    <PropertyGroup>
+      <!-- Normalize IntermediateOutputPath to an absolute path with a trailing slash for use in MakeRelative. -->
+      <_NormalizedIntermediateOutputPath>$([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)'))))</_NormalizedIntermediateOutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_GeneratedXbfFiles Update="@(_GeneratedXbfFiles)"
+        Condition="'%(Link)' == '' and !$([MSBuild]::ValueOrDefault('%(FullPath)', '').StartsWith($([MSBuild]::EnsureTrailingSlash($(MSBuildProjectDirectory)))))">
+        <Link>$([MSBuild]::MakeRelative($(_NormalizedIntermediateOutputPath), %(FullPath)))</Link>
+      </_GeneratedXbfFiles>
+    </ItemGroup>
+  </Target>
 </Project>
