@@ -23,7 +23,7 @@ jobs:
     helixRepo: dotnet/sdk
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     enableMicrobuild: true
-    enableMicrobuildForMacAndLinux: true
+    enableMicrobuildForMacAndLinux: ${{ startsWith(parameters.rid, 'osx') }}
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
