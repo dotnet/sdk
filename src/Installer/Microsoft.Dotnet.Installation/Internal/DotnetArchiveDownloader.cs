@@ -213,31 +213,51 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
     private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
-        if (!_releaseManifest.TryFindReleaseFile(installRequest, resolvedVersion, out var targetFile))
+        var result = _releaseManifest.TryFindReleaseFile(installRequest, resolvedVersion);
+
+        switch (result.Status)
         {
-            // Manifest doesn't list this version. For fully-specified prerelease
-            // versions, try the public blob feed (typical for daily/preview builds).
-            if (ShouldFallbackToBlobFeed(installRequest, resolvedVersion))
-            {
-                return ResolveBlobFeedEntry(installRequest, resolvedVersion);
-            }
+            case FindReleaseFileStatus.Found:
+                return BuildEntryFromReleaseFile(result.File!, resolvedVersion, installRequest);
 
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.VersionNotFound,
-                $"No release found for version {resolvedVersion}",
-                version: resolvedVersion.ToString(),
-                component: installRequest.Component.ToString());
+            case FindReleaseFileStatus.NoMatchingFile:
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform,
+                    $"No matching file found for {installRequest.Component} version {resolvedVersion} on {installRequest.InstallRoot.Architecture}",
+                    version: resolvedVersion.ToString(),
+                    component: installRequest.Component.ToString());
+
+            case FindReleaseFileStatus.ProductNotFound:
+            case FindReleaseFileStatus.ReleaseNotFound:
+                // Manifest doesn't list this version. For fully-specified prerelease
+                // versions, try the public blob feed (typical for daily/preview builds).
+                if (ShouldFallbackToBlobFeed(installRequest, resolvedVersion))
+                {
+                    return ResolveBlobFeedEntry(installRequest, resolvedVersion);
+                }
+
+                throw result.Status == FindReleaseFileStatus.ProductNotFound
+                    ? new DotnetInstallException(
+                        DotnetInstallErrorCode.VersionNotFound,
+                        $"No product found for version {resolvedVersion}",
+                        version: resolvedVersion.ToString(),
+                        component: installRequest.Component.ToString())
+                    : new DotnetInstallException(
+                        DotnetInstallErrorCode.ReleaseNotFound,
+                        $"No release found for version {resolvedVersion}",
+                        version: resolvedVersion.ToString(),
+                        component: installRequest.Component.ToString());
+
+            default:
+                throw new InvalidOperationException($"Unexpected {nameof(FindReleaseFileStatus)}: {result.Status}");
         }
+    }
 
-        if (targetFile == null)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.NoMatchingReleaseFileForPlatform,
-                $"No matching file found for {installRequest.Component} version {resolvedVersion} on {installRequest.InstallRoot.Architecture}",
-                version: resolvedVersion.ToString(),
-                component: installRequest.Component.ToString());
-        }
-
+    private static (string DownloadUrl, string ExpectedHash) BuildEntryFromReleaseFile(
+        ReleaseFile targetFile,
+        ReleaseVersion resolvedVersion,
+        DotnetInstallRequest installRequest)
+    {
         string downloadUrl = targetFile.Address.ToString();
         string expectedHash = targetFile.Hash.ToString();
 

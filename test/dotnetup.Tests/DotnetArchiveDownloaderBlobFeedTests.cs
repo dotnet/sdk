@@ -164,6 +164,25 @@ public class DotnetArchiveDownloaderBlobFeedTests
     }
 
     /// <summary>
+    /// When the product is in the manifest but the specific release is not, the
+    /// thrown error must surface as ReleaseNotFound (distinct from VersionNotFound).
+    /// </summary>
+    [Fact]
+    public void ResolveManifestEntry_ReleaseNotFound_PreservedDistinctlyFromVersionNotFound()
+    {
+        const string channel = "preview";
+        const string resolved = "10.0.100-preview.4.25216.37";
+        var (handler, _) = BuildHandler(new());
+
+        using var downloader = CreateDownloader(handler, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
+
+        var ex = Assert.Throws<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.ReleaseNotFound);
+    }
+
+    /// <summary>
     /// If both feeds 404 the .sha512 file, surface a clear VersionNotFound error.
     /// </summary>
     [Fact]
@@ -289,22 +308,18 @@ public class DotnetArchiveDownloaderBlobFeedTests
             _code = code;
         }
 
-        public override bool TryFindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, out ReleaseFile? file)
+        public override FindReleaseFileResult TryFindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
         {
-            // Existing tests pass VersionNotFound to model "manifest does not have this version".
-            // For that case we now indicate the miss via the bool return rather than throwing.
-            if (_code == DotnetInstallErrorCode.VersionNotFound ||
-                _code == DotnetInstallErrorCode.ReleaseNotFound)
+            return _code switch
             {
-                file = null;
-                return false;
-            }
-
-            throw new DotnetInstallException(
-                _code,
-                $"Test stub: manifest failure for {resolvedVersion}",
-                version: resolvedVersion.ToString(),
-                component: installRequest.Component.ToString());
+                DotnetInstallErrorCode.VersionNotFound => FindReleaseFileResult.ProductNotFound,
+                DotnetInstallErrorCode.ReleaseNotFound => FindReleaseFileResult.ReleaseNotFound,
+                _ => throw new DotnetInstallException(
+                    _code,
+                    $"Test stub: manifest failure for {resolvedVersion}",
+                    version: resolvedVersion.ToString(),
+                    component: installRequest.Component.ToString()),
+            };
         }
     }
 }

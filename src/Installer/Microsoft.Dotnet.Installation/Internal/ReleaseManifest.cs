@@ -6,6 +6,36 @@ using Microsoft.Deployment.DotNet.Releases;
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
+/// Outcome of <see cref="ReleaseManifest.TryFindReleaseFile"/>.
+/// </summary>
+internal enum FindReleaseFileStatus
+{
+    /// <summary>The release was found and a matching archive for the platform exists.</summary>
+    Found,
+
+    /// <summary>The release exists in the manifest but has no archive for the requested RID/extension.</summary>
+    NoMatchingFile,
+
+    /// <summary>No product (major.minor) for the version was found in the manifest.</summary>
+    ProductNotFound,
+
+    /// <summary>The product was found, but the specific version is not listed under it.</summary>
+    ReleaseNotFound,
+}
+
+/// <summary>
+/// Result of looking up a release file in the manifest.
+/// </summary>
+internal readonly record struct FindReleaseFileResult(FindReleaseFileStatus Status, ReleaseFile? File)
+{
+    public static FindReleaseFileResult FromFile(ReleaseFile? file) =>
+        new(file is null ? FindReleaseFileStatus.NoMatchingFile : FindReleaseFileStatus.Found, file);
+
+    public static FindReleaseFileResult ProductNotFound { get; } = new(FindReleaseFileStatus.ProductNotFound, null);
+    public static FindReleaseFileResult ReleaseNotFound { get; } = new(FindReleaseFileStatus.ReleaseNotFound, null);
+}
+
+/// <summary>
 /// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.
 /// </summary>
 internal class ReleaseManifest
@@ -18,21 +48,11 @@ internal class ReleaseManifest
 
     /// <summary>
     /// Attempts to find the appropriate release file for the given installation.
+    /// Returns a <see cref="FindReleaseFileResult"/> indicating whether the
+    /// product/release/file was found. Network and parse failures are still
+    /// thrown as <see cref="DotnetInstallException"/>.
     /// </summary>
-    /// <param name="installRequest">The .NET installation request details.</param>
-    /// <param name="resolvedVersion">The resolved release version to find.</param>
-    /// <param name="file">
-    /// On return: the matching <see cref="ReleaseFile"/> if one was found, or
-    /// <c>null</c> if the release exists in the manifest but has no archive
-    /// matching the requested platform/architecture.
-    /// </param>
-    /// <returns>
-    /// <c>true</c> if the release for <paramref name="resolvedVersion"/> exists in
-    /// the manifest (regardless of whether a matching platform file was found);
-    /// <c>false</c> if the manifest does not list this version. Real failures
-    /// (network/parse errors) are thrown as <see cref="DotnetInstallException"/>.
-    /// </returns>
-    public virtual bool TryFindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, out ReleaseFile? file)
+    public virtual FindReleaseFileResult TryFindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
         try
         {
@@ -40,17 +60,14 @@ internal class ReleaseManifest
             var product = FindProduct(productCollection, resolvedVersion);
             if (product is null)
             {
-                file = null;
-                return false;
+                return FindReleaseFileResult.ProductNotFound;
             }
             var release = FindRelease(product, resolvedVersion, installRequest.Component);
             if (release is null)
             {
-                file = null;
-                return false;
+                return FindReleaseFileResult.ReleaseNotFound;
             }
-            file = FindMatchingFile(release, installRequest);
-            return true;
+            return FindReleaseFileResult.FromFile(FindMatchingFile(release, installRequest));
         }
         catch (HttpRequestException ex)
         {
