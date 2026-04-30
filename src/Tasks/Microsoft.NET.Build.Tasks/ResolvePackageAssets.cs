@@ -1655,22 +1655,30 @@ namespace Microsoft.NET.Build.Tasks
                         try
                         {
                             var normalizedLocale = System.Globalization.CultureInfo.GetCultureInfo(locale).Name;
-                            if (normalizedLocale != locale)
+
+                            // Only apply CultureInfo's normalization when it is a pure casing change.
+                            // CultureInfo can remap locale codes to entirely different locales
+                            // (e.g. 'ckb' -> 'ku') depending on the OS/ICU version, so we skip
+                            // normalization when the result differs beyond casing.
+                            if (string.Equals(normalizedLocale, locale, StringComparison.OrdinalIgnoreCase))
                             {
-                                var tfm = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, null).TargetFramework;
-                                if (tfm.Version.Major >= 7)
+                                if (normalizedLocale != locale)
                                 {
-                                    _task.Log.LogWarning(Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
-                                }
-                                else
-                                {
-                                    // We emit low-priority messages here because some clients may interpret normal or higher messages
-                                    // as warnings when they have codes, locations, etc.
-                                    // Roslyn does similar for IDE-only analysis messages.
-                                    _task.Log.LogMessage(MessageImportance.Low, Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
+                                    var tfm = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, null).TargetFramework;
+                                    if (tfm.Version.Major >= 7)
+                                    {
+                                        _task.Log.LogWarning(Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
+                                    }
+                                    else
+                                    {
+                                        // We emit low-priority messages here because some clients may interpret normal or higher messages
+                                        // as warnings when they have codes, locations, etc.
+                                        // Roslyn does similar for IDE-only analysis messages.
+                                        _task.Log.LogMessage(MessageImportance.Low, Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
+                                    }
+                                    locale = normalizedLocale;
                                 }
                             }
-                            locale = normalizedLocale;
                         }
                         catch (System.Globalization.CultureNotFoundException cnf)
                         {

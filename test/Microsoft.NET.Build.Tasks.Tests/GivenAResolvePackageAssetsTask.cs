@@ -200,6 +200,28 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
         }
 
+        [Theory]
+        [InlineData("net7.0")]
+        [InlineData("net6.0")]
+        public void It_does_not_warn_for_ckb_locale(string tfm)
+        {
+            // 'ckb' (Central Kurdish) is a valid ISO 639-3 code. CultureInfo may remap it to 'ku'
+            // (Kurdish, ISO 639-1) which is a different locale. Since the normalized name differs
+            // beyond casing, normalization should be skipped entirely — no NETSDK1187 warning.
+            string projectAssetsJsonPath = Path.GetTempFileName();
+            var assetsContent = AssetsFileWithInvalidLocale(tfm, "ckb");
+            File.WriteAllText(projectAssetsJsonPath, assetsContent);
+            var task = InitializeTask(out _);
+            task.ProjectAssetsFile = projectAssetsJsonPath;
+            task.TargetFramework = tfm;
+            var writer = new CacheWriter(task, new MockPackageResolver());
+            writer.WriteToMemoryStream();
+            var engine = task.BuildEngine as MockBuildEngine;
+
+            engine.Warnings.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
+            engine.Messages.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
+        }
+
         private ResolvePackageAssets InitializeTask(out IEnumerable<PropertyInfo> inputProperties)
         {
             inputProperties = typeof(ResolvePackageAssets)
