@@ -32,7 +32,36 @@ public class DiscoverPrecompressedAssets : Task
         var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
         var assetsToUpdate = new List<ITaskItem>();
 
-        var candidatesByIdentity = candidates.ToDictionary(asset => asset.Identity, OSPath.PathComparer);
+        var candidatesByIdentity = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
+        foreach (var asset in candidates)
+        {
+            if (candidatesByIdentity.TryGetValue(asset.Identity, out var existing))
+            {
+                if (existing.SourceId != asset.SourceId ||
+                    existing.RelativePath != asset.RelativePath)
+                {
+                    Log.LogWarning(
+                        "Duplicate candidate asset '{0}' with differing metadata (SourceId='{1}' vs '{2}', RelativePath='{3}' vs '{4}'). Keeping first occurrence.",
+                        asset.Identity,
+                        existing.SourceId,
+                        asset.SourceId,
+                        existing.RelativePath,
+                        asset.RelativePath);
+                }
+                else
+                {
+                    Log.LogMessage(
+                        MessageImportance.Low,
+                        "Skipping duplicate candidate asset '{0}' (SourceId='{1}'). Assets are identical.",
+                        asset.Identity,
+                        asset.SourceId);
+                }
+            }
+            else
+            {
+                candidatesByIdentity[asset.Identity] = asset;
+            }
+        }
 
         foreach (var candidate in candidates)
         {
