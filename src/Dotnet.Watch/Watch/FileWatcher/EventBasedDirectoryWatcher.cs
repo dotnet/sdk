@@ -13,6 +13,7 @@ internal sealed class EventBasedDirectoryWatcher : DirectoryWatcher
     private volatile bool _disposed;
     private FileSystemWatcher? _fileSystemWatcher;
     private readonly Lock _createLock = new();
+    private bool _isRecreating;
 
     internal EventBasedDirectoryWatcher(string watchedDirectory, ImmutableHashSet<string> watchedFileNames, bool includeSubdirectories)
         : base(watchedDirectory, watchedFileNames, includeSubdirectories)
@@ -39,13 +40,20 @@ internal sealed class EventBasedDirectoryWatcher : DirectoryWatcher
 
         Logger?.Invoke(exception.ToString());
 
-        // Win32Exception may be triggered when setting EnableRaisingEvents on a file system type
-        // that is not supported, such as a network share. Don't attempt to recreate the watcher
-        // in this case as it will cause a StackOverflowException
-        if (exception is not Win32Exception)
+        // Don't recreate on Win32Exception (unsupported file system) or during re-entrant
+        // calls (StartRaisingEvents can synchronously fire Error, causing infinite recursion).
+        if (exception is not Win32Exception && !_isRecreating)
         {
-            // Recreate the watcher if it is a recoverable error.
-            CreateFileSystemWatcher();
+            _isRecreating = true;
+            try
+            {
+                // Recreate the watcher if it is a recoverable error.
+                CreateFileSystemWatcher();
+            }
+            finally
+            {
+                _isRecreating = false;
+            }
         }
 
         NotifyError(exception);

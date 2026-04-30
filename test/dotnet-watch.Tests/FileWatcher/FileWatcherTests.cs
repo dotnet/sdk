@@ -155,6 +155,130 @@ public class FileWatcherTests(ITestOutputHelper output)
         AssertEx.SequenceEqual([$"{dirA}: []"], Inspect(watcher.DirectoryWatchers));
     }
 
+    [Fact]
+    public void ConsolidateDirectories_FindsCommonAncestor()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>
+        {
+            Path.Join(root, "src", "A") + Path.DirectorySeparatorChar,
+            Path.Join(root, "src", "A", "sub") + Path.DirectorySeparatorChar,
+        };
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        // Both are under src/A, which is a single immediate child under src/ — returns src/A/
+        AssertEx.SequenceEqual([Path.Join(root, "src", "A") + Path.DirectorySeparatorChar], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_FewChildrenWatchesPerChild()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>
+        {
+            Path.Join(root, "src", "A") + Path.DirectorySeparatorChar,
+            Path.Join(root, "src", "B") + Path.DirectorySeparatorChar,
+            Path.Join(root, "test", "C") + Path.DirectorySeparatorChar,
+        };
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        // Common ancestor is root. 2 immediate children (src/, test/) ≤ 5 — watch per child.
+        result.Sort(StringComparer.Ordinal);
+        AssertEx.SequenceEqual(
+        [
+            Path.Join(root, "src") + Path.DirectorySeparatorChar,
+            Path.Join(root, "test") + Path.DirectorySeparatorChar,
+        ], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_ManyChildrenWatchesAncestor()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>();
+
+        for (int i = 0; i < 10; i++)
+        {
+            dirs.Add(Path.Join(root, $"Service{i}") + Path.DirectorySeparatorChar);
+        }
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        // 10 immediate children > 5 - falls back to ancestor.
+        AssertEx.SequenceEqual([root], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_LargeProjectStructure()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>();
+
+        for (int i = 0; i < 200; i++)
+        {
+            dirs.Add(Path.Join(root, "Submodule", $"Project{i}") + Path.DirectorySeparatorChar);
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            dirs.Add(Path.Join(root, $"Service{i}") + Path.DirectorySeparatorChar);
+        }
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        // 11 immediate children (Submodule/ + Service0-9) > 5 - falls back to ancestor.
+        AssertEx.SequenceEqual([root], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_DirectoryIsAncestor()
+    {
+        string root = Path.Join(SdkTestContext.Current.TestExecutionDirectory, "repo") + Path.DirectorySeparatorChar;
+        var dirs = new List<string>
+        {
+            root,
+            Path.Join(root, "src", "A") + Path.DirectorySeparatorChar,
+        };
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        // One directory IS the ancestor - just watch it.
+        AssertEx.SequenceEqual([root], result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_NoCommonAncestorBeyondRoot()
+    {
+        // Simulates watching files under completely different root paths (e.g. /private/tmp/... and /Users/...). Should not consolidate since the only common prefix is the filesystem root.
+        var dirs = new List<string>
+        {
+            "/private/tmp/project/src/",
+            "/Users/someone/Library/dotnet/cache/",
+        };
+
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+
+        
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_SingleDirectory()
+    {
+        var dirs = new List<string> { "/some/path/" };
+        var result = FileWatcher.ConsolidateDirectories(dirs);
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public void ConsolidateDirectories_Empty()
+    {
+        var result = FileWatcher.ConsolidateDirectories([]);
+        Assert.Empty(result);
+    }
+
     [Theory]
     [CombinatorialData]
     public async Task NewFile(bool usePolling)
