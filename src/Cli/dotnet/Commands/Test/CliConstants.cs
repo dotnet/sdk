@@ -60,9 +60,9 @@ internal static class HandshakeMessagePropertyNames
 internal static class ProtocolConstants
 {
     /// <summary>
-    /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
+    /// The protocol versions that are supported by the current SDK. Must be ordered from highest version to lowest version.
     /// </summary>
-    internal const string SupportedVersions = "1.0.0";
+    internal static readonly string[] SupportedVersions = ["1.1.0", "1.0.0"];
 }
 
 internal static class ProjectProperties

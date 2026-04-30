@@ -54,6 +54,8 @@ internal sealed class TestApplication(
 
             using var process = Process.Start(processStartInfo)!;
 
+            int exitCode;
+
             // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
@@ -69,7 +71,14 @@ internal sealed class TestApplication(
                 string? currentLine;
                 while ((currentLine = stdOut.ReadLine()) is not null)
                 {
-                    stdOutBuilder.Enqueue(currentLine);
+                    if (_handler.ShouldHideOutputAndError)
+                    {
+                        stdOutBuilder.Enqueue(currentLine);
+                    }
+                    else
+                    {
+                        Console.WriteLine(currentLine);
+                    }
                 }
             }, TaskCreationOptions.LongRunning);
 
@@ -79,7 +88,14 @@ internal sealed class TestApplication(
                 string? currentLine;
                 while ((currentLine = stdErr.ReadLine()) is not null)
                 {
-                    stdErrBuilder.Enqueue(currentLine);
+                    if (_handler.ShouldHideOutputAndError)
+                    {
+                        stdErrBuilder.Enqueue(currentLine);
+                    }
+                    else
+                    {
+                        Console.WriteLine(currentLine);
+                    }
                 }
             }, TaskCreationOptions.LongRunning);
 
@@ -97,7 +113,7 @@ internal sealed class TestApplication(
             {
             }
 
-            var exitCode = process.ExitCode;
+            exitCode = process.ExitCode;
             _handler.OnTestProcessExited(exitCode, string.Join(Environment.NewLine, stdOutBuilder), string.Join(Environment.NewLine, stdErrBuilder));
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
@@ -254,7 +270,7 @@ internal sealed class TestApplication(
                     case HandshakeMessage handshakeMessage:
                         _handshakes.Add(server, handshakeMessage);
                         string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
-                        OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                        OnHandshakeMessage(handshakeMessage, negotiatedVersion);
                         return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
 
                     case CommandLineOptionMessages commandLineOptionMessages:
@@ -317,14 +333,15 @@ internal sealed class TestApplication(
             return string.Empty;
         }
 
-        // NOTE: Today, ProtocolConstants.Version is only 1.0.0 (i.e, SDK supports only a single version).
-        // Whenever we support multiple versions in SDK, we should do intersection
-        // between protocolVersions given by MTP, and the versions supported by SDK.
-        // Then we return the "highest" version from the intersection.
-        // The current logic **assumes** that ProtocolConstants.SupportedVersions is a single version.
-        if (protocolVersions.Split(";").Contains(ProtocolConstants.SupportedVersions))
+        // ProtocolConstant.SupportedVersions is the SDK supported versions, ordered from highest version to lowest version.
+        // So, we take the first highest version that is also supported by MTP.
+        var protocolVersionsByMTP = protocolVersions.Split(";");
+        foreach (var sdkSupportedVersion in ProtocolConstants.SupportedVersions)
         {
-            return ProtocolConstants.SupportedVersions;
+            if (protocolVersionsByMTP.Contains(sdkSupportedVersion))
+            {
+                return sdkSupportedVersion;
+            }
         }
 
         // The version given by MTP is not supported by SDK.
@@ -341,8 +358,8 @@ internal sealed class TestApplication(
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         });
 
-    public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
-        => _handler.OnHandshakeReceived(handshakeMessage, gotSupportedVersion);
+    public void OnHandshakeMessage(HandshakeMessage handshakeMessage, string negotiatedVersion)
+        => _handler.OnHandshakeReceived(handshakeMessage, negotiatedVersion);
 
     private void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
     {
