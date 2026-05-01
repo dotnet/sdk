@@ -1267,7 +1267,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.type\"])\n| where isnotempty(os)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    SuccessRate = round(100.0 * countif(is_success) / count(), 1)\n    by os, version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, Total, SuccessRate",
+      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.type\"])\n| where isnotempty(os)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by os, version\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, SuccessRate, Relevant, Successful, UserErrors",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1278,7 +1278,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.platform\"])\n| where isnotempty(os)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    SuccessRate = round(100.0 * countif(is_success) / count(), 1)\n    by os, version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, Total, SuccessRate",
+      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.platform\"])\n| where isnotempty(os)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by os, version\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, SuccessRate, Relevant, Successful, UserErrors",
       "usedVariables": [
         "_dotnetupCommands"
       ]
