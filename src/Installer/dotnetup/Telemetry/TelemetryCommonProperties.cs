@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.DotNet.Cli.Telemetry;
 
@@ -15,6 +16,7 @@ internal static class TelemetryCommonProperties
     private static readonly Lazy<bool> s_isCIEnvironment = new(DetectCIEnvironment);
     private static readonly Lazy<string?> s_llmEnvironment = new(DetectLLMEnvironment);
     private static readonly Lazy<bool> s_isDevBuild = new(DetectDevBuild);
+    private static readonly Lazy<string> s_dockerContainer = new(DetectDockerContainer);
 
     /// <summary>
     /// True when this process is running in a CI environment, as detected by
@@ -50,9 +52,11 @@ internal static class TelemetryCommonProperties
             ["os.platform"] = RuntimeInformation.OSDescription,
             ["os.version"] = Environment.OSVersion.VersionString,
             ["os.arch"] = RuntimeInformation.OSArchitecture.ToString(),
+            ["kernel.version"] = GetKernelVersion(),
             ["process.arch"] = RuntimeInformation.ProcessArchitecture.ToString(),
             ["runtime.id"] = RuntimeInformation.RuntimeIdentifier,
             ["output.redirected"] = Console.IsOutputRedirected,
+            ["docker.container"] = s_dockerContainer.Value,
             ["ci.detected"] = s_isCIEnvironment.Value,
             ["dotnetup.version"] = GetVersion(),
             ["dev.build"] = s_isDevBuild.Value
@@ -164,6 +168,24 @@ internal static class TelemetryCommonProperties
             return null;
         }
     }
+
+    private static string DetectDockerContainer()
+    {
+        try
+        {
+            var detector = new DockerContainerDetectorForTelemetry();
+            return detector.IsDockerContainer().ToString("G");
+        }
+        catch
+        {
+            return IsDockerContainer.Unknown.ToString("G");
+        }
+    }
+
+    /// <summary>
+    /// Returns the OS kernel version string. Same as the SDK's "Kernel Version" property.
+    /// </summary>
+    private static string GetKernelVersion() => RuntimeInformation.OSDescription;
 
     private static bool DetectDevBuild()
     {
