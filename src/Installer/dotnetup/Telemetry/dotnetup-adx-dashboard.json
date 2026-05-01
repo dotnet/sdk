@@ -149,72 +149,15 @@
         "colorRules": [
           {
             "id": "73c5daba-70a3-425d-ad1c-fe5c73db5f5c",
-            "ruleType": "colorByCondition",
-            "ruleName": "HighSuccess",
+            "ruleType": "colorByValue",
+            "ruleName": "SuccessRateGradient",
             "applyTo": "cells",
             "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": ">=",
-                "values": [
-                  "95"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "green",
-            "tag": "",
-            "icon": null
-          },
-          {
-            "id": "adb277bb-2ee2-432b-bc1a-f5b8448e3897",
-            "ruleType": "colorByCondition",
-            "ruleName": "MediumSuccess",
-            "applyTo": "cells",
-            "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": ">=",
-                "values": [
-                  "80"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "yellow",
-            "tag": "",
-            "icon": null
-          },
-          {
-            "id": "25295878-8c84-4991-9159-e5e0c96d3458",
-            "ruleType": "colorByCondition",
-            "ruleName": "LowSuccess",
-            "applyTo": "cells",
-            "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": "<",
-                "values": [
-                  "80"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "red",
-            "tag": "",
-            "icon": null
+            "column": "SuccessRate",
+            "themeName": "traffic-lights",
+            "minValue": "85",
+            "maxValue": "100",
+            "reverseTheme": false
           }
         ]
       }
@@ -240,72 +183,15 @@
         "colorRules": [
           {
             "id": "171829aa-f0cb-4fda-a77f-9900ebd1ac04",
-            "ruleType": "colorByCondition",
-            "ruleName": "HighSuccess",
+            "ruleType": "colorByValue",
+            "ruleName": "SuccessRateGradient",
             "applyTo": "cells",
             "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": ">=",
-                "values": [
-                  "95"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "green",
-            "tag": "",
-            "icon": null
-          },
-          {
-            "id": "b1c0c4dd-833b-4381-8a60-5e71340aaf17",
-            "ruleType": "colorByCondition",
-            "ruleName": "MediumSuccess",
-            "applyTo": "cells",
-            "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": ">=",
-                "values": [
-                  "80"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "yellow",
-            "tag": "",
-            "icon": null
-          },
-          {
-            "id": "68ab9495-1815-49e7-bcf2-06c699781e5e",
-            "ruleType": "colorByCondition",
-            "ruleName": "LowSuccess",
-            "applyTo": "cells",
-            "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": "<",
-                "values": [
-                  "80"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "red",
-            "tag": "",
-            "icon": null
+            "column": "SuccessRate",
+            "themeName": "traffic-lights",
+            "minValue": "85",
+            "maxValue": "100",
+            "reverseTheme": false
           }
         ]
       }
@@ -354,7 +240,7 @@
     },
     {
       "id": "eccf2c58-5072-4a07-ba21-6e04e551ba50",
-      "title": "Product Success Rate Over Time (by Command)",
+      "title": "Product Success Rate Over Time (by Command, Latest Version)",
       "visualType": "line",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -617,49 +503,15 @@
         "colorRules": [
           {
             "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "ruleType": "colorByCondition",
-            "ruleName": "HighSuccess",
+            "ruleType": "colorByValue",
+            "ruleName": "SuccessRateGradient",
             "applyTo": "cells",
             "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": ">=",
-                "values": [
-                  "95"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "green",
-            "tag": "",
-            "icon": null
-          },
-          {
-            "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
-            "ruleType": "colorByCondition",
-            "ruleName": "LowSuccess",
-            "applyTo": "cells",
-            "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": "<",
-                "values": [
-                  "95"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "red",
-            "tag": "",
-            "icon": null
+            "column": "SuccessRate",
+            "themeName": "traffic-lights",
+            "minValue": "85",
+            "maxValue": "100",
+            "reverseTheme": false
           }
         ]
       }
@@ -685,72 +537,15 @@
         "colorRules": [
           {
             "id": "e339bfd9-bb42-4d26-a3fa-96a22f3fd28b",
-            "ruleType": "colorByCondition",
-            "ruleName": "HighSuccess",
+            "ruleType": "colorByValue",
+            "ruleName": "SuccessRateGradient",
             "applyTo": "cells",
             "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": ">=",
-                "values": [
-                  "95"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "green",
-            "tag": "",
-            "icon": null
-          },
-          {
-            "id": "167f52b6-7e5c-4165-a990-a3910841dd42",
-            "ruleType": "colorByCondition",
-            "ruleName": "MediumSuccess",
-            "applyTo": "cells",
-            "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": ">=",
-                "values": [
-                  "80"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "yellow",
-            "tag": "",
-            "icon": null
-          },
-          {
-            "id": "eba70af8-a21c-4340-a1c9-6c5e82b4056e",
-            "ruleType": "colorByCondition",
-            "ruleName": "LowSuccess",
-            "applyTo": "cells",
-            "visualType": "table",
-            "applyToColumn": "SuccessRate",
-            "hideText": false,
-            "conditions": [
-              {
-                "column": "SuccessRate",
-                "operator": "<",
-                "values": [
-                  "80"
-                ]
-              }
-            ],
-            "chainingOperator": "and",
-            "colorStyle": "bold",
-            "color": "red",
-            "tag": "",
-            "icon": null
+            "column": "SuccessRate",
+            "themeName": "traffic-lights",
+            "minValue": "85",
+            "maxValue": "100",
+            "reverseTheme": false
           }
         ]
       }
@@ -1246,7 +1041,7 @@
     },
     {
       "id": "7e79a842-85f9-4172-8f8c-89c7f71e09bf",
-      "title": "Daily Unique Users by Version",
+      "title": "Daily Unique Sessions by Version",
       "visualType": "stackedcolumn",
       "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
       "layout": {
@@ -1264,7 +1059,7 @@
         "legendLocation": "bottom",
         "xColumn": "Day",
         "yColumns": [
-          "UniqueDevices"
+          "UniqueSessions"
         ],
         "seriesColumns": [
           "version"
@@ -1273,7 +1068,7 @@
     },
     {
       "id": "b38ca851-8bc0-4709-949f-712d2b3d8f2c",
-      "title": "Daily Active Devices",
+      "title": "Daily Active Sessions",
       "visualType": "line",
       "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
       "layout": {
@@ -1290,7 +1085,7 @@
         "hideLegend": false,
         "xColumn": "Day",
         "yColumns": [
-          "UniqueDevices"
+          "UniqueSessions"
         ]
       }
     }
@@ -1363,9 +1158,10 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where isnotempty(command)\n| where not(not(is_success) and error_category == \"user\")\n| summarize Total = count(), Successful = countif(is_success) by Day = bin(TimeGenerated, 1d), command\n| where Total > 0\n| extend SuccessRate = round(100.0 * Successful / Total, 1)\n| project Day, command, SuccessRate\n| order by Day asc, command asc",
+      "text": "// When no version filter is set, auto-scope to the latest version so the\n// chart isn't cluttered with old data. When the user sets a version, respect it.\nlet effectiveVersion = iif(isempty(_versionFilter),\n    toscalar(_dotnetupCommands | where isnotempty(version) | distinct version | order by version desc | take 1),\n    _versionFilter);\n_dotnetupCommands\n| where isnotempty(command)\n| where version == effectiveVersion\n| where not(not(is_success) and error_category == \"user\")\n| summarize Total = count(), Successful = countif(is_success) by Day = bin(TimeGenerated, 1d), command\n| where Total > 0\n| extend SuccessRate = round(100.0 * Successful / Total, 1)\n| project Day, command, SuccessRate\n| order by Day asc, command asc",
       "usedVariables": [
-        "_dotnetupCommands"
+        "_dotnetupCommands",
+        "_versionFilter"
       ]
     },
     {
@@ -1451,7 +1247,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.type\"])\n| where isnotempty(os)\n| summarize\n    Total = count(),\n    SuccessRate = round(100.0 * countif(is_success) / count(), 1)\n    by os\n| order by Total desc\n| project OS = os, Total, SuccessRate",
+      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.type\"])\n| where isnotempty(os)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    SuccessRate = round(100.0 * countif(is_success) / count(), 1)\n    by os, version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, Total, SuccessRate",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1462,7 +1258,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.platform\"])\n| where isnotempty(os)\n| summarize\n    Total = count(),\n    SuccessRate = round(100.0 * countif(is_success) / count(), 1)\n    by os\n| order by Total desc\n| project OS = os, Total, SuccessRate",
+      "text": "_dotnetupCommands\n| extend os = tostring(Properties[\"os.platform\"])\n| where isnotempty(os)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    SuccessRate = round(100.0 * countif(is_success) / count(), 1)\n    by os, version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, os asc\n| project Version = version, OS = os, Total, SuccessRate",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1583,7 +1379,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = tostring(Properties[\"error.type\"]),\n    error_details = tostring(Properties[\"error.details\"]),\n    hresult = tostring(Properties[\"error.hresult\"]),\n    os = tostring(Properties[\"os.platform\"])\n| summarize Count = count(), LastSeen = max(TimeGenerated) by error_type, error_details, hresult, os, version\n| order by Count desc\n| take 25\n| project ErrorType = error_type, ErrorDetails = error_details, Count, LastSeen, hresult, os, version",
+      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = tostring(Properties[\"error.type\"]),\n    error_details = tostring(Properties[\"error.details\"]),\n    hresult = tostring(Properties[\"error.hresult\"]),\n    stack_trace = tostring(Properties[\"error.stack_trace\"]),\n    failure_stage = tostring(Properties[\"error.first_failure_stage\"]),\n    os = tostring(Properties[\"os.platform\"])\n| summarize Count = count(), LastSeen = max(TimeGenerated) by error_type, error_details, hresult, failure_stage, os, version\n| order by Count desc\n| take 25\n| project ErrorType = error_type, ErrorDetails = error_details, FailureStage = failure_stage, Count, LastSeen, hresult, os, version",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1638,7 +1434,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where is_success\n| where isnotempty(command) and isnotnull(duration_ms)\n| summarize\n    Count = count(),\n    P50 = percentile(duration_ms, 50),\n    P90 = percentile(duration_ms, 90),\n    P99 = percentile(duration_ms, 99),\n    Avg = avg(duration_ms)\n    by command\n| project Command = command,\n    Count,\n    P50_ms = round(P50, 0),\n    P90_ms = round(P90, 0),\n    P99_ms = round(P99, 0),\n    Avg_ms = round(Avg, 0)",
+      "text": "_dotnetupCommands\n| where is_success\n| where isnotempty(command) and isnotnull(duration_ms)\n| summarize\n    Count = count(),\n    P25 = percentile(duration_ms, 25),\n    P50 = percentile(duration_ms, 50),\n    P90 = percentile(duration_ms, 90),\n    P99 = percentile(duration_ms, 99)\n    by command\n| project Command = command,\n    Count,\n    P25_ms = round(P25, 0),\n    P50_ms = round(P50, 0),\n    P90_ms = round(P90, 0),\n    P99_ms = round(P99, 0)",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1660,7 +1456,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend device_id = tostring(Properties[\"device.id\"])\n| summarize\n    UniqueDevices = dcount(device_id),\n    TotalCommands = count()\n| project UniqueDevices, TotalCommands, AvgCommandsPerDevice = round(1.0 * TotalCommands / UniqueDevices, 1)",
+      "text": "_dotnetupCommands\n| extend session_id = tostring(Properties[\"session.id\"]),\n    device_id = tostring(Properties[\"device.id\"])\n| summarize\n    UniqueSessions = dcount(session_id),\n    UniqueDevices = dcount(device_id),\n    TotalCommands = count()\n| project UniqueSessions, UniqueDevices, TotalCommands, AvgCommandsPerSession = round(1.0 * TotalCommands / UniqueSessions, 1)",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1671,7 +1467,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(version)\n| summarize UniqueDevices = dcount(device_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
+      "text": "_dotnetupCommands\n| extend session_id = tostring(Properties[\"session.id\"])\n| where isnotempty(version)\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1682,7 +1478,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend device_id = tostring(Properties[\"device.id\"])\n| summarize UniqueDevices = dcount(device_id) by Day = bin(TimeGenerated, 1d)",
+      "text": "_dotnetupCommands\n| extend session_id = tostring(Properties[\"session.id\"])\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d)",
       "usedVariables": [
         "_dotnetupCommands"
       ]
