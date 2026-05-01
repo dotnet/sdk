@@ -255,15 +255,26 @@ namespace Microsoft.TemplateEngine
         /// <see cref="JsonObject.WriteTo"/> falls back to the underlying <see cref="System.Text.Json.JsonElement"/>
         /// when the internal dictionary has not yet been initialized, so <see cref="JsonNode.ToJsonString"/> is
         /// safe to call even after a failed <see cref="JsonObject"/> initialization.
+        /// Duplicate keys are de-duplicated with last-wins semantics to match normal JsonObject enumeration behavior.
         /// </remarks>
         private static List<KeyValuePair<string, JsonNode?>> GetObjectPropertiesViaDocument(JsonObject obj)
         {
             string json = obj.ToJsonString();
             var result = new List<KeyValuePair<string, JsonNode?>>();
+            var propertyIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
             using JsonDocument doc = JsonDocument.Parse(json, DocOptions);
             foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
             {
-                result.Add(new KeyValuePair<string, JsonNode?>(prop.Name, ParseJsonNode(prop.Value.GetRawText())));
+                var property = new KeyValuePair<string, JsonNode?>(prop.Name, ParseJsonNode(prop.Value.GetRawText()));
+                if (propertyIndexes.TryGetValue(prop.Name, out int existingIndex))
+                {
+                    result[existingIndex] = property;
+                }
+                else
+                {
+                    propertyIndexes[prop.Name] = result.Count;
+                    result.Add(property);
+                }
             }
             return result;
         }
