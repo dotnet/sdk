@@ -323,7 +323,7 @@ public class TelemetryE2ETests
     }
 
     [Fact]
-    public void TelemetryDisabled_ProducesNoSpans()
+    public void TelemetryDisabled_ProducesNoLogRecords()
     {
         string tempDir = Path.Combine(Path.GetTempPath(), $"dnup-e2e-{Guid.NewGuid():N}");
         Directory.CreateDirectory(tempDir);

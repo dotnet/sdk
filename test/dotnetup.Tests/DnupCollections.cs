@@ -53,3 +53,12 @@ public class DotnetupLifecycleCollection
 public class DotnetupEnvironmentMutationTests
 {
 }
+
+/// <summary>
+/// Serialized collection for tests that mutate process-wide telemetry state
+/// (e.g. Metrics.OnTrackEvent). Tests in this collection run sequentially to avoid races.
+/// </summary>
+[CollectionDefinition("DotnetupTelemetryStateMutationTests", DisableParallelization = true)]
+public class DotnetupTelemetryStateMutationTests
+{
+}

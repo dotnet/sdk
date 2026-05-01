@@ -19,7 +19,7 @@ internal class DotnetupProgram
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
         // Start root activity for the entire process
-        using var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+        var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
 
         // Capture current console encoding so it can be restored on exit.
         // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.

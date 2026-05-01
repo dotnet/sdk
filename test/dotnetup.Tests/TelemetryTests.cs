@@ -807,6 +807,7 @@ public class ActivitySourceIntegrationTests
     }
 }
 
+[Collection("DotnetupTelemetryStateMutationTests")]
 public class TrackedOperationTests : IDisposable
 {
     private const string TestSessionId = "test-session-id";
@@ -1145,7 +1146,7 @@ public class TrackedOperationTests : IDisposable
 
 /// <summary>
 /// Enforces that production code uses <c>TrackedOperation.Tag()</c> or
-/// <c>InstallationActivitySource.Tag()</c> instead of the raw
+/// <c>Metrics.Tag()</c> instead of the raw
 /// <c>Activity.SetTag()</c> API. Only the telemetry infrastructure files
 /// that wrap the raw API are allowed to call <c>.SetTag()</c> directly.
 /// </summary>
@@ -1210,7 +1211,7 @@ public class TelemetryDualWriteEnforcementTests
         Assert.True(
             violations.Count == 0,
             $"Found {violations.Count} direct .SetTag() call(s) outside infrastructure files. " +
-            "Use TrackedOperation.Tag() or InstallationActivitySource.Tag() instead.\n\n" +
+            "Use TrackedOperation.Tag() or Metrics.Tag() instead.\n\n" +
             string.Join("\n", violations));
     }
 
