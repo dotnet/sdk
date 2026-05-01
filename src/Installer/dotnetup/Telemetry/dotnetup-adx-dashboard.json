@@ -1022,7 +1022,7 @@
     },
     {
       "id": "56514dd3-9563-41ac-8d83-9dff86f64a70",
-      "title": "User Statistics",
+      "title": "Usage Statistics",
       "visualType": "table",
       "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
       "layout": {
@@ -1379,7 +1379,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = tostring(Properties[\"error.type\"]),\n    error_details = tostring(Properties[\"error.details\"]),\n    hresult = tostring(Properties[\"error.hresult\"]),\n    stack_trace = tostring(Properties[\"error.stack_trace\"]),\n    failure_stage = tostring(Properties[\"error.first_failure_stage\"]),\n    os = tostring(Properties[\"os.platform\"])\n| summarize Count = count(), LastSeen = max(TimeGenerated) by error_type, error_details, hresult, failure_stage, os, version\n| order by Count desc\n| take 25\n| project ErrorType = error_type, ErrorDetails = error_details, FailureStage = failure_stage, Count, LastSeen, hresult, os, version",
+      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = tostring(Properties[\"error.type\"]),\n    error_details = tostring(Properties[\"error.details\"]),\n    hresult = tostring(Properties[\"error.hresult\"]),\n    stack_trace = tostring(Properties[\"error.stack_trace\"]),\n    failure_stage = tostring(Properties[\"error.first_failure_stage\"]),\n    os = tostring(Properties[\"os.platform\"])\n| summarize Count = count(), LastSeen = max(TimeGenerated) by error_type, error_details, hresult, failure_stage, os, version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, Count desc\n| take 25\n| project Version = version, ErrorType = error_type, ErrorDetails = error_details, FailureStage = failure_stage, Count, LastSeen, hresult, os",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1390,7 +1390,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where not(is_success)\n| extend stack_trace = tostring(Properties[\"error.stack_trace\"]),\n    error_type = tostring(Properties[\"error.type\"])\n| where error_category == \"product\" or isempty(error_category)\n| where isnotempty(stack_trace)\n| summarize Count = count() by stack_trace, error_type\n| order by Count desc\n| take 20\n| project StackTrace = stack_trace, ErrorType = error_type, Count",
+      "text": "_dotnetupCommands\n| where not(is_success)\n| extend stack_trace = tostring(Properties[\"error.stack_trace\"]),\n    error_type = tostring(Properties[\"error.type\"])\n| where error_category == \"product\" or isempty(error_category)\n| where isnotempty(stack_trace)\n| summarize Count = count() by stack_trace, error_type, version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, Count desc\n| take 20\n| project Version = version, ErrorType = error_type, StackTrace = stack_trace, Count",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1401,7 +1401,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = tostring(Properties[\"error.type\"])\n| where isnotempty(error_type)\n| summarize Count = count() by error_type\n| order by Count desc\n| take 20\n| project ErrorType = error_type, Count",
+      "text": "_dotnetupCommands\n| where not(is_success)\n| where error_category == \"product\" or isempty(error_category)\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend error_details = tostring(Properties[\"error.details\"])\n| extend stack_trace = tostring(Properties[\"error.stack_trace\"])\n| extend detail = iif(isnotempty(error_details), error_details, stack_trace)\n| where isnotempty(error_type)\n| summarize Count = count() by error_type, detail, version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, Count desc\n| take 20\n| project Version = version, ErrorType = error_type, Detail = detail, Count",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1456,7 +1456,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend session_id = tostring(Properties[\"session.id\"]),\n    device_id = tostring(Properties[\"device.id\"])\n| summarize\n    UniqueSessions = dcount(session_id),\n    UniqueDevices = dcount(device_id),\n    TotalCommands = count()\n| project UniqueSessions, UniqueDevices, TotalCommands, AvgCommandsPerSession = round(1.0 * TotalCommands / UniqueSessions, 1)",
+      "text": "_dotnetupCommands\n| extend session_id = tostring(Properties[\"session.id\"])\n| summarize\n    UniqueSessions = dcount(session_id),\n    TotalCommands = count()\n| project UniqueSessions, TotalCommands, AvgCommandsPerSession = round(1.0 * TotalCommands / UniqueSessions, 1)",
       "usedVariables": [
         "_dotnetupCommands"
       ]
