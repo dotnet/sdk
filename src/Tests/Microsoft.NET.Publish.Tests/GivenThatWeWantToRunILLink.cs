@@ -1694,7 +1694,8 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishDir = publishCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid);
             publishDir.Should().HaveFile("System.IO.Compression.ZipFile.dll");
-            GivenThatWeWantToPublishReadyToRun.DoesImageHaveR2RInfo(publishDir.File("TestWeb.Views.dll").FullName);
+            // In net6.0+, Razor views are compiled into the main assembly instead of a separate Views.dll
+            GivenThatWeWantToPublishReadyToRun.DoesImageHaveR2RInfo(publishDir.File("TestWeb.dll").FullName);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]

@@ -8,6 +8,10 @@ set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExt
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
 set DOTNET_MULTILEVEL_LOOKUP=0
+
+REM Enable globalization invariant mode so old .NET Core runtimes (1.x/2.x)
+REM can run on distros without ICU installed (e.g., Azure Linux 3)
+set DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 set TestFullMSBuild=%1
 
 REM Ensure Visual Studio instances allow preview SDKs
