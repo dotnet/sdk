@@ -216,7 +216,12 @@ public static class ErrorCodeMapper
     {
         var errorCode = installEx.ErrorCode;
         var baseCategory = ErrorCategoryClassifier.ClassifyInstallError(errorCode);
-        var details = installEx.Version is not null ? VersionSanitizer.Sanitize(installEx.Version) : null;
+        // Use the sanitized version when available; otherwise fall back to the
+        // error code name so non-version errors (e.g. LocalManifestCorrupted)
+        // still populate error.details in telemetry.
+        var details = installEx.Version is not null
+            ? VersionSanitizer.Sanitize(installEx.Version)
+            : errorCode.ToString();
         int? httpStatus = null;
 
         if (ErrorCategoryClassifier.IsNetworkRelatedErrorCode(errorCode) && installEx.InnerException is not null)
