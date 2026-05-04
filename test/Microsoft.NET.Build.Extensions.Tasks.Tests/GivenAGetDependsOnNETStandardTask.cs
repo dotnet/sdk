@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Reflection;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -122,17 +123,18 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void SucceedsWithWarningOnLockedFile()
         {
             var testDir = TestAssetsManager.CreateTestDirectory();
-            var lockedFile = Path.Combine(testDir.Path, $"{nameof(SucceedsWithWarningOnLockedFile)}.dll");
+            var lockedFileName = $"{nameof(SucceedsWithWarningOnLockedFile)}.dll";
+            var lockedFilePath = Path.Combine(testDir.Path, lockedFileName);
 
             // Create file with exclusive lock (no sharing)
-            using (var fileHandle = new FileStream(lockedFile, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            using (var fileHandle = new FileStream(lockedFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
             {
                 // Verify the lock is actually held before running the task.
                 // On some CI machines, antimalware or file system filters can
                 // interfere with file locking, causing the test to be unreliable.
                 try
                 {
-                    using var probe = new FileStream(lockedFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    using var probe = new FileStream(lockedFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                     Assert.Fail(
                         "File lock is not being enforced — the probe open should have thrown IOException. " +
                         "This may indicate antimalware or file system filter interference on this machine.");
@@ -145,8 +147,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var task = new GetDependsOnNETStandard()
                 {
                     BuildEngine = new MockBuildEngine(),
-                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
-                    References = new[] { new MockTaskItem() { ItemSpec = lockedFile } }
+                    TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(testDir.Path),
+                    References = new[] { new MockTaskItem() { ItemSpec = lockedFileName } }
                 };
 
                 task.Execute().Should().BeTrue();
