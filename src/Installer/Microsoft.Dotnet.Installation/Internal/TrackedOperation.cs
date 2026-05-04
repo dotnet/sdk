@@ -6,20 +6,18 @@ using System.Diagnostics;
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
-/// Wraps an <see cref="Activity"/> and, on dispose, hands the activity plus
-/// accumulated tags to the host callback (set via
-/// <see cref="Metrics.OnTrackEvent"/>) which emits the completion log record
-/// and stops the activity. If no callback is registered the activity is
-/// simply stopped.
+/// Wraps an <see cref="Activity"/> and, on dispose, hands the activity
+/// to the host callback (set via <see cref="Metrics.OnTrackEvent"/>)
+/// which emits the completion log record and stops the activity. If no
+/// callback is registered the activity is simply stopped.
 /// </summary>
 internal sealed class TrackedOperation : IDisposable
 {
     private readonly string _eventName;
-    private readonly Action<string, Activity?, IDictionary<string, string?>>? _onTrackEvent;
-    private readonly Dictionary<string, string?> _storedTags = [];
+    private readonly Action<string, Activity?>? _onTrackEvent;
     private bool _disposed;
 
-    internal TrackedOperation(Activity? activity, string eventName, Action<string, Activity?, IDictionary<string, string?>>? onTrackEvent)
+    internal TrackedOperation(Activity? activity, string eventName, Action<string, Activity?>? onTrackEvent)
     {
         Activity = activity;
         _eventName = eventName;
@@ -31,7 +29,6 @@ internal sealed class TrackedOperation : IDisposable
     public void Tag(string key, object? value)
     {
         Activity?.SetTag(key, value);
-        _storedTags[key] = value?.ToString();
     }
 
     public void SetStatus(ActivityStatusCode code, string? description = null)
@@ -52,7 +49,7 @@ internal sealed class TrackedOperation : IDisposable
         if (_onTrackEvent is not null)
         {
             // Callback is responsible for stopping the activity and emitting the event.
-            _onTrackEvent.Invoke(_eventName, Activity, _storedTags);
+            _onTrackEvent.Invoke(_eventName, Activity);
         }
         else
         {
