@@ -18,8 +18,10 @@ internal class DotnetupProgram
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
-        // Start root activity for the entire process
-        using var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+        // Start root activity for the entire process. Disposed explicitly in
+        // the finally block below (no `using` here) so the completion event is
+        // emitted before DisposeTelemetry flushes/shuts down the providers.
+        var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
 
         // Capture current console encoding so it can be restored on exit.
         // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.

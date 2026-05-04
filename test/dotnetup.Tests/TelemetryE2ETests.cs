@@ -43,7 +43,7 @@ public class TelemetryE2ETests
     };
 
     [Fact]
-    public void InvalidVersion_ProducesUserError_OnRootSpan()
+    public void InvalidVersion_ProducesUserError_OnRootLogRecord()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildSdkArguments("999.999.999", testEnv.InstallPath, testEnv.ManifestPath);
@@ -66,7 +66,7 @@ public class TelemetryE2ETests
     }
 
     [Fact]
-    public void InvalidVersion_ErrorTags_AreOnCommandSpan()
+    public void InvalidVersion_ErrorTags_AreOnCommandLogRecord()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildSdkArguments("999.999.999", testEnv.InstallPath, testEnv.ManifestPath);
@@ -89,7 +89,7 @@ public class TelemetryE2ETests
     }
 
     [Fact]
-    public void InvalidVersion_ErrorDetails_ArePropagatedToRootSpan()
+    public void InvalidVersion_ErrorDetails_ArePropagatedToRootLogRecord()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildSdkArguments("999.999.999", testEnv.InstallPath, testEnv.ManifestPath);
@@ -153,7 +153,7 @@ public class TelemetryE2ETests
     }
 
     [Fact]
-    public void InvalidVersion_RootSpan_HasCorrectDisplayName()
+    public void InvalidVersion_RootLogRecord_HasCorrectDisplayName()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildSdkArguments("999.999.999", testEnv.InstallPath, testEnv.ManifestPath);
@@ -323,7 +323,7 @@ public class TelemetryE2ETests
     }
 
     [Fact]
-    public void TelemetryDisabled_ProducesNoSpans()
+    public void TelemetryDisabled_ProducesNoLogRecords()
     {
         string tempDir = Path.Combine(Path.GetTempPath(), $"dnup-e2e-{Guid.NewGuid():N}");
         Directory.CreateDirectory(tempDir);

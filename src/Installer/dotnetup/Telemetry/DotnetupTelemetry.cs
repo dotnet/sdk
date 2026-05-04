@@ -371,7 +371,10 @@ public sealed class DotnetupTelemetry : IDisposable
         // AND every ancestor. The completion log picks them up automatically
         // because BuildCompletionState folds Activity.TagObjects into state.
         PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
-        operation.SetStatus(ActivityStatusCode.Error, ex.Message);
+        // Use a non-PII description (the classified error type) rather than
+        // ex.Message — the latter can leak user paths / values into exported
+        // span status when the perf-trace exporter is enabled.
+        operation.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
         EmitErrorLog(operation.Activity);
     }
 
