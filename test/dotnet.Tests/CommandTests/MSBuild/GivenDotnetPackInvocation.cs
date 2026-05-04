@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--serviceable" }, new string[] { "--property:Serviceable=true" })]
         [InlineData(new string[] { "-v", "diag" }, new string[] { "--verbosity:diag" })]
         [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diag" })]
+        [InlineData(new string[] { "--logger:xyz" }, new string[] { "--logger:xyz" })]
         [InlineData(new string[] { "<project>" }, new string[] { "<project>" })]
         [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)

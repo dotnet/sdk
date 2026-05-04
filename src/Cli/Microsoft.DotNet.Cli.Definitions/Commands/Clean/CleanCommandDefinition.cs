@@ -34,6 +34,8 @@ internal sealed class CleanCommandDefinition : Command
 
     public readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.normal);
 
+    public readonly Option<IEnumerable<string>> LoggerOption = CommonOptions.CreateLoggerOption();
+
     public readonly Option<string> RuntimeOption = TargetPlatformOptions.CreateRuntimeOption(CommandDefinitionStrings.CleanRuntimeOptionDescription);
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
@@ -56,6 +58,7 @@ internal sealed class CleanCommandDefinition : Command
         Options.Add(ConfigurationOption);
         Options.Add(InteractiveOption);
         Options.Add(VerbosityOption);
+        Options.Add(LoggerOption);
         Options.Add(OutputOption);
         Options.Add(ArtifactsPathOption);
         Options.Add(NoLogoOption);
