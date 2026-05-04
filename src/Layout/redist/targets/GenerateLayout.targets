@@ -523,9 +523,8 @@
     Only runs for native builds (TargetRid == HostRid) on supported platforms.
     Cross-compilation is not supported as NativeAOT requires native toolchain for target platform.
   -->
-  <!-- <Target Name="PublishDotnetAot"
-          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))"> -->
-  <Target Name="PublishDotnetAot" Condition="false">
+  <Target Name="PublishDotnetAot"
+          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))">
     <PropertyGroup>
       <!-- Define platform-specific native library naming -->
       <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
