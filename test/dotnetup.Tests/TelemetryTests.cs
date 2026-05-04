@@ -555,7 +555,6 @@ public class DotnetupTelemetryTests : IDisposable
         var state = DotnetupTelemetry.BuildCompletionState(
             "process/complete",
             rootActivity,
-            new Dictionary<string, string?>(),
             elapsedMs: 12.34,
             commonProperties: common);
 
@@ -606,7 +605,6 @@ public class DotnetupTelemetryTests : IDisposable
         var state = DotnetupTelemetry.BuildCompletionState(
             "command",
             commandActivity,
-            new Dictionary<string, string?>(),
             elapsedMs: 1050.5,
             commonProperties: common);
 
@@ -633,7 +631,7 @@ public class DotnetupTelemetryTests : IDisposable
     }
 
     [Fact]
-    public void BuildCompletionState_StoredTags_OverrideCommonProperties()
+    public void BuildCompletionState_ActivityTags_OverrideCommonProperties()
     {
         // If a per-event tag collides with a common property, the per-event
         // tag wins (last writer). Today nothing in dotnetup deliberately
@@ -642,21 +640,17 @@ public class DotnetupTelemetryTests : IDisposable
         using var activity = DotnetupTelemetry.CommandSource.StartActivity(
             "test-override", ActivityKind.Internal);
         Assert.NotNull(activity);
+        activity.SetTag("os.type", "Linux");
 
         var common = new List<KeyValuePair<string, object?>>
         {
             new("caller", "dotnetup"),
             new("os.type", "Windows"),
         };
-        var stored = new Dictionary<string, string?>
-        {
-            ["os.type"] = "Linux",
-        };
 
         var state = DotnetupTelemetry.BuildCompletionState(
             "command",
             activity,
-            stored,
             elapsedMs: 1.0,
             commonProperties: common);
 
@@ -688,7 +682,6 @@ public class DotnetupTelemetryTests : IDisposable
         var state = DotnetupTelemetry.BuildCompletionState(
             "process/complete",
             childActivity,
-            new Dictionary<string, string?>(),
             elapsedMs: 5.0,
             commonProperties: BuildSyntheticCommonProperties());
 
@@ -814,7 +807,7 @@ public class TrackedOperationTests : IDisposable
     private readonly ActivityListener _listener;
     private readonly ActivityListener _commandListener;
     private readonly List<Activity> _capturedActivities = [];
-    private readonly List<(string EventName, Activity? Activity, IDictionary<string, string?> StoredTags)> _capturedEvents = [];
+    private readonly List<(string EventName, Activity? Activity)> _capturedEvents = [];
 
     public TrackedOperationTests()
     {
@@ -848,36 +841,34 @@ public class TrackedOperationTests : IDisposable
     /// instead of an ActivityEvent — that LogRecord is exercised by E2E tests, not
     /// these in-memory unit tests, so we skip it here.
     /// </summary>
-    private void TestTrackEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
+    private void TestTrackEvent(string eventName, Activity? activity)
     {
-        _capturedEvents.Add((eventName, activity, storedTags));
+        _capturedEvents.Add((eventName, activity));
         activity?.Stop();
     }
 
     /// <summary>
     /// Asserts that a tracked event was properly captured by the callback and that
     /// the expected tags landed on the activity (via <c>op.Tag()</c>, which writes
-    /// to both <c>activity.Tags</c> and the stored-tags mirror dictionary).
+    /// to <c>activity.Tags</c>).
     /// </summary>
     private static void AssertTrackedEvent(
-        (string EventName, Activity? Activity, IDictionary<string, string?> StoredTags) captured,
+        (string EventName, Activity? Activity) captured,
         string expectedEventName,
         IDictionary<string, string?>? expectedTags = null)
     {
         Assert.Equal(expectedEventName, captured.EventName);
         Assert.NotNull(captured.Activity);
 
-        // Verify expected tags landed on the activity (or the storedTags mirror)
+        // Verify expected tags landed on the activity
         if (expectedTags is not null)
         {
             var activityTags = captured.Activity!.TagObjects
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString());
             foreach (var (key, value) in expectedTags)
             {
-                var found = activityTags.TryGetValue(key, out var fromActivity)
-                    || captured.StoredTags.TryGetValue(key, out fromActivity);
-                Assert.True(found, $"Activity or storedTags should contain '{key}'");
-                Assert.Equal(value, fromActivity);
+                Assert.True(activityTags.ContainsKey(key), $"Activity should contain tag '{key}'");
+                Assert.Equal(value, activityTags[key]);
             }
         }
 
@@ -1127,7 +1118,8 @@ public class TrackedOperationTests : IDisposable
 
         Assert.Single(_capturedEvents);
         Assert.Equal("command", _capturedEvents[0].EventName);
-        Assert.Equal("sdk/install", _capturedEvents[0].StoredTags["command.name"]);
+        var commandActivityTags = _capturedEvents[0].Activity!.TagObjects.ToDictionary(t => t.Key, t => t.Value?.ToString());
+        Assert.Equal("sdk/install", commandActivityTags["command.name"]);
         Assert.True(_capturedEvents[0].Activity!.Duration > TimeSpan.Zero);
 
         // Step 5: Program.finally disposes root operation

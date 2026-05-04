@@ -61,7 +61,7 @@ internal static class Metrics
     /// activities still complete via <c>Activity.Stop</c> but no log record
     /// is produced.
     /// </summary>
-    public static Action<string, Activity?, IDictionary<string, string?>>? OnTrackEvent { get; set; }
+    public static Action<string, Activity?>? OnTrackEvent { get; set; }
 
     /// <summary>
     /// Starts a tracked operation that emits a completion log record on

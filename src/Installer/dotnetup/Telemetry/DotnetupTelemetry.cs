@@ -224,8 +224,12 @@ public sealed class DotnetupTelemetry : IDisposable
             .SetResourceBuilder(resource)
             .AddSource("Microsoft.Dotnet.Bootstrapper")
             .AddSource("Microsoft.Dotnet.Installation")
-            .AddInMemoryExporter(_activities)
             .SetSampler(new AlwaysOnSampler());
+
+        if (!string.IsNullOrWhiteSpace(s_diskLogPath))
+        {
+            builder.AddInMemoryExporter(_activities);
+        }
 
         // Both OTLP and AzMonitor are network sinks — gate them on the
         // common `disableExport` switch so tests / CI can opt out of all
@@ -372,7 +376,6 @@ public sealed class DotnetupTelemetry : IDisposable
         // because BuildCompletionState folds Activity.TagObjects into state.
         PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
         operation.SetStatus(ActivityStatusCode.Error, errorInfo.ErrorType);
-        EmitErrorLog(operation.Activity);
     }
 
     /// <summary>
@@ -401,37 +404,6 @@ public sealed class DotnetupTelemetry : IDisposable
             ancestor.SetTag("error.first_failure_stage", failingActivity.OperationName);
         }
     }
-
-    /// <summary>
-    /// Emits one explicit severity=Error LogRecord (<c>dotnetup/error</c>) so
-    /// data-x has a discoverable Error signal in <c>traces</c>. The owning
-    /// op's completion log carries the same tags at severity=Information.
-    /// </summary>
-    private void EmitErrorLog(Activity? failingActivity)
-    {
-        if (_logger is null || failingActivity is null)
-        {
-            return;
-        }
-
-        try
-        {
-            var elapsedMs = (DateTime.UtcNow - failingActivity.StartTimeUtc).TotalMilliseconds;
-            var state = BuildCompletionState("error", failingActivity, s_emptyTags, elapsedMs);
-            _logger.Log(
-                LogLevel.Error,
-                new EventId(0, "dotnetup/error"),
-                state,
-                exception: null,
-                formatter: static (_, _) => "dotnetup/error");
-        }
-        catch
-        {
-            // Telemetry should never crash the app.
-        }
-    }
-
-    private static readonly Dictionary<string, string?> s_emptyTags = [];
 
     /// <summary>
     /// Drains both the tracer and logger batch export processors out to
@@ -497,7 +469,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <see cref="Activity.Duration"/> feeds the span envelope (Aspire /
     /// opt-in <c>DOTNETUP_CLI_GET_PERF_TRACE</c>).
     /// </remarks>
-    private void TrackEvent(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
+    private void TrackEvent(string eventName, Activity? activity)
     {
         if (!Enabled)
         {
@@ -507,7 +479,7 @@ public sealed class DotnetupTelemetry : IDisposable
 
         try
         {
-            EmitCompletionLog(eventName, activity, storedTags);
+            EmitCompletionLog(eventName, activity);
         }
         catch
         {
@@ -526,7 +498,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// <c>TraceId</c>/<c>SpanId</c> from <see cref="Activity.Current"/> for
     /// correlation.
     /// </summary>
-    private void EmitCompletionLog(string eventName, Activity? activity, IDictionary<string, string?> storedTags)
+    private void EmitCompletionLog(string eventName, Activity? activity)
     {
         if (_logger is null || activity is null)
         {
@@ -534,7 +506,7 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         var elapsedMs = (DateTime.UtcNow - activity.StartTimeUtc).TotalMilliseconds;
-        var state = BuildCompletionState(eventName, activity, storedTags, elapsedMs);
+        var state = BuildCompletionState(eventName, activity, elapsedMs);
         var formattedMessage = $"dotnetup/{eventName}";
         _logger.Log(
             LogLevel.Information,
@@ -546,21 +518,20 @@ public sealed class DotnetupTelemetry : IDisposable
 
     /// <summary>
     /// Builds the structured state for one <c>traces</c> row. See
-    /// <see cref="BuildCompletionState(string, Activity, IDictionary{string, string?}, double, IReadOnlyList{KeyValuePair{string, object?}})"/>.
+    /// <see cref="BuildCompletionState(string, Activity, double, IReadOnlyList{KeyValuePair{string, object?}})"/>.
     /// </summary>
     private List<KeyValuePair<string, object?>> BuildCompletionState(
         string eventName,
         Activity activity,
-        IDictionary<string, string?> storedTags,
         double elapsedMs)
-        => BuildCompletionState(eventName, activity, storedTags, elapsedMs, _commonProperties);
+        => BuildCompletionState(eventName, activity, elapsedMs, _commonProperties);
 
     /// <summary>
     /// Builds the structured state for one <c>traces</c> row. Stamps the
     /// process-level common properties first (so per-event Activity tags can
     /// override on collision), walks ancestor activities (root first) to
     /// inherit <c>command.*</c> tags, then overlays the current activity's
-    /// own tags and the op's stored tags. Last writer wins; computed fields
+    /// own tags. Last writer wins; computed fields
     /// (<c>operation.name</c>, <c>operation.duration_ms</c>,
     /// <c>operation.parent_name</c>) are added last.
     /// </summary>
@@ -577,7 +548,6 @@ public sealed class DotnetupTelemetry : IDisposable
     internal static List<KeyValuePair<string, object?>> BuildCompletionState(
         string eventName,
         Activity activity,
-        IDictionary<string, string?> storedTags,
         double elapsedMs,
         IReadOnlyList<KeyValuePair<string, object?>> commonProperties)
     {
@@ -611,14 +581,6 @@ public sealed class DotnetupTelemetry : IDisposable
 
         // Own activity tags (override ancestor inherited values).
         foreach (var tag in activity.TagObjects)
-        {
-            state[tag.Key] = tag.Value;
-        }
-
-        // TrackedOperation.Tag mirrors to Activity.SetTag in production so
-        // these are usually duplicates of TagObjects above; this overlay
-        // covers tests and any path with a null activity.
-        foreach (var tag in storedTags)
         {
             state[tag.Key] = tag.Value;
         }
