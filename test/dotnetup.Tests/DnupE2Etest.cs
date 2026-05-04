@@ -505,7 +505,7 @@ public class MultiChannelSdkInstallTests
         output.Should().NotContain("\r\n\r\n\r\n",
             "Output should not contain excessive blank lines from corrupted progress bars");
     }
-    
+
     private static int CountOccurrences(string text, string pattern)
     {
         int count = 0;

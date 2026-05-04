@@ -4,9 +4,9 @@
 using System.CommandLine;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
