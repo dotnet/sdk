@@ -23,6 +23,12 @@
 
     <!-- Ignore checking for OS API compatibility as we aren't targeting just the Windows platform  -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
+
+    <!--
+      Enable control flow guard
+      https://github.com/dotnet/docs/blob/main/docs/core/deploying/native-aot/security.md#control-flow-guard
+    -->
+    <ControlFlowGuard>Guard</ControlFlowGuard>
   </PropertyGroup>
 
   <ItemGroup>
