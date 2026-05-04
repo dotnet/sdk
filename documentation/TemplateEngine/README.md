@@ -2,7 +2,7 @@
 
 ## Overview
 
-The .NET Template Engine provides the libraries for template instantiation and template package management used in [`dotnet new`](https://learn.microsoft.com/dotnet/core/tools/dotnet-new), the [New Project Dialog](https://learn.microsoft.com/visualstudio/ide/create-new-project?view=vs-2022), and the New Item Dialog in Visual Studio. The source code is located in this repository under [`src/Microsoft.TemplateEngine.*`](../../src) and the libraries are distributed as NuGet packages on nuget.org.
+The .NET Template Engine provides the libraries for template instantiation and template package management used in [`dotnet new`](https://learn.microsoft.com/dotnet/core/tools/dotnet-new), the [New Project Dialog](https://learn.microsoft.com/visualstudio/ide/create-new-project?view=vs-2022), and the New Item Dialog in Visual Studio. The source code is located in this repository under [`src/TemplateEngine/Microsoft.TemplateEngine.*`](../../src/TemplateEngine) and the libraries are distributed as NuGet packages on nuget.org.
 
 > **Note:** The template engine was previously maintained in the [dotnet/templating](https://github.com/dotnet/templating) repository and has been merged into this repository (dotnet/sdk).
 
