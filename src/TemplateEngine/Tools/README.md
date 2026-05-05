@@ -14,10 +14,10 @@ The following tools are only used internally:
 
 |Package name|Description|Documentation|Available since|
 |---|---|---|---|
-| `Microsoft.TemplateEngine.Authoring.TemplateApiVerifier` | The class library containing the basic template engine host that can be used with [snapshot testing framework](../docs/authoring-tools/Templates-Testing-Tooling.md) to test the templates with using `Microsoft.TemplateEngine.Edge` only. |[Test examples](https://github.com/dotnet/templating/blob/main/test/Microsoft.TemplateEngine.IDE.IntegrationTests/SnapshotTests.cs)| .NET SDK 7.0.200 |
+| `Microsoft.TemplateEngine.Authoring.TemplateApiVerifier` | The class library containing the basic template engine host that can be used with [snapshot testing framework](../docs/authoring-tools/Templates-Testing-Tooling.md) to test the templates with using `Microsoft.TemplateEngine.Edge` only. |[Test examples](https://github.com/dotnet/sdk/blob/main/test/TemplateEngine/Microsoft.TemplateEngine.IDE.IntegrationTests/SnapshotTests.cs)| .NET SDK 7.0.200 |
 | `Microsoft.TemplateEngine.TemplateDiscovery` | The CLI tool to generate the search cache for users of `Microsoft.TemplateSearch.Common` and `dotnet new search` command || .NET SDK 3.1 |
 
-The unit and integration tests for the tools are in [`test`](https://github.com/dotnet/templating/tree/main/test) folder.
+The unit and integration tests for the tools are in [`test`](https://github.com/dotnet/sdk/tree/main/test/TemplateEngine) folder.
 
 ## Notes
 

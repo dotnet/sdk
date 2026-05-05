@@ -8,5 +8,5 @@ See
  - [`Program.cs`](./MyProject.Con/Program.cs)
 
 Related
- - [Available parameter generators](https://github.com/dotnet/templating/wiki/Available-Parameter-Generators)
+ - [Available parameter generators](https://github.com/dotnet/sdk/blob/main/documentation/TemplateEngine/Available-Symbols-Generators.md)
 
