@@ -52,6 +52,13 @@ jobs:
         targetPath: '$(Build.SourcesDirectory)/artifacts/binlogs/'
         artifactName: 'dotnetup-executable-binlogs-${{ parameters.rid }}'
         publishLocation: Container
+      - ${{ if startsWith(parameters.rid, 'osx') }}:
+        - output: pipelineArtifact
+          displayName: '🐞 Publish dotnetup ${{ parameters.rid }} debug symbols'
+          condition: succeeded()
+          targetPath: '$(Build.SourcesDirectory)/artifacts/publish/dotnetup-dsym/${{ parameters.rid }}/'
+          artifactName: 'dotnetup-executable-dsym-${{ parameters.rid }}'
+          publishLocation: Container
       - ${{ if or(startsWith(parameters.rid, 'osx'), startsWith(parameters.rid, 'win')) }}:
         - output: pipelineArtifact
           displayName: '🖋️ Publish dotnetup ${{ parameters.rid }} signing logs'
@@ -147,11 +154,22 @@ jobs:
     - ${{ if startsWith(parameters.rid, 'osx') }}:
       - script: |
           PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
-          # Remove NativeAOT debug-symbol bundles before signing. dSYMs are unsigned Mach-O
-          # files; if they're submitted to Apple notarization alongside the executable, the
-          # whole archive is rejected with "Archive contains critical validation errors".
-          rm -rf "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup.dSYM"
-        displayName: 🧹 Remove dSYM debug symbols (${{ parameters.rid }})
+          # NativeAOT publish produces a dotnetup.dSYM bundle next to the binary. The bundle
+          # contains an unsigned Mach-O DWARF file; if it sits next to the executable when
+          # SignTool zips the directory for Apple notarization, the whole submission is
+          # rejected with "Archive contains critical validation errors". Move the dSYM into
+          # a sibling staging directory so it's preserved as a separate pipeline artifact
+          # (useful for symbolicating crash dumps later) but kept out of the notarization zip.
+          DSYM_SRC="$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup.dSYM"
+          DSYM_DEST="$(Build.SourcesDirectory)/artifacts/publish/dotnetup-dsym/${{ parameters.rid }}"
+          if [ -d "$DSYM_SRC" ]; then
+            mkdir -p "$DSYM_DEST"
+            mv "$DSYM_SRC" "$DSYM_DEST/"
+            echo "✅ Moved dSYM to $DSYM_DEST"
+          else
+            echo "⚠️  No dSYM found at $DSYM_SRC"
+          fi
+        displayName: 🐞 Stage dSYM debug symbols (${{ parameters.rid }})
       - script: |
           ./.dotnet/dotnet restore ./src/Installer/Installer.sign.proj $(_officialBuildProperties)
         displayName: 🍱 Restore signing project (${{ parameters.rid }})
