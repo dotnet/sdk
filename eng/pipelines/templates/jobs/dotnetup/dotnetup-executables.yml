@@ -156,6 +156,14 @@ jobs:
         displayName: 🖋️ Sign dotnetup executable (${{ parameters.rid }})
         env:
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      # Staple the notarization ticket onto the binary itself. Without this, distributing the
+      # standalone Mach-O inside a .zip can lose the ticket (which is otherwise stored as an
+      # xattr) and Gatekeeper will block execution on first run.
+      - script: |
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          xcrun stapler staple "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup"
+          xcrun stapler validate "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup"
+        displayName: 📎 Staple notarization ticket (${{ parameters.rid }})
       - script: |
           PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
           codesign --verify --deep --strict "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup"

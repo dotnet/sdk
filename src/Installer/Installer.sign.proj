@@ -31,12 +31,16 @@
     </ItemsToSign>
   </ItemGroup>
 
-  <!-- dotnetup executable signing (when DotnetupPublishDir is provided) -->
+  <!-- dotnetup executable signing (when DotnetupPublishDir is provided).
+       Windows: Microsoft402 (EV Authenticode) so the executable passes Defender SmartScreen reputation.
+       macOS:   MacDeveloperWithNotarization so the binary is both signed and notarized by Apple.
+                After signing, the pipeline staples the notarization ticket to the binary so the ticket
+                is preserved when the binary is distributed in a .zip (xattr-based stapling can be lost). -->
   <ItemGroup Condition="'$(DotnetupPublishDir)' != ''">
-    <FileExtensionSignInfo Include=".exe" CertificateName="Microsoft400" />
-    <FileSignInfo Include="dotnetup.exe" CertificateName="Microsoft400" />
+    <FileExtensionSignInfo Include=".exe" CertificateName="Microsoft402" />
+    <FileSignInfo Include="dotnetup.exe" CertificateName="Microsoft402" />
     <ItemsToSign Condition="'$(OS)' == 'Windows_NT'" Include="$(DotnetupPublishDir)dotnetup.exe" />
-    <FileSignInfo Include="dotnetup" CertificateName="MacDeveloperHarden" />
+    <FileSignInfo Include="dotnetup" CertificateName="MacDeveloperWithNotarization" />
     <ItemsToSign Condition="'$(TargetOS)' == 'osx'" Include="$(DotnetupPublishDir)dotnetup" />
   </ItemGroup>
 
