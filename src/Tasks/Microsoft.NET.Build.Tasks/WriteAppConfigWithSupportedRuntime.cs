@@ -10,10 +10,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public sealed class WriteAppConfigWithSupportedRuntime : TaskBase, IMultiThreadableTask
     {
-        public TaskEnvironment TaskEnvironment { get; set; }
-
-        private TaskEnvironment RequiredTaskEnvironment =>
-            TaskEnvironment ?? throw new InvalidOperationException($"{nameof(TaskEnvironment)} must be provided by MSBuild.");
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         /// <summary>
         /// Path to the app.config source file.
@@ -40,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks
 
             AddSupportedRuntimeToAppconfig(doc, TargetFrameworkIdentifier, TargetFrameworkVersion, TargetFrameworkProfile);
 
-            AbsolutePath outputPath = RequiredTaskEnvironment.GetAbsolutePath(OutputAppConfigFile.ItemSpec);
+            AbsolutePath outputPath = TaskEnvironment.GetAbsolutePath(OutputAppConfigFile.ItemSpec);
             var fileStream = new FileStream(
                 outputPath.Value,
                 FileMode.Create,
@@ -163,7 +160,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                AbsolutePath appConfigPath = RequiredTaskEnvironment.GetAbsolutePath(appConfigItem.ItemSpec);
+                AbsolutePath appConfigPath = TaskEnvironment.GetAbsolutePath(appConfigItem.ItemSpec);
                 document = XDocument.Load(appConfigPath.Value);
                 if (document.Root == null || document.Root.Name != "configuration")
                 {
