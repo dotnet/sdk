@@ -10,6 +10,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public sealed class WriteAppConfigWithSupportedRuntime : TaskBase, IMultiThreadableTask
     {
+        /// <inheritdoc/>
         public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         /// <summary>
