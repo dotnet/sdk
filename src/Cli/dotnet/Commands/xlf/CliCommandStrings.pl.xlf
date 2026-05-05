@@ -1985,13 +1985,13 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (from version '{1}' to version '{2}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (from version '{1}' to version '{2}').</target>
+        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
+        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (from version '{1}' to version '{2}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (from version '{1}' to version '{2}').</target>
+        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
+        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
