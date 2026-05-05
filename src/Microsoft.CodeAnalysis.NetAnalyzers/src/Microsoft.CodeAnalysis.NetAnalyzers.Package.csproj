@@ -79,7 +79,7 @@
       <PackageTargetsFileName>$(PackageId).targets</PackageTargetsFileName>
       <DisableNETAnalyzersPackagePropsFileName>DisableNETAnalyzersForNuGetPackage.props</DisableNETAnalyzersPackagePropsFileName>
       <AnalyzerDocumentationFileName>$(PackageId).md</AnalyzerDocumentationFileName>
-      <AnalyzerSarifFileName>$(PackageId).sarif</AnalyzerSarifFileName>
+      <AnalyzerSarifFileName>$(PackageId).sarif.template</AnalyzerSarifFileName>
       <AnalyzerSarifTemplateProperties>AnalyzerVersion=$(VersionPrefix)</AnalyzerSarifTemplateProperties>
       <AnalyzerConfigurationFileName>analyzer-configuration.md</AnalyzerConfigurationFileName>
 
