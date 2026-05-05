@@ -291,29 +291,18 @@ namespace Microsoft.NET.Build.Tasks
 
                 TaskItem appHostItem = new(itemName);
 
-                // AR-May Fix: Store both original and resolved paths to preserve relativity in outputs
-                string originalPackDirectory = null;
-                string originalFullPath = null;
-                string resolvedPackDirectoryValue = null;
+                AbsolutePath? resolvedPackDirectory = null;
 
                 if (!string.IsNullOrEmpty(TargetingPackRoot))
                 {
-                    // Compute the original (possibly relative) paths before resolution
-                    originalPackDirectory = Path.Combine(TargetingPackRoot, hostPackName, appHostPackVersion);
-                    originalFullPath = Path.Combine(originalPackDirectory, hostRelativePathInPackage);
-
-                    // Resolve to absolute path for file system operations (via TaskEnvironment)
-                    TaskEnvironment taskEnvironment = TaskEnvironment
-                        ?? throw new BuildErrorException($"NETSDK1236: {nameof(TaskEnvironment)} must be supplied by MSBuild for {nameof(IMultiThreadableTask)} tasks.");
-                    resolvedPackDirectoryValue = taskEnvironment.GetAbsolutePath(originalPackDirectory).Value;
+                    resolvedPackDirectory = TaskEnvironment.GetAbsolutePath(Path.Combine(TargetingPackRoot, hostPackName, appHostPackVersion));
                 }
 
-                if (resolvedPackDirectoryValue != null && Directory.Exists(resolvedPackDirectoryValue))
+                if (resolvedPackDirectory != null && Directory.Exists(resolvedPackDirectory.Value))
                 {
-                    //  Use AppHost from packs folder
-                    //  AR-May Fix: Use OriginalValue to preserve relativity in output metadata
-                    appHostItem.SetMetadata(MetadataKeys.PackageDirectory, originalPackDirectory);
-                    appHostItem.SetMetadata(MetadataKeys.Path, originalFullPath);
+                    //  Use AppHost from packs folder. Use OriginalValue to preserve relativity in output metadata.
+                    appHostItem.SetMetadata(MetadataKeys.PackageDirectory, resolvedPackDirectory.Value.OriginalValue);
+                    appHostItem.SetMetadata(MetadataKeys.Path, Path.Combine(resolvedPackDirectory.Value.OriginalValue, hostRelativePathInPackage));
                 }
                 else if (EnableAppHostPackDownload)
                 {
