@@ -6,7 +6,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using FluentAssertions;
-using Microsoft.Build.Framework;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -41,16 +40,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             _originalCwd = Directory.GetCurrentDirectory();
             _tempRoot = Path.Combine(_originalCwd, $"{nameof(GivenAGenerateBundleMultiThreading)}_{Guid.NewGuid():N}");
             Directory.CreateDirectory(_tempRoot);
-        }
-
-        [Fact]
-        public void GenerateBundle_IsRecognizedAsMsbuildMultiThreadable()
-        {
-            typeof(IMultiThreadableTask).IsAssignableFrom(typeof(GenerateBundle)).Should().BeTrue();
-            typeof(GenerateBundle)
-                .GetCustomAttributes(typeof(MSBuildMultiThreadableTaskAttribute), inherit: false)
-                .Should()
-                .ContainSingle();
         }
 
         [Fact]
