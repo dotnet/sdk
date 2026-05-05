@@ -92,7 +92,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         private void RunTask(string targetFrameworkMoniker, string targetPlatformMoniker, bool UseWpf, bool UseWindowsForms, List<(string, string)> expectedResult)
         {
-            Func<List<(string, string)>, ITaskItem[]> convertToItems = (List<(string, string)> list) => list.Select(item => new TaskItem(item.Item1, new Dictionary<string, string>() { { "DisplayName", item.Item2 } })).ToArray();
+            Func<List<(string, string)>, ITaskItem[]> convertToItems = (List<(string, string)> list) => list.Select(item => new TaskItem(item.Item1, new Dictionary<string, string>() { { MetadataKeys.DisplayName, item.Item2 } })).ToArray();
 
             var task = new GenerateSupportedTargetFrameworkAlias()
             {
