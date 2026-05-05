@@ -1204,7 +1204,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <value>Test run summary:</value>
   </data>
   <data name="ToolAlreadyInstalled" xml:space="preserve">
-    <value>Tool '{0}' is already installed.</value>
+    <value>Tool '{0}' (version '{1}') is already installed.</value>
   </data>
   <data name="ToolCommonNoManifestGuide" xml:space="preserve">
     <value>If you intended to perform the action on a global tool, use the `--global` option for the command.</value>
@@ -1302,10 +1302,10 @@ and the corresponding package Ids for installed tools using the command
     <value>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</value>
   </data>
   <data name="UpdateSucceededPreVersionNoChange" xml:space="preserve">
-    <value>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</value>
+    <value>Tool '{0}' was reinstalled with the same prerelease version (from version '{1}' to version '{2}').</value>
   </data>
   <data name="UpdateSucceededStableVersionNoChange" xml:space="preserve">
-    <value>Tool '{0}' was reinstalled with the stable version (version '{1}').</value>
+    <value>Tool '{0}' was reinstalled with the same stable version (from version '{1}' to version '{2}').</value>
   </data>
   <data name="UpdateToLowerVersion" xml:space="preserve">
     <value>The requested version {0} is lower than existing version {1}.</value>

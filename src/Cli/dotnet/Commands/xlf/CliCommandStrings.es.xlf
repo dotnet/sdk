@@ -1801,8 +1801,8 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">La herramienta "{0}" ya está instalada.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommonNoManifestGuide">
@@ -1985,13 +1985,13 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">La herramienta "{0}" se ha reinstalado con la versión preliminar más reciente (versión "{1}").</target>
+        <source>Tool '{0}' was reinstalled with the same prerelease version (from version '{1}' to version '{2}').</source>
+        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (from version '{1}' to version '{2}').</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">La herramienta "{0}" se reinstaló con la versión estable más reciente (versión "{1}").</target>
+        <source>Tool '{0}' was reinstalled with the same stable version (from version '{1}' to version '{2}').</source>
+        <target state="new">Tool '{0}' was reinstalled with the same stable version (from version '{1}' to version '{2}').</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

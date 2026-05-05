@@ -1801,8 +1801,8 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">Nástroj {0} je už nainstalovaný.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommonNoManifestGuide">
@@ -1985,13 +1985,13 @@ příkazu „dotnet tool list“.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">Nástroj {0} se přeinstaloval na předběžnou verzi (verze {1}).</target>
+        <source>Tool '{0}' was reinstalled with the same prerelease version (from version '{1}' to version '{2}').</source>
+        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (from version '{1}' to version '{2}').</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">Nástroj {0} se přeinstaloval na stabilní verzi (verze {1}).</target>
+        <source>Tool '{0}' was reinstalled with the same stable version (from version '{1}' to version '{2}').</source>
+        <target state="new">Tool '{0}' was reinstalled with the same stable version (from version '{1}' to version '{2}').</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

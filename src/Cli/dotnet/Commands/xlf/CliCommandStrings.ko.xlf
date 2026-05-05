@@ -1801,8 +1801,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">'{0}' 도구가 이미 설치되어 있습니다.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommonNoManifestGuide">
@@ -1985,13 +1985,13 @@ and the corresponding package Ids for installed tools using the command
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">'{0}' 도구가 시험판 버전('{1}' 버전)으로 다시 설치되었습니다.</target>
+        <source>Tool '{0}' was reinstalled with the same prerelease version (from version '{1}' to version '{2}').</source>
+        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (from version '{1}' to version '{2}').</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">'{0}' 도구가 안정화 버전('{1}' 버전)으로 다시 설치되었습니다.</target>
+        <source>Tool '{0}' was reinstalled with the same stable version (from version '{1}' to version '{2}').</source>
+        <target state="new">Tool '{0}' was reinstalled with the same stable version (from version '{1}' to version '{2}').</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

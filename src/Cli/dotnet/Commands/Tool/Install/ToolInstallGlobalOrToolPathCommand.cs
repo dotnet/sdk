@@ -403,7 +403,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
                         newInstalledPackage.Version.IsPrerelease ?
                         CliCommandStrings.UpdateSucceededPreVersionNoChange : CliCommandStrings.UpdateSucceededStableVersionNoChange,
-                        newInstalledPackage.Id, newInstalledPackage.Version).Green());
+                        newInstalledPackage.Id, oldPackage.Version, newInstalledPackage.Version).Green());
             }
         }
     }
