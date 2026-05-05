@@ -40,7 +40,7 @@
     <FileExtensionSignInfo Include=".exe" CertificateName="Microsoft402" />
     <FileSignInfo Include="dotnetup.exe" CertificateName="Microsoft402" />
     <ItemsToSign Condition="'$(OS)' == 'Windows_NT'" Include="$(DotnetupPublishDir)dotnetup.exe" />
-    <FileSignInfo Include="dotnetup" CertificateName="MacDeveloperWithNotarization" />
+    <FileSignInfo Include="dotnetup" CertificateName="MacDeveloperHardenWithNotarization" />
     <ItemsToSign Condition="'$(TargetOS)' == 'osx'" Include="$(DotnetupPublishDir)dotnetup" />
   </ItemGroup>
 

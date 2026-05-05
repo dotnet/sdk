@@ -52,7 +52,7 @@ jobs:
         targetPath: '$(Build.SourcesDirectory)/artifacts/binlogs/'
         artifactName: 'dotnetup-executable-binlogs-${{ parameters.rid }}'
         publishLocation: Container
-      - ${{ if startsWith(parameters.rid, 'osx') }}:
+      - ${{ if or(startsWith(parameters.rid, 'osx'), startsWith(parameters.rid, 'win')) }}:
         - output: pipelineArtifact
           displayName: '🖋️ Publish dotnetup ${{ parameters.rid }} signing logs'
           condition: always()
