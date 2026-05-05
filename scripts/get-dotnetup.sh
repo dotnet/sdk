@@ -89,6 +89,25 @@ if ! command -v az &>/dev/null; then
     exit 1
 fi
 
+# Detect Windows az.cmd/az.bat/az.exe being invoked from WSL via inherited PATH.
+# The Windows Azure CLI emits CRLF line endings and Windows-style paths, which
+# corrupts captured output (e.g. trailing \r on RUN_ID) and breaks artifact
+# downloads (paths with backslash separators). Reject early with a clear error.
+AZ_PATH="$(command -v az)"
+case "$AZ_PATH" in
+    *.cmd|*.bat|*.exe)
+        err "Detected Windows Azure CLI at: $AZ_PATH"
+        err ""
+        err "This script must be run with the native Linux Azure CLI."
+        err "On WSL, install it inside your distribution with:"
+        err "  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash"
+        err ""
+        err "Then log in with:"
+        err "  az login"
+        exit 1
+        ;;
+esac
+
 if ! az extension show --name azure-devops &>/dev/null; then
     err "The 'azure-devops' Azure CLI extension is required but is not installed."
     err "Install it with:"
