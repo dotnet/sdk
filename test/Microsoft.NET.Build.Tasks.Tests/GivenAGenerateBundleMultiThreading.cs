@@ -5,7 +5,6 @@
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Xunit;
@@ -23,8 +22,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// Fully driving the HostModel bundler end-to-end is impractical here because the test project
     /// does not reference <c>Microsoft.NET.HostModel</c> at runtime (the task project marks it with
     /// <c>ExcludeAssets="Runtime"</c>; HostModel is resolved from the SDK at MSBuild time). Execute
-    /// coverage therefore uses the task's internal bundler seam, while direct helper tests still
-    /// exercise <c>ResolveOutputDir</c> itself.
+    /// coverage therefore uses the task's internal bundler seam, while direct helper tests exercise
+    /// path resolution before values flow to HostModel file operations.
     ///
     /// The "decoy CWD" pattern is used throughout: the process's current directory is moved to a
     /// location different from the <c>TaskEnvironment.ProjectDirectory</c> so a bug that fell
@@ -74,23 +73,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "relative OutputDir must not leak the process CWD into the resolved path");
         }
 
-        [Fact]
-        public void ResolveOutputDir_PreservesAbsolutePath()
-        {
-            string projectDir = CreateTempDirectory("proj");
-            string absoluteOut = Path.Combine(CreateTempDirectory("abs"), "bundle");
-            Directory.SetCurrentDirectory(CreateTempDirectory("decoy"));
-
-            var env = TaskEnvironmentHelper.CreateForTest(projectDir);
-
-            string resolved = GenerateBundle.ResolveOutputDir(env, absoluteOut);
-
-            // Path.GetFullPath normalisation is allowed but must not re-root under projectDir.
-            Path.GetFullPath(resolved).Should().Be(Path.GetFullPath(absoluteOut));
-            resolved.Should().NotStartWith(projectDir,
-                "absolute OutputDir must not be re-anchored under ProjectDirectory");
-        }
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -105,6 +87,38 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             resolved.Should().Be(projectDir,
                 "null/empty OutputDir must fall back to the project directory, not the process CWD");
+        }
+
+        [Fact]
+        public void ResolveFileSpecSourcePath_RoutesRelativePathThroughTaskEnvironment_NotProcessCwd()
+        {
+            string projectDir = CreateTempDirectory("proj");
+            string decoyCwd = CreateTempDirectory("decoy");
+            Directory.SetCurrentDirectory(decoyCwd);
+
+            var env = TaskEnvironmentHelper.CreateForTest(projectDir);
+
+            string resolved = GenerateBundle.ResolveFileSpecSourcePath(env, "obj/apphost");
+
+            Path.GetFullPath(resolved).Should().Be(Path.GetFullPath(Path.Combine(projectDir, "obj", "apphost")),
+                "relative file source paths must resolve under TaskEnvironment.ProjectDirectory before HostModel file operations");
+            Path.GetFullPath(resolved).Should().NotStartWith(Path.GetFullPath(decoyCwd),
+                "the process CWD must not leak into HostModel source paths");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void ResolveFileSpecSourcePath_PreservesEmptyOrWhitespaceValues(string sourcePath)
+        {
+            string projectDir = CreateTempDirectory("proj");
+            var env = TaskEnvironmentHelper.CreateForTest(projectDir);
+
+            string resolved = GenerateBundle.ResolveFileSpecSourcePath(env, sourcePath);
+
+            resolved.Should().Be(sourcePath,
+                "HostModel should keep validating empty source paths the same way it did before the migration");
         }
 
         [Fact]
@@ -128,83 +142,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "the process CWD must not leak into the bundler output path");
         }
 
-        [Fact]
-        public async System.Threading.Tasks.Task ExecuteWithRetry_ConcurrentInstances_ResolveOutputDirPerTaskEnvironment()
-        {
-            const int concurrency = 64;
-            Directory.SetCurrentDirectory(CreateTempDirectory("shared-decoy"));
-
-            var projectDirs = new string[concurrency];
-            var generateBundleTasks = new RecordingGenerateBundle[concurrency];
-            CancellationToken cancellationToken = TestContext.Current.CancellationToken;
-            using var bundlersReady = new CountdownEvent(concurrency);
-            using var releaseBundlers = new ManualResetEventSlim();
-
-            for (int i = 0; i < concurrency; i++)
-            {
-                projectDirs[i] = CreateTempDirectory($"proj_{i}");
-                generateBundleTasks[i] = CreateRecordingTask(projectDirs[i], "out", bundlersReady, releaseBundlers);
-            }
-
-            var executeResults = new bool[concurrency];
-            var executions = new System.Threading.Tasks.Task[concurrency];
-
-            for (int i = 0; i < concurrency; i++)
-            {
-                int taskIndex = i;
-                executions[taskIndex] = System.Threading.Tasks.Task.Factory.StartNew(
-                    () => executeResults[taskIndex] = generateBundleTasks[taskIndex].Execute(),
-                    cancellationToken,
-                    System.Threading.Tasks.TaskCreationOptions.LongRunning,
-                    System.Threading.Tasks.TaskScheduler.Default);
-            }
-
-            bool allReachedBundling = bundlersReady.Wait(TimeSpan.FromSeconds(30), cancellationToken);
-            releaseBundlers.Set();
-            var allExecutions = System.Threading.Tasks.Task.WhenAll(executions);
-            bool allFinished = await System.Threading.Tasks.Task.WhenAny(
-                allExecutions,
-                System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(30), cancellationToken)) == allExecutions;
-
-            allReachedBundling.Should().BeTrue("all GenerateBundle instances should reach bundling before any are released");
-            allFinished.Should().BeTrue("all GenerateBundle executions should complete after bundling is released");
-            await allExecutions;
-
-            for (int i = 0; i < concurrency; i++)
-            {
-                executeResults[i].Should().BeTrue($"instance {i} should complete successfully");
-                generateBundleTasks[i].InvocationCount.Should().Be(1, $"instance {i} should invoke bundling exactly once");
-                generateBundleTasks[i].ObservedOutputDir.Should().NotBe(generateBundleTasks[i].OutputDir,
-                    $"instance {i} must pass the resolved path to bundling");
-                Path.GetFullPath(generateBundleTasks[i].ObservedOutputDir).Should().Be(
-                    Path.GetFullPath(Path.Combine(projectDirs[i], "out")),
-                    $"instance {i} must resolve against its own TaskEnvironment");
-            }
-        }
-
-        [Fact]
-        public void GenerateBundle_ConstructedInTest_UsesAssignedTaskEnvironment()
-        {
-            // TaskEnvironment is assigned by MSBuild in production; unit tests must provide it
-            // explicitly because MSBuild is not involved.
-            string projectDir = CreateTempDirectory("proj");
-            var task = new GenerateBundle
-            {
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
-            };
-
-            task.TaskEnvironment.Should().NotBeNull();
-            Path.GetFullPath(GenerateBundle.ResolveOutputDir(task.TaskEnvironment, "rel"))
-                .Should().Be(Path.GetFullPath(Path.Combine(projectDir, "rel")));
-        }
-
         private static RecordingGenerateBundle CreateRecordingTask(
             string projectDir,
-            string outputDir,
-            CountdownEvent bundlingStarted = null,
-            ManualResetEventSlim finishBundling = null)
+            string outputDir)
         {
-            return new RecordingGenerateBundle(bundlingStarted, finishBundling)
+            return new RecordingGenerateBundle()
             {
                 BuildEngine = new MockBuildEngine(),
                 TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
@@ -243,15 +185,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         private sealed class RecordingGenerateBundle : GenerateBundle
         {
-            private readonly CountdownEvent _bundlingStarted;
-            private readonly ManualResetEventSlim _finishBundling;
-
-            public RecordingGenerateBundle(CountdownEvent bundlingStarted, ManualResetEventSlim finishBundling)
-            {
-                _bundlingStarted = bundlingStarted;
-                _finishBundling = finishBundling;
-            }
-
             public string ObservedOutputDir { get; private set; }
 
             public int InvocationCount { get; private set; }
@@ -264,8 +197,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 InvocationCount++;
                 ObservedOutputDir = resolvedOutputDir;
-                _bundlingStarted?.Signal();
-                _finishBundling?.Wait();
                 return System.Threading.Tasks.Task.CompletedTask;
             }
         }

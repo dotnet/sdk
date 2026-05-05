@@ -62,6 +62,13 @@ namespace Microsoft.NET.Build.Tasks
             return outputPath.Value;
         }
 
+        internal static string ResolveFileSpecSourcePath(TaskEnvironment taskEnvironment, string sourcePath)
+        {
+            return string.IsNullOrWhiteSpace(sourcePath)
+                ? sourcePath
+                : taskEnvironment.GetAbsolutePath(sourcePath).Value;
+        }
+
         protected override void ExecuteCore()
         {
             ExecuteWithRetry().GetAwaiter().GetResult();
@@ -122,7 +129,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var item in FilesToBundle)
             {
-                fileSpec.Add(new FileSpec(sourcePath: item.ItemSpec,
+                fileSpec.Add(new FileSpec(sourcePath: ResolveFileSpecSourcePath(TaskEnvironment, item.ItemSpec),
                                           bundleRelativePath: item.GetMetadata(MetadataKeys.RelativePath)));
             }
 
