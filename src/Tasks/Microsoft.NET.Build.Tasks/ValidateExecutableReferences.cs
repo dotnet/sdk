@@ -10,8 +10,19 @@ using Microsoft.DotNet.Cli;
 namespace Microsoft.NET.Build.Tasks
 {
     [MSBuildMultiThreadableTask]
-    public class ValidateExecutableReferences : TaskBase
+    public class ValidateExecutableReferences : TaskBase, IMultiThreadableTask
     {
+#if NETFRAMEWORK
+        private TaskEnvironment _taskEnvironment;
+        public TaskEnvironment TaskEnvironment
+        {
+            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
+            set => _taskEnvironment = value;
+        }
+#else
+        public TaskEnvironment TaskEnvironment { get; set; }
+#endif
+
         public bool SelfContained { get; set; }
 
         public bool IsExecutable { get; set; }
