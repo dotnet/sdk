@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -300,6 +300,73 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().Exist();
+        }
+
+        [Fact]
+        public void Publish_ExcludesScopedCssBundle_WhenExcludeScopedCssAssetsIsTrue()
+        {
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:ExcludeScopedCssAssets=true").Should().Pass();
+
+            var intermediateOutputPath = Path.Combine(publish.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css")).Should().Exist();
+
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.gz")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.br")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "ComponentApp.styles.css")).Should().NotExist();
+
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
+        }
+
+        [Fact]
+        public void Publish_ExcludesIndividualScopedCssFiles_WhenExcludeScopedCssAssetsIsTrue_AndBundlingDisabled()
+        {
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:DisableScopedCssBundling=true", "/p:ExcludeScopedCssAssets=true").Should().Pass();
+
+            var intermediateOutputPath = Path.Combine(publish.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().Exist();
+
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "ComponentApp.styles.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css.gz")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css.br")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Counter.razor.rz.scp.css.gz")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Counter.razor.rz.scp.css.br")).Should().NotExist();
+        }
+
+        [Fact]
+        public void Publish_ExcludesScopedCssBundle_WhenExcludeScopedCssAssetsIsTrue_AndNoBuild()
+        {
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var build = CreateBuildCommand(projectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:NoBuild=true", "/p:ExcludeScopedCssAssets=true").Should().Pass();
+
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.gz")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.br")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "ComponentApp.styles.css")).Should().NotExist();
         }
 
         [CoreMSBuildOnlyFact]

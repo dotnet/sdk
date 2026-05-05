@@ -526,4 +526,67 @@ Integration with static web assets:
 
   </Target>
 
+<!--
+  Opt-out hook for $(ExcludeScopedCssAssets).
+
+  Removes scoped CSS assets (the application bundle, the project bundle, and individual
+  per-component .rz.scp.css files) from the publish output while leaving build/dev
+  serving untouched.
+
+  The target is appended to GenerateStaticWebAssetsPublishManifestDependsOn (in
+  Microsoft.NET.Sdk.StaticWebAssets.targets) so it runs after ResolveAllPublishStaticWebAssets
+  has loaded the assets (including for 'dotnet publish /p:NoBuild=true') but before
+  GenerateStaticWebAssetsPublishManifest materializes _FinalPublishStaticWebAsset from
+  @(StaticWebAsset).
+
+  Items are identified via AssetTraitName="ScopedCss" plus an explicit AssetTraitValue
+  allow-list to avoid removing unrelated assets that may share the trait name in the future.
+-->
+<PropertyGroup Condition="'$(ExcludeScopedCssAssets)' == 'true'">
+  <GenerateStaticWebAssetsPublishManifestDependsOn>
+    $(GenerateStaticWebAssetsPublishManifestDependsOn);
+    _RemoveScopedCssAssetsFromPublish;
+  </GenerateStaticWebAssetsPublishManifestDependsOn>
+</PropertyGroup>
+
+<Target Name="_RemoveScopedCssAssetsFromPublish" Condition="'$(ExcludeScopedCssAssets)' == 'true'">
+  <ItemGroup>
+    <_ScopedCssPrimaryAssetToRemove Include="@(StaticWebAsset)"
+      Condition="'%(StaticWebAsset.AssetTraitName)' == 'ScopedCss' and
+                 ('%(StaticWebAsset.AssetTraitValue)' == 'ApplicationBundle' or
+                  '%(StaticWebAsset.AssetTraitValue)' == 'ProjectBundle' or
+                  '%(StaticWebAsset.AssetTraitValue)' == 'ScopedCssFile')" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <_ScopedCssPrimaryIdentities>;@(_ScopedCssPrimaryAssetToRemove->'%(Identity)', ';');</_ScopedCssPrimaryIdentities>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Compressed (gzip / brotli) alternates from ResolvePublishCompressedStaticWebAssets
+         carry AssetTraitName="Content-Encoding" and link to their primary via RelatedAsset
+         (a full path equal to the primary's Identity). -->
+    <_ScopedCssCompressedAssetToRemove Include="@(StaticWebAsset)"
+      Condition="'%(StaticWebAsset.AssetTraitName)' == 'Content-Encoding' and
+                 '%(StaticWebAsset.RelatedAsset)' != '' and
+                 $(_ScopedCssPrimaryIdentities.Contains(';%(StaticWebAsset.RelatedAsset);'))" />
+
+    <_ScopedCssAssetToRemove Include="@(_ScopedCssPrimaryAssetToRemove);@(_ScopedCssCompressedAssetToRemove)" />
+    <StaticWebAsset Remove="@(_ScopedCssAssetToRemove)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <_ScopedCssRemovedIdentities>;@(_ScopedCssAssetToRemove->'%(Identity)', ';');</_ScopedCssRemovedIdentities>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Endpoints don't carry AssetTraitName directly; remove them by matching their
+         AssetFile to the identities of every asset we removed (primary + compressed)
+         to preserve the invariant that every endpoint must point to an existing asset. -->
+    <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)"
+      Condition="'%(StaticWebAssetEndpoint.AssetFile)' != '' and
+                 $(_ScopedCssRemovedIdentities.Contains(';%(StaticWebAssetEndpoint.AssetFile);'))" />
+  </ItemGroup>
+</Target>
+
 </Project>

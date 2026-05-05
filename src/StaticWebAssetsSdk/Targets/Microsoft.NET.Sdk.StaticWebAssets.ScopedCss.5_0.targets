@@ -359,7 +359,7 @@ Integration with static web assets:
   </ItemGroup>
 </Target>
 
-<Target Name="_AddAppBundleToStaticWebAssetsPublishedFiles" BeforeTargets="_StaticWebAssetsComputeFilesToPublish" Condition="'$(DisableScopedCssBundling)' != 'true' and '@(_AllScopedCss)' != ''" DependsOnTargets="_CollectAllScopedCssAssets">
+<Target Name="_AddAppBundleToStaticWebAssetsPublishedFiles" BeforeTargets="_StaticWebAssetsComputeFilesToPublish" Condition="'$(DisableScopedCssBundling)' != 'true' and '$(ExcludeScopedCssAssets)' != 'true' and '@(_AllScopedCss)' != ''" DependsOnTargets="_CollectAllScopedCssAssets">
   <ItemGroup>
     <!-- Manually add the file to the publish flow. See https://github.com/dotnet/aspnetcore/issues/24245 -->
     <_ExternalPublishStaticWebAsset Include="$(_ScopedCssOutputFullPath)" ExcludeFromSingleFile="true">
@@ -373,7 +373,7 @@ Integration with static web assets:
   </ItemGroup>
 </Target>
 
-<Target Name="_AddScopedCssFilesToStaticWebAssetsPublishedFiles" BeforeTargets="_StaticWebAssetsComputeFilesToPublish" Condition="'$(DisableScopedCssBundling)' == 'true' and '@(_ScopedCss)' != ''" DependsOnTargets="_CollectAllScopedCssAssets">
+<Target Name="_AddScopedCssFilesToStaticWebAssetsPublishedFiles" BeforeTargets="_StaticWebAssetsComputeFilesToPublish" Condition="'$(DisableScopedCssBundling)' == 'true' and '$(ExcludeScopedCssAssets)' != 'true' and '@(_ScopedCss)' != ''" DependsOnTargets="_CollectAllScopedCssAssets">
   <ItemGroup>
     <!-- Manually add the scoped css files to the publish flow. See https://github.com/dotnet/aspnetcore/issues/24245 -->
     <_ExternalPublishStaticWebAsset Include="@(_ScopedCssStaticWebAsset)" ExcludeFromSingleFile="true">
