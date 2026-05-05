@@ -9,6 +9,10 @@
       "longName": "allow-prerelease",
       "shortName": ""
     },
+    "NoSdkVersion": {
+      "longName": "no-sdk-version",
+      "shortName": ""
+    },
     "RollForward": {
       "longName": "roll-forward",
       "shortName": ""

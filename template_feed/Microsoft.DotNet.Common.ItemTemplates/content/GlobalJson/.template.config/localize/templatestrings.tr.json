@@ -11,6 +11,8 @@
   "symbols/AllowPrerelease/choices/true/displayName": "Allow prerelease",
   "symbols/AllowPrerelease/choices/false/description": "Don't consider prerelease SDK versions when selecting the .NET SDK version to use.",
   "symbols/AllowPrerelease/choices/false/displayName": "Disallow prerelease",
+  "symbols/NoSdkVersion/description": "Exclude the SDK version from the generated global.json.",
+  "symbols/NoSdkVersion/displayName": "No SDK version",
   "symbols/RollForward/description": "SDK sürümü seçerken kullanılacak ileri alma ilkesi.",
   "symbols/RollForward/displayName": "İleri sarma ilkesi",
   "symbols/RollForward/choices/patch/description": "Belirtilen sürümü kullanır.\nBulunamazsa, en son düzeltme eki düzeyine ileri sarar.\nBulunamazsa başarısız olur.\nBu değer, SDK 'nın önceki sürümlerindeki eski davranıştır.",
