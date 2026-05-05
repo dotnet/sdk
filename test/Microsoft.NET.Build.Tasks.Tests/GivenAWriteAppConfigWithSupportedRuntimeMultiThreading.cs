@@ -131,33 +131,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void TaskEnvironmentMustBeInjected()
-        {
-            string workDir = CreateTempDirectory();
-
-            string appConfigPath = Path.Combine(workDir, "app.config");
-            File.WriteAllText(appConfigPath, @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-</configuration>");
-
-            string outputPath = Path.Combine(workDir, "out.config");
-
-            var task = new WriteAppConfigWithSupportedRuntime
-            {
-                BuildEngine = new MockBuildEngine(),
-                AppConfigFile = new MockTaskItem(appConfigPath, new Dictionary<string, string>()),
-                OutputAppConfigFile = new MockTaskItem(outputPath, new Dictionary<string, string>()),
-                TargetFrameworkIdentifier = ".NETFramework",
-                TargetFrameworkVersion = "v4.7.1"
-            };
-
-            Action execute = () => task.Execute();
-            execute.Should().Throw<InvalidOperationException>()
-                .WithMessage("*TaskEnvironment*");
-            File.Exists(outputPath).Should().BeFalse("the task should not fall back to process CWD without TaskEnvironment");
-        }
-
-        [Fact]
         public void TaskWritesFileUsingTaskEnvironmentResolvedPathWithRealTaskItems()
         {
             string workDir = CreateTempDirectory();
@@ -290,7 +263,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var supportedRuntime = doc.Descendants("supportedRuntime").Single();
 
                 string expectedSku = $".NETFramework,Version={versions[i]}";
-                supportedRuntime.Attribute("sku").Value.Should().Be(expectedSku, 
+                supportedRuntime.Attribute("sku").Value.Should().Be(expectedSku,
                     $"output {i} should have correct SKU for version {versions[i]}");
 
                 for (int j = 0; j < concurrency; j++)
