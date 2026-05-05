@@ -146,6 +146,13 @@ jobs:
     # Sign macOS binaries with MacDeveloperHarden (requires MicroBuild for Mac)
     - ${{ if startsWith(parameters.rid, 'osx') }}:
       - script: |
+          PUBLISH_DIR=$(find "$(Build.SourcesDirectory)/artifacts/bin/dotnetup/Release" -mindepth 1 -maxdepth 1 -type d | head -1)
+          # Remove NativeAOT debug-symbol bundles before signing. dSYMs are unsigned Mach-O
+          # files; if they're submitted to Apple notarization alongside the executable, the
+          # whole archive is rejected with "Archive contains critical validation errors".
+          rm -rf "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup.dSYM"
+        displayName: 🧹 Remove dSYM debug symbols (${{ parameters.rid }})
+      - script: |
           ./.dotnet/dotnet restore ./src/Installer/Installer.sign.proj $(_officialBuildProperties)
         displayName: 🍱 Restore signing project (${{ parameters.rid }})
         retryCountOnTaskFailure: 2
