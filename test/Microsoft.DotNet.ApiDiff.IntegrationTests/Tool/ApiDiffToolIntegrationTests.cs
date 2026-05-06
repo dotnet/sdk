@@ -91,14 +91,14 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
         }
 
         [Fact]
-        public void ApiDiffTool_MissingRequiredOption_ReportsHelpfulError()
+        public void ApiDiffTool_MissingRequiredOption_FailsWithHelpfulError()
         {
-            // Omit --output and verify System.CommandLine reports the missing required option.
-            // (System.CommandLine writes the error to stderr but exits with code 0 after printing help,
-            // so we assert on the reported error text rather than the exit code.)
+            // Omit --output and verify System.CommandLine reports the missing required option
+            // and that the tool exits with a non-zero status.
             CommandResult result = Run("--before", ".", "--after", ".",
                 "--beforeFriendlyName", "old", "--afterFriendlyName", "new");
 
+            result.Should().Fail();
             string output = result.StdOut + result.StdErr;
             output.Should().Contain("--output");
         }
