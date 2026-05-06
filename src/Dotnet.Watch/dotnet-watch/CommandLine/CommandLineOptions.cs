@@ -26,6 +26,7 @@ internal sealed class CommandLineOptions
     public string? FilePath { get; init; }
     public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
+    public string? Device { get; init; }
     public Optional<string?> LaunchProfileName { get; init; }
 
     /// <summary>
@@ -162,6 +163,7 @@ internal sealed class CommandLineOptions
             LaunchProfileName = launchProfile,
             BuildArguments = buildArguments,
             TargetFramework = parseResult.GetValue(definition.FrameworkOption),
+            Device = parseResult.GetValue(definition.DeviceOption),
         };
     }
 
@@ -360,6 +362,7 @@ internal sealed class CommandLineOptions
             Representation = project,
             WorkingDirectory = workingDirectory,
             TargetFramework = TargetFramework,
+            Device = Device,
             Command = Command,
             CommandArguments = CommandArguments,
             LaunchEnvironmentVariables = [],

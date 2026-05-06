@@ -265,9 +265,8 @@ internal sealed class Program(
 
             if (IsHotReloadEnabled())
             {
-                using var tfmPrompt = context.Options.NonInteractive ? null
-                    : new SpectreTargetFrameworkSelectionPrompt(console);
-                var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null, tfmPrompt);
+                using var selectionPrompt = context.Options.NonInteractive ? null : new SpectreBuildParametersSelectionPrompt(console);
+                var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null, selectionPrompt);
                 await watcher.WatchAsync(shutdownHandler.CancellationToken);
             }
             else if (mainProjectOptions.Representation.EntryPointFilePath != null)
@@ -347,6 +346,7 @@ internal sealed class Program(
             options.BuildArguments,
             processRunner,
             buildLogger,
+            options.GlobalOptions,
             environmentOptions);
 
         if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)

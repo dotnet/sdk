@@ -179,11 +179,6 @@
         <target state="translated">'{0}' görüntü dizini '{1}' kayıt defterine gönderildi.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">Podman için görüntü dizini oluşturma desteklenmiyor.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: Görüntü yerel kayıt defterinden yüklenemedi. stdout: {0}</target>

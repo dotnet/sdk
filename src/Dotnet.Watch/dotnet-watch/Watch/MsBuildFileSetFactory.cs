@@ -22,6 +22,7 @@ internal class MSBuildFileSetFactory(
     IEnumerable<string> buildArguments,
     ProcessRunner processRunner,
     ILogger logger,
+    GlobalOptions globalOptions,
     EnvironmentOptions environmentOptions)
 {
     private const string TargetName = "GenerateWatchList";
@@ -33,7 +34,9 @@ internal class MSBuildFileSetFactory(
         [new ProjectRepresentation(rootProjectFile, entryPointFilePath: null)],
         targetFramework,
         buildProperties: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value),
-        logger);
+        logger,
+        globalOptions,
+        environmentOptions);
 
     internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, LoadedProjectGraph? projectGraph)
     {

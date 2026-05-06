@@ -457,15 +457,6 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Image index creation for Podman is not supported..
-        /// </summary>
-        internal static string ImageIndex_PodmanNotSupported {
-            get {
-                return ResourceManager.GetString("ImageIndex_PodmanNotSupported", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings..
         /// </summary>
         internal static string ImageLoadFailed_ContainerdStoreDisabled {

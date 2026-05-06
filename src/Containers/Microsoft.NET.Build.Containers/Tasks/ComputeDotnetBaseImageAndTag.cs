@@ -141,23 +141,23 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         return true;
     }
 
-    private string UbuntuCodenameForSDKVersion(SemanticVersion version)
+    // The codename is primarily determined by the TFM to ensure the base OS stays
+    // consistent regardless of which SDK version builds the project.
+    // For net8.0, the SDK patch band matters because 8.0.300 switched from jammy to noble.
+    private string UbuntuCodenameForVersion(SemanticVersion sdkVersion, SemanticVersion? tfm) => tfm switch
     {
-        if (version >= SemanticVersion.Parse("8.0.300"))
-        {
-            return "noble";
-        }
-        else
-        {
-            return "jammy";
-        }
-    }
+        { Major: >= 11 } => "resolute",
+        { Major: >= 9 } => "noble",
+        _ when sdkVersion >= SemanticVersion.Parse("8.0.300") => "noble",
+        _ => "jammy"
+    };
 
     private bool ComputeRepositoryAndTag([NotNullWhen(true)] out string? repository, [NotNullWhen(true)] out string? tag)
     {
         if (ComputeVersionPart() is (string baseVersionPart, SemanticVersion parsedVersion, bool versionAllowsUsingAOTAndExtrasImages))
         {
-            var defaultUbuntuVersion = UbuntuCodenameForSDKVersion(parsedVersion);
+            SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm);
+            var defaultUbuntuVersion = UbuntuCodenameForVersion(parsedVersion, tfm);
             Log.LogMessage("Computed base version tag of {0} from TFM {1} and SDK {2}", baseVersionPart, TargetFrameworkVersion, SdkVersion);
             if (baseVersionPart is null)
             {
@@ -224,7 +224,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                     };
 
                     // now choose the variant, if any - if globalization then -extra
-                    // as of March 2025, the -aot tag is no longer used, and for .NET 8 and 9 the nightly/runtime-deps images with aot tags point at the regular runtime-deps images 
+                    // as of March 2025, the -aot tag is no longer used, and for .NET 8 and 9 the nightly/runtime-deps images with aot tags point at the regular runtime-deps images
                     tag += (IsAotPublished, IsTrimmed, UsesInvariantGlobalization) switch
                     {
                         (true, _, false) => "-extra",

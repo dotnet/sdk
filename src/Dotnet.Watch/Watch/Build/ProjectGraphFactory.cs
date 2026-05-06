@@ -18,7 +18,9 @@ internal sealed class ProjectGraphFactory(
     ImmutableArray<ProjectRepresentation> rootProjects,
     string? virtualProjectTargetFramework,
     ImmutableDictionary<string, string> buildProperties,
-    ILogger logger)
+    ILogger logger,
+    GlobalOptions globalOptions,
+    EnvironmentOptions environmentOptions)
 {
     /// <summary>
     /// Reuse <see cref="ProjectCollection"/> with XML element caching to improve performance.
@@ -60,7 +62,9 @@ internal sealed class ProjectGraphFactory(
             var graph = new LoadedProjectGraph(
                 new ProjectGraph(entryPoints, _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, logger), cancellationToken),
                 _collection,
-                logger);
+                logger,
+                globalOptions,
+                environmentOptions);
 
             logger.LogDebug("Project graph loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
             return graph;

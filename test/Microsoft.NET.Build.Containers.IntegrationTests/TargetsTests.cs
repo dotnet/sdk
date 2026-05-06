@@ -278,6 +278,9 @@ public class TargetsTests
     [InlineData("8.0.100-servicing.23502.3", "v8.0", "8.0")]
     [InlineData("8.0.100-alpha.12345", "v8.0", "8.0-preview")]
     [InlineData("9.0.100-alpha.12345", "v9.0", "9.0-preview")]
+    [InlineData("11.0.100-preview.2", "v11.0", "11.0.0-preview.2")]
+    [InlineData("11.0.100-dev", "v11.0", "11.0-preview")]
+    [InlineData("11.0.100", "v11.0", "11.0")]
     [Theory]
     public void CanComputeTagsForSupportedSDKVersions(string sdkVersion, string tfm, string expectedTag)
     {
@@ -347,6 +350,8 @@ public class TargetsTests
     [InlineData("8.0.200", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
     [InlineData("8.0.300", "v8.0", "noble-chiseled", "8.0-noble-chiseled-extra")]
     [InlineData("8.0.300", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
+    [InlineData("11.0.100-preview.2", "v11.0", "resolute-chiseled", "11.0.0-preview.2-resolute-chiseled")]
+    [InlineData("11.0.100", "v11.0", "resolute", "11.0-resolute")]
     [Theory]
     public void CanTakeContainerBaseFamilyIntoAccount(string sdkVersion, string tfmMajMin, string containerFamily, string expectedTag)
     {
@@ -453,6 +458,49 @@ public class TargetsTests
             [KnownStrings.Properties.PublishAot] = true.ToString(),
             [KnownStrings.Properties.InvariantGlobalization] = false.ToString()
         }, projectName: $"{nameof(AOTAppsWithCulturesGetExtraImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData("11.0.100-preview.2", "v11.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:11.0.0-preview.2-resolute-chiseled")]
+    [InlineData("11.0.100", "v11.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute-chiseled")]
+    [Theory]
+    public void AOTNet11AppsInferResoluteCodename(string sdkVersion, string tfm, string rid, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = sdkVersion,
+            ["TargetFrameworkVersion"] = tfm,
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishAot] = true.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = true.ToString()
+        }, projectName: $"{nameof(AOTNet11AppsInferResoluteCodename)}_{sdkVersion}_{tfm}_{rid}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData("11.0.100", "v10.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled")]
+    [InlineData("11.0.100-preview.2", "v10.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled")]
+    [InlineData("11.0.100", "v9.0", "linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:9.0-noble-chiseled")]
+    [Theory]
+    public void AOTAppsUseCodenameMatchingTFMNotSDK(string sdkVersion, string tfm, string rid, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = sdkVersion,
+            ["TargetFrameworkVersion"] = tfm,
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishAot] = true.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = true.ToString()
+        }, projectName: $"{nameof(AOTAppsUseCodenameMatchingTFMNotSDK)}_{sdkVersion}_{tfm}_{rid}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
         instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
@@ -617,6 +665,7 @@ public class TargetsTests
     [InlineData("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled-extra")]
     [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:9.0-noble-chiseled-extra")]
     [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra")]
+    [InlineData("11.0.100", "v11.0", "resolute-chiseled", "mcr.microsoft.com/dotnet/runtime:11.0-resolute-chiseled-extra")]
     [Theory]
     public void FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater(string sdkVersion, string tfm, string containerFamily, string expectedImage)
     {
@@ -638,6 +687,7 @@ public class TargetsTests
     [InlineData("8.0.100", "v8.0", "jammy-chiseled", "mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled-extra")]
     [InlineData("9.0.100", "v9.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:9.0-noble-chiseled-extra")]
     [InlineData("10.0.100", "v10.0", "noble-chiseled", "mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra")]
+    [InlineData("11.0.100", "v11.0", "resolute-chiseled", "mcr.microsoft.com/dotnet/aspnet:11.0-resolute-chiseled-extra")]
     [Theory]
     public void FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtrasForNet9AndLater(string sdkVersion, string tfm, string containerFamily, string expectedImage)
     {
