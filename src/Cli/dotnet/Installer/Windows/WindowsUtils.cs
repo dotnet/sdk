@@ -125,7 +125,7 @@ public static class WindowsUtils
         pipeSecurity.SetOwner(ownerSid);
         pipeSecurity.AddAccessRule(new PipeAccessRule(ownerSid, PipeAccessRights.FullControl, AccessControlType.Allow));
 
-        // Restrict read/write access to authenticated users
+        // Restrict read/write access to the allowed client (typically in workloads the unelevated process parent talking to the elevated 'server')
         pipeSecurity.AddAccessRule(new PipeAccessRule(clientSid,
             PipeAccessRights.Read | PipeAccessRights.Write | PipeAccessRights.Synchronize, AccessControlType.Allow));
 

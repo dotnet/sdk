@@ -240,6 +240,18 @@ namespace Microsoft.DotNet.Tests
         }
 
         [WindowsOnlyFact]
+        public void ValidateLogFilePath_ShouldRejectSiblingPrefixAttack()
+        {
+            // "C:\TempEvil" should NOT be accepted when serverTemp is "C:\Temp"
+            string serverTemp = @"C:\Temp";
+            string maliciousPath = @"C:\TempEvil\evil.log";
+
+            string result = WindowsUtils.ValidateLogFilePath(maliciousPath, serverTemp);
+            Assert.NotEqual(Path.GetFullPath(maliciousPath), result);
+            Assert.StartsWith(Path.GetFullPath(serverTemp), result, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [WindowsOnlyFact]
         public void ValidatePackagePath_ShouldRejectTraversalAttack()
         {
             string cacheRoot = @"C:\ProgramData\dotnet\workloads";
