@@ -120,13 +120,13 @@ instantiate the class when needed.
 
 ### Supplying parameters conditions results
 
-It is possible to supply evaluation results of parameters conditions when instantiating template via Edge API [`TemplateCreator.InstantiateAsync`](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/TemplateCreator.cs#L89). Example use case is instantiation from Visual Studio host, that will leverage condition evaluator integrated within the New Project Dialog. 
+It is possible to supply evaluation results of parameters conditions when instantiating template via Edge API [`TemplateCreator.InstantiateAsync`](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/TemplateCreator.cs#L76). Example use case is instantiation from Visual Studio host, that will leverage condition evaluator integrated within the New Project Dialog. 
 
 This can be achieved by passing the structured [`InputDataSet`](https://github.com/dotnet/sdk/blob/main/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/InputDataSet.cs) argument that is populated with [`EvaluatedInputParameterData`](https://github.com/dotnet/sdk/blob/main/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/EvaluatedInputParameterData.cs) objects for evaluated parameters. 
 
 It is currently not possible to provide just partial external evaluation - meaning that the template engine evaluates either all the parameter conditions or none. If the [`InputDataSet`](https://github.com/dotnet/sdk/blob/main/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/InputDataSet.cs) collection contains at least one [`EvaluatedInputParameterData`](https://github.com/dotnet/sdk/blob/main/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/EvaluatedInputParameterData.cs) element, results of all parameter conditions are expected to be passed.
 
-Template engine cross checks externally passed evaluations. If it encounteres mismatch between externally passed result and internal evaluation result a failed `ITemplateCreationResult` is returned from `InstantiateAsync` API. Failure is indicated by [`CondtionsEvaluationMismatch`](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/CreationResultStatus.cs#L61) in [`Status`](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/ITemplateCreationResult.cs#L41) property.
+Template engine cross checks externally passed evaluations. If it encounteres mismatch between externally passed result and internal evaluation result a failed `ITemplateCreationResult` is returned from `InstantiateAsync` API. Failure is indicated by [`CondtionsEvaluationMismatch`](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/CreationResultStatus.cs#L57) in [`Status`](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/ITemplateCreationResult.cs#L39) property.
 
 
 ## [TemplateConstraintManager](https://github.com/dotnet/sdk/blob/main/src/TemplateEngine/Microsoft.TemplateEngine.Edge/TemplateConstraintManager.cs) class
@@ -314,12 +314,12 @@ You can implement the following own components and register them:
 It is possible to register additional components to in the following way:
 
 -   Components of
-    [ITemplateEngineHost.BuiltInComponents](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs#L21)
+    [ITemplateEngineHost.BuiltInComponents](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs#L17)
     will be added when loading environment settings. For
     DefaultTemplateEngineHost they can be passed to constructor.
 
 -   You can use
-    [IComponentManager.AddComponent](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/IComponentManager.cs#L58)
+    [IComponentManager.AddComponent](https://github.com/dotnet/sdk/blob/0d8f160e2f7/src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/IComponentManager.cs#L53)
     method to add the component in runtime.
 
 Note that components are not persisted, so they should be added each time
