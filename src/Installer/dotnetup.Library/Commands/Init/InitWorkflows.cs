@@ -157,12 +157,37 @@ internal class InitWorkflows
         string? manifestPath,
         Task? predownloadTask)
     {
-        var sdkMigrations = toMigrate.Where(m => m.Component == InstallComponent.SDK).ToList();
-        var runtimeMigrations = toMigrate.Where(m => m.Component != InstallComponent.SDK).ToList();
+        var (phase1, deferred) = BuildMigrationPhase1Requests(
+            effectiveRequests, toMigrate, command, installRoot, manifestPath);
+        RunInstallRequests(phase1, predownloadTask, command.NoProgress);
 
-        // Phase 1: primary requests + SDK migrations.
-        effectiveRequests = MergeInstallRequests(
-            effectiveRequests,
+        var phase2 = BuildMigrationPhase2Requests(deferred, command, installRoot, manifestPath);
+        if (phase2.Count > 0)
+        {
+            RunInstallRequests(phase2, predownloadTask: null, command.NoProgress);
+        }
+
+        return [..phase1, ..phase2];
+    }
+
+    /// <summary>
+    /// Builds the Phase 1 install batch (existing requests merged with SDK migrations) and
+    /// returns the runtime-style migrations that should be considered for Phase 2 after the
+    /// Phase 1 install completes.
+    /// </summary>
+    internal static (List<ResolvedInstallRequest> Phase1Requests, List<MigrationSelection> DeferredRuntimeMigrations)
+        BuildMigrationPhase1Requests(
+            List<ResolvedInstallRequest> existingRequests,
+            List<MigrationSelection> migrations,
+            InstallCommand command,
+            DotnetInstallRoot installRoot,
+            string? manifestPath)
+    {
+        var sdkMigrations = migrations.Where(m => m.Component == InstallComponent.SDK).ToList();
+        var runtimeMigrations = migrations.Where(m => m.Component != InstallComponent.SDK).ToList();
+
+        var phase1 = MergeInstallRequests(
+            existingRequests,
             sdkMigrations,
             installRoot,
             manifestPath,
@@ -170,33 +195,39 @@ internal class InitWorkflows
             verbosity: command.Verbosity,
             requireMuxerUpdate: command.RequireMuxerUpdate);
 
-        RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress);
+        return (phase1, runtimeMigrations);
+    }
 
-        // Phase 2: runtime-style migrations whose folder isn't already on disk.
-        if (runtimeMigrations.Count == 0)
+    /// <summary>
+    /// Builds the Phase 2 install batch by filtering deferred runtime-style migrations against
+    /// what is already on disk after Phase 1. Returns an empty list when nothing needs to install.
+    /// </summary>
+    internal static List<ResolvedInstallRequest> BuildMigrationPhase2Requests(
+        List<MigrationSelection> deferredRuntimeMigrations,
+        InstallCommand command,
+        DotnetInstallRoot installRoot,
+        string? manifestPath)
+    {
+        if (deferredRuntimeMigrations.Count == 0)
         {
-            return effectiveRequests;
+            return [];
         }
 
-        var remainingRuntimeMigrations = FilterRuntimeMigrationsAgainstDisk(
-            runtimeMigrations, installRoot, command.ChannelVersionResolver);
-        if (remainingRuntimeMigrations.Count == 0)
+        var remaining = FilterRuntimeMigrationsAgainstDisk(
+            deferredRuntimeMigrations, installRoot, command.ChannelVersionResolver);
+        if (remaining.Count == 0)
         {
-            return effectiveRequests;
+            return [];
         }
 
-        var phase2Requests = MergeInstallRequests(
+        return MergeInstallRequests(
             [],
-            remainingRuntimeMigrations,
+            remaining,
             installRoot,
             manifestPath,
             untracked: command.Untracked,
             verbosity: command.Verbosity,
             requireMuxerUpdate: command.RequireMuxerUpdate);
-
-        RunInstallRequests(phase2Requests, predownloadTask: null, command.NoProgress);
-        effectiveRequests.AddRange(phase2Requests);
-        return effectiveRequests;
     }
 
     private static void RunInstallRequests(
@@ -557,7 +588,7 @@ internal class InitWorkflows
     /// the SDK already installed). If resolution returns null we keep the migration so the
     /// install attempt can surface a clear error rather than silently skipping.
     /// </remarks>
-    internal static List<MigrationSelection> FilterRuntimeMigrationsAgainstDisk(
+    private static List<MigrationSelection> FilterRuntimeMigrationsAgainstDisk(
         List<MigrationSelection> runtimeMigrations,
         DotnetInstallRoot installRoot,
         ChannelVersionResolver channelVersionResolver)

@@ -118,56 +118,18 @@ internal class InstallWorkflow
         List<InitWorkflows.MigrationSelection> migrationSelections,
         DotnetInstallRoot installRoot)
     {
-        var sdkMigrations = migrationSelections
-            .Where(m => m.Component == InstallComponent.SDK)
-            .ToList();
-        var runtimeMigrations = migrationSelections
-            .Where(m => m.Component != InstallComponent.SDK)
-            .ToList();
+        var (phase1, deferred) = InitWorkflows.BuildMigrationPhase1Requests(
+            requests, migrationSelections, _command, installRoot, _command.ManifestPath);
+        ExecuteInstallRequests(phase1);
 
-        // Phase 1: primary requests + SDK migrations.
-        var phase1Requests = InitWorkflows.MergeInstallRequests(
-            requests,
-            sdkMigrations,
-            installRoot,
-            _command.ManifestPath,
-            untracked: _command.Untracked,
-            verbosity: _command.Verbosity,
-            requireMuxerUpdate: _command.RequireMuxerUpdate);
-
-        ExecuteInstallRequests(phase1Requests);
-
-        // Phase 2: runtime-style migrations not already satisfied on disk.
-        if (runtimeMigrations.Count == 0)
+        var phase2 = InitWorkflows.BuildMigrationPhase2Requests(
+            deferred, _command, installRoot, _command.ManifestPath);
+        if (phase2.Count > 0)
         {
-            return phase1Requests;
+            ExecuteInstallRequests(phase2);
         }
 
-        var remainingRuntimeMigrations = InitWorkflows.FilterRuntimeMigrationsAgainstDisk(
-            runtimeMigrations,
-            installRoot,
-            _command.ChannelVersionResolver);
-
-        if (remainingRuntimeMigrations.Count == 0)
-        {
-            return phase1Requests;
-        }
-
-        var phase2Requests = InitWorkflows.MergeInstallRequests(
-            [],
-            remainingRuntimeMigrations,
-            installRoot,
-            _command.ManifestPath,
-            untracked: _command.Untracked,
-            verbosity: _command.Verbosity,
-            requireMuxerUpdate: _command.RequireMuxerUpdate);
-
-        ExecuteInstallRequests(phase2Requests);
-
-        var combined = new List<ResolvedInstallRequest>(phase1Requests.Count + phase2Requests.Count);
-        combined.AddRange(phase1Requests);
-        combined.AddRange(phase2Requests);
-        return combined;
+        return [..phase1, ..phase2];
     }
 
     /// <summary>
