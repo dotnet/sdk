@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,14 +9,13 @@ using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiCompatibility.Runner;
 using Microsoft.DotNet.ApiCompatibility.Tests;
 using Microsoft.DotNet.ApiSymbolExtensions;
-using Microsoft.DotNet.PackageValidation;
 using Microsoft.DotNet.PackageValidation.Validators;
 
-namespace Microsoft.DotNet.ApiCompat.IntegrationTests
+namespace Microsoft.DotNet.PackageValidation.Tests
 {
-    public class CompatibleFrameworkInPackageValidatorIntegrationTests : SdkTest
+    public class CompatibleFrameworkInPackageValidatorTests : SdkTest
     {
-        public CompatibleFrameworkInPackageValidatorIntegrationTests(ITestOutputHelper log) : base(log)
+        public CompatibleFrameworkInPackageValidatorTests(ITestOutputHelper log) : base(log)
         {
         }
 

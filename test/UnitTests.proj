@@ -31,18 +31,26 @@
     <!-- dotnet-format unit tests are run under the DOTNET_FORMAT pipeline section. -->
     <SDKCustomXUnitProject Remove="dotnet-format.UnitTests\dotnet-format.UnitTests.csproj" />
 
-    <!-- ApiCompat integration tests are only run with TestFullMSBuild=true (see below). -->
-    <SDKCustomXUnitProject Remove="Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj" />
-
     <!-- Filter out .NET Framework only test projects and add them manually. -->
     <SDKCustomXUnitProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- Run the compatibility-tooling integration tests under desktop MSBuild on every PR
+       (in addition to the default .NETCoreApp run produced by the *IntegrationTests glob above)
+       so the Runtime="NET" taskhost path is exercised. ApiDiff has no MSBuild task, so it
+       runs only under .NETCoreApp via the default glob. -->
+  <ItemGroup>
+    <SDKCustomXUnitProject Include="
+      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
+      Microsoft.DotNet.GenAPI.IntegrationTests\Microsoft.DotNet.GenAPI.IntegrationTests.csproj"
+                           TargetFramework="net472"
+                           RuntimeTargetFramework="net472" />
   </ItemGroup>
 
   <!-- When TestFullMSBuild=true, include the .NET Framework tests. .NETCoreApp tests are also executed
        as that validates running tests with desktop msbuild. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
     <SDKCustomXUnitProject Include="
-      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
       Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj;
       Microsoft.DotNet.TemplateLocator.Tests\Microsoft.DotNet.TemplateLocator.Tests.csproj;
       Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj;
