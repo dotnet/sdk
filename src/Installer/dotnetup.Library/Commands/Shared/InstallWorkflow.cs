@@ -89,10 +89,10 @@ internal class InstallWorkflow
         }
 
         var installRoot = requests[0].Request.InstallRoot;
-        var toMigrate = InitWorkflows.GetMigrationCandidates(
+        var toMigrate = MigrationWorkflow.GetMigrationCandidates(
             _command.DotnetEnvironment,
             _command.MigrationComponents);
-        var migrationSelections = InitWorkflows.BuildMigrationSelections(
+        var migrationSelections = MigrationWorkflow.BuildMigrationSelections(
             toMigrate,
             installRoot,
             _command.ManifestPath,
@@ -109,7 +109,7 @@ internal class InstallWorkflow
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
             $"Migrating {migrationSelections.Count} matching system .NET channel(s) because --migrate-from-system was specified."));
 
-        return InitWorkflows.ExecuteMigrationInPhases(
+        return MigrationWorkflow.ExecuteMigrationInPhases(
             requests, migrationSelections, _command, installRoot, _command.ManifestPath,
             runner: ExecuteInstallRequests);
     }
