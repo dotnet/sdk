@@ -136,7 +136,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["ALLOW_PRERELEASE"] = "",
                 ["NO_SDK_VERSION"] = false
             };
-            // (!NO_SDK_VERSION || ALLOW_PRERELEASE!="") - a representative condition from globaljson template
+            // (!NO_SDK_VERSION || ALLOW_PRERELEASE!="") - a representative condition from global.json template
             bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "(!NO_SDK_VERSION || ALLOW_PRERELEASE!=\"\")", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result); // !false = true, regardless of right side

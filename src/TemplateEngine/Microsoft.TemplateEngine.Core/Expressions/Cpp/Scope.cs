@@ -109,9 +109,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             return x switch
             {
                 bool b => b,
-                string s when bool.TryParse(s, out bool parsed) => parsed,
-                string s when string.IsNullOrEmpty(s) => false, // unspecified choice parameter (defaultValue: "") → false
                 null => false,
+                string s when string.IsNullOrEmpty(s) => false, // unspecified choice parameter (defaultValue: "") → false
+                string s when bool.TryParse(s, out bool parsed) => parsed,
                 _ => Convert.ToBoolean(x)
             };
         }
