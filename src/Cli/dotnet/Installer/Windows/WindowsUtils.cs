@@ -239,12 +239,14 @@ public static class WindowsUtils
     /// </summary>
     private static bool IsPathUnder(string fullPath, string root)
     {
-        string rootWithSep = root.EndsWith(Path.DirectorySeparatorChar)
-            ? root
-            : root + Path.DirectorySeparatorChar;
+        // Normalize both paths by trimming trailing separators so that
+        // "C:\Temp\" and "C:\Temp" compare identically.
+        string normalizedPath = fullPath.TrimEnd(Path.DirectorySeparatorChar);
+        string normalizedRoot = root.TrimEnd(Path.DirectorySeparatorChar);
+        string rootWithSep = normalizedRoot + Path.DirectorySeparatorChar;
 
-        return fullPath.Equals(root, StringComparison.OrdinalIgnoreCase)
-            || fullPath.StartsWith(rootWithSep, StringComparison.OrdinalIgnoreCase);
+        return normalizedPath.Equals(normalizedRoot, StringComparison.OrdinalIgnoreCase)
+            || normalizedPath.StartsWith(rootWithSep, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -257,10 +259,13 @@ public static class WindowsUtils
     {
         // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{SID}\ProfileImagePath
         // contains the full path to the user's profile directory (e.g., C:\Users\username).
+        // RegistryKey.GetValue expands REG_EXPAND_SZ values by default, but call ExpandEnvironmentVariables
+        // explicitly to also handle the rare case where the value was stored as REG_SZ with literal %vars%.
         using RegistryKey profileListKey = Registry.LocalMachine.OpenSubKey(
             $@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{sid.Value}");
 
-        return profileListKey?.GetValue("ProfileImagePath") as string;
+        string profileImagePath = profileListKey?.GetValue("ProfileImagePath") as string;
+        return profileImagePath != null ? Environment.ExpandEnvironmentVariables(profileImagePath) : null;
     }
 
     /// <summary>
