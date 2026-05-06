@@ -1984,16 +1984,6 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">Určeno pro aktualizaci úloh pomocí {0} z příkazového řádku, ale soubor global.json v {1} je zadán pro použití {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">Požadovaná verze {0} je nižší než stávající verze {1}.</target>

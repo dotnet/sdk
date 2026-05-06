@@ -1984,16 +1984,6 @@ et les ID de package correspondants aux outils installés, utilisez la commande
         <target state="translated">Spécifié pour mettre à jour les charges de travail à l’aide de {0} à partir de la ligne de commande, mais le fichier global.json à {1} spécifie d’utiliser {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">La version demandée {0} est inférieure à la version existante {1}.</target>

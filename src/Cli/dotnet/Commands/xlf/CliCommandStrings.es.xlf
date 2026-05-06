@@ -1984,16 +1984,6 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <target state="translated">Se especifica para actualizar las cargas de trabajo mediante {0} desde la línea de comandos, pero el archivo global.json {1} especificado para usar {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">La versión solicitada {0} es inferior a la versión existente {1}.</target>

@@ -1984,16 +1984,6 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">已指定从命令行使用 {0} 更新工作负载，但位于 {1} 的 global.json 文件指定为使用 {2}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">请求的版本 {0} 低于现有版本 {1}。</target>

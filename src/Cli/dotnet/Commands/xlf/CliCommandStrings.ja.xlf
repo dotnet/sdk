@@ -1984,16 +1984,6 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">コマンド ラインから {0} を使用してワークロードを更新するように指定されていますが、{1} の global.json では {2}を使用するように指定されています。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">要求されたバージョン {0} は、既存のバージョン {1} を下回っています。</target>

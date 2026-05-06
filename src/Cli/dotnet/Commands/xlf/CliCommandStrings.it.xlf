@@ -1984,16 +1984,6 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
         <target state="translated">Specificato per aggiornare i carichi di lavoro usando {0} dalla riga di comando, ma il file global.json in {1} specificato per usare {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">La versione richiesta {0} è inferiore a quella esistente {1}.</target>

@@ -1984,16 +1984,6 @@ karşılık gelen paket kimliklerini bulmak için
         <target state="translated">Komut satırından iş yüklerini {0} ile güncelleştirmek için belirtildi, ancak global.json dosyası {1} kullanmak için {2} olarak ayarlandı.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">İstenen sürümü ({0}) mevcut sürümünden ({1}) düşük.</target>

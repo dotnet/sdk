@@ -1984,16 +1984,6 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
         <target state="translated">Es wurde angegeben, dass Workloads mithilfe von "{0}" über die Befehlszeile aktualisiert werden sollen, aber die global.json-Datei in "{1}" gibt an, dass "{2}" verwendet werden soll.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">Die angeforderte Version {0} ist niedriger als die vorhandene Version {1}.</target>

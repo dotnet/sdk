@@ -1984,16 +1984,6 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <target state="translated">Określono, aby aktualizować obciążenia przy użyciu {0} z wiersza polecenia, ale plik global.json w {1} został określony do użycia {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same prerelease version (version '{1}').</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the same stable version (version '{1}').</source>
-        <target state="new">Tool '{0}' was reinstalled with the same stable version (version '{1}').</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">Żądana wersja {0} jest niższa niż istniejąca wersja {1}.</target>
