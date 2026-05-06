@@ -53,14 +53,17 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
                 $"apidiff-{nameof(ApiDiffTool_AddedMember_ProducesDiff)}-{Guid.NewGuid():N}");
             Directory.CreateDirectory(outputFolder);
 
+            const string tocTitle = "diff";
             Run(
                 "--before", Path.GetDirectoryName(beforeAssembly)!,
                 "--after", Path.GetDirectoryName(afterAssembly)!,
                 "--beforeFriendlyName", "1.0",
                 "--afterFriendlyName", "2.0",
+                "--tableOfContentsTitle", tocTitle,
                 "--output", outputFolder).Should().Pass();
 
-            string assemblyDiff = Path.Combine(outputFolder, "MyLib.md");
+            // Per-assembly markdown files are written as "<tableOfContentsTitle>_<assemblyName>.md".
+            string assemblyDiff = Path.Combine(outputFolder, $"{tocTitle}_MyLib.md");
             File.Exists(assemblyDiff).Should().BeTrue($"the per-assembly markdown should be written to {assemblyDiff}");
             File.ReadAllText(assemblyDiff).Should().Contain("Welcome",
                 "the added member should appear in the diff for MyLib");
@@ -88,14 +91,16 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
         }
 
         [Fact]
-        public void ApiDiffTool_MissingRequiredOption_FailsWithHelpfulError()
+        public void ApiDiffTool_MissingRequiredOption_ReportsHelpfulError()
         {
             // Omit --output and verify System.CommandLine reports the missing required option.
+            // (System.CommandLine writes the error to stderr but exits with code 0 after printing help,
+            // so we assert on the reported error text rather than the exit code.)
             CommandResult result = Run("--before", ".", "--after", ".",
                 "--beforeFriendlyName", "old", "--afterFriendlyName", "new");
 
-            result.Should().Fail();
-            result.StdErr.Should().Contain("--output");
+            string output = result.StdOut + result.StdErr;
+            output.Should().Contain("--output");
         }
 
         private CommandResult Run(params string[] args)

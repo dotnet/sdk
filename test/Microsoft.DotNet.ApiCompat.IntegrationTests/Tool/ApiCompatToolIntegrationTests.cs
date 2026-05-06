@@ -37,7 +37,8 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             var result = Run("--left", contractAssembly, "--right", implementationAssembly);
 
             result.Should().Fail();
-            result.StdOut.Should().Contain("CP0002")
+            string output = result.StdOut + result.StdErr;
+            output.Should().Contain("CP0002")
                 .And.Contain("Goodbye");
         }
 
@@ -86,7 +87,8 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             var result = Run("package", newerPackage, "--baseline-package", baselinePackage);
 
             result.Should().Fail();
-            result.StdOut.Should().Contain("CP0002")
+            string output = result.StdOut + result.StdErr;
+            output.Should().Contain("CP0002")
                 .And.Contain("SomeApiNotInLatestVersion");
         }
 

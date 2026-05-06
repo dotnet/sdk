@@ -29,21 +29,25 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
 
         private static string Resolve(string toolName)
         {
-            string path = Path.Combine(
-                s_repoRoot,
-                "artifacts",
-                "bin",
-                toolName,
-                s_configuration,
-                $"net{ToolsetInfo.CurrentTargetFrameworkVersion}",
-                $"{toolName}.dll");
+            string toolBinDir = Path.Combine(s_repoRoot, "artifacts", "bin", toolName, s_configuration);
+            if (!Directory.Exists(toolBinDir))
+            {
+                throw new DirectoryNotFoundException(
+                    $"Could not find the build output directory for {toolName} at '{toolBinDir}'. " +
+                    $"Make sure {toolName}.csproj has been built (it should be a build-ordering dependency of the IntegrationTests project).");
+            }
 
-            if (!File.Exists(path))
+            // The tool projects single-target $(NetMinimum); discover the actual TFM directory rather
+            // than hard-coding a version that drifts over time.
+            string? path = Directory.EnumerateFiles(toolBinDir, $"{toolName}.dll", SearchOption.AllDirectories)
+                .OrderByDescending(p => p)
+                .FirstOrDefault(p => !p.Contains("publish", StringComparison.OrdinalIgnoreCase));
+
+            if (path is null)
             {
                 throw new FileNotFoundException(
-                    $"Could not find the {toolName} entry-point DLL at '{path}'. " +
-                    $"Make sure {toolName}.csproj has been built (it should be a build-ordering dependency of the IntegrationTests project).",
-                    path);
+                    $"Could not find the {toolName} entry-point DLL under '{toolBinDir}'. " +
+                    $"Make sure {toolName}.csproj has been built (it should be a build-ordering dependency of the IntegrationTests project).");
             }
             return path;
         }
