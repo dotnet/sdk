@@ -227,7 +227,7 @@ public bool IsDaily => Name.Equals("daily", StringComparison.OrdinalIgnoreCase)
     || Name.EndsWith("-daily", StringComparison.OrdinalIgnoreCase);
 public string BaseChannel => IsDaily
     ? Name.Equals("daily", StringComparison.OrdinalIgnoreCase)
-        ? "daily"
+        ? "daily"  // bare "daily" is its own base — resolved separately via major+1 probing
         : Name.Substring(0, Name.LastIndexOf('-'))
     : Name;
 ```
@@ -311,9 +311,10 @@ dotnetup should clearly communicate this to users when installing from daily cha
 ⚠ Daily builds are not code-signed. Only the SHA-512 hash is verified.
 ```
 
-If users need signed pre-release builds, they should use the `signed` quality level instead.
-This raises the question of whether dotnetup should also support `signed` and `validated`
-as channel qualifiers (e.g., `10.0/signed`).
+When dotnetup adds signing validation in the future, if daily channel builds are not signed, then
+dotnetup will automatically skip the sign check but print out a warning.  If they are typically signed,
+then we will add a `--skip-sign-check` flag (which would only work on daily builds) for installing older
+or otherwise unsigned daily builds.
 
 ## Implementation phases
 
@@ -337,7 +338,8 @@ is needed. We just need the blob-feed download path:
 
 Builds on Phase 1's blob-feed download path by adding version discovery:
 - Extend `UpdateChannel` with `IsDaily` / `BaseChannel` properties for `...-daily` suffix parsing
-- Add `IsValidChannelFormat()` support for `...-daily` channels and bare `daily`
+- Add `IsValidChannelFormat()` support for `...-daily` channels and bare `daily` (add `daily`
+  to the known channel keyword set alongside `latest`, `preview`, `lts`)
 - Extend `ChannelVersionResolver.Resolve()` to detect daily channels and query the aka.ms
   redirect to discover the latest version (the `InstallWorkflow` doesn't need to change —
   it already calls `Resolve()` and gets back a version)
@@ -371,9 +373,9 @@ configuration.
 
 ## Open questions
 
-1. **Should there be a `--feed` override?** For internal scenarios, users might want to point at
-   a different feed URL. The `dotnet-install` scripts support `--azure-feed` for this. If added,
-   this should be treated as an advanced/untrusted mode.
+1. ~~**Should there be a `--feed` override?**~~ **Resolved**: No. For custom feed scenarios,
+   users should construct their own release manifest and point dotnetup at that. This keeps
+   daily build support focused on the well-known .NET infrastructure feeds.
 
 2. **Runtime transport package**: With the VMR, all components version together, so any
    VMR-produced package can serve as the version index. A candidate like
@@ -398,7 +400,14 @@ configuration.
    (`10.0/daily`), which mirrors URL path structure but may conflict with file path parsing on
    some platforms.
 
-7. **Other quality levels**: The .NET build pipeline has quality levels beyond `daily`:
-   `daily → signed → validated → preview → ga`. Should dotnetup support `10.0-signed` or
-   `10.0-validated` channels? `signed` builds are code-signed but not fully validated —
-   they may be useful for users who want pre-release builds with signature verification.
+7. ~~**Other quality levels**~~: **Resolved**: No — we will not support `10.0-signed` or
+   `10.0-validated` channels for this feature. Users who need signed pre-release builds can
+   use the `dotnet-install` scripts with `--quality signed` until/unless demand warrants adding
+   these to dotnetup.
+
+8. **Alternative version discovery via AzDO artifacts**: If the build pipelines are public, we
+   could acquire installer payloads directly from AzDO artifacts rather than relying on aka.ms
+   redirects. This would avoid stale marker files and give access to the build metadata. Worth
+   investigating whether the public SDK build pipeline reliably publishes artifacts that map
+   cleanly to what dotnetup needs (archive + hash). Could be explored as an alternative to
+   aka.ms in Phase 2 or as a fallback when aka.ms redirects fail.
