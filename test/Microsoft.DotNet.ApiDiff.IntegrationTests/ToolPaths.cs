@@ -4,46 +4,26 @@
 namespace Microsoft.DotNet.ApiDiff.IntegrationTests
 {
     /// <summary>
-    /// Locates the published <c>apidiff</c> tool DLL in the repo's
-    /// <c>artifacts/bin/Microsoft.DotNet.ApiDiff.Tool/&lt;Configuration&gt;/&lt;TFM&gt;/</c>
-    /// output directory so the integration tests can invoke it via <c>dotnet exec</c>.
+    /// Locates the published <c>apidiff</c> tool DLL that the IntegrationTests project's
+    /// <c>_StageToolsUnderTest</c> target copies under <c>tools\Microsoft.DotNet.ApiDiff.Tool\</c>
+    /// in the test assembly's output directory. Resolving relative to
+    /// <see cref="AppContext.BaseDirectory"/> works both for local <c>dotnet test</c> runs and on
+    /// Helix work items (where the tools tree is part of the work item payload).
     /// </summary>
     internal static class ToolPaths
     {
-        private static readonly string s_repoRoot =
-            SdkTestContext.GetRepoRoot()
-            ?? throw new InvalidOperationException("Could not locate the repo root from the test working directory.");
-
-        private static readonly string s_configuration =
-#if DEBUG
-            "Debug";
-#else
-            "Release";
-#endif
-
         public static string ApiDiffToolDll { get; } = Resolve("Microsoft.DotNet.ApiDiff.Tool");
 
         private static string Resolve(string toolName)
         {
-            string toolBinDir = Path.Combine(s_repoRoot, "artifacts", "bin", toolName, s_configuration);
-            if (!Directory.Exists(toolBinDir))
-            {
-                throw new DirectoryNotFoundException(
-                    $"Could not find the build output directory for {toolName} at '{toolBinDir}'. " +
-                    $"Make sure {toolName}.csproj has been built (it should be a build-ordering dependency of the IntegrationTests project).");
-            }
-
-            // The tool projects single-target $(NetMinimum); discover the actual TFM directory rather
-            // than hard-coding a version that drifts over time.
-            string? path = Directory.EnumerateFiles(toolBinDir, $"{toolName}.dll", SearchOption.AllDirectories)
-                .OrderByDescending(p => p)
-                .FirstOrDefault(p => !p.Contains("publish", StringComparison.OrdinalIgnoreCase));
-
-            if (path is null)
+            string toolDir = Path.Combine(AppContext.BaseDirectory, "tools", toolName);
+            string path = Path.Combine(toolDir, $"{toolName}.dll");
+            if (!File.Exists(path))
             {
                 throw new FileNotFoundException(
-                    $"Could not find the {toolName} entry-point DLL under '{toolBinDir}'. " +
-                    $"Make sure {toolName}.csproj has been built (it should be a build-ordering dependency of the IntegrationTests project).");
+                    $"Could not find the {toolName} entry-point DLL at '{path}'. " +
+                    $"Make sure the IntegrationTests project's _StageToolsUnderTest target ran (it copies the tool's bin output under '{toolDir}').",
+                    path);
             }
             return path;
         }

@@ -17,4 +17,17 @@
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
+  <!-- Stage the apicompat CLI binary closure under tools\Microsoft.DotNet.ApiCompat.Tool\ so the
+       test can invoke 'dotnet exec' against it both locally and on Helix. ToolPaths reads the
+       DLL relative to AppContext.BaseDirectory; the test assembly and its tools/ subtree get
+       packaged together into the Helix work item payload. -->
+  <Target Name="_StageToolsUnderTest" AfterTargets="Build">
+    <ItemGroup>
+      <_ApiCompatToolFile Include="$(ArtifactsBinDir)Microsoft.DotNet.ApiCompat.Tool\$(Configuration)\$(NetMinimum)\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_ApiCompatToolFile)"
+          DestinationFiles="@(_ApiCompatToolFile->'$(OutputPath)tools\Microsoft.DotNet.ApiCompat.Tool\%(RecursiveDir)%(FileName)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>
