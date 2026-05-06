@@ -84,7 +84,6 @@ internal class InstallWorkflow
     {
         if (requests.Count == 0)
         {
-            ExecuteInstallRequests(requests);
             return requests;
         }
 
