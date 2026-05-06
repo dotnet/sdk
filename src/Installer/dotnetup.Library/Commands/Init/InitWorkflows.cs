@@ -103,7 +103,7 @@ internal class InitWorkflows
         }
         else
         {
-            RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress);
+            RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress, command);
         }
 
         // Save config and apply configuration(s).
@@ -159,12 +159,12 @@ internal class InitWorkflows
     {
         var (phase1, deferred) = BuildMigrationPhase1Requests(
             effectiveRequests, toMigrate, command, installRoot, manifestPath);
-        RunInstallRequests(phase1, predownloadTask, command.NoProgress);
+        RunInstallRequests(phase1, predownloadTask, command.NoProgress, command);
 
         var phase2 = BuildMigrationPhase2Requests(deferred, command, installRoot, manifestPath);
         if (phase2.Count > 0)
         {
-            RunInstallRequests(phase2, predownloadTask: null, command.NoProgress);
+            RunInstallRequests(phase2, predownloadTask: null, command.NoProgress, command);
         }
 
         return [..phase1, ..phase2];
@@ -190,10 +190,8 @@ internal class InitWorkflows
             existingRequests,
             sdkMigrations,
             installRoot,
-            manifestPath,
-            untracked: command.Untracked,
-            verbosity: command.Verbosity,
-            requireMuxerUpdate: command.RequireMuxerUpdate);
+            command,
+            manifestPath);
 
         return (phase1, runtimeMigrations);
     }
@@ -224,16 +222,15 @@ internal class InitWorkflows
             [],
             remaining,
             installRoot,
-            manifestPath,
-            untracked: command.Untracked,
-            verbosity: command.Verbosity,
-            requireMuxerUpdate: command.RequireMuxerUpdate);
+            command,
+            manifestPath);
     }
 
     private static void RunInstallRequests(
         List<ResolvedInstallRequest> requests,
         Task? predownloadTask,
-        bool noProgress)
+        bool noProgress,
+        CommandBase command)
     {
         SpectreAnsiConsole.MarkupLine("Setting up your environment.");
         if (requests.Count > 0)
@@ -245,7 +242,7 @@ internal class InitWorkflows
         // so the cache is populated and we avoid redundant downloads.
         predownloadTask?.GetAwaiter().GetResult();
 
-        InstallExecutor.ExecuteInstalls(requests, noProgress);
+        InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, noProgress, command);
     }
 
     private static PathPreference GetInitPathPreference(bool interactive, IEnvShellProvider? shellProvider = null)
@@ -640,15 +637,15 @@ internal class InitWorkflows
         List<ResolvedInstallRequest> requests,
         List<MigrationSelection> toMigrate,
         DotnetInstallRoot installRoot,
-        string? manifestPath = null,
-        bool untracked = false,
-        Verbosity verbosity = Verbosity.Normal,
-        bool requireMuxerUpdate = false)
+        InstallCommand? command = null,
+        string? manifestPath = null)
     {
         if (toMigrate.Count == 0)
         {
             return requests;
         }
+
+        var migrationOptions = BuildMigrationInstallOptions(command, manifestPath);
 
         var mergedRequests = new List<ResolvedInstallRequest>(requests);
         var existingRequests = requests
@@ -668,18 +665,27 @@ internal class InitWorkflows
                     installRoot,
                     migration.Channel,
                     migration.Component,
-                    new InstallRequestOptions
-                    {
-                        ManifestPath = manifestPath,
-                        Untracked = untracked,
-                        Verbosity = verbosity,
-                        RequireMuxerUpdate = requireMuxerUpdate,
-                    }),
+                    migrationOptions),
                 migration.ExampleVersion));
         }
 
         return mergedRequests;
     }
+
+    /// <summary>
+    /// Builds the <see cref="InstallRequestOptions"/> used for migration install requests.
+    /// Migrations only need the command-wide flags (untracked/verbosity/manifest/muxer) — they do not carry
+    /// global.json or InstallSource information because migrations originate from disk discovery, not from
+    /// user-supplied specs or global.json.
+    /// </summary>
+    private static InstallRequestOptions BuildMigrationInstallOptions(InstallCommand? command, string? manifestPath) =>
+        new()
+        {
+            ManifestPath = manifestPath,
+            Untracked = command?.Untracked ?? false,
+            Verbosity = command?.Verbosity ?? Verbosity.Normal,
+            RequireMuxerUpdate = command?.RequireMuxerUpdate ?? false,
+        };
 
     private static string GetMigrationRetryHint()
         => "You can migrate matching SDKs or runtimes later with \"dotnetup sdk install --migrate-from-system\" or \"dotnetup runtime install --migrate-from-system\".";

@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
@@ -48,6 +50,39 @@ internal class InstallExecutor
 
         DisplayBatchResults(batchResult);
         return batchResult;
+    }
+
+    /// <summary>
+    /// Executes a batch of resolved install requests, records install-result telemetry on
+    /// <paramref name="command"/>, and throws if any request failed. This is the standard
+    /// entry point for production code paths that need failures to surface as exceptions
+    /// rather than be silently swallowed.
+    /// </summary>
+    public static void ExecuteInstallsAndThrowOnFailure(
+        List<ResolvedInstallRequest> requests,
+        bool noProgress,
+        CommandBase command)
+    {
+        var batchResult = ExecuteInstalls(requests, noProgress);
+
+        int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
+        int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);
+        command.SetCommandTag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
+
+        if (batchResult.Failures.Count > 0)
+        {
+            // Attach failures [1..] to the primary so RecordException stamps them as
+            // error.additional_failures on the command row when CommandBase catches the
+            // rethrown primary. Without this only the first failure was visible in
+            // telemetry even though all were printed to the user.
+            var primary = batchResult.Failures[0].Exception;
+            for (int i = 1; i < batchResult.Failures.Count; i++)
+            {
+                primary.AttachAdditionalFailure(batchResult.Failures[i].Exception);
+            }
+
+            ExceptionDispatchInfo.Capture(primary).Throw();
+        }
     }
 
     /// <summary>
