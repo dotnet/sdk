@@ -19,6 +19,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// - [Required] TargetPath: the output dll path
         /// - [Required] RuntimeTargetFramework: the target framework to run tests on
         /// - [Optional] Arguments: a string of arguments to be passed to the XUnit console runner
+        /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to the base method limit
+        ///   used for partitioning tests into Helix shards (base is 16, or 32 for FullFramework)
         /// The two required parameters will be automatically created if XUnitProject.Identity is set to the path of the XUnit csproj file
         /// </summary>
         [Required]
