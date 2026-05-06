@@ -12,7 +12,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks();
 
-        [RequiresMSBuildVersionFact("17.8.0.37606", Skip = "https://github.com/dotnet/sdk/issues/39960")]
+        [RequiresMSBuildVersionFact("17.10.0.8101")]
         public void Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks();
 
         [Fact]

@@ -18,10 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)"/>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)"/>
-    <PackageReference Include="Microsoft.Build" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)"/>
-    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)"/>
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Framework" />
   </ItemGroup>
 
   <ItemGroup>

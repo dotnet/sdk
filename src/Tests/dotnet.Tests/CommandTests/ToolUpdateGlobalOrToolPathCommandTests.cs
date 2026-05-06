@@ -24,6 +24,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
         private readonly ToolPackageStoreMock _store;
         private readonly PackageId _packageId = new PackageId("global.tool.console.demo");
+        private readonly PackageId _packageId2 = new PackageId("global.tool.console.demo.second.one");
         private readonly List<MockFeed> _mockFeeds;
         private const string LowerPackageVersion = "1.0.4";
         private const string HigherPackageVersion = "1.0.5";
@@ -65,6 +66,24 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                             PackageId = _packageId.ToString(),
                             Version = HigherPreviewPackageVersion,
                             ToolCommandName = "SimulatorCommand"
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageId2.ToString(),
+                            Version = LowerPackageVersion,
+                            ToolCommandName = "SimulatorCommand2"
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageId2.ToString(),
+                            Version = HigherPackageVersion,
+                            ToolCommandName = "SimulatorCommand2"
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageId2.ToString(),
+                            Version = HigherPreviewPackageVersion,
+                            ToolCommandName = "SimulatorCommand2"
                         }
                     }
                 }
@@ -76,7 +95,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Instance.Parse($"dotnet tool update -g {_packageId} --ignore-failed-sources");
             var toolUpdateCommand = new ToolUpdateGlobalOrToolPathCommand(parseResult);
-            toolUpdateCommand._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            toolUpdateCommand._toolInstallGlobalOrToolPathCommand._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]
@@ -129,6 +148,20 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenAnExistedLowerVersionInstallationItCanUpdateAllThePackageVersion()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId2} --version {LowerPackageVersion}", _packageId2.ToString()).Execute();
+
+            CreateUpdateCommand($"--all -g -v:d").Execute();
+
+            _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should()
+                .Be(HigherPackageVersion);
+            _store.EnumeratePackageVersions(_packageId2).Single().Version.ToFullString().Should()
+                .Be(HigherPackageVersion);
+        }
+
+        [Fact]
         public void GivenAnExistedLowerversionInstallationWhenCallFromRedirectorItCanUpdateThePackageVersion()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -165,7 +198,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId}");
+            var command = CreateUpdateCommand($"-g {_packageId} --verbosity minimal");
 
             command.Execute();
 
@@ -175,12 +208,57 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenAnExistedLowerversionInstallationWhenUpdateAllItCanPrintSuccessMessage()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g --all --verbosity minimal");
+
+            command.Execute();
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                LocalizableStrings.UpdateSucceeded,
+                _packageId, LowerPackageVersion, HigherPackageVersion));
+        }
+
+        [Fact]
+        public void GivenAnExistedHigherversionInstallationWhenUpdateToLowerVersionItErrors()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {LowerPackageVersion} --verbosity minimal");
+
+            Action a = () => command.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(
+                  string.Format(LocalizableStrings.UpdateToLowerVersion, LowerPackageVersion, HigherPackageVersion));
+        }
+
+       [Fact]
+        public void GivenAnExistedHigherversionInstallationWithDowngradeFlagWhenUpdateToLowerVersionItSucceeds()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {LowerPackageVersion} --verbosity minimal --allow-downgrade");
+
+            command.Execute();
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                LocalizableStrings.UpdateSucceeded,
+                _packageId, HigherPackageVersion, LowerPackageVersion));
+        }
+
+        [Fact]
         public void GivenAnExistedLowerversionInstallationWhenCallWithWildCardVersionItCanPrintSuccessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId} --version 1.0.5-*");
+            var command = CreateUpdateCommand($"-g {_packageId} --version 1.0.5-* --verbosity minimal");
 
             command.Execute();
 
@@ -195,7 +273,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId} --prerelease");
+            var command = CreateUpdateCommand($"-g {_packageId} --prerelease  --verbosity minimal");
 
             command.Execute();
 
@@ -230,7 +308,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId}");
+            var command = CreateUpdateCommand($"-g {_packageId} --verbosity minimal");
 
             command.Execute();
 
@@ -245,7 +323,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPreviewPackageVersion}");
+            var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
 
             command.Execute();
 
@@ -352,18 +430,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             }
         }
 
-        private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)
+        private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options, string packageId = null)
         {
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
+            var store = new ToolPackageStoreMock(
+                    new DirectoryPath(_toolsDirectory),
+                    _fileSystem);
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
+                packageId is null ? _packageId : new PackageId(packageId) ,
                 (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                     fileSystem: _fileSystem,
                     _reporter,
                     _mockFeeds
-                    )),
+                    ), new ToolPackageUninstallerMock(_fileSystem, store)),
                 (_, _) => GetMockedShellShimRepository(),
                 _environmentPathInstructionMock,
                 _reporter);
@@ -383,7 +465,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     ),
                     new ToolPackageUninstallerMock(_fileSystem, _store)),
                 (_, _) => GetMockedShellShimRepository(),
-                _reporter);
+                _reporter,
+                _store);
         }
 
         private ShellShimRepository GetMockedShellShimRepository()
