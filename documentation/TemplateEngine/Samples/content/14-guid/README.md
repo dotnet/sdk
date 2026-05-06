@@ -10,5 +10,5 @@ See
  - [`MyProject.Con.csproj`](./MyProject.Con/MyProject.Con.csproj)
 
 Related
- - [Available parameter generators](https://github.com/dotnet/sdk/blob/main/documentation/TemplateEngine/Available-Symbols-Generators.md)
+ - [Available parameter generators](../../../Available-Symbols-Generators.md)
 

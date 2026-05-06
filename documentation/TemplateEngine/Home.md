@@ -4,7 +4,7 @@
 - Visual Studio for Mac
 
 # Community templates
-- See [available templates for dotnet new](https://github.com/dotnet/sdk/blob/main/documentation/TemplateEngine/Available-templates-for-dotnet-new.md)
+- See [available templates for dotnet new](Available-templates-for-dotnet-new.md)
 
 # Template authoring
 - [How to create templates](https://docs.microsoft.com/dotnet/core/tools/custom-templates)

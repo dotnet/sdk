@@ -12,4 +12,4 @@ See
 
 Related
 
-For more info on *post actions*, including the list of available ones, see https://github.com/dotnet/sdk/blob/main/documentation/TemplateEngine/Post-Action-Registry.md.
+For more info on *post actions*, including the list of available ones, see ../../../Post-Action-Registry.md.
