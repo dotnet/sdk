@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
     <!-- Disable transitive pinning, we shouldn't upgrade dependencies that are excluded for runtime and provided externally. -->
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <IsPackable>true</IsPackable>
@@ -10,7 +10,7 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <!-- This package doesn't contain any lib or ref assemblies because it's a tooling package.-->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore;_AddBuildOutputToPackageDesktop</TargetsForTfmSpecificContentInPackage>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore</TargetsForTfmSpecificContentInPackage>
     <PackageDescription>MSBuild tasks and targets to perform api compatibility checks on assemblies and packages.</PackageDescription>
   </PropertyGroup>
 
@@ -58,17 +58,10 @@
     <None Include="$(RepoRoot)src\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.ApiCompat.ValidatePackage.targets" Pack="true" Link="build/Microsoft.NET.ApiCompat.ValidatePackage.targets" PackagePath="build/%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+  <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish">
     <ItemGroup>
       <!-- Publish .NET assets and include them in the package under tools directory. -->
       <TfmSpecificPackageFile Include="$(PublishDir)**" PackagePath="tools/net/%(RecursiveDir)%(FileName)%(Extension)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_AddBuildOutputToPackageDesktop" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
-    <ItemGroup>
-      <!-- Include .NET Framework build outputs in the package under tools directory. -->
-      <TfmSpecificPackageFile Include="$(OutputPath)**" PackagePath="tools/netframework/%(RecursiveDir)%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
 

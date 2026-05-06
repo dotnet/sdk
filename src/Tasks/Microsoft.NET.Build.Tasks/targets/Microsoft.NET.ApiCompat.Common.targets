@@ -12,8 +12,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project>
 
   <!-- Expose the tasks for SDK consumption and for external use cases. -->
-  <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidateAssembliesTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" />
-  <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidatePackageTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidateAssembliesTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" Runtime="NET" />
+  <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidatePackageTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" Runtime="NET" />
 
   <Target Name="CollectApiCompatInputs">
     <PropertyGroup Condition="'$(RoslynAssembliesPath)' == ''">
