@@ -13,6 +13,8 @@
   "symbols/AllowPrerelease/choices/false/displayName": "Disallow prerelease",
   "symbols/NoSdkVersion/description": "Exclude the SDK version from the generated global.json.",
   "symbols/NoSdkVersion/displayName": "No SDK version",
+  "symbols/NoSdkVersion/choices/true/description": "Exclude the SDK version from the generated global.json.",
+  "symbols/NoSdkVersion/choices/true/displayName": "No SDK version",
   "symbols/RollForward/description": "A política de rolar para frente a ser usada ao selecionar uma versão do SDK.",
   "symbols/RollForward/displayName": "Política de rolar para frente",
   "symbols/RollForward/choices/patch/description": "Usa a versão especificada.\nSe não for encontrado, avança para o nível de patch mais recente.\nSe não for encontrado, falha.\nEste valor é o comportamento herdado das versões anteriores do SDK.",

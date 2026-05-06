@@ -22,9 +22,9 @@ Template options:
                                                                                                         Type: choice
                                                                                                           true   Consider prerelease SDK versions when selecting the .NET SDK version to use.
                                                                                                           false  Don't consider prerelease SDK versions when selecting the .NET SDK version to use.
-  --no-sdk-version                                                                                      Exclude the SDK version from the generated global.json.
-                                                                                                        Type: bool
-                                                                                                        Default: false
+  --no-sdk-version <true>                                                                               Exclude the SDK version from the generated global.json.
+                                                                                                        Type: choice
+                                                                                                          true  Exclude the SDK version from the generated global.json.
   --roll-forward <disable|feature|latestFeature|latestMajor|latestMinor|latestPatch|major|minor|patch>  The roll-forward policy to use when selecting an SDK version.
                                                                                                         Type: choice
                                                                                                           patch          Uses the specified version. If not found, rolls forward to the latest patch level. If not found, fails. This value is the legacy behavior from the earlier versions of the SDK.

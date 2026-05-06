@@ -13,6 +13,8 @@
   "symbols/AllowPrerelease/choices/false/displayName": "Disallow prerelease",
   "symbols/NoSdkVersion/description": "Exclude the SDK version from the generated global.json.",
   "symbols/NoSdkVersion/displayName": "No SDK version",
+  "symbols/NoSdkVersion/choices/true/description": "Exclude the SDK version from the generated global.json.",
+  "symbols/NoSdkVersion/choices/true/displayName": "No SDK version",
   "symbols/RollForward/description": "SDK sürümü seçerken kullanılacak ileri alma ilkesi.",
   "symbols/RollForward/displayName": "İleri sarma ilkesi",
   "symbols/RollForward/choices/patch/description": "Belirtilen sürümü kullanır.\nBulunamazsa, en son düzeltme eki düzeyine ileri sarar.\nBulunamazsa başarısız olur.\nBu değer, SDK 'nın önceki sürümlerindeki eski davranıştır.",

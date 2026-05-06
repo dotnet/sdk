@@ -13,6 +13,8 @@
   "symbols/AllowPrerelease/choices/false/displayName": "Disallow prerelease",
   "symbols/NoSdkVersion/description": "Exclude the SDK version from the generated global.json.",
   "symbols/NoSdkVersion/displayName": "No SDK version",
+  "symbols/NoSdkVersion/choices/true/description": "Exclude the SDK version from the generated global.json.",
+  "symbols/NoSdkVersion/choices/true/displayName": "No SDK version",
   "symbols/RollForward/description": "Die Rollforwardrichtlinie, die bei der Auswahl einer SDK-Version verwendet werden soll.",
   "symbols/RollForward/displayName": "Rollforwardrichtlinie",
   "symbols/RollForward/choices/patch/description": "Verwendet die angegebene Version.\nFalls nicht gefunden, wird ein Rollforward auf die neueste Patchebene ausgeführt.\nWenn nicht gefunden, tritt ein Fehler auf.\nDieser Wert ist das Legacyverhalten aus früheren Versionen des SDK.",

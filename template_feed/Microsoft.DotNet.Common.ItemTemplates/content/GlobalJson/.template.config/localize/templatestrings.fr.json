@@ -13,6 +13,8 @@
   "symbols/AllowPrerelease/choices/false/displayName": "Disallow prerelease",
   "symbols/NoSdkVersion/description": "Exclude the SDK version from the generated global.json.",
   "symbols/NoSdkVersion/displayName": "No SDK version",
+  "symbols/NoSdkVersion/choices/true/description": "Exclude the SDK version from the generated global.json.",
+  "symbols/NoSdkVersion/choices/true/displayName": "No SDK version",
   "symbols/RollForward/description": "La stratégie d'actualisation à utiliser lors de la sélection d'une version du kit de développement logiciel (SDK).",
   "symbols/RollForward/displayName": "Stratégie de restauration par progression",
   "symbols/RollForward/choices/patch/description": "Utilise la version spécifiée.\nSi la recherche est introuvable, reportez-vous au niveau de correctif le plus récent.\nSi introuvable, échec.\nCette valeur est le comportement hérité des versions antérieures du kit de développement logiciel (SDK).",
