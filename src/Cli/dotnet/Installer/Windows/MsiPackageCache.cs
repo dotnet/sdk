@@ -55,9 +55,16 @@ namespace Microsoft.DotNet.Installer.Windows
                 throw new ArgumentException($"Invalid package version: {packageVersion}");
             }
 
-            // Validate that the manifest path resolves to a location under the package cache root
-            // or the user's temp directory (where packages are extracted before caching).
+            // Validate that the manifest path resolves to a location under the elevated server's temp
+            // directory or the unelevated client's temp directory (when supplied at server launch via
+            // --client-temp). This prevents an IPC client from coercing the elevated server into reading
+            // or moving arbitrary files.
             string fullManifestPath = Path.GetFullPath(manifestPath);
+
+            if (!WindowsUtils.ValidateManifestPath(fullManifestPath))
+            {
+                throw new ArgumentException($"CachePayload: Manifest path is not under an allowed temp directory: {manifestPath}");
+            }
 
             if (!File.Exists(fullManifestPath))
             {
