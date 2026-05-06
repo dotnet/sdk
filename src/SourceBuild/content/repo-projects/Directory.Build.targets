@@ -91,10 +91,10 @@
   <!-- Wraps the transitive repo references with additional metadata -->
   <Target Name="GetRepositoryReferenceInfo"
           DependsOnTargets="GetTransitiveRepositoryReferences">
-    <!-- SBRP is explicitly excluded since it is output to its own special directory, $(ReferencePackagesDir). -->
+    <!-- source-build-assets (formerly SBRP) is explicitly excluded since it is output to its own special directory, $(ReferencePackagesDir). -->
     <ItemGroup Condition="'@(TransitiveRepositoryReference)' != ''">
       <RepositoryReferenceInfo Include="@(TransitiveRepositoryReference)"
-                               Exclude="source-build-reference-packages">
+                               Exclude="source-build-assets">
         <ShippingSourceName>$(SourceBuiltSourceNamePrefix)%(Identity)</ShippingSourceName>
         <NonShippingSourceName>$(SourceBuiltSourceNamePrefix)transport-%(Identity)</NonShippingSourceName>
         <ShippingPackagesPath>$(ArtifactsShippingPackagesDir)/%(Identity)/</ShippingPackagesPath>

@@ -16,13 +16,13 @@ using NuGet.ProjectModel;
 namespace Microsoft.DotNet.UnifiedBuild.Tasks;
 
 /// <summary>
-/// Reports the usage of the source-build-reference-packages:
-/// 1. SBRP references
+/// Reports the usage of the source-build-assets:
+/// 1. SB-Assets references
 /// 2. Unreferenced packages
 /// </summary>
 public class WriteSbrpUsageReport : Task
 {
-    private const string SbrpRepoName = "source-build-reference-packages";
+    private const string SbrpRepoName = "source-build-assets";
 
     private readonly Dictionary<string, PackageInfo> _sbrpPackages = [];
 
