@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
         {
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void GenAPITask_GeneratesReferenceSource_OnBuild()
         {
             TestAsset asset = PrepareAsset(nameof(GenAPITask_GeneratesReferenceSource_OnBuild));
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
                 .And.NotContain("InternalMultiply", "internal members should not leak into the reference source by default");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void GenAPITask_TargetInvokedDirectly_DoesNotBuildProjectReferences()
         {
             // Customer scenario: invoke /t:GenAPIGenerateReferenceAssemblySource directly without
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
             File.Exists(generated).Should().BeTrue();
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void GenAPITask_RespectInternals_IncludesInternalMembers()
         {
             TestAsset asset = PrepareAsset(nameof(GenAPITask_RespectInternals_IncludesInternalMembers));

@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
         {
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void InvalidPackage()
         {
             var testAsset = TestAssetsManager
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             Assert.Contains("error CP0002: Member 'void PackageValidationTestProject.Program.SomeAPINotInCore()' exists on lib/netstandard2.0/PackageValidationTestProject.dll but not on lib/net8.0/PackageValidationTestProject.dll", result.StdOut);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidatePackageTargetRunsSuccessfully()
         {
             var testAsset = TestAssetsManager
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             Assert.Equal(0, result.ExitCode);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidatePackageTargetRunsSuccessfullyWithBaselineCheck()
         {
             var testAsset = TestAssetsManager
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             Assert.Equal(0, result.ExitCode);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidatePackageTargetRunsSuccessfullyWithBaselineVersion()
         {
             var testAsset = TestAssetsManager
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             Assert.Equal(0, result.ExitCode);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidatePackageTargetFailsWithBaselineVersion()
         {
             var testAsset = TestAssetsManager
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             Assert.Contains("error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiNotInLatestVersion()' exists on [Baseline] lib/netstandard2.0/PackageValidationTestProject.dll but not on lib/netstandard2.0/PackageValidationTestProject.dll", result.StdOut);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidatePackageTargetWithIncorrectBaselinePackagePath()
         {
             var testAsset = TestAssetsManager
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             Assert.Equal(0, result.ExitCode);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidatePackageTargetFailsWithBaselineVersionInStrictMode()
         {
             var testAsset = TestAssetsManager
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             Assert.Contains("error CP0002: Member 'void PackageValidationTestProject.Program.SomeApiOnlyInLatestVersion()' exists on lib/netstandard2.0/PackageValidationTestProject.dll but not on [Baseline] lib/netstandard2.0/PackageValidationTestProject.dll", result.StdOut);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidatePackageTargetSucceedsWithBaselineVersionNotInStrictMode()
         {
             var testAsset = TestAssetsManager

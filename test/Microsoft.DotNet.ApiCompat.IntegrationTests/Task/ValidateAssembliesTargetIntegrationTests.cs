@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.ApiCompat.IntegrationTests;
@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
         {
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidateAssemblies_NoBreakingChanges_Succeeds()
         {
             // Build the asset twice with the same source to produce a "contract" DLL and an "implementation" DLL
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             result.StdOut.Should().NotContain("error CP0002");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidateAssemblies_BreakingChange_FailsWithCP0002()
         {
             // Contract has Goodbye(string); implementation removes it via -p:ForceBreakingChange=true.
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                 .And.Contain("Goodbye");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidateAssemblies_StrictMode_FailsOnAddition()
         {
             // Implementation adds Welcome(string) (-p:AddNewMember=true). Without strict mode, ApiCompat tolerates additions.
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                 .And.Contain("Welcome");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidateAssemblies_GeneratesAndConsumesSuppressionFile()
         {
             // 1) Generate a suppression file for the breaking change.

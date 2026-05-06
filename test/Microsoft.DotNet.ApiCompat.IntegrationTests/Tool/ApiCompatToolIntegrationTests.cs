@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             consumeResult.StdOut.Should().NotContain("error CP0002");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ApiCompatTool_PackageMode_DetectsRemovedApi()
         {
             // Pack the existing PackageValidationTestProject twice to produce two .nupkg files

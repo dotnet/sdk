@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             return (log, validator);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [Fact]
         public void ValidatePackageWithReferences()
         {
             string testDependencySource = @"namespace PackageValidationTests { public class ItermediateBaseClass
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             Assert.Contains($"CP0008 Type 'PackageValidationTests.First' does not implement interface 'PackageValidationTests.IBaseInterface' on lib/{ToolsetInfo.CurrentTargetFramework}/{asset.TestProject.Name}.dll but it does on lib/netstandard2.0/{asset.TestProject.Name}.dll", log.errors);
         }
 
-        [RequiresMSBuildVersionTheory("17.12")]
+        [Theory]
         [InlineData(false, true)]
         [InlineData(false, false)]
         [InlineData(true, false)]
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             validator.Validate(new PackageValidatorOption(package));
         }
 
-        [RequiresMSBuildVersionTheory("17.12")]
+        [Theory]
         [InlineData(false, true, false)]
         [InlineData(true, false, false)]
         [InlineData(true, true, true)]
@@ -154,7 +154,7 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
                 Assert.Contains($"CP0001 Type 'PackageValidationTests.MyForwardedType' exists on lib/netstandard2.0/{testProject.Name}.dll but not on lib/{ToolsetInfo.CurrentTargetFramework}/{testProject.Name}.dll", log.errors);
         }
 
-        [RequiresMSBuildVersionTheory("17.12")]
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public void ValidateMissingReferencesIsOnlyLoggedWhenRunningWithReferences(bool useReferences)
@@ -180,7 +180,7 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
                 Assert.Contains(log.warnings, e => e.Contains("CP1003"));
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact]
         public void ValidateReferencesAreRespectedForPlatformSpecificTFMs()
         {
             TestProject testProject = CreateTestProject("public class MyType { }", $"netstandard2.0;{ToolsetInfo.CurrentTargetFramework}-windows");
