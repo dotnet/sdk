@@ -148,7 +148,8 @@ internal class InstallWorkflow
 
         var remainingRuntimeMigrations = InitWorkflows.FilterRuntimeMigrationsAgainstDisk(
             runtimeMigrations,
-            installRoot);
+            installRoot,
+            _command.ChannelVersionResolver);
 
         if (remainingRuntimeMigrations.Count == 0)
         {

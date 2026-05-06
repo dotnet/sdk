@@ -178,7 +178,8 @@ internal class InitWorkflows
             return effectiveRequests;
         }
 
-        var remainingRuntimeMigrations = FilterRuntimeMigrationsAgainstDisk(runtimeMigrations, installRoot);
+        var remainingRuntimeMigrations = FilterRuntimeMigrationsAgainstDisk(
+            runtimeMigrations, installRoot, command.ChannelVersionResolver);
         if (remainingRuntimeMigrations.Count == 0)
         {
             return effectiveRequests;
@@ -543,13 +544,23 @@ internal class InitWorkflows
 
     /// <summary>
     /// Filters out runtime-style migrations (Runtime / ASPNETCore / WindowsDesktop) whose
-    /// shared-framework folder for the migrated channel is already present on disk after
-    /// Phase 1 installs (e.g. the SDK install brought down its bundled runtime).
+    /// resolved channel version is already present on disk after Phase 1 installs (e.g. the SDK
+    /// install brought down its bundled runtime).
     /// SDK migrations are not handled here — they are installed in Phase 1.
     /// </summary>
+    /// <remarks>
+    /// We resolve each migration's channel to its exact latest version via
+    /// <paramref name="channelVersionResolver"/> (an in-process lookup using cached release
+    /// manifest data) and then compare against the actual on-disk shared-framework folder.
+    /// This avoids both false negatives (skipping a migration when the SDK shipped an older
+    /// runtime patch than the public channel) and false positives (re-downloading a runtime
+    /// the SDK already installed). If resolution returns null we keep the migration so the
+    /// install attempt can surface a clear error rather than silently skipping.
+    /// </remarks>
     internal static List<MigrationSelection> FilterRuntimeMigrationsAgainstDisk(
         List<MigrationSelection> runtimeMigrations,
-        DotnetInstallRoot installRoot)
+        DotnetInstallRoot installRoot,
+        ChannelVersionResolver channelVersionResolver)
     {
         if (runtimeMigrations.Count == 0)
         {
@@ -559,7 +570,15 @@ internal class InitWorkflows
         var remaining = new List<MigrationSelection>(runtimeMigrations.Count);
         foreach (var migration in runtimeMigrations)
         {
-            if (!RuntimeFolderExistsOnDisk(installRoot, migration.Component, migration.ExampleVersion))
+            var resolveProbe = new DotnetInstallRequest(
+                installRoot,
+                migration.Channel,
+                migration.Component,
+                new InstallRequestOptions());
+            ReleaseVersion? resolvedVersion = channelVersionResolver.Resolve(resolveProbe);
+
+            if (resolvedVersion is null ||
+                !RuntimeFolderExistsOnDisk(installRoot, migration.Component, resolvedVersion))
             {
                 remaining.Add(migration);
             }
@@ -578,25 +597,12 @@ internal class InitWorkflows
             return false;
         }
 
-        string sharedRoot = Path.Combine(installRoot.Path, "shared", component.GetFrameworkName());
-        if (!Directory.Exists(sharedRoot))
-        {
-            return false;
-        }
-
-        // Match any installed patch within the same major.minor band (a freshly installed SDK
-        // typically brings the latest patch, which may differ from the system's example version).
-        string bandPrefix = $"{version.Major}.{version.Minor}.";
-        foreach (var dir in Directory.EnumerateDirectories(sharedRoot))
-        {
-            string folderName = Path.GetFileName(dir);
-            if (folderName.StartsWith(bandPrefix, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        string folder = Path.Combine(
+            installRoot.Path,
+            "shared",
+            component.GetFrameworkName(),
+            version.ToString());
+        return Directory.Exists(folder);
     }
 
     internal static List<ResolvedInstallRequest> MergeInstallRequests(
