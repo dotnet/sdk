@@ -112,6 +112,37 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         }
 
         [Fact]
+        public void VerifyCpp2EvaluatorEmptyStringVariableAsBool()
+        {
+            // Validates that a variable with empty-string value (e.g. a choice parameter with defaultValue: "")
+            // is treated as false in a boolean context, without setting a faultedMessage.
+            VariableCollection vc = new VariableCollection
+            {
+                ["ALLOW_PRERELEASE"] = "",
+                ["NO_SDK_VERSION"] = false
+            };
+            // Bare empty-string variable should evaluate to false without error
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "ALLOW_PRERELEASE", vc, out string? faultedMessage);
+            Assert.Null(faultedMessage);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void VerifyCpp2EvaluatorEmptyStringAndBoolExpression()
+        {
+            // Validates that And with an empty-string operand doesn't throw.
+            VariableCollection vc = new VariableCollection
+            {
+                ["ALLOW_PRERELEASE"] = "",
+                ["NO_SDK_VERSION"] = false
+            };
+            // (!NO_SDK_VERSION || ALLOW_PRERELEASE!="") - a representative condition from globaljson template
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "(!NO_SDK_VERSION || ALLOW_PRERELEASE!=\"\")", vc, out string? faultedMessage);
+            Assert.Null(faultedMessage);
+            Assert.True(result); // !false = true, regardless of right side
+        }
+
+        [Fact]
         public void VerifyCpp2EvaluatorTrueVariableErroneousExpression()
         {
             VariableCollection vc = new VariableCollection

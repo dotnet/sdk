@@ -57,13 +57,13 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             switch (Operator)
             {
                 case Operator.Not:
-                    return !EvaluateSide(Right!, x => Convert.ToBoolean(x ?? "False"));
+                    return !EvaluateSide(Right!, ToBool);
                 case Operator.And:
-                    return EvaluateSides(Left!, Right!, x => Convert.ToBoolean(x ?? "False"), (x, y) => x && y);
+                    return EvaluateSides(Left!, Right!, ToBool, (x, y) => x && y);
                 case Operator.Or:
-                    return EvaluateSides(Left!, Right!, x => Convert.ToBoolean(x ?? "False"), (x, y) => x || y);
+                    return EvaluateSides(Left!, Right!, ToBool, (x, y) => x || y);
                 case Operator.Xor:
-                    return EvaluateSides(Left!, Right!, x => Convert.ToBoolean(x ?? "False"), (x, y) => x ^ y);
+                    return EvaluateSides(Left!, Right!, ToBool, (x, y) => x ^ y);
                 case Operator.EqualTo:
                     return EvaluateSides(Left!, Right!, x => x, LenientEquals);
                 case Operator.NotEqualTo:
@@ -102,6 +102,18 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             }
 
             return convert(side);
+        }
+
+        private static bool ToBool(object? x)
+        {
+            return x switch
+            {
+                bool b => b,
+                string s when bool.TryParse(s, out bool parsed) => parsed,
+                string s when string.IsNullOrEmpty(s) => false, // unspecified choice parameter (defaultValue: "") → false
+                null => false,
+                _ => Convert.ToBoolean(x)
+            };
         }
 
         private static bool LenientEquals(object x, object y)
