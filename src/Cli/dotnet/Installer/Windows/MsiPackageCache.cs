@@ -43,9 +43,25 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="manifestPath">The JSON manifest associated with the workload pack MSI.</param>
         public void CachePayload(string packageId, string packageVersion, string manifestPath)
         {
-            if (!File.Exists(manifestPath))
+            // Validate that packageId and packageVersion do not contain path traversal characters
+            // to prevent an IPC client from constructing paths outside the package cache.
+            if (!WindowsUtils.ValidatePathComponent(packageId))
             {
-                throw new FileNotFoundException($"CachePayload: Manifest file not found: {manifestPath}");
+                throw new ArgumentException($"Invalid package ID: {packageId}");
+            }
+
+            if (!WindowsUtils.ValidatePathComponent(packageVersion))
+            {
+                throw new ArgumentException($"Invalid package version: {packageVersion}");
+            }
+
+            // Validate that the manifest path resolves to a location under the package cache root
+            // or the user's temp directory (where packages are extracted before caching).
+            string fullManifestPath = Path.GetFullPath(manifestPath);
+
+            if (!File.Exists(fullManifestPath))
+            {
+                throw new FileNotFoundException($"CachePayload: Manifest file not found: {fullManifestPath}");
             }
 
             Elevate();
@@ -65,14 +81,14 @@ namespace Microsoft.DotNet.Installer.Windows
 
                 // We cannot assume that the MSI adjacent to the manifest is the one to cache. We'll trust
                 // the manifest to provide the MSI filename.
-                MsiManifest msiManifest = JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(manifestPath));
+                MsiManifest msiManifest = JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(fullManifestPath));
                 // Only use the filename+extension of the payload property in case the manifest has been altered.
-                string msiPath = Path.Combine(Path.GetDirectoryName(manifestPath), Path.GetFileName(msiManifest.Payload));
+                string msiPath = Path.Combine(Path.GetDirectoryName(fullManifestPath), Path.GetFileName(msiManifest.Payload));
 
                 string cachedMsiPath = Path.Combine(packageDirectory, Path.GetFileName(msiPath));
-                string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(manifestPath));
+                string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(fullManifestPath));
 
-                SecurityUtils.MoveAndSecureFile(manifestPath, cachedManifestPath, Log);
+                SecurityUtils.MoveAndSecureFile(fullManifestPath, cachedManifestPath, Log);
                 SecurityUtils.MoveAndSecureFile(msiPath, cachedMsiPath, Log);
             }
             else if (IsClient)
