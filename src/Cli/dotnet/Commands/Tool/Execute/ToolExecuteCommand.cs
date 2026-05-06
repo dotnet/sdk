@@ -107,8 +107,9 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
             //  other feeds, but this is probably OK.
             var downloadPackageLocation = new PackageLocation(
                 nugetConfig: _configFile != null ? new(_configFile) : null,
-                sourceFeedOverrides: [packageSource.Source],
-                additionalFeeds: _addSource);
+                sourceFeedOverrides: _sources,
+                additionalFeeds: _addSource,
+                packageSourceOverrides: [packageSource]);
 
             toolPackage = _toolPackageDownloader.InstallPackage(
                 downloadPackageLocation,
