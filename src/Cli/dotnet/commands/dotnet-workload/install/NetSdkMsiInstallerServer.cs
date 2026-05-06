@@ -136,18 +136,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 throw new SecurityException(String.Format(LocalizableStrings.NoTrustWithParentPID, ParentProcess?.Id));
             }
 
-            // Configure pipe DACLs
-            SecurityIdentifier authenticatedUserIdentifier = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+            // Configure pipe DACLs. GetPipeClientIdentifier resolves the parent process's user SID
+            // and will throw SecurityException if the token cannot be read, preventing the server
+            // from starting with an insecure configuration.
+            SecurityIdentifier clientIdentifier = WindowsUtils.GetPipeClientIdentifier();
             SecurityIdentifier currentOwnerIdentifier = WindowsIdentity.GetCurrent().Owner;
-            PipeSecurity pipeSecurity = new();
-
-            // The current user has full control and should be running as Administrator.
-            pipeSecurity.SetOwner(currentOwnerIdentifier);
-            pipeSecurity.AddAccessRule(new PipeAccessRule(currentOwnerIdentifier, PipeAccessRights.FullControl, AccessControlType.Allow));
-
-            // Restrict read/write access to authenticated users
-            pipeSecurity.AddAccessRule(new PipeAccessRule(authenticatedUserIdentifier,
-                PipeAccessRights.Read | PipeAccessRights.Write | PipeAccessRights.Synchronize, AccessControlType.Allow));
+            PipeSecurity pipeSecurity = WindowsUtils.CreatePipeSecurity(currentOwnerIdentifier, clientIdentifier);
 
             // Initialize the named pipe for dispatching commands. The name of the pipe is based off the server PID since
             // the client knows this value and ensures both processes can generate the same name.
