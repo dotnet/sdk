@@ -122,12 +122,15 @@ public class InstallWorkflowTests : IDisposable
     }
 
     [Fact]
-    public void ShouldPromptForStarterChannel_ReturnsTrue_ForFirstUseRuntimeInstallWithoutComponent()
+    public void ShouldPromptForStarterChannel_ReturnsFalse_ForFirstUseRuntimeInstallWithoutComponent()
     {
+        // First-run `dotnetup runtime install` (no version/channel) should NOT trigger the
+        // starter-channel prompt — that prompt is SDK-only and would otherwise silently turn
+        // a runtime install into an SDK install.
         InstallWorkflow.ShouldPromptForStarterChannel(
             runOnboarding: true,
             [new MinimalInstallSpec(InstallComponent.Runtime, null)])
-            .Should().BeTrue();
+            .Should().BeFalse();
     }
 
     [Fact]

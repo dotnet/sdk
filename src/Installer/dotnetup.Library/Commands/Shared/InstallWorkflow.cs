@@ -59,10 +59,12 @@ internal class InstallWorkflow
             requests = GenerateInstallRequests(componentSpecs);
             if (_command.MigrateFromSystem)
             {
-                requests = MergeRequestedMigration(requests);
+                requests = ExecuteWithMigration(requests);
             }
-
-            ExecuteInstallRequests(requests);
+            else
+            {
+                ExecuteInstallRequests(requests);
+            }
         }
 
         // Global.json update runs after install in all code paths, but only when
@@ -76,10 +78,17 @@ internal class InstallWorkflow
 
     }
 
-    private List<ResolvedInstallRequest> MergeRequestedMigration(List<ResolvedInstallRequest> requests)
+    /// <summary>
+    /// Two-phase install flow used when <c>--migrate-from-system</c> is supplied without onboarding.
+    /// Phase 1: install the user's primary requests plus any SDK migrations.
+    /// Phase 2: install runtime / aspnetcore / windowsdesktop migrations whose shared-framework
+    /// folder is not already present on disk after Phase 1 (avoids duplicate downloads).
+    /// </summary>
+    private List<ResolvedInstallRequest> ExecuteWithMigration(List<ResolvedInstallRequest> requests)
     {
         if (requests.Count == 0)
         {
+            ExecuteInstallRequests(requests);
             return requests;
         }
 
@@ -97,17 +106,70 @@ internal class InstallWorkflow
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
                 "No matching untracked system .NET installs were found to migrate."));
+            ExecuteInstallRequests(requests);
             return requests;
         }
 
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
             $"Migrating {migrationSelections.Count} matching system .NET channel(s) because --migrate-from-system was specified."));
 
-        return InitWorkflows.MergeInstallRequests(
+        return ExecuteTwoPhaseMigrationInstall(requests, migrationSelections, installRoot);
+    }
+
+    private List<ResolvedInstallRequest> ExecuteTwoPhaseMigrationInstall(
+        List<ResolvedInstallRequest> requests,
+        List<InitWorkflows.MigrationSelection> migrationSelections,
+        DotnetInstallRoot installRoot)
+    {
+        var sdkMigrations = migrationSelections
+            .Where(m => m.Component == InstallComponent.SDK)
+            .ToList();
+        var runtimeMigrations = migrationSelections
+            .Where(m => m.Component != InstallComponent.SDK)
+            .ToList();
+
+        // Phase 1: primary requests + SDK migrations.
+        var phase1Requests = InitWorkflows.MergeInstallRequests(
             requests,
-            migrationSelections,
+            sdkMigrations,
             installRoot,
-            _command.ManifestPath);
+            _command.ManifestPath,
+            untracked: _command.Untracked,
+            verbosity: _command.Verbosity,
+            requireMuxerUpdate: _command.RequireMuxerUpdate);
+
+        ExecuteInstallRequests(phase1Requests);
+
+        // Phase 2: runtime-style migrations not already satisfied on disk.
+        if (runtimeMigrations.Count == 0)
+        {
+            return phase1Requests;
+        }
+
+        var remainingRuntimeMigrations = InitWorkflows.FilterRuntimeMigrationsAgainstDisk(
+            runtimeMigrations,
+            installRoot);
+
+        if (remainingRuntimeMigrations.Count == 0)
+        {
+            return phase1Requests;
+        }
+
+        var phase2Requests = InitWorkflows.MergeInstallRequests(
+            [],
+            remainingRuntimeMigrations,
+            installRoot,
+            _command.ManifestPath,
+            untracked: _command.Untracked,
+            verbosity: _command.Verbosity,
+            requireMuxerUpdate: _command.RequireMuxerUpdate);
+
+        ExecuteInstallRequests(phase2Requests);
+
+        var combined = new List<ResolvedInstallRequest>(phase1Requests.Count + phase2Requests.Count);
+        combined.AddRange(phase1Requests);
+        combined.AddRange(phase2Requests);
+        return combined;
     }
 
     /// <summary>
@@ -152,8 +214,11 @@ internal class InstallWorkflow
 
     internal static bool ShouldPromptForStarterChannel(bool runOnboarding, MinimalInstallSpec[] componentSpecs)
     {
+        // Only prompt for the starter channel on a first-run SDK install with no version/channel.
+        // Other components (runtime, aspnetcore, etc.) carry their own resolution and should not
+        // be silently turned into an SDK install via the starter-channel prompt.
         return runOnboarding &&
-            componentSpecs is [{ VersionOrChannel: null }];
+            componentSpecs is [{ Component: InstallComponent.SDK, VersionOrChannel: null }];
     }
 
     /// <summary>

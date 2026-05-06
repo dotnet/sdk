@@ -98,12 +98,13 @@ internal class InitWorkflows
 
         if (toMigrate.Count > 0)
         {
-            effectiveRequests = MergeInstallRequests(effectiveRequests, toMigrate, installRoot, manifestPath);
+            effectiveRequests = RunInstallsWithMigration(
+                command, effectiveRequests, toMigrate, installRoot, manifestPath, predownloadTask);
         }
-
-        // Step 3: Run the primary install (typically the base SDK from global.json/latest)
-        // and any selected migration installs before completing setup.
-        RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress);
+        else
+        {
+            RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress);
+        }
 
         // Save config and apply configuration(s).
         SaveConfigAndDisplayResult(pathPreference, previousPreference);
@@ -141,6 +142,60 @@ internal class InitWorkflows
         var workflow = new InstallWorkflow(command);
         return workflow.GenerateInstallRequests(
             [new MinimalInstallSpec(InstallComponent.SDK, selectedChannel)]);
+    }
+
+    /// <summary>
+    /// Two-phase install used by the init walkthrough when migrations were selected.
+    /// Phase 1: existing requests + SDK migrations. Phase 2: runtime-style migrations
+    /// not already on disk after Phase 1 (avoids re-downloading runtimes the SDK brought down).
+    /// </summary>
+    private static List<ResolvedInstallRequest> RunInstallsWithMigration(
+        InstallCommand command,
+        List<ResolvedInstallRequest> effectiveRequests,
+        List<MigrationSelection> toMigrate,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        Task? predownloadTask)
+    {
+        var sdkMigrations = toMigrate.Where(m => m.Component == InstallComponent.SDK).ToList();
+        var runtimeMigrations = toMigrate.Where(m => m.Component != InstallComponent.SDK).ToList();
+
+        // Phase 1: primary requests + SDK migrations.
+        effectiveRequests = MergeInstallRequests(
+            effectiveRequests,
+            sdkMigrations,
+            installRoot,
+            manifestPath,
+            untracked: command.Untracked,
+            verbosity: command.Verbosity,
+            requireMuxerUpdate: command.RequireMuxerUpdate);
+
+        RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress);
+
+        // Phase 2: runtime-style migrations whose folder isn't already on disk.
+        if (runtimeMigrations.Count == 0)
+        {
+            return effectiveRequests;
+        }
+
+        var remainingRuntimeMigrations = FilterRuntimeMigrationsAgainstDisk(runtimeMigrations, installRoot);
+        if (remainingRuntimeMigrations.Count == 0)
+        {
+            return effectiveRequests;
+        }
+
+        var phase2Requests = MergeInstallRequests(
+            [],
+            remainingRuntimeMigrations,
+            installRoot,
+            manifestPath,
+            untracked: command.Untracked,
+            verbosity: command.Verbosity,
+            requireMuxerUpdate: command.RequireMuxerUpdate);
+
+        RunInstallRequests(phase2Requests, predownloadTask: null, command.NoProgress);
+        effectiveRequests.AddRange(phase2Requests);
+        return effectiveRequests;
     }
 
     private static void RunInstallRequests(
@@ -486,11 +541,72 @@ internal class InitWorkflows
         }
     }
 
+    /// <summary>
+    /// Filters out runtime-style migrations (Runtime / ASPNETCore / WindowsDesktop) whose
+    /// shared-framework folder for the migrated channel is already present on disk after
+    /// Phase 1 installs (e.g. the SDK install brought down its bundled runtime).
+    /// SDK migrations are not handled here — they are installed in Phase 1.
+    /// </summary>
+    internal static List<MigrationSelection> FilterRuntimeMigrationsAgainstDisk(
+        List<MigrationSelection> runtimeMigrations,
+        DotnetInstallRoot installRoot)
+    {
+        if (runtimeMigrations.Count == 0)
+        {
+            return runtimeMigrations;
+        }
+
+        var remaining = new List<MigrationSelection>(runtimeMigrations.Count);
+        foreach (var migration in runtimeMigrations)
+        {
+            if (!RuntimeFolderExistsOnDisk(installRoot, migration.Component, migration.ExampleVersion))
+            {
+                remaining.Add(migration);
+            }
+        }
+
+        return remaining;
+    }
+
+    private static bool RuntimeFolderExistsOnDisk(
+        DotnetInstallRoot installRoot,
+        InstallComponent component,
+        ReleaseVersion version)
+    {
+        if (component == InstallComponent.SDK)
+        {
+            return false;
+        }
+
+        string sharedRoot = Path.Combine(installRoot.Path, "shared", component.GetFrameworkName());
+        if (!Directory.Exists(sharedRoot))
+        {
+            return false;
+        }
+
+        // Match any installed patch within the same major.minor band (a freshly installed SDK
+        // typically brings the latest patch, which may differ from the system's example version).
+        string bandPrefix = $"{version.Major}.{version.Minor}.";
+        foreach (var dir in Directory.EnumerateDirectories(sharedRoot))
+        {
+            string folderName = Path.GetFileName(dir);
+            if (folderName.StartsWith(bandPrefix, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     internal static List<ResolvedInstallRequest> MergeInstallRequests(
         List<ResolvedInstallRequest> requests,
         List<MigrationSelection> toMigrate,
         DotnetInstallRoot installRoot,
-        string? manifestPath = null)
+        string? manifestPath = null,
+        bool untracked = false,
+        Verbosity verbosity = Verbosity.Normal,
+        bool requireMuxerUpdate = false)
     {
         if (toMigrate.Count == 0)
         {
@@ -515,7 +631,13 @@ internal class InitWorkflows
                     installRoot,
                     migration.Channel,
                     migration.Component,
-                    new InstallRequestOptions { ManifestPath = manifestPath }),
+                    new InstallRequestOptions
+                    {
+                        ManifestPath = manifestPath,
+                        Untracked = untracked,
+                        Verbosity = verbosity,
+                        RequireMuxerUpdate = requireMuxerUpdate,
+                    }),
                 migration.ExampleVersion));
         }
 
