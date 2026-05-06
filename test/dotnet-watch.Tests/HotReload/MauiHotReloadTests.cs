@@ -79,4 +79,49 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
         App.AssertOutputDoesNotContain(MessageDescriptor.ScopedCssBundleFileNotFound);
         App.AssertOutputDoesNotContain(MessageDescriptor.ManifestFileNotFound);
     }
+
+    /// <summary>
+    /// Tests device selection in dotnet-watch using the DotnetRunDevices test asset,
+    /// which provides ComputeAvailableDevices and DeployToDevice MSBuild targets.
+    /// </summary>
+    [Fact]
+    public async Task SelectsDevice()
+    {
+        var testAsset = TestAssets.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+
+        // Start watch with ReadKeyFromStdin so we can interact with Spectre prompts.
+        // Pass --framework to skip TFM selection and focus on device selection.
+        App.Start(testAsset, ["-f", tfm], testFlags: TestFlags.ReadKeyFromStdin);
+
+        // Wait for the device selection prompt
+        await App.WaitUntilOutputContains(Resources.SelectDevicePrompt);
+
+        // Type to search for "test-device-1" and select it
+        foreach (var c in "test-device-1")
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // The app should launch and print the selected device
+        await App.WaitUntilOutputContains("Device: test-device-1");
+    }
+
+    [Fact]
+    public async Task AutoSelectsSingleDevice()
+    {
+        var testAsset = TestAssets.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+
+        // SingleDevice=true makes ComputeAvailableDevices return only one device.
+        App.Start(testAsset, ["-f", tfm, "--property", "SingleDevice=true"], testFlags: TestFlags.ReadKeyFromStdin);
+
+        // Should auto-select without prompting and launch the app
+        await App.WaitUntilOutputContains("Device: single-device");
+    }
 }

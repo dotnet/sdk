@@ -1539,7 +1539,7 @@ class C
             };
 
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task TestCSAsync(string source, string editorConfigText, params DiagnosticResult[] diagnosticResults)
@@ -1562,7 +1562,7 @@ class C
             };
 
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

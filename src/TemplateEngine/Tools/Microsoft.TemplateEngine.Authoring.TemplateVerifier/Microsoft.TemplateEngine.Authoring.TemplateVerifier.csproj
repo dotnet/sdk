@@ -3,8 +3,9 @@
   <Import Project="Microsoft.TemplateEngine.Authoring.TemplateVerifier.Shared.props" />
 
   <ItemGroup>
-    <PackageReference Include="Verify.Xunit" />
-    <PackageReference Include="Xunit" />
+    <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 
   <ItemGroup>

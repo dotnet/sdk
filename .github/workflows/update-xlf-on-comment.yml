@@ -1,3 +1,8 @@
+# This workflow updates XLF files when /updatexlf or /xlf is commented on a
+# pull request.
+# Action: https://github.com/dotnet/sdk/actions/workflows/update-xlf-on-comment.yml
+# Keep documentation/project-docs/developer-guide.md up to date with changes in
+# this workflow.
 name: Update XLF files on command
 
 on:

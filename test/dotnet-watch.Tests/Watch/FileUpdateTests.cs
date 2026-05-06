@@ -76,6 +76,7 @@ public class FileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBase(log
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
         await App.WaitUntilOutputContains("Failed!");
+        await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
         App.Process.ClearOutput();
 
         UpdateSourceFile(testFile, """

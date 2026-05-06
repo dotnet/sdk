@@ -157,7 +157,7 @@ class C
                     Sources = { fixedCode },
                     MarkupHandling = MarkupMode.Allow,
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -332,7 +332,7 @@ End Class
                     Sources = { fixedCode },
                     MarkupHandling = MarkupMode.Allow,
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1817, "https://github.com/dotnet/roslyn-analyzers/issues/1817")]
@@ -408,7 +408,7 @@ public class C
                 }
             };
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             string vbFirstOrDefaultAndLastOrDefault;
             if (!editorConfigText.EndsWith("true", System.StringComparison.Ordinal))
@@ -475,7 +475,7 @@ End Class";
                 },
             };
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
@@ -1181,7 +1181,7 @@ public class Test
                 TestCode = source,
                 FixedCode = fixedSource,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

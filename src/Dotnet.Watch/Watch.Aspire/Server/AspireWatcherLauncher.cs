@@ -28,7 +28,7 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
             ProcessRunner = new ProcessRunner(EnvironmentOptions.GetProcessCleanupTimeout()),
             Options = GlobalOptions,
             EnvironmentOptions = EnvironmentOptions,
-            MainProjectOptions = null,
+            MainProjectOptions = GetProjectOptions(),
             BuildArguments = [],
             RootProjects = rootProjects,
             BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
@@ -40,7 +40,7 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
 
         try
         {
-            var watcher = new HotReloadDotNetWatcher(context, Console, processLauncherFactory, targetFrameworkSelectionPrompt: null);
+            var watcher = new HotReloadDotNetWatcher(context, Console, processLauncherFactory, selectionPrompt: null);
             await watcher.WatchAsync(cancellationSource.Token);
         }
         catch (OperationCanceledException) when (shutdownHandler.CancellationToken.IsCancellationRequested)
@@ -50,4 +50,6 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
 
         return 0;
     }
+
+    protected virtual ProjectOptions? GetProjectOptions() => null;
 }

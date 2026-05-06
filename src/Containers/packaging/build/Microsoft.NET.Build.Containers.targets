@@ -252,16 +252,7 @@
   <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
        in a few different ways we can't express that dependency directly here. -->
   <Target Name="_PublishSingleContainer" Returns="@(GeneratedContainer)">
-    <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
-      <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
-      <DotNetHostFileName>dotnet</DotNetHostFileName>
-      <DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</DotNetHostFileName>
-    </PropertyGroup>
-
-    <CreateNewImage ContainerizeDirectory="$(ContainerizeFolder)"
-                    ToolPath="$(DotNetHostDirectory)"
-                    ToolExe="$(DotNetHostFileName)"
-                    BaseRegistry="$(ContainerBaseRegistry)"
+    <CreateNewImage BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
                     BaseImageDigest="$(ContainerBaseDigest)"

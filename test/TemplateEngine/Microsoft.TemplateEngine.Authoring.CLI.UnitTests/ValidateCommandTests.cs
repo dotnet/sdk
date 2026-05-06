@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.UnitTests
                 new ValidateCommand()
             };
 
-            int result = await root.Parse(new[] { "validate", Path.Combine(TestTemplatesLocation, "Invalid") }).InvokeAsync();
+            int result = await root.Parse(new[] { "validate", Path.Combine(TestTemplatesLocation, "Invalid") }).InvokeAsync(null, TestContext.Current.CancellationToken);
 
             //there are some invalid templates in location "Invalid"
             Assert.Equal(1, result);
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.UnitTests
                 new ValidateCommand()
             };
 
-            int result = await root.Parse(new[] { "validate", Path.Combine(TestTemplatesLocation, "TemplateWithSourceName") }).InvokeAsync();
+            int result = await root.Parse(new[] { "validate", Path.Combine(TestTemplatesLocation, "TemplateWithSourceName") }).InvokeAsync(null, TestContext.Current.CancellationToken);
 
             Assert.Equal(0, result);
         }

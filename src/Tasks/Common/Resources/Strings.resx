@@ -1018,5 +1018,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</value>
     <comment>{StrBegins="NETSDK1236: "}</comment>
   </data>
-  <!-- The latest message added is SingleFileBundleUnexpectedExclusion. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="ReadyToRunPartialCompileIgnoredInCompositeMode" xml:space="preserve">
+    <value>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</value>
+    <comment>{StrBegins="NETSDK1237: "}{Locked="{0}"}</comment>
+  </data>
+  <!-- The latest message added is ReadyToRunPartialCompileIgnoredInCompositeMode. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

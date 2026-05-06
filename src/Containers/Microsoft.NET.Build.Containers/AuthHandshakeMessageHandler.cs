@@ -403,7 +403,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                     // Ideally we'd call LoadIntoBufferAsync, but it has no overload that accepts a CancellationToken so we call ReadAsByteArrayAsync instead.
                     _ = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
 
-                    if (await GetAuthenticationAsync(_registryName, scheme, authInfo, cancellationToken).ConfigureAwait(false) is (AuthenticationHeaderValue authHeader, DateTimeOffset expirationTime))
+                    if (await GetAuthenticationAsync(_registryName, scheme!, authInfo, cancellationToken).ConfigureAwait(false) is (AuthenticationHeaderValue authHeader, DateTimeOffset expirationTime))
                     {
                         _authenticationHeaders[_registryName] = authHeader;
                         request.Headers.Authorization = authHeader;

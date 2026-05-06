@@ -152,7 +152,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 msbuildAdditionalSdkResolverFolder = "";
             }
 
-            var scheduler = new AssemblyScheduler(methodLimit: !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16);
+            var isFullMSBuild = string.Equals(Environment.GetEnvironmentVariable("TestFullMSBuild"), "true", StringComparison.OrdinalIgnoreCase);
+            var scheduler = new AssemblyScheduler(methodLimit: isFullMSBuild ? 32 : 16);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();

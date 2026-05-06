@@ -215,7 +215,7 @@ public class C
         get => null;
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -228,7 +228,7 @@ Public Class Months
         End Get
     End Property
 End Class",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
@@ -245,7 +245,7 @@ public class C
         get => null;
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -258,7 +258,7 @@ Public Class Months
         End Get
     End Property
 End Class",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult CreateCSharpResult(int line, int col)

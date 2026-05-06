@@ -8,19 +8,21 @@ parameters:
 - name: TestArguments
   type: object
   default:
+  # Commit SHAs align with the .NET 10.0 GA release (v10.0.100).
+  # See https://github.com/dotnet/dotnet/blob/v10.0.100/src/source-manifest.json
   - Name: Roslyn
     _repo: "https://github.com/dotnet/roslyn"
     _repoName: "dotnet/roslyn"
     _targetSolution: "Compilers.slnf"
     _branchName: "main"
-    _sha: "a3bb37003aeccad012a6e7dd220977599e8b8e65"
+    _sha: "739dc0e352a331e8a41cd66c09d2edf359255365"
     _useParentSdk: 0
   - Name: sdk
     _repo: "https://github.com/dotnet/sdk"
     _repoName: "dotnet/sdk"
     _targetSolution: "sdk.slnx"
     _branchName: "main"
-    _sha: "be25db95c376bffd508a023399ddd34392fe6458"
+    _sha: "e6bc966cc3d1348265b0831c6daca23267169d8f"
     _useParentSdk: 0
   - Name: project_system
     _repo: "https://github.com/dotnet/project-system"
@@ -34,21 +36,21 @@ parameters:
     _repoName: "dotnet/msbuild"
     _targetSolution: "MSBuild.sln"
     _branchName: "main"
-    _sha: "f4fa6bde775a3f7cbb2bb90a349ee5fc759114f3"
+    _sha: "995a3dce41788caebf2b8ca6602a7431f08bfd06"
     _useParentSdk: 0
   - Name: aspnetcore
     _repo: "https://github.com/dotnet/aspnetcore"
     _repoName: "dotnet/aspnetcore"
-    _targetSolution: "AspNetCore.sln"
+    _targetSolution: "AspNetCore.slnx"
     _branchName: "main"
-    _sha: "d765d7ba4871a8c2cb38d4134553d3be9a7370d7"
+    _sha: "7387de91234d3ef751fa50b3d1bfede4130213ff"
     _useParentSdk: 0
   - Name: efcore
     _repo: "https://github.com/dotnet/efcore"
     _repoName: "dotnet/efcore"
-    _targetSolution: "All.sln"
+    _targetSolution: "EFCore.sln"
     _branchName: "main"
-    _sha: "1b2ff365399ab6736a9ea4c98ab1b60acda5d917"
+    _sha: "12b8d44bf691d2e6933a6d1003647cce4f13c3d3"
     _useParentSdk: 0
 
 - name: timeoutInMinutes

@@ -451,7 +451,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                      Crossgen2Composite="$(PublishReadyToRunComposite)"
                                      Crossgen2ContainerFormat="$(PublishReadyToRunContainerFormat)"
                                      PublishReadyToRunCompositeExclusions="@(PublishReadyToRunCompositeExclusions)"
-                                     PublishReadyToRunCompositeRoots="@(PublishReadyToRunCompositeRoots)">
+                                     PublishReadyToRunCompositeRoots="@(PublishReadyToRunCompositeRoots)"
+                                     PublishReadyToRunPartialAssemblies="@(PublishReadyToRunPartialAssemblies)">
 
       <Output TaskParameter="ReadyToRunCompileList" ItemName="_ReadyToRunCompileList" />
       <Output TaskParameter="ReadyToRunSymbolsCompileList" ItemName="_ReadyToRunSymbolsCompileList" />

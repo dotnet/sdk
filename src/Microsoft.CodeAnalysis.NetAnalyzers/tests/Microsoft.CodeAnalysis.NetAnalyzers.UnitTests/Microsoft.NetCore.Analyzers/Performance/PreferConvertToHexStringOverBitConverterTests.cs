@@ -1466,7 +1466,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyBasicCodeFixAsync(string source, string fixedSource, ReferenceAssemblies referenceAssemblies = null)
@@ -1476,7 +1476,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies ?? ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

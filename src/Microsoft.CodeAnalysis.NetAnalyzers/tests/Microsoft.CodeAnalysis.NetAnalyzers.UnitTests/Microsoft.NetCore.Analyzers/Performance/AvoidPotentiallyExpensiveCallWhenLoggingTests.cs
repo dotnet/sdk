@@ -6180,7 +6180,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 test.TestState.AnalyzerConfigFiles.Add((editorConfigText.Value.Item1, editorConfigText.Value.Item2));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyBasicDiagnosticAsync(string source, CodeAnalysis.VisualBasic.LanguageVersion? languageVersion = null, (string, string)? editorConfigText = null)
@@ -6198,7 +6198,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 test.TestState.AnalyzerConfigFiles.Add((editorConfigText.Value.Item1, editorConfigText.Value.Item2));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static readonly ReferenceAssemblies Net60WithMELogging =
