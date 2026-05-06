@@ -1,11 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.IO.Pipes;
 using System.Runtime.Versioning;
+using System.Security;
+using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.DotNet.Installer.Windows
 {
@@ -68,6 +73,176 @@ namespace Microsoft.DotNet.Installer.Windows
             bool hasPendingFileRenames = pendingFileRenameOperations.Any(s => !string.IsNullOrWhiteSpace(s) && s.StartsWith(@"!\??\"));
 
             return (auKey != null || cbsKey != null || hasPendingFileRenames);
+        }
+
+        /// <summary>
+        /// Returns the <see cref="SecurityIdentifier"/> of the user associated with the specified process.
+        /// </summary>
+        /// <param name="process">The process whose user SID to retrieve.</param>
+        /// <returns>The <see cref="SecurityIdentifier"/> of the process owner.</returns>
+        /// <exception cref="SecurityException">Thrown when the process token cannot be opened.</exception>
+        public static SecurityIdentifier GetProcessUserSid(Process process)
+        {
+            if (!NativeMethods.OpenProcessToken(process.Handle, (uint)TokenAccessLevels.Query, out SafeAccessTokenHandle tokenHandle))
+            {
+                throw new SecurityException($"Failed to open process token for PID {process.Id}: {Marshal.GetLastPInvokeErrorMessage()}");
+            }
+
+            using (tokenHandle)
+            using (WindowsIdentity identity = new WindowsIdentity(tokenHandle.DangerousGetHandle()))
+            {
+                return identity.User
+                    ?? throw new SecurityException($"Unable to determine user SID for PID {process.Id}.");
+            }
+        }
+
+        /// <summary>
+        /// Returns the <see cref="SecurityIdentifier"/> that should be granted client access to the IPC pipe.
+        /// Resolves the parent process's user SID to restrict pipe access to only the invoking user.
+        /// </summary>
+        /// <returns>The SID of the client allowed to connect to the pipe.</returns>
+        /// <exception cref="SecurityException">Thrown when the parent process user SID cannot be determined.</exception>
+        public static SecurityIdentifier GetPipeClientIdentifier()
+        {
+            return GetProcessUserSid(InstallerBase.ParentProcess);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PipeSecurity"/> instance that grants the owner full control and
+        /// the specified client identity read/write access.
+        /// </summary>
+        /// <param name="ownerSid">The SID of the pipe owner (typically the current elevated user).</param>
+        /// <param name="clientSid">The SID of the client allowed to connect to the pipe.</param>
+        /// <returns>A configured <see cref="PipeSecurity"/> instance.</returns>
+        public static PipeSecurity CreatePipeSecurity(SecurityIdentifier ownerSid, SecurityIdentifier clientSid)
+        {
+            PipeSecurity pipeSecurity = new();
+
+            // The current user has full control and should be running as Administrator.
+            pipeSecurity.SetOwner(ownerSid);
+            pipeSecurity.AddAccessRule(new PipeAccessRule(ownerSid, PipeAccessRights.FullControl, AccessControlType.Allow));
+
+            // Restrict read/write access to authenticated users
+            pipeSecurity.AddAccessRule(new PipeAccessRule(clientSid,
+                PipeAccessRights.Read | PipeAccessRights.Write | PipeAccessRights.Synchronize, AccessControlType.Allow));
+
+            return pipeSecurity;
+        }
+
+        /// <summary>
+        /// Validates and returns the log file path to use for MSI operations.
+        /// Ensures the path is under the server's temp directory or the parent user's profile temp directory.
+        /// If the path is not in an allowed location, it is redirected to the server's temp directory.
+        /// </summary>
+        /// <param name="logFile">The requested log file path.</param>
+        /// <param name="serverTempPath">The server's temp directory. If null, defaults to <see cref="Path.GetTempPath"/>.</param>
+        /// <returns>The validated log file path.</returns>
+        public static string ValidateLogFilePath(string logFile, string serverTempPath = null)
+        {
+            // Canonicalize the path to resolve any '..' segments before comparison,
+            // preventing traversal attacks like "C:\Users\..\..\Windows\System32\evil.log".
+            string fullLogPath = Path.GetFullPath(logFile);
+            string serverTemp = Path.GetFullPath(serverTempPath ?? Path.GetTempPath());
+
+            // Fast path: log file is under the server's own temp directory.
+            if (fullLogPath.StartsWith(serverTemp, StringComparison.OrdinalIgnoreCase))
+            {
+                return fullLogPath;
+            }
+
+            // Profile-based check: resolve the parent user's profile temp directory
+            // to handle the case where the elevated server and unelevated client have
+            // different temp paths (e.g., different user profiles after UAC elevation).
+            if (InstallerBase.ParentProcess != null)
+            {
+                try
+                {
+                    SecurityIdentifier parentUserSid = GetProcessUserSid(InstallerBase.ParentProcess);
+                    string profilePath = GetUserProfilePath(parentUserSid);
+
+                    if (profilePath != null)
+                    {
+                        string profileTemp = Path.GetFullPath(Path.Combine(profilePath, "AppData", "Local", "Temp"));
+                        if (fullLogPath.StartsWith(profileTemp + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                            || fullLogPath.Equals(profileTemp, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return fullLogPath;
+                        }
+                    }
+                }
+                catch
+                {
+                    // If we can't resolve the parent user's profile, fall through to the redirect.
+                }
+            }
+
+            // The path is not in an allowed location — redirect to the server's temp directory.
+            return Path.Combine(serverTemp, Path.GetFileName(fullLogPath));
+        }
+
+        /// <summary>
+        /// Returns the profile path for the user identified by the specified <see cref="SecurityIdentifier"/>.
+        /// Reads the ProfileImagePath value from the registry ProfileList key.
+        /// </summary>
+        /// <param name="sid">The SID of the user whose profile path to retrieve.</param>
+        /// <returns>The profile path, or <see langword="null"/> if the profile is not found.</returns>
+        public static string GetUserProfilePath(SecurityIdentifier sid)
+        {
+            // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{SID}\ProfileImagePath
+            // contains the full path to the user's profile directory (e.g., C:\Users\username).
+            using RegistryKey profileListKey = Registry.LocalMachine.OpenSubKey(
+                $@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{sid.Value}");
+
+            return profileListKey?.GetValue("ProfileImagePath") as string;
+        }
+
+        /// <summary>
+        /// Validates that the specified package path is under the expected cache root directory.
+        /// Canonicalizes paths to prevent directory traversal and sibling-prefix attacks.
+        /// </summary>
+        /// <param name="packagePath">The package path to validate.</param>
+        /// <param name="cacheRoot">The expected cache root directory.</param>
+        /// <returns><see langword="true"/> if the path is under the cache root; otherwise <see langword="false"/>.</returns>
+        public static bool ValidatePackagePath(string packagePath, string cacheRoot)
+        {
+            return ValidatePathUnderRoot(packagePath, cacheRoot);
+        }
+
+        /// <summary>
+        /// Validates that a path component (such as a package ID or version) does not contain
+        /// directory separator characters or parent-directory traversal sequences.
+        /// </summary>
+        /// <param name="component">The path component to validate.</param>
+        /// <returns><see langword="true"/> if the component is safe to use in <see cref="Path.Combine"/>; otherwise <see langword="false"/>.</returns>
+        public static bool ValidatePathComponent(string component)
+        {
+            if (string.IsNullOrWhiteSpace(component))
+            {
+                return false;
+            }
+
+            return !component.Contains(Path.DirectorySeparatorChar)
+                && !component.Contains(Path.AltDirectorySeparatorChar)
+                && !component.Contains("..");
+        }
+
+        /// <summary>
+        /// Validates that the specified path, after canonicalization, is under the expected root directory.
+        /// Prevents directory traversal and sibling-prefix attacks.
+        /// </summary>
+        /// <param name="path">The path to validate.</param>
+        /// <param name="expectedRoot">The expected root directory.</param>
+        /// <returns><see langword="true"/> if the canonicalized path is under the root; otherwise <see langword="false"/>.</returns>
+        public static bool ValidatePathUnderRoot(string path, string expectedRoot)
+        {
+            string fullPath = Path.GetFullPath(path);
+            string fullRoot = Path.GetFullPath(expectedRoot);
+            if (!fullRoot.EndsWith(Path.DirectorySeparatorChar))
+            {
+                fullRoot += Path.DirectorySeparatorChar;
+            }
+
+            return fullPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
