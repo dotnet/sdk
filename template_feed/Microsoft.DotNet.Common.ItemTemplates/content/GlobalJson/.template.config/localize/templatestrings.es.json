@@ -13,8 +13,6 @@
   "symbols/AllowPrerelease/choices/false/displayName": "Disallow prerelease",
   "symbols/NoSdkVersion/description": "Exclude the SDK version from the generated global.json.",
   "symbols/NoSdkVersion/displayName": "No SDK version",
-  "symbols/NoSdkVersion/choices/true/description": "Exclude the SDK version from the generated global.json.",
-  "symbols/NoSdkVersion/choices/true/displayName": "No SDK version",
   "symbols/RollForward/description": "Directiva de reenvío que se va a usar al seleccionar una versión de SDK.",
   "symbols/RollForward/displayName": "Directiva de reenvío",
   "symbols/RollForward/choices/patch/description": "Usa la versión especificada.\nSi no se encuentra, avanza al nivel de revisión más reciente.\nSi no se encuentra, devuelve un error.\nEste valor es el comportamiento heredado de las versiones anteriores del SDK.",
