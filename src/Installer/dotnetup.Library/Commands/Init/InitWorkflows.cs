@@ -157,14 +157,44 @@ internal class InitWorkflows
         string? manifestPath,
         Task? predownloadTask)
     {
+        return ExecuteMigrationInPhases(
+            effectiveRequests, toMigrate, command, installRoot, manifestPath,
+            runner: requests =>
+            {
+                SpectreAnsiConsole.MarkupLine("Setting up your environment.");
+                if (requests.Count > 0)
+                {
+                    DisplayInstallLocation(requests[0]);
+                }
+                // Wait for the predownload to finish (if still running) before starting the real install,
+                // so the cache is populated and we avoid redundant downloads. Only meaningful for Phase 1.
+                predownloadTask?.GetAwaiter().GetResult();
+                predownloadTask = null;
+                InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, command.NoProgress, command);
+            });
+    }
+
+    /// <summary>
+    /// Runs a two-phase migration install batch. Phase 1 is the user's primary requests merged with
+    /// SDK migrations; Phase 2 is the runtime-style migrations whose target version is not already on
+    /// disk after Phase 1. Both phases are dispatched through <paramref name="runner"/>.
+    /// </summary>
+    internal static List<ResolvedInstallRequest> ExecuteMigrationInPhases(
+        List<ResolvedInstallRequest> existingRequests,
+        List<MigrationSelection> migrations,
+        InstallCommand command,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        Action<List<ResolvedInstallRequest>> runner)
+    {
         var (phase1, deferred) = BuildMigrationPhase1Requests(
-            effectiveRequests, toMigrate, command, installRoot, manifestPath);
-        RunInstallRequests(phase1, predownloadTask, command.NoProgress, command);
+            existingRequests, migrations, command, installRoot, manifestPath);
+        runner(phase1);
 
         var phase2 = BuildMigrationPhase2Requests(deferred, command, installRoot, manifestPath);
         if (phase2.Count > 0)
         {
-            RunInstallRequests(phase2, predownloadTask: null, command.NoProgress, command);
+            runner(phase2);
         }
 
         return [..phase1, ..phase2];

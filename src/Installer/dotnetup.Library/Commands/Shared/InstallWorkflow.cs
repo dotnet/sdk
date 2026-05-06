@@ -109,26 +109,9 @@ internal class InstallWorkflow
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
             $"Migrating {migrationSelections.Count} matching system .NET channel(s) because --migrate-from-system was specified."));
 
-        return ExecuteTwoPhaseMigrationInstall(requests, migrationSelections, installRoot);
-    }
-
-    private List<ResolvedInstallRequest> ExecuteTwoPhaseMigrationInstall(
-        List<ResolvedInstallRequest> requests,
-        List<InitWorkflows.MigrationSelection> migrationSelections,
-        DotnetInstallRoot installRoot)
-    {
-        var (phase1, deferred) = InitWorkflows.BuildMigrationPhase1Requests(
-            requests, migrationSelections, _command, installRoot, _command.ManifestPath);
-        ExecuteInstallRequests(phase1);
-
-        var phase2 = InitWorkflows.BuildMigrationPhase2Requests(
-            deferred, _command, installRoot, _command.ManifestPath);
-        if (phase2.Count > 0)
-        {
-            ExecuteInstallRequests(phase2);
-        }
-
-        return [..phase1, ..phase2];
+        return InitWorkflows.ExecuteMigrationInPhases(
+            requests, migrationSelections, _command, installRoot, _command.ManifestPath,
+            runner: ExecuteInstallRequests);
     }
 
     /// <summary>
