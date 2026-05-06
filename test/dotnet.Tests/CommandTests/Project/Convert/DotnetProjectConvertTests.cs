@@ -2252,6 +2252,47 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void Directives_IdenticalDuplicate()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:sdk Microsoft.NET.Sdk
+                #:sdk Microsoft.NET.Sdk
+                #:package Package@1.0
+                #:package Package@1.0
+                #:property Prop=1
+                #:property Prop=1
+                Console.Write();
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <Prop>1</Prop>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Package" Version="1.0" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.Write();
+                """,
+            evaluateDirectives: true);
+    }
+
+    [Fact]
     public void Directives_Duplicate()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -2272,6 +2313,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #:sdk Name
                 #:sdk Name@X
+                #:sdk Name@Y
                 #:sdk Name
                 #:sdk Name2
                 """,
@@ -2287,6 +2329,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #:package Name
                 #:package Name@X
+                #:package Name@Y
                 #:package Name
                 #:package Name2
                 """,

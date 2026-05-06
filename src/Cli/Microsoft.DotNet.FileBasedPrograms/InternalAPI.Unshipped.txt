@@ -90,7 +90,7 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Version.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Shebang
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Shebang.Shebang(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
 Microsoft.DotNet.FileBasedPrograms.DirectiveDeduplicator
-Microsoft.DotNet.FileBasedPrograms.DirectiveDeduplicator.CheckDirective(Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named! directive, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError) -> void
+Microsoft.DotNet.FileBasedPrograms.DirectiveDeduplicator.CheckDirective(Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named! directive, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError) -> bool
 Microsoft.DotNet.FileBasedPrograms.DirectiveDeduplicator.DirectiveDeduplicator() -> void
 Microsoft.DotNet.FileBasedPrograms.ErrorReporter
 Microsoft.DotNet.FileBasedPrograms.ErrorReporters

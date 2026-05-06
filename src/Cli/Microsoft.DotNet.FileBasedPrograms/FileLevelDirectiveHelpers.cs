@@ -875,38 +875,63 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
 /// <summary>
 /// Detects duplicate directives (by type and case-insensitive name)
-/// and reports errors via the provided <see cref="ErrorReporter"/>.
+/// and reports errors via the provided <see cref="ErrorReporter"/> when their values differ.
 /// </summary>
 /// <remarks>
-/// <c>#:project</c> and <c>#:ref</c> duplicates are allowed (MSBuild can handle multiple <c>ProjectReference</c>s).
+/// <c>#:project</c>, <c>#:ref</c>, <c>#:include</c>, and <c>#:exclude</c> duplicates are allowed (MSBuild can handle them).
 /// </remarks>
 internal struct DirectiveDeduplicator
 {
     private Dictionary<CSharpDirective.Named, CSharpDirective.Named>? _seen;
 
     /// <summary>
-    /// Checks <paramref name="directive"/> for duplication and reports an error if it was already seen.
+    /// Checks <paramref name="directive"/> for duplication and reports an error if a different value was already seen.
     /// </summary>
-    public void CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError)
+    /// <returns><see langword="false"/> if a duplicate directive was already seen and this directive should be skipped.</returns>
+    public bool CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError)
     {
-        // Duplicate #:project and #:ref directives are allowed (MSBuild can handle that).
-        if (directive is CSharpDirective.Project or CSharpDirective.Ref)
+        if (directive is CSharpDirective.Project or CSharpDirective.Ref or CSharpDirective.IncludeOrExclude)
         {
-            return;
+            return true;
         }
 
         _seen ??= new(NamedDirectiveComparer.Instance);
 
         if (_seen.TryGetValue(directive, out var existingDirective))
         {
+            if (HasSameValue(existingDirective, directive))
+            {
+                return false;
+            }
+
             var typeAndName = $"#:{existingDirective.KindToString()} {existingDirective.Name}";
             reportError(directive.Info.SourceFile.Text, directive.Info.SourceFile.Path, directive.Info.Span,
                 string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
+
+            return false;
         }
         else
         {
             _seen.Add(directive, directive);
         }
+
+        return true;
+    }
+
+    private static bool HasSameValue(CSharpDirective.Named existingDirective, CSharpDirective.Named directive)
+    {
+        Debug.Assert(NamedDirectiveComparer.Instance.Equals(existingDirective, directive));
+
+        return (existingDirective, directive) switch
+        {
+            (CSharpDirective.Sdk existing, CSharpDirective.Sdk current) =>
+                string.Equals(existing.Version, current.Version, StringComparison.Ordinal),
+            (CSharpDirective.Property existing, CSharpDirective.Property current) =>
+                string.Equals(existing.Value, current.Value, StringComparison.Ordinal),
+            (CSharpDirective.Package existing, CSharpDirective.Package current) =>
+                string.Equals(existing.Version, current.Version, StringComparison.Ordinal),
+            _ => false,
+        };
     }
 }
 

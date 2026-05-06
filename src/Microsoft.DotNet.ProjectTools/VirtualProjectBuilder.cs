@@ -124,7 +124,7 @@ public sealed class VirtualProjectBuilder
         var sourceFile = SourceFile.Load(sourceFilePath);
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
 
-        // Return the first value. Duplicate directives are not supported.
+        // Return the first value. Conflicting duplicate directives are not supported.
         return directives.OfType<CSharpDirective.Property>()
             .FirstOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.OrdinalIgnoreCase))?.Value;
     }
@@ -320,23 +320,36 @@ public sealed class VirtualProjectBuilder
 
         do
         {
+            var directivesForEvaluation = DeduplicateSdkDirectives(directives);
+
             // Create a project with properties from #:property directives so they can be expanded inside EvaluateDirectives.
             (project, projectRootElement) = CreateProjectInstanceNoEvaluation(
                 projectCollection,
-                [.. evaluatedDirectiveBuilder, .. directives],
+                [.. evaluatedDirectiveBuilder, .. directivesForEvaluation],
                 addGlobalProperties);
 
             // Evaluate directives, e.g., determine item types for #:include/#:exclude from their file extension.
-            var fileEvaluatedDirectives = EvaluateDirectives(project, directives, reportError);
+            var fileEvaluatedDirectives = EvaluateDirectives(project, directivesForEvaluation, reportError);
 
             // Detect duplicate directives across all files on evaluated directives.
+            var deduplicatedFileEvaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>(fileEvaluatedDirectives.Length);
             foreach (var directive in fileEvaluatedDirectives)
             {
-                if (directive is CSharpDirective.Named named)
+                if (directive is CSharpDirective.Sdk)
                 {
-                    deduplicator.CheckDirective(named, reportError);
+                    deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
+                    continue;
                 }
+
+                if (directive is CSharpDirective.Named named && !deduplicator.CheckDirective(named, reportError))
+                {
+                    continue;
+                }
+
+                deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
             }
+
+            fileEvaluatedDirectives = deduplicatedFileEvaluatedDirectiveBuilder.DrainToImmutable();
 
             evaluatedDirectiveBuilder.AddRange(fileEvaluatedDirectives);
 
@@ -384,6 +397,30 @@ public sealed class VirtualProjectBuilder
             }
 
             return false;
+        }
+
+        ImmutableArray<CSharpDirective> DeduplicateSdkDirectives(ImmutableArray<CSharpDirective> directives)
+        {
+            if (!directives.Any(static directive => directive is CSharpDirective.Sdk))
+            {
+                return directives;
+            }
+
+            var builder = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
+            var changed = false;
+
+            foreach (var directive in directives)
+            {
+                if (directive is CSharpDirective.Sdk sdk && !deduplicator.CheckDirective(sdk, reportError))
+                {
+                    changed = true;
+                    continue;
+                }
+
+                builder.Add(directive);
+            }
+
+            return changed ? builder.DrainToImmutable() : directives;
         }
 
         (ProjectInstance, ProjectRootElement) CreateProjectInstanceNoEvaluation(
