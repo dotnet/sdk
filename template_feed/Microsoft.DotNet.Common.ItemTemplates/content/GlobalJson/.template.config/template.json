@@ -91,18 +91,10 @@
     },
     "NoSdkVersion": {
       "type": "parameter",
-      "datatype": "choice",
-      "defaultValue": "",
-      "defaultIfOptionWithoutValue": "true",
+      "datatype": "bool",
+      "defaultValue": false,
       "description": "Exclude the SDK version from the generated global.json.",
-      "displayName": "No SDK version",
-      "choices": [
-        {
-          "choice": "true",
-          "description": "Exclude the SDK version from the generated global.json.",
-          "displayName": "No SDK version"
-        }
-      ]
+      "displayName": "No SDK version"
     },
     "RollForward": {
       "type": "parameter",

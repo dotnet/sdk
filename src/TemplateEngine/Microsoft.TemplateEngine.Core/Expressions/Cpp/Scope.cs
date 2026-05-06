@@ -59,11 +59,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 case Operator.Not:
                     return !EvaluateSide(Right!, x => Convert.ToBoolean(x ?? "False"));
                 case Operator.And:
-                    return EvaluateSides(Left!, Right!, x => (bool)x, (x, y) => x && y);
+                    return EvaluateSides(Left!, Right!, x => Convert.ToBoolean(x ?? "False"), (x, y) => x && y);
                 case Operator.Or:
-                    return EvaluateSides(Left!, Right!, x => (bool)x, (x, y) => x || y);
+                    return EvaluateSides(Left!, Right!, x => Convert.ToBoolean(x ?? "False"), (x, y) => x || y);
                 case Operator.Xor:
-                    return EvaluateSides(Left!, Right!, x => (bool)x, (x, y) => x ^ y);
+                    return EvaluateSides(Left!, Right!, x => Convert.ToBoolean(x ?? "False"), (x, y) => x ^ y);
                 case Operator.EqualTo:
                     return EvaluateSides(Left!, Right!, x => x, LenientEquals);
                 case Operator.NotEqualTo:

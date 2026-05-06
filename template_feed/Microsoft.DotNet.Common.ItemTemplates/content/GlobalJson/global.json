@@ -1,16 +1,16 @@
 {
   "sdk": {
-    //#if (RollForward!="" && (NoSdkVersion=="" || AllowPrerelease!=""))
+    //#if (RollForward!="" && (!NoSdkVersion || AllowPrerelease!=""))
     "rollForward": "ROLL_FORWARD_VALUE",
-    //#elseif (RollForward!="" && AllowPrerelease=="" && NoSdkVersion!="")
+    //#elseif (RollForward!="" && AllowPrerelease=="" && NoSdkVersion)
     "rollForward": "ROLL_FORWARD_VALUE"
     //#endif
-    //#if (AllowPrerelease!="" && NoSdkVersion=="")
+    //#if (AllowPrerelease!="" && !NoSdkVersion)
     "allowPrerelease": ALLOW_PRERELEASE_VALUE,
-    //#elseif (AllowPrerelease!="" && NoSdkVersion!="")
+    //#elseif (AllowPrerelease!="" && NoSdkVersion)
     "allowPrerelease": ALLOW_PRERELEASE_VALUE
     //#endif
-    //#if (NoSdkVersion=="")
+    //#if (!NoSdkVersion)
     "version": "SDK_VERSION"
     //#endif
   //#if (TestRunner=="")

@@ -83,6 +83,35 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         }
 
         [Fact]
+        public void VerifyCpp2EvaluatorStringBoolAndExpression()
+        {
+            // Validates that And operator handles string-typed bool values (e.g. from template parameters
+            // stored as strings) without throwing InvalidCastException.
+            VariableCollection vc = new VariableCollection
+            {
+                ["FIRST_IF"] = "false",
+                ["SECOND_IF"] = "true"
+            };
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF && SECOND_IF", vc, out string? faultedMessage);
+            Assert.Null(faultedMessage);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void VerifyCpp2EvaluatorStringBoolOrExpression()
+        {
+            // Validates that Or operator handles string-typed bool values without throwing InvalidCastException.
+            VariableCollection vc = new VariableCollection
+            {
+                ["FIRST_IF"] = "false",
+                ["SECOND_IF"] = "true"
+            };
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF || SECOND_IF", vc, out string? faultedMessage);
+            Assert.Null(faultedMessage);
+            Assert.True(result);
+        }
+
+        [Fact]
         public void VerifyCpp2EvaluatorTrueVariableErroneousExpression()
         {
             VariableCollection vc = new VariableCollection
