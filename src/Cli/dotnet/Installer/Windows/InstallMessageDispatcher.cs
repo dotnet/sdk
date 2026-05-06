@@ -3,8 +3,8 @@
 
 using System.IO.Pipes;
 using System.Runtime.Versioning;
-using static Microsoft.Win32.Msi.Error;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using static Microsoft.Win32.Msi.Error;
 
 namespace Microsoft.DotNet.Installer.Windows
 {
@@ -206,6 +206,26 @@ namespace Microsoft.DotNet.Installer.Windows
                 RequestType = InstallRequestType.AdjustWorkloadSetVersion,
                 SdkFeatureBand = sdkFeatureBand.ToString(),
                 WorkloadSetVersion = newVersion,
+            });
+        }
+
+        public InstallResponseMessage SendRecordWorkloadSetInGlobalJsonRequest(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.RecordWorkloadSetInGlobalJson,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
+                GlobalJsonPath = globalJsonPath,
+                WorkloadSetVersion = workloadSetVersion,
+            });
+        }
+
+        public InstallResponseMessage SendGetGlobalJsonWorkloadSetVersionsRequest(SdkFeatureBand sdkFeatureBand)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.GetGlobalJsonWorkloadSetVersions,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
             });
         }
     }

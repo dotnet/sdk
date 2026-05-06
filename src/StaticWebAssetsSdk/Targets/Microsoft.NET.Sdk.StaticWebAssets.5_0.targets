@@ -32,13 +32,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
+    <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpgradeLegacyStaticWebAssetsToV2"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ValidateStaticWebAssetsUniquePaths"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAsssetsPropsFile"
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsPropsFile50"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
@@ -395,22 +400,24 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_StaticWebAssetUpgradeMetadataToKeep Include="RelatedAsset" />
       <_StaticWebAssetUpgradeMetadataToKeep Include="AssetTraitName" />
       <_StaticWebAssetUpgradeMetadataToKeep Include="AssetTraitValue" />
+      <_StaticWebAssetUpgradeMetadataToKeep Include="Fingerprint" />
+      <_StaticWebAssetUpgradeMetadataToKeep Include="Integrity" />
       <_StaticWebAssetUpgradeMetadataToKeep Include="CopyToOutputDirectory" />
       <_StaticWebAssetUpgradeMetadataToKeep Include="CopyToPublishDirectory" />
       <_StaticWebAssetUpgradeMetadataToKeep Include="OriginalItemSpec" />
+    </ItemGroup>
 
-      <_ThisProjectStaticWebAssetItems KeepMetadata="@(_StaticWebAssetUpgradeMetadataToKeep)" Include="@(_ThisProjectStaticWebAssets->'%(FullPath)')">
+    <UpgradeLegacyStaticWebAssetsToV2
+      Assets="@(_ThisProjectStaticWebAssets)"
+      Condition="'@(_ThisProjectStaticWebAssets)' != ''"
+    >
+      <Output TaskParameter="UpgradedAssets" ItemName="_ThisProjectStaticWebAssetsUpgraded" />
+    </UpgradeLegacyStaticWebAssetsToV2>
+
+    <ItemGroup>
+      <_ThisProjectStaticWebAssetItems KeepMetadata="@(_StaticWebAssetUpgradeMetadataToKeep)" Include="@(_ThisProjectStaticWebAssetsUpgraded)">
         <ResultType>StaticWebAsset</ResultType>
         <SourceType>Project</SourceType>
-        <AssetKind Condition="'%(_ThisProjectStaticWebAssets.AssetKind)' == ''">All</AssetKind>
-        <AssetMode Condition="'%(_ThisProjectStaticWebAssets.AssetMode)' == ''">All</AssetMode>
-        <AssetRole Condition="'%(_ThisProjectStaticWebAssets.AssetRole)' == ''">Primary</AssetRole>
-        <RelatedAsset Condition="'%(_ThisProjectStaticWebAssets.RelatedAsset)' == ''"></RelatedAsset>
-        <AssetTraitName Condition="'%(_ThisProjectStaticWebAssets.AssetTraitName)' == ''"></AssetTraitName>
-        <AssetTraitValue Condition="'%(_ThisProjectStaticWebAssets.AssetTraitValue)' == ''"></AssetTraitValue>
-        <CopyToOutputDirectory Condition="'%(_ThisProjectStaticWebAssets.CopyToOutputDirectory)' == ''">Never</CopyToOutputDirectory>
-        <CopyToPublishDirectory  Condition="'%(_ThisProjectStaticWebAssets.CopyToPublishDirectory)' == ''">PreserveNewest</CopyToPublishDirectory>
-        <OriginalItemSpec Condition="'%(_ThisProjectStaticWebAssets.OriginalItemSpec)' == ''">%(_ThisProjectStaticWebAssets.Identity)</OriginalItemSpec>
       </_ThisProjectStaticWebAssetItems>
       <_ThisProjectStaticWebAssetItems Include="$(PackageId)\wwwroot" Condition="Exists('$(MSBuildProjectDirectory)\wwwroot')">
         <ResultType>StaticWebAssetDiscoveryPattern</ResultType>
@@ -506,7 +513,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Generates a props file that goes in build\Microsoft.AspNetCore.StaticWebAssets.props
          and that describes the static web assets for the package.
      -->
-    <GenerateStaticWebAsssetsPropsFile
+    <GenerateStaticWebAssetsPropsFile50
       Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'"
       StaticWebAssets="@(_CurrentProjectStaticWebAsset)"
       AllowEmptySourceType="true"
