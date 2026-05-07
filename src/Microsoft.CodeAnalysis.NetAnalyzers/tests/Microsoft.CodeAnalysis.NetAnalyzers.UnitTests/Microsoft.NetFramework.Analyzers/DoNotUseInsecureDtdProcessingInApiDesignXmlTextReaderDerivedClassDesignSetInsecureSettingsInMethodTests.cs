@@ -47,7 +47,7 @@ namespace TestNamespace
                 {
                     GetCA3077ConstructorCSharpResultAt(9, 16, "TestClass"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -66,7 +66,7 @@ End Namespace",
                 {
                     GetCA3077ConstructorBasicResultAt(7, 20, "TestClass"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace TestNamespace
         public TestClass () {}
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -101,7 +101,7 @@ Namespace TestNamespace
         End Sub
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

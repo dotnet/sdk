@@ -96,7 +96,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                 record R([field: ThreadStatic] string {{|CA2259:Value|}});
                 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]

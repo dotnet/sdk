@@ -94,7 +94,7 @@ public class NoDisposeClass : System.IDisposable
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -246,7 +246,7 @@ public class NoDisposeClass : System.IDisposable
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -910,7 +910,7 @@ public class SomeClass : System.IDisposable
     }
 }
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -948,7 +948,7 @@ Public Class SomeClass
     End Sub
 End Class
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

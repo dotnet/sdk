@@ -472,7 +472,7 @@ public class C
                     OutputKind = OutputKind.ConsoleApplication,
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #region Helpers

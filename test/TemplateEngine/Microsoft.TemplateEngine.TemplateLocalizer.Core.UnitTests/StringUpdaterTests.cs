@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             Assert.True(File.Exists(expectedFilename));
 
             using FileStream locFileStream = File.OpenRead(expectedFilename);
-            JsonDocument locFile = await JsonDocument.ParseAsync(locFileStream);
+            JsonDocument locFile = await JsonDocument.ParseAsync(locFileStream, cancellationToken: TestContext.Current.CancellationToken);
 
             int inputIndex = 0;
             foreach (JsonProperty property in locFile.RootElement.EnumerateObject())

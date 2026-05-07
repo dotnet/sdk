@@ -566,7 +566,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 ReferenceAssemblies = referenceAssemblies,
                 FixedCode = fixedSource,
                 DiagnosticVerifier = diagnosticVerifier,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyVBAsync(
@@ -581,7 +581,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 ReferenceAssemblies = referenceAssemblies,
                 FixedCode = fixedSource,
                 DiagnosticVerifier = diagnosticVerifier,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

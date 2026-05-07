@@ -424,7 +424,7 @@ End Namespace
                     }
                 }
 
-                return test.RunAsync();
+                return test.RunAsync(TestContext.Current.CancellationToken);
             }
 
             internal override Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources, int line, int column)
@@ -454,7 +454,7 @@ End Namespace
                     }
                 }
 
-                return test.RunAsync();
+                return test.RunAsync(TestContext.Current.CancellationToken);
             }
         }
 
@@ -480,7 +480,7 @@ End Namespace
                     }
                 }
 
-                return test.RunAsync();
+                return test.RunAsync(TestContext.Current.CancellationToken);
             }
 
             internal override Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources, int line, int column)
@@ -510,7 +510,7 @@ End Namespace
                     }
                 }
 
-                return test.RunAsync();
+                return test.RunAsync(TestContext.Current.CancellationToken);
             }
         }
     }

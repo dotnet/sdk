@@ -33,7 +33,7 @@ set DOTNET_CLI_CONTEXT_VERBOSE=true
 
 ## <a name="70"></a>70 - Unexpected internal software issue
 
-Unexpected result or issue. [File a bug](https://github.com/dotnet/templating/issues/new?title=Unexpected%20Internal%20Software%20Issue%20(EX_SOFTWARE)) if you encounter this exit code.
+Unexpected result or issue. [File a bug](https://github.com/dotnet/sdk/issues/new?title=Unexpected%20Internal%20Software%20Issue%20(EX_SOFTWARE)) if you encounter this exit code.
 
 This is a semi-standardized exit code (see [EX_SOFTWARE in /usr/include/sysexits.h](https://github.com/openbsd/src/blob/master/include/sysexits.h#L107))
 
@@ -199,7 +199,7 @@ For details on current exit code please visit https://aka.ms/templating-exit-cod
 
 Reserved for future use.
 
-[File a bug](https://github.com/dotnet/templating/issues/new?title=Unexpected%20Exit%20Code) if you encounter any of these exit codes.
+[File a bug](https://github.com/dotnet/sdk/issues/new?title=Unexpected%20Exit%20Code) if you encounter any of these exit codes.
 
 
 ## <a name="127"></a>127 - Unrecognized option(s) and/or argument(s) for a command

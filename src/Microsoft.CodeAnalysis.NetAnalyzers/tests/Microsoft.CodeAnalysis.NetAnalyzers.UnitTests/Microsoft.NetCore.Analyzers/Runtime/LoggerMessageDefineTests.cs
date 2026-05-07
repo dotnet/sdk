@@ -278,7 +278,7 @@ public class Program
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = code,
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

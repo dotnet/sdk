@@ -95,6 +95,11 @@ Ejemplos:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="Help_Device">
+        <source>The device identifier to run on (e.g. emulator, simulator, or physical device).</source>
+        <target state="translated">Identificador de dispositivo en el que se va a ejecutar (por ejemplo, emulador, simulador o dispositivo físico).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Help_List">
         <source>
       Lists all discovered files without starting the watcher.
@@ -142,6 +147,11 @@ Ejemplos:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="MoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="translated">Subir y bajar para mostrar más dispositivos</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
         <target state="translated">Subir y bajar para mostrar más marcos</target>
@@ -150,6 +160,11 @@ Ejemplos:
       <trans-unit id="SearchPlaceholderText">
         <source>Type to search</source>
         <target state="translated">Escriba para buscar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="translated">Seleccione un dispositivo en el que se ejecutará:</target>
         <note />
       </trans-unit>
       <trans-unit id="SelectTargetFrameworkPrompt">

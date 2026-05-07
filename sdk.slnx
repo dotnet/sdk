@@ -67,6 +67,9 @@
     <Project Path="src/Dotnet.Watch/Web.Middleware/Microsoft.DotNet.HotReload.Web.Middleware.shproj" />
   </Folder>
   <Folder Name="/src/Cli/">
+    <Project Path="src/Cli/dn/dn.csproj" />
+    <Project Path="src/Cli/dn/dn-native-debug.vcxproj" Id="e9a0b5d7-2f4a-4c8e-9d3b-1a6f5e8c7d2a" />
+    <Project Path="src/Cli/dotnet-aot/dotnet-aot.csproj" />
     <Project Path="src/Cli/dotnet/dotnet.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.CommandLine/Microsoft.DotNet.Cli.CommandLine.csproj" />
     <Project Path="src/Cli/Microsoft.DotNet.Cli.CoreUtils/Microsoft.DotNet.Cli.CoreUtils.csproj" />
