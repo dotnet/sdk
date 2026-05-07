@@ -91,7 +91,15 @@ public class TestCommand(
 
             string[] additionalBuildProperties;
 
-            var useTerminalLogger = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+            // Filter post-`--` settings tokens out of UnmatchedTokens before handing them to
+            // MSBuild's command-line parser - MSBuild's parser treats any non-switch token as a
+            // positional project-file argument and fails (MSB1008) when it sees more than one. The
+            // same filter is applied below in FromParseResult before forwarding to MSBuild.
+            IReadOnlyList<string> unmatchedTokensWithoutSettings = settings.Length > 1
+                ? [.. parseResult.UnmatchedTokens.TakeWhile(x => x != settings[1])]
+                : parseResult.UnmatchedTokens;
+
+            var useTerminalLogger = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(unmatchedTokensWithoutSettings);
 
             if (useTerminalLogger == TerminalLoggerMode.Invalid)
             {
@@ -371,12 +379,12 @@ public class TestCommand(
 
 public class TerminalLoggerDetector
 {
-    public static TerminalLoggerMode ProcessTerminalLoggerConfiguration(ParseResult parseResult)
+    public static TerminalLoggerMode ProcessTerminalLoggerConfiguration(IReadOnlyList<string> unmatchedTokens)
     {
         string? terminalLoggerArg;
-        if (!TryFromCommandLine(parseResult.UnmatchedTokens, out terminalLoggerArg) && !TryFromEnvironmentVariables(out terminalLoggerArg))
+        if (!TryFromCommandLine(unmatchedTokens, out terminalLoggerArg) && !TryFromEnvironmentVariables(out terminalLoggerArg))
         {
-            terminalLoggerArg = FindDefaultValue(parseResult.UnmatchedTokens) ?? "auto";
+            terminalLoggerArg = FindDefaultValue(unmatchedTokens) ?? "auto";
         }
 
         terminalLoggerArg = NormalizeIntoBooleanValues(terminalLoggerArg!);
@@ -434,10 +442,18 @@ public class TerminalLoggerDetector
 
         string? FindDefaultValue(IReadOnlyList<string> unmatchedTokens)
         {
-            var parser = new Microsoft.Build.CommandLine.Experimental.CommandLineParser();
-            var switches = parser.Parse(unmatchedTokens);
+            // MSBuild's CommandLineParser is strict: it throws when it sees malformed switches, when
+            // it cannot expand a response file (@-prefixed tokens), or when it parses more than one
+            // positional project-file argument. Detection of the terminal logger configuration is
+            // best-effort - on any failure, fall back to the default ("auto") rather than crashing
+            // `dotnet test`.
+            var switches = TryParseSwitches(unmatchedTokens);
+            if (switches is null)
+            {
+                return null;
+            }
 
-            string[]? tlpValues = switches.TerminalLoggerParameters;
+            string[]? tlpValues = switches.Value.TerminalLoggerParameters;
             if (tlpValues is not { Length: > 0 })
             {
                 return null;
@@ -465,10 +481,14 @@ public class TerminalLoggerDetector
 
         bool TryFromCommandLine(IReadOnlyList<string> unmatchedTokens, [NotNullWhen(true)] out string? value)
         {
-            var parser = new Microsoft.Build.CommandLine.Experimental.CommandLineParser();
-            var switches = parser.Parse(unmatchedTokens);
+            var switches = TryParseSwitches(unmatchedTokens);
+            if (switches is null)
+            {
+                value = null;
+                return false;
+            }
 
-            string[]? tlValues = switches.TerminalLogger;
+            string[]? tlValues = switches.Value.TerminalLogger;
             if (tlValues is not { Length: > 0 })
             {
                 value = null;
@@ -479,6 +499,21 @@ public class TerminalLoggerDetector
             // An empty value (e.g. bare "-tl") means "auto".
             value = string.IsNullOrEmpty(lastValue) ? "auto" : lastValue;
             return true;
+        }
+
+        static Microsoft.Build.CommandLine.Experimental.CommandLineSwitchesAccessor? TryParseSwitches(IReadOnlyList<string> unmatchedTokens)
+        {
+            try
+            {
+                return new Microsoft.Build.CommandLine.Experimental.CommandLineParser().Parse(unmatchedTokens);
+            }
+            catch (Exception)
+            {
+                // MSBuild's parser throws on inputs we cannot constrain (e.g. multiple positional
+                // project args, malformed switches, missing response files). Detection is best
+                // effort, so swallow the error and let the caller fall back to defaults.
+                return null;
+            }
         }
 
         bool TryFromEnvironmentVariables([NotNullWhen(true)] out string? terminalLoggerArg)

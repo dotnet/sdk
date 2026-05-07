@@ -21,7 +21,7 @@ public class TerminalLoggerDetectorTests
     {
         var parseResult = Parser.Parse($"dotnet test {tlArg}");
 
-        var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+        var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult.UnmatchedTokens);
 
         result.Should().Be(expectedMode);
     }
@@ -35,7 +35,7 @@ public class TerminalLoggerDetectorTests
             Environment.SetEnvironmentVariable("MSBUILDTERMINALLOGGER", "off");
 
             var parseResult = Parser.Parse("dotnet test");
-            var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+            var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult.UnmatchedTokens);
 
             result.Should().Be(TerminalLoggerMode.Off);
         }
@@ -54,7 +54,7 @@ public class TerminalLoggerDetectorTests
             Environment.SetEnvironmentVariable("MSBUILDTERMINALLOGGER", "off");
 
             var parseResult = Parser.Parse("dotnet test -tl:true");
-            var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+            var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult.UnmatchedTokens);
 
             result.Should().Be(TerminalLoggerMode.On);
         }
@@ -75,7 +75,7 @@ public class TerminalLoggerDetectorTests
             Environment.SetEnvironmentVariable("MSBUILDLIVELOGGER", "off");
 
             var parseResult = Parser.Parse("dotnet test");
-            var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+            var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult.UnmatchedTokens);
 
             result.Should().Be(TerminalLoggerMode.Off);
         }
@@ -97,7 +97,7 @@ public class TerminalLoggerDetectorTests
             Environment.SetEnvironmentVariable("MSBUILDLIVELOGGER", "false");
 
             var parseResult = Parser.Parse("dotnet test");
-            var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+            var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult.UnmatchedTokens);
 
             result.Should().Be(TerminalLoggerMode.On);
         }
@@ -112,7 +112,7 @@ public class TerminalLoggerDetectorTests
     public void ProcessTerminalLoggerConfiguration_WithTlpDefault_UsesDefaultValue()
     {
         var parseResult = Parser.Parse("dotnet test -tlp:default=off");
-        var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+        var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult.UnmatchedTokens);
 
         result.Should().Be(TerminalLoggerMode.Off);
     }
@@ -123,8 +123,31 @@ public class TerminalLoggerDetectorTests
     public void ProcessTerminalLoggerConfiguration_ExplicitSwitchTakesPrecedenceOverTlpDefault(string tlArg, TerminalLoggerMode expectedMode)
     {
         var parseResult = Parser.Parse($"dotnet test -tlp:default=on {tlArg}");
-        var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+        var result = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult.UnmatchedTokens);
 
         result.Should().Be(expectedMode);
     }
+
+    [Theory]
+    [InlineData("-tl:false")]
+    [InlineData("-tl:true")]
+    public void ProcessTerminalLoggerConfiguration_DoesNotThrowOnNonSwitchTokens(string tlArg)
+    {
+        // Regression coverage for https://github.com/dotnet/sdk/pull/53835:
+        // tokens that look like positional MSBuild project arguments (e.g. test run parameters
+        // forwarded after `--`) must not crash the detector. The caller is expected to filter
+        // post-`--` tokens out, but the detector itself must also be defensive in case anything
+        // slips through (e.g. malformed switches, response file references).
+        IReadOnlyList<string> unmatchedTokens =
+        [
+            tlArg,
+            "TestRunParameters.Parameter(name=\"myParam\",value=\"value\")",
+            "TestRunParameters.Parameter(name=\"myParam2\",value=\"value with space\")",
+        ];
+
+        var act = () => TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(unmatchedTokens);
+
+        act.Should().NotThrow();
+    }
 }
+
