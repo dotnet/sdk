@@ -72,7 +72,7 @@ namespace Dotnet_new3
         {
             List<string> allArgs = new()
             {
-                "sln",
+                "solution",
                 solutionFile,
                 "add"
             };
