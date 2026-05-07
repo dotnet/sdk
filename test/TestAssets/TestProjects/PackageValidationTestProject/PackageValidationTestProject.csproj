@@ -9,13 +9,4 @@
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
-  <!-- TEMP DIAGNOSTIC: dump the MSBuild properties consulted by AssemblyTaskFactory.AddNetHostParamsIfNeeded
-       so we can see why NETHostTaskLoad_Failed fires from desktop msbuild.exe on the FullFramework Helix leg. -->
-  <Target Name="_DiagnoseTaskHostProps" BeforeTargets="Build;Pack">
-    <Message Importance="High" Text="[DIAG] DOTNET_HOST_PATH='$(DOTNET_HOST_PATH)'" />
-    <Message Importance="High" Text="[DIAG] NetCoreSdkRoot='$(NetCoreSdkRoot)'" />
-    <Message Importance="High" Text="[DIAG] RuntimeIdentifierGraphPath='$(RuntimeIdentifierGraphPath)'" />
-    <Message Importance="High" Text="[DIAG] MSBuildSDKsPath='$(MSBuildSDKsPath)'" />
-  </Target>
-
 </Project>
