@@ -35,11 +35,17 @@
     <SDKCustomXUnitProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
   </ItemGroup>
 
-  <!-- Run the compatibility-tooling integration tests under desktop MSBuild on every PR
-       (in addition to the default .NETCoreApp run produced by the *IntegrationTests glob above)
-       so the Runtime="NET" taskhost path is exercised. ApiDiff has no MSBuild task, so it
-       runs only under .NETCoreApp via the default glob. -->
-  <ItemGroup>
+  <!-- Run the compatibility-tooling integration tests under desktop MSBuild whenever the
+       FullFramework leg runs (it's part of every PR build, so the Runtime="NET" taskhost path
+       is exercised on every PR). The default *IntegrationTests glob above already adds these
+       projects under .NETCoreApp on every leg; this entry only adds the additional
+       net472/desktop-MSBuild row. ApiDiff has no MSBuild task so it runs only under .NETCoreApp.
+
+       This row is conditioned on TestFullMSBuild=true because:
+       - net472 binaries can't be loaded on Linux/macOS, so scheduling a net472 work item
+         to those queues fails at chmod+x time on the missing native exe.
+       - The FullFramework leg sets TestFullMSBuild=true and uses a Windows queue. -->
+  <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
     <SDKCustomXUnitProject Include="
       Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
       Microsoft.DotNet.GenAPI.IntegrationTests\Microsoft.DotNet.GenAPI.IntegrationTests.csproj"
