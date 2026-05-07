@@ -107,6 +107,12 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("99", true)]  // Max reasonable major
         [InlineData("99.0.100", true)]
         [InlineData("10.0.100-preview.1.32640", true)]  // Full prerelease version
+        [InlineData("daily", true)]
+        [InlineData("DAILY", true)]
+        [InlineData("10-daily", true)]
+        [InlineData("10.0-daily", true)]
+        [InlineData("10.0.1xx-daily", true)]
+        [InlineData("10.0-DAILY", true)]
         public void IsValidChannelFormat_ValidInputs_ReturnsTrue(string channel, bool expected)
         {
             Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));
@@ -124,6 +130,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("9.-1.100", false)]  // Negative minor
         [InlineData("10.0.1xxx", false)]  // Invalid wildcard
         [InlineData("10.0.1xx-preview.1", false)]  // Wildcards with prerelease not supported
+        [InlineData("10.0.103-daily", false)]  // Daily applies only to scopes, not specific patches
+        [InlineData("-daily", false)]  // Empty scope before -daily
+        [InlineData("preview-daily", false)]  // Named channels can't take -daily
+        [InlineData("100-daily", false)]  // Major outside reasonable range
         public void IsValidChannelFormat_InvalidInputs_ReturnsFalse(string channel, bool expected)
         {
             Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));

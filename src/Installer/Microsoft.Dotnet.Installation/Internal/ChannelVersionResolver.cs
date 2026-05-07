@@ -24,9 +24,20 @@ internal class ChannelVersionResolver
     public const string LtsChannel = "lts";
 
     /// <summary>
+    /// Channel keyword for the latest daily build (latest major version).
+    /// </summary>
+    public const string DailyChannel = "daily";
+
+    /// <summary>
+    /// Suffix that turns any version scope channel into a daily-build channel
+    /// (e.g. <c>10.0-daily</c>, <c>10.0.1xx-daily</c>).
+    /// </summary>
+    public const string DailySuffix = "-daily";
+
+    /// <summary>
     /// Known channel keywords that are always valid.
     /// </summary>
-    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel];
+    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel, DailyChannel];
 
     /// <summary>
     /// Maximum reasonable major version number. .NET versions are currently single-digit;
@@ -35,6 +46,7 @@ internal class ChannelVersionResolver
     internal const int MaxReasonableMajorVersion = 99;
 
     private readonly ReleaseManifest _releaseManifest = new();
+    private DailyChannelResolver? _dailyChannelResolver;
 
     public ChannelVersionResolver()
     {
@@ -44,6 +56,12 @@ internal class ChannelVersionResolver
     public ChannelVersionResolver(ReleaseManifest releaseManifest)
     {
         _releaseManifest = releaseManifest;
+    }
+
+    public ChannelVersionResolver(ReleaseManifest releaseManifest, DailyChannelResolver dailyChannelResolver)
+    {
+        _releaseManifest = releaseManifest;
+        _dailyChannelResolver = dailyChannelResolver;
     }
 
     public IEnumerable<string> GetSupportedChannels(bool includeFeatureBands = true)
@@ -78,6 +96,12 @@ internal class ChannelVersionResolver
 
     public ReleaseVersion? Resolve(DotnetInstallRequest installRequest)
     {
+        if (installRequest.Channel.IsDaily)
+        {
+            _dailyChannelResolver ??= new DailyChannelResolver(_releaseManifest);
+            return _dailyChannelResolver.Resolve(installRequest.Channel, installRequest.InstallRoot.Architecture);
+        }
+
         return GetLatestVersionForChannel(installRequest.Channel, installRequest.Component);
     }
 
@@ -94,20 +118,40 @@ internal class ChannelVersionResolver
             return false;
         }
 
-        // Known keywords are always valid
+        // Known keywords are always valid (includes bare "daily").
         if (KnownChannelKeywords.Any(k => string.Equals(k, channel, StringComparison.OrdinalIgnoreCase)))
         {
             return true;
         }
 
-        // Check for prerelease suffix (e.g., "10.0.100-preview.1.32640")
-        var dashIndex = channel.IndexOf('-', StringComparison.Ordinal);
-        var hasPrerelease = dashIndex >= 0;
-        var versionPart = hasPrerelease ? channel.Substring(0, dashIndex) : channel;
+        // For "<scope>-daily" channels, validate the scope as a version-like
+        // string. Daily applies only to scopes (major / major.minor / feature
+        // band) — fully specified versions like "10.0.103-daily" are rejected
+        // because there's no such thing as "the daily 10.0.103" (a specific
+        // patch is already specific).
+        if (channel.EndsWith(DailySuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            var scope = channel.Substring(0, channel.Length - DailySuffix.Length);
+            if (string.IsNullOrEmpty(scope))
+            {
+                return false;
+            }
 
-        // Try to parse as a version-like string
-        var parts = versionPart.Split('.');
-        if (parts.Length is 0 or > 4)
+            return IsValidScopeFormat(scope);
+        }
+
+        return IsValidScopeFormat(channel) || IsValidPrereleaseVersion(channel);
+    }
+
+    /// <summary>
+    /// Validates a version-scope channel string: bare major (e.g. <c>10</c>),
+    /// major.minor (e.g. <c>10.0</c>), or feature band (e.g. <c>10.0.1xx</c>).
+    /// Rejects fully-specified versions and prerelease tags.
+    /// </summary>
+    private static bool IsValidScopeFormat(string scope)
+    {
+        var parts = scope.Split('.');
+        if (parts.Length is 0 or > 3)
         {
             return false;
         }
@@ -127,35 +171,68 @@ internal class ChannelVersionResolver
             }
         }
 
-        if (parts.Length >= 3 && !IsValidPatchPart(parts[2], hasPrerelease))
+        if (parts.Length == 3)
         {
-            return false;
-        }
-
-        return true;
-    }
-
-    private static bool IsValidPatchPart(string patch, bool hasPrerelease)
-    {
-        if (string.IsNullOrEmpty(patch))
-        {
-            return false;
-        }
-
-        // Allow feature band pattern (e.g., "1xx", "101xx"), but NOT with a prerelease suffix.
-        if (patch.EndsWith("xx", StringComparison.OrdinalIgnoreCase))
-        {
-            if (hasPrerelease)
+            // Scope only allows feature band patterns like "1xx", not numeric patches.
+            var patch = parts[2];
+            if (!patch.EndsWith("xx", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
             var prefix = patch.Substring(0, patch.Length - 2);
-            return prefix.Length > 0 && int.TryParse(prefix, out _);
+            if (prefix.Length == 0 || !int.TryParse(prefix, out _))
+            {
+                return false;
+            }
         }
 
-        // Allow fully specified numeric patch (e.g., "103"), optionally with a prerelease suffix.
-        return int.TryParse(patch, out var numericPatch) && numericPatch >= 0;
+        return true;
+    }
+
+    /// <summary>
+    /// Validates a fully-specified prerelease version like <c>10.0.100-preview.1.32640</c>.
+    /// </summary>
+    private static bool IsValidPrereleaseVersion(string channel)
+    {
+        var dashIndex = channel.IndexOf('-', StringComparison.Ordinal);
+        if (dashIndex < 0)
+        {
+            // Non-prerelease, non-scope version (e.g. "10.0.103") — historically accepted.
+            return IsValidNonScopeVersion(channel);
+        }
+
+        var versionPart = channel.Substring(0, dashIndex);
+        return IsValidNonScopeVersion(versionPart);
+    }
+
+    /// <summary>
+    /// Validates a numeric major[.minor[.patch]] version (no feature band, no prerelease).
+    /// </summary>
+    private static bool IsValidNonScopeVersion(string version)
+    {
+        var parts = version.Split('.');
+        if (parts.Length is 0 or > 4)
+        {
+            return false;
+        }
+
+        if (!int.TryParse(parts[0], out var major) || major < 0 || major > MaxReasonableMajorVersion)
+        {
+            return false;
+        }
+
+        if (parts.Length >= 2 && (!int.TryParse(parts[1], out var minor) || minor < 0))
+        {
+            return false;
+        }
+
+        if (parts.Length >= 3 && (!int.TryParse(parts[2], out var patch) || patch < 0))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
