@@ -104,7 +104,6 @@ jobs:
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run Tests in Helix
-          condition: succeededOrFailed()
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: $(_HelixApiToken)
@@ -136,7 +135,6 @@ jobs:
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run Tests in Helix
-          condition: succeededOrFailed()
           env:
               TestFullMSBuild: 'true'
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -177,7 +175,6 @@ jobs:
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run Tests in Helix
-          condition: succeededOrFailed()
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: $(_HelixApiToken)
