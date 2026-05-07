@@ -292,7 +292,7 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -331,7 +331,7 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -370,7 +370,7 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -445,7 +445,7 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -480,7 +480,7 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         // In this case, [DefaultDllImportSearchPaths] is applied to the assembly.
@@ -582,7 +582,7 @@ class TestClass
                     //},
                 },
                 LanguageVersion = LanguageVersion.CSharp9,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         // [DllImport] is set with an absolute path, which will let the [DefaultDllImportSearchPaths] be ignored.

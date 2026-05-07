@@ -4,7 +4,7 @@
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 {
@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/InvalidTemplatePackage_MissingName", tmpDir, true);
-            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
+            SetupNuGetConfigForPackagesLocation(tmpDir);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/InvalidTemplatePackage_MissingOptionalData", tmpDir, true);
-            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
+            SetupNuGetConfigForPackagesLocation(tmpDir);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()

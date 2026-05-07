@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             //    .GetInstalledWorkloadsAsync(A<CancellationToken>._))
             //    .Returns(Task.FromResult(workloads.Select(s => new WorkloadInfo(s, $"D:{s}"))));
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(allowed ? TemplateConstraintResult.Status.Allowed : TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
         }
 
@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(settings);
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, evaluateResult.EvaluationStatus);
             Assert.Equal(0, messagesCollection.Count(t => t.Item1 >= LogLevel.Warning));
             Assert.StartsWith("The constraint 'workload' failed to initialize", evaluateResult.LocalizedErrorMessage);
@@ -131,7 +131,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(settings);
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
             Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, evaluateResult.EvaluationStatus);
             Assert.Equal(0, messagesCollection.Count(t => t.Item1 >= LogLevel.Warning));
             Assert.StartsWith("The constraint 'workload' failed to initialize", evaluateResult.LocalizedErrorMessage);

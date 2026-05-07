@@ -90,15 +90,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftSourceLinkCommonPackageVersion>11.0.100-preview.4.26208.110</MicrosoftSourceLinkCommonPackageVersion>
     <MicrosoftSourceLinkGitHubPackageVersion>11.0.100-preview.4.26208.110</MicrosoftSourceLinkGitHubPackageVersion>
     <MicrosoftSourceLinkGitLabPackageVersion>11.0.100-preview.4.26208.110</MicrosoftSourceLinkGitLabPackageVersion>
-    <MicrosoftTemplateEngineAbstractionsPackageVersion>11.0.100-preview.4.26208.110</MicrosoftTemplateEngineAbstractionsPackageVersion>
-    <MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>11.0.100-preview.4.26208.110</MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion>
-    <MicrosoftTemplateEngineEdgePackageVersion>11.0.100-preview.4.26208.110</MicrosoftTemplateEngineEdgePackageVersion>
-    <MicrosoftTemplateEngineMocksXunitV3PackageVersion>11.0.100-preview.4.26208.110</MicrosoftTemplateEngineMocksXunitV3PackageVersion>
-    <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>11.0.100-preview.4.26208.110</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
-    <MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>11.0.100-preview.4.26208.110</MicrosoftTemplateEngineTestHelperXunitV3PackageVersion>
-    <MicrosoftTemplateEngineUtilsPackageVersion>11.0.100-preview.4.26208.110</MicrosoftTemplateEngineUtilsPackageVersion>
-    <MicrosoftTemplateSearchCommonPackageVersion>11.0.100-preview.4.26208.110</MicrosoftTemplateSearchCommonPackageVersion>
-    <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>11.0.100-preview.4.26208.110</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
     <MicrosoftTestPlatformBuildPackageVersion>18.7.0-preview-26208-110</MicrosoftTestPlatformBuildPackageVersion>
     <MicrosoftTestPlatformCLIPackageVersion>18.7.0-preview-26208-110</MicrosoftTestPlatformCLIPackageVersion>
     <MicrosoftWebXdtPackageVersion>3.3.0-preview.4.26208.110</MicrosoftWebXdtPackageVersion>
@@ -144,8 +135,8 @@ This file should be imported by eng/Versions.props
     <SystemTextJsonPackageVersion>11.0.0-preview.4.26208.110</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>11.0.0-preview.4.26208.110</SystemWindowsExtensionsPackageVersion>
     <!-- microsoft-testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>2.3.0-preview.26211.1</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>4.3.0-preview.26211.1</MSTestPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>2.3.0-preview.26219.1</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>4.3.0-preview.26219.1</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
@@ -234,15 +225,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftSourceLinkCommonVersion>$(MicrosoftSourceLinkCommonPackageVersion)</MicrosoftSourceLinkCommonVersion>
     <MicrosoftSourceLinkGitHubVersion>$(MicrosoftSourceLinkGitHubPackageVersion)</MicrosoftSourceLinkGitHubVersion>
     <MicrosoftSourceLinkGitLabVersion>$(MicrosoftSourceLinkGitLabPackageVersion)</MicrosoftSourceLinkGitLabVersion>
-    <MicrosoftTemplateEngineAbstractionsVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAbstractionsVersion>
-    <MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3Version>$(MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3Version>
-    <MicrosoftTemplateEngineEdgeVersion>$(MicrosoftTemplateEngineEdgePackageVersion)</MicrosoftTemplateEngineEdgeVersion>
-    <MicrosoftTemplateEngineMocksXunitV3Version>$(MicrosoftTemplateEngineMocksXunitV3PackageVersion)</MicrosoftTemplateEngineMocksXunitV3Version>
-    <MicrosoftTemplateEngineOrchestratorRunnableProjectsVersion>$(MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion)</MicrosoftTemplateEngineOrchestratorRunnableProjectsVersion>
-    <MicrosoftTemplateEngineTestHelperXunitV3Version>$(MicrosoftTemplateEngineTestHelperXunitV3PackageVersion)</MicrosoftTemplateEngineTestHelperXunitV3Version>
-    <MicrosoftTemplateEngineUtilsVersion>$(MicrosoftTemplateEngineUtilsPackageVersion)</MicrosoftTemplateEngineUtilsVersion>
-    <MicrosoftTemplateSearchCommonVersion>$(MicrosoftTemplateSearchCommonPackageVersion)</MicrosoftTemplateSearchCommonVersion>
-    <MicrosoftTemplateSearchTemplateDiscoveryVersion>$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryVersion>
     <MicrosoftTestPlatformBuildVersion>$(MicrosoftTestPlatformBuildPackageVersion)</MicrosoftTestPlatformBuildVersion>
     <MicrosoftTestPlatformCLIVersion>$(MicrosoftTestPlatformCLIPackageVersion)</MicrosoftTestPlatformCLIVersion>
     <MicrosoftWebXdtVersion>$(MicrosoftWebXdtPackageVersion)</MicrosoftWebXdtVersion>

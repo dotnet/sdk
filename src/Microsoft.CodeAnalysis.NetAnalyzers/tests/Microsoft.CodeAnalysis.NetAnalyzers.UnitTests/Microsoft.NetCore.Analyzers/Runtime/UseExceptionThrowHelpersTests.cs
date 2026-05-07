@@ -351,7 +351,7 @@ class GenericType<T>
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -380,7 +380,7 @@ class C
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -630,7 +630,7 @@ class C
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -910,7 +910,7 @@ class C
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -954,7 +954,7 @@ class C
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1145,7 +1145,7 @@ struct S
 "
             };
             test.FixedState.MarkupHandling = CodeAnalysis.Testing.MarkupMode.Allow;
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

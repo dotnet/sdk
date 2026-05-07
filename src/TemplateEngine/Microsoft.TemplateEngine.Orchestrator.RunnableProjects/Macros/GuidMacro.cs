@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 value = isUpperCase ? value.ToUpperInvariant() : value.ToLowerInvariant();
 
                 // Not breaking any dependencies on exact param names and on the
-                //  case insensitive matching of parameters (https://github.com/dotnet/templating/blob/7e14ef44/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/RunnableProjectGenerator.cs#L726)
+                //  case insensitive matching of parameters
                 //  we need to introduce new parameters - with distinct naming for upper- and lower- casing replacements
                 string legacyName = config.VariableName + "-" + config.Format[i];
                 string newName = config.VariableName +

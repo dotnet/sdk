@@ -17,6 +17,7 @@ pr:
     - eng
     - build
     - src
+    - template_feed
     - test
     - '*.yml'
     - '*.props'

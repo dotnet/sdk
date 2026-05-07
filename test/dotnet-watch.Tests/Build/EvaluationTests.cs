@@ -442,7 +442,7 @@ public class EvaluationTests(ITestOutputHelper output)
         var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory);
         var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
 
-        var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, _logger, options);
+        var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, _logger, TestOptions.GlobalOptions, options);
 
         var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
         Assert.NotNull(result);
@@ -506,7 +506,7 @@ public class EvaluationTests(ITestOutputHelper output)
         var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!);
         var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
 
-        var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildArguments: [], processRunner, _logger, options);
+        var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildArguments: [], processRunner, _logger, TestOptions.GlobalOptions, options);
         var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
         Assert.Null(result);
 
@@ -543,7 +543,7 @@ public class EvaluationTests(ITestOutputHelper output)
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir) with { TestOutput = testDir };
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
             var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-            var factory = new MSBuildFileSetFactory(rootProjectPath, targetFramework: null, buildArguments, processRunner, _logger, options);
+            var factory = new MSBuildFileSetFactory(rootProjectPath, targetFramework: null, buildArguments, processRunner, _logger, TestOptions.GlobalOptions, options);
             var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(targetsResult);
 

@@ -149,7 +149,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             RunnableProjectGenerator rpg = new();
 
             using RunnableProjectConfig templateConfig = new RunnableProjectConfig(environmentSettings, rpg, config, sourceMountPoint.Root);
-            await templateConfig.ValidateAsync(ValidationScope.Instantiation, default);
+            await templateConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
 
             if (expectedToBeValid)
             {
