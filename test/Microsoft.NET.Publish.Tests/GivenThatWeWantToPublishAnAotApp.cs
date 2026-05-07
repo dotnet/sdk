@@ -1118,14 +1118,13 @@ class Test
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
 
-            // App-defined satellite for French should be present
-            File.Exists(Path.Combine(publishDirectory, "fr", $"{projectName}.resources.dll")).Should().BeTrue("fr app satellite should be published");
+            // NativeAOT embeds satellite assemblies into the native binary, so they should NOT
+            // appear as separate files in the publish directory (dotnet/runtime#124191).
+            File.Exists(Path.Combine(publishDirectory, "fr", $"{projectName}.resources.dll")).Should().BeFalse("fr app satellite should be embedded, not published separately");
+            File.Exists(Path.Combine(publishDirectory, "fr", "System.Spatial.resources.dll")).Should().BeFalse("fr System.Spatial satellite should be embedded, not published separately");
+            File.Exists(Path.Combine(publishDirectory, "de", "System.Spatial.resources.dll")).Should().BeFalse("de System.Spatial satellite should be embedded, not published separately");
 
-            // Package-reference satellites for filtered cultures (fr, de) should be present
-            File.Exists(Path.Combine(publishDirectory, "fr", "System.Spatial.resources.dll")).Should().BeTrue("fr System.Spatial satellite should be published");
-            File.Exists(Path.Combine(publishDirectory, "de", "System.Spatial.resources.dll")).Should().BeTrue("de System.Spatial satellite should be published");
-
-            // Satellite for a non-selected culture (ja) should be absent
+            // Satellite for a non-selected culture (ja) should also be absent
             File.Exists(Path.Combine(publishDirectory, "ja", "System.Spatial.resources.dll")).Should().BeFalse("ja System.Spatial satellite should be filtered out");
 
             // Published output should be a native image
