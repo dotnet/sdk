@@ -62,7 +62,7 @@ public class InstallEndToEndTests
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
         var updateChannel = new UpdateChannel(channel);
-        var expectedVersion = new ChannelVersionResolver().Resolve(
+        var expectedVersion = new ChannelVersionResolver().GetLatestVersionForChannel(
             updateChannel,
             InstallComponent.SDK,
             InstallerUtilities.GetDefaultInstallArchitecture());

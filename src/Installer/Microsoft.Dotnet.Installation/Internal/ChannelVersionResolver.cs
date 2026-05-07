@@ -94,17 +94,6 @@ internal class ChannelVersionResolver
 
     }
 
-    public ReleaseVersion? Resolve(UpdateChannel channel, InstallComponent component, InstallArchitecture architecture)
-    {
-        if (channel.IsDaily)
-        {
-            _dailyChannelResolver ??= new DailyChannelResolver(_releaseManifest);
-            return _dailyChannelResolver.Resolve(channel, architecture);
-        }
-
-        return GetLatestVersionForChannel(channel, component);
-    }
-
     /// <summary>
     /// Checks if a channel string looks like a valid .NET version/channel format.
     /// This is a preliminary validation before attempting resolution.
@@ -270,17 +259,22 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
-    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "preview")</param>
+    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "preview", "10.0.1xx-daily")</param>
     /// <param name="component">The component to check (ie SDK or runtime)</param>
+    /// <param name="architecture">
+    /// Architecture to use when resolving daily channels (selects the correct aka.ms RID-suffixed
+    /// link). Optional; defaults to the current process architecture. Ignored for non-daily channels.
+    /// </param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
-    public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
+    public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component, InstallArchitecture? architecture = null)
     {
-        // Daily channels must be resolved via DailyChannelResolver. Reaching this method with a
-        // daily channel means a caller bypassed Resolve(); refuse rather than silently parsing
-        // "10.0.1xx-daily" as 10.0.x and returning the latest released version.
+        // Daily channels are resolved via aka.ms redirect rather than the release manifest.
         if (channel.IsDaily)
         {
-            return null;
+            _dailyChannelResolver ??= new DailyChannelResolver(_releaseManifest);
+            return _dailyChannelResolver.Resolve(
+                channel,
+                architecture ?? InstallerUtilities.GetDefaultInstallArchitecture());
         }
 
         if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))

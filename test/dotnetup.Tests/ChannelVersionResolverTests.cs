@@ -197,26 +197,12 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         }
 
         [Fact]
-        public void GetLatestVersionForChannel_DailyChannel_ReturnsNull()
+        public void GetLatestVersionForChannel_DailyChannel_RoutesThroughDailyChannelResolver()
         {
-            // Daily channels must go through DailyChannelResolver via Resolve(); reaching
-            // GetLatestVersionForChannel with a daily channel means a caller bypassed routing.
-            // We refuse rather than silently returning the latest released version (which is
-            // what the manifest path would do for "10.0.1xx-daily" parsing).
-            var resolver = new ChannelVersionResolver();
-
-            Assert.Null(resolver.GetLatestVersionForChannel(new UpdateChannel("10.0.1xx-daily"), InstallComponent.SDK));
-            Assert.Null(resolver.GetLatestVersionForChannel(new UpdateChannel("10.0-daily"), InstallComponent.SDK));
-            Assert.Null(resolver.GetLatestVersionForChannel(new UpdateChannel("daily"), InstallComponent.SDK));
-        }
-
-        [Fact]
-        public void Resolve_DailyChannel_RoutesThroughDailyChannelResolver()
-        {
-            // Wiring test: Resolve() for a daily channel must invoke DailyChannelResolver,
-            // not the release-manifest path. We prove this by stubbing the aka.ms redirect
-            // target — if the daily resolver isn't called, the returned version won't match
-            // the redirect URL we set up.
+            // Wiring test: GetLatestVersionForChannel for a daily channel must invoke
+            // DailyChannelResolver, not the release-manifest path. We prove this by stubbing
+            // the aka.ms redirect target — if the daily resolver isn't called, the returned
+            // version won't match the redirect URL we set up.
             const string redirectTarget =
                 "https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip";
 
@@ -229,7 +215,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             var resolver = new ChannelVersionResolver(new ReleaseManifest(), dailyResolver);
 
-            var version = resolver.Resolve(new UpdateChannel("10.0.1xx-daily"), InstallComponent.SDK, InstallArchitecture.x64);
+            var version = resolver.GetLatestVersionForChannel(new UpdateChannel("10.0.1xx-daily"), InstallComponent.SDK, InstallArchitecture.x64);
 
             Assert.NotNull(version);
             Assert.Equal("10.0.100-preview.4.25216.37", version!.ToString());

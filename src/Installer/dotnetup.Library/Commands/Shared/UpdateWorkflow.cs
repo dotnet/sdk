@@ -162,10 +162,8 @@ internal class UpdateWorkflow
             return false;
         }
 
-        // Route through Resolve() so daily channels reach DailyChannelResolver instead
-        // of falling through to the release-manifest path (which would parse "10.0.1xx-daily"
-        // as 10.0.x and silently install the latest released version).
-        var latestVersion = _channelVersionResolver.Resolve(channel, spec.Component, installRoot.Architecture);
+        // Pass architecture so daily channels can be resolved via DailyChannelResolver.
+        var latestVersion = _channelVersionResolver.GetLatestVersionForChannel(channel, spec.Component, installRoot.Architecture);
         string displayName = spec.Component.GetDisplayName();
         if (latestVersion is null)
         {
