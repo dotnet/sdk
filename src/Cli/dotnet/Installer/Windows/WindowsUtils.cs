@@ -11,7 +11,6 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Utilities;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
@@ -125,7 +124,7 @@ public static class WindowsUtils
         pipeSecurity.SetOwner(ownerSid);
         pipeSecurity.AddAccessRule(new PipeAccessRule(ownerSid, PipeAccessRights.FullControl, AccessControlType.Allow));
 
-        // Restrict read/write access to authenticated users
+        // Restrict read/write access to the allowed client (typically in workloads the unelevated process parent talking to the elevated 'server')
         pipeSecurity.AddAccessRule(new PipeAccessRule(clientSid,
             PipeAccessRights.Read | PipeAccessRights.Write | PipeAccessRights.Synchronize, AccessControlType.Allow));
 
@@ -134,7 +133,8 @@ public static class WindowsUtils
 
     /// <summary>
     /// Validates and returns the log file path to use for MSI operations.
-    /// Ensures the path is under the server's temp directory or the parent user's profile temp directory.
+    /// Ensures the path is under the server's temp directory, the trusted client temp directory
+    /// (if supplied at server launch), or the parent user's profile temp directory.
     /// If the path is not in an allowed location, it is redirected to the server's temp directory.
     /// </summary>
     /// <param name="logFile">The requested log file path.</param>
@@ -148,7 +148,16 @@ public static class WindowsUtils
         string serverTemp = Path.GetFullPath(serverTempPath ?? Path.GetTempPath());
 
         // Fast path: log file is under the server's own temp directory.
-        if (fullLogPath.StartsWith(serverTemp, StringComparison.OrdinalIgnoreCase))
+        if (IsPathUnder(fullLogPath, serverTemp))
+        {
+            return fullLogPath;
+        }
+
+        // Trusted client-supplied temp: the unelevated client tells the server its Path.GetTempPath()
+        // value at launch via the --client-temp argument. Honors custom TEMP env vars and over-the-shoulder
+        // UAC scenarios where the elevated server resolves a different temp directory than the client.
+        string clientTemp = InstallerBase.TrustedClientTempDirectory;
+        if (!string.IsNullOrEmpty(clientTemp) && IsPathUnder(fullLogPath, clientTemp))
         {
             return fullLogPath;
         }
@@ -166,8 +175,7 @@ public static class WindowsUtils
                 if (profilePath != null)
                 {
                     string profileTemp = Path.GetFullPath(Path.Combine(profilePath, "AppData", "Local", "Temp"));
-                    if (fullLogPath.StartsWith(profileTemp + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                        || fullLogPath.Equals(profileTemp, StringComparison.OrdinalIgnoreCase))
+                    if (IsPathUnder(fullLogPath, profileTemp))
                     {
                         return fullLogPath;
                     }
@@ -184,6 +192,63 @@ public static class WindowsUtils
     }
 
     /// <summary>
+    /// Validates that an IPC-supplied workload manifest path lives under an allowed root, to prevent
+    /// a same-user attacker on the install pipe from coercing the elevated server into reading or moving
+    /// arbitrary files. Allowed roots are the server's own temp directory and the trusted client temp
+    /// directory (if supplied at server launch via <c>--client-temp</c>).
+    /// </summary>
+    /// <param name="manifestPath">The manifest path supplied by the client.</param>
+    /// <param name="serverTempPath">The server's temp directory. If null, defaults to <see cref="Path.GetTempPath"/>.</param>
+    /// <returns><see langword="true"/> if the canonicalized path is under an allowed root; otherwise <see langword="false"/>.</returns>
+    public static bool ValidateManifestPath(string manifestPath, string serverTempPath = null)
+    {
+        if (string.IsNullOrWhiteSpace(manifestPath))
+        {
+            return false;
+        }
+
+        string fullManifestPath;
+        try
+        {
+            fullManifestPath = Path.GetFullPath(manifestPath);
+        }
+        catch
+        {
+            return false;
+        }
+
+        string serverTemp = Path.GetFullPath(serverTempPath ?? Path.GetTempPath());
+        if (IsPathUnder(fullManifestPath, serverTemp))
+        {
+            return true;
+        }
+
+        string clientTemp = InstallerBase.TrustedClientTempDirectory;
+        if (!string.IsNullOrEmpty(clientTemp) && IsPathUnder(fullManifestPath, clientTemp))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Returns true if <paramref name="fullPath"/> equals or is contained beneath <paramref name="root"/>.
+    /// Both inputs must already be canonicalized via <see cref="Path.GetFullPath(string)"/>.
+    /// </summary>
+    private static bool IsPathUnder(string fullPath, string root)
+    {
+        // Normalize both paths by trimming trailing separators so that
+        // "C:\Temp\" and "C:\Temp" compare identically.
+        string normalizedPath = fullPath.TrimEnd(Path.DirectorySeparatorChar);
+        string normalizedRoot = root.TrimEnd(Path.DirectorySeparatorChar);
+        string rootWithSep = normalizedRoot + Path.DirectorySeparatorChar;
+
+        return normalizedPath.Equals(normalizedRoot, StringComparison.OrdinalIgnoreCase)
+            || normalizedPath.StartsWith(rootWithSep, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// Returns the profile path for the user identified by the specified <see cref="SecurityIdentifier"/>.
     /// Reads the ProfileImagePath value from the registry ProfileList key.
     /// </summary>
@@ -193,10 +258,13 @@ public static class WindowsUtils
     {
         // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{SID}\ProfileImagePath
         // contains the full path to the user's profile directory (e.g., C:\Users\username).
+        // RegistryKey.GetValue expands REG_EXPAND_SZ values by default, but call ExpandEnvironmentVariables
+        // explicitly to also handle the rare case where the value was stored as REG_SZ with literal %vars%.
         using RegistryKey profileListKey = Registry.LocalMachine.OpenSubKey(
             $@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{sid.Value}");
 
-        return profileListKey?.GetValue("ProfileImagePath") as string;
+        string profileImagePath = profileListKey?.GetValue("ProfileImagePath") as string;
+        return profileImagePath != null ? Environment.ExpandEnvironmentVariables(profileImagePath) : null;
     }
 
     /// <summary>
@@ -230,21 +298,18 @@ public static class WindowsUtils
     }
 
     /// <summary>
-    /// Validates that the specified path, after canonicalization, is under the expected root directory.
-    /// Prevents directory traversal and sibling-prefix attacks.
+    /// Validates that the specified path, after canonicalization, is the expected root directory itself
+    /// or is contained beneath it. Prevents directory traversal and sibling-prefix attacks
+    /// (e.g., <c>C:\Temp2\evil</c> against root <c>C:\Temp</c>).
     /// </summary>
     /// <param name="path">The path to validate.</param>
     /// <param name="expectedRoot">The expected root directory.</param>
-    /// <returns><see langword="true"/> if the canonicalized path is under the root; otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the canonicalized path equals or is under the root; otherwise <see langword="false"/>.</returns>
     public static bool ValidatePathUnderRoot(string path, string expectedRoot)
     {
         string fullPath = Path.GetFullPath(path);
         string fullRoot = Path.GetFullPath(expectedRoot);
-        if (!fullRoot.EndsWith(Path.DirectorySeparatorChar))
-        {
-            fullRoot += Path.DirectorySeparatorChar;
-        }
 
-        return fullPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase);
+        return IsPathUnder(fullPath, fullRoot);
     }
 }
