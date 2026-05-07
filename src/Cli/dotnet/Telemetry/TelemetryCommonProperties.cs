@@ -18,11 +18,13 @@ internal class TelemetryCommonProperties(
     IDockerContainerDetector? dockerContainerDetector = null,
     IUserLevelCacheWriter? userLevelCacheWriter = null,
     ICIEnvironmentDetector? ciEnvironmentDetector = null,
-    ILLMEnvironmentDetector? llmEnvironmentDetector = null)
+    ILLMEnvironmentDetector? llmEnvironmentDetector = null,
+    ILLMProcessTreeDetector? llmProcessTreeDetector = null)
 {
     private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
     private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
     private readonly ILLMEnvironmentDetector _llmEnvironmentDetector = llmEnvironmentDetector ?? new LLMEnvironmentDetectorForTelemetry();
+    private readonly ILLMProcessTreeDetector _llmProcessTreeDetector = llmProcessTreeDetector ?? new LLMProcessTreeDetector();
     private readonly Func<string> _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
     private readonly Func<string, string> _hasher = hasher ?? Sha256Hasher.Hash;
     private readonly Func<string?> _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
@@ -49,6 +51,7 @@ internal class TelemetryCommonProperties(
     private const string SessionId = "SessionId";
     private const string CI = "Continuous Integration";
     private const string LLM = "llm";
+    private const string LLMProcess = "llm_process";
     private const string TelemetryProfileEnvironmentVariable = "DOTNET_CLI_TELEMETRY_PROFILE";
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
@@ -65,6 +68,7 @@ internal class TelemetryCommonProperties(
         { DockerContainer,  _userLevelCacheWriter.RunWithCache(IsDockerContainerCacheKey, () => _dockerContainerDetector.IsDockerContainer().ToString("G") ) },
         { CI,               _ciEnvironmentDetector.IsCIEnvironment().ToString() },
         { LLM,              _llmEnvironmentDetector.GetLLMEnvironment() },
+        { LLMProcess,       _llmProcessTreeDetector.GetLLMFromProcessTree() },
         { CurrentPathHash,  _hasher(_getCurrentDirectory()) },
         { MachineIdOld,     _userLevelCacheWriter.RunWithCache(MachineIdCacheKey, GetMachineId) },
         // We don't want to recalcuate a new id for every new SDK version. Reuse the same path across versions.

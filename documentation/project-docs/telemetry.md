@@ -62,6 +62,7 @@ Every telemetry event automatically includes these common properties:
 | **Docker Container** | Whether running in Docker container | `True` or `False` |
 | **CI** | Whether running in CI environment | `True` or `False` |
 | **LLM** | Detected LLM/assistant environment identifiers (comma-separated) | `claude`, `cursor`, `gemini`, `copilot`, `codex`, `aider`, `plandex`, `amp`, `qwen`, `droid`, `opencode`, `zed`, `kimi`, `openhands`, `goose`, `cline`, `roo`, `windsurf`, `generic_agent` |
+| **LLM Process** | Detected LLM process names found in the process ancestor tree (comma-separated). Complements the env-var-based LLM property by walking the process tree to find known LLM processes. Known limitations: may produce false positives from shell-escape commands (`!dotnet build`) and false negatives when LLMs launch via intermediate terminal windows. | `claude`, `copilot`, `cursor`, `vscode`, `windsurf`, `zed`, `gemini`, `codex`, `aider`, `goose`, `amp` |
 | **Current Path Hash** | SHA256 hash of current directory path | Hashed value |
 | **Machine ID** | SHA256 hash of machine MAC address (or GUID if unavailable) | Hashed value |
 | **Machine ID Old** | Legacy machine ID for compatibility | Hashed value |

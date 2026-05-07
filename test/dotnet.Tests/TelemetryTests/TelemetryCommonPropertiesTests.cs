@@ -168,6 +168,37 @@ public class TelemetryCommonPropertiesTests : SdkTest
         unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"].Should().BeOneOf("claude", null);
     }
 
+    [Fact]
+    public void TelemetryCommonPropertiesShouldContainLLMProcessKey()
+    {
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId").Should().ContainKey("llm_process");
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnNullLLMProcessWhenDetectorReturnsNull()
+    {
+        var mockDetector = new MockLLMProcessTreeDetector(null);
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache(), llmProcessTreeDetector: mockDetector);
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm_process"].Should().BeNull();
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnLLMProcessWhenDetected()
+    {
+        var mockDetector = new MockLLMProcessTreeDetector("cursor");
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache(), llmProcessTreeDetector: mockDetector);
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm_process"].Should().Be("cursor");
+    }
+
+    [Fact]
+    public void TelemetryCommonPropertiesShouldReturnMultipleLLMProcessesWhenDetected()
+    {
+        var mockDetector = new MockLLMProcessTreeDetector("claude, vscode");
+        var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache(), llmProcessTreeDetector: mockDetector);
+        unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm_process"].Should().Be("claude, vscode");
+    }
+
     [Theory]
     [MemberData(nameof(CITelemetryTestCases))]
     public void CanDetectCIStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
@@ -308,5 +339,10 @@ public class TelemetryCommonPropertiesTests : SdkTest
         {
             return getValueToCache();
         }
+    }
+
+    private class MockLLMProcessTreeDetector(string? result) : ILLMProcessTreeDetector
+    {
+        public string? GetLLMFromProcessTree() => result;
     }
 }
