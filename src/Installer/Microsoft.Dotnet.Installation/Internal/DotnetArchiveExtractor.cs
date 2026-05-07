@@ -15,6 +15,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _shouldDisposeDownloader;
     private readonly bool _ownsProgressReporter = true;
+    private readonly int _versionDisplayWidth;
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -31,8 +32,9 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseManifest releaseManifest,
         IProgressTarget progressTarget,
         IArchiveDownloader? archiveDownloader = null,
-        string? cacheDirectory = null)
-        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
+        string? cacheDirectory = null,
+        int versionDisplayWidth = 0)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory, versionDisplayWidth)
     {
         _progressTarget = progressTarget;
     }
@@ -47,8 +49,9 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseManifest releaseManifest,
         IProgressReporter sharedReporter,
         IArchiveDownloader? archiveDownloader = null,
-        string? cacheDirectory = null)
-        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
+        string? cacheDirectory = null,
+        int versionDisplayWidth = 0)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory, versionDisplayWidth)
     {
         _progressReporter = sharedReporter;
         _ownsProgressReporter = false;
@@ -59,10 +62,12 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
         IArchiveDownloader? archiveDownloader,
-        string? cacheDirectory = null)
+        string? cacheDirectory = null,
+        int versionDisplayWidth = 0)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
+        _versionDisplayWidth = versionDisplayWidth;
         ScratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
 
         if (archiveDownloader != null)
@@ -89,7 +94,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget!.CreateProgressReporter();
 
-    private ExtractorProgressTracker ProgressTracker { get => field ??= new ExtractorProgressTracker(ProgressReporter, _request.Component, _resolvedVersion.ToString()); }
+    private ExtractorProgressTracker ProgressTracker { get => field ??= new ExtractorProgressTracker(ProgressReporter, _request.Component, _resolvedVersion.ToString(), _versionDisplayWidth); }
 
     public void Prepare()
     {

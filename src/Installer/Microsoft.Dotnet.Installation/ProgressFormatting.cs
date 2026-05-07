@@ -47,9 +47,11 @@ public static class ProgressFormatting
     /// <summary>
     /// Builds a progress-bar description such as "Downloading aspnet (runtime)         9.0.312".
     /// Component names and versions are padded so all rows align vertically.
+    /// Pass <paramref name="versionMinWidth"/> (typically the longest version length in
+    /// the current install batch) to keep mixed short/long versions aligned.
     /// </summary>
-    public static string FormatProgressDescription(string action, InstallComponent component, string version) =>
-        $"{action.PadRight(s_actionWidth)} {component.GetPaddedDisplayName()} {InstallComponentExtensions.FormatVersionForDisplay(version)}";
+    public static string FormatProgressDescription(string action, InstallComponent component, string version, int versionMinWidth = 8) =>
+        $"{action.PadRight(s_actionWidth)} {component.GetPaddedDisplayName()} {InstallComponentExtensions.FormatVersionForDisplay(version, versionMinWidth)}";
 
     /// <summary>
     /// Formats bytes as MB, right-aligned to 8 characters (e.g. "  0.7 MB", "290.4 MB").

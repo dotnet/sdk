@@ -74,6 +74,11 @@ internal class InstallerOrchestratorSingleton
     /// <returns>A batch result containing both successes and per-request failures.</returns>
     public InstallBatchResult InstallMany(IReadOnlyList<ResolvedInstallRequest> requests, IProgressReporter sharedReporter)
     {
+        // Compute a shared version-display width so all rows in this batch align even
+        // when versions differ in length (e.g. stable "10.0.201" + daily "11.0.100-preview.3.26207.106").
+        int versionDisplayWidth = requests.Count == 0
+            ? 0
+            : requests.Max(r => r.ResolvedVersion.ToString().Length);
 
         var results = new List<InstallResult>();
         var failures = new List<InstallFailure>();
@@ -84,7 +89,7 @@ internal class InstallerOrchestratorSingleton
         // overlapping extraction/commit with still-running downloads.
         using var readyQueue = new System.Collections.Concurrent.BlockingCollection<PreparedInstall>();
 
-        var downloadTask = Task.Run(() => PrepareConcurrent(requests, sharedReporter, readyQueue, results, failures, fatalExceptions, installResultCollectionLock));
+        var downloadTask = Task.Run(() => PrepareConcurrent(requests, sharedReporter, readyQueue, results, failures, fatalExceptions, installResultCollectionLock, versionDisplayWidth));
         ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, results, failures, fatalExceptions, installResultCollectionLock);
         downloadTask.Wait();
 
@@ -108,7 +113,8 @@ internal class InstallerOrchestratorSingleton
         List<InstallResult> results,
         List<InstallFailure> failures,
         List<Exception> fatalExceptions,
-        object installResultCollectionLock)
+        object installResultCollectionLock,
+        int versionDisplayWidth)
     {
         const int maxConcurrentDownloads = 3;
 
@@ -118,7 +124,7 @@ internal class InstallerOrchestratorSingleton
             {
                 try
                 {
-                    var prepared = PrepareInstall(request, sharedReporter, out var existingResult);
+                    var prepared = PrepareInstall(request, sharedReporter, out var existingResult, versionDisplayWidth);
                     lock (installResultCollectionLock)
                     {
                         if (prepared is not null)
@@ -226,12 +232,14 @@ internal class InstallerOrchestratorSingleton
     /// <param name="resolvedRequest">The resolved installation request with a concrete version.</param>
     /// <param name="sharedReporter">A shared progress reporter for displaying download progress.</param>
     /// <param name="alreadyInstalledResult">Set when the install is already present; null otherwise.</param>
+    /// <param name="versionDisplayWidth">Optional minimum width for the version column in progress rows. Pass the longest version length in the current batch to keep mixed-version rows aligned. Zero (default) uses the version's own length.</param>
     /// <returns>A PreparedInstall that can be committed later, or null if already installed.</returns>
 #pragma warning disable CA1822
     public PreparedInstall? PrepareInstall(
         ResolvedInstallRequest resolvedRequest,
         IProgressReporter sharedReporter,
-        out InstallResult? alreadyInstalledResult)
+        out InstallResult? alreadyInstalledResult,
+        int versionDisplayWidth = 0)
     {
         alreadyInstalledResult = null;
         var installRequest = resolvedRequest.Request;
@@ -267,7 +275,7 @@ internal class InstallerOrchestratorSingleton
             }
         }
 
-        DotnetArchiveExtractor extractor = new(installRequest, versionToInstall, releaseManifest, sharedReporter, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
+        DotnetArchiveExtractor extractor = new(installRequest, versionToInstall, releaseManifest, sharedReporter, cacheDirectory: DotnetupPaths.DownloadCacheDirectory, versionDisplayWidth: versionDisplayWidth);
         extractor.Prepare();
 
         return new PreparedInstall(resolvedRequest, install, extractor);
