@@ -2,6 +2,7 @@ name: 'Stale: Label and Close Issues'
 on:
   schedule:
     - cron: '19 4,16 * * *' # Twice daily at 19 minutes after the hour (random/uncommon time)
+  workflow_dispatch: # Allow manual trigger for testing
 
 env:
   KBE_LABEL: 'Known Build Error'
@@ -47,6 +48,8 @@ jobs:
               { owner: context.repo.owner, repo: context.repo.repo,
                 labels: process.env.KBE_LABEL, state: 'open', per_page: 100 });
 
+            console.log(`Found ${issues.length} open issues with '${process.env.KBE_LABEL}' label`);
+
             for (const issue of issues) {
               if (issue.pull_request) continue;
               if (issue.labels.some(l => l.name === process.env.KEEP_OPEN_LABEL)) continue;
@@ -56,14 +59,19 @@ jobs:
               //         |---|---|---|
               //         |N|N|N|
               const match = issue.body?.match(
-                /\|24-Hour Hit Count\|.*\n\|[-| ]+\n\|(\d+)\|(\d+)\|(\d+)\|/);
-              if (!match) continue;
+                /\|24-Hour Hit Count\|.*\r?\n\|[-| ]+\r?\n\|(\d+)\|(\d+)\|(\d+)\|/);
+              if (!match) {
+                console.log(`  #${issue.number}: no hit count table found`);
+                continue;
+              }
               const monthCount = parseInt(match[3], 10);
+              console.log(`  #${issue.number}: 1-month count = ${monthCount}`);
 
               const hasStale = issue.labels.some(l => l.name === process.env.STALE_LABEL);
 
               if (monthCount === 0 && !hasStale) {
                 // Zero hits for a month: mark as stale
+                console.log(`  #${issue.number}: marking as stale`);
                 await github.rest.issues.addLabels({
                   ...context.repo, issue_number: issue.number,
                   labels: [process.env.STALE_LABEL] });
@@ -74,6 +82,7 @@ jobs:
                     'Add the `' + process.env.KEEP_OPEN_LABEL + '` label to prevent auto-closure.' });
               } else if (monthCount > 0 && hasStale) {
                 // Hits resumed: remove the stale label
+                console.log(`  #${issue.number}: removing stale (hits resumed)`);
                 await github.rest.issues.removeLabel({
                   ...context.repo, issue_number: issue.number,
                   name: process.env.STALE_LABEL }).catch(() => {});

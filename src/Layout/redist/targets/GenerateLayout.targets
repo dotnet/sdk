@@ -523,9 +523,8 @@
     Only runs for native builds (TargetRid == HostRid) on supported platforms.
     Cross-compilation is not supported as NativeAOT requires native toolchain for target platform.
   -->
-  <!-- <Target Name="PublishDotnetAot"
-          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))"> -->
-  <Target Name="PublishDotnetAot" Condition="false">
+  <Target Name="PublishDotnetAot"
+          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))">
     <PropertyGroup>
       <!-- Define platform-specific native library naming -->
       <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
@@ -535,15 +534,23 @@
       <_DotnetAotNativeLibName>$(_DotnetAotNativeLibPrefix)dotnet-aot$(_DotnetAotNativeLibExtension)</_DotnetAotNativeLibName>
 
       <_DotnetAotPublishDir>$(ArtifactsBinDir)dotnet-aot-redist\$(Configuration)\$(SdkTargetFramework)\$(TargetRid)\publish\</_DotnetAotPublishDir>
-      <!-- Use separate intermediate directory to avoid restore conflicts with main build -->
-      <_DotnetAotIntermediateDir>$(ArtifactsObjDir)dotnet-aot-redist\$(Configuration)\$(TargetRid)\</_DotnetAotIntermediateDir>
     </PropertyGroup>
 
-    <!-- Restore and publish the dotnet-aot project as a NativeAOT shared library -->
+    <!--
+      In CI, Arcade's centralized NuGet restore runs via NuGet.targets and does not include
+      RuntimeIdentifier, so the assets file lacks the RID-specific target (NETSDK1047).
+      Restore here with RuntimeIdentifiers (plural) to add the RID target to the assets file.
+    -->
     <MSBuild
-      Targets="Restore;Publish"
+      Targets="Restore"
       Projects="$(RepoRoot)/src/Cli/dotnet-aot/dotnet-aot.csproj"
-      Properties="Configuration=$(Configuration);RuntimeIdentifier=$(TargetRid);PublishDir=$(_DotnetAotPublishDir);IntermediateOutputPath=$(_DotnetAotIntermediateDir)" />
+      Properties="Configuration=$(Configuration);RuntimeIdentifiers=$(TargetRid)" />
+
+    <!-- Publish the dotnet-aot project as a NativeAOT shared library -->
+    <MSBuild
+      Targets="Publish"
+      Projects="$(RepoRoot)/src/Cli/dotnet-aot/dotnet-aot.csproj"
+      Properties="Configuration=$(Configuration);RuntimeIdentifier=$(TargetRid);PublishDir=$(_DotnetAotPublishDir)" />
 
     <!-- Verify the native library was produced -->
     <Error Condition="!Exists('$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)')"

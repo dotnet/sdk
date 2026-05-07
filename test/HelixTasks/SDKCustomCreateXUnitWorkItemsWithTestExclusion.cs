@@ -19,6 +19,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// - [Required] TargetPath: the output dll path
         /// - [Required] RuntimeTargetFramework: the target framework to run tests on
         /// - [Optional] Arguments: a string of arguments to be passed to the XUnit console runner
+        /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to the base method limit
+        ///   used for partitioning tests into Helix shards (base is 16, or 32 for FullFramework)
         /// The two required parameters will be automatically created if XUnitProject.Identity is set to the path of the XUnit csproj file
         /// </summary>
         [Required]
@@ -153,7 +155,19 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
 
             var isFullMSBuild = string.Equals(Environment.GetEnvironmentVariable("TestFullMSBuild"), "true", StringComparison.OrdinalIgnoreCase);
-            var scheduler = new AssemblyScheduler(methodLimit: isFullMSBuild ? 32 : 16);
+            var baseMethodLimit = isFullMSBuild ? 32 : 16;
+            if (xunitProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
+            {
+                if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
+                {
+                    baseMethodLimit *= multiplier;
+                }
+                else
+                {
+                    Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
+                }
+            }
+            var scheduler = new AssemblyScheduler(methodLimit: baseMethodLimit);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
