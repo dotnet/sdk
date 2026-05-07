@@ -333,7 +333,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
     /// <summary>
     /// Downloads and parses a .sha512 hash file. Returns null if the URL 404s
-    /// (try the next feed). Throws for any other error.
+    /// (the version is not published to the blob feed). Throws for any other error.
     /// </summary>
     private string? TryGetHashFromUrl(string checksumUrl, ReleaseVersion resolvedVersion, InstallComponent component)
     {
