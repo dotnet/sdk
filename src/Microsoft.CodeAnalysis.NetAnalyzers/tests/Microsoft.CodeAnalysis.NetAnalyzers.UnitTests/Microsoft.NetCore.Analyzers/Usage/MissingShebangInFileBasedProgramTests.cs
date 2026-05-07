@@ -246,7 +246,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     {
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
                         // Preprocessor directives must appear as the first non-whitespace character on a line
-                        DiagnosticResult.CompilerError("CS1040").WithSpan("Test0.cs", 2, 1, 2, 2),
+                        DiagnosticResult.CompilerError("CS9378").WithSpan("Test0.cs", 2, 1, 2, 2),
                     },
                 },
                 SolutionTransforms =
