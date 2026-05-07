@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Installer.Windows;
@@ -31,7 +32,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Elevate
                     {
                         try
                         {
-                            InstallerBase.TrustedClientTempDirectory = System.IO.Path.GetFullPath(clientTemp);
+                            InstallerBase.TrustedClientTempDirectory = Path.GetFullPath(clientTemp);
                         }
                         catch
                         {

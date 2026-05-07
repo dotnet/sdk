@@ -278,73 +278,35 @@ namespace Microsoft.DotNet.Tests
             Assert.True(WindowsUtils.ValidatePackagePath(validPath, cacheRoot));
         }
 
-        [WindowsOnlyFact]
-        public void ValidatePathComponent_ShouldRejectTraversalSequence()
+        [WindowsOnlyTheory]
+        [InlineData(@"..\..\evil")]
+        [InlineData(@"good\evil")]
+        [InlineData("good/evil")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void ValidatePathComponent_ShouldRejectInvalidInput(string input)
         {
-            Assert.False(WindowsUtils.ValidatePathComponent(@"..\..\evil"));
+            Assert.False(WindowsUtils.ValidatePathComponent(input));
         }
 
-        [WindowsOnlyFact]
-        public void ValidatePathComponent_ShouldRejectDirectorySeparator()
+        [WindowsOnlyTheory]
+        [InlineData("Microsoft.NET.Workload.Mono.ToolChain")]
+        [InlineData("8.0.100")]
+        public void ValidatePathComponent_ShouldAcceptValidComponent(string input)
         {
-            Assert.False(WindowsUtils.ValidatePathComponent(@"good\evil"));
+            Assert.True(WindowsUtils.ValidatePathComponent(input));
         }
 
-        [WindowsOnlyFact]
-        public void ValidatePathComponent_ShouldRejectAltDirectorySeparator()
+        [WindowsOnlyTheory]
+        [InlineData(@"C:\ProgramData\dotnet\workloads\..\..\..\..\Windows\System32\evil.msi", @"C:\ProgramData\dotnet\workloads", false)]
+        [InlineData(@"C:\ProgramData\dotnet\workloadsEvil\evil.msi", @"C:\ProgramData\dotnet\workloads", false)]
+        [InlineData(@"C:\ProgramData\dotnet\workloads\pack\1.0\manifest.json", @"C:\ProgramData\dotnet\workloads", true)]
+        [InlineData(@"C:\ProgramData\dotnet\workloads", @"C:\ProgramData\dotnet\workloads", true)]
+        [InlineData(@"C:\ProgramData\dotnet\workloads\", @"C:\ProgramData\dotnet\workloads", true)]
+        [InlineData(@"C:\ProgramData\dotnet\workloads", @"C:\ProgramData\dotnet\workloads\", true)]
+        public void ValidatePathUnderRoot_ReturnsExpectedResult(string path, string root, bool expected)
         {
-            Assert.False(WindowsUtils.ValidatePathComponent("good/evil"));
-        }
-
-        [WindowsOnlyFact]
-        public void ValidatePathComponent_ShouldRejectEmpty()
-        {
-            Assert.False(WindowsUtils.ValidatePathComponent(""));
-            Assert.False(WindowsUtils.ValidatePathComponent(null));
-        }
-
-        [WindowsOnlyFact]
-        public void ValidatePathComponent_ShouldAcceptValidComponent()
-        {
-            Assert.True(WindowsUtils.ValidatePathComponent("Microsoft.NET.Workload.Mono.ToolChain"));
-            Assert.True(WindowsUtils.ValidatePathComponent("8.0.100"));
-        }
-
-        [WindowsOnlyFact]
-        public void ValidatePathUnderRoot_ShouldRejectTraversal()
-        {
-            string root = @"C:\ProgramData\dotnet\workloads";
-            string traversal = root + @"\..\..\..\..\Windows\System32\evil.msi";
-
-            Assert.False(WindowsUtils.ValidatePathUnderRoot(traversal, root));
-        }
-
-        [WindowsOnlyFact]
-        public void ValidatePathUnderRoot_ShouldRejectSiblingPrefix()
-        {
-            string root = @"C:\ProgramData\dotnet\workloads";
-            string sibling = @"C:\ProgramData\dotnet\workloadsEvil\evil.msi";
-
-            Assert.False(WindowsUtils.ValidatePathUnderRoot(sibling, root));
-        }
-
-        [WindowsOnlyFact]
-        public void ValidatePathUnderRoot_ShouldAcceptValidPath()
-        {
-            string root = @"C:\ProgramData\dotnet\workloads";
-            string valid = @"C:\ProgramData\dotnet\workloads\pack\1.0\manifest.json";
-
-            Assert.True(WindowsUtils.ValidatePathUnderRoot(valid, root));
-        }
-
-        [WindowsOnlyFact]
-        public void ValidatePathUnderRoot_ShouldAcceptRootItself()
-        {
-            string root = @"C:\ProgramData\dotnet\workloads";
-
-            Assert.True(WindowsUtils.ValidatePathUnderRoot(root, root));
-            Assert.True(WindowsUtils.ValidatePathUnderRoot(root + @"\", root));
-            Assert.True(WindowsUtils.ValidatePathUnderRoot(root, root + @"\"));
+            Assert.Equal(expected, WindowsUtils.ValidatePathUnderRoot(path, root));
         }
 
         [WindowsOnlyFact]
