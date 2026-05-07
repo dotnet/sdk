@@ -258,7 +258,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         // Uri.Host so that Unicode-dot forms, which the runtime canonicalizes back to
         // 127.0.0.1 when the request is actually sent, cannot bypass the check by
         // appearing as a DNS name to Uri.HostNameType.
-        string realmHost = realmUri.IdnHost;
+        string realmHost = TrimTrailingDot(realmUri.IdnHost);
         if (IPAddress.TryParse(realmHost, out IPAddress? realmIp)
             && IsBlockedIpLiteral(realmIp))
         {
@@ -290,10 +290,20 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// <summary>
     /// Returns true when <paramref name="host"/> is one of the DNS names RFC 6761 reserves
     /// for loopback resolution.
+    /// Callers must pass an already-trimmed host (see <see cref="TrimTrailingDot"/>).
     /// </summary>
     private static bool IsLoopbackDnsName(string host) =>
         host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
         || host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Strips a single FQDN root-zone trailing dot from <paramref name="host"/>. DNS treats
+    /// "localhost" and "localhost." as equivalent, but Uri.IdnHost preserves the dot, so
+    /// without this normalization a realm could bypass the IP-literal and loopback-name
+    /// guards using forms like "127.0.0.1." or "localhost.".
+    /// </summary>
+    private static string TrimTrailingDot(string host) =>
+        host.Length > 1 && host[^1] == '.' ? host[..^1] : host;
 
     /// <summary>
     /// Returns true when <paramref name="registryName"/> identifies the local machine via a
@@ -370,7 +380,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         //      actually resolves.
         //   3. Matches the canonicalization ValidateRealmUri uses, so realm-vs-registry
         //      host comparisons stay consistent on both sides.
-        string host = uri.IdnHost;
+        string host = TrimTrailingDot(uri.IdnHost);
 
         // RFC 6761 reserves "localhost" (and "*.localhost") for loopback addresses, so a
         // localhost-named registry returning a 127.0.0.0/8 or ::1 realm is legitimate.

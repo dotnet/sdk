@@ -387,6 +387,12 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [InlineData("https://169\uFF0E254\uFF0E169\uFF0E254/token")]
         [InlineData("https://10\uFF0E0\uFF0E0\uFF0E1/token")]
         [InlineData("https://127\u30020\u30020\u30021/token")]
+        // FQDN root-zone trailing dot: Uri.IdnHost preserves the trailing "." so neither
+        // IPAddress.TryParse nor a plain DNS name match would catch these without normalization,
+        // but every resolver treats "127.0.0.1." as equivalent to "127.0.0.1".
+        [InlineData("https://127.0.0.1./token")]
+        [InlineData("https://169.254.169.254./token")]
+        [InlineData("https://10.0.0.5./token")]
         public void ValidateRealmUri_RejectsBlockedIpLiterals_OnSecureRegistry(string realm)
         {
             Assert.Throws<InvalidAuthResponseException>(() =>
@@ -455,6 +461,13 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [InlineData("https://localhost:5000/token", "registry.example.com", false)]
         [InlineData("https://foo.localhost/token", "registry.example.com", false)]
         [InlineData("https://LOCALHOST/token", "registry.example.com", false)] // case-insensitive
+        // FQDN root-zone trailing dot: "localhost." is equivalent to "localhost" to every
+        // resolver. Uri.IdnHost preserves the dot so the validator must normalize it away.
+        [InlineData("https://localhost./token", "registry.example.com", false)]
+        [InlineData("https://foo.localhost./token", "registry.example.com", false)]
+        // Unicode trailing dot (U+3002 ideographic full stop) - Uri.IdnHost canonicalizes
+        // it to "localhost.", so it must be caught by the same trailing-dot normalization.
+        [InlineData("https://localhost\u3002/token", "registry.example.com", false)]
         // Insecure registry: still rejected when registry isn't a loopback-equivalent host.
         [InlineData("https://localhost/token", "192.168.1.5:5000", true)]
         [InlineData("http://localhost/token", "192.168.1.5:5000", true)]
