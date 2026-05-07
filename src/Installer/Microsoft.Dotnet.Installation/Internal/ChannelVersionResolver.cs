@@ -275,6 +275,14 @@ internal class ChannelVersionResolver
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
     {
+        // Daily channels must be resolved via DailyChannelResolver. Reaching this method with a
+        // daily channel means a caller bypassed Resolve(); refuse rather than silently parsing
+        // "10.0.1xx-daily" as 10.0.x and returning the latest released version.
+        if (channel.IsDaily)
+        {
+            return null;
+        }
+
         if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))
         {
             var productIndex = _releaseManifest.GetReleasesIndex();

@@ -2,6 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Xunit;
@@ -189,6 +194,84 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
             var channels = resolver.GetSupportedChannels().ToList();
 
             Assert.Contains(channels, c => c.EndsWith("xx"));
+        }
+
+        [Fact]
+        public void GetLatestVersionForChannel_DailyChannel_ReturnsNull()
+        {
+            // Daily channels must go through DailyChannelResolver via Resolve(); reaching
+            // GetLatestVersionForChannel with a daily channel means a caller bypassed routing.
+            // We refuse rather than silently returning the latest released version (which is
+            // what the manifest path would do for "10.0.1xx-daily" parsing).
+            var resolver = new ChannelVersionResolver();
+
+            Assert.Null(resolver.GetLatestVersionForChannel(new UpdateChannel("10.0.1xx-daily"), InstallComponent.SDK));
+            Assert.Null(resolver.GetLatestVersionForChannel(new UpdateChannel("10.0-daily"), InstallComponent.SDK));
+            Assert.Null(resolver.GetLatestVersionForChannel(new UpdateChannel("daily"), InstallComponent.SDK));
+        }
+
+        [Fact]
+        public void Resolve_DailyChannel_RoutesThroughDailyChannelResolver()
+        {
+            // Wiring test: Resolve() for a daily channel must invoke DailyChannelResolver,
+            // not the release-manifest path. We prove this by stubbing the aka.ms redirect
+            // target — if the daily resolver isn't called, the returned version won't match
+            // the redirect URL we set up.
+            const string redirectTarget =
+                "https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip";
+
+            using var handler = new StubRedirectHandler(new Dictionary<string, string>
+            {
+                ["https://aka.ms/dotnet/10.0.1xx/daily/dotnet-sdk-"] = redirectTarget,
+            });
+            using var httpClient = new HttpClient(handler);
+            using var dailyResolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+            var resolver = new ChannelVersionResolver(new ReleaseManifest(), dailyResolver);
+
+            var request = new DotnetInstallRequest(
+                new DotnetInstallRoot("C:/dotnet", InstallArchitecture.x64),
+                new UpdateChannel("10.0.1xx-daily"),
+                InstallComponent.SDK,
+                new InstallRequestOptions());
+
+            var version = resolver.Resolve(request);
+
+            Assert.NotNull(version);
+            Assert.Equal("10.0.100-preview.4.25216.37", version!.ToString());
+        }
+
+        /// <summary>
+        /// Maps URL prefixes to redirect target URLs, emulating the post-redirect state of
+        /// HttpClient after aka.ms redirects to the actual blob storage location.
+        /// </summary>
+        private sealed class StubRedirectHandler : HttpMessageHandler
+        {
+            private readonly Dictionary<string, string> _redirectMap;
+
+            public StubRedirectHandler(Dictionary<string, string> redirectMap)
+            {
+                _redirectMap = redirectMap;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                string url = request.RequestUri!.ToString();
+
+                foreach (var (prefix, target) in _redirectMap)
+                {
+                    if (url.StartsWith(prefix, StringComparison.Ordinal))
+                    {
+                        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent(string.Empty),
+                            RequestMessage = new HttpRequestMessage(HttpMethod.Get, target),
+                        });
+                    }
+                }
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound) { RequestMessage = request });
+            }
         }
 
         #region UpdateChannel.IsSdkVersionOrFeatureBand Tests
