@@ -37,10 +37,10 @@
                 signing plugin's ESRPCerts (no 402.json). Microsoft400 is internal-EKU and gets
                 blocked by Defender SmartScreen, so MicrosoftDotNet500 is the best available option.
        macOS:   MacDeveloperHardenWithNotarization so the binary is both signed and notarized by Apple.
-                After signing, the pipeline staples the notarization ticket to the binary so the ticket
-                is preserved when the binary is distributed in a .zip (xattr-based stapling can be lost).
-                The CertificatesSignInfo entry below tells SignTool that this is a virtual cert that
-                maps to the real MacDeveloperHarden cert + a notarize step. -->
+                The notarization ticket is not stapled because xcrun stapler does not support bare
+                Mach-O executables; Gatekeeper performs an online ticket check on first launch when
+                needed. The CertificatesSignInfo entry below tells SignTool that this is a virtual
+                cert that maps to the real MacDeveloperHarden cert + a notarize step. -->
   <ItemGroup Condition="'$(DotnetupPublishDir)' != ''">
     <FileExtensionSignInfo Include=".exe" CertificateName="MicrosoftDotNet500" />
     <FileSignInfo Include="dotnetup.exe" CertificateName="MicrosoftDotNet500" />
