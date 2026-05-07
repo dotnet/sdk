@@ -16,15 +16,18 @@
 
   <!-- Stage the apidiff CLI binary closure under tools\Microsoft.DotNet.ApiDiff.Tool\ so the
        test can invoke 'dotnet exec' against it both locally and on Helix. ToolPaths reads the
-       DLL relative to AppContext.BaseDirectory; the test assembly and its tools/ subtree get
-       packaged together into the Helix work item payload. -->
-  <Target Name="_StageToolsUnderTest" AfterTargets="Build">
+       DLL relative to AppContext.BaseDirectory; the CopyToOutputDirectory/CopyToPublishDirectory
+       metadata makes the tools tree ride along into both the local bin output (used by 'dotnet
+       test' with the no-build flag) and the Helix work item payload (which is built from
+       PublishDir). -->
+  <Target Name="_StageToolsUnderTest" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
       <_ApiDiffToolFile Include="$(ArtifactsBinDir)Microsoft.DotNet.ApiDiff.Tool\$(Configuration)\$(NetMinimum)\**\*" />
+      <Content Include="@(_ApiDiffToolFile)"
+               Link="tools\Microsoft.DotNet.ApiDiff.Tool\%(_ApiDiffToolFile.RecursiveDir)%(_ApiDiffToolFile.Filename)%(_ApiDiffToolFile.Extension)"
+               CopyToOutputDirectory="PreserveNewest"
+               CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
-    <Copy SourceFiles="@(_ApiDiffToolFile)"
-          DestinationFiles="@(_ApiDiffToolFile->'$(OutputPath)tools\Microsoft.DotNet.ApiDiff.Tool\%(RecursiveDir)%(FileName)%(Extension)')"
-          SkipUnchangedFiles="true" />
   </Target>
 
 </Project>
