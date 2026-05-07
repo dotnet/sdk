@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.314">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.315">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>4d37977dc94f810e840dd0333fa786123189f995</Sha>
+      <Sha>2939bd379eb3946292d38cbd8a54b4da08a9000d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.314-servicing.26209.3">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.315-servicing.26256.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>4d37977dc94f810e840dd0333fa786123189f995</Sha>
+      <Sha>2939bd379eb3946292d38cbd8a54b4da08a9000d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.300-preview.25209.5">
@@ -597,14 +597,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>e156e649f28395d9d0ee1e848225a689b59e0fd3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.26202.3">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.26256.3">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>0f750c53b3052a593c6daacc0d60eb8c0d2d9cf1</Sha>
+      <Sha>c2069dde2cb60983e985c6ca397783cf23f2f603</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.26202.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.26256.3">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>0f750c53b3052a593c6daacc0d60eb8c0d2d9cf1</Sha>
+      <Sha>c2069dde2cb60983e985c6ca397783cf23f2f603</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
