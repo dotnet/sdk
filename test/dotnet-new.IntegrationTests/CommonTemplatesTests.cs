@@ -31,6 +31,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
         [InlineData("global.json file", "globaljson", new[] { "--allow-prerelease", "false" })]
         [InlineData("global.json file", "globaljson", new[] { "--allow-prerelease", "true" })]
+        [InlineData("global.json file", "globaljson", new[] { "--allow-prerelease" })]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--allow-prerelease", "false" })]
         [InlineData("global.json file", "globaljson", new[] { "--no-sdk-version" })]
         [InlineData("global.json file", "globaljson", new[] { "--allow-prerelease", "false", "--no-sdk-version" })]
