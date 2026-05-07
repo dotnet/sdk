@@ -1118,7 +1118,7 @@ class Test
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
 
-            // NativeAOT embeds satellite assemblies into the native binary, so they should NOT
+            // NativeAOT embeds all satellite assemblies into the native binary, so they should NOT
             // appear as separate files in the publish directory (dotnet/runtime#124191).
             File.Exists(Path.Combine(publishDirectory, "fr", $"{projectName}.resources.dll")).Should().BeFalse("fr app satellite should be embedded, not published separately");
             File.Exists(Path.Combine(publishDirectory, "fr", "System.Spatial.resources.dll")).Should().BeFalse("fr System.Spatial satellite should be embedded, not published separately");
