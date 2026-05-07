@@ -313,7 +313,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [Theory]
         [InlineData("https://auth.example.com/token", false)]
         [InlineData("https://auth.example.com:8443/token", false)]
-        [InlineData("https://203.0.113.10/token", false)]          // public IP, must be allowed
+        [InlineData("https://203.0.113.10/token", false)]          // TEST-NET-3 doc IP, outside every blocked range, must be allowed
         [InlineData("http://auth.example.com/token", true)]        // downgrade permitted only when insecure
         public void ValidateRealmUri_AcceptsAllowedSchemes(string realm, bool isInsecureRegistry)
         {
