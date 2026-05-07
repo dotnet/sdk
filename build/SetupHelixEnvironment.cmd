@@ -6,6 +6,11 @@ set NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 
 set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
+REM DOTNET_HOST_PATH lets MSBuild's AssemblyTaskFactory locate the .NET runtime task host
+REM (UsingTask Runtime="NET") when desktop msbuild.exe invokes a build/pack on the
+REM FullFramework leg. dotnet.exe sets this automatically for the MSBuild it spawns;
+REM msbuild.exe does not. Without it, .NETCoreApp tasks like Microsoft.DotNet.ApiCompat.Task
+REM fail to load with NETHostTaskLoad_Failed (see https://aka.ms/nettaskhost).
 set DOTNET_HOST_PATH=%DOTNET_ROOT%\dotnet.exe
 set PATH=%DOTNET_ROOT%;%PATH%
 set TestFullMSBuild=%1
