@@ -6,6 +6,7 @@ set NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 
 set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
+set DOTNET_HOST_PATH=%DOTNET_ROOT%\dotnet.exe
 set PATH=%DOTNET_ROOT%;%PATH%
 set TestFullMSBuild=%1
 
