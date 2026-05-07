@@ -80,19 +80,21 @@ namespace Microsoft.DotNet.Tests
         }
 
         [WindowsOnlyFact]
-        public void InstallRequestMessageCreateThrowsForNullPayload()
+        public void InstallRequestMessageCreateReturnsDefaultForNullPayload()
         {
-            Action action = () => InstallRequestMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
+            InstallRequestMessage message = InstallRequestMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
 
-            action.Should().Throw<System.Text.Json.JsonException>();
+            message.Should().NotBeNull();
+            message.RequestType.Should().Be(default);
         }
 
         [WindowsOnlyFact]
-        public void InstallResponseMessageCreateThrowsForNullPayload()
+        public void InstallResponseMessageCreateReturnsDefaultForNullPayload()
         {
-            Action action = () => InstallResponseMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
+            InstallResponseMessage message = InstallResponseMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
 
-            action.Should().Throw<System.Text.Json.JsonException>();
+            message.Should().NotBeNull();
+            message.Message.Should().BeNull();
         }
 
         [WindowsOnlyTheory]
