@@ -229,13 +229,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             var resolver = new ChannelVersionResolver(new ReleaseManifest(), dailyResolver);
 
-            var request = new DotnetInstallRequest(
-                new DotnetInstallRoot("C:/dotnet", InstallArchitecture.x64),
-                new UpdateChannel("10.0.1xx-daily"),
-                InstallComponent.SDK,
-                new InstallRequestOptions());
-
-            var version = resolver.Resolve(request);
+            var version = resolver.Resolve(new UpdateChannel("10.0.1xx-daily"), InstallComponent.SDK, InstallArchitecture.x64);
 
             Assert.NotNull(version);
             Assert.Equal("10.0.100-preview.4.25216.37", version!.ToString());

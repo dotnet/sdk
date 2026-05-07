@@ -94,15 +94,15 @@ internal class ChannelVersionResolver
 
     }
 
-    public ReleaseVersion? Resolve(DotnetInstallRequest installRequest)
+    public ReleaseVersion? Resolve(UpdateChannel channel, InstallComponent component, InstallArchitecture architecture)
     {
-        if (installRequest.Channel.IsDaily)
+        if (channel.IsDaily)
         {
             _dailyChannelResolver ??= new DailyChannelResolver(_releaseManifest);
-            return _dailyChannelResolver.Resolve(installRequest.Channel, installRequest.InstallRoot.Architecture);
+            return _dailyChannelResolver.Resolve(channel, architecture);
         }
 
-        return GetLatestVersionForChannel(installRequest.Channel, installRequest.Component);
+        return GetLatestVersionForChannel(channel, component);
     }
 
     /// <summary>

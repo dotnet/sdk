@@ -165,12 +165,7 @@ internal class UpdateWorkflow
         // Route through Resolve() so daily channels reach DailyChannelResolver instead
         // of falling through to the release-manifest path (which would parse "10.0.1xx-daily"
         // as 10.0.x and silently install the latest released version).
-        var resolveRequest = new DotnetInstallRequest(
-            installRoot,
-            channel,
-            spec.Component,
-            new InstallRequestOptions { ManifestPath = manifestPath, Verbosity = verbosity });
-        var latestVersion = _channelVersionResolver.Resolve(resolveRequest);
+        var latestVersion = _channelVersionResolver.Resolve(channel, spec.Component, installRoot.Architecture);
         string displayName = spec.Component.GetDisplayName();
         if (latestVersion is null)
         {

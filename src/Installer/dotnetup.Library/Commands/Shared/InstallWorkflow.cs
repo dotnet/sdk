@@ -144,7 +144,7 @@ internal class InstallWorkflow
                 Verbosity = _command.Verbosity
             });
 
-        var resolvedVersion = _command.ChannelVersionResolver.Resolve(request);
+        var resolvedVersion = _command.ChannelVersionResolver.Resolve(request.Channel, request.Component, request.InstallRoot.Architecture);
 
         if (resolvedVersion is null)
         {

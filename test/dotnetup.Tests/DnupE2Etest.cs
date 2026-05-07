@@ -63,11 +63,9 @@ public class InstallEndToEndTests
 
         var updateChannel = new UpdateChannel(channel);
         var expectedVersion = new ChannelVersionResolver().Resolve(
-            new DotnetInstallRequest(
-                new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
-                updateChannel,
-                InstallComponent.SDK,
-                new InstallRequestOptions()));
+            updateChannel,
+            InstallComponent.SDK,
+            InstallerUtilities.GetDefaultInstallArchitecture());
 
         expectedVersion.Should().NotBeNull($"Channel {channel} should resolve to a valid version");
         Console.WriteLine($"Channel '{channel}' resolved to version: {expectedVersion}");
