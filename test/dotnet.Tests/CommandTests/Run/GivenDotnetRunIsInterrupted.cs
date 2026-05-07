@@ -18,6 +18,66 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
         }
 
+        [Fact]
+        public void ItForwardsCtrlCToConsoleApp()
+        {
+            var asset = TestAssetsManager.CopyTestAsset("ConsoleAppCtrlC")
+                .WithSource();
+
+            var command = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(asset.Path);
+
+            bool signaled = false;
+            Process child = null;
+            Process testProcess = null;
+            command.ProcessStartedHandler = p => { testProcess = p; };
+
+            command.CommandOutputHandler = line =>
+            {
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+
+                if (signaled)
+                {
+                    return;
+                }
+
+                if (int.TryParse(line, out int pid))
+                {
+                    try
+                    {
+                        child = Process.GetProcessById(pid);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while getting child process Id: {e}");
+                        Assert.Fail($"Failed to get child process Id: {line}");
+                    }
+                }
+                else if (line == "Started" && child != null)
+                {
+                    Log.WriteLine($"Sending Ctrl+C to dotnet run process {testProcess.Id}");
+                    SendCtrlC(testProcess.Id);
+                    signaled = true;
+                }
+            };
+
+            var result = command.Execute();
+            signaled.Should().BeTrue("Ctrl+C should have been sent to dotnet run");
+
+            // Exit code 42 proves the child's CancelKeyPress handler was invoked
+            result.ExitCode.Should().Be(42);
+
+            Assert.NotNull(child);
+            if (!child.WaitForExit(WaitTimeout))
+            {
+                child.Kill();
+                throw new XunitException("child process failed to terminate.");
+            }
+        }
+
         [WindowsOnlyFact]
         public void ItTerminatesWinExeAppWithCloseMainWindow()
         {
@@ -289,6 +349,25 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             {
                 child.Kill();
                 throw new XunitException("child process failed to terminate.");
+            }
+        }
+
+        /// <summary>
+        /// Sends SIGINT (Unix) or CTRL_C_EVENT (Windows) to the specified process.
+        /// </summary>
+        private static void SendCtrlC(int processId)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                GenerateConsoleCtrlEvent(0, (uint)processId);
+
+                [DllImport("kernel32.dll", SetLastError = true)]
+                [return: MarshalAs(UnmanagedType.Bool)]
+                static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
+            }
+            else
+            {
+                NativeMethods.Posix.kill(processId, NativeMethods.Posix.SIGINT);
             }
         }
     }

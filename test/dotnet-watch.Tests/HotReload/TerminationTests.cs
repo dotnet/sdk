@@ -54,6 +54,7 @@ public class TerminationTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
             using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ =>
             {
                 Console.WriteLine("SIGTERM detected! Performing cleanup...");
+                Environment.Exit(42);
             });
             """));
 
@@ -68,7 +69,7 @@ public class TerminationTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
         App.SendControlC();
 
         await App.WaitUntilOutputContains("SIGTERM detected! Performing cleanup...");
-        await App.WaitUntilOutputContains("exited with exit code 0.");
+        await App.WaitUntilOutputContains("exited with exit code 42.");
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows)]

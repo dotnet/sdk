@@ -115,7 +115,19 @@ internal class ProcessReaper : IDisposable
         // For console apps this is a no-op (returns false) since they have no main window.
         try
         {
-            _process.CloseMainWindow();
+            if (!_process.CloseMainWindow())
+            {
+#if NET
+                // Console apps don't have a main window. Forward SIGINT to the child
+                // so it can handle the signal (e.g. Microsoft.Android.Run calls am force-stop).
+                // ProcessReaper sets e.Cancel = true which swallows the signal, so the
+                // child won't receive it unless we forward it explicitly.
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    NativeMethods.Posix.kill(_process.Id, NativeMethods.Posix.SIGINT);
+                }
+#endif
+            }
         }
         catch (InvalidOperationException)
         {
