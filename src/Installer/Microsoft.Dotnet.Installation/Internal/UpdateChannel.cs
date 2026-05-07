@@ -7,6 +7,9 @@ namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class UpdateChannel
 {
+    private const string DailySuffix = "-daily";
+    private const string DailyKeyword = "daily";
+
     public string Name { get; }
 
     private static bool IsStableRelease(ReleaseVersion version) => string.IsNullOrEmpty(version.Prerelease);
@@ -19,6 +22,39 @@ internal class UpdateChannel
     public bool IsFullySpecifiedVersion()
     {
         return ReleaseVersion.TryParse(Name, out _);
+    }
+
+    /// <summary>
+    /// True if this channel refers to a daily build — either bare <c>daily</c>
+    /// or a scope with a <c>-daily</c> suffix (e.g. <c>10.0-daily</c>,
+    /// <c>10.0.1xx-daily</c>).
+    /// </summary>
+    public bool IsDaily =>
+        Name.Equals(DailyKeyword, StringComparison.OrdinalIgnoreCase) ||
+        Name.EndsWith(DailySuffix, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// For daily channels, the version scope without the <c>-daily</c> suffix
+    /// (e.g. <c>10.0-daily</c> → <c>10.0</c>). Bare <c>daily</c> returns
+    /// <c>"daily"</c> — it has no explicit scope and is resolved separately.
+    /// For non-daily channels, returns the channel name unchanged.
+    /// </summary>
+    public string BaseChannel
+    {
+        get
+        {
+            if (!IsDaily)
+            {
+                return Name;
+            }
+
+            if (Name.Equals(DailyKeyword, StringComparison.OrdinalIgnoreCase))
+            {
+                return DailyKeyword;
+            }
+
+            return Name.Substring(0, Name.Length - DailySuffix.Length);
+        }
     }
 
     /// <summary>
@@ -71,30 +107,31 @@ internal class UpdateChannel
             return false;
         }
 
+        // Daily channels match the same versions their base channel would.
+        // Bare "daily" matches any version; "10.0-daily" matches any 10.0.x;
+        // "10.0.1xx-daily" matches any 10.0.1xx version. The "kind of build"
+        // distinction (daily vs released) is reflected in how versions are
+        // resolved and tracked, not in which versions Matches() accepts.
+        if (IsDaily)
+        {
+            if (Name.Equals(DailyKeyword, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return new UpdateChannel(BaseChannel).Matches(version);
+        }
+
         // Exact version match
         if (string.Equals(version.ToString(), Name, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
-        // Named channels
-        if (Name.Equals("lts", StringComparison.OrdinalIgnoreCase))
+        // Named channels (lts, latest, preview)
+        if (TryMatchNamedChannel(version, out var namedMatch))
         {
-            // LTS releases are even major versions and must be stable releases.
-            return version.Major % 2 == 0 && IsStableRelease(version);
-        }
-
-        // "latest" should only match stable releases so a preview SDK doesn't satisfy the
-        // stable channel during garbage collection. "preview" continues to allow stable
-        // matches so existing preview specs can keep a GA SDK when no preview exists yet.
-        if (Name.Equals("latest", StringComparison.OrdinalIgnoreCase))
-        {
-            return IsStableRelease(version);
-        }
-
-        if (Name.Equals("preview", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
+            return namedMatch;
         }
 
         // Major version match (e.g., "10" matches "10.0.103")
@@ -103,6 +140,39 @@ internal class UpdateChannel
             return version.Major == major;
         }
 
+        return MatchesMajorMinorOrFeatureBand(version);
+    }
+
+    private bool TryMatchNamedChannel(ReleaseVersion version, out bool result)
+    {
+        if (Name.Equals("lts", StringComparison.OrdinalIgnoreCase))
+        {
+            // LTS releases are even major versions and must be stable releases.
+            result = version.Major % 2 == 0 && IsStableRelease(version);
+            return true;
+        }
+
+        // "latest" should only match stable releases so a preview SDK doesn't satisfy the
+        // stable channel during garbage collection. "preview" continues to allow stable
+        // matches so existing preview specs can keep a GA SDK when no preview exists yet.
+        if (Name.Equals("latest", StringComparison.OrdinalIgnoreCase))
+        {
+            result = IsStableRelease(version);
+            return true;
+        }
+
+        if (Name.Equals("preview", StringComparison.OrdinalIgnoreCase))
+        {
+            result = true;
+            return true;
+        }
+
+        result = false;
+        return false;
+    }
+
+    private bool MatchesMajorMinorOrFeatureBand(ReleaseVersion version)
+    {
         var parts = Name.Split('.');
 
         // Major.Minor match (e.g., "10.0" matches "10.0.103")
