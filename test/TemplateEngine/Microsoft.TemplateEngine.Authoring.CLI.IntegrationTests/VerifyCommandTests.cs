@@ -6,7 +6,7 @@ using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {
@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             _log = log;
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/53889")]
         public void VerifyCommandFullDevLoop()
         {
             // dots issue https://github.com/VerifyTests/Verify/issues/658
@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             Directory.Delete(snapshotsDir, true);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/53889")]
         public void VerifyCommandFullDevLoopWithNotInstalledTemplate()
         {
             // dots issue https://github.com/VerifyTests/Verify/issues/658

@@ -41,7 +41,7 @@ namespace Testopolis
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ End Namespace";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace Testopolis
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ End Namespace";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace Testopolis
                         .WithArguments("River", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ End Namespace";
 
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -216,7 +216,7 @@ namespace Testopolis
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod),
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -250,7 +250,7 @@ End Namespace";
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -297,7 +297,7 @@ namespace Testopolis
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -339,7 +339,7 @@ End Namespace";
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -389,7 +389,7 @@ namespace Testopolis
                         .WithArguments("River", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -433,7 +433,7 @@ End Namespace";
                         .WithArguments("River", VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -485,7 +485,7 @@ namespace Testopolis
                         .WithArguments("River", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -531,7 +531,7 @@ End Namespace";
                         .WithArguments("River", VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         //  This test has no VB counterpart because in Visual Basic it is illegal to override one overload
@@ -566,7 +566,7 @@ namespace Testopolis
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -597,7 +597,7 @@ namespace Testopolis
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -626,7 +626,7 @@ End Namespace";
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 
@@ -651,7 +651,7 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -672,7 +672,7 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -695,7 +695,7 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -716,7 +716,7 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -738,7 +738,7 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -758,7 +758,7 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -780,7 +780,7 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -800,7 +800,7 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -832,7 +832,7 @@ namespace Testopolis
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -860,7 +860,7 @@ End Namespace";
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -894,7 +894,7 @@ namespace Testopolis
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -924,7 +924,7 @@ End Namespace";
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -959,7 +959,7 @@ namespace Testopolis
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -990,7 +990,7 @@ End Namespace";
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1016,7 +1016,7 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1040,7 +1040,7 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1064,7 +1064,7 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1086,7 +1086,7 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 
@@ -1120,7 +1120,7 @@ namespace Testopolis
                         .WithLocation(1)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1150,7 +1150,7 @@ End Namespace";
                         .WithLocation(1)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1181,7 +1181,7 @@ namespace Testopolis
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1210,7 +1210,7 @@ End Namespace";
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1241,7 +1241,7 @@ namespace Testopolis
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1271,7 +1271,7 @@ End Namespace";
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1301,7 +1301,7 @@ namespace Testopolis
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1329,7 +1329,7 @@ End Namespace";
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 

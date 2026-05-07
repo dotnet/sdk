@@ -25,6 +25,15 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
         HelpName = CommandDefinitionStrings.FrameworkArgumentName,
     };
 
+    /// <summary>
+    /// Specifies the device to run on. The watcher passes the value explicitly instead of forwarding the subcommand's --device option.
+    /// </summary>
+    public readonly Option<string?> DeviceOption = new("--device")
+    {
+        Description = Resources.Help_Device,
+        HelpName = "DEVICE_ID",
+    };
+
     // Options we need to know about. They are passed through to the subcommand if the subcommand supports them.
 
     public readonly Option<string> ShortProjectOption = new("-p")
@@ -80,6 +89,7 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
         Options.Add(NoHotReloadOption);
         Options.Add(NonInteractiveOption);
         Options.Add(FrameworkOption);
+        Options.Add(DeviceOption);
 
         Options.Add(LongProjectOption);
         Options.Add(ShortProjectOption);
@@ -118,5 +128,6 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
            option == ListOption ||
            option == NoHotReloadOption ||
            option == NonInteractiveOption ||
-           option == FrameworkOption;
+           option == FrameworkOption ||
+           option == DeviceOption;
 }

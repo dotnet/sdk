@@ -506,7 +506,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetNonIFormatterCSharpResultAt(int line, int column, params string[] arguments)

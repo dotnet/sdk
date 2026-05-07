@@ -138,9 +138,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FolderManagedTemplatePackage source = new FolderManagedTemplatePackage(engineEnvironmentSettings, folderInstaller, provider, Path.GetRandomFileName(), DateTime.UtcNow);
             //add a delay so update updates last changed time
-            await Task.Delay(100);
+            await Task.Delay(100, TestContext.Current.CancellationToken);
             UpdateRequest updateRequest = new UpdateRequest(source, "1.0.0");
-            UpdateResult result = await folderInstaller.UpdateAsync(updateRequest, provider, CancellationToken.None);
+            UpdateResult result = await folderInstaller.UpdateAsync(updateRequest, provider, TestContext.Current.CancellationToken);
 
             Assert.True(result.Success);
             Assert.Equal(updateRequest, result.UpdateRequest);

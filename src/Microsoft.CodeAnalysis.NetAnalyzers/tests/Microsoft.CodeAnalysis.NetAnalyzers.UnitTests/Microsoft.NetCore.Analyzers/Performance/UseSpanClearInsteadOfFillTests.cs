@@ -370,7 +370,7 @@ class C
                 FixedCode = corrected,
             };
 
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

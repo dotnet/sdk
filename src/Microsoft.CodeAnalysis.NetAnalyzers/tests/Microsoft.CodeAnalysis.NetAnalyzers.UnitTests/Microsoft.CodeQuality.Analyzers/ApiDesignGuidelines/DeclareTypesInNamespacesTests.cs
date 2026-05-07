@@ -111,7 +111,7 @@ public partial class Program
                 },
                 FixedCode = csCode,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

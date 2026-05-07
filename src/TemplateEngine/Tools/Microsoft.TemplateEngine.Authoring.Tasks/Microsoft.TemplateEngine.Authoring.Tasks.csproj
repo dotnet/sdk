@@ -23,9 +23,9 @@
     <PackageReference Include="Microsoft.Build.Framework" Publish="false" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Publish="false" ExcludeAssets="runtime" />
 
-    <ProjectReference Include="$(ToolsDir)\Microsoft.TemplateEngine.TemplateLocalizer.Core\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj" PrivateAssets="all" />
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" PrivateAssets="all" />
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" PrivateAssets="all" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Tools\Microsoft.TemplateEngine.TemplateLocalizer.Core\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" PrivateAssets="all" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

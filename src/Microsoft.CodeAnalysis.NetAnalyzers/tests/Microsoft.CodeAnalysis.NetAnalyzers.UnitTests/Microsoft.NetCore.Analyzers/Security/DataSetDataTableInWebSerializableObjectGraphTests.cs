@@ -107,7 +107,7 @@ public class MyClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyWebServicesCSharpAsync(string source, params DiagnosticResult[] expected)
@@ -129,7 +129,7 @@ public class MyClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

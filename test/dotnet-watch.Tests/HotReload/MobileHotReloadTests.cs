@@ -38,4 +38,55 @@ public class MobileHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
 
         await App.AssertOutputLineStartsWith("Changed!");
     }
+
+    [Fact]
+    public async Task CtrlC_ShutsDownCleanly()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")
+            .WithSource();
+
+        App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+        await App.WaitUntilOutputContains("Started");
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains(WebSocketServerStartedPattern);
+        await App.WaitUntilOutputContains("WebSocket client connected");
+
+        App.Process.ClearOutput();
+        App.SendControlC();
+
+        await App.WaitUntilOutputContains(MessageDescriptor.ShutdownRequested);
+        await App.WaitUntilOutputContains("exited with exit code");
+
+        App.AssertOutputDoesNotContain("ObjectDisposedException");
+        App.AssertOutputDoesNotContain("WebSocketException");
+        App.AssertOutputDoesNotContain("An unexpected error occurred");
+    }
+
+    [Fact]
+    public async Task CtrlR_RestartsCleanly()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")
+            .WithSource();
+
+        App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+        await App.WaitUntilOutputContains("Started");
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains(WebSocketServerStartedPattern);
+        await App.WaitUntilOutputContains("WebSocket client connected");
+
+        App.Process.ClearOutput();
+        App.SendControlR();
+
+        await App.WaitUntilOutputContains(MessageDescriptor.RestartRequested);
+
+        // App should restart and output "Started" again (iteration 2)
+        await App.WaitUntilOutputContains("DOTNET_WATCH_ITERATION = 2");
+        await App.WaitUntilOutputContains("Started");
+
+        App.AssertOutputDoesNotContain("ObjectDisposedException");
+        App.AssertOutputDoesNotContain("WebSocketException");
+        App.AssertOutputDoesNotContain("An unexpected error occurred");
+    }
 }

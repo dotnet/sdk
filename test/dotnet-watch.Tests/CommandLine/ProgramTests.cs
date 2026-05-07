@@ -37,14 +37,14 @@ public class ProgramTests(ITestOutputHelper output) : DotNetWatchTestBase(output
 
         var run = program.RunAsync();
 
-        await watching.WaitAsync();
+        await watching.WaitAsync(TestContext.Current.CancellationToken);
 
         console.PressKey(new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true));
 
         var exitCode = await run;
         Assert.Equal(0, exitCode);
 
-        await shutdownRequested.WaitAsync();
+        await shutdownRequested.WaitAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]

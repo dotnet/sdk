@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                 },
             };
 
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static Task VerifyVisualBasicAsync(
@@ -94,7 +94,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                 },
             };
 
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

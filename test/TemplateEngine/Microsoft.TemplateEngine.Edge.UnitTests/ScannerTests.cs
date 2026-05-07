@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Scanner scanner = new(settings);
 
-            ScanResult result = await scanner.ScanAsync(templatesLocation, default);
+            ScanResult result = await scanner.ScanAsync(templatesLocation, TestContext.Current.CancellationToken);
 
             Assert.Empty(result.Templates);
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Scanner scanner = new(settings);
 
-            ScanResult result = await scanner.ScanAsync(templatesLocation, default);
+            ScanResult result = await scanner.ScanAsync(templatesLocation, TestContext.Current.CancellationToken);
 
             Assert.Empty(result.Templates);
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -106,7 +106,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Scanner scanner = new(settings);
 
-            ScanResult result = await scanner.ScanAsync(templatesLocation, default);
+            ScanResult result = await scanner.ScanAsync(templatesLocation, TestContext.Current.CancellationToken);
 
             Assert.Single(result.Templates);
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -328,7 +330,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
                 }
                 else
                 {
-                    TerminateUnixProcess(state, logger, force);
+                    TerminateUnixProcess(process, state, logger, force);
                 }
             }
         }
@@ -364,12 +366,26 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         }
     }
 
-    private static void TerminateUnixProcess(ProcessState state, ILogger logger, bool force)
+    [UnsupportedOSPlatform("windows")]
+    private static void TerminateUnixProcess(Process process, ProcessState state, ILogger logger, bool force)
     {
+        var signal = force ? PosixSignal.SIGKILL : PosixSignal.SIGTERM;
         var signalName = force ? "SIGKILL" : "SIGTERM";
         logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
 
-        var error = ProcessUtilities.SendPosixSignal(state.ProcessId, signal: force ? ProcessUtilities.SIGKILL : ProcessUtilities.SIGTERM);
+        string? error = null;
+        try
+        {
+            process.SafeHandle.Signal(signal);
+        }
+        catch (Win32Exception ex)
+        {
+            // A process that has already exited is handled by Signal's non-exception return path.
+            // This catch is for exceptional failures, such as attempting to signal a process
+            // that we don't have permission to kill.
+            error = ex.Message;
+        }
+
         if (error != null)
         {
             logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);

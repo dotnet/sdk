@@ -1,38 +1,34 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
     [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
-    [CombinatorialData]
-    public async Task BlazorWasm(bool projectSpecifiesCapabilities)
+    [InlineData("net6.0", "6.0.36")]
+    [InlineData(ToolsetInfo.CurrentTargetFramework, null)]
+    public async Task BlazorWasm(string tfm, string? wasmVersion)
     {
-        var tfm = ToolsetInfo.CurrentTargetFramework;
-
-        var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: projectSpecifiesCapabilities.ToString())
-            .WithSource();
-
-        if (projectSpecifiesCapabilities)
-        {
-            testAsset = testAsset.WithProjectChanges(proj =>
-            {
-                proj.Root.Descendants()
-                    .First(e => e.Name.LocalName == "PropertyGroup")
-                    .Add(XElement.Parse("""
-                        <WebAssemblyHotReloadCapabilities>Baseline;AddMethodToExistingType</WebAssemblyHotReloadCapabilities>
-                        """));
-            });
-        }
+        var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: $"{tfm}_{wasmVersion}").WithSource(
+            targetFramework: tfm,
+            packageVersionPropertySubstitutions: wasmVersion != null ? [("MicrosoftAspNetCoreAppRefPackageVersion", wasmVersion)] : null);
 
         var port = TestOptions.GetTestPort();
         App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+
+        // AddExplicitInterfaceImplementation is an implicit capability that's always added for .NET targets:
+        string[] expectedCapabilities = tfm switch
+        {
+            "net6.0" => ["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "NewTypeDefinition", "ChangeCustomAttributes", "AddExplicitInterfaceImplementation"],
+            _ => ["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "NewTypeDefinition", "ChangeCustomAttributes", "AddInstanceFieldToExistingType",
+                  "GenericAddMethodToExistingType", "GenericUpdateMethod", "UpdateParameters", "GenericAddFieldToExistingType", "AddExplicitInterfaceImplementation" ]
+        };
+
+        await App.WaitUntilOutputContains(MessageDescriptor.ProjectSpecifiesCapabilities.GetMessage(string.Join(", ", expectedCapabilities)));
 
         // env variable passed when launching the server:
         await App.WaitUntilOutputContains($"HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES=dotnet watch 🕵️ [blazorwasm ({tfm})]");
@@ -61,8 +57,7 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
 
         UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
 
-        // WebAssemblyHotReloadCapabilities set by project is overwritten in WASM SDK targets:
-        await App.WaitUntilOutputContains("dotnet watch 🔥 Hot reload capabilities: AddExplicitInterfaceImplementation AddInstanceFieldToExistingType AddMethodToExistingType AddStaticFieldToExistingType Baseline ChangeCustomAttributes GenericAddFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod NewTypeDefinition UpdateParameters.");
+        await App.WaitUntilOutputContains($"dotnet watch 🔥 Hot reload capabilities: {string.Join(" ", expectedCapabilities.Order())}.");
         await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
     }
 
@@ -74,7 +69,7 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
             .WithSource()
             .WithProjectChanges(proj =>
             {
-                proj.Root.Descendants()
+                proj.Root!.Descendants()
                     .Single(e => e.Name.LocalName == "ItemGroup")
                     .Add(XElement.Parse("""
                         <AdditionalFiles Include="Pages\Index.razor" />
@@ -99,7 +94,7 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.PressCtrlRToRestart);
 
@@ -120,7 +115,7 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
         var port = TestOptions.GetTestPort();
         App.Start(testAsset, ["--urls", "http://localhost:" + port], "blazorhosted", testFlags: TestFlags.MockBrowser);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
     }
@@ -136,7 +131,7 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
         App.Process.ClearOutput();
