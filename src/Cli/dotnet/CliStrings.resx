@@ -474,6 +474,9 @@ setx PATH "%PATH%;{0}"
     <value>Failed to validate package signing.
 {0}</value>
   </data>
+  <data name="PackageDownloadFailedFromSource" xml:space="preserve">
+    <value>Failed to download package {0} from source {1}: {2}. Attempting to download from another source.</value>
+  </data>
   <data name="FieldCommandsIsMissing" xml:space="preserve">
     <value>Missing 'commands' entry.</value>
   </data>

@@ -574,6 +574,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">한 번에 하나의 .nuspec 파일만 압축할 수 있습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageDownloadFailedFromSource">
+        <source>Failed to download package {0} from source {1}: {2}. Attempting to download from another source.</source>
+        <target state="new">Failed to download package {0} from source {1}: {2}. Attempting to download from another source.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageIdentityArgumentVersionOptionConflict">
         <source>Cannot specify --version when the package argument already contains a version.</source>
         <target state="translated">패키지 인수에 이미 버전이 포함되어 있을 때는 --version을 지정할 수 없습니다.</target>
