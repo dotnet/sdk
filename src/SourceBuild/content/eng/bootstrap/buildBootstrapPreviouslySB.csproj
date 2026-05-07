@@ -1,0 +1,197 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="$(MSBuildProjectDirectory)/PackageVersions.props" />
+  <Import Project="$(BootstrapOverrideVersionsProps)" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <BaseOutputPath>$(MSBuildProjectDirectory)/artifacts/</BaseOutputPath>
+    <RestorePackagesPath>$(MSBuildProjectDirectory)/artifacts/restoredPkgs/</RestorePackagesPath>
+    <UnpackedTarPath>$(MSBuildProjectDirectory)/artifacts/unpacked/</UnpackedTarPath>
+    <NewTarballName>$(ArchiveDir)Private.SourceBuilt.Artifacts.Bootstrap.tar.gz</NewTarballName>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <PortablePackage>
+      <IsNative>false</IsNative>
+    </PortablePackage>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <UnixRid Include="linux-x64" />
+    <UnixRid Include="linux-musl-x64" />
+    <UnixRid Include="linux-arm64" />
+    <UnixRid Include="linux-musl-arm64" />
+    <UnixRid Include="osx-x64" />
+    <UnixRid Include="osx-arm64" />
+  </ItemGroup>
+
+  <!-- 
+    These packages will be replaced with ms-built packages downloaded from official package feeds.
+    The runtime packs do not have a RIDless package, so we'll use the version of their corresponding ref pack
+    to determine the version.
+  -->
+  <ItemGroup>
+    <RuntimePack Include="Microsoft.AspNetCore.App.Runtime" Version="[$(MicrosoftAspNetCoreAppRefPackageVersion)]" />
+    <RuntimePack Include="Microsoft.NETCore.App.Crossgen2" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+    <RuntimePack Include="Microsoft.NETCore.App.Host" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+    <RuntimePack Include="Microsoft.NETCore.App.Runtime" Version="[$(MicrosoftNETCoreAppRefPackageVersion)]" />
+
+    <PortablePackage Include="Microsoft.DotNet.ILCompiler" Version="[$(MicrosoftDotNetILCompilerVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.DotNetAppHost" Version="[$(MicrosoftNETCoreDotNetAppHostVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
+
+    <PortablePackage Include="System.IO.Ports" Version="[$(RuntimeNativeSystemIOPortsVersion)]" IsNative="true" />
+    <!-- These packages don't actually exist -->
+    <ExcludedPackage Include="runtime.linux-musl-x64.runtime.native.System.IO.Ports" />
+    <ExcludedPackage Include="runtime.linux-musl-arm64.runtime.native.System.IO.Ports" />
+  </ItemGroup>
+
+  <Target Name="GetPackagesToDownload"
+          AfterTargets="CollectPackageDownloads"
+          Returns="@(PackageDownload)">
+    <ItemGroup>
+      <!-- Generate a cross-product between runtime packs and Unix RIDs -->
+      <RuntimePackWithUnixRid Include="@(RuntimePack)">
+        <UnixRid>%(UnixRid.Identity)</UnixRid>
+      </RuntimePackWithUnixRid>
+
+      <!-- Generate a cross-product between portable packages and Unix RIDs -->
+      <PortablePackageWithUnixRid Include="@(PortablePackage)">
+        <UnixRid>%(UnixRid.Identity)</UnixRid>
+      </PortablePackageWithUnixRid>
+
+    </ItemGroup>
+    <ItemGroup>
+      <!--
+            Generate package names for runtime packs by concatenating the base name with the Unix RID
+            (e.g. Microsoft.AspNetCore.App.Runtime.linux-x64)
+        -->
+      <PackageWithName Include="@(RuntimePackWithUnixRid)">
+        <PackageName>%(RuntimePackWithUnixRid.Identity).%(RuntimePackWithUnixRid.UnixRid)</PackageName>
+      </PackageWithName>
+
+      <!--
+            Include the base name of each portable package (e.g. Microsoft.NETCore.ILAsm)
+            Exclude any that are native packages.
+        -->
+      <PackageWithName Include="@(PortablePackageWithUnixRid)" Condition=" '%(PortablePackageWithUnixRid.IsNative)' != 'true' ">
+        <PackageName>%(PortablePackageWithUnixRid.Identity)</PackageName>
+      </PackageWithName>
+
+      <!--
+            Generate Unix RID package names for portable packages by concatenating the base name with the Unix RID
+            (e.g. runtime.linux-x64.Microsoft.NETCore.ILAsm)
+            Do this for two groups: native and non-native packages. They have different naming conventions.
+        -->
+      <PackageWithName Include="@(PortablePackageWithUnixRid)" Condition=" '%(PortablePackageWithUnixRid.IsNative)' != 'true' ">
+        <PackageName>runtime.%(PortablePackageWithUnixRid.UnixRid).%(PortablePackageWithUnixRid.Identity)</PackageName>
+      </PackageWithName>
+      <PackageWithName Include="@(PortablePackageWithUnixRid)" Condition=" '%(PortablePackageWithUnixRid.IsNative)' == 'true' ">
+        <PackageName>runtime.%(PortablePackageWithUnixRid.UnixRid).runtime.native.%(PortablePackageWithUnixRid.Identity)</PackageName>
+      </PackageWithName>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageDownload Include="@(PackageWithName -> '%(PackageName)')" />
+      <PackageDownload Remove="@(ExcludedPackage)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="BuildBoostrapPreviouslySourceBuilt"
+          AfterTargets="Restore"
+          DependsOnTargets="GetPackagesToDownload">
+    <ItemGroup>
+      <RestoredNupkgs Include="$(RestorePackagesPath)**/*.nupkg" />
+      <PrevSBArchive Include="$(ArchiveDir)Private.SourceBuilt.Artifacts.*.tar.gz" />
+    </ItemGroup>
+
+    <!-- Copy restored nupkg files to root of restored packages dir so they're all in one place-->
+    <Copy SourceFiles="@(RestoredNupkgs)" DestinationFolder="$(RestorePackagesPath)" />
+
+    <!-- Check to ensure there is only one previously source-built archive -->
+    <Error Text="Multiple Private.SourceBuilt.Artifacts.*.tar.gz tarballs exists at $(ArchiveDir).  Expecting only one."
+        Condition="'@(PrevSBArchive->Count())' != '1'" />
+
+    <!-- Unpack existing archive -->
+    <Message Text="  Unpacking existing tarball from %(PrevSBArchive.Identity)" Importance="High" />
+    <MakeDir Directories="$(UnpackedTarPath)" />
+    <Exec Command="tar -xzf %(PrevSBArchive.Identity) -C $(UnpackedTarPath)" />
+
+    <!-- Delete existing archive -->
+    <Message Text="  Deleting existing tarball: %(PrevSBArchive.Identity)" Importance="High" />
+    <Delete Files="%(PrevSBArchive.Identity)" />
+
+    <!-- Copy files specified in package references above from restored package dir to unpacked archive dir -->
+    <Message Text="  Replacing restored files in $(UnpackedTarPath)" Importance="High" />
+    <MSBuild Projects="$(MSBuildProjectFile)"
+      Targets="CopyDownloadedPackage"
+      Properties="SourcePath=$(RestorePackagesPath);DestinationPath=$(UnpackedTarPath);PackageName=%(PackageDownload.Identity);PackageVersion=%(PackageDownload.Version)" />
+
+    <!-- override PVP with bootstrap-override package versions -->
+    <Message Text="  Overriding previously-source-built package versions with $(BootstrapOverrideVersionsProps)" Importance="High" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
+    <ReadLinesFromFile File="$(UnpackedTarPath)/PackageVersions.props">
+      <Output TaskParameter="Lines" ItemName="OriginalPackageVersionLines" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="$(BootstrapOverrideVersionsProps)">
+      <Output TaskParameter="Lines" ItemName="BootstrapPackageVersionLines" />
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <OriginalPackageVersionLines Remove="&lt;/Project&gt;" />
+      <BootstrapPackageVersionLines Remove="&lt;Project&gt;" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
+                      Lines="@(OriginalPackageVersionLines)"
+                      Overwrite="true"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
+    />
+    <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
+                      Lines="@(BootstrapPackageVersionLines)"
+                      Overwrite="false"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
+    />
+
+    <!-- Repack tarball with new bootstrap name -->
+    <Message Text="  Repacking tarball to $(NewTarballName)" Importance="High" />
+    <Exec Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props *.xml SourceBuildReferencePackages/" WorkingDirectory="$(UnpackedTarPath)" />
+
+  </Target>
+
+  <Target Name="CopyDownloadedPackage">
+    <!--
+      Copy downloaded package to the output path.
+      Note: The package version may be different than the version specified
+      since the source-build build number can be different than the official
+      package build number.
+    -->
+    <ItemGroup>
+      <SourceFileName Include="$(SourcePath)$(PackageName.ToLower()).*.nupkg" />
+    </ItemGroup>
+    <PropertyGroup>
+      <DestinationFileName>@(SourceFileName->'%(Filename)')</DestinationFileName>
+      <NewVersion>$(DestinationFileName.Replace('$(PackageName.ToLower()).',''))</NewVersion>
+    </PropertyGroup>
+    <Copy
+      SourceFiles="@(SourceFileName)"
+      DestinationFiles="$(DestinationPath)$(PackageName).$(NewVersion).nupkg" />
+
+    <!--
+      Update the PackageVersions.props if restored version is
+      different than the specified version.
+    -->
+    <PropertyGroup>
+      <VersionTag>$([System.String]::concat('%3C','$(PackageName)','Version','%3E').Replace('.',''))</VersionTag>
+      <PackageVersionTag>$([System.String]::concat('%3C','$(PackageName)','PackageVersion','%3E').Replace('.',''))</PackageVersionTag>
+      <FilePath>$(DestinationPath)PackageVersions.props</FilePath>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(FilePath)"
+      Lines="$([System.IO.File]::ReadAllText($(FilePath)).Replace('$(VersionTag)$(PackageVersion)','$(VersionTag)$(NewVersion)').Replace('$(PackageVersionTag)$(PackageVersion)','$(PackageVersionTag)$(NewVersion)'))"
+      Overwrite="true"
+      Condition=" '$(PackageVersion)' != '$(NewVersion)' " />
+  </Target>
+</Project>

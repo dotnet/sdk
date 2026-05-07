@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+    <Copyright>© Microsoft</Copyright>
+    <Product>Razor Test</Product>
+    <Company>Microsoft</Company>
+    <Description>RazorPackageLibraryTransitiveDependency Description</Description>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+        <!-- See Directory.Packages.props for details on $(AspNetTestPackageSource).
+         It essentially creates an additional feed for the tests packages at the root
+         of the test project
+     -->
+    <PackageOutputPath>$(AspNetTestPackageSource)</PackageOutputPath>
+    <PackageVersion>1.0.2</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- We don't want to run build server when not running as tests. -->
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <Target Name="EnsureFingerprinting" BeforeTargets="Pack" DependsOnTargets="ResolveStaticWebAssetsConfiguration" >
+    <!-- Error if StaticWebAssetFingerprintingEnabled is not true -->
+    <Error Condition="'$(StaticWebAssetFingerprintingEnabled)' != 'true'" Text="$(StaticWebAssetFingerprintingEnabled) must be true for the test to pass." />
+  </Target>
+  
+</Project>

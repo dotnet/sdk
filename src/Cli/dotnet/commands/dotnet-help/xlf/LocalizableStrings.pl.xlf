@@ -12,6 +12,11 @@
         <target state="translated">Przewiń do wersji platformy (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
         <note />
       </trans-unit>
+      <trans-unit id="SDKOptionsHelpDefinition">
+        <source>Show command line help.</source>
+        <target state="translated">Pokaż pomoc wiersza polecenia.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SdkDefinition">
         <source>Manage .NET SDK installation.</source>
         <target state="translated">Zarządzaj instalacją zestawu .NET SDK.</target>
@@ -48,8 +53,8 @@
         <note />
       </trans-unit>
       <trans-unit id="HelpDefinition">
-        <source>Show command line help.</source>
-        <target state="translated">Pokaż pomoc wiersza polecenia.</target>
+        <source>Opens the reference page in a browser for the specified command.</source>
+        <target state="translated">Otwiera stronę odwołania w przeglądarce dla określonego polecenia.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
@@ -163,8 +168,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ListDefinition">
-        <source>List project references of a .NET project.</source>
-        <target state="translated">Wyświetl listę odwołań projektu dla projektu platformy .NET.</target>
+        <source>List packages or references of a .NET project.</source>
+        <target state="translated">Wyświetl listę pakietów lub odwołań projektu platformy .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

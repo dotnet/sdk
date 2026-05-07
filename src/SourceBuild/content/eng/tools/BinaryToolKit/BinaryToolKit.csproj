@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="CheckCustomPackageVersionsProps">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <CustomPackageVersionsProps></CustomPackageVersionsProps>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <Target Name="CheckCustomPackageVersionsProps">
+    <Error Condition="'$(CustomPackageVersionsProps)' != '' And !Exists('$(CustomPackageVersionsProps)')" Text="CustomPackageVersionsProps file '$(CustomPackageVersionsProps)' does not exist." />
+  </Target>
+
+  <!-- Need to condition this import because msbuild will complain about the project not being valid otherwise. -->
+  <!-- With the condition, the CheckCustomPackageVersionsProps will run as expected and show the respective errors. -->
+  <Import Project="$(CustomPackageVersionsProps)" Condition="'$(CustomPackageVersionsProps)' != ''" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+</Project>

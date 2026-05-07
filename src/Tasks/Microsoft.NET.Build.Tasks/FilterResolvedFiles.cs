@@ -3,8 +3,8 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using NuGet.ProjectModel;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -13,8 +13,8 @@ namespace Microsoft.NET.Build.Tasks
     /// </summary>
     public class FilterResolvedFiles : TaskBase
     {
-        private readonly List<ITaskItem> _assembliesToPublish = new List<ITaskItem>();
-        private readonly List<ITaskItem> _packagesResolved = new List<ITaskItem>();
+        private readonly List<ITaskItem> _assembliesToPublish = new();
+        private readonly List<ITaskItem> _packagesResolved = new();
 
         public string AssetsFilePath { get; set; }
 
@@ -59,9 +59,9 @@ namespace Microsoft.NET.Build.Tasks
                 runtimeFrameworks: null,
                 IsSelfContained);
 
-            var packageClosure =  new HashSet<PackageIdentity>();
+            var packageClosure = new HashSet<PackageIdentity>();
 
-            foreach ( var packageItem in PackagesToPrune)
+            foreach (var packageItem in PackagesToPrune)
             {
                 var pkgName = packageItem.ItemSpec;
                 if (!string.IsNullOrEmpty(pkgName))
@@ -86,7 +86,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var resolvedPkg in packagesToPublish)
             {
-                TaskItem item = new TaskItem(resolvedPkg.Id);
+                TaskItem item = new(resolvedPkg.Id);
                 item.SetMetadata("Version", resolvedPkg.Version.ToString());
                 _packagesResolved.Add(item);
             }

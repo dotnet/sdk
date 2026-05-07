@@ -8,24 +8,17 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tools.Help
 {
-    public class HelpCommand
+    public class HelpCommand(string[] helpArgs)
     {
-        private readonly ParseResult _parseResult;
-
-        public HelpCommand(ParseResult parseResult)
-        {
-            _parseResult = parseResult;
-        }
-
         public static int Run(ParseResult result)
         {
             result.HandleDebugSwitch();
 
             result.ShowHelpOrErrorIfAppropriate();
 
-            if (!string.IsNullOrEmpty(result.GetValue(HelpCommandParser.Argument)))
+            if (result.GetValue(HelpCommandParser.Argument) is string[] args && args is not [])
             {
-                return new HelpCommand(result).Execute();
+                return new HelpCommand(args).Execute();
             }
 
             PrintHelp();
@@ -85,7 +78,7 @@ namespace Microsoft.DotNet.Tools.Help
         public int Execute()
         {
             if (TryGetDocsLink(
-                _parseResult.GetValue(HelpCommandParser.Argument),
+                helpArgs,
                 out var docsLink) &&
                 !string.IsNullOrEmpty(docsLink))
             {
@@ -99,18 +92,18 @@ namespace Microsoft.DotNet.Tools.Help
                 Reporter.Error.WriteLine(
                     string.Format(
                         LocalizableStrings.CommandDoesNotExist,
-                        _parseResult.GetValue(HelpCommandParser.Argument)).Red());
+                        helpArgs).Red());
                 Reporter.Output.WriteLine(HelpUsageText.UsageText);
                 return 1;
             }
         }
 
-        private bool TryGetDocsLink(string commandName, out string docsLink)
+        private bool TryGetDocsLink(string[] command, out string docsLink)
         {
-            var command = Cli.Parser.GetBuiltInCommand(commandName);
-            if (command != null && command as DocumentedCommand != null)
+            var parsedCommand = Parser.Instance.Parse(["dotnet", .. command]);
+            if (parsedCommand?.CommandResult?.Command is DocumentedCommand dc)
             {
-                docsLink = (command as DocumentedCommand).DocsLink;
+                docsLink = dc.DocsLink;
                 return true;
             }
             docsLink = null;
