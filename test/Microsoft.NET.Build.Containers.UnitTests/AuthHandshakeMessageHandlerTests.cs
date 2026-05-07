@@ -443,13 +443,61 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         }
 
         /// <summary>
-        /// Verifies that DNS-named realms always pass the IP-literal guard.
+        /// Verifies that DNS realms whose host is a reserved loopback name (RFC 6761:
+        /// <c>localhost</c> or <c>*.localhost</c>) are rejected. These names resolve to
+        /// loopback regardless of the host file, so they carry the same risk as a literal
+        /// 127.0.0.1 even though they appear as DNS to <c>Uri.HostNameType</c>. Both the
+        /// secure-registry case and the insecure-but-non-matching-registry case are covered.
         /// </summary>
         [Theory]
-        [InlineData("http://localhost:5000/auth", "localhost:5000", true)]
-        [InlineData("https://localhost:5000/auth", "localhost:5000", true)]
+        // Secure registry: loopback-name realms are always rejected.
+        [InlineData("https://localhost/token", "registry.example.com", false)]
+        [InlineData("https://localhost:5000/token", "registry.example.com", false)]
+        [InlineData("https://foo.localhost/token", "registry.example.com", false)]
+        [InlineData("https://LOCALHOST/token", "registry.example.com", false)] // case-insensitive
+        // Insecure registry: still rejected when registry isn't a loopback-equivalent host.
+        [InlineData("https://localhost/token", "192.168.1.5:5000", true)]
+        [InlineData("http://localhost/token", "192.168.1.5:5000", true)]
+        // Lookalike that isn't actually localhost: "localhost.example.com" is a public DNS
+        // name, so the registry doesn't match the loopback exception either.
+        [InlineData("http://localhost/token", "localhost.example.com:5000", true)]
+        public void ValidateRealmUri_RejectsLoopbackDnsNameRealm(string realm, string registryName, bool isInsecureRegistry)
+        {
+            Assert.Throws<InvalidAuthResponseException>(() =>
+                AuthHandshakeMessageHandler.ValidateRealmUri(realm, registryName, isInsecureRegistry));
+        }
+
+        /// <summary>
+        /// Verifies that a realm whose host is a reserved loopback DNS name is permitted
+        /// when the registry is insecure and the registry host is itself loopback-equivalent
+        /// (a loopback IP literal, <c>localhost</c>, or a <c>*.localhost</c> subdomain).
+        /// Mirrors <see cref="ValidateRealmUri_AllowsMatchingIpLiteralWhenInsecure"/> for the
+        /// case where the realm side uses a DNS name instead of an IP literal.
+        /// </summary>
+        [Theory]
+        [InlineData("http://localhost:5000/auth", "localhost:5000")]
+        [InlineData("https://localhost:5000/auth", "localhost:5000")]
+        [InlineData("http://localhost:7000/auth", "localhost:5000")]           // port-independent
+        [InlineData("http://foo.localhost:5000/auth", "localhost:5000")]       // *.localhost realm
+        [InlineData("http://localhost:5000/auth", "registry.localhost:5000")]  // *.localhost registry
+        [InlineData("http://localhost:5000/auth", "127.0.0.1:5000")]           // registry is loopback IP literal
+        [InlineData("http://localhost:5000/auth", "[::1]:5000")]               // registry is IPv6 loopback literal
+        public void ValidateRealmUri_AllowsLoopbackDnsNameRealm_WhenInsecureAndRegistryIsLoopback(string realm, string registryName)
+        {
+            Uri uri = AuthHandshakeMessageHandler.ValidateRealmUri(realm, registryName, isInsecureRegistry: true);
+            Assert.Equal(realm, uri.AbsoluteUri);
+        }
+
+        /// <summary>
+        /// Verifies that public DNS-named realms (i.e. not RFC 6761 loopback names and not
+        /// IP literals) pass all guards regardless of the insecure flag - this is the
+        /// expected shape for any production token endpoint.
+        /// </summary>
+        [Theory]
         [InlineData("https://auth.example.com/token", "registry.example.com", false)]
-        public void ValidateRealmUri_AllowsDnsNamedRealms(string realm, string registryName, bool isInsecureRegistry)
+        [InlineData("https://auth.docker.io/token", "registry-1.docker.io", false)]    // real Docker Hub realm shape
+        [InlineData("http://auth.example.com:8080/token", "registry.example.com:5000", true)]
+        public void ValidateRealmUri_AllowsPublicDnsRealms(string realm, string registryName, bool isInsecureRegistry)
         {
             Uri uri = AuthHandshakeMessageHandler.ValidateRealmUri(realm, registryName, isInsecureRegistry);
             Assert.Equal(realm, uri.AbsoluteUri);

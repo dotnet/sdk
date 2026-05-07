@@ -258,7 +258,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         // Uri.Host so that Unicode-dot forms, which the runtime canonicalizes back to
         // 127.0.0.1 when the request is actually sent, cannot bypass the check by
         // appearing as a DNS name to Uri.HostNameType.
-        if (IPAddress.TryParse(realmUri.IdnHost, out IPAddress? realmIp)
+        string realmHost = realmUri.IdnHost;
+        if (IPAddress.TryParse(realmHost, out IPAddress? realmIp)
             && IsBlockedIpLiteral(realmIp))
         {
             // Exception: allow IP-literal realm whose host matches the registry's host
@@ -268,11 +269,46 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             {
                 throw new InvalidAuthResponseException(
                     registryName,
-                    Resource.FormatString(nameof(Strings.InvalidAuthResponse_PrivateIpLiteralRealm), realm, realmUri.IdnHost));
+                    Resource.FormatString(nameof(Strings.InvalidAuthResponse_PrivateIpLiteralRealm), realm, realmHost));
             }
+        }
+        else if (IsLoopbackDnsName(realmHost)
+            && !(isInsecureRegistry && RegistryIsLoopbackEquivalent(registryName)))
+        {
+            // RFC 6761 reserves "localhost" and "*.localhost" for loopback resolution, so a
+            // realm host of those names carries the same risk as a literal 127.0.0.1 - the
+            // runtime resolves them to loopback regardless of /etc/hosts. Apply the same
+            // exception model the IP-literal guard uses (insecure + registry is also loopback-equivalent).
+            throw new InvalidAuthResponseException(
+                registryName,
+                Resource.FormatString(nameof(Strings.InvalidAuthResponse_PrivateIpLiteralRealm), realm, realmHost));
         }
 
         return realmUri;
+    }
+
+    /// <summary>
+    /// Returns true when <paramref name="host"/> is one of the DNS names RFC 6761 reserves
+    /// for loopback resolution.
+    /// </summary>
+    private static bool IsLoopbackDnsName(string host) =>
+        host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+        || host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Returns true when <paramref name="registryName"/> identifies the local machine via a
+    /// loopback IP literal (<c>127.0.0.0</c> or <c>::1</c>) or an RFC 6761 loopback name
+    /// (<c>localhost</c> / <c>*.localhost</c>).
+    /// </summary>
+    private static bool RegistryIsLoopbackEquivalent(string registryName)
+    {
+        if (!Uri.TryCreate($"https://{registryName}", UriKind.Absolute, out Uri? uri))
+        {
+            return false;
+        }
+        string host = TrimTrailingDot(uri.IdnHost);
+        return IsLoopbackDnsName(host)
+            || (IPAddress.TryParse(host, out IPAddress? ip) && IPAddress.IsLoopback(ip));
     }
 
     /// <summary>
@@ -338,9 +374,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
 
         // RFC 6761 reserves "localhost" (and "*.localhost") for loopback addresses, so a
         // localhost-named registry returning a 127.0.0.0/8 or ::1 realm is legitimate.
-        if (IPAddress.IsLoopback(ip)
-            && (host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
-                || host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase)))
+        if (IPAddress.IsLoopback(ip) && IsLoopbackDnsName(host))
         {
             return true;
         }
