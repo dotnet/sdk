@@ -286,19 +286,26 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// Returns true if a manifest miss should fall back to the blob feed.
     /// We only fall back when the user gave us an exact prerelease version
     /// (e.g. <c>10.0.100-preview.4.25216.37</c>) and the manifest doesn't yet
-    /// know about it. Stable versions and named channels (e.g. "preview") are
-    /// served only from the manifest so that real misses surface as errors.
+    /// know about it, OR when the channel is a daily channel (where the
+    /// resolved version always points at a blob-feed-only build). Stable
+    /// versions and named channels (e.g. "preview") are served only from the
+    /// manifest so that real misses surface as errors.
     /// </summary>
     private static bool ShouldFallbackToBlobFeed(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion)
     {
-        if (!installRequest.Channel.IsFullySpecifiedVersion())
+        if (string.IsNullOrEmpty(resolvedVersion.Prerelease))
         {
             return false;
         }
 
-        if (string.IsNullOrEmpty(resolvedVersion.Prerelease))
+        if (installRequest.Channel.IsDaily)
+        {
+            return true;
+        }
+
+        if (!installRequest.Channel.IsFullySpecifiedVersion())
         {
             return false;
         }
