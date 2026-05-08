@@ -34,15 +34,13 @@ if ($arch) { $arguments += " /p:TargetArchitecture=$arch" }
 
 if ($test) { $arguments += " -test" }
 if ($pack) {
-  $arguments += " -pack /p:SkipUsingCrossgen=false /p:SkipBuildingInstallers=false"
-} else {
-  if ($skipCrossgen -or -not $pack) {
-    $arguments += " /p:SkipUsingCrossgen=true"
-  }
-  if ($skipInstallers -or -not $pack) {
-    $arguments += " /p:SkipBuildingInstallers=true"
-  }
+  $arguments += " -pack /p:SkipBuildingInstallers=false"
+  if (-not $skipCrossgen) { $arguments += " /p:SkipUsingCrossgen=false" }
+  if (-not $skipInstallers) { $arguments += " /p:SkipBuildingInstallers=false" }
 }
+
+if ($skipCrossgen) { $arguments += " /p:SkipUsingCrossgen=true" }
+if ($skipInstallers) { $arguments += " /p:SkipBuildingInstallers=true" }
 
 if ($properties) { $arguments += " " + ($properties -join " ") }
 
