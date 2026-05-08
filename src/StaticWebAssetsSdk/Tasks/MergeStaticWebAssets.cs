@@ -1,6 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -24,7 +27,8 @@ public class MergeStaticWebAssets : Task
     public override bool Execute()
     {
 
-        var assets = CandidateAssets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem);
+        var assets = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
+        Array.Sort(assets, (a, b) => string.CompareOrdinal(a.Identity, b.Identity));
 
         var assetsByTargetPath = assets
             .GroupBy(a => a.ComputeTargetPath("", '/'), StringComparer.OrdinalIgnoreCase)

@@ -6,7 +6,7 @@ using System.CommandLine;
 namespace Microsoft.TemplateEngine.Cli.Commands;
 
 /// <summary>
-/// If a <see cref="CliCommand"/> implements this interface, it can open
+/// If a <see cref="Command"/> implements this interface, it can open
 /// its documentation page online.
 /// </summary>
 public interface ICommandDocument

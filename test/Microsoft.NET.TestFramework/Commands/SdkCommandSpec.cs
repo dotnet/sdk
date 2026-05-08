@@ -8,14 +8,16 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public class SdkCommandSpec
     {
-        public string FileName { get; set; }
+        public string? FileName { get; set; }
         public List<string> Arguments { get; set; } = new List<string>();
 
         public Dictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
 
         public List<string> EnvironmentToRemove { get; } = new List<string>();
 
-        public string WorkingDirectory { get; set; }
+        public string? WorkingDirectory { get; set; }
+
+        public bool RedirectStandardInput { get; set; }
 
         private string EscapeArgs()
         {
@@ -30,7 +32,7 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 StartInfo = ToProcessStartInfo(doNotEscapeArguments)
             };
-            var ret = new Command(process, trimtrailingNewlines: true);
+            var ret = new Command(process, trimTrailingNewlines: true);
             return ret;
         }
 
@@ -40,7 +42,8 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 FileName = FileName,
                 Arguments = doNotEscapeArguments ? string.Join(" ", Arguments) : EscapeArgs(),
-                UseShellExecute = false
+                UseShellExecute = false,
+                RedirectStandardInput = RedirectStandardInput,
             };
             foreach (var kvp in Environment)
             {

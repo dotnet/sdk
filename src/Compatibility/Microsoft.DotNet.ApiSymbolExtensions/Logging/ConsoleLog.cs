@@ -6,8 +6,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
     /// <summary>
     /// Class to define common logging abstraction to the console across the APICompat and GenAPI codebases.
     /// </summary>
-    public class ConsoleLog(MessageImportance messageImportance) : ILog
+    public class ConsoleLog(MessageImportance messageImportance, string? noWarn = null) : ILog
     {
+        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new(noWarn!.Split(';'), StringComparer.OrdinalIgnoreCase);
+
         /// <inheritdoc />
         public bool HasLoggedErrors { get; private set; }
 
@@ -30,8 +32,20 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
             Console.WriteLine(message);
 
         /// <inheritdoc />
-        public virtual void LogWarning(string code, string message) =>
-            Console.WriteLine($"{code}: {message}");
+        public virtual void LogWarning(string code, string message)
+        {
+            string messageTextWithCode = $"{code}: {message}";
+
+            // Mimic MSBuild which logs suppressed warnings as low importance messages.
+            if (_noWarn.Contains(code))
+            {
+                LogMessage(MessageImportance.Low, messageTextWithCode);
+            }
+            else
+            {
+                Console.WriteLine(messageTextWithCode);
+            }
+        }
 
         /// <inheritdoc />
         public virtual void LogMessage(string message) =>
