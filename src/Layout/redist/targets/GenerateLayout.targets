@@ -537,19 +537,14 @@
     </PropertyGroup>
 
     <!--
-      Publish the dotnet-aot project as a NativeAOT shared library using a separate process.
+      Publish via Exec in a separate process to avoid BuildManager caching/scheduling
+      interference in CI's multi-node parallel build context.
       
-      In CI, Arcade's centralized NuGet restore writes the assets file without RuntimeIdentifier,
-      so it lacks the RID-specific target needed by Publish (NETSDK1047). Using nested <MSBuild>
-      Restore+Publish calls within the parallel build fails non-deterministically due to
-      BuildManager caching/scheduling interference in the multi-node build context.
-      
-      Running 'dotnet publish' via Exec in a separate process ensures:
-      1. A clean restore that generates the RID-specific target in the assets file
-      2. Immediate consumption of that assets file by Publish in the same invocation
-      3. No interference from the outer parallel build's project evaluations
+      The dotnet-aot project declares RuntimeIdentifier=$(TargetRid) so that centralized
+      NuGet restore (via sdk.slnx) generates the RID-specific target in project.assets.json.
+      Restore is skipped here since the initial restore is sufficient.
     -->
-    <Exec Command="&quot;$(DotNetTool)&quot; publish &quot;$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj&quot; -c $(Configuration) -r $(TargetRid) -o &quot;$(_DotnetAotPublishDir)&quot;" />
+    <Exec Command="&quot;$(DotNetTool)&quot; publish &quot;$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj&quot; --no-restore -c $(Configuration) -r $(TargetRid) -o &quot;$(_DotnetAotPublishDir)&quot;" />
 
     <!-- Verify the native library was produced -->
     <Error Condition="!Exists('$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)')"
