@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.DotNet.Watch.Aspire.UnitTests</RootNamespace>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" />
+    <ProjectReference Include="..\..\src\Dotnet.Watch\Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\Dotnet.Watch\Watch\RuntimeDependencies.props" />
+</Project>

@@ -21,6 +21,13 @@
     Detail: Displays all columns in the output.
   },
   {
+    Label: --diagnostics,
+    Kind: Keyword,
+    SortText: --diagnostics,
+    InsertText: --diagnostics,
+    Detail: Enables diagnostic output.
+  },
+  {
     Label: --language,
     Kind: Keyword,
     SortText: --language,
@@ -49,10 +56,31 @@
     Detail: Filters templates based on available types. Predefined values are "project" and "item".
   },
   {
+    Label: --verbosity,
+    Kind: Keyword,
+    SortText: --verbosity,
+    InsertText: --verbosity,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
+  },
+  {
+    Label: -d,
+    Kind: Keyword,
+    SortText: -d,
+    InsertText: -d,
+    Detail: Enables diagnostic output.
+  },
+  {
     Label: -lang,
     Kind: Keyword,
     SortText: -lang,
     InsertText: -lang,
     Detail: Filters templates based on language.
+  },
+  {
+    Label: -v,
+    Kind: Keyword,
+    SortText: -v,
+    InsertText: -v,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
   }
 ]
