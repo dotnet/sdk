@@ -94,14 +94,16 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
 
         private CommandResult Run(params string[] args)
         {
-            // --roll-forward LatestMajor: the tool DLL targets $(NetMinimum) (net10.0); when running in
-            // a redist SDK whose only viable .NETCoreApp shared runtime is the SDK's own (e.g. net11.0
-            // on macOS arm64 where the bundled net10.0 runtime is x86_64-only), force the host to roll
-            // forward past net10.0 so the tool loads under the redist SDK's runtime. With `exec`, the
-            // host options must follow the verb (`dotnet exec --roll-forward ...`), not precede it.
+            // The tool DLL targets $(NetMinimum) (net10.0). On macOS arm64 the helix payload's bundled
+            // Microsoft.NETCore.App/10.0.0 is x86_64-only, so dlopen of libhostpolicy.dylib fails. We
+            // need to roll forward to the redist SDK's net11.0 runtime — but it's a prerelease (e.g.
+            // 11.0.0-preview.x), and roll-forward refuses prereleases by default. Pass --roll-forward
+            // LatestMajor (must follow the `exec` verb) and DOTNET_ROLL_FORWARD_TO_PRERELEASE=1.
             var allArgs = new List<string> { "exec", "--roll-forward", "LatestMajor", ToolPaths.ApiCompatToolDll };
             allArgs.AddRange(args);
-            return new DotnetCommand(Log, allArgs.ToArray()).Execute();
+            return new DotnetCommand(Log, allArgs.ToArray())
+                .WithEnvironmentVariable("DOTNET_ROLL_FORWARD_TO_PRERELEASE", "1")
+                .Execute();
         }
 
         /// <summary>
