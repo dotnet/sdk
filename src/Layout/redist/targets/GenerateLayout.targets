@@ -544,7 +544,8 @@
       NuGet restore (via sdk.slnx) generates the RID-specific target in project.assets.json.
       Restore is skipped here since the initial restore is sufficient.
     -->
-    <Exec Command="&quot;$(DotNetTool)&quot; publish &quot;$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj&quot; --no-restore -c $(Configuration) -r $(TargetRid) -o &quot;$(_DotnetAotPublishDir)&quot;" />
+    <Exec Command="&quot;$(DotNetTool)&quot; publish &quot;$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj&quot; --no-restore -c $(Configuration) -r $(TargetRid) -o &quot;$(_DotnetAotPublishDir)&quot;"
+          IgnoreStandardErrorWarningFormat="true" />
 
     <!-- Verify the native library was produced -->
     <Error Condition="!Exists('$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)')"
