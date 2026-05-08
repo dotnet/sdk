@@ -34,7 +34,7 @@ if ($arch) { $arguments += " /p:TargetArchitecture=$arch" }
 
 if ($test) { $arguments += " -test" }
 if ($pack) {
-  $arguments += " -pack /p:SkipBuildingInstallers=false"
+  $arguments += " -pack"
   if (-not $skipCrossgen) { $arguments += " /p:SkipUsingCrossgen=false" }
   if (-not $skipInstallers) { $arguments += " /p:SkipBuildingInstallers=false" }
 } else {
