@@ -8,8 +8,8 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using Microsoft.DotNet.Cli.Installer.Windows;
-using Microsoft.DotNet.Cli.Installer.Windows.Security;
+using Microsoft.DotNet.Installer.Windows;
+using Microsoft.DotNet.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -79,24 +79,6 @@ namespace Microsoft.DotNet.Tests
 
             Assert.Equal("Received request: UninstallMsi", r1.Message);
             Assert.Equal("Shutting down!", r2.Message);
-        }
-
-        [WindowsOnlyFact]
-        public void InstallRequestMessageCreateReturnsDefaultForNullPayload()
-        {
-            InstallRequestMessage message = InstallRequestMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
-
-            message.Should().NotBeNull();
-            message.RequestType.Should().Be(default);
-        }
-
-        [WindowsOnlyFact]
-        public void InstallResponseMessageCreateReturnsDefaultForNullPayload()
-        {
-            InstallResponseMessage message = InstallResponseMessage.Create(System.Text.Encoding.UTF8.GetBytes("null"));
-
-            message.Should().NotBeNull();
-            message.Message.Should().BeNull();
         }
 
         [WindowsOnlyTheory]

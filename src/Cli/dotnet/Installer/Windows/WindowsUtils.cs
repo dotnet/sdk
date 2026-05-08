@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Runtime.Versioning;
@@ -14,7 +12,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
-namespace Microsoft.DotNet.Cli.Installer.Windows;
+namespace Microsoft.DotNet.Installer.Windows;
 
 [SupportedOSPlatform("windows")]
 /// <summary>
