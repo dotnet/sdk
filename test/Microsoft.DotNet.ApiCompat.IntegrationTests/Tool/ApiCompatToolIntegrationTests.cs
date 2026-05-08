@@ -97,8 +97,9 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             // --roll-forward LatestMajor: the tool DLL targets $(NetMinimum) (net10.0); when running in
             // a redist SDK whose only viable .NETCoreApp shared runtime is the SDK's own (e.g. net11.0
             // on macOS arm64 where the bundled net10.0 runtime is x86_64-only), force the host to roll
-            // forward past net10.0 so the tool loads under the redist SDK's runtime.
-            var allArgs = new List<string> { "--roll-forward", "LatestMajor", "exec", ToolPaths.ApiCompatToolDll };
+            // forward past net10.0 so the tool loads under the redist SDK's runtime. With `exec`, the
+            // host options must follow the verb (`dotnet exec --roll-forward ...`), not precede it.
+            var allArgs = new List<string> { "exec", "--roll-forward", "LatestMajor", ToolPaths.ApiCompatToolDll };
             allArgs.AddRange(args);
             return new DotnetCommand(Log, allArgs.ToArray()).Execute();
         }
