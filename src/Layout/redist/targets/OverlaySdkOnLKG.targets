@@ -93,10 +93,20 @@
     <Exec Command="$(RedistLayoutPath)dotnet new"
           EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)" />
 
+
+    <!-- Pass the credential provider plugin path to the subprocess so it can authenticate
+         with internal NuGet feeds. DOTNET_CLI_HOME redirection causes NuGet to look for
+         plugins in the wrong location (artifacts/tmp/ instead of the user profile). -->
+    <ItemGroup>
+      <_OverlaySdkEnvVars Include="DOTNET_CLI_HOME=$(ArtifactsTmpDir)" />
+      <_OverlaySdkEnvVars Condition="Exists('$(USERPROFILE)\.nuget\plugins\netcore\CredentialProvider.Microsoft\CredentialProvider.Microsoft.dll')"
+                          Include="NUGET_PLUGIN_PATHS=$(USERPROFILE)\.nuget\plugins\netcore\CredentialProvider.Microsoft\CredentialProvider.Microsoft.dll" />
+    </ItemGroup>
+
     <!-- Install a coherent set of workload manifests -->
     <Exec Condition="Exists('$(RedistLayoutPath)TestRollback.json')"
-          Command="$(RedistLayoutPath)dotnet workload update --from-rollback-file $(RedistLayoutPath)TestRollback.json"
-          EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)"/>
+          Command="$(RedistLayoutPath)dotnet workload update --from-rollback-file $(RedistLayoutPath)TestRollback.json --configfile $(RepoRoot)NuGet.config"
+          EnvironmentVariables="@(_OverlaySdkEnvVars)"/>
 
     <ItemGroup>
       <MonoToolchainCurrentWorkloadManifests Include="$(RedistLayoutPath)\sdk-manifests\$(MonoWorkloadFeatureBand)\microsoft.net.workload.mono.toolchain.current\*\WorkloadManifest.targets" />
