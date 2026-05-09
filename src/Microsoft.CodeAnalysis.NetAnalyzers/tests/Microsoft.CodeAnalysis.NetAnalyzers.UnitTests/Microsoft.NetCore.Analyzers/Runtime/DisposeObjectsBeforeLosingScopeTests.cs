@@ -8197,8 +8197,8 @@ class B : IDisposable
 {
     public void Dispose()
     {
-        A x = new A();{|CS1525:|}
-        = x{|CS1002:|}
+        A x = new A();
+        {|CS1525:=|} x{|CS1002:|}
     }
 }
 ");

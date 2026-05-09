@@ -5,9 +5,14 @@
   </ItemGroup>
 
   <Target Name="LayoutBuiltinManifests">
+
+    <PropertyGroup>
+      <_VersionOverride Condition="'$(DotNet1xxWorkloadManifestVersion)' != ''">Version=$(DotNet1xxWorkloadManifestVersion)</_VersionOverride>
+    </PropertyGroup>
+
     <MSBuild Projects="@(ProjectReference)"
              Targets="LayoutManifest"
-             Properties="ManifestDirectory=$(ManifestDirectory)" />
+             Properties="ManifestDirectory=$(ManifestDirectory);$(_VersionOverride)" />
   </Target>
 
 </Project>
