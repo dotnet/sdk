@@ -1727,6 +1727,26 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void Directives_IncludeDll()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:include Lib.dll
+            Console.WriteLine("Hello");
+            """);
+        File.WriteAllBytes(Path.Join(testInstance.Path, "Lib.dll"), []);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Lib.dll", "Program.cs", "Program.csproj"]);
+    }
+
+    [Fact]
     public void Directives_IncludeExclude_FilesCopied()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

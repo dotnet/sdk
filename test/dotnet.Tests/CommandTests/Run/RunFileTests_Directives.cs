@@ -1019,6 +1019,46 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     }
 
     [Fact]
+    public void IncludeDirective_Dll()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "LibClass.cs"), """
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        new DotnetCommand(Log, "build", "Lib.csproj")
+            .WithWorkingDirectory(libDir)
+            .Execute()
+            .Should().Pass();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:include Lib/bin/Debug/{ToolsetInfo.CurrentTargetFramework}/Lib.dll
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Lib");
+    }
+
+    [Fact]
     public void IncludeDirective_WorkingDirectory()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
