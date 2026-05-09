@@ -1500,12 +1500,12 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
       </trans-unit>
       <trans-unit id="RunCommandWarningCsFileArgumentPassedToProject">
         <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <target state="translated">Uyarı: '{0}' dosya tabanlı bir uygulama gibi görünüyor ancak dosya bulunamadı ve proje '{1}' için bağımsız değişken olarak iletildi. Uygulama bağımsız değişkeni olarak iletmek ve bu uyarıyı gizlemek için 'dotnet run -- {0}' komutunu kullanın.</target>
         <note>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningFileArgumentPassedToProject">
         <source>Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <target state="translated">Uyarı: '{0}' dosya tabanlı bir uygulama gibi görünüyor ancak proje '{1}' için bağımsız değişken olarak iletildi. Dosya tabanlı bir uygulama olarak çalıştırmak için 'dotnet run --file {0}' komutunu kullanın. Uygulama bağımsız değişkeni olarak iletmek ve bu uyarıyı gizlemek için 'dotnet run -- {0}' komutunu kullanın.</target>
         <note>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
@@ -2081,12 +2081,12 @@ karşılık gelen paket kimliklerini bulmak için
       </trans-unit>
       <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
         <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</target>
+        <target state="translated">Uyarı: '{0}' dosya tabanlı bir uygulama gibi görünüyor ancak dosya bulunamadı ve MSBuild bağımsız değişkeni olarak işlendi.</target>
         <note>{0} is the .cs file path argument.</note>
       </trans-unit>
       <trans-unit id="WarningFileArgumentPassedToMSBuild">
         <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</target>
+        <target state="translated">Uyarı: '{0}' dosya tabanlı bir uygulama gibi görünüyor ancak MSBuild bağımsız değişkeni olarak işlendi. Dosya tabanlı bir uygulama olarak işlemek için 'dotnet {1} {0}' komutunu kullanın.</target>
         <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
