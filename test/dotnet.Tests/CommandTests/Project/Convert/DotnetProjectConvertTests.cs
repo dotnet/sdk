@@ -1730,11 +1730,38 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void Directives_IncludeDll()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "LibClass.cs"), """
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        new DotnetCommand(Log, "build", "Lib.csproj")
+            .WithWorkingDirectory(libDir)
+            .Execute()
+            .Should().Pass();
+
+        File.Copy(
+            sourceFileName: Path.Join(libDir, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll"),
+            destFileName: Path.Join(testInstance.Path, "Lib.dll"));
+
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:include Lib.dll
             Console.WriteLine("Hello");
             """);
-        File.WriteAllBytes(Path.Join(testInstance.Path, "Lib.dll"), []);
 
         new DotnetCommand(Log, "project", "convert", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
