@@ -1768,6 +1768,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
+        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
+            .Should().Contain($"""
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                """)
+            // Convert currently copies include files, but doesn't materialize include directives as explicit project items.
+            .And.NotContain("""<Reference Include="Lib.dll" />""");
+
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
             .Should().BeEquivalentTo(["Lib.dll", "Program.cs", "Program.csproj"]);
