@@ -33,27 +33,8 @@ public sealed class DotnetupTelemetry : IDisposable
     /// ActivitySource for command-level telemetry.
     /// </summary>
     public static readonly ActivitySource CommandSource = new(
-        "Microsoft.Dotnet.Bootstrapper",
+        Constants.Telemetry.BootstrapperSourceName,
         GetVersion());
-
-    /// <summary>
-    /// Connection string for Application Insights.
-    /// </summary>
-    private const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
-
-    private const string TelemetryOptOutEnvVar = "DOTNET_CLI_TELEMETRY_OPTOUT";
-    private const string StoragePathEnvVar = "DOTNET_CLI_TELEMETRY_STORAGE_PATH";
-    private const string DisableTraceExportEnvVar = "DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT";
-    private const string DiskLogPathEnvVar = "DOTNET_CLI_TELEMETRY_LOG_PATH";
-
-    /// <summary>
-    /// Opt-in env var that enables network export of OTel spans via the
-    /// AzMonitor + OTLP trace exporters (Aspire-style perf debugging).
-    /// Default-off because data-x ingests only the AppInsights <c>traces</c>
-    /// table (fed by ILogger), not the span-fed tables; keeping spans
-    /// in-process saves bandwidth, batch overhead, and offline retry blobs.
-    /// </summary>
-    private const string EnablePerfTraceEnvVar = "DOTNETUP_CLI_GET_PERF_TRACE";
 
     private static readonly string s_defaultStorageDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -63,7 +44,7 @@ public sealed class DotnetupTelemetry : IDisposable
 
     private static string? GetDiskLogPath()
     {
-        var path = Environment.GetEnvironmentVariable(DiskLogPathEnvVar);
+        var path = Environment.GetEnvironmentVariable(Constants.Telemetry.DiskLogPathEnvVar);
         if (string.IsNullOrWhiteSpace(path))
         {
             return null;
@@ -123,9 +104,7 @@ public sealed class DotnetupTelemetry : IDisposable
         // Check opt-out (same env var as SDK).
         // Unlike the SDK, dotnetup sends telemetry from dev/test builds too —
         // distinguished by the dev.build=true tag in common properties.
-        var optOutValue = Environment.GetEnvironmentVariable(TelemetryOptOutEnvVar);
-        Enabled = !string.Equals(optOutValue, "1", StringComparison.Ordinal) &&
-                  !string.Equals(optOutValue, "true", StringComparison.OrdinalIgnoreCase);
+        Enabled = !IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.TelemetryOptOutEnvVar));
 
         if (!Enabled)
         {
@@ -137,8 +116,8 @@ public sealed class DotnetupTelemetry : IDisposable
 
         try
         {
-            var disableExport = IsTruthy(Environment.GetEnvironmentVariable(DisableTraceExportEnvVar));
-            var enablePerfTrace = IsTruthy(Environment.GetEnvironmentVariable(EnablePerfTraceEnvVar));
+            var disableExport = IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.DisableTraceExportEnvVar));
+            var enablePerfTrace = IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.EnablePerfTraceEnvVar));
             var debugConsole = Environment.GetEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
             var storageDirectory = ResolveStorageDirectory();
             var commonAttrs = BuildCommonAttributes();
@@ -149,7 +128,7 @@ public sealed class DotnetupTelemetry : IDisposable
             _services = BuildLoggingServices(resource, disableExport, debugConsole, storageDirectory);
             _loggerProvider = _services.GetService<LoggerProvider>();
             _loggerFactory = _services.GetRequiredService<ILoggerFactory>();
-            _logger = _loggerFactory.CreateLogger("Microsoft.Dotnet.Bootstrapper");
+            _logger = _loggerFactory.CreateLogger(Constants.Telemetry.BootstrapperSourceName);
         }
         catch (Exception)
         {
@@ -160,7 +139,7 @@ public sealed class DotnetupTelemetry : IDisposable
 
     private static string ResolveStorageDirectory()
     {
-        var environmentStoragePath = Environment.GetEnvironmentVariable(StoragePathEnvVar);
+        var environmentStoragePath = Environment.GetEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
         return string.IsNullOrWhiteSpace(environmentStoragePath)
             ? s_defaultStorageDirectory
             : environmentStoragePath;
@@ -222,8 +201,8 @@ public sealed class DotnetupTelemetry : IDisposable
     {
         var builder = Sdk.CreateTracerProviderBuilder()
             .SetResourceBuilder(resource)
-            .AddSource("Microsoft.Dotnet.Bootstrapper")
-            .AddSource("Microsoft.Dotnet.Installation")
+            .AddSource(Constants.Telemetry.BootstrapperSourceName)
+            .AddSource(Metrics.SourceName)
             .SetSampler(new AlwaysOnSampler());
 
         if (!string.IsNullOrWhiteSpace(s_diskLogPath))
@@ -240,7 +219,7 @@ public sealed class DotnetupTelemetry : IDisposable
             builder.AddOtlpExporter();
             builder.AddAzureMonitorTraceExporter(o =>
             {
-                o.ConnectionString = ConnectionString;
+                o.ConnectionString = Constants.Telemetry.ConnectionString;
                 o.EnableLiveMetrics = false;
                 o.StorageDirectory = storageDirectory;
             });
@@ -294,7 +273,7 @@ public sealed class DotnetupTelemetry : IDisposable
                 {
                     o.AddAzureMonitorLogExporter(amo =>
                     {
-                        amo.ConnectionString = ConnectionString;
+                        amo.ConnectionString = Constants.Telemetry.ConnectionString;
                         amo.EnableLiveMetrics = false;
                         amo.StorageDirectory = storageDirectory;
                     });
