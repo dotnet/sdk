@@ -4,12 +4,15 @@
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
@@ -71,18 +74,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 new HashSet<string>(StringComparer.OrdinalIgnoreCase), usedFolderNames);
         }
 
-        ConvertFile(file, entryPointOutputDir, isEntryPointFile: true);
-
-        // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
-        var includeItems = FindIncludedItems(builder, projectInstance, file).ToList();
+        var (_, _, _, includeItems) = ConvertFile(file, entryPointOutputDir, isEntryPointFile: true);
 
         // Convert referenced files (#:ref directives) into library projects.
         var convertedRefFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var refIncludeItems = new List<(string ItemType, string FullPath, string RelativePath)>();
         ConvertReferencedFiles(evaluatedDirectives, Path.GetDirectoryName(file)!);
-
-        // Copy or move over included items.
-        CopyIncludedItems(includeItems, entryPointOutputDir);
 
         // Handle deletion of source files if requested.
         bool shouldDelete = _deleteSource || TryAskForDeleteSource();
@@ -111,7 +108,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
         return 0;
 
-        (VirtualProjectBuilder builder, ProjectInstance projectInstance, ImmutableArray<CSharpDirective> evaluatedDirectives)
+        (VirtualProjectBuilder builder, ProjectInstance projectInstance, ImmutableArray<CSharpDirective> evaluatedDirectives, List<(string ItemType, string FullPath, string RelativePath)> includeItems)
             ConvertFile(string sourceFile, string outputDirectory, bool isEntryPointFile)
         {
             var sourceDirectory = Path.GetDirectoryName(sourceFile)!;
@@ -139,6 +136,9 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     validateAllDirectives: !_force);
             }
 
+            // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
+            var includeItems = FindIncludedItems(fileBuilder, fileProjectInstance, sourceFile).ToList();
+
             CreateDirectory(outputDirectory);
 
             // Copy the .cs file with directives removed.
@@ -153,6 +153,8 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 VirtualProjectBuildingCommand.RemoveDirectivesFromFile(fileBuilder.EntryPointSourceFile, targetFile);
             }
 
+            CopyIncludedItems(includeItems, outputDirectory);
+
             // Create project file.
             var projectFile = Path.Join(outputDirectory, Path.GetFileNameWithoutExtension(sourceFile) + ".csproj");
             if (_dryRun)
@@ -161,17 +163,38 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
             else
             {
+                var projectDirectives = UpdateDirectives(fileDirectives, sourceDirectory, outputDirectory);
+                WriteProjectFile(projectFile, projectDirectives);
+
+                var explicitProjectItemDirectives = FindExplicitProjectItemDirectives(
+                    projectFile,
+                    sourceDirectory,
+                    outputDirectory,
+                    includeItems,
+                    fileDirectives).ToImmutableArray();
+                if (!explicitProjectItemDirectives.IsEmpty)
+                {
+                    WriteProjectFile(projectFile, projectDirectives, explicitProjectItemDirectives);
+                }
+            }
+
+            return (fileBuilder, fileProjectInstance, fileDirectives, includeItems);
+
+            void WriteProjectFile(
+                string projectFile,
+                ImmutableArray<CSharpDirective> projectDirectives,
+                ImmutableArray<CSharpDirective.IncludeOrExclude> explicitProjectItemDirectives = default)
+            {
                 using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
                 using var writer = new StreamWriter(stream, Encoding.UTF8);
                 VirtualProjectBuilder.WriteProjectFile(
                     writer,
-                    UpdateDirectives(fileDirectives, sourceDirectory, outputDirectory),
+                    projectDirectives,
+                    GetDefaultProperties(fileProjectInstance),
                     isVirtualProject: false,
                     userSecretsId: isEntryPointFile ? DetermineUserSecretsId(fileProjectInstance) : null,
-                    defaultProperties: GetDefaultProperties(fileProjectInstance));
+                    explicitProjectItemDirectives: explicitProjectItemDirectives);
             }
-
-            return (fileBuilder, fileProjectInstance, fileDirectives);
         }
 
         void CreateDirectory(string path)
@@ -269,11 +292,8 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 var refDir = Path.GetDirectoryName(refPath)!;
                 var refTargetDirectory = Path.Combine(targetDirectory, refName);
 
-                var (refBuilder, refProjectInstance, refEvaluatedDirectives) = ConvertFile(refPath, refTargetDirectory, isEntryPointFile: false);
+                var (_, _, refEvaluatedDirectives, items) = ConvertFile(refPath, refTargetDirectory, isEntryPointFile: false);
 
-                // Copy included items (e.g., default Content items) for the referenced file.
-                var items = FindIncludedItems(refBuilder, refProjectInstance, refPath).ToList();
-                CopyIncludedItems(items, refTargetDirectory);
                 refIncludeItems.AddRange(items);
 
                 // Recursively convert referenced files in the referenced file.
@@ -383,6 +403,135 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
+        IEnumerable<CSharpDirective.IncludeOrExclude> FindExplicitProjectItemDirectives(
+            string projectFile,
+            string sourceDirectory,
+            string outputDirectory,
+            List<(string ItemType, string FullPath, string RelativePath)> includeItems,
+            ImmutableArray<CSharpDirective> directives)
+        {
+            // The converted project is evaluated after files are copied so SDK defaults can pick up
+            // items such as Compile/None/Content naturally. Keep only the #:include directives whose
+            // copied items are missing from that evaluation so the project writer doesn't infer item
+            // types from mapping again.
+            var candidateItems = includeItems
+                .Select(item => (item.ItemType, item.RelativePath, SourceFullPath: item.FullPath, OutputFullPath: Path.GetFullPath(Path.Combine(outputDirectory, item.RelativePath))))
+                .Distinct()
+                .ToArray();
+
+            if (candidateItems.Length == 0)
+            {
+                yield break;
+            }
+
+            using var outputProjectCollection = new ProjectCollection();
+            var outputProject = ProjectInstance.FromFile(projectFile, new ProjectOptions
+            {
+                ProjectCollection = outputProjectCollection,
+            });
+
+            var itemComparer = new ProjectItemComparer();
+            var automaticallyIncludedItems = new HashSet<(string ItemType, string FullPath)>(itemComparer);
+            foreach (var itemType in candidateItems.Select(static item => item.ItemType).Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                foreach (var item in outputProject.GetItems(itemType))
+                {
+                    var fullPath = Path.GetFullPath(item.GetMetadataValue("FullPath"), outputDirectory);
+                    automaticallyIncludedItems.Add((itemType, fullPath));
+                }
+            }
+
+            var addedExplicitItems = new HashSet<(string ItemType, string FullPath)>(itemComparer);
+            foreach (var directive in directives.OfType<CSharpDirective.IncludeOrExclude>())
+            {
+                if (directive.Kind != CSharpDirective.IncludeOrExcludeKind.Include || directive.ItemType is null)
+                {
+                    continue;
+                }
+
+                var missingItems = candidateItems
+                    .Where(item => string.Equals(item.ItemType, directive.ItemType, StringComparison.OrdinalIgnoreCase) &&
+                        DirectiveIncludesItem(directive, sourceDirectory, item.SourceFullPath))
+                    .Where(item =>
+                    {
+                        var itemKey = (item.ItemType, item.OutputFullPath);
+                        return !automaticallyIncludedItems.Contains(itemKey) && addedExplicitItems.Add(itemKey);
+                    })
+                    .ToArray();
+
+                if (missingItems.Length == 0)
+                {
+                    continue;
+                }
+
+                if (TryGetOutputDirectiveName(directive, sourceDirectory, outputDirectory, missingItems, out var directiveName))
+                {
+                    yield return directive.WithName(directiveName);
+                    continue;
+                }
+
+                foreach (var item in missingItems)
+                {
+                    yield return directive.WithName(item.RelativePath);
+                }
+            }
+
+            static bool DirectiveIncludesItem(CSharpDirective.IncludeOrExclude directive, string sourceDirectory, string itemFullPath)
+            {
+                if (!HasWildcards(directive.Name))
+                {
+                    return string.Equals(Path.GetFullPath(directive.Name), itemFullPath, StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (!IsInDirectory(directive.Name, sourceDirectory))
+                {
+                    return false;
+                }
+
+                var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+                matcher.AddInclude(NormalizePath(Path.GetRelativePath(sourceDirectory, directive.Name)));
+                return matcher.Match(NormalizePath(Path.GetRelativePath(sourceDirectory, itemFullPath))).HasMatches;
+            }
+
+            static bool TryGetOutputDirectiveName(
+                CSharpDirective.IncludeOrExclude directive,
+                string sourceDirectory,
+                string outputDirectory,
+                (string ItemType, string RelativePath, string SourceFullPath, string OutputFullPath)[] missingItems,
+                [NotNullWhen(true)] out string? directiveName)
+            {
+                // Like project/ref conversion, rewrite paths to be relative to the converted output shape.
+                // Files under the source directory keep the same relative path after being copied; files
+                // copied from outside the source directory are placed at the output root.
+                if (IsInDirectory(directive.Name, sourceDirectory))
+                {
+                    var outputPath = Path.Combine(outputDirectory, Path.GetRelativePath(sourceDirectory, directive.Name));
+                    directiveName = Path.GetRelativePath(outputDirectory, outputPath);
+                    return true;
+                }
+
+                if (missingItems.Length == 1)
+                {
+                    directiveName = Path.GetRelativePath(outputDirectory, missingItems[0].OutputFullPath);
+                    return true;
+                }
+
+                directiveName = null;
+                return false;
+            }
+
+            static bool HasWildcards(string path) => path.Contains('*') || path.Contains('?');
+
+            static bool IsInDirectory(string path, string directory)
+            {
+                var fullPath = Path.GetFullPath(path);
+                var fullDirectory = PathUtilities.EnsureTrailingSlash(Path.GetFullPath(directory));
+                return fullPath.StartsWith(fullDirectory, StringComparison.OrdinalIgnoreCase);
+            }
+
+            static string NormalizePath(string path) => path.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/');
+        }
+
         string? DetermineUserSecretsId(ProjectInstance projectInstance)
         {
             var implicitValue = projectInstance.GetPropertyValue("_ImplicitFileBasedProgramUserSecretsId");
@@ -462,6 +611,11 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     continue;
                 }
 
+                if (directive is CSharpDirective.IncludeOrExclude)
+                {
+                    continue;
+                }
+
                 result.Add(directive);
             }
 
@@ -478,6 +632,22 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     yield return (name, defaultValue);
                 }
             }
+        }
+    }
+
+    private sealed class ProjectItemComparer : IEqualityComparer<(string ItemType, string FullPath)>
+    {
+        public bool Equals((string ItemType, string FullPath) x, (string ItemType, string FullPath) y)
+        {
+            return string.Equals(x.ItemType, y.ItemType, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.FullPath, y.FullPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public int GetHashCode((string ItemType, string FullPath) obj)
+        {
+            return HashCode.Combine(
+                StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ItemType),
+                StringComparer.OrdinalIgnoreCase.GetHashCode(obj.FullPath));
         }
     }
 
