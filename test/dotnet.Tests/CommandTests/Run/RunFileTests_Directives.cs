@@ -1834,4 +1834,29 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .Should().Fail()
             .And.HaveStdErrContaining(DirectiveError(utilPath, 1, FileBasedProgramsResources.DuplicateDirective, duplicateTypeAndName));
     }
+
+    [Fact]
+    public void IncludeDirective_IncludeAndExcludeSamePathAreAllowed()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        File.WriteAllText(programPath, """
+            #!/usr/bin/env dotnet
+            #:include Helper.cs
+            #:exclude Helper.cs
+            Console.WriteLine("Hello");
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Helper.cs"), """
+            #error This file should not be compiled.
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello");
+    }
 }

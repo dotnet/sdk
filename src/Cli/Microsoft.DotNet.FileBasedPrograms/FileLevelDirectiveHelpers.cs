@@ -885,7 +885,7 @@ internal struct DirectiveDeduplicator
     private Dictionary<CSharpDirective.Named, CSharpDirective.Named>? _seen;
 
     /// <summary>
-    /// Checks <paramref name="directive"/> for duplication and reports an error if a different value was already seen.
+    /// Checks <paramref name="directive"/> for duplication and reports an error if a different unevaluated value was already seen.
     /// </summary>
     /// <returns><see langword="false"/> if a duplicate directive was already seen and this directive should be skipped.</returns>
     public bool CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError)
@@ -921,6 +921,8 @@ internal struct DirectiveDeduplicator
     private static bool HasSameValue(CSharpDirective.Named existingDirective, CSharpDirective.Named directive)
     {
         Debug.Assert(NamedDirectiveComparer.Instance.Equals(existingDirective, directive));
+        Debug.Assert(existingDirective is CSharpDirective.Sdk or CSharpDirective.Property or CSharpDirective.Package);
+        Debug.Assert(directive is CSharpDirective.Sdk or CSharpDirective.Property or CSharpDirective.Package);
 
         return (existingDirective, directive) switch
         {

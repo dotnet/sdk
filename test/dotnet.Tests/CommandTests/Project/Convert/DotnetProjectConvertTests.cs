@@ -2293,6 +2293,76 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void Directives_Duplicate_UsesUnevaluatedValues()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:property A=a
+                #:property B=b
+                #:property B=b
+                #:property C=a
+                #:property C=$(A)
+                #:property D=$(A)
+                #:property D=$(A)
+                Console.Write();
+                """,
+            expectedProject: null,
+            expectedCSharp: """
+                Console.Write();
+                """,
+            expectedErrors:
+            [
+                (5, string.Format(FileBasedProgramsResources.DuplicateDirective, "#:property C")),
+            ],
+            evaluateDirectives: true);
+    }
+
+    [Fact]
+    public void Directives_Duplicate_EvaluatedProjectDirectivesAreAllowed()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Lib.csproj"), """
+            <Project Sdk="Microsoft.NET.Sdk" />
+            """);
+
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:property LibraryProject=Lib.csproj
+                #:project Lib.csproj
+                #:project $(LibraryProject)
+                Console.Write();
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <LibraryProject>Lib.csproj</LibraryProject>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <ProjectReference Include="Lib.csproj" />
+                    <ProjectReference Include="Lib.csproj" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.Write();
+                """,
+            evaluateDirectives: true);
+    }
+
+    [Fact]
     public void Directives_Duplicate()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

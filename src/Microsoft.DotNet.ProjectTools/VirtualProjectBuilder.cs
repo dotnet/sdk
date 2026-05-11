@@ -331,7 +331,8 @@ public sealed class VirtualProjectBuilder
             // Evaluate directives, e.g., determine item types for #:include/#:exclude from their file extension.
             var fileEvaluatedDirectives = EvaluateDirectives(project, directivesForEvaluation, reportError);
 
-            // Detect duplicate directives across all files on evaluated directives.
+            // Detect duplicate directives across all files on evaluated directives. EvaluateDirectives only expands
+            // #:project, #:ref, #:include, and #:exclude; #:property and #:package values are still unevaluated here.
             var deduplicatedFileEvaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>(fileEvaluatedDirectives.Length);
             foreach (var directive in fileEvaluatedDirectives)
             {
@@ -399,6 +400,8 @@ public sealed class VirtualProjectBuilder
             return false;
         }
 
+        // #:sdk directives become Sdk.props/Sdk.targets imports when creating the temporary project used for
+        // directive evaluation, so identical duplicates must be removed before that project is created.
         ImmutableArray<CSharpDirective> DeduplicateSdkDirectives(ImmutableArray<CSharpDirective> directives)
         {
             if (!directives.Any(static directive => directive is CSharpDirective.Sdk))

@@ -269,8 +269,8 @@ We do not limit these directives to appear only in entry point files because it 
 
 Duplicate directives are handled according to the MSBuild construct they represent.
 For `#:sdk`, `#:property`, and `#:package`, directives are considered duplicate if their kind and name are equal case-insensitively.
-If the duplicate has the same value, it is ignored.
-If the duplicate has a different value, it is an error (which might be relaxed in the future with smarter deduplication,
+If the duplicate has the same unevaluated value (before any MSBuild variable expansion), it is ignored.
+If the duplicate has a different unevaluated value, it is an error (which might be relaxed in the future with smarter deduplication,
 for example, properties could be concatenated via `;`, more specific package versions could override less specific ones.)
 For `#:project`, `#:ref`, `#:include`, and `#:exclude`, duplicates are allowed and translated to the corresponding MSBuild items.
 Any resulting item behavior, including warnings for duplicate `Compile` items, is left to MSBuild and the compiler.
