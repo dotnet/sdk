@@ -70,8 +70,34 @@ internal static class Metrics
     /// (<see cref="Activity.TagObjects"/>) and are folded into the LogRecord
     /// state.
     /// </summary>
-    public static TrackedOperation Track(string activityName, string eventName)
+    /// <param name="eventName">
+    /// The stable event discriminator stamped onto the completion
+    /// LogRecord Message as <c>dotnetup/{eventName}</c> (the GDPR-classified
+    /// row in the AppInsights <c>traces</c> table). Conventionally
+    /// hierarchical with <c>'/'</c> separators (e.g., <c>"download/complete"</c>,
+    /// <c>"extract/complete"</c>, <c>"gc/delete-orphaned-subcomponents"</c>).
+    /// The portion before the final <c>'/'</c> is also used by default as
+    /// the <see cref="Activity.OperationName"/>, so <c>'/'</c> must not
+    /// appear inside the leaf name segment.
+    /// </param>
+    /// <param name="activityName">
+    /// Optional override for the <see cref="Activity.OperationName"/> used
+    /// for in-process correlation and ancestor walks. When null (the default),
+    /// derived from <paramref name="eventName"/> by taking everything before
+    /// the final <c>'/'</c> (or the full string if there is no <c>'/'</c>).
+    /// Pass an explicit value only when the desired Activity name diverges
+    /// from the event hierarchy and must remain stable for existing dashboard
+    /// queries that filter on <c>error.first_failure_stage</c> or
+    /// <c>operation.parent_name</c>.
+    /// </param>
+    public static TrackedOperation Track(string eventName, string? activityName = null)
     {
+        if (activityName is null)
+        {
+            int lastSlash = eventName.AsSpan().LastIndexOf('/');
+            activityName = lastSlash > 0 ? eventName[..lastSlash] : eventName;
+        }
+
         var activity = ActivitySource.StartActivity(activityName, ActivityKind.Internal);
         return new TrackedOperation(activity, eventName, OnTrackEvent);
     }

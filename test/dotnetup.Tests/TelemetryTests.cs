@@ -881,7 +881,7 @@ public class TrackedOperationTests : IDisposable
     [Fact]
     public void TrackedOperation_EmitsEventOnDispose()
     {
-        using (var op = Metrics.Track("test-op", "test/complete"))
+        using (var op = Metrics.Track("test/complete", activityName: "test-op"))
         {
             op.Tag("key1", "value1");
         }
@@ -896,7 +896,7 @@ public class TrackedOperationTests : IDisposable
     [Fact]
     public void TrackedOperation_IncludesDuration()
     {
-        using (var op = Metrics.Track("test-duration", "test/duration"))
+        using (var op = Metrics.Track("test/duration", activityName: "test-duration"))
         {
             op.Tag("foo", "bar");
         }
@@ -908,7 +908,7 @@ public class TrackedOperationTests : IDisposable
     [Fact]
     public void TrackedOperation_CapturesTagsSetViaActivityCurrent()
     {
-        using (var op = Metrics.Track("test-current", "test/current"))
+        using (var op = Metrics.Track("test/current", activityName: "test-current"))
         {
             // Simulate code deeper in the call stack setting tags via Activity.Current
             Activity.Current?.SetTag("inner.tag", "inner-value");
@@ -929,7 +929,7 @@ public class TrackedOperationTests : IDisposable
     [Fact]
     public void TrackedOperation_SetsTagOnUnderlyingActivity()
     {
-        using (var op = Metrics.Track("test-span-tags", "test/span"))
+        using (var op = Metrics.Track("test/span", activityName: "test-span-tags"))
         {
             op.Tag("span.key", "span-value");
         }
@@ -949,7 +949,7 @@ public class TrackedOperationTests : IDisposable
     [Fact]
     public void TrackedOperation_SetStatus_SetsOnActivity()
     {
-        using (var op = Metrics.Track("test-status", "test/status"))
+        using (var op = Metrics.Track("test/status", activityName: "test-status"))
         {
             op.SetStatus(ActivityStatusCode.Error, "test failure");
         }
@@ -963,7 +963,7 @@ public class TrackedOperationTests : IDisposable
     {
         Metrics.OnTrackEvent = null;
 
-        using (var op = Metrics.Track("test-no-callback", "test/no-callback"))
+        using (var op = Metrics.Track("test/no-callback", activityName: "test-no-callback"))
         {
             op.Tag("key", "value");
         }
@@ -983,7 +983,7 @@ public class TrackedOperationTests : IDisposable
     public void TrackedOperation_RootActivity_EmitsActivityEvent()
     {
         // Use the library ActivitySource (no parent activity exists)
-        using (var op = Metrics.Track("test-root", "test/root-event"))
+        using (var op = Metrics.Track("test/root-event", activityName: "test-root"))
         {
             op.Tag("root.key", "root-value");
         }
@@ -1034,7 +1034,7 @@ public class TrackedOperationTests : IDisposable
         Assert.NotNull(commandActivity);
 
         // Create child library activity within the command scope
-        using (var childOp = Metrics.Track("download", "download/complete"))
+        using (var childOp = Metrics.Track("download/complete"))
         {
             childOp.Tag("download.bytes", "1024");
         }
@@ -1153,7 +1153,7 @@ public class TelemetryDualWriteEnforcementTests
     {
         "DotnetupTelemetry.cs",           // TrackEvent / StartCommand internals
         "ErrorCodeMapper.cs",             // Applies error tags to specific activity instances
-        "InstallationActivitySource.cs",  // Tag() static helper wraps Activity.Current
+        "Metrics.cs",                     // Tag() static helper wraps Activity.Current
         "TrackedOperation.cs",            // Tag() instance method wraps _activity
     };
 

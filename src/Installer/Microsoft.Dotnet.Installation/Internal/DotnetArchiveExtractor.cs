@@ -130,7 +130,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Commit()
     {
-        using var op = Metrics.Track("extract", "extract/complete");
+        using var op = Metrics.Track("extract/complete");
         op.Tag("download.version", _resolvedVersion.ToString());
 
         _extractedSubcomponents.Clear();

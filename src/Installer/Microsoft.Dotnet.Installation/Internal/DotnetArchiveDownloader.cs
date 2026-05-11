@@ -187,7 +187,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         string destinationPath,
         IProgress<DownloadProgress>? progress = null)
     {
-        using var op = Metrics.Track("download", "download/complete");
+        using var op = Metrics.Track("download/complete");
         op.Tag("download.version", resolvedVersion.ToString());
 
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);

@@ -144,7 +144,7 @@ internal class GarbageCollector
     /// </summary>
     private static List<string> DeleteOrphanedSubcomponents(string dotnetRootPath, HashSet<string> referencedSubcomponents)
     {
-        using var op = Metrics.Track("gc.delete-orphaned-subcomponents", "gc/delete-orphaned-subcomponents");
+        using var op = Metrics.Track("gc/delete-orphaned-subcomponents", activityName: "gc.delete-orphaned-subcomponents");
         var deleted = new List<string>();
         var failedCount = 0;
         string? lastFailedPath = null;
