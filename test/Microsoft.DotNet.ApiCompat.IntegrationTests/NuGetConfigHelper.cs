@@ -4,10 +4,12 @@
 namespace Microsoft.DotNet.ApiCompat.IntegrationTests
 {
     /// <summary>
-    /// Helpers for writing a NuGet.config in a test working directory that includes
-    /// the locally-built test packages feed (`SdkTestContext.Current.TestPackages`)
+    /// Helpers for writing a NuGet.config in a test working directory that adds
+    /// the locally-built test packages feed (<c>SdkTestContext.Current.TestPackages</c>)
     /// so test projects can <c>dotnet add package Microsoft.DotNet.ApiCompat.Task --prerelease</c>
-    /// and resolve to the dev-versioned <c>.nupkg</c> produced by the build.
+    /// and resolve to the dev-versioned <c>.nupkg</c> produced by the build. All other
+    /// sources (nuget.org, etc.) are inherited from the surrounding environment's
+    /// NuGet.config.
     /// </summary>
     internal static class NuGetConfigHelper
     {
@@ -18,9 +20,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             string content = $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <clear />
     <add key=""testpackages"" value=""{testPackages}"" />
-    <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
   </packageSources>
 </configuration>
 ";
