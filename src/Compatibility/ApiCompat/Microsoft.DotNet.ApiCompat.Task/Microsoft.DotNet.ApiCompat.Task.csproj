@@ -12,6 +12,7 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore</TargetsForTfmSpecificContentInPackage>
     <PackageDescription>MSBuild tasks and targets to perform api compatibility checks on assemblies and packages.</PackageDescription>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <!-- SDK's task infrastructure -->
@@ -53,6 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="**\*.props;**\*.targets" Pack="true" PackagePath="%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="$(RepoRoot)src\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.ApiCompat.Common.targets" Pack="true" Link="build/Microsoft.NET.ApiCompat.Common.targets" PackagePath="build/%(Filename)%(Extension)" />
     <None Include="$(RepoRoot)src\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.ApiCompat.ValidatePackage.targets" Pack="true" Link="build/Microsoft.NET.ApiCompat.ValidatePackage.targets" PackagePath="build/%(Filename)%(Extension)" />
@@ -61,7 +63,7 @@
   <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish">
     <ItemGroup>
       <!-- Publish .NET assets and include them in the package under tools directory. -->
-      <TfmSpecificPackageFile Include="$(PublishDir)**" PackagePath="tools/net/%(RecursiveDir)%(FileName)%(Extension)" />
+      <TfmSpecificPackageFile Include="$(PublishDir)**" PackagePath="tools/%(RecursiveDir)%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
 

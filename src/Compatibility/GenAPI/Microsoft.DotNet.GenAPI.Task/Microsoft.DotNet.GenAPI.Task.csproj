@@ -9,6 +9,7 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore</TargetsForTfmSpecificContentInPackage>
     <PackageDescription>MSBuild tasks and targets to emit Roslyn based source code from input assemblies.</PackageDescription>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <!-- SDK's task infrastructure -->
@@ -33,13 +34,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="**\*.props;**\*.targets" Pack="true" PackagePath="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish">
     <ItemGroup>
       <!-- Publish .NET assets and include them in the package under tools directory. -->
-      <TfmSpecificPackageFile Include="$(PublishDir)**" PackagePath="tools/net/%(RecursiveDir)%(FileName)%(Extension)" />
+      <TfmSpecificPackageFile Include="$(PublishDir)**" PackagePath="tools/%(RecursiveDir)%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
 

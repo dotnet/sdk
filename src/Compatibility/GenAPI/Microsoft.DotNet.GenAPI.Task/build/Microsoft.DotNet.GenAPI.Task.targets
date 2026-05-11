@@ -2,7 +2,7 @@
 <Project>
 
   <PropertyGroup>
-    <DotNetGenAPITaskAssembly>$(MSBuildThisFileDirectory)..\tools\net\Microsoft.DotNet.GenAPI.Task.dll</DotNetGenAPITaskAssembly>
+    <DotNetGenAPITaskAssembly>$(MSBuildThisFileDirectory)..\tools\Microsoft.DotNet.GenAPI.Task.dll</DotNetGenAPITaskAssembly>
 
     <!-- Hook onto the TargetsTriggeredByCompilation target which only runs when the compiler is invoked. -->
     <TargetsTriggeredByCompilation Condition="'$(GenAPIGenerateReferenceAssemblySource)' == 'true'">
