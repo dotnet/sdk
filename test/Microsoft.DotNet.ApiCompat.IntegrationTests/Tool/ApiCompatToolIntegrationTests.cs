@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
         {
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void ApiCompatTool_AssembliesIdentical_ExitsZero()
         {
             string assembly = BuildAsset(nameof(ApiCompatTool_AssembliesIdentical_ExitsZero), forceBreakingChange: false);
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             result.Should().Pass();
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void ApiCompatTool_BreakingChange_ReportsCP0002()
         {
             string contractAssembly = BuildAsset($"{nameof(ApiCompatTool_BreakingChange_ReportsCP0002)}_left", forceBreakingChange: false);
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
                 .And.Contain("Goodbye");
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void ApiCompatTool_SuppressionFile_RoundTrip()
         {
             string contractAssembly = BuildAsset($"{nameof(ApiCompatTool_SuppressionFile_RoundTrip)}_left", forceBreakingChange: false);
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             consumeResult.StdOut.Should().NotContain("error CP0002");
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void ApiCompatTool_PackageMode_DetectsRemovedApi()
         {
             // Pack the existing PackageValidationTestProject twice to produce two .nupkg files
@@ -94,16 +94,9 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
 
         private CommandResult Run(params string[] args)
         {
-            // The tool DLL targets $(NetMinimum) (net10.0). On macOS arm64 the helix payload's bundled
-            // Microsoft.NETCore.App/10.0.0 is x86_64-only, so dlopen of libhostpolicy.dylib fails. We
-            // need to roll forward to the redist SDK's net11.0 runtime — but it's a prerelease (e.g.
-            // 11.0.0-preview.x), and roll-forward refuses prereleases by default. Pass --roll-forward
-            // LatestMajor (must follow the `exec` verb) and DOTNET_ROLL_FORWARD_TO_PRERELEASE=1.
-            var allArgs = new List<string> { "exec", "--roll-forward", "LatestMajor", ToolPaths.ApiCompatToolDll };
+            var allArgs = new List<string> { "exec", ToolPaths.ApiCompatToolDll };
             allArgs.AddRange(args);
-            return new DotnetCommand(Log, allArgs.ToArray())
-                .WithEnvironmentVariable("DOTNET_ROLL_FORWARD_TO_PRERELEASE", "1")
-                .Execute();
+            return new DotnetCommand(Log, allArgs.ToArray()).Execute();
         }
 
         /// <summary>

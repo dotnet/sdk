@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
         {
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void GenAPITool_GeneratesSourceForAssembly()
         {
             (string assembly, string outputDirectory) = BuildAndPrepareOutput(nameof(GenAPITool_GeneratesSourceForAssembly));
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
                 .And.NotContain("InternalMultiply");
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void GenAPITool_HeaderFile_IsPrependedToOutput()
         {
             (string assembly, string outputDirectory) = BuildAndPrepareOutput(nameof(GenAPITool_HeaderFile_IsPrependedToOutput));
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
             File.ReadAllText(generated).Should().StartWith(headerLine);
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void GenAPITool_RespectInternals_IncludesInternalMembers()
         {
             (string assembly, string outputDirectory) = BuildAndPrepareOutput(nameof(GenAPITool_RespectInternals_IncludesInternalMembers));
@@ -62,16 +62,9 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
 
         private CommandResult Run(params string[] args)
         {
-            // The tool DLL targets $(NetMinimum) (net10.0). On macOS arm64 the helix payload's bundled
-            // Microsoft.NETCore.App/10.0.0 is x86_64-only, so dlopen of libhostpolicy.dylib fails. We
-            // need to roll forward to the redist SDK's net11.0 runtime — but it's a prerelease (e.g.
-            // 11.0.0-preview.x), and roll-forward refuses prereleases by default. Pass --roll-forward
-            // LatestMajor (must follow the `exec` verb) and DOTNET_ROLL_FORWARD_TO_PRERELEASE=1.
-            var allArgs = new List<string> { "exec", "--roll-forward", "LatestMajor", ToolPaths.GenAPIToolDll };
+            var allArgs = new List<string> { "exec", ToolPaths.GenAPIToolDll };
             allArgs.AddRange(args);
-            return new DotnetCommand(Log, allArgs.ToArray())
-                .WithEnvironmentVariable("DOTNET_ROLL_FORWARD_TO_PRERELEASE", "1")
-                .Execute();
+            return new DotnetCommand(Log, allArgs.ToArray()).Execute();
         }
 
         /// <summary>

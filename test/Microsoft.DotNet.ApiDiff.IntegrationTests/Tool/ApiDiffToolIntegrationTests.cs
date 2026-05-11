@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
         {
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void ApiDiffTool_NoChanges_ProducesNoMemberDiffs()
         {
             string assembly = BuildAssembly("MyLib", "public class Greeter { public string Hello(string name) => name; }", nameof(ApiDiffTool_NoChanges_ProducesNoMemberDiffs) + "_before");
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
             File.Exists(toc).Should().BeTrue($"the table-of-contents file should be written to {toc}");
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void ApiDiffTool_AddedMember_ProducesDiff()
         {
             const string sharedSource =
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
                 "the added member should appear in the diff for MyLib");
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void ApiDiffTool_TableOfContentsTitle_ControlsOutputFileName()
         {
             string assembly = BuildAssembly("MyLib", "public class Greeter { public string Hello(string name) => name; }",
@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
             File.Exists(toc).Should().BeTrue($"the table-of-contents file should honour --tableOfContentsTitle and be written to {toc}");
         }
 
-        [Fact]
+        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
         public void ApiDiffTool_MissingRequiredOption_FailsWithHelpfulError()
         {
             // Omit --output and verify System.CommandLine reports the missing required option
@@ -105,16 +105,9 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
 
         private CommandResult Run(params string[] args)
         {
-            // The tool DLL targets $(NetMinimum) (net10.0). On macOS arm64 the helix payload's bundled
-            // Microsoft.NETCore.App/10.0.0 is x86_64-only, so dlopen of libhostpolicy.dylib fails. We
-            // need to roll forward to the redist SDK's net11.0 runtime — but it's a prerelease (e.g.
-            // 11.0.0-preview.x), and roll-forward refuses prereleases by default. Pass --roll-forward
-            // LatestMajor (must follow the `exec` verb) and DOTNET_ROLL_FORWARD_TO_PRERELEASE=1.
-            var allArgs = new List<string> { "exec", "--roll-forward", "LatestMajor", ToolPaths.ApiDiffToolDll };
+            var allArgs = new List<string> { "exec", ToolPaths.ApiDiffToolDll };
             allArgs.AddRange(args);
-            return new DotnetCommand(Log, allArgs.ToArray())
-                .WithEnvironmentVariable("DOTNET_ROLL_FORWARD_TO_PRERELEASE", "1")
-                .Execute();
+            return new DotnetCommand(Log, allArgs.ToArray()).Execute();
         }
 
         /// <summary>
