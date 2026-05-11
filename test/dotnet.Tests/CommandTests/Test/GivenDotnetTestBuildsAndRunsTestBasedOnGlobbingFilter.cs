@@ -94,6 +94,53 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        [Fact]
+        public void RunTestProjectsWithFilterExpressionContainingWhitespaces_ShouldReturnExitCodeGenericFailure()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            new BuildCommand(testInstance, "TestProject")
+                .Execute()
+                .Should().Pass();
+
+            new BuildCommand(testInstance, "OtherTestProject")
+              .Execute()
+              .Should().Pass();
+
+            var binDirectory = new FileInfo($"{testInstance.Path}{Path.DirectorySeparatorChar}bin").Directory;
+            var binDirectoryLastWriteTime = binDirectory?.LastWriteTime;
+
+            string testProjectPattern = $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar);
+            string otherTestProjectPattern = $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/OtherTestProject.dll".Replace('/', Path.DirectorySeparatorChar);
+            string filterExpression = $"  {testProjectPattern}; \n\t {otherTestProjectPattern}  ";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("--test-modules", filterExpression);
+
+            // Assert that the bin folder hasn't been modified
+            Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, TestingConstants.Debug), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Failed!")
+                    .And.Contain("total: 5")
+                    .And.Contain("succeeded: 2")
+                    .And.Contain("failed: 1")
+                    .And.Contain("skipped: 2");
+            }
+
+            // TestProject produces 1 passed, 1 failed, and 1 skipped.
+            // OtherTestProject produces 1 passed and 1 skipped.
+            // We got 2 exit codes. Success and AtLeastOneTestFailed. So, we aggregate the final exit code to AtLeastOneTestFailed.
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
 
         [Fact]
         public void RunTestProjectWithFilterOfDllWithRootDirectory_ShouldReturnExitCodeSuccess()

@@ -81,7 +81,10 @@ internal sealed class TestModulesFilterHandler : ITestHandler
             return new List<string>();
         }
 
-        var testModulePatterns = testModules.Split([';'], StringSplitOptions.RemoveEmptyEntries);
+        var testModulePatterns = testModules
+            .Split([';'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(pattern => pattern.Trim())
+            .Where(pattern => !string.IsNullOrEmpty(pattern));
 
         Matcher matcher = new();
         matcher.AddIncludePatterns(testModulePatterns);
