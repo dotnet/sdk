@@ -40,18 +40,17 @@ public abstract class CommandBase
             _exitCode = ExecuteCore();
             return _exitCode;
         }
-        catch (DotnetInstallException ex)
-        {
-            DotnetupTelemetry.Instance.RecordException(_operation, ex);
-            AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
-            return 1;
-        }
         catch (Exception ex)
         {
             DotnetupTelemetry.Instance.RecordException(_operation, ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
 #if DEBUG
-            Console.Error.WriteLine(ex.StackTrace);
+            // Use ToString() (vs StackTrace) so inner exceptions and the
+            // exception type name are preserved for debugging.
+            if (ex is not DotnetInstallException)
+            {
+                Console.Error.WriteLine(ex.ToString());
+            }
 #endif
             return 1;
         }
@@ -63,10 +62,28 @@ public abstract class CommandBase
         }
     }
 
+    /// <summary>
+    /// Implement the command's core logic. Throw
+    /// <see cref="DotnetInstallException"/> on failure so
+    /// <see cref="Execute"/> can stamp <c>error.*</c> tags via
+    /// <see cref="DotnetupTelemetry.RecordException"/>; do NOT return a
+    /// non-zero exit code from here for failures.
+    /// </summary>
+    /// <returns>The successful exit code (typically 0).</returns>
     protected abstract int ExecuteCore();
 
+    /// <summary>
+    /// Returns the stable command identifier used as the
+    /// <c>command.name</c> telemetry tag (e.g., <c>"sdk/install"</c>,
+    /// <c>"runtime/update"</c>). Used only for telemetry; not surfaced to
+    /// users.
+    /// </summary>
     protected abstract string GetCommandName();
 
+    /// <summary>
+    /// Adds a tag to the per-command <see cref="TrackedOperation"/>. The
+    /// tag is folded into the completion LogRecord state on dispose.
+    /// </summary>
     internal void SetCommandTag(string key, object? value)
     {
         _operation?.Tag(key, value);
@@ -153,7 +170,10 @@ public abstract class CommandBase
         if (valueType == typeof(bool?))
         {
             var value = ParseResult.GetValue((Option<bool?>)option);
-            return value?.ToString()?.ToLowerInvariant() ?? "true";
+            // Distinguish "--flag" (true), "--flag false" (false), and
+            // "option not provided" (null). Returning "true" for null was a
+            // bug — it conflated absent with present.
+            return value?.ToString()?.ToLowerInvariant() ?? "null";
         }
 
         // Enum: emit the name if it's a defined member, "unknown" otherwise
