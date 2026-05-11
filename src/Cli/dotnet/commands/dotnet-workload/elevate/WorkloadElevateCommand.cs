@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.IO;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.Workloads.Workload.Install;
 
 namespace Microsoft.DotNet.Workloads.Workload.Elevate
@@ -21,6 +24,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Elevate
             {
                 try
                 {
+                    // Capture the unelevated client's temp directory (if supplied) so path validators
+                    // can accept IPC-supplied paths that originate from it. Optional and ignored when null
+                    // or unparseable; in either case validators fall back to the server's own temp.
+                    string clientTemp = _parseResult.GetValue(WorkloadElevateCommandParser.ClientTempOption);
+                    if (!string.IsNullOrWhiteSpace(clientTemp))
+                    {
+                        try
+                        {
+                            InstallerBase.TrustedClientTempDirectory = Path.GetFullPath(clientTemp);
+                        }
+                        catch
+                        {
+                            // Ignore malformed values.
+                        }
+                    }
+
                     _server = NetSdkMsiInstallerServer.Create(VerifySignatures);
                     _server.Run();
                 }
