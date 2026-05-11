@@ -7,7 +7,7 @@ involved. The required changes when migrating from the earlier versions to .NET
 ## Bootstrapper implementation
 
 Most of the methods of
-[Bootstrapper](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.IDE/Bootstrapper.cs)
+[Bootstrapper](../../../src/TemplateEngine/Microsoft.TemplateEngine.IDE/Bootstrapper.cs)
 are obsolete now, preserving backward compatibility when possible. Please ensure
 you use new methods when migrating to .NET 6, the obsolete messages in the code
 will point to new version of method.
@@ -63,7 +63,7 @@ ITemplatePackageProvider interface has the following members:
         2.  ITemplatePackageProvider – provider returning the package (itself).
 
 [The default implementation of
-ITemplatePackage](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/TemplatePackage/TemplatePackage.cs)
+ITemplatePackage](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/TemplatePackage/TemplatePackage.cs)
 is available in Abstractions assembly.
 
 -   event TemplatePackagesChanged – the event that should be raised if template
@@ -87,9 +87,9 @@ specific host or host version.
 
 ## ITemplateEngineHost updates 
 
-[ITemplateEngineHost](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs)
+[ITemplateEngineHost](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs)
 interface and its default implementation
-[DefaultTemplateEngineHost](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/DefaultTemplateEngineHost.cs)
+[DefaultTemplateEngineHost](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/DefaultTemplateEngineHost.cs)
 was changed:
 
 -   ILogger Logger and ILoggerFactory LoggerFactory properties were added.
@@ -126,7 +126,7 @@ get the list of available components, and then load required components via
 AddComponent methods.
 
 The list of components defined in
-[Microsoft.TemplateEngine.Edge:](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Components.cs)
+[Microsoft.TemplateEngine.Edge:](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/Components.cs)
 
 -   Providers (ITemplatePackageProviderFactory)
 
@@ -150,7 +150,7 @@ them only if needed for the host. It is recommended to always include default
 mount point implementations.
 
 The list of components defined in
-[Microsoft.TemplateEngine.Orchestrator.RunnableProjects](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Components.cs):
+[Microsoft.TemplateEngine.Orchestrator.RunnableProjects](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Components.cs):
 
 -   Generators
 
@@ -176,7 +176,7 @@ For components management, please use IComponentManager and
 IEngineEnvironmentSettings.ComponentManager.
 
 For template package and template cache, use new class
-[TemplatePackageManager](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Settings/TemplatePackageManager.cs).
+[TemplatePackageManager](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/Settings/TemplatePackageManager.cs).
 It is required to instantiate this class to work with it. It reads all template
 packages available to engine and maintains the template cache.
 TemplatePackageManager maintains the cache for information received from

@@ -12,4 +12,4 @@ See
 
 Related
 
-For more info on *post actions*, including the list of available ones, see https://github.com/dotnet/templating/wiki/Post-Action-Registry.
+For more info on *post actions*, including the list of available ones, see ../../../Post-Action-Registry.md.

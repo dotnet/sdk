@@ -44,6 +44,22 @@
     </ItemGroup>
   </Target>
 
+  <!-- Copy the nupkg to TestPackagesDir so integration tests can consume it.
+       This replaces the BuildTestPackages.targets entry that re-packed this project
+       with different global properties, which caused a parallel-build race condition.
+       Guard with IsCrossTargetingBuild so this runs only once in the outer build of a
+       multi-targeting project, avoiding concurrent copies per inner TFM build. -->
+  <Target Name="CopyPackageToTestPackagesDir" AfterTargets="Pack"
+          Condition="'$(TestLayoutDir)' != '' and ('$(IsCrossTargetingBuild)' == 'true' or '$(TargetFrameworks)' == '')">
+    <PropertyGroup>
+      <_TestPackagesDir>$(TestLayoutDir)testpackages/</_TestPackagesDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(_TestPackagesDir)" Condition="!Exists('$(_TestPackagesDir)')" />
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg"
+          DestinationFolder="$(_TestPackagesDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
   <Target Name="AddBuildOutputToPackageNetFramework" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(OutputPath)**" PackagePath="$(BuildOutputTargetFolder)/netframework/%(RecursiveDir)%(FileName)%(Extension)"/>
