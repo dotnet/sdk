@@ -165,15 +165,8 @@ public sealed class DotnetupTelemetry : IDisposable
         return commonAttrs;
     }
 
-    private static KeyValuePair<string, object?>[] ToLogStateProperties(List<KeyValuePair<string, object>> commonAttrs)
-    {
-        var arr = new KeyValuePair<string, object?>[commonAttrs.Count];
-        for (int i = 0; i < commonAttrs.Count; i++)
-        {
-            arr[i] = new KeyValuePair<string, object?>(commonAttrs[i].Key, commonAttrs[i].Value);
-        }
-        return arr;
-    }
+    private static KeyValuePair<string, object?>[] ToLogStateProperties(List<KeyValuePair<string, object>> commonAttrs) =>
+        commonAttrs.Select(kv => new KeyValuePair<string, object?>(kv.Key, kv.Value)).ToArray();
 
     /// <summary>
     /// Builds the OTel <see cref="Resource"/> shared by tracer and logger.
