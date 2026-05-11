@@ -36,14 +36,20 @@ internal class DotnetCommand : CommandBase
 
         if (!File.Exists(dotnetExe))
         {
-            Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.DotnetCommandDotnetNotFound, dotnetExe));
-            Console.Error.WriteLine(Strings.DotnetCommandInstallFirst);
+            // CommandBase.Execute prints the exception Message to stderr;
+            // include both "not found at" and the install hint in a single
+            // string so the user sees one error block (not two writes from
+            // here plus a third from CommandBase).
+            var message = string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.DotnetCommandDotnetNotFound,
+                dotnetExe) + Environment.NewLine + Strings.DotnetCommandInstallFirst;
             // User-level error: they invoked `dotnetup dotnet ...` before installing
             // a .NET SDK/runtime. Tag for telemetry so it doesn't show as an unknown
             // product failure.
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ContextResolutionFailed,
-                $"dotnet executable not found at '{dotnetExe}'.");
+                message);
         }
 
         return RunDotnet(dotnetExe, dotnetPath, _forwardedArgs);
@@ -105,12 +111,12 @@ internal class DotnetCommand : CommandBase
         using var process = Process.Start(startInfo);
         if (process is null)
         {
-            Console.Error.WriteLine(Strings.DotnetCommandDotnetStartFailed);
             // Process.Start returning null is a system-level failure we should be
             // able to act on; classify as a product error via the default mapping.
+            // CommandBase prints the exception Message — don't double-write here.
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.Unknown,
-                $"Failed to start process '{dotnetExe}'.");
+                Strings.DotnetCommandDotnetStartFailed);
         }
 
         process.WaitForExit();
