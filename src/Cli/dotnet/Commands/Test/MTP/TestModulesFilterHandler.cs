@@ -84,7 +84,31 @@ internal sealed class TestModulesFilterHandler : ITestHandler
         var testModulePatterns = testModules.Split([';'], StringSplitOptions.RemoveEmptyEntries);
 
         Matcher matcher = new();
-        matcher.AddIncludePatterns(testModulePatterns);
+        bool hasIncludePatterns = false;
+        foreach (var rawPattern in testModulePatterns)
+        {
+            var pattern = rawPattern.Trim();
+            if (string.IsNullOrEmpty(pattern))
+            {
+                continue;
+            }
+
+            if (pattern.StartsWith('!'))
+            {
+                matcher.AddExclude(pattern[1..].Trim());
+            }
+            else
+            {
+                matcher.AddInclude(pattern);
+                hasIncludePatterns = true;
+            }
+        }
+
+        // If only exclusion patterns were specified, match all files minus the excluded ones
+        if (!hasIncludePatterns)
+        {
+            matcher.AddInclude("**");
+        }
 
         // Make sure we have a non-lazy collection, so that if we enumerate multiple times we guarantee the same result.
         var results = matcher.GetResultsInFullPath(rootDirectory);

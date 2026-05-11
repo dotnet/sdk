@@ -125,5 +125,50 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
+
+        [Fact]
+        public void RunTestProjectsWithIncludeAndExcludeFilterOfDll_ShouldReturnExitCodeSuccess()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            new BuildCommand(testInstance, "TestProject")
+                .Execute()
+                .Should().Pass();
+
+            new BuildCommand(testInstance, "OtherTestProject")
+                .Execute()
+                .Should().Pass();
+
+            var binDirectory = new FileInfo($"{testInstance.Path}{Path.DirectorySeparatorChar}bin").Directory;
+            var binDirectoryLastWriteTime = binDirectory?.LastWriteTime;
+
+            // Include all test project DLLs but exclude the failing TestProject.dll
+            string includePattern = $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/*TestProject.dll".Replace('/', Path.DirectorySeparatorChar);
+            string excludePattern = $"!**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar);
+            string filterExpression = $"{includePattern}; {excludePattern}";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("--test-modules", filterExpression);
+
+            // Assert that the bin folder hasn't been modified
+            Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // Only OtherTestProject should run (TestProject is excluded)
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Passed!")
+                    .And.Contain("total: 2")
+                    .And.Contain("succeeded: 1")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
     }
 }
