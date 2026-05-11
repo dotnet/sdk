@@ -56,8 +56,8 @@ public sealed class DotnetupTelemetry : IDisposable
     private const string EnablePerfTraceEnvVar = "DOTNETUP_CLI_GET_PERF_TRACE";
 
     private static readonly string s_defaultStorageDirectory = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-        ".dotnet", "TelemetryStorageService");
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "dotnetup", "TelemetryStorageService");
 
     private static readonly string? s_diskLogPath = GetDiskLogPath();
 
