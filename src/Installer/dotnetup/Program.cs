@@ -66,23 +66,31 @@ internal class DotnetupProgram
         }
         finally
         {
-            // If the parser returned a non-zero exit code WITHOUT throwing
-            // (e.g., System.CommandLine validation failure that printed
-            // usage and returned non-zero), there's no command row tagged
-            // with error.* and no exception for RecordException to consume.
-            // Stamp the root op so the failure shows up in the dashboard's
-            // root-error queries instead of disappearing silently.
-            if (processExitCode != 0 && rootOp.Activity?.GetTagItem("error.type") is null)
-            {
-                rootOp.Tag("error.type", "ParseError");
-                rootOp.Tag("error.category", "user");
-            }
-
-            rootOp.Tag(TelemetryTagNames.ExitCode, processExitCode);
-            rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            TagRootForExitCode(rootOp, processExitCode);
             rootOp.Dispose(); // emit root event before flush
             DisposeTelemetry();
         }
+    }
+
+    /// <summary>
+    /// Stamps the final exit code, status, and (if applicable) a synthetic
+    /// <c>error.type=ParseError</c> tag on the root op. The synthetic tag
+    /// covers the case where the parser returned a non-zero exit code
+    /// without throwing (e.g., System.CommandLine validation failure that
+    /// printed usage and returned non-zero) — without this, the failure
+    /// would have no <c>error.*</c> tags anywhere and would disappear from
+    /// the dashboard's root-error queries.
+    /// </summary>
+    private static void TagRootForExitCode(TrackedOperation rootOp, int processExitCode)
+    {
+        if (processExitCode != 0 && rootOp.Activity?.GetTagItem("error.type") is null)
+        {
+            rootOp.Tag("error.type", "ParseError");
+            rootOp.Tag("error.category", "user");
+        }
+
+        rootOp.Tag(TelemetryTagNames.ExitCode, processExitCode);
+        rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
     }
 
     private static int InvokeParser(string[] args)
