@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Fact]
-        public void RunTestProjectsWithFilterExpressionContainingWhitespaces_ShouldReturnExitCodeGenericFailure()
+        public void RunTestProjectsWithFilterExpressionContainingWhitespace_ShouldReturnExitCodeAtLeastOneTestFailed()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -105,8 +105,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Should().Pass();
 
             new BuildCommand(testInstance, "OtherTestProject")
-              .Execute()
-              .Should().Pass();
+                .Execute()
+                .Should().Pass();
 
             var binDirectory = new FileInfo($"{testInstance.Path}{Path.DirectorySeparatorChar}bin").Directory;
             var binDirectoryLastWriteTime = binDirectory?.LastWriteTime;
