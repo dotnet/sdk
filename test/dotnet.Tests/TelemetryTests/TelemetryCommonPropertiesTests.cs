@@ -237,6 +237,7 @@ public class TelemetryCommonPropertiesTests : SdkTest
         { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
         { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
         { new Dictionary<string, string> { { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot" },
+        { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot" },
         { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
         { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
         { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },
