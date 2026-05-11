@@ -1680,4 +1680,76 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             MySecret=MyValue (JsonConfigurationProvider for 'secrets.json' (Optional))
             """);
     }
+
+    /// <summary>
+    /// Duplicate directives across <c>#:include</c>'d files should be reported as errors.
+    /// Note: <c>#:project</c> and <c>#:ref</c> duplicates are allowed
+    /// (tested by <see cref="ProjectReference_Duplicate"/> and <see cref="RefDirective_DuplicateRefFromIncludedFiles"/>).
+    /// </summary>
+    [Theory]
+    [InlineData("package")]
+    [InlineData("property")]
+    [InlineData("sdk")]
+    [InlineData("include")]
+    [InlineData("exclude")]
+    public void IncludeDirective_DuplicateDirectives(string directiveKind)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var utilPath = Path.Join(testInstance.Path, "Util.cs");
+
+        string programDirective;
+        string utilDirective;
+        string duplicateTypeAndName;
+
+        switch (directiveKind)
+        {
+            case "package":
+                programDirective = "#:package System.CommandLine@2.0.0-beta4.22272.1";
+                utilDirective = "#:package System.CommandLine@2.0.0-beta4.22272.1";
+                duplicateTypeAndName = "#:package System.CommandLine";
+                break;
+            case "property":
+                programDirective = "#:property MyProp=Value1";
+                utilDirective = "#:property MyProp=Value2";
+                duplicateTypeAndName = "#:property MyProp";
+                break;
+            case "sdk":
+                programDirective = "#:sdk Microsoft.NET.Sdk";
+                utilDirective = "#:sdk Microsoft.NET.Sdk@9.0.0";
+                duplicateTypeAndName = "#:sdk Microsoft.NET.Sdk";
+                break;
+            case "include":
+                File.WriteAllText(Path.Join(testInstance.Path, "Helper.cs"), "static class Helper { }");
+                programDirective = "#:include Helper.cs";
+                utilDirective = "#:include Helper.cs";
+                duplicateTypeAndName = $"#:include {Path.Join(testInstance.Path, "Helper.cs")}";
+                break;
+            case "exclude":
+                programDirective = "#:exclude Helper.cs";
+                utilDirective = "#:exclude Helper.cs";
+                duplicateTypeAndName = $"#:exclude {Path.Join(testInstance.Path, "Helper.cs")}";
+                break;
+            default:
+                throw new ArgumentException($"Unsupported directive kind '{directiveKind}'.", nameof(directiveKind));
+        }
+
+        File.WriteAllText(programPath, $"""
+            #:include Util.cs
+            {programDirective}
+            Console.WriteLine("Hello");
+            """);
+
+        File.WriteAllText(utilPath, $$"""
+            {{utilDirective}}
+            static class Util { }
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(DirectiveError(utilPath, 1, FileBasedProgramsResources.DuplicateDirective, duplicateTypeAndName));
+    }
 }
