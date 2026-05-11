@@ -89,12 +89,24 @@ public abstract class CommandBase
         _operation?.Tag(key, value);
     }
 
+    /// <summary>
+    /// Tags the per-command operation with the version or channel the user
+    /// requested (e.g., <c>"9.0"</c>, <c>"LTS"</c>, <c>"latest"</c>),
+    /// sanitized via <see cref="VersionSanitizer"/> so arbitrary user input
+    /// can't leak into the <c>dotnet.requested_version</c> telemetry tag.
+    /// </summary>
     protected void RecordRequestedVersion(string? versionOrChannel)
     {
         var sanitized = VersionSanitizer.Sanitize(versionOrChannel);
         _operation?.Tag(TelemetryTagNames.DotnetRequestedVersion, sanitized);
     }
 
+    /// <summary>
+    /// Tags the per-command operation with where the requested version came
+    /// from (e.g., <c>"cli"</c>, <c>"global.json"</c>) and, when available,
+    /// the sanitized requested value itself. Lets dashboards distinguish
+    /// explicit user requests from inferred / file-sourced ones.
+    /// </summary>
     protected void RecordRequestSource(string source, string? requestedValue)
     {
         _operation?.Tag(TelemetryTagNames.DotnetRequestSource, source);

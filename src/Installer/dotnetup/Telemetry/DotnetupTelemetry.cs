@@ -577,6 +577,10 @@ public sealed class DotnetupTelemetry : IDisposable
 
         state["operation.name"] = $"dotnetup/{eventName}";
         state["operation.duration_ms"] = elapsedMs.ToString(CultureInfo.InvariantCulture);
+        // Distinguishes library-emitted events (Microsoft.Dotnet.Installation,
+        // routed through Metrics.OnTrackEvent) from dotnetup-internal events
+        // (Microsoft.DotNet.Tools.Bootstrapper) on the AppInsights traces row.
+        state["telemetry.source"] = activity.Source.Name;
         if (activity.Parent is { } parent)
         {
             state["operation.parent_name"] = parent.OperationName;

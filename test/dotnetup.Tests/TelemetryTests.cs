@@ -553,7 +553,7 @@ public class DotnetupTelemetryTests : IDisposable
 
         var common = BuildSyntheticCommonProperties();
         var state = DotnetupTelemetry.BuildCompletionState(
-            "process/complete",
+            "root",
             rootActivity,
             elapsedMs: 12.34,
             commonProperties: common);
@@ -578,7 +578,7 @@ public class DotnetupTelemetryTests : IDisposable
         Assert.Contains("dev.build", asDict.Keys);
 
         // Computed fields must also be stamped.
-        Assert.Equal("dotnetup/process/complete", asDict["operation.name"]);
+        Assert.Equal("dotnetup/root", asDict["operation.name"]);
         Assert.Equal("12.34", asDict["operation.duration_ms"]);
 
         // Root has no parent — operation.parent_name must be absent.
@@ -680,7 +680,7 @@ public class DotnetupTelemetryTests : IDisposable
         Assert.NotNull(childActivity);
 
         var state = DotnetupTelemetry.BuildCompletionState(
-            "process/complete",
+            "root",
             childActivity,
             elapsedMs: 5.0,
             commonProperties: BuildSyntheticCommonProperties());

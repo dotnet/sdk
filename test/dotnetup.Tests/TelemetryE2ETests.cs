@@ -438,11 +438,11 @@ public class TelemetryE2ETests
                     : formatted;
 
                 // Remap the root completion record's display name from
-                // `process` back to `dotnetup` so existing tests can keep
+                // `root` back to `dotnetup` so existing tests can keep
                 // using `DisplayName == "dotnetup"` as the root filter.
                 // (Command records like `command/sdk` and the explicit
                 // `error` record are unmodified.)
-                current.DisplayName = string.Equals(trimmed, "process", StringComparison.Ordinal)
+                current.DisplayName = string.Equals(trimmed, "root", StringComparison.Ordinal)
                     ? "dotnetup"
                     : trimmed;
                 inAttributes = false;

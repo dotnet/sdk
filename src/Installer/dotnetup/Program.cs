@@ -66,9 +66,21 @@ internal class DotnetupProgram
         }
         finally
         {
+            // If the parser returned a non-zero exit code WITHOUT throwing
+            // (e.g., System.CommandLine validation failure that printed
+            // usage and returned non-zero), there's no command row tagged
+            // with error.* and no exception for RecordException to consume.
+            // Stamp the root op so the failure shows up in the dashboard's
+            // root-error queries instead of disappearing silently.
+            if (processExitCode != 0 && rootOp.Activity?.GetTagItem("error.type") is null)
+            {
+                rootOp.Tag("error.type", "ParseError");
+                rootOp.Tag("error.category", "user");
+            }
+
             rootOp.Tag(TelemetryTagNames.ExitCode, processExitCode);
             rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-            rootOp.Dispose(); // emit process/complete event before flush
+            rootOp.Dispose(); // emit root event before flush
             DisposeTelemetry();
         }
     }
