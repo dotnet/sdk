@@ -36,7 +36,7 @@ internal static class FileLevelDirectiveHelpers
     /// The latter is useful for <c>dotnet run file.cs</c> where if there are app directives after the first token,
     /// compiler reports <see cref="ErrorCode.ERR_PPIgnoredFollowsToken"/> anyway, so we speed up success scenarios by not parsing the whole file up front in the SDK CLI.
     /// </param>
-    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ErrorReporter errorReporter)
+    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ErrorReporter errorReporter, bool checkDuplicates = true)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
         var tokenizer = CreateTokenizer(sourceFile.Text);
@@ -44,7 +44,7 @@ internal static class FileLevelDirectiveHelpers
         var result = tokenizer.ParseLeadingTrivia();
         var triviaList = result.Token.LeadingTrivia;
 
-        FindLeadingDirectives(sourceFile, triviaList, errorReporter, builder);
+        FindLeadingDirectives(sourceFile, triviaList, errorReporter, builder, checkDuplicates);
 
         // In conversion mode, we want to report errors for any invalid directives in the rest of the file
         // so users don't end up with invalid directives in the converted project.
@@ -86,9 +86,10 @@ internal static class FileLevelDirectiveHelpers
         SourceFile sourceFile,
         SyntaxTriviaList triviaList,
         ErrorReporter errorReporter,
-        ImmutableArray<CSharpDirective>.Builder? builder)
+        ImmutableArray<CSharpDirective>.Builder? builder,
+        bool checkDuplicates = true)
     {
-        var deduplicated = new Dictionary<CSharpDirective.Named, CSharpDirective.Named>(NamedDirectiveComparer.Instance);
+        var deduplicator = new DirectiveDeduplicator();
         TextSpan previousWhiteSpaceSpan = default;
 
         for (var index = 0; index < triviaList.Count; index++)
@@ -156,15 +157,9 @@ internal static class FileLevelDirectiveHelpers
 
                 if (CSharpDirective.Parse(context) is { } directive)
                 {
-                    // If the directive is already present, report an error.
-                    if (deduplicated.TryGetValue(directive, out var existingDirective))
+                    if (checkDuplicates)
                     {
-                        var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
-                        context.ReportError(directive.Info.Span, string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
-                    }
-                    else
-                    {
-                        deduplicated.Add(directive, directive);
+                        deduplicator.CheckDirective(directive, errorReporter);
                     }
 
                     builder?.Add(directive);
@@ -323,6 +318,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             case "property": return Property.Parse(context);
             case "package": return Package.Parse(context);
             case "project": return Project.Parse(context);
+            case "ref": return Ref.Parse(context);
             case "include" or "exclude": return IncludeOrExclude.Parse(context);
             default:
                 context.ReportError(string.Format(FileBasedProgramsResources.UnrecognizedDirective, context.DirectiveKind));
@@ -367,6 +363,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     }
 
     public abstract override string ToString();
+
+    public virtual string KindToString() => GetType().Name.ToLowerInvariant();
 
     /// <summary>
     /// <c>#!</c> directive.
@@ -587,6 +585,100 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         public override string ToString() => $"#:project {Name}";
     }
 
+    /// <summary>
+    /// <c>#:ref</c> directive. References another file-based app as a library.
+    /// </summary>
+    public sealed class Ref : Named
+    {
+        public const string ExperimentalFileBasedProgramEnableRefDirective = nameof(ExperimentalFileBasedProgramEnableRefDirective);
+
+        [SetsRequiredMembers]
+        public Ref(in ParseInfo info, string name) : base(info)
+        {
+            Name = name;
+            OriginalName = name;
+        }
+
+        /// <summary>
+        /// Preserved across <see cref="WithName"/> calls, i.e.,
+        /// this is the original directive text as entered by the user.
+        /// </summary>
+        public string OriginalName { get; init; }
+
+        /// <summary>
+        /// This is the <see cref="OriginalName"/> with MSBuild <c>$(..)</c> vars expanded.
+        /// </summary>
+        public string? ExpandedName { get; init; }
+
+        /// <summary>
+        /// The resolved full path to the referenced <c>.cs</c> file.
+        /// </summary>
+        public string? ResolvedPath { get; init; }
+
+        public static new Ref? Parse(in ParseContext context)
+        {
+            var directiveText = context.DirectiveText;
+            if (directiveText.IsWhiteSpace())
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
+                return null;
+            }
+
+            return new Ref(context.Info, directiveText);
+        }
+
+        public enum NameKind
+        {
+            /// <summary>
+            /// Change <see cref="Named.Name"/> and <see cref="ExpandedName"/>.
+            /// </summary>
+            Expanded = 1,
+
+            /// <summary>
+            /// Change <see cref="Named.Name"/> and <see cref="ResolvedPath"/>.
+            /// </summary>
+            Resolved = 2,
+
+            /// <summary>
+            /// Change only <see cref="Named.Name"/>.
+            /// </summary>
+            Final = 3,
+        }
+
+        public Ref WithName(string name, NameKind kind)
+        {
+            return new Ref(Info, name)
+            {
+                OriginalName = OriginalName,
+                ExpandedName = kind == NameKind.Expanded ? name : ExpandedName,
+                ResolvedPath = kind == NameKind.Resolved ? name : ResolvedPath,
+            };
+        }
+
+        /// <summary>
+        /// Resolves the path relative to the source file's directory.
+        /// </summary>
+        public Ref EnsureResolvedPath(ErrorReporter errorReporter)
+        {
+            var sourcePath = Info.SourceFile.Path;
+            var sourceDirectory = Path.GetDirectoryName(sourcePath)
+                ?? throw new InvalidOperationException($"Source file path '{sourcePath}' does not have a containing directory.");
+
+            var resolvedFilePath = Path.GetFullPath(Path.Combine(sourceDirectory, Name.Replace('\\', '/')));
+
+            if (!File.Exists(resolvedFilePath))
+            {
+                errorReporter(Info.SourceFile.Text, sourcePath, Info.Span,
+                    string.Format(FileBasedProgramsResources.InvalidRefDirective,
+                        string.Format(FileBasedProgramsResources.CouldNotFindRefFile, resolvedFilePath)));
+            }
+
+            return WithName(resolvedFilePath, NameKind.Resolved);
+        }
+
+        public override string ToString() => $"#:ref {Name}";
+    }
+
     public enum IncludeOrExcludeKind
     {
         Include,
@@ -598,11 +690,6 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// </summary>
     public sealed class IncludeOrExclude(in ParseInfo info) : Named(info)
     {
-        public const string ExperimentalFileBasedProgramEnableIncludeDirective = nameof(ExperimentalFileBasedProgramEnableIncludeDirective);
-        public const string ExperimentalFileBasedProgramEnableExcludeDirective = nameof(ExperimentalFileBasedProgramEnableExcludeDirective);
-        public const string ExperimentalFileBasedProgramEnableTransitiveDirectives = nameof(ExperimentalFileBasedProgramEnableTransitiveDirectives);
-        public const string ExperimentalFileBasedProgramEnableItemMapping = nameof(ExperimentalFileBasedProgramEnableItemMapping);
-
         public const string MappingPropertyName = "FileBasedProgramsItemMapping";
 
         public static string DefaultMappingString => ".cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content";
@@ -715,7 +802,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             };
         }
 
-        public string KindToString()
+        public override string KindToString()
         {
             return Kind switch
             {
@@ -782,6 +869,43 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             void ReportError(string message)
                 => errorReporter(sourceFile.Text, sourceFile.Path, default, message);
+        }
+    }
+}
+
+/// <summary>
+/// Detects duplicate directives (by type and case-insensitive name)
+/// and reports errors via the provided <see cref="ErrorReporter"/>.
+/// </summary>
+/// <remarks>
+/// <c>#:project</c> and <c>#:ref</c> duplicates are allowed (MSBuild can handle multiple <c>ProjectReference</c>s).
+/// </remarks>
+internal struct DirectiveDeduplicator
+{
+    private Dictionary<CSharpDirective.Named, CSharpDirective.Named>? _seen;
+
+    /// <summary>
+    /// Checks <paramref name="directive"/> for duplication and reports an error if it was already seen.
+    /// </summary>
+    public void CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError)
+    {
+        // Duplicate #:project and #:ref directives are allowed (MSBuild can handle that).
+        if (directive is CSharpDirective.Project or CSharpDirective.Ref)
+        {
+            return;
+        }
+
+        _seen ??= new(NamedDirectiveComparer.Instance);
+
+        if (_seen.TryGetValue(directive, out var existingDirective))
+        {
+            var typeAndName = $"#:{existingDirective.KindToString()} {existingDirective.Name}";
+            reportError(directive.Info.SourceFile.Text, directive.Info.SourceFile.Path, directive.Info.Span,
+                string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
+        }
+        else
+        {
+            _seen.Add(directive, directive);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "http://json.schemastore.org/sarif-1.0.0",
   "version": "1.0.0",
   "runs": [
@@ -580,6 +580,25 @@
             "category": "Usage",
             "isEnabledByDefault": true,
             "typeName": "CSharpPreferGenericOverloadsAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2266": {
+          "id": "CA2266",
+          "shortDescription": "File-based program entry point should start with '#!'",
+          "fullDescription": "When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2266",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpMissingShebangInFileBasedProgram",
             "languages": [
               "C#"
             ],

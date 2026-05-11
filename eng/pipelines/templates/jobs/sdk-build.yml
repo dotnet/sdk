@@ -100,7 +100,6 @@ jobs:
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-          /graph
         displayName: 🟣 Build
         env:
           BuildConfig: $(buildConfiguration)
@@ -125,8 +124,7 @@ jobs:
           ${{ parameters.osProperties }} \
           ${{ parameters.runtimeSourceProperties }} \
           ${{ parameters.officialBuildProperties }} \
-          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) \
-          /graph
+          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
         displayName: 🟣 Build
         env:
           BuildConfig: $(buildConfiguration)

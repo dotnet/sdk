@@ -176,6 +176,24 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), ICl
         return $"{path}({line}): {FileBasedProgramsResources.DirectiveError}: {string.Format(messageFormat, args)}";
     }
 
+    internal static void EnableRefDirective(TestDirectory testInstance)
+    {
+        var propsPath = Path.Join(testInstance.Path, "Directory.Build.props");
+        var propsContent = File.Exists(propsPath) ? File.ReadAllText(propsPath) : null;
+        if (propsContent is not null && propsContent.Contains(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective))
+        {
+            return;
+        }
+
+        File.WriteAllText(propsPath, $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+    }
+
     internal static void VerifyBinLogEvaluationDataCount(string binaryLogPath, int expectedCount)
     {
         var records = BinaryLog.ReadRecords(binaryLogPath).ToList();

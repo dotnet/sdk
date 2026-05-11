@@ -7,7 +7,8 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -18,6 +19,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 {
+    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
+
     private readonly IToolPackageStore _toolPackageStore;
 
     protected readonly IFileSystem _fileSystem;
@@ -110,7 +113,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             verbosity,
             restoreActionConfig);
 
-        var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds, _currentWorkingDirectory);
+        var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds, _currentWorkingDirectory, packageLocation.PackageSourceOverrides);
 
         NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
@@ -384,11 +387,11 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         {
             string existingJson = _fileSystem.File.ReadAllText(runtimeConfigFilePath);
 
-            var jsonObject = JObject.Parse(existingJson);
-            if (jsonObject["runtimeOptions"] is JObject runtimeOptions)
+            var jsonObject = JsonNode.Parse(existingJson)!.AsObject();
+            if (jsonObject["runtimeOptions"] is JsonObject runtimeOptions)
             {
                 runtimeOptions["rollForward"] = "Major";
-                string updateJson = jsonObject.ToString();
+                string updateJson = jsonObject.ToJsonString(s_writeIndentedOptions);
                 _fileSystem.File.WriteAllText(runtimeConfigFilePath, updateJson);
             }
         }

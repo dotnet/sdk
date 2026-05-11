@@ -15,7 +15,8 @@ using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.Common.Providers;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
@@ -57,6 +58,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 .WithTag("language", "F#");
 #pragma warning restore SA1311 // Static readonly fields should begin with upper-case letter
 #pragma warning restore SA1308 // Variable names should not be prefixed
+
+        [Fact]
+        public void CliHostSearchCacheDataReaderReturnsDefaultForEmptyObject()
+        {
+            var result = CliHostSearchCacheData.Reader(new JsonObject());
+
+            Assert.Same(HostSpecificTemplateData.Default, result);
+        }
 
         [Fact]
         public async Task CacheSearchNameMatchTest()
@@ -600,9 +609,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             var cache = new TemplateSearchCache(new[] { packOne, packTwo, packThree });
 
-            JObject toSerialize = JObject.FromObject(cache);
+            string json = JsonSerializer.Serialize(cache);
             string targetPath = Path.Combine(fileLocation, "searchCacheV2.json");
-            File.WriteAllText(targetPath, toSerialize.ToString());
+            File.WriteAllText(targetPath, json);
             return targetPath;
         }
 
@@ -611,9 +620,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var packOne = new TemplatePackageSearchData(new MockTemplatePackageInfo("PackOne", "1.0.0"), new[] { new TemplateSearchData(new MockTemplateInfo("foo", "foo", "foo").WithParameters("Config type", "Main type", "unknown")) });
             var cache = new TemplateSearchCache(new[] { packOne });
 
-            JObject toSerialize = JObject.FromObject(cache);
+            string jsonToSerialize = JsonSerializer.Serialize(cache);
             string targetPath = Path.Combine(fileLocation, "searchCacheV2.json");
-            File.WriteAllText(targetPath, toSerialize.ToString());
+            File.WriteAllText(targetPath, jsonToSerialize);
             return targetPath;
         }
     }

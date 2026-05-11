@@ -4,8 +4,10 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
+using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -18,18 +20,23 @@ internal sealed class HotReloadDotNetWatcher
     private readonly IConsole _console;
     private readonly IRuntimeProcessLauncherFactory? _runtimeProcessLauncherFactory;
     private readonly RestartPrompt? _rudeEditRestartPrompt;
-    private readonly TargetFrameworkSelectionPrompt? _targetFrameworkSelectionPrompt;
+    private readonly BuildParametersSelectionPrompt? _selectionPrompt;
 
     private readonly DotNetWatchContext _context;
     private readonly ProjectGraphFactory _designTimeBuildGraphFactory;
 
     internal Task? Test_FileChangesCompletedTask { get; set; }
 
-    public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory, TargetFrameworkSelectionPrompt? targetFrameworkSelectionPrompt)
+    public HotReloadDotNetWatcher(
+        DotNetWatchContext context,
+        IConsole console,
+        IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory,
+        BuildParametersSelectionPrompt? selectionPrompt)
     {
         _context = context;
         _console = console;
         _runtimeProcessLauncherFactory = runtimeProcessLauncherFactory;
+        _selectionPrompt = selectionPrompt;
         if (!context.Options.NonInteractive)
         {
             var consoleInput = new ConsoleInputReader(_console, context.Options.LogLevel, context.EnvironmentOptions.SuppressEmojis);
@@ -41,16 +48,16 @@ internal sealed class HotReloadDotNetWatcher
             }
 
             _rudeEditRestartPrompt = new RestartPrompt(context.Logger, consoleInput, noPrompt ? true : null);
-            _targetFrameworkSelectionPrompt = targetFrameworkSelectionPrompt;
         }
 
         _designTimeBuildGraphFactory = new ProjectGraphFactory(
             context.RootProjects,
-            context.MainProjectOptions?.TargetFramework,
             buildProperties: EvaluationResult.GetGlobalBuildProperties(
                 context.BuildArguments,
                 context.EnvironmentOptions),
-            context.BuildLogger);
+            context.BuildLogger,
+            context.Options,
+            context.EnvironmentOptions);
     }
 
     public async Task WatchAsync(CancellationToken shutdownCancellationToken)
@@ -95,13 +102,14 @@ internal sealed class HotReloadDotNetWatcher
                     _context.RootProjects,
                     fileWatcher,
                     _context.MainProjectOptions,
-                    frameworkSelector: _targetFrameworkSelectionPrompt != null ? _targetFrameworkSelectionPrompt.SelectAsync : null,
+                    frameworkSelector: _selectionPrompt != null ? _selectionPrompt.SelectTargetFrameworkAsync : null,
+                    deviceSelector: _selectionPrompt != null ? _selectionPrompt.SelectDeviceAsync : null,
                     iterationCancellationToken);
 
                 // Try load project graph and perform design-time build even if the build failed.
                 // This allows us to watch the project and source files for changes that will trigger restart.
 
-                projectGraph = rootProjectsBuildResult.ProjectGraph ?? TryLoadProjectGraph(iterationCancellationToken);
+                projectGraph = rootProjectsBuildResult.ProjectGraph ?? TryLoadProjectGraph(rootProjectsBuildResult.MainProjectTargetFramework, iterationCancellationToken);
                 if (projectGraph == null)
                 {
                     continue;
@@ -142,7 +150,12 @@ internal sealed class HotReloadDotNetWatcher
                 var mainProjectOptions = _context.MainProjectOptions;
                 if (mainProjectOptions != null)
                 {
-                    mainProjectOptions = mainProjectOptions with { TargetFramework = rootProjectsBuildResult.MainProjectTargetFramework };
+                    mainProjectOptions = mainProjectOptions with
+                    {
+                        TargetFramework = rootProjectsBuildResult.MainProjectTargetFramework,
+                        Device = rootProjectsBuildResult.SelectedDevice,
+                        DeviceRuntimeIdentifier = rootProjectsBuildResult.SelectedDeviceRuntimeIdentifier,
+                    };
 
                     if (projectGraph.Graph.GraphRoots.Single()?.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability) == true)
                     {
@@ -272,6 +285,7 @@ internal sealed class HotReloadDotNetWatcher
                                 fileWatcher,
                                 mainProjectOptions,
                                 frameworkSelector: null,
+                                deviceSelector: null,
                                 iterationCancellationToken);
 
                             if (result.Success)
@@ -350,16 +364,18 @@ internal sealed class HotReloadDotNetWatcher
                         {
                             // TODO: consider reloading/reevaluating only affected projects instead of the whole graph.
 
+                            var targetFramework = mainProjectOptions?.TargetFramework;
+
                             while (true)
                             {
                                 iterationCancellationToken.ThrowIfCancellationRequested();
 
-                                projectGraph = TryLoadProjectGraph(iterationCancellationToken);
+                                projectGraph = TryLoadProjectGraph(targetFramework, iterationCancellationToken);
                                 if (projectGraph != null)
                                 {
                                     fileWatcher.WatchFiles(projectGraph.BuildFiles);
 
-                                    evaluationResult = await TryEvaluateProjectGraphAsync(projectGraph, mainProjectOptions?.TargetFramework, restore: true, iterationCancellationToken);
+                                    evaluationResult = await TryEvaluateProjectGraphAsync(projectGraph, targetFramework, restore: true, iterationCancellationToken);
                                     if (evaluationResult != null)
                                     {
                                         break;
@@ -918,8 +934,8 @@ internal sealed class HotReloadDotNetWatcher
             };
     }
 
-    private LoadedProjectGraph? TryLoadProjectGraph(CancellationToken cancellationToken)
-        => _designTimeBuildGraphFactory.TryLoadProjectGraph(projectGraphRequired: true, cancellationToken);
+    private LoadedProjectGraph? TryLoadProjectGraph(string? virtualProjectTargetFramework, CancellationToken cancellationToken)
+        => _designTimeBuildGraphFactory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework, cancellationToken);
 
     private ValueTask<EvaluationResult?> TryEvaluateProjectGraphAsync(LoadedProjectGraph projectGraph, string? mainProjectTargetFramework, bool restore, CancellationToken cancellationToken)
         => EvaluationResult.TryCreateAsync(
@@ -939,9 +955,11 @@ internal sealed class HotReloadDotNetWatcher
     }
 
     // internal for testing
-    internal sealed class BuildProjectsResult(string? mainProjectTargetFramework, LoadedProjectGraph? projectGraph, bool success)
+    internal sealed class BuildProjectsResult(string? mainProjectTargetFramework, string? selectedDevice, string? selectedDeviceRuntimeIdentifier, LoadedProjectGraph? projectGraph, bool success)
     {
         public string? MainProjectTargetFramework { get; } = mainProjectTargetFramework;
+        public string? SelectedDevice { get; } = selectedDevice;
+        public string? SelectedDeviceRuntimeIdentifier { get; } = selectedDeviceRuntimeIdentifier;
         public LoadedProjectGraph? ProjectGraph { get; } = projectGraph;
         public bool Success { get; } = success;
     }
@@ -952,12 +970,15 @@ internal sealed class HotReloadDotNetWatcher
         FileWatcher fileWatcher,
         ProjectOptions? mainProjectOptions,
         Func<IReadOnlyList<string>, CancellationToken, ValueTask<string>>? frameworkSelector,
+        Func<IReadOnlyList<DeviceInfo>, CancellationToken, ValueTask<DeviceInfo>>? deviceSelector,
         CancellationToken cancellationToken)
     {
         Debug.Assert(projects.Any());
 
         LoadedProjectGraph? projectGraph = null;
         var targetFramework = mainProjectOptions?.TargetFramework;
+        var selectedDevice = mainProjectOptions?.Device;
+        var selectedDeviceRuntimeIdentifier = mainProjectOptions?.DeviceRuntimeIdentifier;
 
         _context.Logger.Log(MessageDescriptor.BuildStartedNotification, projects);
 
@@ -965,21 +986,55 @@ internal sealed class HotReloadDotNetWatcher
         fileWatcher.SuppressEvents = true;
         try
         {
-            var success = await BuildWithFrameworkSelectionAsync();
+            var success = await BuildWithFrameworkAndDeviceSelectionAsync();
             _context.Logger.Log(MessageDescriptor.BuildCompletedNotification, (projects, success));
-            return new BuildProjectsResult(targetFramework, projectGraph, success);
+            return new BuildProjectsResult(targetFramework, selectedDevice, selectedDeviceRuntimeIdentifier, projectGraph, success);
         }
         finally
         {
             fileWatcher.SuppressEvents = false;
         }
 
-        async ValueTask<bool> BuildWithFrameworkSelectionAsync()
+        async ValueTask<bool> BuildWithFrameworkAndDeviceSelectionAsync()
         {
+            // Framework selection for file-based programs:
+            // If framework is specified on command line use it to create the virtual project.
+            // Otherwise, use TargetFramework/TargetFrameworks property specified in the source file, if any.
+            //
+            // Device selection not applicable to file based apps.
+            if (mainProjectOptions?.Representation.EntryPointFilePath is { } sourcePath)
+            {
+                if (targetFramework == null)
+                {
+                    if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFramework) is { } framework and not "")
+                    {
+                        targetFramework = framework;
+                    }
+                    else if (VirtualProjectBuilder.GetPropertyFromSourceFile(sourcePath, PropertyNames.TargetFrameworks) is { } frameworks and not "")
+                    {
+                        var frameworkList = frameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                        if (frameworkSelector != null)
+                        {
+                            targetFramework = await frameworkSelector(frameworkList, cancellationToken);
+                        }
+                        else
+                        {
+                            _context.BuildLogger.Log(MessageDescriptor.FileSpecifiesMultipleTargetFrameworks, sourcePath, string.Join("', '", frameworkList));
+
+                            return false;
+                        }
+                    }
+                }
+
+                return await BuildAsync(BuildAction.RestoreAndBuild, targetFramework);
+            }
+
+            var needsDeviceSelection = selectedDevice == null && deviceSelector != null;
+            var needsFrameworkSelection = targetFramework == null && frameworkSelector != null;
+
             if (mainProjectOptions == null ||
-                frameworkSelector == null ||
-                targetFramework != null ||
-                !mainProjectOptions.Representation.IsProjectFile)
+                (!needsFrameworkSelection && !needsDeviceSelection))
             {
                 return await BuildAsync(BuildAction.RestoreAndBuild, targetFramework);
             }
@@ -990,35 +1045,69 @@ internal sealed class HotReloadDotNetWatcher
             }
 
             // load project graph after restore so that props and targets files from packages are imported:
-            projectGraph = TryLoadProjectGraph(cancellationToken);
+            projectGraph = TryLoadProjectGraph(targetFramework, cancellationToken);
             if (projectGraph == null)
             {
                 return false;
             }
 
             var rootProject = projectGraph.Graph.GraphRoots.Single().ProjectInstance;
-            if (rootProject.GetTargetFramework() is var framework and not "")
+
+            // Select target framework if needed:
+            if (needsFrameworkSelection)
             {
-                targetFramework = framework;
-            }
-            else if (rootProject.GetTargetFrameworks() is var frameworks and not [])
-            {
-                targetFramework = await frameworkSelector(frameworks, cancellationToken);
-            }
-            else
-            {
-                _context.BuildLogger.LogError("Project '{Path}' does not specify a target framework.", rootProject.FullPath);
-                return false;
+                Debug.Assert(frameworkSelector != null);
+
+                if (rootProject.GetTargetFramework() is var framework and not "")
+                {
+                    targetFramework = framework;
+                }
+                else if (rootProject.GetTargetFrameworks() is var frameworks and not [])
+                {
+                    targetFramework = await frameworkSelector(frameworks, cancellationToken);
+                }
+                else
+                {
+                    _context.BuildLogger.LogError("Project '{Path}' does not specify a target framework.", rootProject.FullPath);
+                    return false;
+                }
             }
 
-            return await BuildAsync(BuildAction.BuildOnly, targetFramework);
+            // Select device if needed:
+            if (needsDeviceSelection
+                && rootProject.Targets.ContainsKey(TargetNames.ComputeAvailableDevices))
+            {
+                Debug.Assert(deviceSelector != null);
+
+                var deviceInfo = await TrySelectDeviceAsync(projectGraph, rootProject, targetFramework, deviceSelector, cancellationToken);
+                if (deviceInfo == null)
+                {
+                    return false;
+                }
+
+                selectedDevice = deviceInfo.Id;
+                selectedDeviceRuntimeIdentifier = deviceInfo.RuntimeIdentifier;
+                _context.Logger.LogDebug("Selected device: {DeviceId}", selectedDevice);
+
+                // If the device provides a RuntimeIdentifier, re-restore so the assets file
+                // includes the RID target. This mirrors the dotnet-run behavior.
+                if (!string.IsNullOrEmpty(selectedDeviceRuntimeIdentifier))
+                {
+                    if (!await BuildAsync(BuildAction.RestoreOnly, targetFramework, deviceInfo))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return await BuildAsync(BuildAction.BuildOnly, targetFramework, selectedDevice != null ? new DeviceInfo(selectedDevice, null, null, null, selectedDeviceRuntimeIdentifier) : null);
         }
 
-        async Task<bool> BuildAsync(BuildAction action, string? targetFramework)
+        async Task<bool> BuildAsync(BuildAction action, string? targetFramework, DeviceInfo? device = null)
         {
             if (projects is [var singleProject])
             {
-                return await BuildFileOrProjectOrSolutionAsync(singleProject.ProjectOrEntryPointFilePath, targetFramework, action, cancellationToken);
+                return await BuildFileOrProjectOrSolutionAsync(singleProject.ProjectOrEntryPointFilePath, targetFramework, device, action, cancellationToken);
             }
 
             // TODO: workaround for https://github.com/dotnet/sdk/issues/51311
@@ -1027,7 +1116,7 @@ internal sealed class HotReloadDotNetWatcher
 
             if (projectPaths is [var singleProjectPath])
             {
-                if (!await BuildFileOrProjectOrSolutionAsync(singleProjectPath, targetFramework, action, cancellationToken))
+                if (!await BuildFileOrProjectOrSolutionAsync(singleProjectPath, targetFramework, device, action, cancellationToken))
                 {
                     return false;
                 }
@@ -1047,7 +1136,7 @@ internal sealed class HotReloadDotNetWatcher
 
                 try
                 {
-                    if (!await BuildFileOrProjectOrSolutionAsync(solutionFile, targetFramework, action, cancellationToken))
+                    if (!await BuildFileOrProjectOrSolutionAsync(solutionFile, targetFramework, device, action, cancellationToken))
                     {
                         return false;
                     }
@@ -1068,7 +1157,7 @@ internal sealed class HotReloadDotNetWatcher
             // To maximize parallelism of building dependencies, build file-based projects after all physical projects:
             foreach (var file in projects.Where(p => p.EntryPointFilePath != null).Select(p => p.EntryPointFilePath!))
             {
-                if (!await BuildFileOrProjectOrSolutionAsync(file, targetFramework, action, cancellationToken))
+                if (!await BuildFileOrProjectOrSolutionAsync(file, targetFramework, device, action, cancellationToken))
                 {
                     return false;
                 }
@@ -1078,7 +1167,67 @@ internal sealed class HotReloadDotNetWatcher
         }
     }
 
-    private async Task<bool> BuildFileOrProjectOrSolutionAsync(string path, string? targetFramework, BuildAction action, CancellationToken cancellationToken)
+    /// <summary>
+    /// Computes available devices and selects one.
+    /// Auto-selects a single device when only one is available; otherwise uses the provided device selector.
+    /// Returns null if no devices are available (error).
+    /// </summary>
+    private async Task<DeviceInfo?> TrySelectDeviceAsync(
+        LoadedProjectGraph projectGraph,
+        ProjectInstance rootProject,
+        string? targetFramework,
+        Func<IReadOnlyList<DeviceInfo>, CancellationToken, ValueTask<DeviceInfo>> deviceSelector,
+        CancellationToken cancellationToken)
+    {
+        // Get the project node for the selected TFM so device computation is correct.
+        var projectNode = projectGraph.TryGetProjectNode(rootProject.FullPath, targetFramework);
+        if (projectNode == null)
+        {
+            return null;
+        }
+
+        var projectInstance = projectNode.ProjectInstance.DeepCopy();
+
+        var results = await projectGraph.BuildManager.BuildAsync(
+            [BuildRequest.Create(projectInstance, [TargetNames.ComputeAvailableDevices])],
+            onFailure: _ => true,
+            operationName: TargetNames.ComputeAvailableDevices,
+            cancellationToken);
+
+        if (results is not [var result] || !result.IsSuccess
+            || !result.TargetResults.TryGetValue(TargetNames.ComputeAvailableDevices, out var targetResult))
+        {
+            _context.Logger.LogDebug("ComputeAvailableDevices target failed or returned no output.");
+            return null;
+        }
+
+        var devices = new List<DeviceInfo>(targetResult.Items.Length);
+        foreach (var item in targetResult.Items)
+        {
+            devices.Add(new DeviceInfo(
+                item.ItemSpec,
+                item.GetMetadata("Description"),
+                item.GetMetadata("Type"),
+                item.GetMetadata("Status"),
+                item.GetMetadata("RuntimeIdentifier")));
+        }
+
+        if (devices.Count == 0)
+        {
+            _context.Logger.Log(MessageDescriptor.NoDevicesAvailable);
+            return null;
+        }
+
+        // Auto-select if only one device is available.
+        if (devices.Count == 1)
+        {
+            return devices[0];
+        }
+
+        return await deviceSelector(devices, cancellationToken);
+    }
+
+    private async Task<bool> BuildFileOrProjectOrSolutionAsync(string path, string? targetFramework, DeviceInfo? device, BuildAction action, CancellationToken cancellationToken)
     {
         var arguments = new List<string>
         {
@@ -1092,6 +1241,17 @@ internal sealed class HotReloadDotNetWatcher
         {
             arguments.Add("--framework");
             arguments.Add(targetFramework);
+        }
+
+        if (device != null)
+        {
+            arguments.Add($"-p:Device={device.Id}");
+
+            if (!string.IsNullOrEmpty(device.RuntimeIdentifier))
+            {
+                arguments.Add("--runtime");
+                arguments.Add(device.RuntimeIdentifier);
+            }
         }
 
         if (action == BuildAction.BuildOnly)

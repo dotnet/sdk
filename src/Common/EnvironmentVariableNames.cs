@@ -17,6 +17,7 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_CLI_FORCE_UTF8_ENCODING = nameof(DOTNET_CLI_FORCE_UTF8_ENCODING);
     public static readonly string TELEMETRY_OPTOUT = "DOTNET_CLI_TELEMETRY_OPTOUT";
     public static readonly string DOTNET_ROOT = nameof(DOTNET_ROOT);
+    public static readonly string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);
     public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG = nameof(DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG);
     public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR = nameof(DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR);
     public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER = nameof(DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER);
@@ -25,6 +26,7 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = nameof(DOTNET_ADD_GLOBAL_TOOLS_TO_PATH);
     public static readonly string DOTNET_NOLOGO = nameof(DOTNET_NOLOGO);
     public static readonly string DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK = nameof(DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK);
+    public static readonly string DOTNET_CLI_ENABLEAOT = nameof(DOTNET_CLI_ENABLEAOT);
     public static readonly string DOTNET_CLI_TELEMETRY_SESSIONID = nameof(DOTNET_CLI_TELEMETRY_SESSIONID);
     public static readonly string DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING = nameof(DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING);
     // Telemetry logging/debug/testing.

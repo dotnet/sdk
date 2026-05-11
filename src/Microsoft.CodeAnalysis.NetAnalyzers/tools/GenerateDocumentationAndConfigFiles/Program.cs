@@ -452,6 +452,8 @@ namespace GenerateDocumentationAndConfigFiles
 
                     if (!string.IsNullOrWhiteSpace(analyzerVersion))
                     {
+                        // Keep the checked-in SARIF stable across SDK version updates.
+                        // The build resolves this placeholder into the intermediate output that gets packed.
                         writer.Write("version", analyzerVersionTemplate);
                     }
 
