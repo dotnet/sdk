@@ -311,7 +311,15 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
-    /// Starts a tracked root process operation.
+    /// Starts the root <see cref="TrackedOperation"/> for the entire
+    /// dotnetup invocation. Disposed in <c>Program.Main</c>'s
+    /// <c>finally</c>; emits the <c>dotnetup/root</c> LogRecord that
+    /// carries the wall-clock <c>operation.duration_ms</c> for the whole
+    /// process and any <c>error.*</c> tags propagated up from a failing
+    /// command (or attached directly when an exception escapes
+    /// <see cref="CommandBase"/>'s catch). Paired with the per-command
+    /// <c>dotnetup/command</c> rows: "root" = whole process, "command" =
+    /// one subcommand.
     /// </summary>
     internal TrackedOperation StartTrackedProcess(string name)
     {
@@ -319,7 +327,7 @@ public sealed class DotnetupTelemetry : IDisposable
             ? CommandSource.StartActivity(name, ActivityKind.Internal)
             : null;
 
-        return new TrackedOperation(activity, "process/complete", TrackEvent);
+        return new TrackedOperation(activity, "root", TrackEvent);
     }
 
     /// <summary>
