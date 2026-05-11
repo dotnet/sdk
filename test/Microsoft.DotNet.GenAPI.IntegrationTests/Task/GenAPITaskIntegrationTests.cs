@@ -8,13 +8,9 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
     /// <c>Microsoft.DotNet.GenAPI.Task</c> from the local testpackages feed and invoking
     /// <c>dotnet build /t:GenAPIGenerateReferenceAssemblySource</c> against a real test project.
     /// </summary>
-    public class GenAPITaskIntegrationTests : SdkTest
+    public class GenAPITaskIntegrationTests(ITestOutputHelper log) : SdkTest(log)
     {
         private const string TestAssetName = "GenAPITaskTestProject";
-
-        public GenAPITaskIntegrationTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
         [Fact]
         public void GenAPITask_GeneratesReferenceSource_OnBuild()
@@ -22,7 +18,9 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
             TestAsset asset = PrepareAsset(nameof(GenAPITask_GeneratesReferenceSource_OnBuild));
 
             new BuildCommand(asset)
-                .Execute("-p:GenAPIGenerateReferenceAssemblySource=true")
+                .Execute(
+                    "-p:GenAPIGenerateReferenceAssemblySource=true",
+                    $"-p:RestoreAdditionalProjectSources={SdkTestContext.Current.TestPackages}")
                 .Should().Pass();
 
             string generated = Path.Combine(asset.TestRoot, "bin", "Debug",
@@ -45,7 +43,9 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
             TestAsset asset = PrepareAsset(nameof(GenAPITask_TargetInvokedDirectly_DoesNotBuildProjectReferences));
 
             // First build to produce the IntermediateAssembly that GenAPI consumes.
-            new BuildCommand(asset).Execute().Should().Pass();
+            new BuildCommand(asset)
+                .Execute($"-p:RestoreAdditionalProjectSources={SdkTestContext.Current.TestPackages}")
+                .Should().Pass();
 
             new MSBuildCommand(asset, "GenAPIGenerateReferenceAssemblySource")
                 .Execute()
@@ -64,7 +64,8 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
             new BuildCommand(asset)
                 .Execute(
                     "-p:GenAPIGenerateReferenceAssemblySource=true",
-                    "-p:GenAPIRespectInternals=true")
+                    "-p:GenAPIRespectInternals=true",
+                    $"-p:RestoreAdditionalProjectSources={SdkTestContext.Current.TestPackages}")
                 .Should().Pass();
 
             string generated = Path.Combine(asset.TestRoot, "bin", "Debug",
@@ -78,9 +79,9 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Task
             TestAsset asset = TestAssetsManager
                 .CopyTestAsset(TestAssetName, identifier: testName)
                 .WithSource();
-            NuGetConfigHelper.WriteNuGetConfigWithTestPackages(asset.TestRoot);
 
-            new DotnetCommand(Log, "add", asset.Path, "package", "Microsoft.DotNet.GenAPI.Task", "--prerelease")
+            new DotnetCommand(Log, "add", asset.Path, "package", "Microsoft.DotNet.GenAPI.Task",
+                "--prerelease", "--source", SdkTestContext.Current.TestPackages)
                 .Execute()
                 .Should().Pass();
             return asset;

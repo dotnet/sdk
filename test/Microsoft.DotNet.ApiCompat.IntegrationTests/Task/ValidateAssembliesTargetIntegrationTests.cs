@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.ApiCompat.IntegrationTests;
-
 namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
 {
-    public class ValidateAssembliesTargetIntegrationTests : SdkTest
+    public class ValidateAssembliesTargetIntegrationTests(ITestOutputHelper log) : SdkTest(log)
     {
         private const string TestAssetName = "ApiCompatValidateAssembliesTestProject";
-
-        public ValidateAssembliesTargetIntegrationTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
         [Fact]
         public void ValidateAssemblies_NoBreakingChanges_Succeeds()
@@ -24,7 +18,8 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             var result = new BuildCommand(implementationAsset)
                 .Execute(
                     "-p:ApiCompatValidateAssemblies=true",
-                    $"-p:ApiCompatContractAssembly={contractAssembly}");
+                    $"-p:ApiCompatContractAssembly={contractAssembly}",
+                    $"-p:RestoreAdditionalProjectSources={SdkTestContext.Current.TestPackages}");
 
             result.Should().Pass();
             result.StdOut.Should().NotContain("error CP0002");
@@ -42,7 +37,8 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                 .Execute(
                     "-p:ApiCompatValidateAssemblies=true",
                     "-p:ForceBreakingChange=true",
-                    $"-p:ApiCompatContractAssembly={contractAssembly}");
+                    $"-p:ApiCompatContractAssembly={contractAssembly}",
+                    $"-p:RestoreAdditionalProjectSources={SdkTestContext.Current.TestPackages}");
 
             result.Should().Fail();
             result.StdOut.Should().Contain("error CP0002")
@@ -62,7 +58,8 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                     "-p:ApiCompatValidateAssemblies=true",
                     "-p:ApiCompatStrictMode=true",
                     "-p:AddNewMember=true",
-                    $"-p:ApiCompatContractAssembly={contractAssembly}");
+                    $"-p:ApiCompatContractAssembly={contractAssembly}",
+                    $"-p:RestoreAdditionalProjectSources={SdkTestContext.Current.TestPackages}");
 
             result.Should().Fail();
             result.StdOut.Should().Contain("error CP0002")
@@ -84,7 +81,8 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                     "-p:ApiCompatValidateAssemblies=true",
                     "-p:ForceBreakingChange=true",
                     "-p:ApiCompatGenerateSuppressionFile=true",
-                    $"-p:ApiCompatContractAssembly={contractAssembly}");
+                    $"-p:ApiCompatContractAssembly={contractAssembly}",
+                    $"-p:RestoreAdditionalProjectSources={SdkTestContext.Current.TestPackages}");
             generateResult.Should().Pass();
             File.Exists(suppressionFile).Should().BeTrue("the suppression file should have been written");
             File.ReadAllText(suppressionFile).Should().Contain("CP0002");
@@ -93,7 +91,8 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                 .Execute(
                     "-p:ApiCompatValidateAssemblies=true",
                     "-p:ForceBreakingChange=true",
-                    $"-p:ApiCompatContractAssembly={contractAssembly}");
+                    $"-p:ApiCompatContractAssembly={contractAssembly}",
+                    $"-p:RestoreAdditionalProjectSources={SdkTestContext.Current.TestPackages}");
             consumeResult.Should().Pass();
             consumeResult.StdOut.Should().NotContain("error CP0002");
         }
@@ -107,7 +106,6 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             TestAsset contractAsset = TestAssetsManager
                 .CopyTestAsset(TestAssetName, identifier: $"{testName}_contract")
                 .WithSource();
-            NuGetConfigHelper.WriteNuGetConfigWithTestPackages(contractAsset.TestRoot);
 
             new BuildCommand(contractAsset).Execute().Should().Pass();
 
@@ -128,9 +126,9 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             TestAsset asset = TestAssetsManager
                 .CopyTestAsset(TestAssetName, identifier: $"{testName}_impl")
                 .WithSource();
-            NuGetConfigHelper.WriteNuGetConfigWithTestPackages(asset.TestRoot);
 
-            new DotnetCommand(Log, "add", asset.Path, "package", "Microsoft.DotNet.ApiCompat.Task", "--prerelease")
+            new DotnetCommand(Log, "add", asset.Path, "package", "Microsoft.DotNet.ApiCompat.Task",
+                "--prerelease", "--source", SdkTestContext.Current.TestPackages)
                 .Execute()
                 .Should().Pass();
             return asset;
