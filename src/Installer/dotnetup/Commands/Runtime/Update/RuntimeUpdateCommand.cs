@@ -17,7 +17,7 @@ internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
 
     protected override string GetCommandName() => "runtime/update";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         // Update all runtime-type components
         // (but not SDKs — those are updated via `dotnetup sdk update`)
@@ -45,6 +45,5 @@ internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
         }
 
         firstFailure?.Throw();
-        return 0;
     }
 }

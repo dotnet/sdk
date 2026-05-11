@@ -48,7 +48,7 @@ internal class InfoCommand : CommandBase
 
     protected override string GetCommandName() => "info";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         var info = GetDotnetupInfo();
         ListData? listData = null;
@@ -67,8 +67,6 @@ internal class InfoCommand : CommandBase
         {
             PrintHumanReadableInfo(_output, info, listData);
         }
-
-        return 0;
     }
 
     private static DotnetupInfo GetDotnetupInfo()

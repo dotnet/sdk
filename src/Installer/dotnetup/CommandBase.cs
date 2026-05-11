@@ -37,11 +37,17 @@ public abstract class CommandBase
 
         try
         {
-            _exitCode = ExecuteCore();
+            // Default success exit code; ExecuteCore can overwrite via
+            // SetExitCode() (e.g. DotnetCommand forwarding a child process
+            // exit code) or throw to signal failure (which leaves _exitCode
+            // at its outer initialization of 1).
+            _exitCode = 0;
+            ExecuteCore();
             return _exitCode;
         }
         catch (Exception ex)
         {
+            _exitCode = 1;
             DotnetupTelemetry.Instance.RecordException(_operation, ex);
             AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
 #if DEBUG
@@ -52,10 +58,12 @@ public abstract class CommandBase
                 Console.Error.WriteLine(ex.ToString());
             }
 #endif
-            return 1;
+            return _exitCode;
         }
         finally
         {
+            // _exitCode = 0 on success (set in try), 1 on exception (reset
+            // in catch), or whatever ExecuteCore passed to SetExitCode().
             _operation?.Tag(TelemetryTagNames.ExitCode, _exitCode);
             _operation?.SetStatus(_exitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             _operation?.Dispose();
@@ -66,11 +74,28 @@ public abstract class CommandBase
     /// Implement the command's core logic. Throw
     /// <see cref="DotnetInstallException"/> on failure so
     /// <see cref="Execute"/> can stamp <c>error.*</c> tags via
-    /// <see cref="DotnetupTelemetry.RecordException"/>; do NOT return a
-    /// non-zero exit code from here for failures.
+    /// <see cref="DotnetupTelemetry.RecordException"/>; do NOT return
+    /// without throwing for failures.
     /// </summary>
-    /// <returns>The successful exit code (typically 0).</returns>
-    protected abstract int ExecuteCore();
+    /// <remarks>
+    /// Successful completion implies exit code 0. Commands that need to
+    /// surface a different non-error exit code (e.g. forwarding a child
+    /// process's exit code via <c>dotnetup dotnet ...</c>) must call
+    /// <see cref="SetExitCode"/> before returning.
+    /// </remarks>
+    protected abstract void ExecuteCore();
+
+    /// <summary>
+    /// Overrides the success exit code that <see cref="Execute"/> would
+    /// otherwise return as 0. Intended for the narrow case of forwarding a
+    /// child process's exit code (e.g. <c>dotnetup dotnet build</c>); do NOT
+    /// use this as a substitute for throwing on failures (that bypasses the
+    /// telemetry pipeline).
+    /// </summary>
+    protected void SetExitCode(int exitCode)
+    {
+        _exitCode = exitCode;
+    }
 
     /// <summary>
     /// Returns the stable command identifier used as the

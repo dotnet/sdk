@@ -15,7 +15,7 @@ internal class SdkInstallCommand(ParseResult result) : InstallCommand(result)
 
     protected override string GetCommandName() => "sdk/install";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         // Map each channel to a MinimalInstallSpec. If none provided, a single null-channel
         // entry lets the workflow fall back to global.json or "latest".
@@ -25,6 +25,5 @@ internal class SdkInstallCommand(ParseResult result) : InstallCommand(result)
 
         var workflow = new InstallWorkflow(this);
         workflow.Execute(specs);
-        return 0;
     }
 }

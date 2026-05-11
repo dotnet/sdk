@@ -25,7 +25,7 @@ internal class ElevatedAdminPathCommand : CommandBase
 
     protected override string GetCommandName() => "elevatedadminpath";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         // This command only works on Windows
         if (!OperatingSystem.IsWindows())
@@ -45,12 +45,15 @@ internal class ElevatedAdminPathCommand : CommandBase
 
         try
         {
-            return _operation.ToLowerInvariant() switch
+            // Forward the helper's 0/1 exit code so the parent (which spawned
+            // this elevated child process) reads success/failure correctly.
+            // SetExitCode is the documented escape hatch for forwarding cases.
+            SetExitCode(_operation.ToLowerInvariant() switch
             {
                 "removedotnet" => RemoveDotnet(),
                 "adddotnet" => AddDotnet(),
                 _ => throw new InvalidOperationException($"Unknown operation: {_operation}")
-            };
+            });
         }
         catch (Exception ex)
         {

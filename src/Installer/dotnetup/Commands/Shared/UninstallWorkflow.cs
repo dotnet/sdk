@@ -21,8 +21,7 @@ internal class UninstallWorkflow
     /// <param name="versionOrChannel">The channel/version to uninstall.</param>
     /// <param name="sourceFilter">Which install source to filter by.</param>
     /// <param name="componentFilter">Which component to target.</param>
-    /// <returns>Exit code (0 for success).</returns>
-    public static int Execute(string? manifestPath, string? installPath, string versionOrChannel, InstallSource sourceFilter, InstallComponent componentFilter)
+    public static void Execute(string? manifestPath, string? installPath, string versionOrChannel, InstallSource sourceFilter, InstallComponent componentFilter)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -77,7 +76,6 @@ internal class UninstallWorkflow
         CheckAndReportStillPresent(manifestPath, installRoot, targetedInstallations);
 
         AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]Done.[/]");
-        return 0;
     }
 
     private static void ReportNoMatchingSpecs(

@@ -23,7 +23,7 @@ internal class PrintEnvScriptCommand : CommandBase
 
     protected override string GetCommandName() => "print-env-script";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         // Check if shell provider was successfully determined
         if (_shellProvider == null)
@@ -58,8 +58,6 @@ internal class PrintEnvScriptCommand : CommandBase
         string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet);
 
         WriteScriptToStandardOutput(script);
-
-        return 0;
     }
 
     internal static void WriteScriptToStandardOutput(string script)

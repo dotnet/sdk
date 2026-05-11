@@ -15,7 +15,7 @@ internal class RuntimeUninstallCommand(ParseResult result) : CommandBase(result)
 
     protected override string GetCommandName() => "runtime/uninstall";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         // Parse the component spec to determine runtime type and version/channel
         var (component, versionOrChannel) = Install.RuntimeInstallCommand.ParseComponentSpec(_componentSpec);
@@ -28,7 +28,7 @@ internal class RuntimeUninstallCommand(ParseResult result) : CommandBase(result)
                 "Examples: dotnetup runtime uninstall 9.0, dotnetup runtime uninstall aspnetcore@10.0");
         }
 
-        return UninstallWorkflow.Execute(
+        UninstallWorkflow.Execute(
             _manifestPath,
             _installPath,
             versionOrChannel,

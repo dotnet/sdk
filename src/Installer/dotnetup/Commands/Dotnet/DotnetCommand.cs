@@ -29,7 +29,7 @@ internal class DotnetCommand : CommandBase
 
     protected override string GetCommandName() => "dotnet";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         string dotnetPath = ResolveDotnetPath();
         string dotnetExe = GetDotnetExecutable(dotnetPath);
@@ -52,7 +52,10 @@ internal class DotnetCommand : CommandBase
                 message);
         }
 
-        return RunDotnet(dotnetExe, dotnetPath, _forwardedArgs);
+        // Forward the child process's exit code as our own so callers see
+        // the build/test/run result. SetExitCode is the documented escape
+        // hatch for this case (CommandBase otherwise defaults success to 0).
+        SetExitCode(RunDotnet(dotnetExe, dotnetPath, _forwardedArgs));
     }
 
     /// <summary>

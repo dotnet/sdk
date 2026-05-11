@@ -29,8 +29,7 @@ internal class UpdateWorkflow
     /// <param name="noProgress">Whether to suppress progress display.</param>
     /// <param name="updateGlobalJson">Whether to update global.json files after updating global.json-sourced SDK specs.</param>
     /// <param name="verbosity">The verbosity level for diagnostic messages during installation.</param>
-    /// <returns>Exit code (0 for success).</returns>
-    public int Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress, bool updateGlobalJson = false, Verbosity verbosity = Verbosity.Normal)
+    public void Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress, bool updateGlobalJson = false, Verbosity verbosity = Verbosity.Normal)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -38,7 +37,7 @@ internal class UpdateWorkflow
         if (rootsList.Count == 0)
         {
             AnsiConsole.MarkupLine(DotnetupTheme.Warning("No tracked dotnet installations found to update."));
-            return 0;
+            return;
         }
 
         // Capture the first failure so we can rethrow it after best-effort processing
@@ -67,8 +66,6 @@ internal class UpdateWorkflow
             }
             firstFailure.Throw();
         }
-
-        return 0;
     }
 
     private void UpdateRoot(
