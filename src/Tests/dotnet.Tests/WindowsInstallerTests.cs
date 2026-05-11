@@ -4,6 +4,8 @@
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Versioning;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.Installer.Windows.Security;
 
@@ -167,6 +169,244 @@ namespace Microsoft.DotNet.Tests
         private NamedPipeServerStream CreateServerPipe(string name)
         {
             return new NamedPipeServerStream(name, PipeDirection.InOut, 1, PipeTransmissionMode.Message);
+        }
+
+        [WindowsOnlyFact]
+        public void CreatePipeSecurity_ShouldNotGrantAccessToAuthenticatedUsers()
+        {
+            SecurityIdentifier ownerSid = WindowsIdentity.GetCurrent().Owner;
+            SecurityIdentifier clientSid = WindowsUtils.GetPipeClientIdentifier();
+
+            PipeSecurity pipeSecurity = WindowsUtils.CreatePipeSecurity(ownerSid, clientSid);
+
+            var rules = pipeSecurity.GetAccessRules(true, false, typeof(SecurityIdentifier));
+            SecurityIdentifier authenticatedUserSid = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+
+            Assert.DoesNotContain(rules.Cast<PipeAccessRule>(),
+                r => r.IdentityReference.Equals(authenticatedUserSid) && r.AccessControlType == AccessControlType.Allow);
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateLogFilePath_ShouldRejectSystemPaths()
+        {
+            string maliciousPath = @"C:\Windows\System32\evil.log";
+
+            string result = WindowsUtils.ValidateLogFilePath(maliciousPath);
+            Assert.NotEqual(maliciousPath, result);
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateLogFilePath_ShouldAcceptUserProfileTempPath()
+        {
+            // Use a fake server temp that differs from the user's profile temp,
+            // forcing the validation to exercise the profile-based lookup path.
+            string fakeServerTemp = @"C:\Windows\Temp";
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string userTempPath = Path.Combine(userProfile, "AppData", "Local", "Temp", "Microsoft.NET.Workload_test.log");
+
+            string result = WindowsUtils.ValidateLogFilePath(userTempPath, fakeServerTemp);
+            Assert.Equal(Path.GetFullPath(userTempPath), result);
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateLogFilePath_ShouldRejectTraversalAttack()
+        {
+            string traversalPath = Path.Combine(Path.GetTempPath(), @"..\..\Windows\System32\evil.log");
+
+            string result = WindowsUtils.ValidateLogFilePath(traversalPath);
+            string canonicalized = Path.GetFullPath(traversalPath);
+
+            // The traversal resolves to a system path, so it should be redirected
+            Assert.NotEqual(canonicalized, result);
+            Assert.StartsWith(Path.GetFullPath(Path.GetTempPath()), result, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [WindowsOnlyFact]
+        public void ValidatePackagePath_ShouldRejectTraversalAttack()
+        {
+            string cacheRoot = @"C:\ProgramData\dotnet\workloads";
+            string traversalPath = cacheRoot + @"\..\..\..\..\Users\Public\evil.msi";
+
+            Assert.False(WindowsUtils.ValidatePackagePath(traversalPath, cacheRoot));
+        }
+
+        [WindowsOnlyFact]
+        public void ValidatePackagePath_ShouldRejectSiblingPrefixAttack()
+        {
+            string cacheRoot = @"C:\ProgramData\dotnet\workloads";
+            string siblingPath = @"C:\ProgramData\dotnet\workloadsEvil\evil.msi";
+
+            Assert.False(WindowsUtils.ValidatePackagePath(siblingPath, cacheRoot));
+        }
+
+        [WindowsOnlyFact]
+        public void ValidatePackagePath_ShouldAcceptValidCachePath()
+        {
+            string cacheRoot = @"C:\ProgramData\dotnet\workloads";
+            string validPath = @"C:\ProgramData\dotnet\workloads\pack\1.0\pack.msi";
+
+            Assert.True(WindowsUtils.ValidatePackagePath(validPath, cacheRoot));
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData(@"..\..\evil")]
+        [InlineData(@"good\evil")]
+        [InlineData("good/evil")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void ValidatePathComponent_ShouldRejectInvalidInput(string input)
+        {
+            Assert.False(WindowsUtils.ValidatePathComponent(input));
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData("Microsoft.NET.Workload.Mono.ToolChain")]
+        [InlineData("8.0.100")]
+        public void ValidatePathComponent_ShouldAcceptValidComponent(string input)
+        {
+            Assert.True(WindowsUtils.ValidatePathComponent(input));
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData(@"C:\ProgramData\dotnet\workloads\..\..\..\..\Windows\System32\evil.msi", @"C:\ProgramData\dotnet\workloads", false)]
+        [InlineData(@"C:\ProgramData\dotnet\workloadsEvil\evil.msi", @"C:\ProgramData\dotnet\workloads", false)]
+        [InlineData(@"C:\ProgramData\dotnet\workloads\pack\1.0\manifest.json", @"C:\ProgramData\dotnet\workloads", true)]
+        [InlineData(@"C:\ProgramData\dotnet\workloads", @"C:\ProgramData\dotnet\workloads", true)]
+        [InlineData(@"C:\ProgramData\dotnet\workloads\", @"C:\ProgramData\dotnet\workloads", true)]
+        [InlineData(@"C:\ProgramData\dotnet\workloads", @"C:\ProgramData\dotnet\workloads\", true)]
+        public void ValidatePathUnderRoot_ReturnsExpectedResult(string path, string root, bool expected)
+        {
+            Assert.Equal(expected, WindowsUtils.ValidatePathUnderRoot(path, root));
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateManifestPath_ShouldAcceptPathUnderServerTemp()
+        {
+            string serverTemp = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+            string manifest = Path.Combine(serverTemp, Guid.NewGuid().ToString(), "data", "msi.json");
+
+            string priorClientTemp = InstallerBase.TrustedClientTempDirectory;
+            try
+            {
+                InstallerBase.TrustedClientTempDirectory = null;
+                Assert.True(WindowsUtils.ValidateManifestPath(manifest));
+            }
+            finally
+            {
+                InstallerBase.TrustedClientTempDirectory = priorClientTemp;
+            }
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateManifestPath_ShouldAcceptPathUnderTrustedClientTemp()
+        {
+            string fakeServerTemp = @"C:\fake-server-temp";
+            string fakeClientTemp = @"C:\fake-client-temp";
+            string manifest = Path.Combine(fakeClientTemp, Guid.NewGuid().ToString(), "data", "msi.json");
+
+            string priorClientTemp = InstallerBase.TrustedClientTempDirectory;
+            try
+            {
+                InstallerBase.TrustedClientTempDirectory = fakeClientTemp;
+                Assert.True(WindowsUtils.ValidateManifestPath(manifest, fakeServerTemp));
+            }
+            finally
+            {
+                InstallerBase.TrustedClientTempDirectory = priorClientTemp;
+            }
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateManifestPath_ShouldRejectPathOutsideAllowedRoots()
+        {
+            string fakeServerTemp = @"C:\fake-server-temp";
+            string maliciousPath = @"C:\Users\OtherUser\Desktop\evil.json";
+
+            string priorClientTemp = InstallerBase.TrustedClientTempDirectory;
+            try
+            {
+                InstallerBase.TrustedClientTempDirectory = null;
+                Assert.False(WindowsUtils.ValidateManifestPath(maliciousPath, fakeServerTemp));
+            }
+            finally
+            {
+                InstallerBase.TrustedClientTempDirectory = priorClientTemp;
+            }
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateManifestPath_ShouldRejectTraversalAttack()
+        {
+            string serverTemp = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+            string traversal = Path.Combine(serverTemp, "..", "..", "..", "Windows", "System32", "evil.json");
+
+            string priorClientTemp = InstallerBase.TrustedClientTempDirectory;
+            try
+            {
+                InstallerBase.TrustedClientTempDirectory = null;
+                Assert.False(WindowsUtils.ValidateManifestPath(traversal));
+            }
+            finally
+            {
+                InstallerBase.TrustedClientTempDirectory = priorClientTemp;
+            }
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateManifestPath_ShouldRejectSiblingPrefix()
+        {
+            string fakeServerTemp = @"C:\fake-server-temp";
+            string sibling = @"C:\fake-server-temp_evil\msi.json";
+
+            string priorClientTemp = InstallerBase.TrustedClientTempDirectory;
+            try
+            {
+                InstallerBase.TrustedClientTempDirectory = null;
+                Assert.False(WindowsUtils.ValidateManifestPath(sibling, fakeServerTemp));
+            }
+            finally
+            {
+                InstallerBase.TrustedClientTempDirectory = priorClientTemp;
+            }
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateManifestPath_ShouldRejectNullOrEmpty()
+        {
+            Assert.False(WindowsUtils.ValidateManifestPath(null));
+            Assert.False(WindowsUtils.ValidateManifestPath(""));
+            Assert.False(WindowsUtils.ValidateManifestPath("   "));
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateLogFilePath_ShouldRejectSiblingPrefixAttack()
+        {
+            string serverTemp = @"C:\Temp";
+            string maliciousPath = @"C:\TempEvil\evil.log";
+
+            string result = WindowsUtils.ValidateLogFilePath(maliciousPath, serverTemp);
+            Assert.NotEqual(Path.GetFullPath(maliciousPath), result);
+            Assert.StartsWith(Path.GetFullPath(serverTemp), result, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [WindowsOnlyFact]
+        public void ValidateLogFilePath_ShouldAcceptTrustedClientTemp()
+        {
+            string fakeServerTemp = @"C:\fake-server-temp";
+            string fakeClientTemp = @"C:\fake-client-temp";
+            string clientLogPath = Path.Combine(fakeClientTemp, "Microsoft.NET.Workload_42.log");
+
+            string priorClientTemp = InstallerBase.TrustedClientTempDirectory;
+            try
+            {
+                InstallerBase.TrustedClientTempDirectory = fakeClientTemp;
+                string result = WindowsUtils.ValidateLogFilePath(clientLogPath, fakeServerTemp);
+                Assert.Equal(Path.GetFullPath(clientLogPath), result);
+            }
+            finally
+            {
+                InstallerBase.TrustedClientTempDirectory = priorClientTemp;
+            }
         }
     }
 
