@@ -423,7 +423,7 @@ public class ImplementsGeneralThree : IGeneral
                     object IGeneral.DoSomething() { return null; }
                 }
                 """,
-                LanguageVersion.CSharp8).RunAsync();
+                LanguageVersion.CSharp8).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -468,7 +468,7 @@ public class ImplementsGeneralThree : IGeneral
                     string Name => "name";
                 }
                 """,
-                LanguageVersion.CSharp8).RunAsync();
+                LanguageVersion.CSharp8).RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
