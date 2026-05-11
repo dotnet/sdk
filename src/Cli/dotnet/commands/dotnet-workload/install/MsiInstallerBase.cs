@@ -225,6 +225,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="logFile">The path of the log file.</param>
         protected void ConfigureInstall(string logFile)
         {
+            string validatedLogFile = WindowsUtils.ValidateLogFilePath(logFile);
             uint error = Error.SUCCESS;
 
             // Turn off the MSI UI.
@@ -232,12 +233,12 @@ namespace Microsoft.DotNet.Installer.Windows
 
             // The log file must be created before calling MsiEnableLog and we should avoid having active handles
             // against it.
-            FileStream logFileStream = File.Create(logFile);
+            FileStream logFileStream = File.Create(validatedLogFile);
             logFileStream.Close();
-            error = WindowsInstaller.EnableLog(InstallLogMode.DEFAULT | InstallLogMode.VERBOSE, logFile, InstallLogAttributes.NONE);
+            error = WindowsInstaller.EnableLog(InstallLogMode.DEFAULT | InstallLogMode.VERBOSE, validatedLogFile, InstallLogAttributes.NONE);
 
             // We can report issues with the log file creation, but shouldn't fail the workload operation.
-            LogError(error, $"Failed to configure log file: {logFile}");
+            LogError(error, $"Failed to configure log file: {validatedLogFile}");
         }
 
         /// <summary>
@@ -276,7 +277,7 @@ namespace Microsoft.DotNet.Installer.Windows
         protected uint InstallMsi(string packagePath, string logFile)
         {
             // Make sure the package we're going to run is coming from the cache.
-            if (!packagePath.StartsWith(Cache.PackageCacheRoot))
+            if (!WindowsUtils.ValidatePackagePath(packagePath, Cache.PackageCacheRoot))
             {
                 return Error.INSTALL_PACKAGE_INVALID;
             }
