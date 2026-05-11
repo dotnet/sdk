@@ -579,11 +579,7 @@ public sealed class DotnetupTelemetry : IDisposable
             state["operation.parent_name"] = parent.OperationName;
         }
 
-        var list = new List<KeyValuePair<string, object?>>(state.Count);
-        foreach (var kv in state)
-        {
-            list.Add(new KeyValuePair<string, object?>(kv.Key, kv.Value));
-        }
+        var list = new List<KeyValuePair<string, object?>>(state);
         return list;
     }
 
