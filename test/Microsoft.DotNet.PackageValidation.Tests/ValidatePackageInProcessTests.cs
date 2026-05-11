@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
         [Fact]
         public void ValidatePackageWithReferences()
         {
-            string testDependencySource = @"namespace PackageValidationTests { public class ItermediateBaseClass
+            string testDependencySource = @"namespace PackageValidationTests { public class IntermediateBaseClass
 #if NETSTANDARD2_0
 : IBaseInterface
 #endif
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
                                             testDependencySource,
                                             $"netstandard2.0;{ToolsetInfo.CurrentTargetFramework}",
                                             new[] { testSubDependency });
-            TestProject testProject = CreateTestProject(@"namespace PackageValidationTests { public class First : ItermediateBaseClass { } }", $"netstandard2.0;{ToolsetInfo.CurrentTargetFramework}", new[] { testDependency });
+            TestProject testProject = CreateTestProject(@"namespace PackageValidationTests { public class First : IntermediateBaseClass { } }", $"netstandard2.0;{ToolsetInfo.CurrentTargetFramework}", new[] { testDependency });
 
             TestAsset asset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
             PackCommand packCommand = new(Log, Path.Combine(asset.TestRoot, testProject.Name));
@@ -105,10 +105,13 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             File.Delete(Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, $"{testDummyDependency.Name}.dll"));
             (SuppressibleTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
 
-            // First we run without references. Without references, ApiCompat should not be able to see that class First
-            // removed an interface due to it's base class removing that implementation. We validate that APICompat doesn't
-            // log errors when not using references.
+            // The test name reflects the original intent: ApiCompat should only flag a missing reference (CP1002)
+            // when the type graph being compared actually requires that reference at runtime. Today CP1002 is
+            // temporarily downgraded to an informational message (see https://github.com/dotnet/sdk/issues/46236),
+            // so no errors or warnings should be produced for any combination in the matrix.
             validator.Validate(new PackageValidatorOption(package));
+            Assert.Empty(log.errors);
+            Assert.DoesNotContain(log.warnings, e => e.Contains("CP1002"));
         }
 
         [Theory]
