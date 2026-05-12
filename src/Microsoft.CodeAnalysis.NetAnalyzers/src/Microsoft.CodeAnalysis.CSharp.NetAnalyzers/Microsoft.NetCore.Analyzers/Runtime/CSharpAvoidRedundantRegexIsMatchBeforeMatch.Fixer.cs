@@ -548,6 +548,39 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 {
                     return true;
                 }
+
+                // LINQ query range variables. Pattern variables introduced by
+                // `is { ... } m` scope to the enclosing block, so any subsequent
+                // query that already binds the same name would start conflicting.
+                if (descendant is FromClauseSyntax fromClause &&
+                    fromClause.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
+
+                if (descendant is LetClauseSyntax letClause &&
+                    letClause.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
+
+                if (descendant is JoinClauseSyntax joinClause &&
+                    joinClause.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
+
+                if (descendant is JoinIntoClauseSyntax joinIntoClause &&
+                    joinIntoClause.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
+
+                if (descendant is QueryContinuationSyntax queryCont &&
+                    queryCont.Identifier.ValueText == variableName)
+                {
+                    return true;
+                }
             }
 
             return false;

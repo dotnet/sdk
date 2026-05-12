@@ -2832,6 +2832,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
+        [Fact]
+        public async Task LinqQueryRangeVariableAfterIf_NoFix()
+        {
+            // Regression for Copilot review (2026-05-12): a subsequent LINQ query
+            // that already binds `m` (via `from m in ...`) would conflict with a
+            // pattern variable `m` introduced by the fixer (which scopes to the
+            // entire enclosing block). HasConflictingName must include query range
+            // variables, so no fix is offered here.
+            var source = """
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, IEnumerable<string> items)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                        var q = (from m in items select m).ToList();
+                    }
+                }
+                """;
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
         #endregion
     }
 }
