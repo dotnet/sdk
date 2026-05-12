@@ -239,13 +239,14 @@ public class SignatureVerifierTests
     public void Verify_ForeignSigner_FlagsSubjectMismatch()
     {
         // The vscode-dotnet-runtime CMS signature is signed by a different Microsoft entity
-        // (not "Microsoft Corporation, OU=.NET Release"). Even though we don't have its
+        // (CN=Microsoft Corporation without OU=.NET Release). Even though we don't have its
         // matching content (so SigCryptoInvalid will also fire), the subject DN check runs
         // against the embedded signer cert independently and must reject.
         //
-        // We don't assert IssuerMismatch here: the foreign signer happens to chain through
-        // the same DigiCert "Code Signing RSA4096 SHA384 2021 CA1" intermediate that
-        // .NET Release uses, so the issuer pin (spec §5.2) legitimately passes for it.
+        // We don't assert IssuerMismatch here: the vscode signer happens to chain through
+        // the same DigiCert "Trusted G4 Code Signing RSA4096 SHA384 2021 CA1" intermediate
+        // that .NET Release uses (signed in the same era), so the issuer pin (spec §5.2)
+        // legitimately passes. Use the 3.1.x NuGet sig fixture below for IssuerMismatch.
         var result = SignatureVerifier.Verify(
             LoadAsset("releases-directory.json"),  // wrong content — that's fine, checks are independent
             LoadAsset("vscode-runtime.signature.p7s"),
@@ -253,6 +254,52 @@ public class SignatureVerifierTests
             s_pinnedNow);
 
         result.Failures.Select(f => f.Code).Should().Contain(FailureCode.SubjectMismatch);
+    }
+
+    [Fact]
+    public void Verify_NuGetPackageSignature_FromOlderIntermediate_FlagsIssuerMismatch()
+    {
+        // Microsoft.AspNetCore.App.Runtime 3.1.32's NuGet .signature.p7s is signed by
+        // CN=Microsoft Corporation (no OU=.NET Release) chaining through the older
+        // "DigiCert SHA2 Assured ID Code Signing CA" intermediate — NOT the
+        // "DigiCert Trusted G4 Code Signing RSA4096 SHA384 2021 CA1" pin from spec §5.2.
+        // This is the one realistic Microsoft fixture that drives IssuerMismatch.
+        //
+        // Using a NuGet .signature.p7s as the signature with our JSON content guarantees
+        // SigCryptoInvalid (the sig was computed over the package signature manifest, not
+        // our JSON) — but the verifier's collect-all behavior means SubjectMismatch and
+        // IssuerMismatch checks run independently against the embedded signer cert.
+        var result = SignatureVerifier.Verify(
+            LoadAsset("releases-directory.json"),
+            LoadAsset("nuget-aspnetcore-3.1.32.signature.p7s"),
+            ProductionOptions(requireExpiration: false),
+            s_pinnedNow);
+
+        var codes = result.Failures.Select(f => f.Code).ToHashSet();
+        codes.Should().Contain(FailureCode.IssuerMismatch, "the older DigiCert intermediate is not the spec §5.2 pin");
+        codes.Should().Contain(FailureCode.SubjectMismatch, "the NuGet signer subject lacks the required OU=.NET Release");
+    }
+
+    [Fact]
+    public void Verify_NuGetPackageSignature_PassesAlgorithmAndEkuChecks()
+    {
+        // Same NuGet fixture confirms the algorithm + EKU checks DON'T over-fire on a
+        // legitimate Microsoft NuGet signer: SHA-256 digest is allowed (not WeakDigest),
+        // RSA public key is allowed (not WeakSignatureAlgorithm), and the EKU is exactly
+        // id-kp-codeSigning (not EkuMissing or EkuNotExclusiveCodeSign).
+        var result = SignatureVerifier.Verify(
+            LoadAsset("releases-directory.json"),
+            LoadAsset("nuget-aspnetcore-3.1.32.signature.p7s"),
+            ProductionOptions(requireExpiration: false),
+            s_pinnedNow);
+
+        var codes = result.Failures.Select(f => f.Code).ToHashSet();
+        codes.Should().NotContain(FailureCode.WeakDigest);
+        codes.Should().NotContain(FailureCode.WeakSignatureAlgorithm);
+        codes.Should().NotContain(FailureCode.EkuMissing);
+        codes.Should().NotContain(FailureCode.EkuNotExclusiveCodeSign);
+        codes.Should().NotContain(FailureCode.SigMultipleSigners);
+        codes.Should().NotContain(FailureCode.SignerCertMissing);
     }
 
     // ---------------- Collect-all behavior ----------------
