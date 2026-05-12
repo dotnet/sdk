@@ -115,7 +115,8 @@ public class DotnetArchiveDownloaderBlobFeedTests
             [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.OK, expectedHash + "\n"),
         });
 
-        using var downloader = CreateDownloader(handler, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        using var http = new HttpClient(handler);
+        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
 
@@ -134,7 +135,8 @@ public class DotnetArchiveDownloaderBlobFeedTests
         const string version = "10.0.100";
         var (handler, history) = BuildHandler(new());
 
-        using var downloader = CreateDownloader(handler, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        using var http = new HttpClient(handler);
+        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
@@ -154,7 +156,8 @@ public class DotnetArchiveDownloaderBlobFeedTests
         const string resolved = "10.0.100-preview.4.25216.37";
         var (handler, history) = BuildHandler(new());
 
-        using var downloader = CreateDownloader(handler, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        using var http = new HttpClient(handler);
+        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -174,7 +177,8 @@ public class DotnetArchiveDownloaderBlobFeedTests
         const string resolved = "10.0.100-preview.4.25216.37";
         var (handler, _) = BuildHandler(new());
 
-        using var downloader = CreateDownloader(handler, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
+        using var http = new HttpClient(handler);
+        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -191,7 +195,8 @@ public class DotnetArchiveDownloaderBlobFeedTests
         const string version = "10.0.100-preview.4.25216.37";
         var (handler, history) = BuildHandler(new());
 
-        using var downloader = CreateDownloader(handler, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        using var http = new HttpClient(handler);
+        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
@@ -216,7 +221,8 @@ public class DotnetArchiveDownloaderBlobFeedTests
             [$"https://ci.dot.net/public-checksums/Runtime/{version}/dotnet-runtime-{version}-{rid}{ext}.sha512"] = (HttpStatusCode.OK, expectedHash),
         });
 
-        using var downloader = CreateDownloader(handler, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        using var http = new HttpClient(handler);
+        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.Runtime), new ReleaseVersion(version));
 
@@ -232,10 +238,9 @@ public class DotnetArchiveDownloaderBlobFeedTests
         return new DotnetInstallRequest(root, new UpdateChannel(channel), component, new InstallRequestOptions());
     }
 
-    private static DotnetArchiveDownloader CreateDownloader(HttpMessageHandler handler, DotnetInstallErrorCode manifestThrows)
+    private static DotnetArchiveDownloader CreateDownloader(HttpClient http, DotnetInstallErrorCode manifestThrows)
     {
         var manifest = new ThrowingReleaseManifest(manifestThrows);
-        var http = new HttpClient(handler);
         // Use a per-test cache directory so we don't pollute the user cache.
         var cacheDir = Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
         return new DotnetArchiveDownloader(manifest, http, cacheDir);

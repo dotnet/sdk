@@ -50,7 +50,7 @@ public static class ProgressFormatting
     /// Pass <paramref name="versionMinWidth"/> (typically the longest version length in
     /// the current install batch) to keep mixed short/long versions aligned.
     /// </summary>
-    public static string FormatProgressDescription(string action, InstallComponent component, string version, int versionMinWidth = 8) =>
+    public static string FormatProgressDescription(string action, InstallComponent component, string version, int versionMinWidth) =>
         $"{action.PadRight(s_actionWidth)} {component.GetPaddedDisplayName()} {InstallComponentExtensions.FormatVersionForDisplay(version, versionMinWidth)}";
 
     /// <summary>
