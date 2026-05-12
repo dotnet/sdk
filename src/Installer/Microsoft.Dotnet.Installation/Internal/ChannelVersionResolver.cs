@@ -36,6 +36,14 @@ internal class ChannelVersionResolver
 
     private readonly ReleaseManifest _releaseManifest = new();
 
+    /// <summary>
+    /// Exposes the underlying <see cref="ReleaseManifest"/> so callers (e.g. the install
+    /// workflow) can flow it into <see cref="ResolvedInstallRequest.ReleaseManifest"/> and
+    /// avoid creating a second instance for the orchestrator's PrepareInstall path. Without
+    /// this sharing the orchestrator would re-download (and re-verify) both manifests.
+    /// </summary>
+    internal ReleaseManifest Manifest => _releaseManifest;
+
     public ChannelVersionResolver()
     {
 
@@ -56,7 +64,7 @@ internal class ChannelVersionResolver
                 .SelectMany(p => GetChannelsForProduct(p, includeFeatureBands))
         ];
 
-        static IEnumerable<string> GetChannelsForProduct(Product product, bool includeFeatureBands)
+        IEnumerable<string> GetChannelsForProduct(Product product, bool includeFeatureBands)
         {
             if (!includeFeatureBands)
             {
@@ -64,7 +72,7 @@ internal class ChannelVersionResolver
             }
 
             return [product.ProductVersion,
-                ..product.GetReleasesAsync().GetAwaiter().GetResult()
+                .._releaseManifest.GetReleases(product)
                     .SelectMany(r => r.Sdks)
                     .Select(sdk => sdk.Version)
                     .OrderByDescending(v => v)
@@ -346,7 +354,7 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Gets the latest version for a feature band channel (e.g., "9.0.1xx").
     /// </summary>
-    private static ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
+    private ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
     {
         if (component != InstallComponent.SDK)
         {
@@ -355,7 +363,9 @@ internal class ChannelVersionResolver
 
         var validProducts = GetProductsInMajorOrMajorMinor(index, major, minor);
         var latestProduct = validProducts.FirstOrDefault();
-        var releases = latestProduct?.GetReleasesAsync().GetAwaiter().GetResult().ToList() ?? [];
+        var releases = latestProduct is not null
+            ? _releaseManifest.GetReleases(latestProduct).ToList()
+            : new List<ProductRelease>();
         var normalizedFeatureBand = NormalizeFeatureBandInput(featureBand);
 
         foreach (var release in releases)

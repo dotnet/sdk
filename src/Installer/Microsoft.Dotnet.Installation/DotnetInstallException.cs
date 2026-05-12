@@ -82,6 +82,12 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The uninstall target (install spec or tracked root) was not found.</summary>
     UninstallTargetNotFound,
+
+    /// <summary>The detached CMS signature on a release manifest JSON failed verification.</summary>
+    SignatureVerificationFailed,
+
+    /// <summary>The release manifest is missing a SHA-512 hash for the archive, breaking the signed-manifest → hash → archive trust chain.</summary>
+    ArchiveHashMissing,
 }
 
 /// <summary>

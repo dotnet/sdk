@@ -141,7 +141,12 @@ internal class InstallWorkflow
                 $"Could not resolve channel '{channel}' to a .NET version for {component.GetDisplayName()}.");
         }
 
-        var resolved = new ResolvedInstallRequest(request, resolvedVersion);
+        var resolved = new ResolvedInstallRequest(request, resolvedVersion)
+        {
+            // Share the manifest used during resolution so the orchestrator's PrepareInstall
+            // path reuses its signed in-memory caches instead of re-downloading + re-verifying.
+            ReleaseManifest = _command.ChannelVersionResolver.Manifest,
+        };
 
         RecordInstallTelemetry(
             component, explicitChannel,

@@ -41,7 +41,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      Trusted root certificate lists for release-manifest signature verification.
+      Same files the SDK ships in src/Layout/redist/trustedroots/ for NuGet signing validation,
+      embedded as resources here so dnup can verify release manifests as a standalone executable
+      without an SDK present. Loaded by Internal/Signing/TrustedRootsLoader.cs.
+    -->
+    <EmbeddedResource Include="$(RepoRoot)src\Layout\redist\trustedroots\codesignctl.pem"
+                      LogicalName="codesignctl.pem" />
+    <EmbeddedResource Include="$(RepoRoot)src\Layout\redist\trustedroots\timestampctl.pem"
+                      LogicalName="timestampctl.pem" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Meziantou.Analyzer" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <!-- Required for SignedCms / Rfc3161TimestampToken used by Internal/Signing/SignatureVerifier. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 </Project>

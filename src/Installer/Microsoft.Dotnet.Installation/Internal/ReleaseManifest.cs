@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal.Signing;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -12,8 +15,31 @@ internal class ReleaseManifest
 {
     private ProductCollection? _productCollection;
 
+    // Per-product release cache. Wrapping the value in Lazy<T> with ExecutionAndPublication
+    // is required: ConcurrentDictionary.GetOrAdd does NOT guarantee single-invocation of the
+    // value factory under concurrent access. Without Lazy<T>, two PrepareInstall threads asking
+    // for the same channel could each download + verify the same JSON.
+    private readonly ConcurrentDictionary<string, Lazy<ReadOnlyCollection<ProductRelease>>> _releaseCache = new(StringComparer.Ordinal);
+
+    // Lazy<T>'s default mode is ExecutionAndPublication, so the orchestrator's parallel
+    // PrepareConcurrent calls cannot double-instantiate the loader.
+    private readonly Lazy<SignedReleaseManifestLoader> _loader;
+
     public ReleaseManifest()
     {
+        _loader = new Lazy<SignedReleaseManifestLoader>(() => new SignedReleaseManifestLoader(
+            DefaultHttpClient.Instance,
+            DefaultSignatureOptions.Instance,
+            indexUrl: ProductCollection.ReleasesIndexDefaultUrl));
+    }
+
+    /// <summary>
+    /// Test seam — inject a fake loader (e.g. one that reads fixture JSON+sig from disk).
+    /// </summary>
+    internal ReleaseManifest(SignedReleaseManifestLoader loader)
+    {
+        ArgumentNullException.ThrowIfNull(loader);
+        _loader = new Lazy<SignedReleaseManifestLoader>(() => loader);
     }
 
     /// <summary>
@@ -33,7 +59,7 @@ internal class ReleaseManifest
                     $"No product found for version {resolvedVersion}",
                     version: resolvedVersion.ToString(),
                     component: installRequest.Component.ToString());
-            var release = FindRelease(product, resolvedVersion, installRequest.Component)
+            var release = FindRelease(GetReleases(product), resolvedVersion, installRequest.Component)
                 ?? throw new DotnetInstallException(
                     DotnetInstallErrorCode.ReleaseNotFound,
                     $"No release found for version {resolvedVersion}. Daily build versions are not yet supported.",
@@ -85,8 +111,22 @@ internal class ReleaseManifest
             return _productCollection;
         }
 
-        _productCollection = ProductCollection.GetAsync().GetAwaiter().GetResult();
+        _productCollection = _loader.Value.GetVerifiedReleasesIndex();
         return _productCollection;
+    }
+
+    /// <summary>
+    /// Returns releases for a product. Downloaded + signature-verified once per process per
+    /// product, then served from <see cref="_releaseCache"/>. Lazy&lt;T&gt; guarantees the verify
+    /// runs exactly once even under concurrent <see cref="GetReleases"/> calls.
+    /// </summary>
+    public ReadOnlyCollection<ProductRelease> GetReleases(Product product)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+        return _releaseCache.GetOrAdd(product.ProductVersion, _ =>
+            new Lazy<ReadOnlyCollection<ProductRelease>>(
+                () => _loader.Value.GetVerifiedReleases(product),
+                LazyThreadSafetyMode.ExecutionAndPublication)).Value;
     }
 
     /// <summary>
@@ -124,10 +164,8 @@ internal class ReleaseManifest
     /// <summary>
     /// Finds the specific release for the given version.
     /// </summary>
-    private static ReleaseComponent? FindRelease(Product product, ReleaseVersion resolvedVersion, InstallComponent component)
+    private static ReleaseComponent? FindRelease(ReadOnlyCollection<ProductRelease> releases, ReleaseVersion resolvedVersion, InstallComponent component)
     {
-        var releases = product.GetReleasesAsync().GetAwaiter().GetResult().ToList();
-
         foreach (var release in releases)
         {
             if (component == InstallComponent.SDK)
