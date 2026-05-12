@@ -352,6 +352,99 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         dotnetRootValue.Should().Be(installPath, $"DOTNET_ROOT should be set to the install path for {shell}");
     }
 
+    /// <summary>
+    /// Exercises the blob-feed fallback path for a fully-specified prerelease SDK version
+    /// that isn't published in the release manifest. We discover the current daily-build
+    /// version via aka.ms at test time so the test stays valid as builds roll over on
+    /// ci.dot.net.
+    /// </summary>
+    [Fact]
+    public void SdkInstall_FullySpecifiedPreviewVersion_UsesBlobFeedFallback()
+    {
+        string? previewVersion = TryResolveCurrentDailyPreviewSdkVersion();
+        previewVersion.Should().NotBeNull("a daily preview SDK should be available on one of the probed dev-branch channels");
+
+        Console.WriteLine($"Resolved current daily preview SDK version: {previewVersion}");
+
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildSdkArguments(previewVersion!, testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        // Only assert that an SDK was installed — don't pin the manifest's recorded
+        // version string, because we don't want to couple to the exact form
+        // (prerelease tag, servicing suffix, etc.) preserved through the install pipeline.
+        VerifyManifestContains(testEnv, InstallComponent.SDK);
+    }
+
+    /// <summary>
+    /// Looks up the current daily preview SDK version by following the aka.ms redirect
+    /// for the SDK archive on the channel with the highest major version in the release
+    /// manifest. If that channel doesn't yield a prerelease, probes the next-major
+    /// channel (some windows have a not-yet-listed dev branch above the manifest's
+    /// highest major).
+    /// </summary>
+    private static string? TryResolveCurrentDailyPreviewSdkVersion()
+    {
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+        string ext = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
+
+        int latestManifestMajor = new ReleaseManifest().GetReleasesIndex()
+            .Select(product =>
+            {
+                var parts = product.ProductVersion.Split('.');
+                return int.TryParse(parts[0], out var major) ? major : 0;
+            })
+            .Max();
+
+        using var handler = new System.Net.Http.HttpClientHandler { AllowAutoRedirect = true, MaxAutomaticRedirections = 10 };
+        using var http = new System.Net.Http.HttpClient(handler);
+
+        // Probe the dev-branch channel above the manifest's highest major first (handles
+        // the window where the next dev branch is building daily but not yet listed in
+        // the manifest), then fall back to the manifest's highest major (the dev branch
+        // for a not-yet-GA major is already there).
+        foreach (int probeMajor in new[] { latestManifestMajor + 1, latestManifestMajor })
+        {
+            string channel = $"{probeMajor}.0";
+            var akaMsUrl = $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{rid}{ext}";
+            try
+            {
+                using var response = http.GetAsync(akaMsUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
+                if (!response.IsSuccessStatusCode)
+                {
+                    continue;
+                }
+
+                var finalUri = response.RequestMessage?.RequestUri;
+                if (finalUri is null)
+                {
+                    continue;
+                }
+
+                // Path looks like .../Sdk/<version>/dotnet-sdk-<version>-<rid>.<ext>.
+                // Pull the first segment that parses as a prerelease ReleaseVersion —
+                // skip stable versions (the channel redirected to a servicing build,
+                // not a daily preview).
+                foreach (var segment in finalUri.Segments)
+                {
+                    var trimmed = segment.Trim('/');
+                    if (ReleaseVersion.TryParse(trimmed, out var parsed)
+                        && !string.IsNullOrEmpty(parsed.Prerelease))
+                    {
+                        return trimmed;
+                    }
+                }
+            }
+            catch (System.Net.Http.HttpRequestException)
+            {
+                // Try the next major.
+            }
+        }
+
+        return null;
+    }
+
     private static void VerifyManifestContains(TestEnvironment testEnv, InstallComponent expectedComponent, Action<Installation>? additionalAssertions = null)
     {
         Directory.Exists(testEnv.InstallPath).Should().BeTrue();
