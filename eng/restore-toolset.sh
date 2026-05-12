@@ -10,6 +10,8 @@ function GetNativeMachineArchitecture {
   case "$(uname -m)" in
     arm64|aarch64) echo "arm64" ;;
     amd64|x86_64) echo "x64" ;;
+    armv*l) echo "arm" ;;
+    i[3-6]86) echo "x86" ;;
     *) echo "x64" ;;
   esac
 }

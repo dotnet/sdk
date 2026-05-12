@@ -6,6 +6,12 @@ function Get-NativeMachineArchitecture {
     if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
       return "arm64"
     }
+    if ($osArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
+      return "x86"
+    }
+    if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
+      return "arm"
+    }
   } catch {
     # Fallback for environments where RuntimeInformation is unavailable
   }
