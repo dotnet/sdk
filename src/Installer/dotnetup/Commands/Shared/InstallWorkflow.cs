@@ -198,7 +198,18 @@ internal class InstallWorkflow
 
         if (batchResult.Failures.Count > 0)
         {
-            ExceptionDispatchInfo.Capture(batchResult.Failures[0].Exception).Throw();
+            // Attach failures [1..] to the primary so RecordException stamps
+            // them as error.additional_failures on the command row when
+            // CommandBase catches the rethrown primary. Without this only the
+            // first failure was visible in telemetry even though all were
+            // printed to the user.
+            var primary = batchResult.Failures[0].Exception;
+            for (int i = 1; i < batchResult.Failures.Count; i++)
+            {
+                primary.AttachAdditionalFailure(batchResult.Failures[i].Exception);
+            }
+
+            ExceptionDispatchInfo.Capture(primary).Throw();
         }
     }
 

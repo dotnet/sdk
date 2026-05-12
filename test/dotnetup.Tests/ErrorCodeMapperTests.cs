@@ -4,7 +4,9 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Xunit;
 
@@ -388,5 +390,203 @@ public class ErrorPropagationTests : IDisposable
             Assert.Equal("product", activity.GetTagItem("error.category"));
             Assert.Equal(500, activity.GetTagItem("error.http_status"));
         }
+    }
+}
+
+/// <summary>
+/// Covers the best-effort batch failure pipeline:
+/// <see cref="ExceptionExtensions"/> storage / cap behavior,
+/// <see cref="ErrorCodeMapper.GetErrorInfo"/> recursion over attached
+/// failures, and <see cref="ErrorCodeMapper.ApplyAdditionalFailureTags"/>
+/// JSON shape.
+/// </summary>
+public class ErrorCodeMapperAdditionalFailureTests : IDisposable
+{
+    private readonly ActivitySource _source;
+    private readonly ActivityListener _listener;
+
+    public ErrorCodeMapperAdditionalFailureTests()
+    {
+        // ActivitySource.StartActivity returns null unless a listener is
+        // registered for the source. Per-instance source + listener avoids
+        // any cctor ordering or cross-test interference.
+        _source = new ActivitySource("dotnetup.tests.additionalfailures." + Guid.NewGuid().ToString("N"));
+        var sourceName = _source.Name;
+        _listener = new ActivityListener
+        {
+            ShouldListenTo = src => src.Name == sourceName || src.Name == "Microsoft.Dotnet.Bootstrapper",
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+        };
+        ActivitySource.AddActivityListener(_listener);
+    }
+
+    public void Dispose()
+    {
+        _listener.Dispose();
+        _source.Dispose();
+    }
+
+    [Fact]
+    public void AttachAdditionalFailure_BelowCap_StoresAllInOrder()
+    {
+        var primary = new InvalidOperationException("primary");
+        var a = new InvalidOperationException("a");
+        var b = new InvalidOperationException("b");
+
+        primary.AttachAdditionalFailure(a);
+        primary.AttachAdditionalFailure(b);
+
+        var stored = primary.GetAdditionalFailures();
+        Assert.Equal(2, stored.Count);
+        Assert.Same(a, stored[0]);
+        Assert.Same(b, stored[1]);
+        Assert.Equal(0, primary.GetTruncatedAdditionalFailureCount());
+    }
+
+    [Fact]
+    public void AttachAdditionalFailure_AtCap_StoresExactlyMax()
+    {
+        var primary = new InvalidOperationException("primary");
+        for (int i = 0; i < ExceptionExtensions.MaxAdditionalFailures; i++)
+        {
+            primary.AttachAdditionalFailure(new InvalidOperationException($"sib{i}"));
+        }
+
+        Assert.Equal(ExceptionExtensions.MaxAdditionalFailures, primary.GetAdditionalFailures().Count);
+        Assert.Equal(0, primary.GetTruncatedAdditionalFailureCount());
+    }
+
+    [Fact]
+    public void AttachAdditionalFailure_OverCap_DropsExtraAndCountsTruncated()
+    {
+        var primary = new InvalidOperationException("primary");
+        const int over = 7;
+        int total = ExceptionExtensions.MaxAdditionalFailures + over;
+
+        for (int i = 0; i < total; i++)
+        {
+            primary.AttachAdditionalFailure(new InvalidOperationException($"sib{i}"));
+        }
+
+        Assert.Equal(ExceptionExtensions.MaxAdditionalFailures, primary.GetAdditionalFailures().Count);
+        Assert.Equal(over, primary.GetTruncatedAdditionalFailureCount());
+    }
+
+    [Fact]
+    public void AttachAdditionalFailure_SurvivesRethrow()
+    {
+        // Exception.Data round-trips through ExceptionDispatchInfo / throw;
+        // — that's the storage's whole reason for living. Asserting it
+        // directly so a future BCL change can't silently regress.
+        var primary = new InvalidOperationException("primary");
+        primary.AttachAdditionalFailure(new InvalidOperationException("sib"));
+
+        var captured = ExceptionDispatchInfo.Capture(primary);
+        try
+        {
+            captured.Throw();
+        }
+        catch (InvalidOperationException ex)
+        {
+            Assert.Single(ex.GetAdditionalFailures());
+        }
+    }
+
+    [Fact]
+    public void GetErrorInfo_AttachedFailures_AreClassifiedRecursively()
+    {
+        // DotnetInstallException → DownloadFailed (product), HttpRequestException
+        // with a 4xx → Http404 (user). Verifies GetErrorInfo walks the
+        // Exception.Data list rather than just looking at the primary.
+        var primary = new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, "primary");
+        var http = new HttpRequestException("404 not found", inner: null, statusCode: HttpStatusCode.NotFound);
+        primary.AttachAdditionalFailure(http);
+
+        var info = ErrorCodeMapper.GetErrorInfo(primary);
+
+        Assert.Equal("DownloadFailed", info.ErrorType);
+        Assert.NotNull(info.AdditionalFailures);
+        var sub = Assert.Single(info.AdditionalFailures!);
+        Assert.Equal("Http404", sub.ErrorType);
+        Assert.Equal(ErrorCategory.User, sub.Category);
+        Assert.Equal(0, info.TruncatedAdditionalFailureCount);
+    }
+
+    [Fact]
+    public void GetErrorInfo_TruncationCount_PropagatesIntoErrorInfo()
+    {
+        var primary = new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, "primary");
+        for (int i = 0; i < ExceptionExtensions.MaxAdditionalFailures + 3; i++)
+        {
+            primary.AttachAdditionalFailure(new InvalidOperationException($"sib{i}"));
+        }
+
+        var info = ErrorCodeMapper.GetErrorInfo(primary);
+
+        Assert.NotNull(info.AdditionalFailures);
+        Assert.Equal(ExceptionExtensions.MaxAdditionalFailures, info.AdditionalFailures!.Count);
+        Assert.Equal(3, info.TruncatedAdditionalFailureCount);
+    }
+
+    [Fact]
+    public void ApplyAdditionalFailureTags_NullOrEmpty_DoesNotEmitTag()
+    {
+        using var activity = _source.StartActivity("op", ActivityKind.Internal);
+        Assert.NotNull(activity);
+
+        var info = new ExceptionErrorInfo("Primary");
+        ErrorCodeMapper.ApplyAdditionalFailureTags(activity, info);
+
+        Assert.Null(activity!.GetTagItem("error.additional_failures"));
+    }
+
+    [Fact]
+    public void ApplyAdditionalFailureTags_EmitsExpectedJsonShape()
+    {
+        using var activity = _source.StartActivity("op", ActivityKind.Internal);
+        Assert.NotNull(activity);
+
+        var info = new ExceptionErrorInfo(
+            "Primary",
+            ErrorCategory.Product,
+            AdditionalFailures: new[]
+            {
+                new ExceptionErrorInfo("DownloadFailed", ErrorCategory.Product),
+                new ExceptionErrorInfo("PermissionDenied", ErrorCategory.User),
+            },
+            TruncatedAdditionalFailureCount: 4);
+
+        ErrorCodeMapper.ApplyAdditionalFailureTags(activity, info);
+
+        var json = activity!.GetTagItem("error.additional_failures") as string;
+        Assert.Equal(
+            "[{\"type\":\"DownloadFailed\",\"category\":\"product\"},{\"type\":\"PermissionDenied\",\"category\":\"user\"},{\"truncated\":true,\"remaining\":4}]",
+            json);
+    }
+
+    [Fact]
+    public void RecordException_StampsPrimaryAndAdditionalFailures_OnSameActivity()
+    {
+        // End-to-end: simulate a batch loop that captures the first failure
+        // and attaches a second, then routes through DotnetupTelemetry.
+        // The failing activity should carry both the primary error.* tags
+        // and the additional-failures JSON.
+        using var commandActivity = _source.StartActivity("command/test", ActivityKind.Internal);
+        Assert.NotNull(commandActivity);
+        commandActivity!.SetTag(TelemetryTagNames.CommandName, "test");
+
+        var primary = new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, "primary");
+        primary.AttachAdditionalFailure(new HttpRequestException("404", null, HttpStatusCode.NotFound));
+
+        var op = new TrackedOperation(commandActivity, "command", null);
+        DotnetupTelemetry.Instance.RecordException(op, primary);
+
+        // Primary classification lands as error.type.
+        Assert.Equal("DownloadFailed", commandActivity.GetTagItem("error.type"));
+        // Additional failure lands as a JSON property on the same activity.
+        var json = commandActivity.GetTagItem("error.additional_failures") as string;
+        Assert.NotNull(json);
+        Assert.Contains("\"type\":\"Http404\"", json!, StringComparison.Ordinal);
+        Assert.Contains("\"category\":\"user\"", json!, StringComparison.Ordinal);
     }
 }

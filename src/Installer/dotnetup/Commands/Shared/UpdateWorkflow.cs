@@ -44,13 +44,15 @@ internal class UpdateWorkflow
         // of remaining specs. Rethrowing (rather than returning a non-zero exit code)
         // gives CommandBase a real DotnetInstallException to feed into RecordException
         // so error.type / error.category / error.details land on the telemetry row.
+        // Subsequent failures hang off the primary via AttachAdditionalFailure;
+        // GetAdditionalFailures().Count + 1 yields the total failure count without
+        // a parallel counter to keep in sync.
         ExceptionDispatchInfo? firstFailure = null;
-        int failureCount = 0;
         bool anyUpdated = false;
 
         foreach (var root in rootsList)
         {
-            UpdateRoot(root, manifestPath, componentFilter, noProgress, updateGlobalJson, verbosity, ref anyUpdated, ref firstFailure, ref failureCount);
+            UpdateRoot(root, manifestPath, componentFilter, noProgress, updateGlobalJson, verbosity, ref anyUpdated, ref firstFailure);
         }
 
         if (!anyUpdated && firstFailure is null)
@@ -60,9 +62,10 @@ internal class UpdateWorkflow
 
         if (firstFailure is not null)
         {
-            if (failureCount > 1)
+            int totalFailures = firstFailure.SourceException.GetAdditionalFailures().Count + 1;
+            if (totalFailures > 1)
             {
-                AnsiConsole.MarkupLine(DotnetupTheme.Error($"{failureCount} update(s) failed; reporting the first failure."));
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"{totalFailures} update(s) failed; reporting the first failure."));
             }
             firstFailure.Throw();
         }
@@ -76,8 +79,7 @@ internal class UpdateWorkflow
         bool updateGlobalJson,
         Verbosity verbosity,
         ref bool anyUpdated,
-        ref ExceptionDispatchInfo? firstFailure,
-        ref int failureCount)
+        ref ExceptionDispatchInfo? firstFailure)
     {
         bool rootUpdated = false;
         var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
@@ -97,8 +99,17 @@ internal class UpdateWorkflow
             catch (DotnetInstallException ex)
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()}."));
-                failureCount++;
-                firstFailure ??= ExceptionDispatchInfo.Capture(ex);
+                if (firstFailure is null)
+                {
+                    firstFailure = ExceptionDispatchInfo.Capture(ex);
+                }
+                else
+                {
+                    // Attach this follow-on failure to the primary exception
+                    // so RecordException sees the whole batch when CommandBase
+                    // catches the rethrown firstFailure.
+                    firstFailure.SourceException.AttachAdditionalFailure(ex);
+                }
             }
         }
 

@@ -351,10 +351,10 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         var errorInfo = ErrorCodeMapper.GetErrorInfo(ex);
-        // ApplyErrorTags is the single source of truth for the error.* tag
-        // bag; PropagateErrorToActivityChain calls it on the failing activity
-        // AND every ancestor. The completion log picks them up automatically
-        // because BuildCompletionState folds Activity.TagObjects into state.
+        // Single hand-off into the propagation/application pipeline:
+        // primary error.* tags spread up the ancestor chain (first-failure-wins
+        // per ancestor), additional failures land only on the failing activity
+        // (the command row) so the root row stays uncluttered with batch detail.
         PropagateErrorToActivityChain(operation.Activity, errorInfo, errorCode);
         // Use a non-PII description (the classified error type) rather than
         // ex.Message — the latter can leak user paths / values into exported
@@ -366,6 +366,11 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Tags the failing activity and walks up <see cref="Activity.Parent"/>,
     /// applying the same error.* tags to each ancestor that doesn't already
     /// carry an <c>error.type</c> (first-failure-wins per ancestor).
+    /// Additional-failure tags (a JSON list of sibling failures attached via
+    /// <see cref="ExceptionExtensions.AttachAdditionalFailure"/>) land only
+    /// on the failing activity — they describe a batch loop on this command
+    /// row, not the whole invocation, so duplicating onto ancestors would
+    /// just inflate payload size without adding signal.
     /// </summary>
     private static void PropagateErrorToActivityChain(Activity? failingActivity, ExceptionErrorInfo errorInfo, string? errorCode)
     {
@@ -375,6 +380,7 @@ public sealed class DotnetupTelemetry : IDisposable
         }
 
         ErrorCodeMapper.ApplyErrorTags(failingActivity, errorInfo, errorCode);
+        ErrorCodeMapper.ApplyAdditionalFailureTags(failingActivity, errorInfo);
         failingActivity.SetTag("error.first_failure_stage", failingActivity.OperationName);
 
         for (var ancestor = failingActivity.Parent; ancestor is not null; ancestor = ancestor.Parent)
