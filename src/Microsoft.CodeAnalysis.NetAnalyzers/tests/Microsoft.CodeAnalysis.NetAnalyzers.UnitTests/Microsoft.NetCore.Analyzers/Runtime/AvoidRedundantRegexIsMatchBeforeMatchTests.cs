@@ -538,7 +538,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task NegatedIsMatch_NoDiagnostic()
         {
-            // Inverted case — explicitly dropped per stephentoub's review.
+            // Inverted form (`!Regex.IsMatch(...)`) is intentionally not handled.
             var source = """
                 using System.Text.RegularExpressions;
 
@@ -2381,7 +2381,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #endregion
 
-        #region Regression tests for krwq review feedback (2026-05-12)
+        #region Additional regression tests
 
         [Fact]
         public async Task TernaryConditional_NoDiagnostic()
@@ -2745,9 +2745,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task MatchInsideObjectInitializer_Diagnostic()
         {
-            // Regression for Copilot review (2026-05-12): Match call inside an
-            // object initializer (`new Foo { Bar = Regex.Match(...) }`) should
-            // be detected by walking IObjectOrCollectionInitializerOperation.
+            // Match call inside an object initializer
+            // (`new Foo { Bar = Regex.Match(...) }`) should be detected by
+            // walking IObjectOrCollectionInitializerOperation.
             var source = """
                 using System.Text.RegularExpressions;
 
@@ -2771,11 +2771,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task IntermediateLocalFunctionWithWrite_StillFlags()
         {
-            // Regression for Copilot review (2026-05-12): A local function declared
-            // between IsMatch and Match contains a write to `input`, but its body
-            // is not executed at declaration time, so the analyzer should still
-            // fire. (The fixer may decline due to intermediate statements; we only
-            // assert the diagnostic here.)
+            // A local function declared between IsMatch and Match contains a
+            // write to `input`, but its body is not executed at declaration
+            // time, so the analyzer should still fire. (The fixer may decline
+            // due to intermediate statements; we only assert the diagnostic
+            // here.)
             var source = """
                 using System.Text.RegularExpressions;
 
@@ -2798,9 +2798,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task PreDeclaredAssignment_DefaultTypeExpressionInitializer_FixOffered()
         {
-            // Regression for Copilot review (2026-05-12): `Match m = default(Match);`
-            // is also a constant-default initializer, equivalent to `null` for a
-            // reference type, and should be treated as removable.
+            // `Match m = default(Match);` is a constant-default initializer,
+            // equivalent to `null` for a reference type, and should be treated
+            // as removable by the pre-declared assignment fixer.
             var source = """
                 using System.Text.RegularExpressions;
 
@@ -2835,11 +2835,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task LinqQueryRangeVariableAfterIf_NoFix()
         {
-            // Regression for Copilot review (2026-05-12): a subsequent LINQ query
-            // that already binds `m` (via `from m in ...`) would conflict with a
-            // pattern variable `m` introduced by the fixer (which scopes to the
-            // entire enclosing block). HasConflictingName must include query range
-            // variables, so no fix is offered here.
+            // A subsequent LINQ query that already binds `m` (via
+            // `from m in ...`) would conflict with a pattern variable `m`
+            // introduced by the fixer (which scopes to the entire enclosing
+            // block). HasConflictingName must include query range variables,
+            // so no fix is offered here.
             var source = """
                 using System.Collections.Generic;
                 using System.Linq;
