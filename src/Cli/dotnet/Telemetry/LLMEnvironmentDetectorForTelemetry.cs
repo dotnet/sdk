@@ -13,7 +13,7 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         // Gemini
         new EnvironmentDetectionRuleWithResult<string>("gemini", new BooleanEnvironmentRule("GEMINI_CLI")),
         // GitHub Copilot
-        new EnvironmentDetectionRuleWithResult<string>("copilot", new BooleanEnvironmentRule("GITHUB_COPILOT_CLI_MODE")),
+        new EnvironmentDetectionRuleWithResult<string>("copilot", new BooleanEnvironmentRule("GITHUB_COPILOT_CLI_MODE", "COPILOT_CLI")),
         // (proposed) generic flag for Agentic usage
         new EnvironmentDetectionRuleWithResult<string>("generic_agent", new BooleanEnvironmentRule("AGENT_CLI")),
     ];
