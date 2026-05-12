@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
+    <RootNamespace>Microsoft.DotNet.Cli.Tests</RootNamespace>
+
+    <!-- Strong naming deprecated on .NET Core -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
+
+    <!-- Ignore OS API compatibility checks (same as dotnet-aot) -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <!-- Shared AOT source files (Parser, CommandLineInfo, EnvironmentVariableNames) -->
+  <Import Project="..\..\src\Cli\dotnet-aot\AotSourceFiles.props" />
+
+  <!-- NativeEntryPoint for ExecuteCore tests (ManagedHost is stubbed in TestManagedHost.cs) -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Cli\dotnet-aot\NativeEntryPoint.cs" Link="NativeEntryPoint.cs" />
+  </ItemGroup>
+
+  <!-- DotnetRootResolver from the dn project -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Cli\dn\DotnetRootResolver.cs" Link="DotnetRootResolver.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+</Project>
