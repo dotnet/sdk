@@ -107,13 +107,18 @@ internal class UpdateChannel
             return false;
         }
 
-        // Daily channels match the same versions their base channel would.
-        // Bare "daily" matches any version; "10.0-daily" matches any 10.0.x;
-        // "10.0.1xx-daily" matches any 10.0.1xx version. The "kind of build"
-        // distinction (daily vs released) is reflected in how versions are
-        // resolved and tracked, not in which versions Matches() accepts.
+        // Daily channels match the same versions their base channel would, but
+        // restricted to prerelease versions. A stable release is not a daily
+        // build, even if its version falls inside the base scope; rejecting it
+        // here keeps the channel's "what satisfies me?" answer coherent for GC
+        // and reporting.
         if (IsDaily)
         {
+            if (IsStableRelease(version))
+            {
+                return false;
+            }
+
             if (Name.Equals(DailyKeyword, StringComparison.OrdinalIgnoreCase))
             {
                 return true;

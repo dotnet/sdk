@@ -26,14 +26,18 @@ public class UpdateChannelTests
     [InlineData("lts", "10.0.100", true)]
     [InlineData("lts", "10.0.100-preview.1", false)]
     [InlineData("lts", "9.0.100", false)]
-    // Daily channels: behave like their base scope for matching.
+    // Daily channels: behave like their base scope, but only for prerelease versions.
+    // A stable release is not a daily build, so it must not satisfy a daily channel.
     [InlineData("daily", "11.0.100-preview.4.25216.37", true)]
-    [InlineData("daily", "9.0.103", true)]
+    [InlineData("daily", "9.0.103", false)]
     [InlineData("10-daily", "10.0.103-preview.1", true)]
+    [InlineData("10-daily", "10.0.103", false)]
     [InlineData("10-daily", "11.0.100", false)]
     [InlineData("10.0-daily", "10.0.103-preview.1", true)]
+    [InlineData("10.0-daily", "10.0.103", false)]
     [InlineData("10.0-daily", "10.1.100", false)]
     [InlineData("10.0.1xx-daily", "10.0.103-preview.1", true)]
+    [InlineData("10.0.1xx-daily", "10.0.103", false)]
     [InlineData("10.0.1xx-daily", "10.0.204-preview.1", false)]
     public void Matches_ReturnsExpectedResult(string channel, string versionString, bool expected)
     {

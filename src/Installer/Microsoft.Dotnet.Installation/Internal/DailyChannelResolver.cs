@@ -16,7 +16,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 internal sealed class DailyChannelResolver : IDisposable
 {
     /// <summary>
-    /// aka.ms link template. The <c>{0}</c> placeholder is the channel scope
+    /// aka.ms link template. The <c>{0}</c> placeholder is the channel's partial version
     /// (e.g. <c>10.0</c> or <c>10.0.1xx</c>); the rest identifies the SDK
     /// archive for the current OS/architecture. We always use the SDK archive
     /// for version discovery because VMR-built daily versions share the same
@@ -58,7 +58,7 @@ internal sealed class DailyChannelResolver : IDisposable
 
     /// <summary>
     /// Resolves the latest daily-build version for <paramref name="channel"/>.
-    /// Returns <c>null</c> if no daily build is available for the channel scope.
+    /// Returns <c>null</c> if no daily build is available.
     /// </summary>
     public ReleaseVersion? Resolve(UpdateChannel channel, InstallArchitecture architecture)
     {
@@ -77,33 +77,33 @@ internal sealed class DailyChannelResolver : IDisposable
         {
             int latestMajor = GetLatestManifestMajor();
 
-            ReleaseVersion? candidate = TryResolveScope($"{latestMajor + 1}.0", rid, extension);
+            ReleaseVersion? candidate = TryResolvePartialVersion($"{latestMajor + 1}.0", rid, extension);
             if (candidate != null)
             {
                 return candidate;
             }
 
-            return TryResolveScope($"{latestMajor}.0", rid, extension);
+            return TryResolvePartialVersion($"{latestMajor}.0", rid, extension);
         }
 
-        // "<M>-daily" → use "<M>.0" as the aka.ms scope (aka.ms paths use major.minor).
-        string scope = NormalizeScope(channel.BaseChannel);
-        return TryResolveScope(scope, rid, extension);
+        // "<M>-daily" → use "<M>.0" as the aka.ms partial version (aka.ms paths use major.minor).
+        string partialVersion = NormalizePartialVersion(channel.BaseChannel);
+        return TryResolvePartialVersion(partialVersion, rid, extension);
     }
 
     /// <summary>
-    /// Converts a channel scope into the form expected by aka.ms paths:
+    /// Converts a channel's partial version into the form expected by aka.ms paths:
     /// bare-major <c>10</c> becomes <c>10.0</c>; major.minor and feature-band
-    /// scopes pass through unchanged.
+    /// partial versions pass through unchanged.
     /// </summary>
-    private static string NormalizeScope(string scope)
+    private static string NormalizePartialVersion(string partialVersion)
     {
-        if (int.TryParse(scope, out _))
+        if (int.TryParse(partialVersion, out _))
         {
-            return $"{scope}.0";
+            return $"{partialVersion}.0";
         }
 
-        return scope;
+        return partialVersion;
     }
 
     private int GetLatestManifestMajor()
@@ -121,9 +121,9 @@ internal sealed class DailyChannelResolver : IDisposable
         return latestMajor;
     }
 
-    private ReleaseVersion? TryResolveScope(string scope, string rid, string extension)
+    private ReleaseVersion? TryResolvePartialVersion(string partialVersion, string rid, string extension)
     {
-        string akaMsUrl = string.Format(System.Globalization.CultureInfo.InvariantCulture, AkaMsTemplate, scope, rid, extension);
+        string akaMsUrl = string.Format(System.Globalization.CultureInfo.InvariantCulture, AkaMsTemplate, partialVersion, rid, extension);
 
         Uri finalUri;
         try
@@ -138,13 +138,13 @@ internal sealed class DailyChannelResolver : IDisposable
             finalUri = response.RequestMessage?.RequestUri
                 ?? throw new DotnetInstallException(
                     DotnetInstallErrorCode.NetworkError,
-                    $"Could not determine the redirect target for daily channel scope '{scope}'.");
+                    $"Could not determine the redirect target for daily channel '{partialVersion}-daily'.");
         }
         catch (HttpRequestException ex)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.NetworkError,
-                $"Failed to resolve daily channel scope '{scope}' via {akaMsUrl}: {ex.Message}",
+                $"Failed to resolve daily channel '{partialVersion}-daily' via {akaMsUrl}: {ex.Message}",
                 ex);
         }
 
@@ -152,7 +152,7 @@ internal sealed class DailyChannelResolver : IDisposable
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.NetworkError,
-                $"Daily channel '{scope}' redirected to disallowed host '{finalUri.Host}' (expected one of: {string.Join(", ", AllowedRedirectHosts)}).");
+                $"Daily channel '{partialVersion}-daily' redirected to disallowed host '{finalUri.Host}' (expected one of: {string.Join(", ", AllowedRedirectHosts)}).");
         }
 
         var version = ExtractVersionFromUrl(finalUri);
