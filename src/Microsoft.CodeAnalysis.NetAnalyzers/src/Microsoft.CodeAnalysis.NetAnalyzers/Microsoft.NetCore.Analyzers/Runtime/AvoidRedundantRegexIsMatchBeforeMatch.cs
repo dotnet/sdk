@@ -343,6 +343,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return null;
             }
 
+            // Object/collection initializer: walk the member assignments
+            // (e.g. `new Foo { Bar = Regex.Match(...) }`) and any nested initializers.
+            if (expression is IObjectOrCollectionInitializerOperation initializer)
+            {
+                foreach (var inner in initializer.Initializers)
+                {
+                    var found = FindMatchInExpression(inner, isMatchInvocation, regexType);
+                    if (found is not null)
+                    {
+                        return found;
+                    }
+                }
+
+                return null;
+            }
+
+            // Simple assignment (used as an expression, e.g. inside an object initializer
+            // member assignment): the value may contain a Match call.
+            if (expression is ISimpleAssignmentOperation simpleAssignment)
+            {
+                return FindMatchInExpression(simpleAssignment.Value, isMatchInvocation, regexType);
+            }
+
             if (expression is IArrayCreationOperation arrayCreation && arrayCreation.Initializer is not null)
             {
                 foreach (var element in arrayCreation.Initializer.ElementValues)
@@ -635,6 +658,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// </summary>
         private static bool ContainsWriteToSymbols(IOperation operation, HashSet<ISymbol> symbols)
         {
+            // Local function and lambda bodies are not executed at the declaration
+            // point, so writes inside them are not intervening writes.
+            if (operation is IAnonymousFunctionOperation or ILocalFunctionOperation)
+            {
+                return false;
+            }
+
             ISymbol? writtenSymbol = GetWrittenSymbol(operation);
             if (writtenSymbol is not null && symbols.Contains(writtenSymbol))
             {

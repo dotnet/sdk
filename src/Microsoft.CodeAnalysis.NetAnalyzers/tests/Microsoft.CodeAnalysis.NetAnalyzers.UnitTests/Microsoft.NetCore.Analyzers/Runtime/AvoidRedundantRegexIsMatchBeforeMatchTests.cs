@@ -2742,6 +2742,59 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCodeFixCSharp9Async(source, fixedSource);
         }
 
+        [Fact]
+        public async Task MatchInsideObjectInitializer_Diagnostic()
+        {
+            // Regression for Copilot review (2026-05-12): Match call inside an
+            // object initializer (`new Foo { Bar = Regex.Match(...) }`) should
+            // be detected by walking IObjectOrCollectionInitializerOperation.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class Wrapper { public Match Bar { get; set; } }
+
+                class C
+                {
+                    Wrapper M(string input)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            return new Wrapper { Bar = Regex.Match(input, @"\d+") };
+                        }
+                        return null;
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task IntermediateLocalFunctionWithWrite_StillFlags()
+        {
+            // Regression for Copilot review (2026-05-12): A local function declared
+            // between IsMatch and Match contains a write to `input`, but its body
+            // is not executed at declaration time, so the analyzer should still
+            // fire. (The fixer may decline due to intermediate statements; we only
+            // assert the diagnostic here.)
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            void Local() { input = "other"; }
+                            Match m = Regex.Match(input, @"\d+");
+                            Local();
+                        }
+                    }
+                }
+                """;
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
         #endregion
     }
 }
