@@ -50,6 +50,17 @@ namespace Microsoft.NET.TestFramework
             return testAsset;
         }
 
+        public TestAsset CreateTestAsset(
+            string name,
+            [CallerMemberName] string callingMethod = "",
+            string? identifier = "")
+        {
+            var testDestinationDirectory = GetTestDestinationDirectoryPath(name, callingMethod, identifier);
+            TestDestinationDirectories.Add(testDestinationDirectory);
+
+            return new TestAsset(testDestinationDirectory, Log);
+        }
+
         /// <summary>
         /// Writes an in-memory test project onto the disk.
         /// </summary>

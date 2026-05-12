@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -171,7 +171,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -193,7 +193,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -247,7 +247,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                     });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -271,7 +271,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -300,7 +300,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 .WithInstantiationThroughTemplateCreatorApi(templateParams);
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
     }
 }

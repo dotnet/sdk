@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             var nupkgs = new[] { Path.Combine(templateEngineTestAssets, "nupkg_templates", "*.nupkg") };
 
             var provider = new DefaultTemplatePackageProvider(null!, _engineEnvironmentSettings, nupkgs, folders);
-            var sources = await provider.GetAllTemplatePackagesAsync(default);
+            var sources = await provider.GetAllTemplatePackagesAsync(TestContext.Current.CancellationToken);
 
             //Total should be 7
             Assert.Equal(7, sources.Count);

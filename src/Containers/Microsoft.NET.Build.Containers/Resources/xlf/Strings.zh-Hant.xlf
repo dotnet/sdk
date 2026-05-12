@@ -204,6 +204,21 @@
         <target state="translated">無法建立映射索引，因為未提供影像。</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidAuthResponse_DisallowedScheme">
+        <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
+        <target state="new">bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
+        <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
+        <target state="new">bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
+        <source>bearer realm '{0}' is not a valid absolute URI</source>
+        <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
+      </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
         <target state="translated">CONTAINER2031: 不支援容器映像格式 '{0}'。支援的格式為 '{1}'。</target>
@@ -253,6 +268,11 @@
         <source>CONTAINER2017: A ContainerPort item was provided with an invalid port type '{0}'. ContainerPort items must have an Include value that is an integer, and a Type value that is either 'tcp' or 'udp'.</source>
         <target state="translated">CONTAINER2017: 提供的 ContainerPort 項目具有無效的連接埠類型 '{0}'。ContainerPort 項目必須具有為整數的 Include 值，以及 'tcp' 或 'udp' 的 Type 值。</target>
         <note>{StrBegins="CONTAINER2017: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidRegistryAuthResponse">
+        <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
+        <target state="new">CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</target>
+        <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
       </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
         <source>CONTAINER2018: Invalid SDK prerelease version '{0}' - only 'rc' and 'preview' are supported.</source>

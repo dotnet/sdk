@@ -783,7 +783,7 @@ class C
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
                 TestCode = source,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -801,7 +801,7 @@ class C
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
                 TestCode = source,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -837,7 +837,7 @@ class C
                     VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(7, 23).WithArguments("Array.Empty<int>()"),
 #pragma warning restore RS0030 // Do not use banned APIs
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

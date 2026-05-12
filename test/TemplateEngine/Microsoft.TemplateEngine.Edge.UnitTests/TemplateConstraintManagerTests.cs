@@ -27,10 +27,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var success1 = await constraintManager.EvaluateConstraintAsync("test-1", "yes", default);
-            var failure1 = await constraintManager.EvaluateConstraintAsync("test-1", "no", default);
-            var notEvaluated1 = await constraintManager.EvaluateConstraintAsync("test-1", "not-valid", default);
-            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", default);
+            var success1 = await constraintManager.EvaluateConstraintAsync("test-1", "yes", TestContext.Current.CancellationToken);
+            var failure1 = await constraintManager.EvaluateConstraintAsync("test-1", "no", TestContext.Current.CancellationToken);
+            var notEvaluated1 = await constraintManager.EvaluateConstraintAsync("test-1", "not-valid", TestContext.Current.CancellationToken);
+            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", TestContext.Current.CancellationToken);
 
             Assert.Equal(TemplateConstraintResult.Status.Allowed, success1.EvaluationStatus);
             Assert.Null(success1.LocalizedErrorMessage);
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var constraints = await constraintManager.GetConstraintsAsync();
+            var constraints = await constraintManager.GetConstraintsAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(4, constraints.Count);
             Assert.Equal(new[] { "host", "os", "test-1", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 new TemplateConstraintInfo("test-1", "yes")
             });
 
-            var constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, default);
+            var constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, TestContext.Current.CancellationToken);
 
             Assert.Single(constraints);
             Assert.Equal("test-1", constraints.Single().Type);
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
-            var constraints = await constraintManager.GetConstraintsAsync();
+            var constraints = await constraintManager.GetConstraintsAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(3, constraints.Count);
             Assert.Equal(new[] { "host", "os", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var result = await constraintManager.EvaluateConstraintAsync("test-1", "yes", default);
+            var result = await constraintManager.EvaluateConstraintAsync("test-1", "yes", TestContext.Current.CancellationToken);
             Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, result.EvaluationStatus);
             Assert.Equal("The constraint 'test-1' failed to initialize: creation failed", result.LocalizedErrorMessage);
             Assert.Null(result.CallToAction);
@@ -122,12 +122,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var result1 = await constraintManager.EvaluateConstraintAsync("test-1", "yes", default);
+            var result1 = await constraintManager.EvaluateConstraintAsync("test-1", "yes", TestContext.Current.CancellationToken);
             Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, result1.EvaluationStatus);
             Assert.Equal("The constraint 'test-1' failed to initialize: creation failed", result1.LocalizedErrorMessage);
             Assert.Null(result1.CallToAction);
 
-            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", default);
+            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", TestContext.Current.CancellationToken);
 
             Assert.Equal(TemplateConstraintResult.Status.Allowed, success2.EvaluationStatus);
             Assert.Null(success2.LocalizedErrorMessage);
@@ -143,7 +143,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", default);
+            var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", TestContext.Current.CancellationToken);
 
             Assert.Equal(TemplateConstraintResult.Status.Allowed, success2.EvaluationStatus);
             Assert.Null(success2.LocalizedErrorMessage);
@@ -167,9 +167,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var constraintsTask = Task.Run(async () =>
                 {
                     var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
-                    constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, default);
-                });
-            var completedTask = await Task.WhenAny(constraintsTask, Task.Delay(10000));
+                    constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, TestContext.Current.CancellationToken);
+                }, TestContext.Current.CancellationToken);
+            var completedTask = await Task.WhenAny(constraintsTask, Task.Delay(10000, TestContext.Current.CancellationToken));
 
             Assert.Equal(completedTask, constraintsTask);
             Assert.Equal(1, constraints?.Count);
@@ -187,7 +187,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             ITemplateInfo template = A.Fake<ITemplateInfo>();
             A.CallTo(() => template.Constraints).Returns(new[] { new TemplateConstraintInfo("test-1", "yes"), new TemplateConstraintInfo("test-2", "no") });
 
-            var result = await constraintManager.EvaluateConstraintsAsync(new[] { template }, default);
+            var result = await constraintManager.EvaluateConstraintsAsync(new[] { template }, TestContext.Current.CancellationToken);
 
             Assert.Equal(2, result.Single().Result.Count);
             Assert.Equal(template, result.Single().Template);

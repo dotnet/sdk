@@ -831,7 +831,7 @@ End Class",
                                                     "ComputerInfo.InstalledUICulture",
                                                     "IFormatProviderOverloads.IFormatProviderReturningNonString(String, IFormatProvider)"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -966,7 +966,7 @@ namespace Test
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1115,7 +1115,7 @@ namespace NS
                 },
             };
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1145,7 +1145,7 @@ End Namespace",
                 },
             };
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
@@ -1212,7 +1212,7 @@ namespace NS
                 csharpTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleCSharpResultAt(23, 13, "C.M2(string)", "C.M()", "C.M2(IFormatProvider, string)"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1272,7 +1272,7 @@ End Namespace",
                 vbTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleBasicResultAt(32, 13, "C.M2(String)", "C.M()", "C.M2(IFormatProvider, String)"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
@@ -1340,7 +1340,7 @@ namespace NS
                 csharpTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleCSharpResultAt(24, 13, "C.M3(string)", "C.M()", "C.M3(string, IFormatProvider)"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1407,7 +1407,7 @@ End Namespace",
                 vbTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleBasicResultAt(39, 13, "C.M3(String)", "C.M()", "C.M3(IFormatProvider, String)"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
@@ -1460,7 +1460,7 @@ namespace NS
                 csharpTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleCSharpResultAt(12, 31, "string.Format(string, object)", "C.M()", "string.Format(IFormatProvider, string, params object[])"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1495,7 +1495,7 @@ End Namespace",
                 vbTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleBasicResultAt(9, 38, "String.Format(String, Object)", "C.M()", "String.Format(IFormatProvider, String, ParamArray Object())"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1553,7 +1553,7 @@ public class C
                     VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule).WithLocation(3)
                         .WithArguments("C.MyMethod(string)", "C.M(ReadOnlySpan<char>)", "C.MyMethod(string, [IFormatProvider])"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1588,7 +1588,7 @@ End Class
                     VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule).WithLocation(1)
                         .WithArguments("C.MyMethod(String)", "C.M()", "C.MyMethod(String, [IFormatProvider])"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(6586, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
@@ -1626,7 +1626,7 @@ End Class
                 TestCode = code,
                 ExpectedDiagnostics = { result },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
@@ -1660,7 +1660,7 @@ End Class
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6746")]
@@ -1684,7 +1684,7 @@ End Class
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -1711,7 +1711,7 @@ End Class
             {
                 TestCode = source,
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -1752,7 +1752,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -1799,7 +1799,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -1824,7 +1824,7 @@ End Class
             {
                 TestCode = source,
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -1853,7 +1853,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -1883,7 +1883,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -1913,7 +1913,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -1943,7 +1943,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -1973,7 +1973,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -2003,7 +2003,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -2033,7 +2033,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -2063,7 +2063,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -2093,7 +2093,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -2123,7 +2123,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -2153,7 +2153,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -2183,7 +2183,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(7154, "https://github.com/dotnet/roslyn-analyzers/issues/7154")]
@@ -2213,7 +2213,7 @@ End Class
                 TestCode = source,
                 ExpectedDiagnostics = { expectedDiagnostic },
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>

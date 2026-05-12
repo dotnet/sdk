@@ -6,6 +6,8 @@
 # flagged as unnecessary for netcoreapp TFMs.
 dotnet_diagnostic.IDE0005.severity = suggestion
 
+dotnet_diagnostic.RS0041.severity = suggestion
+
 dotnet_diagnostic.SA0001.severity = none
 dotnet_diagnostic.SA1005.severity = none
 dotnet_diagnostic.SA1101.severity = none

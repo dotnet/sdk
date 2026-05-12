@@ -128,7 +128,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             };
 
             VerificationEngine engine = new VerificationEngine(commandRunner, _log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -151,7 +151,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             };
 
             VerificationEngine engine = new VerificationEngine(commandRunner, _log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
     }
 }

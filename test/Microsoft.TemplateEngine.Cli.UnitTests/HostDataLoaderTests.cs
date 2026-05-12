@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
@@ -145,14 +145,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 }
             };
             var data = new HostSpecificTemplateData(symbolInfo, usageExamples, isHidden: true);
-            var serialized = JObject.FromObject(data);
+            var serialized = JsonSerializer.SerializeToNode(data)!.AsObject();
 
             Assert.NotNull(serialized);
-            Assert.Equal(3, serialized.Children().Count());
+            Assert.Equal(3, serialized.Count);
 
-            Assert.Single<JProperty>(serialized.Properties(), p => p.Name == "UsageExamples");
-            Assert.Single<JProperty>(serialized.Properties(), p => p.Name == "SymbolInfo");
-            Assert.Single<JProperty>(serialized.Properties(), p => p.Name == "IsHidden");
+            Assert.Contains("UsageExamples", serialized.Select(p => p.Key));
+            Assert.Contains("SymbolInfo", serialized.Select(p => p.Key));
+            Assert.Contains("IsHidden", serialized.Select(p => p.Key));
         }
 
         [Fact]
@@ -188,23 +188,23 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 }
             };
             var data = new HostSpecificTemplateData(symbolInfo, usageExamples, isHidden: false);
-            var serialized = JObject.FromObject(data);
+            var serialized = JsonSerializer.SerializeToNode(data)!.AsObject();
 
             Assert.NotNull(serialized);
-            Assert.Single(serialized.Children());
+            Assert.Single(serialized);
 
-            Assert.Single<JProperty>(serialized.Properties(), p => p.Name == "SymbolInfo");
+            Assert.Contains("SymbolInfo", serialized.Select(p => p.Key));
 
-            var symbolInfoArray = serialized.Properties().Single().Value as JObject;
-            Assert.NotNull(symbolInfoArray);
+            var symbolInfoObj = serialized["SymbolInfo"]!.AsObject();
+            Assert.NotNull(symbolInfoObj);
             //empty values should stay when deserializing symbol info
-            Assert.Equal(3, ((JObject)symbolInfoArray!["param1"]!).Properties().Count());
-            Assert.Equal("", symbolInfoArray!["param2"]!["longName"]);
-            Assert.Equal(3, ((JObject)symbolInfoArray!["param2"]!).Properties().Count());
-            Assert.Single(((JObject)symbolInfoArray!["param3"]!).Properties());
+            Assert.Equal(3, symbolInfoObj["param1"]!.AsObject().Count);
+            Assert.Equal("", symbolInfoObj["param2"]!["longName"]!.GetValue<string>());
+            Assert.Equal(3, symbolInfoObj["param2"]!.AsObject().Count);
+            Assert.Single(symbolInfoObj["param3"]!.AsObject());
 
-            Assert.DoesNotContain(serialized.Properties(), p => p.Name == "IsHidden");
-            Assert.DoesNotContain(serialized.Properties(), p => p.Name == "UsageExamples");
+            Assert.DoesNotContain("IsHidden", serialized.Select(p => p.Key));
+            Assert.DoesNotContain("UsageExamples", serialized.Select(p => p.Key));
         }
     }
 }
