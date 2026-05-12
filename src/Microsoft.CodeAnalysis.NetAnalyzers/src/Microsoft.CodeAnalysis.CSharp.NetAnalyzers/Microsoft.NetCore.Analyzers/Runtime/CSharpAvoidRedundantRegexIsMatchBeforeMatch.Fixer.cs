@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.NetCore.Analyzers;
 using Microsoft.NetCore.Analyzers.Runtime;
 
@@ -356,10 +357,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             for (int i = ifIndex + 1; i < parentBlock.Statements.Count; i++)
             {
-                if (parentBlock.Statements[i]
-                    .DescendantNodesAndSelf()
-                    .OfType<IdentifierNameSyntax>()
-                    .Any(id => id.Identifier.ValueText == variableName))
+                if (ContainsIdentifierReference(parentBlock.Statements[i], variableName))
                 {
                     return true;
                 }
@@ -376,10 +374,49 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return false;
             }
 
-            return ifStatement.Else
-                .DescendantNodesAndSelf()
-                .OfType<IdentifierNameSyntax>()
-                .Any(id => id.Identifier.ValueText == variableName);
+            return ContainsIdentifierReference(ifStatement.Else, variableName);
+        }
+
+        /// <summary>
+        /// Returns true when <paramref name="node"/> contains an identifier that
+        /// could plausibly bind to a local named <paramref name="variableName"/>.
+        /// Excludes identifiers that are syntactically the name of a member access
+        /// (e.g. <c>obj.m</c>) or a qualified name suffix, since those bind to a
+        /// member rather than the local. Conservative — does not consult the
+        /// semantic model, so it can still over-report (e.g. type names, nameof).
+        /// </summary>
+        private static bool ContainsIdentifierReference(SyntaxNode node, string variableName)
+        {
+            foreach (var id in node.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>())
+            {
+                if (id.Identifier.ValueText != variableName)
+                {
+                    continue;
+                }
+
+                // Skip `something.m` (right-hand side of a member access) — `m` here is
+                // a member name, not a reference to the local.
+                if (id.Parent is MemberAccessExpressionSyntax memberAccess && memberAccess.Name == id)
+                {
+                    continue;
+                }
+
+                // Skip `Foo.m` where `m` is the right-hand side of a qualified name.
+                if (id.Parent is QualifiedNameSyntax qualified && qualified.Right == id)
+                {
+                    continue;
+                }
+
+                // Skip `M(m: value)` — `m` here is a parameter name label, not a reference.
+                if (id.Parent is NameColonSyntax nameColon && nameColon.Name == id)
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -450,7 +487,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 matchCallExpression.WithoutTrivia(),
                 successPattern)
                 .WithLeadingTrivia(ifStatement.Condition.GetLeadingTrivia())
-                .WithTrailingTrivia(SyntaxFactory.TriviaList());
+                .WithTrailingTrivia(SyntaxFactory.TriviaList())
+                .WithAdditionalAnnotations(Formatter.Annotation);
         }
 
         /// <summary>

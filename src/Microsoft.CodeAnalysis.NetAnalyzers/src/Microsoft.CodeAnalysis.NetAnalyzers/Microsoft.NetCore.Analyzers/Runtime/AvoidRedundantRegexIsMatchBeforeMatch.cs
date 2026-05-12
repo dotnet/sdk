@@ -55,6 +55,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     var conditional = (IConditionalOperation)context.Operation;
 
+                    // OperationKind.Conditional fires for both if-statements and ternary
+                    // expressions (`?:` in C#, `If(...)` in VB). Statement-form conditionals
+                    // have a null Type; expression-form conditionals have the result Type.
+                    // Skip expressions — the rest of the analyzer (and the C# fixer) is
+                    // structured around statement-shaped WhenTrue bodies.
+                    if (conditional.Type is not null)
+                    {
+                        return;
+                    }
+
                     // The condition must be a direct call to Regex.IsMatch (not negated).
                     if (UnwrapInvocationFromCondition(conditional.Condition) is not IInvocationOperation isMatchInvocation ||
                         isMatchInvocation.TargetMethod.Name != "IsMatch" ||
@@ -309,6 +319,103 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     ?? FindMatchInExpression(condAccess.WhenNotNull, isMatchInvocation, regexType);
             }
 
+            // Object/collection creation: new Foo(Regex.Match(...)) / new[] { Regex.Match(...) }
+            if (expression is IObjectCreationOperation objCreation)
+            {
+                foreach (var arg in objCreation.Arguments)
+                {
+                    var found = FindMatchInExpression(arg.Value, isMatchInvocation, regexType);
+                    if (found is not null)
+                    {
+                        return found;
+                    }
+                }
+
+                if (objCreation.Initializer is not null)
+                {
+                    var found = FindMatchInExpression(objCreation.Initializer, isMatchInvocation, regexType);
+                    if (found is not null)
+                    {
+                        return found;
+                    }
+                }
+
+                return null;
+            }
+
+            if (expression is IArrayCreationOperation arrayCreation && arrayCreation.Initializer is not null)
+            {
+                foreach (var element in arrayCreation.Initializer.ElementValues)
+                {
+                    var found = FindMatchInExpression(element, isMatchInvocation, regexType);
+                    if (found is not null)
+                    {
+                        return found;
+                    }
+                }
+
+                return null;
+            }
+
+            // Coalesce: Regex.Match(...) ?? defaultMatch
+            if (expression is ICoalesceOperation coalesce)
+            {
+                return FindMatchInExpression(coalesce.Value, isMatchInvocation, regexType)
+                    ?? FindMatchInExpression(coalesce.WhenNull, isMatchInvocation, regexType);
+            }
+
+            // Tuple: (Regex.Match(...), other)
+            if (expression is ITupleOperation tuple)
+            {
+                foreach (var element in tuple.Elements)
+                {
+                    var found = FindMatchInExpression(element, isMatchInvocation, regexType);
+                    if (found is not null)
+                    {
+                        return found;
+                    }
+                }
+
+                return null;
+            }
+
+            // Interpolated string: $"{Regex.Match(...).Value}"
+            if (expression is IInterpolatedStringOperation interpString)
+            {
+                foreach (var part in interpString.Parts)
+                {
+                    if (part is IInterpolationOperation interpolation)
+                    {
+                        var found = FindMatchInExpression(interpolation.Expression, isMatchInvocation, regexType);
+                        if (found is not null)
+                        {
+                            return found;
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            // Binary: Regex.Match(...) != null, x + Regex.Match(...).Length, etc.
+            if (expression is IBinaryOperation binary)
+            {
+                return FindMatchInExpression(binary.LeftOperand, isMatchInvocation, regexType)
+                    ?? FindMatchInExpression(binary.RightOperand, isMatchInvocation, regexType);
+            }
+
+            // Unary: !Regex.Match(...).Success, -Regex.Match(...).Length, etc.
+            if (expression is IUnaryOperation unary)
+            {
+                return FindMatchInExpression(unary.Operand, isMatchInvocation, regexType);
+            }
+
+            // Await: await Task.FromResult(Regex.Match(...))
+            if (expression is IAwaitOperation awaitOp)
+            {
+                return FindMatchInExpression(awaitOp.Operation, isMatchInvocation, regexType);
+            }
+
             return null;
         }
 
@@ -443,10 +550,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return Equals(left.ConstantValue.Value, right.ConstantValue.Value);
             }
 
-            // Same instance reference (this/Me)
-            if (left is IInstanceReferenceOperation && right is IInstanceReferenceOperation)
+            // Same instance reference (this/Me).
+            // Restrict to reference types only: `this` is reassignable inside struct
+            // instance methods (e.g. `this = new S(...)`), so two `this` references
+            // separated by such a write are not necessarily the same value.
+            if (left is IInstanceReferenceOperation leftInstance &&
+                right is IInstanceReferenceOperation rightInstance)
             {
-                return true;
+                return leftInstance.Type is { IsValueType: false } &&
+                       rightInstance.Type is { IsValueType: false };
             }
 
             // Same field reference (readonly fields only for safety)
@@ -534,7 +646,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 argOp.Parameter is not null &&
                 argOp.Parameter.RefKind is RefKind.Ref or RefKind.Out)
             {
-                var argValue = argOp.Value.WalkDownConversion();
+                var argValue = argOp.Value.WalkDownParentheses().WalkDownConversion();
                 ISymbol? argSymbol = argValue switch
                 {
                     ILocalReferenceOperation localRef => localRef.Local,

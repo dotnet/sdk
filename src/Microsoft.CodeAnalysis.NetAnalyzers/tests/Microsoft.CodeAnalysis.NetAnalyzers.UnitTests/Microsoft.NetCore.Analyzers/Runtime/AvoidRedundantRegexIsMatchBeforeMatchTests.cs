@@ -2380,5 +2380,368 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         #endregion
+
+        #region Regression tests for krwq review feedback (2026-05-12)
+
+        [Fact]
+        public async Task TernaryConditional_NoDiagnostic()
+        {
+            // IConditionalOperation also fires for `?:` (and VB `If(...)`),
+            // but the analyzer should only report on if-statements.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    string M(string input, string p)
+                    {
+                        return Regex.IsMatch(input, p) ? Regex.Match(input, p).Value : "";
+                    }
+                }
+                """;
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task VB_TernaryIfExpression_NoDiagnostic()
+        {
+            // VB `If(cond, a, b)` is also IConditionalOperation; analyzer must skip it.
+            var source = """
+                Imports System.Text.RegularExpressions
+
+                Class C
+                    Function M(input As String, p As String) As String
+                        Return If(Regex.IsMatch(input, p), Regex.Match(input, p).Value, "")
+                    End Function
+                End Class
+                """;
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task MatchInsideObjectCreation_Diagnostic()
+        {
+            // Locks in coverage for IObjectCreationOperation.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class Wrapper { public Wrapper(Match m) { } }
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            var w = new Wrapper(Regex.Match(input, @"\d+"));
+                        }
+                    }
+                }
+                """;
+            // Diagnostic fires; no fix because Match is embedded inside a larger expression.
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task MatchInsideTuple_Diagnostic()
+        {
+            // Locks in coverage for ITupleOperation.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    (Match, int) M(string input)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            return (Regex.Match(input, @"\d+"), 1);
+                        }
+                        return (null, 0);
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task MatchInsideInterpolatedString_Diagnostic()
+        {
+            // Locks in coverage for IInterpolatedStringOperation.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    string M(string input)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            return $"{Regex.Match(input, @"\d+").Value}";
+                        }
+                        return "";
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task MatchInsideCoalesce_Diagnostic()
+        {
+            // Locks in coverage for ICoalesceOperation.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    Match M(string input, Match fallback)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            return Regex.Match(input, @"\d+") ?? fallback;
+                        }
+                        return fallback;
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task MatchInsideBinaryComparison_Diagnostic()
+        {
+            // Locks in coverage for IBinaryOperation.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    bool M(string input)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            return Regex.Match(input, @"\d+") != null;
+                        }
+                        return false;
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task MatchInsideUnaryNot_Diagnostic()
+        {
+            // Locks in coverage for IUnaryOperation.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    bool M(string input)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            return !Regex.Match(input, @"\d+").Success;
+                        }
+                        return false;
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, source);
+        }
+
+        [Fact]
+        public async Task StructInstanceMethod_ThisReassignedBeforeMatch_NoDiagnostic()
+        {
+            // `this` is reassignable inside a struct's instance methods, so
+            // `r.IsMatch(input)` and a later `r.Match(input)` separated by a
+            // `this = ...` may use different `r` values. Restricting the
+            // IInstanceReferenceOperation equivalence to reference types
+            // suppresses the diagnostic in this case.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                struct S
+                {
+                    public Regex r;
+
+                    public S(Regex regex) { r = regex; }
+
+                    public void M(string input, Regex other)
+                    {
+                        if (r.IsMatch(input))
+                        {
+                            this = new S(other);
+                            Match m = r.Match(input);
+                        }
+                    }
+                }
+                """;
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task ClassInstanceMethod_StillFlags()
+        {
+            // Sanity check that the struct-only restriction in Comment 3 didn't
+            // break the common reference-type case.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    readonly Regex r = new Regex(@"\d+");
+
+                    void M(string input)
+                    {
+                        if ([|r.IsMatch(input)|])
+                        {
+                            Match m = r.Match(input);
+                        }
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    readonly Regex r = new Regex(@"\d+");
+
+                    void M(string input)
+                    {
+                        if (r.Match(input) is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task PreDeclaredAssignment_UnrelatedMemberAccessAfter_FixOffered()
+        {
+            // `something.m` after the if is a member access, not a reference to the
+            // local `m`, so the fixer should still be offered.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class Holder { public int m; }
+
+                class C
+                {
+                    void M(string input, Holder something)
+                    {
+                        Match m = null;
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            m = Regex.Match(input, @"\d+");
+                        }
+                        something.m = 1;
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class Holder { public int m; }
+
+                class C
+                {
+                    void M(string input, Holder something)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                        }
+                        something.m = 1;
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task FixerStripsTrivia_DocumentsBehavior()
+        {
+            // The fixer intentionally clears trailing trivia from the original
+            // condition expression and uses `WithoutTrivia()` on the moved Match
+            // call. This regression test documents the current behavior so that
+            // future formatting changes are caught explicitly.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ([|Regex.IsMatch(input, @"\d+")|]) // end-of-line comment
+                        {
+                            Match m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m) // end-of-line comment
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task PreDeclaredAssignment_NamedArgumentLabelMatchesName_FixOffered()
+        {
+            // `m: 1` after the if is a named-argument label, not a reference to the
+            // local `m`, so the fixer should still be offered.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void Helper(int m) { }
+
+                    void M(string input)
+                    {
+                        Match m = null;
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            m = Regex.Match(input, @"\d+");
+                        }
+                        Helper(m: 1);
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void Helper(int m) { }
+
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                        }
+                        Helper(m: 1);
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
+        #endregion
     }
 }
