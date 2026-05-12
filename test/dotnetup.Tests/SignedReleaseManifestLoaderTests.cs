@@ -1,0 +1,147 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using FluentAssertions;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.Dotnet.Installation.Internal.Signing;
+using Xunit;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
+
+/// <summary>
+/// Pure-function unit tests for <see cref="SignedReleaseManifestLoader"/> helpers. The
+/// network/file-IO orchestration is exercised end-to-end via
+/// <see cref="SignatureVerifierTests"/> + future integration tests; these focus on the
+/// URL-derivation and JSON-parsing primitives that are easiest to break without being noticed.
+/// </summary>
+public class SignedReleaseManifestLoaderTests
+{
+    private static SignedReleaseManifestLoader CreateLoader(string indexUrl) => new(
+        new HttpClient(), // never sent on; loader constructor doesn't do IO besides mkdtemp
+        new SignatureVerificationOptions(new X509Certificate2Collection(), new X509Certificate2Collection()),
+        new Uri(indexUrl));
+    // ---------------- DeriveSiblingUrl ----------------
+
+    [Theory]
+    [InlineData(
+        "https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json",
+        "releases-index.json.20260505084330.p7s",
+        "https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json.20260505084330.p7s")]
+    [InlineData(
+        "https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json",
+        "releases.json.20260505.p7s",
+        "https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json.20260505.p7s")]
+    [InlineData(
+        "https://mirror.corp.com:8443/dotnet/release-metadata/releases-index.json",
+        "sig.p7s",
+        "https://mirror.corp.com:8443/dotnet/release-metadata/sig.p7s")]
+    public void DeriveSiblingUrl_ReplacesLastPathSegment(string jsonUrl, string sigName, string expected)
+    {
+        Uri actual = SignedReleaseManifestLoader.DeriveSiblingUrl(new Uri(jsonUrl), sigName);
+        actual.ToString().Should().Be(expected);
+    }
+
+    [Fact]
+    public void DeriveSiblingUrl_PreservesPort()
+    {
+        // Non-default port must round-trip through the UriBuilder.
+        Uri actual = SignedReleaseManifestLoader.DeriveSiblingUrl(
+            new Uri("https://example.com:9443/path/file.json"),
+            "file.json.p7s");
+        actual.Port.Should().Be(9443);
+        actual.AbsolutePath.Should().Be("/path/file.json.p7s");
+    }
+
+    // ---------------- ParseSignatureFileField ----------------
+
+    [Fact]
+    public void ParseSignatureFileField_PresentSignatureBlock_ReturnsFile()
+    {
+        byte[] json = Encoding.UTF8.GetBytes("""
+            {
+              "channels": [],
+              "signature": { "expiration": "2026-08-03T00:00:00Z", "file": "x.20260505.p7s" }
+            }
+            """);
+        SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().Be("x.20260505.p7s");
+    }
+
+    [Fact]
+    public void ParseSignatureFileField_MissingSignatureProperty_ReturnsNull()
+    {
+        byte[] json = Encoding.UTF8.GetBytes("""{ "channels": [] }""");
+        SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().BeNull();
+    }
+
+    [Fact]
+    public void ParseSignatureFileField_SignatureWithoutFile_ReturnsNull()
+    {
+        byte[] json = Encoding.UTF8.GetBytes("""
+            { "signature": { "expiration": "2026-08-03T00:00:00Z" } }
+            """);
+        SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().BeNull();
+    }
+
+    [Fact]
+    public void ParseSignatureFileField_SignatureFileNotAString_ReturnsNull()
+    {
+        // Defensive: don't accept numeric or null values. The loader uses this to construct
+        // a URL, so anything but a string must reject (loader will then throw
+        // SignatureVerificationFailed for "unsigned manifest").
+        byte[] json = Encoding.UTF8.GetBytes("""{ "signature": { "file": 42 } }""");
+        SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().BeNull();
+    }
+
+    [Fact]
+    public void ParseSignatureFileField_ArrayRoot_ReturnsNull()
+    {
+        byte[] json = Encoding.UTF8.GetBytes("[]");
+        SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().BeNull();
+    }
+
+    // ---------------- GetReleaseUriForConfiguredHost (private-mirror rebase) ----------------
+
+    [Fact]
+    public void GetReleaseUriForConfiguredHost_SameAuthority_IsNoOp()
+    {
+        // Production case: index URL and Product.ReleasesJson both point at builds.dotnet
+        // — the rebase must return the original instance without touching anything.
+        using var loader = CreateLoader("https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json");
+        var original = new Uri("https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json");
+
+        loader.GetReleaseUriForConfiguredHost(original).Should().BeSameAs(original);
+    }
+
+    [Fact]
+    public void GetReleaseUriForConfiguredHost_DifferentHost_RebasesScheme_Host_AndPort()
+    {
+        // Mirror case: index URL is on internal host; rebase swaps scheme/host/port and
+        // preserves the absolute path so a private mirror serving the same signed bytes
+        // resolves channel URLs against itself.
+        using var loader = CreateLoader("https://mirror.corp.com:8443/dotnet/release-metadata/releases-index.json");
+        var original = new Uri("https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json");
+
+        Uri rebased = loader.GetReleaseUriForConfiguredHost(original);
+
+        rebased.Scheme.Should().Be("https");
+        rebased.Host.Should().Be("mirror.corp.com");
+        rebased.Port.Should().Be(8443);
+        rebased.AbsolutePath.Should().Be("/dotnet/release-metadata/10.0/releases.json");
+    }
+
+    [Fact]
+    public void GetReleaseUriForConfiguredHost_DoesNotPropagateUserInfo()
+    {
+        // URL-embedded credentials are deprecated and ignored by HttpClient. Make sure
+        // the rebase NEVER copies UserInfo from the index URL into the rebased URL.
+        using var loader = CreateLoader("https://alice:secret@mirror.corp.com/x/index.json");
+        var original = new Uri("https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json");
+
+        Uri rebased = loader.GetReleaseUriForConfiguredHost(original);
+        rebased.UserInfo.Should().BeEmpty();
+    }
+}
