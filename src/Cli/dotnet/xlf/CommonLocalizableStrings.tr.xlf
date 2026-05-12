@@ -37,6 +37,36 @@
         <target state="translated">Hem `-r|--runtime` hem de `-os` seçeneğinin belirtilmesi desteklenmiyor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="translated">Bir ortam değişkeninin değerini ayarlar. 
+Değişken yoksa oluşturur, varsa değişkeni geçersiz kılar. 
+Bu, testleri yalıtılmış bir işlemde çalıştırılmaya zorlar. 
+Bu bağımsız değişken, birden çok değişken sağlamak için birden çok kez belirtilebilir.
+
+Örnek:
+-e DEĞİŞKEN=abc
+-e DEĞİŞKEN="boşluk içeren değerler"
+-e DEĞİŞKEN="noktalı virgülle;ayrılmış;değerler"
+-e DEĞ1=abc -e DEĞ2=def -e DEĞ3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableExpression">
+        <source>NAME="VALUE"</source>
+        <target state="translated">AD="DEĞER"</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Komutun durup kullanıcı girişini veya eylemini (örneğin, kimlik doğrulamasının tamamlanmasını) beklemesine izin verir .</target>
@@ -130,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Uygulamanızı çerçeveye bağımlı bir uygulama olarak yayımlayın. Uygulamanızı çalıştırmak için hedef makineye uyumlu bir .NET çalışma zamanı yüklenmelidir.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="translated">Yanlış biçimlendirilmiş ortam değişkenleri: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">.NET Cli Seçenekleri:</target>
@@ -221,6 +256,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">Uygulamanızla birlikte .NET çalışma zamanını yayımladığınızda hedef makinede çalışma zamanının yüklü olması gerekmez.
 Varsayılan değer 'false' olur. Ancak çalışma zamanı tanımlayıcısı belirtildiyse .NET 7 veya altı projeler hedeflenirken varsayılan değer 'true' olur.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="translated">Kullanılabilir iş yükü sürümlerini veya iş yükü sürümünü oluşturanları arayın. Daha fazla 'dotnet workload search version --help' için bu uygulamayı kullanın.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
       </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>

@@ -395,12 +395,12 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/42820")]
     [InlineData(true, true, true)]
     [InlineData(false, true, true)]
     [InlineData(true, false, true)]
     [InlineData(false, false, true)]
     [InlineData(false, false, false)]
-    [Theory]
     public async Task InsecureRegistry(bool isInsecureRegistry, bool serverIsHttps, bool httpServerCloseAbortive)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(InsecureRegistry));

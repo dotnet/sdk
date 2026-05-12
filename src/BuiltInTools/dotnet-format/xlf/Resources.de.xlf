@@ -377,11 +377,6 @@
         <target state="translated">MSBuild wurde nicht gefunden. Stellen Sie sicher, dass das .NET SDK mit dem offiziellen Installationsprogramm installiert wurde.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH">
-        <source>Unable to locate dotnet CLI. Ensure that it is on the PATH.</source>
-        <target state="translated">Die dotnet-CLI wurde nicht gefunden. Stellen Sie sicher, dass sie sich im Pfad befindet.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unable_to_organize_imports_for_0_The_document_is_too_complex">
         <source>Unable to organize imports for '{0}'. The document is too complex.</source>
         <target state="translated">Importe für "{0}" können nicht organisiert werden. Das Dokument ist zu komplex.</target>
