@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         public void ItPublishesARunnablePortableApp()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         public void ItImplicitlyRestoresAProjectWhenPublishing()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         [Fact]
         public void ItCanPublishAMultiTFMProjectWithImplicitRestore()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(
+            var testInstance = TestAssetsManager.CopyTestAsset(
                     "NETFrameworkReferenceNETStandard20",
                     testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         public void ItDoesNotImplicitlyRestoreAProjectWhenPublishingWithTheNoRestoreOption()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         [InlineData("publish", "--property", "Configuration=Debug")]
         public void ItParsesSpacedPropertiesInPublishReleaseEvaluationPhase(string command, string propertyKey, string propertyVal)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Restore(Log);
 
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             if (!selfContainedIsGlobal)
                 testProject.AdditionalProperties["SelfContained"] = selfContained.ToString();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"PSC-OVERRIDES-{publishSelfContained}-{selfContainedIsGlobal}-{publishSelfContainedIsGlobal}");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"PSC-OVERRIDES-{publishSelfContained}-{selfContainedIsGlobal}-{publishSelfContainedIsGlobal}");
             var publishCommand = new DotnetCommand(Log);
             List<string> args = new()
             {
@@ -196,7 +196,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         [Fact]
         public void ItFailsWith1193IfPublishSelfContainedHasInvalidValue()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: "NET1193Failure")
                 .WithSource();
 
@@ -270,7 +270,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             var testAppName = "MSBuildTestApp";
             var rid = EnvironmentInfo.GetCompatibleRid();
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: args)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: args)
                 .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -285,7 +285,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
 
         private DirectoryInfo PublishApp(string testAppName, string rid, string args = null, [CallerMemberName] string callingMethod = "")
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: $"{rid ?? "none"}_{args ?? "none"}")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: $"{rid ?? "none"}_{args ?? "none"}")
                 .WithSource();
 
             var testProjectDirectory = testInstance.Path;
@@ -306,7 +306,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             string dir = "pkgs";
             string args = $"--packages {dir}";
 
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Restore(Log);
 
@@ -330,7 +330,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         [Fact]
         public void ItFailsToPublishWithNoBuildIfNotPreviouslyBuilt()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Restore(Log);
 
@@ -349,7 +349,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         [InlineData(true)]
         public void ItPublishesSuccessfullyWithNoBuildIfPreviouslyBuilt(bool selfContained)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple", identifier: selfContained.ToString())
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple", identifier: selfContained.ToString())
                 .WithSource();
 
             var rootPath = testInstance.Path;
@@ -383,7 +383,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         [Fact]
         public void ItFailsToPublishWithNoBuildIfPreviouslyBuiltWithoutRid()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource();
 
             var rootPath = testInstance.Path;
@@ -403,7 +403,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         [Fact]
         public void DotnetPublishDoesNotPrintCopyrightInfo()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
+            var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp")
                 .WithSource();
 
             var cmd = new DotnetPublishCommand(Log)
@@ -412,7 +412,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
 
             cmd.Should().Pass();
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 cmd.Should().NotHaveStdOutContaining("Copyright (C) Microsoft Corporation. All rights reserved.");
             }
@@ -421,7 +421,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         [Fact]
         public void DotnetPublishAllowsPublishOutputDir()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple")
                 .WithSource()
                 .Restore(Log);
 
@@ -438,7 +438,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         [Fact]
         public void A_PublishRelease_property_does_not_override_other_command_configuration()
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                .CopyTestAsset("HelloWorld", "PublishPropertiesHelloWorld")
                .WithSource();
 

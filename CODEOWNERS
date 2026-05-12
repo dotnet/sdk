@@ -1,4 +1,4 @@
-# This is a comment.
+﻿# This is a comment.
 # Each line is a file pattern followed by one or more owners.
 # Syntax: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners#codeowners-syntax
 
@@ -19,13 +19,13 @@
 /test/TestAssets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
 /test/TestAssets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
 /test/TestAssets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
-/src/RazorSdk/ @dotnet/razor-compiler
+/src/RazorSdk/ @dotnet/razor-tooling
 /test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/ @dotnet/aspnet-blazor-eng
-/test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/razor-compiler
-/test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/razor-compiler
+/test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/razor-tooling
+/test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/razor-tooling
 /test/TestAssets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
 /test/TestAssets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
-/test/TestAssets/TestProjects/Razor*/ @dotnet/razor-compiler
+/test/TestAssets/TestProjects/Razor*/ @dotnet/razor-tooling
 
 # Area-Wasm
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
@@ -80,9 +80,9 @@
 /test/TestAssets/TestProjects/Watch*/ @tmat @dotnet/roslyn-ide
 /test/dotnet-watch.Tests/ @tmat @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @dotnet/roslyn-ide
-/src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
+/src/Dotnet.Watch/ @tmat @dotnet/roslyn-ide
+/src/Dotnet.Watch/BrowserRefresh @dotnet/aspnet-blazor-eng
+/src/Dotnet.Watch/AspireService @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries

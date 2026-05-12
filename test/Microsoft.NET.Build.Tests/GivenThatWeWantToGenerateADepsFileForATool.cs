@@ -93,10 +93,10 @@ class Program
         //  This method duplicates a lot of logic from the CLI in order to test generating deps files for tools in the SDK repo
         private CommandResult GenerateDepsAndRunTool(TestProject toolProject, [CallerMemberName] string callingMethod = "")
         {
-            DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
-            DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
+            DeleteFolder(Path.Combine(SdkTestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
+            DeleteFolder(Path.Combine(SdkTestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
 
-            var toolProjectInstance = _testAssetsManager.CreateTestProject(toolProject, callingMethod, identifier: toolProject.Name);
+            var toolProjectInstance = TestAssetsManager.CreateTestProject(toolProject, callingMethod, identifier: toolProject.Name);
 
             NuGetConfigWriter.Write(toolProjectInstance.TestRoot);
 
@@ -117,7 +117,7 @@ class Program
                 TargetFrameworks = "netcoreapp2.0"
             };
 
-            var toolReferencerInstance = _testAssetsManager.CreateTestProject(toolReferencer, callingMethod, identifier: toolReferencer.Name)
+            var toolReferencerInstance = TestAssetsManager.CreateTestProject(toolReferencer, callingMethod, identifier: toolReferencer.Name)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -135,13 +135,13 @@ class Program
             var restoreCommand = toolReferencerInstance.GetRestoreCommand(Log, toolReferencer.Name);
             restoreCommand.Execute("/v:n").Should().Pass();
 
-            string toolAssetsFilePath = Path.Combine(TestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant(), "1.0.0", toolProject.TargetFrameworks, "project.assets.json");
+            string toolAssetsFilePath = Path.Combine(SdkTestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant(), "1.0.0", toolProject.TargetFrameworks, "project.assets.json");
             var toolAssetsFile = new LockFileFormat().Read(toolAssetsFilePath);
 
             var args = new List<string>();
 
 
-            string currentToolsetSdksPath = TestContext.Current.ToolsetUnderTest.SdksPath;
+            string currentToolsetSdksPath = SdkTestContext.Current.ToolsetUnderTest.SdksPath;
 
             string generateDepsProjectDirectoryPath = Path.Combine(currentToolsetSdksPath, "Microsoft.NET.Sdk", "targets", "GenerateDeps");
             string generateDepsProjectFileName = "GenerateDeps.proj";
@@ -226,10 +226,10 @@ class Program
 
             var toolCommandSpec = new SdkCommandSpec()
             {
-                FileName = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                FileName = SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath,
                 Arguments = dotnetArgs
             };
-            TestContext.Current.AddTestEnvironmentVariables(toolCommandSpec.Environment);
+            SdkTestContext.Current.AddTestEnvironmentVariables(toolCommandSpec.Environment);
             toolCommandSpec.Environment.Add("DOTNET_ROLL_FORWARD","LatestMajor");
 
             ICommand toolCommand = toolCommandSpec.ToCommand().CaptureStdOut();

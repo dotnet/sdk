@@ -29,8 +29,7 @@
     <DownloadedWindowsDesktopTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">windowsdesktop-targeting-pack-$(MicrosoftWindowsDesktopAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWindowsDesktopTargetingPackInstallerFileName>
 
     <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
-    <!-- <SdkTemplatesMSIInstallerFileName>dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName> -->
-    <SdkTemplatesMSIInstallerFileName>dotnet-100templates-10.0.100-rtm-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName>
+    <SdkTemplatesMSIInstallerFileName>dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName>
 
     <CombinedFrameworkHostArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
     <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
@@ -64,7 +63,7 @@
     <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/$(WindowsDesktopBlobVersion)</WinFormsAndWpfSharedFxRootUrl>
     <SdkRootUrl>$(PublicBaseURL)Sdk/$(FullNugetVersion)</SdkRootUrl>
 
-    <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT'">true</IncludeWpfAndWinForms>
+    <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(TargetOS)' == 'windows'">true</IncludeWpfAndWinForms>
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == ''">false</IncludeWpfAndWinForms>
   </PropertyGroup>
 

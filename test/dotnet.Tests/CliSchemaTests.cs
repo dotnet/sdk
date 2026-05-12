@@ -768,18 +768,6 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
-    "--debug": {
-      "hidden": false,
-      "valueType": "System.Boolean",
-      "hasDefaultValue": true,
-      "defaultValue": false,
-      "arity": {
-        "minimum": 0,
-        "maximum": 0
-      },
-      "required": false,
-      "recursive": false
-    },
     "--disable-build-servers": {
       "description": "Force the command to ignore any persistent build servers.",
       "hidden": false,
@@ -1220,7 +1208,7 @@ public class CliSchemaTests : SdkTest
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
-        CliSchema.PrintCliSchema(Parser.Parse(commandArgs).CommandResult, writer, null);
+        CliSchema.PrintCliSchema(Parser.Parse(commandArgs), writer, null);
         stream.Position = 0;
         var reader = new StreamReader(stream);
         var output = reader.ReadToEnd();

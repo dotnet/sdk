@@ -11,11 +11,11 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 
-internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult) : CommandBase<CleanFileBasedAppArtifactsCommandDefinition>(parseResult)
 {
     public override int Execute()
     {
-        bool dryRun = _parseResult.GetValue(CleanFileBasedAppArtifactsCommandDefinition.DryRunOption);
+        bool dryRun = _parseResult.GetValue(Definition.DryRunOption);
 
         using var metadataFileStream = OpenMetadataFile();
 
@@ -71,7 +71,7 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
 
         Reporter.Output.WriteLine(CliCommandStrings.CleanFileBasedAppArtifactsScanning, directory.FullName);
 
-        var days = _parseResult.GetValue(CleanFileBasedAppArtifactsCommandDefinition.DaysOption);
+        var days = _parseResult.GetValue(Definition.DaysOption);
         var cutoff = DateTime.UtcNow.AddDays(-days);
 
         foreach (var subdir in directory.GetDirectories())
@@ -90,7 +90,7 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
 
     private FileStream? OpenMetadataFile()
     {
-        if (!_parseResult.GetValue(CleanFileBasedAppArtifactsCommandDefinition.AutomaticOption))
+        if (!_parseResult.GetValue(Definition.AutomaticOption))
         {
             return null;
         }
@@ -127,9 +127,9 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
                 FileName = new Muxer().MuxerPath,
                 Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
                 [
-                    CleanCommandParser.GetCommand().Name,
+                    CleanCommandDefinition.Name,
                     CleanFileBasedAppArtifactsCommandDefinition.Name,
-                    CleanFileBasedAppArtifactsCommandDefinition.AutomaticOption.Name,
+                    CleanFileBasedAppArtifactsCommandDefinition.AutomaticOptionName,
                 ]),
                 UseShellExecute = false,
                 RedirectStandardInput = true,

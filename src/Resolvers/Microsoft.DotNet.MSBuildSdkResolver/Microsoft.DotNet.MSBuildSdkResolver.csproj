@@ -10,6 +10,14 @@
     <!-- For product build, this project only builds in the second build pass as it depends on assets from other
          verticals that are built in the first build pass. -->
     <ExcludeFromDotNetBuild Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible Condition="'$(TargetFramework)' != 'net472'">true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

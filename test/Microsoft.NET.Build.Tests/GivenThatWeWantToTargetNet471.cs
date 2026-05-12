@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -80,7 +80,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(netStandardProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, "net471_ref_ns20");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, "net471_ref_ns20");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -115,7 +115,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("NETStandard.Library", "1.6.1"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(netStandardProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, "net471_ref_ns16");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, "net471_ref_ns16");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -210,7 +210,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.ReferencedProjects.Add(net471library);
             testProject.ReferencedProjects.Add(net462library);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, "net471_ref_net471_net462");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, "net471_ref_net471_net462");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -247,7 +247,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("DependsOnNETStandard", "true");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, "net471_with_override_property");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, "net471_with_override_property");
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -301,7 +301,7 @@ public static class Program
 
             testProject.ReferencedProjects.Add(netStandardProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((projectPath, project) =>
                 {
                     if (Path.GetFileNameWithoutExtension(projectPath) == testProject.Name)
@@ -434,7 +434,7 @@ public static class NS16LibClass
     }}
 }}
 ";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod, identifier: useSdk ? "_sdk" : string.Empty)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod, identifier: useSdk ? "_sdk" : string.Empty)
                             .WithProjectChanges((projectPath, project) =>
                             {
                                 if (Path.GetFileNameWithoutExtension(projectPath) == testProject.Name)
@@ -546,7 +546,7 @@ public class Startup
 }
 ";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((projectPath, project) =>
                 {
                     if (Path.GetFileNameWithoutExtension(projectPath) == testProject.Name)

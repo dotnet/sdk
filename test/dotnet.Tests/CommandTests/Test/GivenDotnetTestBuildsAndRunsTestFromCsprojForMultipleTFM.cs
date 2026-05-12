@@ -19,12 +19,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [WindowsOnlyFact]
         public void MStestMultiTFM()
         {
-            var testProjectDirectory = _testAssetsManager.CopyTestAsset("VSTestMulti", identifier: "1")
+            var testProjectDirectory = TestAssetsManager.CopyTestAsset("VSTestMulti", identifier: "1")
                 .WithSource()
                 .WithVersionVariables()
                 .Path;
 
-            NuGetConfigWriter.Write(testProjectDirectory, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testProjectDirectory, SdkTestContext.Current.TestPackages);
 
             var runtime = EnvironmentInfo.GetCompatibleRid();
 
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute(ConsoleLoggerOutputNormal);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 3")
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             // Copy XunitMulti project in output directory of project dotnet-test.Tests
             string testAppName = "XunitMulti";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: "2")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: "2")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                        .Execute(ConsoleLoggerOutputNormal);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 // for target framework net46
                 result.StdOut.Should().Contain("Total tests: 3");
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             // Copy XunitMulti project in output directory of project dotnet-test.Tests
             string testAppName = "XunitMulti";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, identifier: "3")
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, identifier: "3")
                             .WithSource()
                             .WithVersionVariables();
 
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void ItCanTestAMultiTFMProjectWithImplicitRestore()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset(
+            var testInstance = TestAssetsManager.CopyTestAsset(
                     "MultiTFMXunitProject",
                     testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
                 .WithSource();
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             testProject.ReferencedProjects.Add(libraryProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new DotnetNewCommand(Log, "sln")
                 .WithVirtualHive()

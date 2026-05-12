@@ -1,0 +1,8 @@
+{
+  "hostingManifest": {
+    "applicationUrl": "http://localhost:12345"
+  },
+  "hostingManifest2": {
+    "applicationUrl": "http://check:12345"
+  }
+}

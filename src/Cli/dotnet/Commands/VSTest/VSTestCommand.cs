@@ -35,21 +35,23 @@ public class VSTestCommand
         int exitCode = vsTestforwardingApp.Execute();
 
         // We run post processing also if execution is failed for possible partial successful result to post process.
-        exitCode |= TestCommand.RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
+        exitCode |= TestCommand.RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, diag: null, FeatureFlag.Instance);
 
         return exitCode;
     }
 
     private static string[] GetArgs(ParseResult parseResult)
     {
+        var definition = (VSTestCommandDefinition)parseResult.CommandResult.Command;
+
         IEnumerable<string> args = parseResult.GetArguments();
 
-        if (parseResult.HasOption(CommonOptions.TestLoggerOption))
+        if (parseResult.HasOption(definition.TestLoggerOption))
         {
             // System command line might have mutated the options, reformat test logger option so vstest recognizes it
-            var loggerValues = parseResult.GetValue(CommonOptions.TestLoggerOption);
-            var loggerArgs = loggerValues.Select(loggerValue => $"{CommonOptions.TestLoggerOption.Name}:{loggerValue}");
-            args = args.Where(a => !loggerValues.Contains(a) && !CommonOptions.TestLoggerOption.Name.Equals(a) && !CommonOptions.TestLoggerOption.Aliases.Contains(a));
+            var loggerValues = parseResult.GetValue(definition.TestLoggerOption);
+            var loggerArgs = loggerValues.Select(loggerValue => $"{definition.TestLoggerOption.Name}:{loggerValue}");
+            args = args.Where(a => !loggerValues.Contains(a) && !definition.TestLoggerOption.Name.Equals(a) && !definition.TestLoggerOption.Aliases.Contains(a));
             args = loggerArgs.Concat(args);
         }
 

@@ -35,6 +35,22 @@
       <_Parameter1>AspirePackageVersion</_Parameter1>
       <_Parameter2>$(AspirePackageVersion)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" >
+      <_Parameter1>MicrosoftExtensionsServiceDiscoveryPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftExtensionsServiceDiscoveryPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MicrosoftNETTestSdkPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETTestSdkPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>XUnitPackageVersion</_Parameter1>
+      <_Parameter2>$(XUnitVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>XUnitRunnerVisualStudioPackageVersion</_Parameter1>
+      <_Parameter2>$(XUnitRunnerVisualStudioPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
@@ -44,12 +60,22 @@
     -->
 
     <PackageReference Include="DiffPlex" />
-    <PackageReference Include="Microsoft.DotNet.XUnitExtensions" />
+    <PackageReference Include="Microsoft.DotNet.XUnitV3Extensions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.IO.Hashing" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="AwesomeAssertions" />
+
+    <Using Include="FluentAssertions" />
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Xunit" />
   </ItemGroup>
 
   <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->

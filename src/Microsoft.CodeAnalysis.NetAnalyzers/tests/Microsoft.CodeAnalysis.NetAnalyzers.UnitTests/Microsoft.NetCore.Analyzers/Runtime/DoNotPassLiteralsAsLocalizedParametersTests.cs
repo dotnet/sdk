@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
@@ -507,7 +508,7 @@ public class Test
                         GetCSharpResultAt(17, 18, "void Test.M1(C c)", "message", "void C.M(string param, string message)", "m"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -545,7 +546,7 @@ End Class
                         GetBasicResultAt(13, 18, "Sub Test.M1(c As C)", "message", "Sub C.M(param As String, message As String)", "m"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1355,7 +1356,7 @@ public class Test
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(14, 13, "void Test.M1(C c)", parameterName, $"void C.M(string {parameterName})", "a"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1390,7 +1391,7 @@ End Class
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(10, 13, "Sub Test.M1(c As C)", parameterName, $"Sub C.M({parameterName} As String)", "a"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [InlineData("message", false)]
@@ -1454,7 +1455,7 @@ public class Test
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(12, 9, "void Test.M1(C c)", "value", $"void C.{propertyName}.set", "a"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1488,7 +1489,7 @@ End Class
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(9, 9, "Sub Test.M1(c As C)", "AutoPropertyValue", $"Property Set C.{propertyName}(AutoPropertyValue As String)", "a"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1919, "https://github.com/dotnet/roslyn-analyzers/issues/1919")]
@@ -1529,7 +1530,7 @@ dotnet_code_quality.CA1303.use_naming_heuristic = true"), },
                         GetCSharpResultAt(6, 45, "void Program.Main()", "text", "decimal DerivedClass.Generic<decimal>(string text)", "number")
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1919, "https://github.com/dotnet/roslyn-analyzers/issues/1919")]
@@ -1569,7 +1570,7 @@ dotnet_code_quality.CA1303.use_naming_heuristic = true"), },
                         GetCSharpResultAt(6, 45, "void Program.Main()", "text", "decimal DerivedClass.Generic<decimal>(string text)", "number")
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(2602, "https://github.com/dotnet/roslyn-analyzers/issues/2602")]
@@ -1636,7 +1637,7 @@ public class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(2602, "https://github.com/dotnet/roslyn-analyzers/issues/2602")]
@@ -1708,7 +1709,7 @@ public class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(2602, "https://github.com/dotnet/roslyn-analyzers/issues/2602")]
@@ -1776,7 +1777,7 @@ public class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1835,7 +1836,7 @@ public class Test
                 });
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1885,7 +1886,7 @@ public class Test
                     GetCSharpResultAt(17, 13, "void Test.M1(C c)", "param", "void C.M(string param)", "a  a"));
             }
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbCode = @"
 Imports Microsoft.VisualBasic
@@ -1920,7 +1921,7 @@ End Class
                     GetBasicResultAt(14, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a  a"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

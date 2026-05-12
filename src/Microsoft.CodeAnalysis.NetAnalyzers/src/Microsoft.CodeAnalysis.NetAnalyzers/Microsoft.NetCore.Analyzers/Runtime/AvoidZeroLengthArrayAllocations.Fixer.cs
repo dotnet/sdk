@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -73,7 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // When Type is null in cases like 'T[] goo = { }', use ConvertedType instead (https://github.com/dotnet/roslyn/issues/23545).
             // When Type isn't null, do not use ConvertedType. For cases like `object[] goo = new string[0]`,
             // we want to return the string type symbol, not the object one.
-            var arrayType = (IArrayTypeSymbol?)(typeInfo.Type ?? typeInfo.ConvertedType);
+            var arrayType = (typeInfo.Type ?? typeInfo.ConvertedType) as IArrayTypeSymbol;
             return arrayType?.ElementType;
         }
 

@@ -85,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false, ReferenceScenario.HintPath)]
         public void It_includes_netstandard(bool isSdk, ReferenceScenario scenario)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk), identifier: (isSdk ? "sdk_" : "") + scenario.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -129,7 +129,7 @@ namespace Microsoft.NET.Build.Tests
             //  even if doing a design-time build where there is no output on disk to examine
             //  See https://github.com/dotnet/sdk/issues/1403
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("DesktopAppWithLibrary-NonSDK")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -176,7 +176,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var successMessage = "No conflicts found for support libs";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk, usePackagesConfig),
                                identifier: isSdk.ToString() + "_" + usePackagesConfig.ToString())
                 .WithSource()
@@ -208,7 +208,7 @@ namespace Microsoft.NET.Build.Tests
 
                         target.Add(new XElement(ns + "FindUnderPath",
                             new XAttribute("Files", "@(_ConflictPackageFiles)"),
-                            new XAttribute("Path", TestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath()),
+                            new XAttribute("Path", SdkTestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath()),
                             new XElement(ns + "Output",
                                 new XAttribute("TaskParameter", "InPath"),
                                 new XAttribute("ItemName", "_ConflictsInSupportLibs"))
@@ -260,7 +260,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false)]
         public void It_does_not_include_netstandard_when_inbox(bool isSdk)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk), identifier: isSdk.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -327,7 +327,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false)]
         public void It_does_not_include_netstandard_when_library_targets_netstandard14(bool isSdk)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk), identifier: isSdk.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>
@@ -365,7 +365,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false)]
         public void It_includes_netstandard_when_library_targets_netstandard15(bool isSdk)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(GetTemplateName(isSdk), identifier: isSdk.ToString())
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>

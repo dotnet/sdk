@@ -41,12 +41,35 @@ public class ComputeReferenceStaticWebAssetItems : Task
             var existingAssets = StaticWebAsset.AssetsByTargetPath(Assets, Source, AssetKind);
 
             var resultAssets = new List<StaticWebAsset>(existingAssets.Count);
+            var groupSet = new HashSet<string>(StringComparer.Ordinal);
             foreach (var kvp in existingAssets)
             {
                 var targetPath = kvp.Key;
                 var (selected, all) = kvp.Value;
                 if (all != null)
                 {
+                    // If all assets have distinct, non-empty AssetGroups, they can coexist
+                    if (StaticWebAsset.AllAssetsHaveDistinctGroups(all, groupSet))
+                    {
+                        foreach (var groupedAsset in all)
+                        {
+                            if (ShouldIncludeAssetAsReference(groupedAsset, out var groupReason))
+                            {
+                                if (UpdateSourceType && !StaticWebAsset.SourceTypes.IsFramework(groupedAsset.SourceType))
+                                {
+                                    groupedAsset.SourceType = StaticWebAsset.SourceTypes.Project;
+                                }
+                                if (MakeReferencedAssetOriginalItemSpecAbsolute)
+                                {
+                                    groupedAsset.OriginalItemSpec = Path.GetFullPath(groupedAsset.OriginalItemSpec);
+                                }
+                                resultAssets.Add(groupedAsset);
+                            }
+                            Log.LogMessage(MessageImportance.Low, groupReason);
+                        }
+                        continue;
+                    }
+
                     Log.LogError("More than one compatible asset found for target path '{0}' -> {1}.",
                         targetPath,
                         Environment.NewLine + string.Join(Environment.NewLine, all.Select(a => $"({a.Identity},{a.AssetKind})")));
@@ -55,7 +78,10 @@ public class ComputeReferenceStaticWebAssetItems : Task
 
                 if (ShouldIncludeAssetAsReference(selected, out var reason))
                 {
-                    selected.SourceType = UpdateSourceType ? StaticWebAsset.SourceTypes.Project : selected.SourceType;
+                    if (UpdateSourceType && !StaticWebAsset.SourceTypes.IsFramework(selected.SourceType))
+                    {
+                        selected.SourceType = StaticWebAsset.SourceTypes.Project;
+                    }
                     if (MakeReferencedAssetOriginalItemSpecAbsolute)
                     {
                         selected.OriginalItemSpec = Path.GetFullPath(selected.OriginalItemSpec);

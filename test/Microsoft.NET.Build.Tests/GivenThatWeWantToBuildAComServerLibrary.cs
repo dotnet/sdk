@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_copies_the_comhost_to_the_output_directory()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource();
 
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_generates_a_regfree_com_manifest_when_requested()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86")]
         public void It_embeds_the_clsidmap_in_the_comhost_when_rid_specified(string rid)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServer", rid)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -109,7 +109,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_warns_on_self_contained_build()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -131,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
         [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
         public void It_fails_to_find_comhost_for_platforms_without_comhost()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServer")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -152,7 +152,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_embeds_single_typelib_with_default_id()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj => proj.Root.Add(new XElement("ItemGroup", new XElement("ComHostTypeLibrary", new XAttribute("Include", "dummy1.tlb")))));
@@ -167,7 +167,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_fails_when_multiple_typelibs_without_ids_specified()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj =>
@@ -188,7 +188,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_fails_when_multiple_typelibs_with_same_ids_specified()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj =>
@@ -213,7 +213,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(3.14)]
         public void It_fails_when_typelib_with_invalid_id_specified(object id)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs", identifier: id.ToString())
                 .WithSource()
                 .WithProjectChanges(proj =>
@@ -233,7 +233,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_embeds_multiple_typelibs_with_distinct_ids()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj =>
@@ -252,7 +252,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_fails_when_typelib_does_not_exist()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj => proj.Root.Add(new XElement("ItemGroup", new XElement("ComHostTypeLibrary", new XAttribute("Include", "doesnotexist.tlb")))));
@@ -269,7 +269,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_fails_when_typelib_is_invalid()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServerWithTypeLibs")
                 .WithSource()
                 .WithProjectChanges(proj => proj.Root.Add(new XElement("ItemGroup", new XElement("ComHostTypeLibrary", new XAttribute("Include", "invalid.tlb")))));
@@ -286,7 +286,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_copies_nuget_package_dependencies()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("ComServerWithDependencies")
                 .WithSource();
 

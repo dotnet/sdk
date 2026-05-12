@@ -21,7 +21,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(TestProjectName)
                 .WithSource();
 
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(TestProjectName)
                 .WithSource();
 
@@ -76,7 +76,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid("netcoreapp2.0");
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(TestProjectName)
                 .WithSource()
                 .WithProjectChanges(doc =>
@@ -108,7 +108,7 @@ namespace Microsoft.NET.Publish.Tests
         [RequiresMSBuildVersionFact("17.4.0.41702")]
         public void It_publishes_an_app_with_a_netcoreapp_lib_reference()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppWithNetCoreAppLib")
                 .WithSource();
 
@@ -142,7 +142,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.AdditionalProperties.Add("UseWPF", "true");
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
 
             var rid = EnvironmentInfo.GetCompatibleRid(tfm);
             var command = new PublishCommand(testProjectInstance);
@@ -187,7 +187,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties.Add("UseWPF", "true");
             testProject.AdditionalProperties.Add("SatelliteResourceLanguages", "cs;zh-Hant;ko");
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
 
             var rid = EnvironmentInfo.GetCompatibleRid(tfm);
             var command = new PublishCommand(testProjectInstance);
@@ -224,7 +224,7 @@ namespace Microsoft.NET.Publish.Tests
         [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void NoStaticLibs()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                .CopyTestAsset(TestProjectName)
                .WithSource();
 

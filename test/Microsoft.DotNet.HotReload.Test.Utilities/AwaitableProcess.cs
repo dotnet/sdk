@@ -1,36 +1,39 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
-using System.Threading.Tasks.Dataflow;
+using System.Threading.Channels;
+using Microsoft.NET.TestFramework.Utilities;
+using Xunit;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal class AwaitableProcess(ITestOutputHelper logger) : IDisposable
+    internal sealed class AwaitableProcess : IAsyncDisposable
     {
         // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
         private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
-            ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(1);
-
-        private readonly object _testOutputLock = new();
+            ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(10);
 
         private readonly List<string> _lines = [];
-        private readonly BufferBlock<string> _source = new();
-        private Process _process;
-        private bool _disposed;
 
-        public IEnumerable<string> Output => _lines;
-        public int Id => _process.Id;
-        public Process Process => _process;
+        private CancellationTokenSource? _disposalCompletionSource = new();
+        private readonly CancellationTokenSource _outputCompletionSource = new();
 
-        public void Start(ProcessStartInfo processStartInfo)
+        private readonly Channel<string> _outputChannel = Channel.CreateUnbounded<string>(new()
         {
-            if (_process != null)
-            {
-                throw new InvalidOperationException("Already started");
-            }
+            SingleReader = true,
+            SingleWriter = false
+        });
+
+        public int Id { get; }
+        public Process Process { get; }
+        public DebugTestOutputLogger Logger { get; }
+
+        private readonly Task _processExitAwaiter;
+
+        public AwaitableProcess(ProcessStartInfo processStartInfo, DebugTestOutputLogger logger)
+        {
+            Logger = logger;
 
             if (!processStartInfo.UseShellExecute && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -47,87 +50,137 @@ namespace Microsoft.DotNet.Watch.UnitTests
             processStartInfo.StandardOutputEncoding = Encoding.UTF8;
             processStartInfo.StandardErrorEncoding = Encoding.UTF8;
 
-            _process = new Process
+            Process = new Process
             {
                 EnableRaisingEvents = true,
                 StartInfo = processStartInfo,
             };
 
-            _process.OutputDataReceived += OnData;
-            _process.ErrorDataReceived += OnData;
-            _process.Exited += OnExit;
+            Process.OutputDataReceived += OnData;
+            Process.ErrorDataReceived += OnData;
 
-            WriteTestOutput($"{DateTime.Now}: starting process: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
-            _process.Start();
-            _process.BeginErrorReadLine();
-            _process.BeginOutputReadLine();
-            WriteTestOutput($"{DateTime.Now}: process started: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
+            Process.Start();
+
+            Process.BeginErrorReadLine();
+            Process.BeginOutputReadLine();
+
+            try
+            {
+                Id = Process.Id;
+            }
+            catch
+            {
+            }
+
+            _processExitAwaiter = WaitForProcessExitAsync();
         }
+
+        public IEnumerable<string> Output
+            => _lines;
 
         public void ClearOutput()
             => _lines.Clear();
 
-        public async Task<string> GetOutputLineAsync(Predicate<string> success, Predicate<string> failure)
+        public async Task WaitForProcessExitAsync()
         {
-            using var cancellationOnFailure = new CancellationTokenSource();
-
-            if (!Debugger.IsAttached)
-            {
-                cancellationOnFailure.CancelAfter(s_timeout);
-            }
-
-            var failedLineCount = 0;
-            while (!_source.Completion.IsCompleted && failedLineCount == 0)
+            while (true)
             {
                 try
                 {
-                    while (await _source.OutputAvailableAsync(cancellationOnFailure.Token))
+                    if (Process.HasExited)
                     {
-                        var line = await _source.ReceiveAsync(cancellationOnFailure.Token);
-                        _lines.Add(line);
-                        if (success(line))
-                        {
-                            return line;
-                        }
-
-                        if (failure(line))
-                        {
-                            if (failedLineCount == 0)
-                            {
-                                // Limit the time to collect remaining output after a failure to avoid hangs:
-                                cancellationOnFailure.CancelAfter(TimeSpan.FromSeconds(1));
-                            }
-
-                            if (failedLineCount > 100)
-                            {
-                                break;
-                            }
-
-                            failedLineCount++;
-                        }
+                        break;
                     }
                 }
-                catch (OperationCanceledException) when (failedLineCount > 0)
+                catch
                 {
                     break;
+                }
+
+                using var iterationCancellationSource = new CancellationTokenSource();
+                iterationCancellationSource.CancelAfter(TimeSpan.FromSeconds(1));
+
+                try
+                {
+                    await Process.WaitForExitAsync(iterationCancellationSource.Token);
+                    break;
+                }
+                catch 
+                {
+                }
+            }
+
+            Logger.Log($"Process {Id} exited");
+            _outputCompletionSource.Cancel();
+        }
+
+        public async Task<string> GetRequiredOutputLineAsync(Predicate<string> selector)
+        {
+            var line = await GetOutputLineAsync(selector);
+
+            // process terminated without producing required output
+            Assert.NotNull(line);
+
+            return line;
+        }
+
+        public async Task<string?> GetOutputLineAsync(Predicate<string> selector)
+        {
+            var disposalCompletionSource = _disposalCompletionSource;
+            ObjectDisposedException.ThrowIf(disposalCompletionSource == null, this);
+
+            using var timeoutCancellation = new CancellationTokenSource();
+            if (!Debugger.IsAttached)
+            {
+                timeoutCancellation.CancelAfter(s_timeout);
+            }
+
+            using var outputReadCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                _outputCompletionSource.Token,
+                disposalCompletionSource.Token,
+                timeoutCancellation.Token);
+
+            try
+            {
+                while (!outputReadCancellation.IsCancellationRequested)
+                {
+                    var line = await _outputChannel.Reader.ReadAsync(outputReadCancellation.Token);
+                    _lines.Add(line);
+                    if (selector(line))
+                    {
+                        return line;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                if (timeoutCancellation.Token.IsCancellationRequested)
+                {
+                    Assert.Fail($"Output not found within {s_timeout}");
+                }
+
+                if (disposalCompletionSource.Token.IsCancellationRequested)
+                {
+                    Assert.Fail($"Test disposed while waiting for output");
+                }
+            }
+
+            // Read the remaining output that may have been written to
+            // the channel but not read yet when the process exited.
+            while (_outputChannel.Reader.TryRead(out var line))
+            {
+                _lines.Add(line);
+                if (selector(line))
+                {
+                    return line;
                 }
             }
 
             return null;
         }
 
-        public async Task<IList<string>> GetAllOutputLinesAsync(CancellationToken cancellationToken)
-        {
-            var lines = new List<string>();
-            while (!_source.Completion.IsCompleted)
-            {
-                while (await _source.OutputAvailableAsync(cancellationToken))
-                {
-                    lines.Add(await _source.ReceiveAsync(cancellationToken));
-                }
-            }
-            return lines;
-        }
+        public Task WaitUntilOutputCompleted()
+            => GetOutputLineAsync(_ => false);
 
         private void OnData(object sender, DataReceivedEventArgs args)
         {
@@ -138,50 +191,26 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 line = line.StripTerminalLoggerProgressIndicators();
             }
 
-            WriteTestOutput(line);
-            _source.Post(line);
+            Logger.WriteLine(line);
+
+            Assert.True(_outputChannel.Writer.TryWrite(line));
         }
 
-        private void WriteTestOutput(string text)
+        public async ValueTask DisposeAsync()
         {
-            lock (_testOutputLock)
-            {
-                if (!_disposed)
-                {
-                    logger.WriteLine(text);
-                }
-            }
-        }
+            var disposalCompletionSource = Interlocked.Exchange(ref _disposalCompletionSource, null);
+            ObjectDisposedException.ThrowIf(disposalCompletionSource == null, this);
+            disposalCompletionSource.Cancel();
 
-        private void OnExit(object sender, EventArgs args)
-        {
-            // Wait to ensure the process has exited and all output consumed
-            _process.WaitForExit();
+            Process.ErrorDataReceived -= OnData;
+            Process.OutputDataReceived -= OnData;
 
-            // Signal test methods waiting on all process output to be completed:
-            _source.Complete();
-        }
-
-        public void Dispose()
-        {
-            _source.Complete();
-
-            lock (_testOutputLock)
-            {
-                _disposed = true;
-            }
-
-            if (_process == null)
-            {
-                return;
-            }
-
-            _process.ErrorDataReceived -= OnData;
-            _process.OutputDataReceived -= OnData;
-
+            // Close stdin before killing the process to unblock any pending stdin reads
+            // (e.g. PhysicalConsole.ListenToStandardInputAsync on Linux where stdin reads
+            // don't unblock on process kill).
             try
             {
-                _process.CancelErrorRead();
+                Process.StandardInput?.Close();
             }
             catch
             {
@@ -189,7 +218,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             try
             {
-                _process.CancelOutputRead();
+                Process.CancelErrorRead();
             }
             catch
             {
@@ -197,14 +226,26 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             try
             {
-                _process.Kill(entireProcessTree: false);
+                Process.CancelOutputRead();
             }
             catch
             {
             }
 
-            _process.Dispose();
-            _process = null;
+            try
+            {
+                Process.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+            }
+
+            // ensure process has exited
+            await _processExitAwaiter;
+
+            Process.Dispose();
+
+            _outputCompletionSource.Dispose();
         }
     }
 }

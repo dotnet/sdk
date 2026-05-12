@@ -73,8 +73,53 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
-        <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled</source>
-        <target state="translated">如果停用記錄，則此引數的評估可能會非常昂貴且不必要</target>
+        <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</source>
+        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled ({0})</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAnonymousObjectCreation">
+        <source>anonymous object creation</source>
+        <target state="new">anonymous object creation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonArrayCreation">
+        <source>array creation</source>
+        <target state="new">array creation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonAwaitExpression">
+        <source>await expression</source>
+        <target state="new">await expression</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonBoxingConversion">
+        <source>boxing conversion</source>
+        <target state="new">boxing conversion</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression">
+        <source>collection expression</source>
+        <target state="new">collection expression</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonMethodInvocation">
+        <source>method invocation</source>
+        <target state="new">method invocation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonObjectCreation">
+        <source>object creation</source>
+        <target state="new">object creation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonStringInterpolation">
+        <source>string interpolation</source>
+        <target state="new">string interpolation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingReasonWithExpression">
+        <source>with expression</source>
+        <target state="new">with expression</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
@@ -1881,6 +1926,26 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
       <trans-unit id="MissHttpVerbAttributeMessage">
         <source>Action method {0} needs to specify the HTTP request kind explicitly</source>
         <target state="translated">Action 方法 {0} 必須明確地指定 HTTP 要求種類</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
+        <source>Add '#!' (shebang)</source>
+        <target state="translated">新增 '#!'(shebang)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramDescription">
+        <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
+        <target state="translated">當檔案型程式包含多個檔案時，進入點檔案開頭應該為 shebang ('#!') 行，以明確區分它與其他包含的檔案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramMessage">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="translated">檔案型程式進入點的開頭應該為 '#!'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramTitle">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="translated">檔案型程式進入點的開頭應該為 '#!'</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">

@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(BundledNETCoreAppTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <Description>MSBuild tasks for template authoring.</Description>
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddBuildOutputToPackageNet;AddBuildOutputToPackageNetFramework</TargetsForTfmSpecificContentInPackage>
+    <!-- Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests needs a package for testing. -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' ==  '$(NetFrameworkToolCurrent)'">
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Publish="false" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Publish="false" ExcludeAssets="runtime" />
+
+    <ProjectReference Include="$(TemplateEngSrcDir)Tools\Microsoft.TemplateEngine.TemplateLocalizer.Core\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" PrivateAssets="all" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\*" PackagePath="build" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="LocalizableStrings.resx"
+                      GenerateSource="true" />
+  </ItemGroup>
+
+  <Target Name="AddBuildOutputToPackageNet" DependsOnTargets="Publish" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(PublishDir)**"
+                              PackagePath="$(BuildOutputTargetFolder)/net/%(RecursiveDir)%(FileName)%(Extension)"/>
+    </ItemGroup>
+  </Target>
+
+  <!-- Copy the nupkg to TestPackagesDir so integration tests can consume it.
+       This replaces the BuildTestPackages.targets entry that re-packed this project
+       with different global properties, which caused a parallel-build race condition.
+       Guard with IsCrossTargetingBuild so this runs only once in the outer build of a
+       multi-targeting project, avoiding concurrent copies per inner TFM build. -->
+  <Target Name="CopyPackageToTestPackagesDir" AfterTargets="Pack"
+          Condition="'$(TestLayoutDir)' != '' and ('$(IsCrossTargetingBuild)' == 'true' or '$(TargetFrameworks)' == '')">
+    <PropertyGroup>
+      <_TestPackagesDir>$(TestLayoutDir)testpackages/</_TestPackagesDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(_TestPackagesDir)" Condition="!Exists('$(_TestPackagesDir)')" />
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg"
+          DestinationFolder="$(_TestPackagesDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="AddBuildOutputToPackageNetFramework" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(OutputPath)**" PackagePath="$(BuildOutputTargetFolder)/netframework/%(RecursiveDir)%(FileName)%(Extension)"/>
+    </ItemGroup>
+  </Target>
+
+</Project>

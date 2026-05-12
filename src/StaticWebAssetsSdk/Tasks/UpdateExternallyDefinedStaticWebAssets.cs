@@ -25,6 +25,8 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
 
     public ITaskItem[] FingerprintInferenceExpressions { get; set; }
 
+    public ITaskItem[] StaticWebAssetGroups { get; set; }
+
     [Output]
     public ITaskItem[] UpdatedAssets { get; set; }
 
@@ -38,6 +40,7 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
     {
         var assets = Assets.Select(StaticWebAsset.FromV1TaskItem).ToArray();
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
+        var groupLookup = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
         var endpointByAsset = endpoints
             .GroupBy(e => e.AssetFile, OSPath.PathComparer)
             .ToDictionary(e => e.Key, e => e.ToArray(), OSPath.PathComparer);
@@ -64,9 +67,17 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
             }
         }
 
-        UpdatedAssets = assets.Select(a => a.ToTaskItem()).ToArray();
-        UpdatedEndpoints = endpoints.Select(e => e.ToTaskItem()).ToArray();
-        AssetsWithoutEndpoints = assetsWithoutEndpoints.Select(a => a.ToTaskItem()).ToArray();
+        var (filteredAssets, excludedAssetFiles) = StaticWebAsset.FilterByGroup(assets, groupLookup, skipDeferred: true);
+
+        UpdatedAssets = StaticWebAsset.ToTaskItems(filteredAssets);
+
+        // Filter endpoints using the shared helper.
+        var endpointGroups = StaticWebAssetEndpointGroup.CreateEndpointGroups(endpoints);
+        var (_, survivingEndpoints) = StaticWebAssetEndpointGroup.ComputeFilteredEndpoints(endpointGroups, excludedAssetFiles);
+        UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(survivingEndpoints);
+
+        AssetsWithoutEndpoints = StaticWebAsset.ToTaskItems(
+            assetsWithoutEndpoints.Where(a => !excludedAssetFiles.Contains(a.Identity)));
 
         return !Log.HasLoggedErrors;
     }

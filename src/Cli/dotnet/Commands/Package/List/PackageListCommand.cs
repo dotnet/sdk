@@ -4,71 +4,86 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Hidden.List;
-using Microsoft.DotNet.Cli.Commands.NuGet;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.Utils;
+using System.Diagnostics;
 using System.Globalization;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.NuGet;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
-internal class PackageListCommand(
-    ParseResult parseResult) : CommandBase(parseResult)
+internal sealed class PackageListCommand(ParseResult parseResult) : CommandBase<PackageListCommandDefinitionBase>(parseResult)
 {
-    //The file or directory passed down by the command
-    private readonly string _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
-            parseResult.HasOption(PackageCommandDefinition.ProjectOption) ?
-            parseResult.GetValue(PackageCommandDefinition.ProjectOption) :
-            parseResult.GetValue(ListCommandDefinition.SlnOrProjectArgument) ?? "");
-
-    private static string GetAbsolutePath(string currentDirectory, string relativePath)
-    {
-        return Path.GetFullPath(Path.Combine(currentDirectory, relativePath));
-    }
-
     public override int Execute()
     {
-        string projectFile = GetProjectOrSolution();
-        bool noRestore = _parseResult.HasOption(PackageListCommandDefinition.NoRestore);
+        var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(Definition.FileOption, Definition.ProjectOption, Definition.GetProjectOrFileArgument(), _parseResult);
+
+        fileOrDirectory = Path.GetFullPath(fileOrDirectory);
+
+        bool isFileBasedApp = allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory);
+
+        Debug.Assert(isFileBasedApp || allowedAppKinds.HasFlag(AppKinds.ProjectBased));
+
+        string projectFile = isFileBasedApp ? Path.GetFullPath(fileOrDirectory) : GetProjectOrSolution(fileOrDirectory);
+        bool noRestore = _parseResult.HasOption(Definition.NoRestore);
         int restoreExitCode = 0;
 
         if (!noRestore)
         {
-            ReportOutputFormat formatOption = _parseResult.GetValue((Option<ReportOutputFormat>)PackageListCommandDefinition.FormatOption);
-            bool interactive = _parseResult.GetValue((Option<bool>)PackageListCommandDefinition.InteractiveOption);
-            restoreExitCode = RunRestore(projectFile, formatOption, interactive);
+            ReportOutputFormat formatOption = _parseResult.GetValue(Definition.FormatOption);
+            bool interactive = _parseResult.GetValue(Definition.InteractiveOption);
+            restoreExitCode = RunRestore(projectFile, formatOption, interactive, isFileBasedApp);
         }
 
         return restoreExitCode == 0
-            ? NuGetCommand.Run(TransformArgs(projectFile))
+            ? NuGetCommand.Run(TransformArgs(projectFile), isFileBasedApp)
             : restoreExitCode;
     }
 
-    private int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive)
+    private static int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive, bool isFileBasedApp)
     {
-        List<string> args = ["-target:Restore", projectOrSolution];
-
-        if (formatOption == ReportOutputFormat.json)
+        CommandBase command;
+        if (isFileBasedApp)
         {
-            args.Add("-noConsoleLogger");
+            command = new VirtualProjectBuildingCommand(
+                entryPointFileFullPath: projectOrSolution,
+                msbuildArgs: MSBuildArgs.FromProperties(new Dictionary<string, string>
+                {
+                    ["NuGetInteractive"] = interactive.ToString(),
+                }.AsReadOnly()))
+            {
+                NoCache = true,
+                NoBuild = true,
+                NoConsoleLogger = formatOption == ReportOutputFormat.json,
+            };
         }
         else
         {
-            args.Add("-consoleLoggerParameters:NoSummary");
-            args.Add("-verbosity:minimal");
+            List<string> args = ["-target:Restore", projectOrSolution];
+
+            if (formatOption == ReportOutputFormat.json)
+            {
+                args.Add("-noConsoleLogger");
+            }
+            else
+            {
+                args.Add("-consoleLoggerParameters:NoSummary");
+                args.Add("-verbosity:minimal");
+            }
+
+            args.Add($"-interactive:{interactive.ToString().ToLower()}");
+
+            command = new MSBuildForwardingApp(rawMSBuildArgs: args);
         }
-
-        args.Add($"-interactive:{interactive.ToString().ToLower()}");
-
-        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(rawMSBuildArgs: args);
 
         int exitCode = 0;
 
         try
         {
-            exitCode = restoringCommand.Execute();
+            exitCode = command.Execute();
         }
         catch (Exception)
         {
@@ -97,18 +112,6 @@ internal class PackageListCommand(
         return exitCode;
     }
 
-    internal static void EnforceOptionRules(ParseResult parseResult)
-    {
-        var mutexOptionCount = 0;
-        mutexOptionCount += parseResult.HasOption(PackageListCommandDefinition.DeprecatedOption) ? 1 : 0;
-        mutexOptionCount += parseResult.HasOption(PackageListCommandDefinition.OutdatedOption) ? 1 : 0;
-        mutexOptionCount += parseResult.HasOption(PackageListCommandDefinition.VulnerableOption) ? 1 : 0;
-        if (mutexOptionCount > 1)
-        {
-            throw new GracefulException(CliCommandStrings.OptionsCannotBeCombined);
-        }
-    }
-
     private string[] TransformArgs(string projectOrSolution)
     {
         var args = new List<string>
@@ -118,9 +121,9 @@ internal class PackageListCommand(
             projectOrSolution
         };
 
-        args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandDefinition.Create()));
+        args.AddRange(_parseResult.OptionValuesToBeForwarded(Definition));
 
-        EnforceOptionRules(_parseResult);
+        Definition.EnforceOptionRules(_parseResult);
 
         return [.. args];
     }
@@ -131,9 +134,9 @@ internal class PackageListCommand(
     /// it exists.
     /// </summary>
     /// <returns>Path to send to the command</returns>
-    private string GetProjectOrSolution()
+    private static string GetProjectOrSolution(string fileOrDirectory)
     {
-        string resultPath = _fileOrDirectory;
+        string resultPath = fileOrDirectory;
 
         if (Directory.Exists(resultPath))
         {

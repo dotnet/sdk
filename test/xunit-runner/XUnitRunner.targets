@@ -1,23 +1,30 @@
 <Project>
+
   <PropertyGroup>
     <SDKCustomXUnitPublishTargetFramework Condition="'$(SDKCustomXUnitPublishTargetFramework)' == ''">$(SdkTargetFramework)</SDKCustomXUnitPublishTargetFramework>
     <SDKCustomXUnitRuntimeTargetFramework Condition="'$(SDKCustomXUnitRuntimeTargetFramework)' == ''">$(SdkTargetFramework)</SDKCustomXUnitRuntimeTargetFramework>
 
-    <SDKCustomXUnitRunnerVersion Condition="'$(SDKCustomXUnitRunnerVersion)' == ''">2.4.1</SDKCustomXUnitRunnerVersion>
+    <SDKCustomXUnitRunnerVersion Condition="'$(SDKCustomXUnitRunnerVersion)' == ''">$(XUnitV3Version)</SDKCustomXUnitRunnerVersion>
 
     <_SDKCustomXUnitPublishTargetsPath>$(MSBuildThisFileDirectory)XUnitPublish.targets</_SDKCustomXUnitPublishTargetsPath>
 
     <SDKCustomXUnitArguments Condition="'$(SDKCustomXUnitArguments)' == ''">-nocolor</SDKCustomXUnitArguments>
 
-    <TaskTargetFramework>net8.0</TaskTargetFramework>
-    <TaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskTargetFramework>
+    <!-- xUnit v3 runs tests out-of-process via a native AppHost.  When cross-compiling
+         (e.g. building on arm64 for x64 Helix queues), set RuntimeIdentifier so the
+         AppHost matches the target architecture.  SelfContained=false keeps the publish
+         framework-dependent.  ErrorOnDuplicatePublishOutputFiles=false suppresses
+         NETSDK1152 from Exe project-references (e.g. dotnet.csproj) whose outputs appear
+         in both the plain-TFM and RID-qualified directories. -->
+    <_TestPublishRidProperties Condition="'$(TargetRid)' != ''">RuntimeIdentifier=$(TargetRid);SelfContained=false;ErrorOnDuplicatePublishOutputFiles=false</_TestPublishRidProperties>
 
-    <SDKHelixCustomSdkTaskDll>$(ArtifactsDir)\bin\HelixTasks\$(Configuration)\$(TaskTargetFramework)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
+    <!-- Keep TFM in sync with HelixTasks.csproj -->
+    <SDKHelixCustomSdkTaskDll>$(ArtifactsBinDir)HelixTasks\$(Configuration)\HelixTasks.dll</SDKHelixCustomSdkTaskDll>
   </PropertyGroup>
 
-  <UsingTask TaskName="SDKCustomCreateXUnitWorkItemsWithTestExclusion" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" />
-  <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" />
-  <UsingTask TaskName="CreateLocalHelixTestLayout" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" />
+  <UsingTask TaskName="SDKCustomCreateXUnitWorkItemsWithTestExclusion" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="CreateLocalHelixTestLayout" AssemblyFile="$(SDKHelixCustomSdkTaskDll)" TaskFactory="TaskHostFactory" Runtime="NET" />
 
   <Choose>
     <When Condition="$(HelixTargetQueue.ToLowerInvariant().Contains('windows'))">
@@ -38,7 +45,7 @@
           Outputs="%(SDKCustomXUnitProject.Identity)%(SDKCustomXUnitProject.TargetFramework)%(SDKCustomXUnitProject.RuntimeTargetFramework)%(SDKCustomXUnitProject.AdditionalProperties)">
     <MSBuild Projects="%(SDKCustomXUnitProject.Identity)"
              Targets="Restore"
-             Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);%(SDKCustomXUnitProject.AdditionalProperties)">
+             Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);RuntimeIdentifiers=$(TargetRid);%(SDKCustomXUnitProject.AdditionalProperties)">
     </MSBuild>
   </Target>
 
@@ -54,7 +61,16 @@
       <_CurrentRuntimeTargetFramework Condition="'$(_CurrentRuntimeTargetFramework)' == ''">$(SDKCustomXUnitRuntimeTargetFramework)</_CurrentRuntimeTargetFramework>
       <_CurrentAdditionalProperties>%(SDKCustomXUnitProject.AdditionalProperties)</_CurrentAdditionalProperties>
     </PropertyGroup>
-    <MSBuild Projects="$(_CurrentSDKCustomXUnitProject)" Targets="PublishWithOutput" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);BuildTestPackages=false;$(_CurrentAdditionalProperties)">
+    <!-- In CI, Arcade's centralized NuGet restore runs via NuGet.targets and does not
+         include RuntimeIdentifier, so the assets file lacks the RID-specific target.
+         Restore here with RuntimeIdentifiers (plural) to add the RID target without
+         clobbering multi-TFM transitive dependencies (e.g. BrowserRefresh targets net6.0). -->
+    <MSBuild Condition="'$(TargetRid)' != ''"
+             Projects="$(_CurrentSDKCustomXUnitProject)"
+             Targets="Restore"
+             Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);RuntimeIdentifiers=$(TargetRid);$(_CurrentAdditionalProperties)" />
+
+    <MSBuild Projects="$(_CurrentSDKCustomXUnitProject)" Targets="PublishWithOutput" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);BuildTestPackages=false;$(_TestPublishRidProperties);$(_CurrentAdditionalProperties)">
       <Output TaskParameter="TargetOutputs" PropertyName="_PublishOutputDir" />
     </MSBuild>
     <MSBuild Projects="$(_CurrentSDKCustomXUnitProject)" Targets="GetTargetPath" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
@@ -78,6 +94,7 @@
     <SDKCustomCreateXUnitWorkItemsWithTestExclusion
         XUnitProjects="@(SDKCustomXUnitProject)"
         IsPosixShell="$(IsPosixShell)"
+        TargetRid="$(TargetRid)"
         XUnitArguments="$(SDKCustomXUnitArgument)"
         XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)">
       <Output TaskParameter="XUnitWorkItems" ItemName="HelixWorkItem"/>

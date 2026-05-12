@@ -27,15 +27,11 @@ namespace Microsoft.NET.TestFramework.Commands
         public List<string> MetadataNames { get; set; } = new List<string>();
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
-        public bool ShouldRestore { get; set; } = true;
-
-        protected override bool ExecuteWithRestoreByDefault => ShouldRestore;
-
         public GetValuesCommand(ITestOutputHelper log, string projectPath, string targetFramework,
             string valueName, ValueType valueType = ValueType.Property)
             : base(log, "WriteValuesToFile", projectPath, relativePathToProject: null)
         {
-            _targetFramework = targetFramework;
+            _targetFramework = targetFramework ?? OutputPathCalculator.FromProject(ProjectFile).TargetFramework ?? string.Empty;
 
             _valueName = valueName;
             _valueType = valueType;
@@ -139,7 +135,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var outputDirectory = GetValuesOutputDirectory(_targetFramework);
             outputDirectory.Create();
 
-            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
+            return SdkTestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
         }
 
         public List<string> GetValues()
@@ -153,7 +149,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var outputDirectory = GetValuesOutputDirectory(_targetFramework, Configuration ?? "Debug");
             string fullFileName = Path.Combine(outputDirectory.FullName, outputFilename);
 
-            if (File.Exists(fullFileName))
+            //if (File.Exists(fullFileName))
             {
                 return File.ReadAllLines(fullFileName)
                    .Where(line => !string.IsNullOrWhiteSpace(line))
@@ -178,10 +174,10 @@ namespace Microsoft.NET.TestFramework.Commands
                    })
                    .ToList();
             }
-            else
-            {
-                return new List<(string value, Dictionary<string, string> metadata)>();
-            }
+            // else
+            // {
+            //     return new List<(string value, Dictionary<string, string> metadata)>();
+            // }
         }
 
         DirectoryInfo GetValuesOutputDirectory(string targetFramework = "", string configuration = "Debug")

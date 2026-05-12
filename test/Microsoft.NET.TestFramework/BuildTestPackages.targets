@@ -159,6 +159,15 @@
         <ProjectName>Microsoft.Net.Sdk.Compilers.Toolset.csproj</ProjectName>
         <Version>$(Version)</Version>
       </BaseTestPackageProject>
+      <!-- Microsoft.TemplateEngine.Authoring.Tasks is excluded here because it has
+           GeneratePackageOnBuild=true and is in the solution. Packing it again with
+           different global properties causes a parallel-build race condition on the
+           obj/ output DLL. The project copies its nupkg to TestPackagesDir itself. -->
+      <BaseTestPackageProject Include="src/TemplateEngine/Tools/Microsoft.TemplateSearch.TemplateDiscovery">
+        <Name>Microsoft.TemplateSearch.TemplateDiscovery</Name>
+        <ProjectName>Microsoft.TemplateSearch.TemplateDiscovery.csproj</ProjectName>
+        <Version>$(Version)</Version>
+      </BaseTestPackageProject>
 
       <BaseTestPackageProject>
         <NuPkgName Condition=" '%(NuPkgName)' == '' ">%(Name)</NuPkgName>

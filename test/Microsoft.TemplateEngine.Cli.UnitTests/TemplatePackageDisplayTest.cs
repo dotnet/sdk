@@ -78,7 +78,7 @@ Installed package has the following vulnerabilities:
 
     [1m[36mLow[39m[22m:
         low1".UnixifyLineBreaks();
-            ParseResult parseResult = NewCommandFactory.Create(_ => CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
+            ParseResult parseResult = CliTestHostFactory.CreateNewCommand(CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
 
             await packageDisplayer.DisplayInstallResultAsync(
                 "PackageA",
@@ -125,7 +125,7 @@ Installed package has the following vulnerabilities:
 [1mIn order to install this package, run:[22m
    new install testPackage --force".UnixifyLineBreaks();
 
-            ParseResult parseResult = NewCommandFactory.Create(_ => CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
+            ParseResult parseResult = CliTestHostFactory.CreateNewCommand(CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
             await packageDisplayer.DisplayInstallResultAsync(
                 "testPackage",
                 installResult,
@@ -168,7 +168,7 @@ Installed package has the following vulnerabilities:
    new uninstall testPackage
    new install testPackage --force".UnixifyLineBreaks();
 
-            ParseResult parseResult = NewCommandFactory.Create(_ => CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
+            ParseResult parseResult = CliTestHostFactory.CreateNewCommand(CliTestHostFactory.GetVirtualHost()).Parse($"new search foo");
             await packageDisplayer.DisplayInstallResultAsync(
                 "testPackage",
                 updateResult,

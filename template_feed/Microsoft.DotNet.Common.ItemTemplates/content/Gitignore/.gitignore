@@ -129,6 +129,8 @@ ipch/
 
 # Visual Studio Trace Files
 *.e2e
+# but not directories ending in .e2e
+!*.e2e/
 
 # TFS 2012 Local Workspace
 $tf/
@@ -392,6 +394,9 @@ FodyWeavers.xsd
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+
+# Official VS Code C# Dev Kit Extension exclusion
+*.lscache
 
 # Local History for Visual Studio Code
 .history/

@@ -59,7 +59,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             params object[] becauseArgs
         )
         {
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 return BeVisuallyEquivalentTo(assertions, expected, because, becauseArgs);
             }
@@ -75,7 +75,7 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public static AndConstraint<StringAssertions> ContainVisuallySameFragmentIfNotLocalized(this StringAssertions assertions, string expected, string because = "", params object[] becauseArgs)
         {
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 return ContainVisuallySameFragment(assertions, expected, because, becauseArgs);
             }

@@ -225,7 +225,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
             get
             {
-#if NET472
+#if NETFRAMEWORK
                 if (string.IsNullOrEmpty(m_exePath))
                 {
                     // if path is not set, we optimize to latest version of msdeploy
@@ -796,7 +796,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                                 Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(ExistingDeclareParameterMetadata), valueQuote);
                                 if (arguments.Count > 0 && !string.IsNullOrEmpty(data))
                                 {
-#if NET472
+#if NETFRAMEWORK
                                     arguments.Add(string.Concat(ExistingSyncParameterMetadata.Value.ToString().ToLower(CultureInfo.InvariantCulture),
                                                             "=", Utility.PutValueInQuote(data, valueQuote)));
 #else

@@ -14,7 +14,8 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
-        [InlineData("net46", "netstandard1.3", false)]
+        // Skip = "https://github.com/dotnet/sdk/issues/53796"
+        //[InlineData("net46", "netstandard1.3", false)]
         [InlineData("netcoreapp2.0", "netstandard2.0", false)]
         [InlineData("netcoreapp2.0", "netstandard2.0", true)]
         [InlineData("netcoreapp3.0", "netstandard2.0", false)]
@@ -51,7 +52,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("System.Data.SqlClient", ToolsetInfo.GetSystemDataSqlClientPackageVersion()));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: appTargetFramework + withoutCopyingRefs);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: appTargetFramework + withoutCopyingRefs);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "LangVersion");
             getValuesCommand.Execute().Should().Pass();
@@ -165,7 +166,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var targetFramework = "netcoreapp2.0";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("CompilationContext", "PreserveCompilationContextRefs")
                 .WithSource()
                 .WithProjectChanges((path, project) =>

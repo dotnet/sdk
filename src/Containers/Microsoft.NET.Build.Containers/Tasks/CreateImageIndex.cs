@@ -125,7 +125,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 }
 
                 imageDigest = manifestV2.Config.digest;
-                imageSha = DigestUtils.GetShaFromDigest(imageDigest);
+                imageSha = DigestUtils.GetEncoded(imageDigest);
                 layers = manifestV2.Layers;
             }     
 

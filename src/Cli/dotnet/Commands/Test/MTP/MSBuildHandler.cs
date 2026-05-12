@@ -7,14 +7,13 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler(BuildOptions buildOptions)
+internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
 {
     private readonly BuildOptions _buildOptions = buildOptions;
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
-    private bool _areTestingPlatformApplications = true;
 
-    public bool RunMSBuild()
+    public bool Initialize()
     {
         PathOptions pathOptions = _buildOptions.PathOptions;
 
@@ -23,65 +22,58 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions)
             return false;
         }
 
-        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution);
+        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, int buildExitCode) = isSolution ?
+            MSBuildUtility.GetProjectsFromSolution(projectOrSolutionFilePath, _buildOptions) :
+            MSBuildUtility.GetProjectsFromProject(projectOrSolutionFilePath, _buildOptions);
 
-        InitializeTestApplications(projects);
+        LogProjectProperties(projects);
 
-        if (!restored || _testApplications.IsEmpty)
+        if (buildExitCode != 0)
         {
-            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, ExitCode.GenericFailure));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, buildExitCode));
             return false;
         }
 
-        return true;
+        return InitializeTestApplications(projects);
     }
 
-    private void InitializeTestApplications(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
+    private bool InitializeTestApplications(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
     {
         // If one test app has IsTestingPlatformApplication set to false (VSTest and not MTP), then we will not run any of the test apps
         IEnumerable<TestModule> vsTestTestProjects = moduleGroups.SelectMany(group => group.GetVSTestAndNotMTPModules());
 
         if (vsTestTestProjects.Any())
         {
-            _areTestingPlatformApplications = false;
-
             Reporter.Error.WriteLine(
                 string.Format(
                     CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription,
                     string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath))).Red().Bold()));
 
-            return;
+            return false;
         }
 
         foreach (ParallelizableTestModuleGroupWithSequentialInnerModules moduleGroup in moduleGroups)
         {
             _testApplications.Add(moduleGroup);
         }
-    }
 
-    public bool EnqueueTestApplications(TestApplicationActionQueue queue)
-    {
-        if (!_areTestingPlatformApplications)
+        if (_testApplications.IsEmpty)
         {
+            Reporter.Error.WriteLine(CliCommandStrings.CmdTestNoTestProjectsFound);
             return false;
         }
 
-        foreach (var testApp in _testApplications)
-        {
-            queue.Enqueue(testApp);
-        }
         return true;
     }
 
-    private (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
+    public int RunTestApplications(TestApplicationActionQueue actionQueue)
     {
-        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool isBuiltOrRestored) = isSolution ?
-            MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, _buildOptions) :
-            MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, _buildOptions);
+        foreach (var testApp in _testApplications)
+        {
+            actionQueue.Enqueue(testApp);
+        }
 
-        LogProjectProperties(projects);
-
-        return (projects, isBuiltOrRestored);
+        return actionQueue.CompleteEnqueueAndWait();
     }
 
     private static void LogProjectProperties(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)

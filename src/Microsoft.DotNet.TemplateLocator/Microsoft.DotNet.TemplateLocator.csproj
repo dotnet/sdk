@@ -1,15 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(ResolverTargetFramework);net472</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <!-- For product build, the .NET Framework TFM only builds in the second build pass as it depends on assets from other
          verticals that are built in the first build pass. -->
-    <TargetFrameworks Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">$(ResolverTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">$(SdkTargetFramework)</TargetFrameworks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
-    <AssemblyVersion Condition="'$(TargetFramework)' == 'net472'">5.0.100.0</AssemblyVersion>
+    <AssemblyVersion Condition="'$(TargetFramework)' == '$(NetFrameworkToolCurrent)'">5.0.100.0</AssemblyVersion>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible Condition="'$(TargetFramework)' != '$(NetFrameworkToolCurrent)'">true</IsAotCompatible>
   </PropertyGroup>
 
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">

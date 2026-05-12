@@ -18,7 +18,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
     [Fact]
     public void ItRunsMultiTFMProjectWhenFrameworkIsSpecified()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset(
+        var testInstance = TestAssetsManager.CopyTestAsset(
                 "NETFrameworkReferenceNETStandard20",
                 testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
             .WithSource();
@@ -35,7 +35,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
     [Fact]
     public void ItFailsInNonInteractiveMode_WhenMultiTFMProjectHasNoFrameworkSpecified()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset(
+        var testInstance = TestAssetsManager.CopyTestAsset(
                 "NETFrameworkReferenceNETStandard20",
                 testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
             .WithSource();
@@ -54,7 +54,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
     [Fact]
     public void ItRunsWithShortFormFrameworkOption()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset(
+        var testInstance = TestAssetsManager.CopyTestAsset(
                 "NETFrameworkReferenceNETStandard20",
                 testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
             .WithSource();
@@ -71,7 +71,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
     [Fact]
     public void ItRunsWithFrameworkPropertySyntax()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset(
+        var testInstance = TestAssetsManager.CopyTestAsset(
                 "NETFrameworkReferenceNETStandard20",
                 testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
             .WithSource();
@@ -88,7 +88,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
     [Fact]
     public void ItShowsErrorMessageWithAvailableFrameworks_InNonInteractiveMode()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset(
+        var testInstance = TestAssetsManager.CopyTestAsset(
                 "NETFrameworkReferenceNETStandard20",
                 testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
             .WithSource();
@@ -107,7 +107,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
     [Fact]
     public void ItFailsForMultiTargetedAppWithoutFramework_InNonInteractiveMode()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
             .WithSource();
 
         var result = new DotnetCommand(Log, "run")
@@ -132,7 +132,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
             return;
         }
 
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
             .WithSource();
 
         new DotnetCommand(Log, "run")
@@ -145,7 +145,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
     [Fact]
     public void ItTreatsEmptyFrameworkSpecificationAsNotSpecified()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset(
+        var testInstance = TestAssetsManager.CopyTestAsset(
                 "NETFrameworkReferenceNETStandard20",
                 testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
             .WithSource();
@@ -164,7 +164,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
     [Fact]
     public void ItTreatsWhitespaceFrameworkSpecificationAsNotSpecified()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset(
+        var testInstance = TestAssetsManager.CopyTestAsset(
                 "NETFrameworkReferenceNETStandard20",
                 testAssetSubdirectory: TestAssetSubdirectories.DesktopTestProjects)
             .WithSource();
@@ -184,7 +184,7 @@ public partial class GivenDotnetRunSelectsTargetFramework : SdkTest
     public void ItAutoSelectsSingleFrameworkInTargetFrameworksProperty()
     {
         // Reuse the DotnetRunMultiTarget project and modify it to have only one framework
-        var testInstance = _testAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunMultiTarget")
             .WithSource();
 
         // Read the existing .csproj file

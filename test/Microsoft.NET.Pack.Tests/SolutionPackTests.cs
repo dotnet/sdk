@@ -24,7 +24,7 @@ namespace Microsoft.NET.Pack.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
 
-            var testAsset = _testAssetsManager.CreateTestProjects(new[] { testProject1, testProject2 });
+            var testAsset = TestAssetsManager.CreateTestProjects(new[] { testProject1, testProject2 });
 
             string packageOutputPath = Path.Combine(testAsset.Path, "output", "packages");
 

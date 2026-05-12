@@ -53,14 +53,14 @@ Commands:
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {
             return new TestSetup(
-                _testAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod + nameof(GivenDotnetAddReference), identifier: identifier + callingMethod, testAssetSubdirectory: TestSetup.TestGroup)
+                TestAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod + nameof(GivenDotnetAddReference), identifier: identifier + callingMethod, testAssetSubdirectory: TestSetup.TestGroup)
                     .WithSource()
                     .Path);
         }
 
         private ProjDir NewDir([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")
         {
-            return new ProjDir(_testAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: identifier).Path);
+            return new ProjDir(TestAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: identifier).Path);
         }
 
         private ProjDir NewLib(string? dir = null, [System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")
@@ -194,7 +194,7 @@ Commands:
         [Fact]
         public void ItFailsToAddInvalidRefWithProperlyFormattedError()
         {
-            var invalidProjDirectory = Path.Combine(_testAssetsManager.CreateTestDirectory().Path, "InvalidProj");
+            var invalidProjDirectory = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "InvalidProj");
             var invalidProjPath = Path.Combine(invalidProjDirectory, "InvalidProj.csproj");
             Directory.CreateDirectory(invalidProjDirectory);
             File.WriteAllText(invalidProjPath, $@"<Project Sdk=""Microsoft.NET.Sdk"">
@@ -710,6 +710,22 @@ Commands:
 
             result.Should().Pass();
             result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj"));
+            result.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void WhenNoProjectIsSpecifiedItUsesCurrentDirectory()
+        {
+            var setup = Setup();
+            var lib = NewLibWithFrameworks(dir: setup.TestRoot);
+
+            // Reproduces: dotnet reference add ../ValidRef/ValidRef.csproj
+            // where the current directory contains a project (no --project argument needed)
+            var result = new DotnetCommand(Log, "reference", "add")
+                    .WithWorkingDirectory(lib.Path)
+                    .Execute(setup.ValidRefCsprojPath);
+
+            result.Should().Pass();
             result.StdErr.Should().BeEmpty();
         }
 

@@ -1,0 +1,89 @@
+<!-- MSBuild processing -->
+<!-- Values -->
+<ValueA>VAL_A</ValueA>
+<ValueB>VAL_B</ValueB>
+<ValueC>VAL_C</ValueC>
+<ValueD>VAL_D</ValueD>
+
+<!--'$(A)' in condition -->
+<TargetFramework Condition="'$(A)'">A-true</TargetFramework>
+<TargetFramework Condition="'$(B)'">B-true</TargetFramework>
+<TargetFramework Condition="'$(C)'">C-true</TargetFramework>
+<TargetFramework Condition="'$(D)'">D-true</TargetFramework>
+<!--'$(A)' == true in condition -->
+<TargetFramework Condition="'$(A)' == true">A-true</TargetFramework>
+<TargetFramework Condition="'$(B)' == true">B-true</TargetFramework>
+<TargetFramework Condition="'$(C)' == true">C-true</TargetFramework>
+<TargetFramework Condition="'$(D)' == true">D-true</TargetFramework>
+<!--'$(A)' == 'true' in condition -->
+<TargetFramework Condition="'$(A)' == 'true'">A-true</TargetFramework>
+<TargetFramework Condition="'$(B)' == 'true'">B-true</TargetFramework>
+<TargetFramework Condition="'$(C)' == 'true'">C-true</TargetFramework>
+<TargetFramework Condition="'$(D)' == 'true'">D-true</TargetFramework>
+
+<!-- if (A) syntax-->
+<!--#if (A) -->
+  <TargetFramework>A-true</TargetFramework>
+<!--#else-->
+  <TargetFramework>A-false</TargetFramework>  
+<!--#endif-->
+<!--#if (B) -->
+<TargetFramework>B-true</TargetFramework>
+<!--#else-->
+<TargetFramework>B-false</TargetFramework>
+<!--#endif-->
+<!--#if (C) -->
+<TargetFramework>C-true</TargetFramework>
+<!--#else-->
+<TargetFramework>C-false</TargetFramework>
+<!--#endif-->
+<!--#if (D) -->
+<TargetFramework>D-true</TargetFramework>
+<!--#else-->
+<TargetFramework>D-false</TargetFramework>
+<!--#endif-->
+
+<!-- if (A == true) syntax-->
+<!--#if (A == true) -->
+<TargetFramework>A-true</TargetFramework>
+<!--#else-->
+<TargetFramework>A-false</TargetFramework>
+<!--#endif-->
+<!--#if (B == true) -->
+<TargetFramework>B-true</TargetFramework>
+<!--#else-->
+<TargetFramework>B-false</TargetFramework>
+<!--#endif-->
+<!--#if (C == true) -->
+<TargetFramework>C-true</TargetFramework>
+<!--#else-->
+<TargetFramework>C-false</TargetFramework>
+<!--#endif-->
+<!--#if (D == true) -->
+<TargetFramework>D-true</TargetFramework>
+<!--#else-->
+<TargetFramework>D-false</TargetFramework>
+<!--#endif-->
+
+
+<!-- if (A == "true") syntax-->
+<!--#if (A == "true") -->
+<TargetFramework>A-true</TargetFramework>
+<!--#else-->
+<TargetFramework>A-false</TargetFramework>
+<!--#endif-->
+<!--#if (B == "true") -->
+<TargetFramework>B-true</TargetFramework>
+<!--#else-->
+<TargetFramework>B-false</TargetFramework>
+<!--#endif-->
+<!--#if (C == "true") -->
+<TargetFramework>C-true</TargetFramework>
+<!--#else-->
+<TargetFramework>C-false</TargetFramework>
+<!--#endif-->
+<!--#if (D == "true") -->
+<TargetFramework>D-true</TargetFramework>
+<!--#else-->
+<TargetFramework>D-false</TargetFramework>
+<!--#endif-->
