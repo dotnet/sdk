@@ -112,7 +112,7 @@ internal static class BlobFeedUrlBuilder
         for (int i = 0; i < hash.Length; i++)
         {
             char c = hash[i];
-            bool isHex = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+            bool isHex = c is (>= '0' and <= '9') or (>= 'a' and <= 'f') or (>= 'A' and <= 'F');
             if (!isHex)
             {
                 throw new FormatException("SHA-512 hash file contains non-hex characters.");
