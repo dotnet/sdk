@@ -73,6 +73,8 @@ internal sealed record VerificationFailure(FailureCode Code, string Reason);
 /// <summary>
 /// Aggregated verification result. The verifier collects all failures rather than stopping at
 /// the first one so callers can surface every spec violation in a single error message.
+/// Mutation is restricted to the verifier itself — once <see cref="SignatureVerifier.Verify"/>
+/// returns, the result is effectively read-only to callers.
 /// </summary>
 internal sealed class VerificationResult
 {
@@ -81,7 +83,7 @@ internal sealed class VerificationResult
     public IReadOnlyList<VerificationFailure> Failures => _failures;
     public bool IsValid => _failures.Count == 0;
 
-    public void Add(FailureCode code, string reason) => _failures.Add(new VerificationFailure(code, reason));
+    internal void Add(FailureCode code, string reason) => _failures.Add(new VerificationFailure(code, reason));
 
-    public void AddSkip(string reason) => _failures.Add(new VerificationFailure(FailureCode.CheckSkipped, reason));
+    internal void AddSkip(string reason) => _failures.Add(new VerificationFailure(FailureCode.CheckSkipped, reason));
 }

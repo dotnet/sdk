@@ -173,21 +173,39 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
 
     /// <summary>
     /// Reads the <c>signature.file</c> field from a JSON byte array. Returns <see langword="null"/>
-    /// if the <c>signature</c> property or the <c>file</c> sub-property is absent.
+    /// if the <c>signature</c> property or the <c>file</c> sub-property is absent, empty,
+    /// whitespace, or contains characters that would make it more than a bare filename
+    /// (path separators, scheme prefix). Defense in depth: a malicious mirror could otherwise
+    /// point us at <c>"../../etc/passwd"</c> or <c>"https://attacker/x.p7s"</c>; we reject
+    /// those upstream rather than relying on signature verification to catch the misdirected
+    /// fetch later.
     /// </summary>
     internal static string? ParseSignatureFileField(byte[] jsonBytes)
     {
         using var doc = JsonDocument.Parse(jsonBytes);
         if (doc.RootElement.ValueKind != JsonValueKind.Object) return null;
 
-        if (doc.RootElement.TryGetProperty("signature", out JsonElement sig) &&
-            sig.ValueKind == JsonValueKind.Object &&
-            sig.TryGetProperty("file", out JsonElement file) &&
-            file.ValueKind == JsonValueKind.String)
+        if (!doc.RootElement.TryGetProperty("signature", out JsonElement sig) ||
+            sig.ValueKind != JsonValueKind.Object ||
+            !sig.TryGetProperty("file", out JsonElement fileEl) ||
+            fileEl.ValueKind != JsonValueKind.String)
         {
-            return file.GetString();
+            return null;
         }
-        return null;
+
+        string? file = fileEl.GetString();
+        if (string.IsNullOrWhiteSpace(file)) return null;
+
+        // Bare filename only — no path traversal, no absolute URL, no directory navigation.
+        // The signing protocol publishes filenames like "releases-index.json.<timestamp>.p7s".
+        if (file.Contains('/', StringComparison.Ordinal) ||
+            file.Contains('\\', StringComparison.Ordinal) ||
+            file.Contains(':', StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return file;
     }
 
     /// <summary>

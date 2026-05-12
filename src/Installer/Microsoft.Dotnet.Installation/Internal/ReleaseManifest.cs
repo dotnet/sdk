@@ -23,6 +23,11 @@ internal class ReleaseManifest
 
     // Lazy<T>'s default mode is ExecutionAndPublication, so the orchestrator's parallel
     // PrepareConcurrent calls cannot double-instantiate the loader.
+    //
+    // We don't dispose the loader: ReleaseManifest's lifetime is the process (held via
+    // ChannelVersionResolver -> InstallCommand) and propagating IDisposable up the chain
+    // for a sub-megabyte temp directory cleanup is invasive. The OS temp cleanup picks
+    // it up on next reboot; for hot paths that's good enough.
     private readonly Lazy<SignedReleaseManifestLoader> _loader;
 
     public ReleaseManifest()

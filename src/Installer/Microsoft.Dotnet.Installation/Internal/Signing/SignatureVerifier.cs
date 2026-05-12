@@ -68,6 +68,12 @@ internal static class SignatureVerifier
     private static readonly TimeSpan SigningTimeTolerance = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan RevocationRetrievalTimeout = TimeSpan.FromSeconds(30);
 
+    // The OS root store (StoreName.Root for both CurrentUser and LocalMachine) is read into
+    // every X509Chain we build. Opening the OS store on each call costs 50–200ms on Windows;
+    // we build two chains per Verify (primary + TSA) so that's 4 store opens per call.
+    // Cache the union once per process — chain build is read-only.
+    private static readonly Lazy<X509Certificate2Collection> s_osRoots = new(LoadOsRoots, LazyThreadSafetyMode.ExecutionAndPublication);
+
     /// <summary>
     /// Verifies <paramref name="content"/> against the detached CMS signature in <paramref name="signature"/>.
     /// Collects every spec violation it can detect; the result is valid only when zero failures are recorded.
@@ -500,7 +506,7 @@ internal static class SignatureVerifier
         chain.ChainPolicy.ExtraStore.AddRange(extraStore);
 
         chain.ChainPolicy.CustomTrustStore.AddRange(customRoots);
-        AddOsRootsTo(chain.ChainPolicy.CustomTrustStore);
+        chain.ChainPolicy.CustomTrustStore.AddRange(s_osRoots.Value);
 
         bool ok = chain.Build(leaf);
         if (ok && chain.ChainStatus.Length == 0)
@@ -530,8 +536,9 @@ internal static class SignatureVerifier
         result.Add(genericCode, $"{role} chain build failed: {DescribeChainStatus(chain)}");
     }
 
-    private static void AddOsRootsTo(X509Certificate2Collection store)
+    private static X509Certificate2Collection LoadOsRoots()
     {
+        var store = new X509Certificate2Collection();
         foreach (StoreLocation loc in new[] { StoreLocation.CurrentUser, StoreLocation.LocalMachine })
         {
             try
@@ -545,6 +552,7 @@ internal static class SignatureVerifier
                 // Store may be unavailable on some platforms (e.g. LocalMachine on Linux). Skip.
             }
         }
+        return store;
     }
 
     private static string DescribeChainStatus(X509Chain chain)

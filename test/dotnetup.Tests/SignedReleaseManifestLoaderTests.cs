@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.Dotnet.Installation.Internal.Signing;
@@ -24,6 +25,18 @@ public class SignedReleaseManifestLoaderTests
         new HttpClient(), // never sent on; loader constructor doesn't do IO besides mkdtemp
         new SignatureVerificationOptions(new X509Certificate2Collection(), new X509Certificate2Collection()),
         new Uri(indexUrl));
+
+    /// <summary>
+    /// Builds a JSON byte array with the given <paramref name="signatureFile"/> as the value
+    /// of <c>signature.file</c>, properly JSON-escaping the value so test data with backslashes
+    /// or quotes doesn't corrupt the JSON document itself.
+    /// </summary>
+    private static byte[] BuildJsonWithSignatureFile(string signatureFile)
+    {
+        // JsonSerializer correctly escapes the string contents.
+        string escaped = JsonSerializer.Serialize(signatureFile);
+        return Encoding.UTF8.GetBytes($$"""{ "signature": { "file": {{escaped}} } }""");
+    }
     // ---------------- DeriveSiblingUrl ----------------
 
     [Theory]
@@ -101,6 +114,35 @@ public class SignedReleaseManifestLoaderTests
     {
         byte[] json = Encoding.UTF8.GetBytes("[]");
         SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("\t")]
+    public void ParseSignatureFileField_EmptyOrWhitespaceFile_ReturnsNull(string fileValue)
+    {
+        // An empty signature.file would derive a sibling URL ending in '/', which would
+        // fetch a directory listing or the index page. Reject upstream.
+        SignedReleaseManifestLoader.ParseSignatureFileField(BuildJsonWithSignatureFile(fileValue))
+            .Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("../etc/passwd")]                         // relative path traversal
+    [InlineData("../../sensitive.p7s")]
+    [InlineData("subdir/sig.p7s")]                        // forward-slash navigation
+    [InlineData("subdir\\sig.p7s")]                       // back-slash navigation (Windows-style)
+    [InlineData("https://attacker.com/sig.p7s")]          // absolute URL with scheme
+    [InlineData("file:///etc/passwd")]                    // file: scheme
+    [InlineData("//attacker.com/sig.p7s")]                // protocol-relative URL
+    public void ParseSignatureFileField_PathTraversalOrSchemePrefix_ReturnsNull(string fileValue)
+    {
+        // signature.file MUST be a bare filename per the signing protocol's naming convention
+        // (basename.<timestamp>.p7s). Anything that looks like a path or URL is rejected so a
+        // malicious mirror cannot misdirect our GET.
+        SignedReleaseManifestLoader.ParseSignatureFileField(BuildJsonWithSignatureFile(fileValue))
+            .Should().BeNull();
     }
 
     // ---------------- GetReleaseUriForConfiguredHost (private-mirror rebase) ----------------
