@@ -15,11 +15,28 @@ internal static class TelemetryCommonProperties
     private static readonly Lazy<bool> s_isCIEnvironment = new(DetectCIEnvironment);
     private static readonly Lazy<string?> s_llmEnvironment = new(DetectLLMEnvironment);
     private static readonly Lazy<bool> s_isDevBuild = new(DetectDevBuild);
+    private static readonly Lazy<string> s_dockerContainer = new(DetectDockerContainer);
+
+    /// <summary>
+    /// True when this process is running in a CI environment, as detected by
+    /// <see cref="CIEnvironmentDetectorForTelemetry"/>. Surfaces the existing
+    /// <see cref="s_isCIEnvironment"/> lazy so callers (e.g.
+    /// <see cref="DotnetupTelemetry.IsOneAndDoneEnvironment"/>) can decide
+    /// CI-specific shutdown behavior without re-running the detector.
+    /// </summary>
+    internal static bool IsCIEnvironment => s_isCIEnvironment.Value;
 
     /// <summary>
     /// Environment variable to mark telemetry as coming from a dev build.
     /// </summary>
     private const string DevBuildEnvVar = "DOTNETUP_DEV_BUILD";
+
+    /// <summary>
+    /// Environment variable used by the .NET CLI to tag the user's telemetry
+    /// profile (mirrored here so dotnetup runs are correlatable with SDK
+    /// runs in the same environment).
+    /// </summary>
+    private const string TelemetryProfileEnvVar = "DOTNET_CLI_TELEMETRY_PROFILE";
 
     /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.
@@ -30,13 +47,27 @@ internal static class TelemetryCommonProperties
         {
             ["session.id"] = sessionId,
             ["device.id"] = s_deviceId.Value,
+            ["os.type"] = GetOSType(),
             ["os.platform"] = RuntimeInformation.OSDescription,
             ["os.version"] = Environment.OSVersion.VersionString,
+            ["os.arch"] = RuntimeInformation.OSArchitecture.ToString(),
+            ["kernel.version"] = GetKernelVersion(),
             ["process.arch"] = RuntimeInformation.ProcessArchitecture.ToString(),
+            ["runtime.id"] = RuntimeInformation.RuntimeIdentifier,
+            ["output.redirected"] = Console.IsOutputRedirected,
+            ["docker.container"] = s_dockerContainer.Value,
             ["ci.detected"] = s_isCIEnvironment.Value,
             ["dotnetup.version"] = GetVersion(),
             ["dev.build"] = s_isDevBuild.Value
         };
+
+        // Mirror the .NET CLI's DOTNET_CLI_TELEMETRY_PROFILE (same env var
+        // the SDK's TelemetryCommonProperties stamps as "Telemetry Profile").
+        var telemetryProfile = Environment.GetEnvironmentVariable(TelemetryProfileEnvVar);
+        if (!string.IsNullOrEmpty(telemetryProfile))
+        {
+            attributes["telemetry.profile"] = telemetryProfile;
+        }
 
         // Add LLM environment if detected (same detection as .NET SDK)
         var llmEnv = s_llmEnvironment.Value;
@@ -85,6 +116,30 @@ internal static class TelemetryCommonProperties
         }
     }
 
+    /// <summary>
+    /// Returns a simplified OS family name: "Windows", "macOS", "Linux", or "Unknown".
+    /// Uses RuntimeInformation.IsOSPlatform() so no string-parsing of distro names is needed.
+    /// </summary>
+    private static string GetOSType()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return "Windows";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            return "macOS";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return "Linux";
+        }
+
+        return "Unknown";
+    }
+
     private static bool DetectCIEnvironment()
     {
         try
@@ -112,6 +167,24 @@ internal static class TelemetryCommonProperties
             return null;
         }
     }
+
+    private static string DetectDockerContainer()
+    {
+        try
+        {
+            var detector = new DockerContainerDetectorForTelemetry();
+            return detector.IsDockerContainer().ToString("G");
+        }
+        catch
+        {
+            return IsDockerContainer.Unknown.ToString("G");
+        }
+    }
+
+    /// <summary>
+    /// Returns the OS kernel version string. Same as the SDK's "Kernel Version" property.
+    /// </summary>
+    private static string GetKernelVersion() => RuntimeInformation.OSDescription;
 
     private static bool DetectDevBuild()
     {

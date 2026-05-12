@@ -3,8 +3,8 @@
 
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 

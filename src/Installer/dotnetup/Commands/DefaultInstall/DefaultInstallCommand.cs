@@ -24,21 +24,27 @@ internal class DefaultInstallCommand : CommandBase
 
     protected override string GetCommandName() => "defaultinstall";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
-        return _installType.ToLowerInvariant() switch
+        switch (_installType.ToLowerInvariant())
         {
-            DefaultInstallCommandParser.UserInstallType => SetUserInstallRoot(),
-            DefaultInstallCommandParser.SystemInstallType => SetSystemInstallRoot(),
-            _ => throw new InvalidOperationException($"Unknown install type: {_installType}")
-        };
+            case DefaultInstallCommandParser.UserInstallType:
+                SetUserInstallRoot();
+                break;
+            case DefaultInstallCommandParser.SystemInstallType:
+                SetSystemInstallRoot();
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown install type: {_installType}");
+        }
     }
 
-    private int SetUserInstallRoot()
+    private void SetUserInstallRoot()
     {
         if (!OperatingSystem.IsWindows())
         {
-            return SetUnixShellProfile(dotnetupOnly: false);
+            SetUnixShellProfile(dotnetupOnly: false);
+            return;
         }
 
         var changes = _installRootManager.GetUserInstallRootChanges();
@@ -46,7 +52,7 @@ internal class DefaultInstallCommand : CommandBase
         if (!changes.NeedsChange())
         {
             Console.WriteLine($"User install root already configured for {changes.UserDotnetPath}");
-            return 0;
+            return;
         }
 
         Console.WriteLine($"Setting up user install root at: {changes.UserDotnetPath}");
@@ -59,18 +65,20 @@ internal class DefaultInstallCommand : CommandBase
         if (!succeeded)
         {
             // UAC prompt was cancelled
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PermissionDenied,
+                "User cancelled the elevation prompt while configuring the user install root.");
         }
 
         Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
-        return 0;
     }
 
-    private int SetSystemInstallRoot()
+    private void SetSystemInstallRoot()
     {
         if (!OperatingSystem.IsWindows())
         {
-            return SetUnixShellProfile(dotnetupOnly: true);
+            SetUnixShellProfile(dotnetupOnly: true);
+            return;
         }
 
         var changes = _installRootManager.GetAdminInstallRootChanges();
@@ -78,7 +86,7 @@ internal class DefaultInstallCommand : CommandBase
         if (!changes.NeedsChange())
         {
             Console.WriteLine("System install root already configured.");
-            return 0;
+            return;
         }
 
         bool succeeded = InstallRootManager.ApplyAdminInstallRoot(
@@ -89,14 +97,15 @@ internal class DefaultInstallCommand : CommandBase
         if (!succeeded)
         {
             // Elevation was cancelled
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PermissionDenied,
+                "User cancelled the elevation prompt while configuring the system install root.");
         }
 
         Console.WriteLine("Succeeded. NOTE: You may need to restart your terminal or application for the changes to take effect.");
-        return 0;
     }
 
-    private int SetUnixShellProfile(bool dotnetupOnly, string? dotnetInstallPath = null)
+    private void SetUnixShellProfile(bool dotnetupOnly, string? dotnetInstallPath = null)
     {
         var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
         var shellProvider = ShellDetection.GetCurrentShellProviderOrThrow(_shellProvider);
@@ -132,8 +141,6 @@ internal class DefaultInstallCommand : CommandBase
             Console.WriteLine("To start using .NET in this terminal, run:");
             Console.WriteLine($"  {shellProvider.GenerateActivationCommand(dotnetupPath, dotnetInstallPath: profileDotnetInstallPath)}");
         }
-
-        return 0;
     }
 
     private string? GetInstallPathToPassToProfile(string? dotnetInstallPath)

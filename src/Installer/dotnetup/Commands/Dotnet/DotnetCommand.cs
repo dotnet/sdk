@@ -29,19 +29,33 @@ internal class DotnetCommand : CommandBase
 
     protected override string GetCommandName() => "dotnet";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         string dotnetPath = ResolveDotnetPath();
         string dotnetExe = GetDotnetExecutable(dotnetPath);
 
         if (!File.Exists(dotnetExe))
         {
-            Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Strings.DotnetCommandDotnetNotFound, dotnetExe));
-            Console.Error.WriteLine(Strings.DotnetCommandInstallFirst);
-            return 1;
+            // CommandBase.Execute prints the exception Message to stderr;
+            // include both "not found at" and the install hint in a single
+            // string so the user sees one error block (not two writes from
+            // here plus a third from CommandBase).
+            var message = string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.DotnetCommandDotnetNotFound,
+                dotnetExe) + Environment.NewLine + Strings.DotnetCommandInstallFirst;
+            // User-level error: they invoked `dotnetup dotnet ...` before installing
+            // a .NET SDK/runtime. Tag for telemetry so it doesn't show as an unknown
+            // product failure.
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ContextResolutionFailed,
+                message);
         }
 
-        return RunDotnet(dotnetExe, dotnetPath, _forwardedArgs);
+        // Forward the child process's exit code as our own so callers see
+        // the build/test/run result. SetExitCode is the documented escape
+        // hatch for this case (CommandBase otherwise defaults success to 0).
+        SetExitCode(RunDotnet(dotnetExe, dotnetPath, _forwardedArgs));
     }
 
     /// <summary>
@@ -100,8 +114,12 @@ internal class DotnetCommand : CommandBase
         using var process = Process.Start(startInfo);
         if (process is null)
         {
-            Console.Error.WriteLine(Strings.DotnetCommandDotnetStartFailed);
-            return 1;
+            // Process.Start returning null is a system-level failure we should be
+            // able to act on; classify as a product error via the default mapping.
+            // CommandBase prints the exception Message — don't double-write here.
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.Unknown,
+                Strings.DotnetCommandDotnetStartFailed);
         }
 
         process.WaitForExit();

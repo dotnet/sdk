@@ -26,7 +26,7 @@ internal class ListCommand : CommandBase
 
     protected override string GetCommandName() => "list";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         var listData = InstallationLister.GetListData(verify: !_skipVerification, manifestPath: _manifestPath, installPath: _installPath);
 
@@ -38,8 +38,6 @@ internal class ListCommand : CommandBase
         {
             InstallationLister.WriteHumanReadable(Console.Out, listData);
         }
-
-        return 0;
     }
 }
 

@@ -29,7 +29,7 @@ internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result
 
     protected override string GetCommandName() => "runtime/install";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         // Parse and validate all specs upfront before any downloads begin.
         // If none provided, default to a single core runtime with no channel.
@@ -39,7 +39,6 @@ internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result
 
         var workflow = new InstallWorkflow(this);
         workflow.Execute(specs);
-        return 0;
     }
 
     private static void ValidateComponentForPlatform(InstallComponent component)

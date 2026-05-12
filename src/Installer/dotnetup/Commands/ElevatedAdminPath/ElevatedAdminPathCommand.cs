@@ -25,35 +25,43 @@ internal class ElevatedAdminPathCommand : CommandBase
 
     protected override string GetCommandName() => "elevatedadminpath";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         // This command only works on Windows
         if (!OperatingSystem.IsWindows())
         {
-            Log("Error: The elevatedadminpath command is only supported on Windows.");
-            return 1;
+            const string message = "The elevatedadminpath command is only supported on Windows.";
+            Log("Error: " + message);
+            throw new DotnetInstallException(DotnetInstallErrorCode.PlatformNotSupported, message);
         }
 
         // Check if running with elevated privileges
         if (!Environment.IsPrivilegedProcess)
         {
-            Log("Error: This operation requires administrator privileges. Please run from an elevated command prompt.");
-            return 1;
+            const string message = "This operation requires administrator privileges. Please run from an elevated command prompt.";
+            Log("Error: " + message);
+            throw new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, message);
         }
 
         try
         {
-            return _operation.ToLowerInvariant() switch
+            // Forward the helper's 0/1 exit code so the parent (which spawned
+            // this elevated child process) reads success/failure correctly.
+            // SetExitCode is the documented escape hatch for forwarding cases.
+            SetExitCode(_operation.ToLowerInvariant() switch
             {
                 "removedotnet" => RemoveDotnet(),
                 "adddotnet" => AddDotnet(),
                 _ => throw new InvalidOperationException($"Unknown operation: {_operation}")
-            };
+            });
         }
         catch (Exception ex)
         {
-            Log($"Error: {ex.ToString()}");
-            return 1;
+            // This command runs in an elevated child process; the parent reads
+            // diagnostics from the shared output file, so we must Log before
+            // letting the exception bubble up to CommandBase for telemetry.
+            Log($"Error: {ex}");
+            throw;
         }
     }
 

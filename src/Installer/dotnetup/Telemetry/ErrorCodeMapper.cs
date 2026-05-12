@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Json.Nodes;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -35,13 +36,26 @@ public enum ErrorCategory
 /// <param name="HResult">Win32 HResult if applicable.</param>
 /// <param name="Details">Additional context (no PII - sanitized values only).</param>
 /// <param name="StackTrace">Full stack trace including inner exceptions.</param>
+/// <param name="AdditionalFailures">
+/// Classified follow-on failures attached to the exception via
+/// <see cref="ExceptionExtensions.AttachAdditionalFailure"/> by best-effort
+/// batch loops. Null/empty when the exception was a single failure.
+/// Each entry is its own <see cref="ExceptionErrorInfo"/> classified by
+/// <see cref="ErrorCodeMapper.GetErrorInfo"/> recursively.
+/// </param>
+/// <param name="TruncatedAdditionalFailureCount">
+/// Number of additional failures that were dropped because the on-exception
+/// cap was hit. Zero when no overflow occurred.
+/// </param>
 public sealed record ExceptionErrorInfo(
     string ErrorType,
     ErrorCategory Category = ErrorCategory.Product,
     int? StatusCode = null,
     int? HResult = null,
     string? Details = null,
-    string? StackTrace = null);
+    string? StackTrace = null,
+    IReadOnlyList<ExceptionErrorInfo>? AdditionalFailures = null,
+    int TruncatedAdditionalFailureCount = 0);
 
 /// <summary>
 /// Maps exceptions to error info for telemetry.
@@ -93,7 +107,69 @@ public static class ErrorCodeMapper
     }
 
     /// <summary>
-    /// Extracts error info from an exception.
+    /// Serializes <see cref="ExceptionErrorInfo.AdditionalFailures"/> (and
+    /// the truncated counter) into the single <c>error.additional_failures</c>
+    /// tag on <paramref name="activity"/>. No-op when the list is null/empty.
+    /// </summary>
+    /// <remarks>
+    /// Call this once on the failing activity (the command row), separate
+    /// from <see cref="ApplyErrorTags"/> which runs on each ancestor in the
+    /// chain. Additional failures are sibling-level (a batch loop kept
+    /// going past the primary failure) and belong on the row that reports
+    /// the batch — duplicating them onto the root would just inflate
+    /// payload size without adding signal.
+    ///
+    /// Format: a JSON array of <c>{"type":"…","category":"…"}</c> entries.
+    /// When more than <see cref="ExceptionExtensions.MaxAdditionalFailures"/>
+    /// failures were attached, a trailing
+    /// <c>{"truncated":true,"remaining":N}</c> entry records the overflow.
+    /// </remarks>
+    public static void ApplyAdditionalFailureTags(Activity? activity, ExceptionErrorInfo errorInfo)
+    {
+        if (activity is null)
+        {
+            return;
+        }
+
+        var failures = errorInfo.AdditionalFailures;
+        if ((failures is null || failures.Count == 0) && errorInfo.TruncatedAdditionalFailureCount == 0)
+        {
+            return;
+        }
+
+        // Build via JsonArray/JsonObject so escaping and primitive
+        // formatting are handled by the framework. AOT-safe — we only
+        // pass JsonNode values (the Add(JsonNode?) overload), avoiding
+        // the generic Add<T> that requires runtime code generation.
+        var array = new JsonArray();
+        if (failures is not null)
+        {
+            foreach (var f in failures)
+            {
+                array.Add((JsonNode)new JsonObject
+                {
+                    ["type"] = f.ErrorType,
+                    ["category"] = f.Category.ToString().ToLowerInvariant(),
+                });
+            }
+        }
+        if (errorInfo.TruncatedAdditionalFailureCount > 0)
+        {
+            array.Add((JsonNode)new JsonObject
+            {
+                ["truncated"] = true,
+                ["remaining"] = errorInfo.TruncatedAdditionalFailureCount,
+            });
+        }
+
+        activity.SetTag("error.additional_failures", array.ToJsonString());
+    }
+
+    /// <summary>
+    /// Extracts error info from an exception. Recursively classifies any
+    /// follow-on failures attached via
+    /// <see cref="ExceptionExtensions.AttachAdditionalFailure"/> into the
+    /// returned <see cref="ExceptionErrorInfo.AdditionalFailures"/>.
     /// </summary>
     /// <param name="ex">The exception to analyze.</param>
     /// <returns>Error info with type name and contextual details.</returns>
@@ -112,8 +188,30 @@ public static class ErrorCodeMapper
         }
 
         var fullStackTrace = GetFullStackTrace(ex);
+        var primary = ClassifyExceptionType(ex, fullStackTrace);
 
-        return ClassifyExceptionType(ex, fullStackTrace);
+        // Stitch any follow-on failures (attached via
+        // ExceptionExtensions.AttachAdditionalFailure) onto the primary
+        // info so a single GetErrorInfo() call exposes the whole picture.
+        // Recurse so nested attachments are also classified, but the
+        // attachers in this codebase only attach leaf exceptions.
+        var attached = ex.GetAdditionalFailures();
+        if (attached.Count == 0)
+        {
+            return primary;
+        }
+
+        var classified = new List<ExceptionErrorInfo>(attached.Count);
+        foreach (var inner in attached)
+        {
+            classified.Add(GetErrorInfo(inner));
+        }
+
+        return primary with
+        {
+            AdditionalFailures = classified,
+            TruncatedAdditionalFailureCount = ex.GetTruncatedAdditionalFailureCount(),
+        };
     }
 
     private static ExceptionErrorInfo ClassifyExceptionType(Exception ex, string? fullStackTrace)
@@ -216,7 +314,12 @@ public static class ErrorCodeMapper
     {
         var errorCode = installEx.ErrorCode;
         var baseCategory = ErrorCategoryClassifier.ClassifyInstallError(errorCode);
-        var details = installEx.Version is not null ? VersionSanitizer.Sanitize(installEx.Version) : null;
+        // Use the sanitized version when available; otherwise fall back to the
+        // error code name so non-version errors (e.g. LocalManifestCorrupted)
+        // still populate error.details in telemetry.
+        var details = installEx.Version is not null
+            ? VersionSanitizer.Sanitize(installEx.Version)
+            : errorCode.ToString();
         int? httpStatus = null;
 
         if (ErrorCategoryClassifier.IsNetworkRelatedErrorCode(errorCode) && installEx.InnerException is not null)

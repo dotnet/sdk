@@ -29,8 +29,7 @@ internal class UpdateWorkflow
     /// <param name="noProgress">Whether to suppress progress display.</param>
     /// <param name="updateGlobalJson">Whether to update global.json files after updating global.json-sourced SDK specs.</param>
     /// <param name="verbosity">The verbosity level for diagnostic messages during installation.</param>
-    /// <returns>Exit code (0 for success).</returns>
-    public int Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress, bool updateGlobalJson = false, Verbosity verbosity = Verbosity.Normal)
+    public void Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress, bool updateGlobalJson = false, Verbosity verbosity = Verbosity.Normal)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -38,49 +37,87 @@ internal class UpdateWorkflow
         if (rootsList.Count == 0)
         {
             AnsiConsole.MarkupLine(DotnetupTheme.Warning("No tracked dotnet installations found to update."));
-            return 0;
+            return;
         }
 
+        // Capture the first failure so we can rethrow it after best-effort processing
+        // of remaining specs. Rethrowing (rather than returning a non-zero exit code)
+        // gives CommandBase a real DotnetInstallException to feed into RecordException
+        // so error.type / error.category / error.details land on the telemetry row.
+        // Subsequent failures hang off the primary via AttachAdditionalFailure;
+        // GetAdditionalFailures().Count + 1 yields the total failure count without
+        // a parallel counter to keep in sync.
+        ExceptionDispatchInfo? firstFailure = null;
         bool anyUpdated = false;
-        List<DotnetInstallException> failures = [];
 
         foreach (var root in rootsList)
         {
-            bool rootUpdated = false;
-            var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
-
-            foreach (var spec in root.InstallSpecs.ToList())
-            {
-                if (componentFilter is not null && spec.Component != componentFilter.Value)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    bool updated = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson, verbosity);
-                    if (updated) { anyUpdated = true; rootUpdated = true; }
-                }
-                catch (DotnetInstallException ex)
-                {
-                    AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()}."));
-                    failures.Add(ex);
-                }
-            }
-
-            // Run garbage collection
-            if (rootUpdated)
-            {
-                GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot);
-            }
+            UpdateRoot(root, manifestPath, componentFilter, noProgress, updateGlobalJson, verbosity, ref anyUpdated, ref firstFailure);
         }
 
-        if (!anyUpdated)
+        if (!anyUpdated && firstFailure is null)
         {
             AnsiConsole.MarkupLine("Everything is up to date.");
         }
 
-        return failures.Count > 0 ? 1 : 0;
+        if (firstFailure is not null)
+        {
+            int totalFailures = firstFailure.SourceException.GetAdditionalFailures().Count + 1;
+            if (totalFailures > 1)
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"{totalFailures} update(s) failed; reporting the first failure."));
+            }
+            firstFailure.Throw();
+        }
+    }
+
+    private void UpdateRoot(
+        DotnetRootEntry root,
+        string? manifestPath,
+        InstallComponent? componentFilter,
+        bool noProgress,
+        bool updateGlobalJson,
+        Verbosity verbosity,
+        ref bool anyUpdated,
+        ref ExceptionDispatchInfo? firstFailure)
+    {
+        bool rootUpdated = false;
+        var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
+
+        foreach (var spec in root.InstallSpecs.ToList())
+        {
+            if (componentFilter is not null && spec.Component != componentFilter.Value)
+            {
+                continue;
+            }
+
+            try
+            {
+                bool updated = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson, verbosity);
+                if (updated) { anyUpdated = true; rootUpdated = true; }
+            }
+            catch (DotnetInstallException ex)
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"Failed to update {spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()}."));
+                if (firstFailure is null)
+                {
+                    firstFailure = ExceptionDispatchInfo.Capture(ex);
+                }
+                else
+                {
+                    // Attach this follow-on failure to the primary exception
+                    // so RecordException sees the whole batch when CommandBase
+                    // catches the rethrown firstFailure.
+                    firstFailure.SourceException.AttachAdditionalFailure(ex);
+                }
+            }
+        }
+
+        // Run garbage collection
+        if (rootUpdated)
+        {
+            GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot);
+        }
     }
 
     /// <summary>

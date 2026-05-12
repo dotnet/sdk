@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -95,7 +94,7 @@ internal class MuxerHandler
         // If no muxer was extracted (e.g., WindowsDesktop), nothing to do
         if (!MuxerWasExtracted)
         {
-            Activity.Current?.SetTag("muxer.action", "skipped_not_in_archive");
+            Metrics.Tag("muxer.action", "skipped_not_in_archive");
             return;
         }
 
@@ -103,7 +102,7 @@ internal class MuxerHandler
         // to its final location - nothing more to do.
         if (!_hadExistingMuxer)
         {
-            Activity.Current?.SetTag("muxer.action", "new_install");
+            Metrics.Tag("muxer.action", "new_install");
             return;
         }
 
@@ -132,9 +131,9 @@ internal class MuxerHandler
         if (!shouldUpdateMuxer)
         {
             TryDeleteTempMuxer();
-            Activity.Current?.SetTag("muxer.action", "kept_existing");
-            Activity.Current?.SetTag("muxer.existing_version", VersionSanitizer.Sanitize(_preExtractionHighestRuntimeVersion?.ToString()));
-            Activity.Current?.SetTag("muxer.archive_version", VersionSanitizer.Sanitize(postExtractionHighestRuntimeVersion?.ToString()));
+            Metrics.Tag("muxer.action", "kept_existing");
+            Metrics.Tag("muxer.existing_version", VersionSanitizer.Sanitize(_preExtractionHighestRuntimeVersion?.ToString()));
+            Metrics.Tag("muxer.archive_version", VersionSanitizer.Sanitize(postExtractionHighestRuntimeVersion?.ToString()));
             return;
         }
 
@@ -166,8 +165,8 @@ internal class MuxerHandler
                 Console.Error.WriteLine(
                     $"Warning: Could not update dotnet executable at '{_muxerTargetPath}' - {reason}. " +
                     $"The existing muxer will be retained. This may cause issues if the new runtime requires a newer muxer.");
-                Activity.Current?.SetTag("muxer.action", "blocked");
-                Activity.Current?.SetTag("muxer.blocked_reason", reason);
+                Metrics.Tag("muxer.action", "blocked");
+                Metrics.Tag("muxer.blocked_reason", reason);
                 return;
             }
         }
@@ -177,9 +176,9 @@ internal class MuxerHandler
             // Move the new muxer into place
             File.Move(_tempMuxerPath, _muxerTargetPath);
 
-            Activity.Current?.SetTag("muxer.action", "updated");
-            Activity.Current?.SetTag("muxer.previous_version", VersionSanitizer.Sanitize(_preExtractionHighestRuntimeVersion?.ToString()));
-            Activity.Current?.SetTag("muxer.new_version", VersionSanitizer.Sanitize(postVersion?.ToString()));
+            Metrics.Tag("muxer.action", "updated");
+            Metrics.Tag("muxer.previous_version", VersionSanitizer.Sanitize(_preExtractionHighestRuntimeVersion?.ToString()));
+            Metrics.Tag("muxer.new_version", VersionSanitizer.Sanitize(postVersion?.ToString()));
 
             // Clean up the backup
             if (_movedExistingMuxer && File.Exists(_existingMuxerBackupPath))

@@ -18,10 +18,10 @@ internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = fal
 
     protected override string GetCommandName() => "sdk/update";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
         var workflow = new UpdateWorkflow(new ChannelVersionResolver());
-        return workflow.Execute(
+        workflow.Execute(
             _manifestPath,
             _installPath,
             _updateAll ? null : InstallComponent.SDK,

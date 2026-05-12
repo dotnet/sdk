@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
 
@@ -20,8 +21,7 @@ internal class UninstallWorkflow
     /// <param name="versionOrChannel">The channel/version to uninstall.</param>
     /// <param name="sourceFilter">Which install source to filter by.</param>
     /// <param name="componentFilter">Which component to target.</param>
-    /// <returns>Exit code (0 for success).</returns>
-    public static int Execute(string? manifestPath, string? installPath, string versionOrChannel, InstallSource sourceFilter, InstallComponent componentFilter)
+    public static void Execute(string? manifestPath, string? installPath, string versionOrChannel, InstallSource sourceFilter, InstallComponent componentFilter)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -57,7 +57,9 @@ internal class UninstallWorkflow
         if (matchingSpecs.Count == 0)
         {
             ReportNoMatchingSpecs(allMatchingSpecs, matchingSpecs, sourceFilter, componentFilter, versionOrChannel, resolvedInstallPath);
-            return 1;
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.UninstallTargetNotFound,
+                $"No tracked installations matched component={componentFilter}, version='{versionOrChannel}', source={sourceFilter} at {resolvedInstallPath}.");
         }
 
         // Snapshot installations matching the target component/channel before GC
@@ -74,7 +76,6 @@ internal class UninstallWorkflow
         CheckAndReportStillPresent(manifestPath, installRoot, targetedInstallations);
 
         AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]Done.[/]");
-        return 0;
     }
 
     private static void ReportNoMatchingSpecs(

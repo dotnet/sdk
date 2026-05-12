@@ -15,9 +15,9 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result)
 
     protected override string GetCommandName() => "sdk/uninstall";
 
-    protected override int ExecuteCore()
+    protected override void ExecuteCore()
     {
-        return UninstallWorkflow.Execute(
+        UninstallWorkflow.Execute(
             _manifestPath,
             _installPath,
             _versionOrChannel,

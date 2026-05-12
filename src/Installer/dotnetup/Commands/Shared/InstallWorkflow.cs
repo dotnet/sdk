@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
@@ -195,11 +194,22 @@ internal class InstallWorkflow
 
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
         int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
+        _command.SetCommandTag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
 
         if (batchResult.Failures.Count > 0)
         {
-            ExceptionDispatchInfo.Capture(batchResult.Failures[0].Exception).Throw();
+            // Attach failures [1..] to the primary so RecordException stamps
+            // them as error.additional_failures on the command row when
+            // CommandBase catches the rethrown primary. Without this only the
+            // first failure was visible in telemetry even though all were
+            // printed to the user.
+            var primary = batchResult.Failures[0].Exception;
+            for (int i = 1; i < batchResult.Failures.Count; i++)
+            {
+                primary.AttachAdditionalFailure(batchResult.Failures[i].Exception);
+            }
+
+            ExceptionDispatchInfo.Capture(primary).Throw();
         }
     }
 
@@ -217,8 +227,8 @@ internal class InstallWorkflow
         // Block system-managed install paths — dotnetup should not install there
         if (InstallPathClassifier.IsAdminInstallPath(installPath))
         {
-            Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, "system");
-            Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, pathSource.ToString().ToLowerInvariant());
+            _command.SetCommandTag(TelemetryTagNames.InstallPathType, "system");
+            _command.SetCommandTag(TelemetryTagNames.InstallPathSource, pathSource.ToString().ToLowerInvariant());
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminPathBlocked,
                 $"The install path '{installPath}' is a system-managed .NET location. " +
@@ -253,7 +263,7 @@ internal class InstallWorkflow
         }
     }
 
-    private static void RecordInstallTelemetry(
+    private void RecordInstallTelemetry(
         InstallComponent component,
         string? requestedVersionOrChannel,
         string? explicitInstallPath,
@@ -263,26 +273,21 @@ internal class InstallWorkflow
         string resolvedChannel,
         ResolvedInstallRequest resolved)
     {
-        // Request-level tags
-        Activity.Current?.SetTag(TelemetryTagNames.InstallComponent, component.ToString());
-        Activity.Current?.SetTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathExplicit, explicitInstallPath is not null);
-
-        // Resolved context tags
-        Activity.Current?.SetTag(TelemetryTagNames.InstallHasGlobalJson, globalJson?.GlobalJsonPath is not null);
-        Activity.Current?.SetTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot?.InstallType.ToString() ?? "none");
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
-        Activity.Current?.SetTag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
-
-        // Resolved version tags
-        Activity.Current?.SetTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());
-
         string requestSource = requestedVersionOrChannel is not null
             ? "explicit"
             : globalJson?.GlobalJsonPath is not null
                 ? "default-globaljson"
                 : "default-latest";
-        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequestSource, requestSource);
-        Activity.Current?.SetTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(resolvedChannel));
+
+        _command.SetCommandTag(TelemetryTagNames.InstallComponent, component.ToString());
+        _command.SetCommandTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
+        _command.SetCommandTag(TelemetryTagNames.InstallPathExplicit, (explicitInstallPath is not null).ToString());
+        _command.SetCommandTag(TelemetryTagNames.InstallHasGlobalJson, (globalJson?.GlobalJsonPath is not null).ToString());
+        _command.SetCommandTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot?.InstallType.ToString() ?? "none");
+        _command.SetCommandTag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
+        _command.SetCommandTag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
+        _command.SetCommandTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());
+        _command.SetCommandTag(TelemetryTagNames.DotnetRequestSource, requestSource);
+        _command.SetCommandTag(TelemetryTagNames.DotnetRequested, VersionSanitizer.Sanitize(resolvedChannel));
     }
 }

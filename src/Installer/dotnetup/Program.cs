@@ -18,6 +18,11 @@ internal class DotnetupProgram
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
 
+        // Start root activity for the entire process. Disposed explicitly in
+        // the finally block below (no `using` here) so the completion event is
+        // emitted before DisposeTelemetry flushes/shuts down the providers.
+        var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+
         // Capture current console encoding so it can be restored on exit.
         // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.
         using AutomaticEncodingRestorer encodingRestorer = new();
@@ -40,22 +45,17 @@ internal class DotnetupProgram
         // Show first-run telemetry notice if needed
         FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
 
-        // Start root activity for the entire process
-        using var rootActivity = DotnetupTelemetry.Instance.Enabled
-            ? DotnetupTelemetry.CommandSource.StartActivity("dotnetup", ActivityKind.Internal)
-            : null;
+        int processExitCode = 1;
 
         try
         {
-            var exitCode = InvokeParser(args, rootActivity);
+            processExitCode = InvokeParser(args);
 
-            return exitCode;
+            return processExitCode;
         }
         catch (Exception ex)
         {
-            // Catch-all for unhandled exceptions
-            DotnetupTelemetry.Instance.RecordException(rootActivity, ex);
-            rootActivity?.SetTag(TelemetryTagNames.ExitCode, 1);
+            DotnetupTelemetry.Instance.RecordException(rootOp, ex);
 
             // Log the error and return non-zero exit code
             Console.Error.WriteLine($"Error: {ex.Message}");
@@ -66,35 +66,55 @@ internal class DotnetupProgram
         }
         finally
         {
-            // Stop the root activity before disposing so the console/Azure Monitor
-            // exporters see it.  The 'using' dispose that follows is a no-op on
-            // an already-stopped Activity.
-            rootActivity?.Stop();
+            TagRootForExitCode(rootOp, processExitCode);
+            rootOp.Dispose(); // emit root event before flush
             DisposeTelemetry();
         }
     }
 
-    private static int InvokeParser(string[] args, Activity? rootActivity)
+    /// <summary>
+    /// Stamps the final exit code, status, and (if applicable) a synthetic
+    /// <c>error.type=ParseError</c> tag on the root op. The synthetic tag
+    /// covers the case where the parser returned a non-zero exit code
+    /// without throwing (e.g., System.CommandLine validation failure that
+    /// printed usage and returned non-zero) — without this, the failure
+    /// would have no <c>error.*</c> tags anywhere and would disappear from
+    /// the dashboard's root-error queries.
+    /// </summary>
+    private static void TagRootForExitCode(TrackedOperation rootOp, int processExitCode)
     {
-        var result = Parser.Invoke(args);
-        rootActivity?.SetTag(TelemetryTagNames.ExitCode, result);
-        rootActivity?.SetStatus(result == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-        return result;
+        if (processExitCode != 0 && rootOp.Activity?.GetTagItem("error.type") is null)
+        {
+            rootOp.Tag("error.type", "ParseError");
+            rootOp.Tag("error.category", "user");
+        }
+
+        rootOp.Tag(TelemetryTagNames.ExitCode, processExitCode);
+        rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+    }
+
+    private static int InvokeParser(string[] args)
+    {
+        return Parser.Invoke(args);
     }
 
     private static void DisposeTelemetry()
     {
-        // Best-effort flush with a short timeout. The Azure Monitor exporter
-        // has built-in offline storage (%LOCALAPPDATA%\Microsoft\AzureMonitor)
-        // so unsent spans survive process exit and are retried on the next run.
-        //
-        // We intentionally skip Dispose(): TracerProvider.Dispose() internally
-        // calls Shutdown() with its own (potentially long) timeout, which would
-        // block the user noticeably. Since ThreadPool threads are background
-        // threads, any remaining exporter work is terminated when Main returns.
+        // CI runs are one-and-done — there's no follow-up dotnetup
+        // invocation to drain the AzMonitor exporter's offline store — so
+        // give the batch export processors a longer ceiling to drain
+        // synchronously before the process exits. ForceFlush returns as
+        // soon as the queues are empty, so the larger budget never adds
+        // latency on happy-path runs; it only matters when the queue is
+        // backed up against a slow network. Interactive (non-CI) runs keep
+        // the smaller budget so user-perceived exit time is unaffected.
+        var flushTimeoutMs = DotnetupTelemetry.Instance.IsOneAndDoneEnvironment ? 30_000 : 10;
+
         try
         {
-            DotnetupTelemetry.Instance.Flush(timeoutMilliseconds: 100);
+            DotnetupTelemetry.Instance.WriteLogIfNecessary();
+            DotnetupTelemetry.Instance.Flush(flushTimeoutMs);
+            DotnetupTelemetry.Instance.Dispose();
         }
         catch
         {
