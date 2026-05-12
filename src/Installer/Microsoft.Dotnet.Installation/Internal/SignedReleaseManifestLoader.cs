@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
@@ -23,8 +24,8 @@ namespace Microsoft.Dotnet.Installation.Internal;
 ///
 /// <para>
 /// Threading: instance methods are sync but the loader can be invoked concurrently by the
-/// orchestrator's <see cref="System.Threading.Tasks.Parallel.ForEach{TSource}(System.Collections.Generic.IEnumerable{TSource}, System.Threading.Tasks.ParallelOptions, Action{TSource})"/>.
-/// <see cref="HttpClient"/> is thread-safe; the temp directory is per-instance.
+/// orchestrator's parallel <c>PrepareInstall</c> path. <see cref="HttpClient"/> is
+/// thread-safe; the temp directory is per-instance.
 /// </para>
 /// </summary>
 internal sealed class SignedReleaseManifestLoader : IDisposable
@@ -68,6 +69,15 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
     public ReadOnlyCollection<ProductRelease> GetVerifiedReleases(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
+
+        if (product.ReleasesJson is null)
+        {
+            // Defensive: the deployment library reads this from the index JSON via GetUriOrDefault,
+            // so a malformed / legacy entry could leave it null. Surface a clean error rather than NRE.
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Product '{product.ProductVersion}' has no releases.json URL in the verified release index.");
+        }
 
         Uri channelUrl = GetReleaseUriForConfiguredHost(product.ReleasesJson);
         string tempPath = DownloadAndVerify(channelUrl);
@@ -128,9 +138,23 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
                 "Signature verification is required. This may indicate an EOL channel or a tampered manifest.");
         }
 
-        // 3. Derive sibling sig URL and download.
+        // 3. Derive sibling sig URL and download. A 404 here means the .p7s isn't co-hosted
+        //    with the JSON — surface that as SignatureVerificationFailed (specific) rather
+        //    than letting it bubble out as ManifestFetchFailed (which the outer catch in
+        //    ReleaseManifest would attribute to the JSON URL, misleading the user).
         Uri sigUrl = DeriveSiblingUrl(jsonUrl, sigFileName);
-        byte[] sigBytes = _httpClient.GetByteArrayAsync(sigUrl, cts.Token).GetAwaiter().GetResult();
+        byte[] sigBytes;
+        try
+        {
+            sigBytes = _httpClient.GetByteArrayAsync(sigUrl, cts.Token).GetAwaiter().GetResult();
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.SignatureVerificationFailed,
+                $"Failed to download detached signature for {jsonUrl} from {sigUrl}: {ex.Message}",
+                ex);
+        }
 
         // 4. Verify in memory.
         VerificationResult result = SignatureVerifier.Verify(jsonBytes, sigBytes, _options);
@@ -189,10 +213,10 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
     private static string FormatVerificationFailure(VerificationResult result, Uri url)
     {
         var sb = new StringBuilder();
-        sb.AppendLine(System.Globalization.CultureInfo.InvariantCulture, $"Signature verification failed for {url}: {result.Failures.Count} issue(s)");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Signature verification failed for {url}: {result.Failures.Count} issue(s)");
         foreach (VerificationFailure f in result.Failures)
         {
-            sb.AppendLine(System.Globalization.CultureInfo.InvariantCulture, $"  - {f.Code}: {f.Reason}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  - {f.Code}: {f.Reason}");
         }
         return sb.ToString();
     }

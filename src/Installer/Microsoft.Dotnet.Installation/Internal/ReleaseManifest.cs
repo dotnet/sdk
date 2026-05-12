@@ -117,16 +117,33 @@ internal class ReleaseManifest
 
     /// <summary>
     /// Returns releases for a product. Downloaded + signature-verified once per process per
-    /// product, then served from <see cref="_releaseCache"/>. Lazy&lt;T&gt; guarantees the verify
-    /// runs exactly once even under concurrent <see cref="GetReleases"/> calls.
+    /// product, then served from <see cref="_releaseCache"/>. <see cref="Lazy{T}"/> guarantees the
+    /// verify runs exactly once even under concurrent <see cref="GetReleases"/> calls.
+    ///
+    /// <para>
+    /// On failure, the cache entry is removed so a retry within the same process gets a fresh
+    /// attempt. Without this, <see cref="Lazy{T}"/>'s exception memoization would permanently
+    /// block recovery from transient errors (503, network blips) for the rest of the process.
+    /// </para>
     /// </summary>
     public ReadOnlyCollection<ProductRelease> GetReleases(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
-        return _releaseCache.GetOrAdd(product.ProductVersion, _ =>
+        var lazy = _releaseCache.GetOrAdd(product.ProductVersion, _ =>
             new Lazy<ReadOnlyCollection<ProductRelease>>(
                 () => _loader.Value.GetVerifiedReleases(product),
-                LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+                LazyThreadSafetyMode.ExecutionAndPublication));
+        try
+        {
+            return lazy.Value;
+        }
+        catch
+        {
+            // Atomic compare-and-remove: only drop the failed entry, not a fresh one another
+            // thread may have already swapped in.
+            _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>>>(product.ProductVersion, lazy));
+            throw;
+        }
     }
 
     /// <summary>
