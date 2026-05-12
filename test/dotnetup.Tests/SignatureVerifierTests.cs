@@ -302,6 +302,87 @@ public class SignatureVerifierTests
         codes.Should().NotContain(FailureCode.SignerCertMissing);
     }
 
+    // ---------------- Timestamp-shape coverage from earlier signing-protocol drafts ----------------
+    //
+    // The v3 happy fixture has a valid RFC 3161 timestamp. To exercise the negative timestamp
+    // paths we use earlier drafts of the same release-metadata signing experiment that were
+    // produced by the real .NET Release signer but with a different signing-attribute layout:
+    //
+    //   * v1 (releases-directory-v1.json + .sig): no RFC 3161 timestamp attribute at all.
+    //     Drives TimestampMissing positively. Crypto still verifies because the .sig was
+    //     produced for that exact JSON.
+    //
+    //   * v2 (releases-directory-v2.json + .p7s): valid RFC 3161 timestamp present, but the
+    //     SignerInfo uses SHA-256 instead of v3's SHA-384. Confirms the verifier accepts
+    //     both digest algorithms (both are in the allow-list).
+
+    [Fact]
+    public void Verify_V1Signature_FlagsTimestampMissing_AndCascadingSkips()
+    {
+        // The v1 fixture (May 2026 draft) has no RFC 3161 timestamp attribute at all.
+        // The verifier must positively fire TimestampMissing AND, because all downstream
+        // chain/JSON-policy checks rely on the TSA timestamp, must record CheckSkipped
+        // entries for the TSA chain, primary chain, and JSON expiration.
+        var result = SignatureVerifier.Verify(
+            LoadAsset("releases-directory-v1.json"),
+            LoadAsset("releases-directory-v1.json.20260424114016.sig"),
+            ProductionOptions(),
+            s_pinnedNow);
+
+        var codes = result.Failures.Select(f => f.Code).ToList();
+
+        codes.Should().Contain(FailureCode.TimestampMissing);
+
+        // Crypto still works because the sig was produced for this exact content; signer DN
+        // and issuer also pass since v1 was already produced by the .NET Release signer.
+        codes.Should().NotContain(FailureCode.SigCryptoInvalid);
+        codes.Should().NotContain(FailureCode.SubjectMismatch);
+        codes.Should().NotContain(FailureCode.IssuerMismatch);
+        codes.Should().NotContain(FailureCode.EkuMissing);
+        codes.Should().NotContain(FailureCode.EkuNotExclusiveCodeSign);
+
+        // Downstream cascades — the verifier must record CheckSkipped (not crash, not silently
+        // pass) when the TSA timestamp is unavailable.
+        codes.Where(c => c == FailureCode.CheckSkipped).Should().HaveCountGreaterThanOrEqualTo(2,
+            "TSA chain and JSON expiration policy must both report CheckSkipped when no TSA timestamp is available");
+    }
+
+    [Fact]
+    public void Verify_V2Signature_AcceptsSha256Digest_AndFlagsTimestampBindingInvalid()
+    {
+        // v2 fixture (April 2026 draft) was signed with SHA-256 instead of v3's SHA-384.
+        // Both digests are in the verifier's allow-list (spec §4) — confirming SHA-256 is
+        // accepted is the primary win. We assert WeakDigest does NOT fire.
+        //
+        // Bonus coverage: v2's RFC 3161 token doesn't actually bind to the SignerInfo's
+        // EncryptedDigest (an early bug in the producer that v3 fixed). The verifier must
+        // catch this with TimestampBindingInvalid. This is the only real-world fixture we
+        // have that drives this specific failure positively.
+        var result = SignatureVerifier.Verify(
+            LoadAsset("releases-directory-v2.json"),
+            LoadAsset("releases-directory-v2.json.p7s"),
+            ProductionOptions(),
+            s_pinnedNow);
+
+        var codes = result.Failures.Select(f => f.Code).ToHashSet();
+
+        // SHA-256 is allowed; if WeakDigest fired here we accidentally restricted the policy.
+        codes.Should().NotContain(FailureCode.WeakDigest);
+        codes.Should().NotContain(FailureCode.WeakSignatureAlgorithm);
+
+        // Crypto + DN + EKU + timestamp-shape (other than the binding bug) all pass.
+        codes.Should().NotContain(FailureCode.SigCryptoInvalid);
+        codes.Should().NotContain(FailureCode.SubjectMismatch);
+        codes.Should().NotContain(FailureCode.IssuerMismatch);
+        codes.Should().NotContain(FailureCode.EkuMissing);
+        codes.Should().NotContain(FailureCode.EkuNotExclusiveCodeSign);
+        codes.Should().NotContain(FailureCode.TimestampMissing);
+        codes.Should().NotContain(FailureCode.TimestampMalformed);
+
+        // The producer-side binding bug — must fire.
+        codes.Should().Contain(FailureCode.TimestampBindingInvalid);
+    }
+
     // ---------------- Collect-all behavior ----------------
 
     [Fact]
