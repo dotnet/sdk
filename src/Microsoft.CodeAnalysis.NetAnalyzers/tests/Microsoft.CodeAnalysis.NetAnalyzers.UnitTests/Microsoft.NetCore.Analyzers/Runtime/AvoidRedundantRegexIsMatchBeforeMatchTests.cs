@@ -2795,6 +2795,43 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
+        [Fact]
+        public async Task PreDeclaredAssignment_DefaultTypeExpressionInitializer_FixOffered()
+        {
+            // Regression for Copilot review (2026-05-12): `Match m = default(Match);`
+            // is also a constant-default initializer, equivalent to `null` for a
+            // reference type, and should be treated as removable.
+            var source = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        Match m = default(Match);
+                        if ([|Regex.IsMatch(input, @"\d+")|])
+                        {
+                            m = Regex.Match(input, @"\d+");
+                        }
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if (Regex.Match(input, @"\d+") is { Success: true } m)
+                        {
+                        }
+                    }
+                }
+                """;
+            await VerifyCodeFixCSharp9Async(source, fixedSource);
+        }
+
         #endregion
     }
 }

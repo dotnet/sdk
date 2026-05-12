@@ -359,13 +359,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return null;
             }
 
-            // Simple assignment (used as an expression, e.g. inside an object initializer
-            // member assignment): the value may contain a Match call.
-            if (expression is ISimpleAssignmentOperation simpleAssignment)
-            {
-                return FindMatchInExpression(simpleAssignment.Value, isMatchInvocation, regexType);
-            }
-
             if (expression is IArrayCreationOperation arrayCreation && arrayCreation.Initializer is not null)
             {
                 foreach (var element in arrayCreation.Initializer.ElementValues)

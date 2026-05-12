@@ -246,14 +246,22 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return;
             }
 
-            // The pre-existing declaration must have no initializer, or be initialized to
-            // null/default so removing it doesn't lose meaningful computation.
+            // The pre-existing declaration must have no initializer, or be initialized
+            // to a constant default expression (`null`, `default`, or `default(T)`) so
+            // removing it doesn't lose meaningful computation.
             if (preVar.Initializer is not null)
             {
                 var initValue = preVar.Initializer.Value;
-                if (initValue is not LiteralExpressionSyntax literal ||
-                    (!literal.IsKind(SyntaxKind.NullLiteralExpression) &&
-                     !literal.IsKind(SyntaxKind.DefaultLiteralExpression)))
+                bool acceptable = initValue switch
+                {
+                    LiteralExpressionSyntax literal =>
+                        literal.IsKind(SyntaxKind.NullLiteralExpression) ||
+                        literal.IsKind(SyntaxKind.DefaultLiteralExpression),
+                    DefaultExpressionSyntax => true,
+                    _ => false,
+                };
+
+                if (!acceptable)
                 {
                     return;
                 }
