@@ -9,6 +9,36 @@ using Microsoft.Dotnet.Installation.Internal.Signing;
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
+/// Outcome of <see cref="ReleaseManifest.TryFindReleaseFile"/>.
+/// </summary>
+internal enum FindReleaseFileStatus
+{
+    /// <summary>The release was found and a matching archive for the platform exists.</summary>
+    Found,
+
+    /// <summary>The release exists in the manifest but has no archive for the requested RID/extension.</summary>
+    NoMatchingFile,
+
+    /// <summary>No product (major.minor) for the version was found in the manifest.</summary>
+    ProductNotFound,
+
+    /// <summary>The product was found, but the specific version is not listed under it.</summary>
+    ReleaseNotFound,
+}
+
+/// <summary>
+/// Result of looking up a release file in the manifest.
+/// </summary>
+internal readonly record struct FindReleaseFileResult(FindReleaseFileStatus Status, ReleaseFile? File)
+{
+    public static FindReleaseFileResult FromFile(ReleaseFile? file) =>
+        new(file is null ? FindReleaseFileStatus.NoMatchingFile : FindReleaseFileStatus.Found, file);
+
+    public static FindReleaseFileResult ProductNotFound { get; } = new(FindReleaseFileStatus.ProductNotFound, null);
+    public static FindReleaseFileResult ReleaseNotFound { get; } = new(FindReleaseFileStatus.ReleaseNotFound, null);
+}
+
+/// <summary>
 /// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.
 /// </summary>
 internal class ReleaseManifest
@@ -48,32 +78,34 @@ internal class ReleaseManifest
     }
 
     /// <summary>
-    /// Finds the appropriate release file for the given installation.
+    /// Attempts to find the appropriate release file for the given installation.
+    /// Returns a <see cref="FindReleaseFileResult"/> indicating whether the
+    /// product/release/file was found. Network and parse failures are still
+    /// thrown as <see cref="DotnetInstallException"/>.
     /// </summary>
-    /// <param name="installRequest">The .NET installation request details</param>
-    /// <param name="resolvedVersion">The resolved release version to find</param>
-    /// <returns>The matching ReleaseFile, throws if none are available.</returns>
-    public ReleaseFile? FindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+    public virtual FindReleaseFileResult TryFindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
         try
         {
             var productCollection = GetReleasesIndex();
-            var product = FindProduct(productCollection, resolvedVersion)
-                ?? throw new DotnetInstallException(
-                    DotnetInstallErrorCode.VersionNotFound,
-                    $"No product found for version {resolvedVersion}",
-                    version: resolvedVersion.ToString(),
-                    component: installRequest.Component.ToString());
-            var release = FindRelease(GetReleases(product), resolvedVersion, installRequest.Component)
-                ?? throw new DotnetInstallException(
-                    DotnetInstallErrorCode.ReleaseNotFound,
-                    $"No release found for version {resolvedVersion}. Daily build versions are not yet supported.",
-                    version: resolvedVersion.ToString(),
-                    component: installRequest.Component.ToString());
-            return FindMatchingFile(release, installRequest);
+            var product = FindProduct(productCollection, resolvedVersion);
+            if (product is null)
+            {
+                return FindReleaseFileResult.ProductNotFound;
+            }
+            // Routes through GetReleases(product) so the per-channel JSON is signature-verified
+            // (and per-process cached) before we trust its contents to drive the archive download.
+            var release = FindRelease(GetReleases(product), resolvedVersion, installRequest.Component);
+            if (release is null)
+            {
+                return FindReleaseFileResult.ReleaseNotFound;
+            }
+            return FindReleaseFileResult.FromFile(FindMatchingFile(release, installRequest));
         }
         catch (DotnetInstallException)
         {
+            // Preserve signature-verification and other typed failures thrown from the signed
+            // loader; the generic catch below would otherwise re-wrap them as Unknown.
             throw;
         }
         catch (HttpRequestException ex)

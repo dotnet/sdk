@@ -7,11 +7,17 @@
     <LogDir Condition="'$(LogDir)' == ''">$(RepoRoot)artifacts\log\Sign\</LogDir>
 
     <!-- SignTool requires explicit dotnet path; default to repo-local SDK. -->
-    <DotNetPath Condition="'$(DotNetPath)' == ''">$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
+    <DotNetPath Condition="'$(DotNetPath)' == '' and '$(OS)' == 'Windows_NT'">$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
+    <DotNetPath Condition="'$(DotNetPath)' == '' and '$(OS)' != 'Windows_NT'">$(RepoRoot).dotnet/dotnet</DotNetPath>
 
     <MicroBuild_DoNotStrongNameSign>true</MicroBuild_DoNotStrongNameSign>
     <MicroBuild_SigningEnabled>true</MicroBuild_SigningEnabled>
   </PropertyGroup>
+
+  <!-- On macOS, SignToolTask requires PkgToolPath even when no .pkg/.app items are being signed. -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <PackageDownload Include="Microsoft.DotNet.MacOsPkg.Cli" Version="[$(MicrosoftDotNetSignToolPackageVersion)]" />
+  </ItemGroup>
 
   <Import Project="$(NuGetPackageRoot)microsoft.dotnet.signtool\$(MicrosoftDotNetSignToolVersion)\build\Microsoft.DotNet.SignTool.props" />
 
@@ -25,6 +31,29 @@
     </ItemsToSign>
   </ItemGroup>
 
+  <!-- dotnetup executable signing (when DotnetupPublishDir is provided).
+       Windows: MicrosoftDotNet500 (.NET-specific Authenticode cert). Microsoft402 (EV) would be
+                preferable for SmartScreen reputation but it isn't provisioned in our MicroBuild
+                signing plugin's ESRPCerts (no 402.json). Microsoft400 is internal-EKU and gets
+                blocked by Defender SmartScreen, so MicrosoftDotNet500 is the best available option.
+       macOS:   MacDeveloperHardenWithNotarization so the binary is both signed and notarized by Apple.
+                The notarization ticket is not stapled because xcrun stapler does not support bare
+                Mach-O executables; Gatekeeper performs an online ticket check on first launch when
+                needed. The CertificatesSignInfo entry below tells SignTool that this is a virtual
+                cert that maps to the real MacDeveloperHarden cert + a notarize step.
+       A trailing '/' is inlined in each concatenation so callers can pass DotnetupPublishDir
+       with or without a separator (MSBuild collapses consecutive separators on every OS). -->
+  <ItemGroup Condition="'$(DotnetupPublishDir)' != ''">
+    <FileExtensionSignInfo Include=".exe" CertificateName="MicrosoftDotNet500" />
+    <FileSignInfo Include="dotnetup.exe" CertificateName="MicrosoftDotNet500" />
+    <ItemsToSign Condition="'$(OS)' == 'Windows_NT'" Include="$(DotnetupPublishDir)/dotnetup.exe" />
+    <!-- Mac-only: gate the bare "dotnetup" entry on osx so the Mac notarization cert can't
+         accidentally bind to a Linux build's "dotnetup" binary if signing is ever wired up there. -->
+    <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="dotnetup" CertificateName="MacDeveloperHardenWithNotarization" />
+    <ItemsToSign Condition="'$(TargetOS)' == 'osx'" Include="$(DotnetupPublishDir)/dotnetup" />
+    <CertificatesSignInfo Condition="'$(TargetOS)' == 'osx'" Include="MacDeveloperHardenWithNotarization" MacCertificate="MacDeveloperHarden" MacNotarizationAppName="dotnet" />
+  </ItemGroup>
+
   <PropertyGroup Condition="'$(SignType)' == ''">
       <SignType>test</SignType>
       <TestSign>true</TestSign>
@@ -36,18 +65,23 @@
 
 
   <Target Name="Sign" AfterTargets="Build">
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+      <MacOSPkgCliItem Include="$(NuGetPackageRoot)microsoft.dotnet.macospkg.cli\$(MicrosoftDotNetSignToolPackageVersion)\tools\net*\any\Microsoft.Dotnet.MacOsPkg.Cli.dll" />
+    </ItemGroup>
     <Microsoft.DotNet.SignTool.SignToolTask
         DryRun="false"
         TestSign="$(TestSign)"
         ItemsToSign="@(ItemsToSign)"
         FileSignInfo="@(FileSignInfo)"
         FileExtensionSignInfo="@(FileExtensionSignInfo)"
+        CertificatesSignInfo="@(CertificatesSignInfo)"
         TempDir="$(IntermediateOutputPath)"
         LogDir="$(LogDir)"
         DoStrongNameCheck="false"
         DotNetPath="$(DotNetPath)"
         MicroBuildCorePath="$(NuGetPackageRoot)microsoft.visualstudioeng.microbuild.core\$(MicrosoftVisualStudioEngMicroBuildCoreVersion)"
         SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
+        PkgToolPath="@(MacOSPkgCliItem)"
         >
     </Microsoft.DotNet.SignTool.SignToolTask>
   </Target>

@@ -13,6 +13,8 @@ parameters:
   # Unfortunately, _SignType can't be used to exclude the use of the service connection in non-real sign scenarios. The
   # variable is not available in template expression. _SignType has a very large proliferation across .NET, so replacing it is tough.
   microbuildUseESRP: true
+  # Microbuild installation directory (must be writable on Mac/Linux agents)
+  microBuildOutputFolder: $(Agent.TempDirectory)/MicroBuild
   # Microbuild version
   microbuildPluginVersion: 'latest'
 
@@ -27,7 +29,7 @@ steps:
         inputs:
           packageType: sdk
           version: 8.0.x
-          installationPath: ${{ parameters.microBuildOutputFolder }}/.dotnet
+          installationPath: ${{ parameters.microBuildOutputFolder }}/.dotnet-microbuild
           workingDirectory: ${{ parameters.microBuildOutputFolder }}
         condition: and(succeeded(), ne(variables['Agent.Os'], 'Windows_NT'))
 

@@ -48,6 +48,10 @@ variables:
   value: -sign /p:SignCoreSdk=true
 - name: _TeamName
   value: DotNet-Cli
+# MicroBuildSigningPlugin@4 on non-Windows agents requires a pipeline variable
+# literally named TeamName (separate from arcade's _TeamName convention).
+- name: TeamName
+  value: DotNet-Cli
 - name: _BuildConfig
   value: Release
 - name: _officialBuildProperties
