@@ -60,11 +60,14 @@ namespace Microsoft.NET.TestFramework.Commands
             newArgs.Add($"/p:ValueName={_valueName}");
             newArgs.AddRange(args);
 
-            //  Override build target to write out DefineConstants value to a file in the output directory
             Directory.CreateDirectory(GetBaseIntermediateDirectory().FullName);
-            string injectTargetPath = Path.Combine(
+            string customAfterDirectoryBuildTargetsPath = Path.Combine(
                 GetBaseIntermediateDirectory().FullName,
-                Path.GetFileName(ProjectFile) + ".WriteValuesToFile.g.targets");
+                "Custom.After.Directory.Build.targets");
+
+            var project = XDocument.Load(ProjectFile);
+
+            var ns = project.Root.Name.Namespace;
 
             string linesAttribute;
             if (_valueType == ValueType.Property)
@@ -80,35 +83,53 @@ namespace Microsoft.NET.TestFramework.Commands
                 }
             }
 
-            string propertiesElement = "";
+            var propertyGroup = project.Root.Elements(ns + "PropertyGroup").FirstOrDefault();
+
+            if (propertyGroup == null)
+            {
+                propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.AddAfterSelf(propertyGroup);
+            }
+            
+            propertyGroup.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath}"));
+            propertyGroup.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath}"));
+
+            project.Save(ProjectFile);
+
+            var customAfterDirectoryBuildTargets = new XDocument(new XElement(ns + "Project"));
+
+            var target = new XElement(ns + "Target",
+                new XAttribute("Name", TargetName),
+                ShouldCompile ? new XAttribute("DependsOnTargets", DependsOnTargets) : null);
+
+            customAfterDirectoryBuildTargets.Root.Add(target);
+
             if (Properties.Count != 0)
             {
-                propertiesElement += "<PropertyGroup>\n";
+                propertyGroup = new XElement(ns + "PropertyGroup");
+                customAfterDirectoryBuildTargets.Root.Add(propertyGroup);
+
                 foreach (var pair in Properties)
                 {
-                    propertiesElement += $"    <{pair.Key}>{pair.Value}</{pair.Key}>\n";
+                    propertyGroup.Add(new XElement(ns + pair.Key, pair.Value));
                 }
-                propertiesElement += "  </PropertyGroup>";
             }
 
-            string injectTargetContents =
-$@"<Project ToolsVersion=`14.0` xmlns=`http://schemas.microsoft.com/developer/msbuild/2003`>
-  {propertiesElement}
-  <Target Name=`{TargetName}` {(ShouldCompile ? $"DependsOnTargets=`{DependsOnTargets}`" : "")}>
-    <ItemGroup>
-      <LinesToWrite Include=`{linesAttribute}`/>
-    </ItemGroup>
-    <WriteLinesToFile
-      File=`bin\$(Configuration)\$(TargetFramework)\{_valueName}Values.txt`
-      Lines=`@(LinesToWrite)`
-      Overwrite=`true`
-      Encoding=`Unicode`
-      />
-  </Target>
-</Project>";
-            injectTargetContents = injectTargetContents.Replace('`', '"');
+            var itemGroup = new XElement(ns + "ItemGroup");
+            target.Add(itemGroup);
 
-            File.WriteAllText(injectTargetPath, injectTargetContents);
+            itemGroup.Add(
+                new XElement(ns + "LinesToWrite",
+                    new XAttribute("Include", linesAttribute)));
+
+            target.Add(
+                new XElement(ns + "WriteLinesToFile",
+                    new XAttribute("File", $@"bin\$(Configuration)\$(TargetFramework)\{_valueName}Values.txt"),
+                    new XAttribute("Lines", "@(LinesToWrite)"),
+                    new XAttribute("Overwrite", bool.TrueString),
+                    new XAttribute("Encoding", "Unicode")));
+
+            customAfterDirectoryBuildTargets.Save(customAfterDirectoryBuildTargetsPath);
 
             var outputDirectory = GetValuesOutputDirectory(_targetFramework);
             outputDirectory.Create();
