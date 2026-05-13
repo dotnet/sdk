@@ -480,7 +480,7 @@ public sealed class VirtualProjectBuilder
         string? artifactsPath = null,
         bool includeRuntimeConfigInformation = true,
         string? userSecretsId = null,
-        ImmutableArray<CSharpDirective.IncludeOrExclude> explicitProjectItemDirectives = default)
+        ImmutableArray<(string ItemType, string Include)> explicitProjectItems = default)
     {
         Debug.Assert(userSecretsId == null || !isVirtualProject);
 
@@ -708,23 +708,16 @@ public sealed class VirtualProjectBuilder
                 """);
         }
 
-        if (!explicitProjectItemDirectives.IsDefaultOrEmpty)
+        if (!explicitProjectItems.IsDefaultOrEmpty)
         {
             writer.WriteLine("""
                   <ItemGroup>
                 """);
 
-            foreach (var includeOrExclude in explicitProjectItemDirectives)
+            foreach (var (itemType, include) in explicitProjectItems)
             {
-                var itemType = includeOrExclude.ItemType;
-
-                if (itemType == null)
-                {
-                    continue;
-                }
-
                 writer.WriteLine($"""
-                        <{itemType} {includeOrExclude.KindToMSBuildString()}="{EscapeValue(includeOrExclude.Name)}" />
+                        <{itemType} Include="{EscapeValue(include)}" />
                     """);
             }
 
