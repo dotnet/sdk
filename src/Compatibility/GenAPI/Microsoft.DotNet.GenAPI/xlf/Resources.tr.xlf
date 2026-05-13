@@ -12,6 +12,11 @@
         <target state="translated">'{1}' içeren derlemede tür yönlendirme yoluyla '{0}' türü çözülemedi. Derlemenin referans olarak verildiğinden ve türü içerdiğinden emin olun.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">Sözdizimi düğümü bulunamadı.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

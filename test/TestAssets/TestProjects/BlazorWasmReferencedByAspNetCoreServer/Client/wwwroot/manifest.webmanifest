@@ -1,0 +1,8 @@
+{
+  "name": "Client",
+  "short_name": "Client",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "Test Blazor WASM referenced by ASP.NET Core Server"
+}

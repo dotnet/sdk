@@ -39,7 +39,7 @@ cd C:\helix\payload-dir
 REM HELIX_CORRELATION_PAYLOAD would be set to correlation payload by real helix machine
 set HELIX_CORRELATION_PAYLOAD=C:\helix\localHelixTestLayout
 
-REM "true" is full framework test. Without "true", it is dotnet core tests. RunTestsOnHelix.cmd is the same script will setup the helix environnement.
+REM "true" is full framework test. Without "true", it is dotnet core tests. RunTestsOnHelix.cmd is the same script will setup the helix environment.
 C:\helix\localHelixTestLayout\t\RunTestsOnHelix.cmd true
 ```
 

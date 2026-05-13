@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AnalyzerLanguage>cs</AnalyzerLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CodeAnalysis.NetAnalyzers\Microsoft.CodeAnalysis.NetAnalyzers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.CodeAnalysis.NetAnalyzers.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="$(MicrosoftCodeAnalysisVersionForNetAnalyzers)" />
+  </ItemGroup>
+
+  <Import Project="..\Utilities\Compiler.CSharp\Analyzer.CSharp.Utilities.projitems" Label="Shared" />
+
+</Project>

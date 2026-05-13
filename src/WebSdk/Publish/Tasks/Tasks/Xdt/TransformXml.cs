@@ -10,16 +10,16 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
 {
     public class TransformXml : Task
     {
-        private string _sourceFile = null;
-        private string _transformFile = null;
-        private string _destinationFile = null;
+        private string? _sourceFile = null;
+        private string? _transformFile = null;
+        private string? _destinationFile = null;
         private string _sourceRootPath = string.Empty;
         private string _transformRootPath = string.Empty;
         private bool _ignoreError = false;
         private bool stackTrace = false;
 
         [Required]
-        public string Source
+        public string? Source
         {
             get
             {
@@ -40,9 +40,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
             set { _ignoreError = value; }
         }
 
-
         [Required]
-        public string Transform
+        public string? Transform
         {
             get
             {
@@ -70,9 +69,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
             set { _transformRootPath = value; }
         }
 
-
         [Required]
-        public string Destination
+        public string? Destination
         {
             get
             {
@@ -104,14 +102,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
         public bool RunXmlTransform(bool isLoggingEnabled = true)
         {
             bool succeeded = true;
-            IXmlTransformationLogger logger = null;
+            IXmlTransformationLogger? logger = null;
             if (isLoggingEnabled && !IgnoreError)
             {
                 logger = new TaskTransformationLogger(Log, StackTrace);
             }
 
-            XmlTransformation transformation = null;
-            XmlTransformableDocument document = null;
+            XmlTransformation? transformation = null;
+            XmlTransformableDocument? document = null;
 
             try
             {
@@ -142,7 +140,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
                     return true;
                 }
 
-                string localPath = Source;
+                string? localPath = Source;
                 if (!string.IsNullOrEmpty(ex.SourceUri))
                 {
                     Uri sourceUri = new(ex.SourceUri);
@@ -180,7 +178,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
             return succeeded;
         }
 
-        private void SaveTransformedFile(XmlTransformableDocument document, string destinationFile)
+        private void SaveTransformedFile(XmlTransformableDocument document, string? destinationFile)
         {
             try
             {
@@ -198,7 +196,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
             }
         }
 
-        private XmlTransformableDocument OpenSourceFile(string sourceFile)
+        private XmlTransformableDocument OpenSourceFile(string? sourceFile)
         {
             try
             {
@@ -222,7 +220,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
             }
         }
 
-        private XmlTransformation OpenTransformFile(string transformFile, IXmlTransformationLogger logger)
+        private XmlTransformation OpenTransformFile(string? transformFile, IXmlTransformationLogger? logger)
         {
             try
             {

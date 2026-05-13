@@ -20,10 +20,19 @@ Visibility|All jobs|
 You can download the .NET SDK as either an installer (MSI, PKG) or a zip (zip, tar.gz). The .NET SDK contains both the .NET runtime and CLI tools.
 
 - [Official builds](https://dotnet.microsoft.com/download/dotnet)
-- [**Latest builds table**](documentation/package-table.md)
+- [**.NET SDK latest builds table**](https://github.com/dotnet/dotnet/blob/main/docs/builds-table.md)
 
 > [!NOTE]
-> When acquiring installers from the latest builds table, be aware that the installers are the **latest bits**. With development builds, internal NuGet feeds are necessary for some scenarios (for example, to acquire the runtime pack for self-contained apps). You can use the following NuGet.config to configure these feeds. See the following document [Configuring NuGet behavior](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior) for more information on where to modify your NuGet.config to apply the changes.
+> When acquiring installers from the .NET SDK latest builds table, be aware that the installers are the **latest bits**. With development builds, internal NuGet feeds are necessary for some scenarios (for example, to acquire the runtime pack for self-contained apps). You can use the following NuGet.config to configure these feeds. See the following document [Configuring NuGet behavior](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior) for more information on where to modify your NuGet.config to apply the changes.
+
+### For .NET 10 builds
+```xml
+<configuration>
+  <packageSources>
+    <add key="dotnet10" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json" />
+  </packageSources>
+</configuration>
+```
 
 ### For .NET 9 builds
 ```xml
