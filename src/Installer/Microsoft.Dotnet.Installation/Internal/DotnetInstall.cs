@@ -44,17 +44,7 @@ internal record DotnetInstallRequest(
 /// </summary>
 internal record ResolvedInstallRequest(
     DotnetInstallRequest Request,
-    ReleaseVersion ResolvedVersion)
-{
-    /// <summary>
-    /// The <see cref="ReleaseManifest"/> used during version resolution. Reused downstream
-    /// (in <c>InstallerOrchestratorSingleton.PrepareInstall</c>) so the manifest's signed
-    /// in-memory caches (index + per-product releases) are shared end-to-end. Without this,
-    /// the orchestrator would create a fresh <see cref="ReleaseManifest"/> and re-download
-    /// (and re-verify) both JSON tiers.
-    /// </summary>
-    public ReleaseManifest ReleaseManifest { get; init; } = new();
-}
+    ReleaseVersion ResolvedVersion);
 
 internal record InstallRequestOptions()
 {

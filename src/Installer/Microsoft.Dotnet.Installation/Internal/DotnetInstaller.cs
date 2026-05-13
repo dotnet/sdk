@@ -24,7 +24,7 @@ internal class DotnetInstaller : IDotnetInstaller
 
         var installRequest = new DotnetInstallRequest(dotnetRoot, new UpdateChannel(version.ToString()), component, new InstallRequestOptions());
 
-        using DotnetArchiveExtractor installer = new(installRequest, version, new ReleaseManifest(), _progressTarget);
+        using DotnetArchiveExtractor installer = new(installRequest, version, ReleaseManifest.Default, _progressTarget);
         installer.Prepare();
         installer.Commit();
     }

@@ -40,9 +40,43 @@ internal readonly record struct FindReleaseFileResult(FindReleaseFileStatus Stat
 
 /// <summary>
 /// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.
+///
+/// <para>
+/// Use <see cref="Default"/> rather than constructing instances directly. Sharing a single
+/// instance is what keeps signature verification at one verify per JSON per process —
+/// distinct instances would each run their own download + verify and grow their own caches.
+/// </para>
 /// </summary>
 internal class ReleaseManifest
 {
+    // Process-wide default. Lazy because TrustedRootsLoader / DefaultHttpClient construction
+    // shouldn't run unless someone actually queries the manifest. ExecutionAndPublication is
+    // the Lazy<T> default — guarantees single-instantiation under the orchestrator's
+    // Parallel.ForEach without explicit locking.
+    private static Lazy<ReleaseManifest> s_default = new(() => new ReleaseManifest());
+
+    /// <summary>
+    /// The process-wide <see cref="ReleaseManifest"/> shared by version resolution, the install
+    /// orchestrator, and any other consumer. Using the same instance everywhere is what keeps
+    /// signature verification at one verify per JSON per process.
+    /// </summary>
+    public static ReleaseManifest Default => s_default.Value;
+
+    /// <summary>
+    /// Test seam — replaces the process-wide instance with one backed by the supplied loader
+    /// (typically a fake that reads fixtures from disk). Tests MUST call <see cref="ResetDefault"/>
+    /// in teardown so subsequent tests get a clean instance.
+    /// </summary>
+    internal static void SetDefaultForTesting(ReleaseManifest replacement)
+    {
+        ArgumentNullException.ThrowIfNull(replacement);
+        s_default = new Lazy<ReleaseManifest>(() => replacement);
+    }
+
+    /// <summary>Restores the production default. Call from test teardown.</summary>
+    internal static void ResetDefault() =>
+        s_default = new Lazy<ReleaseManifest>(() => new ReleaseManifest());
+
     private ProductCollection? _productCollection;
 
     // Per-product release cache. Wrapping the value in Lazy<T> with ExecutionAndPublication
@@ -54,10 +88,9 @@ internal class ReleaseManifest
     // Lazy<T>'s default mode is ExecutionAndPublication, so the orchestrator's parallel
     // PrepareConcurrent calls cannot double-instantiate the loader.
     //
-    // We don't dispose the loader: ReleaseManifest's lifetime is the process (held via
-    // ChannelVersionResolver -> InstallCommand) and propagating IDisposable up the chain
-    // for a sub-megabyte temp directory cleanup is invasive. The OS temp cleanup picks
-    // it up on next reboot; for hot paths that's good enough.
+    // We don't dispose the loader: ReleaseManifest is reached via the static Default singleton,
+    // so its lifetime is the process. The temp directory it owns is sub-megabyte; OS temp
+    // cleanup picks it up on next reboot.
     private readonly Lazy<SignedReleaseManifestLoader> _loader;
 
     public ReleaseManifest()

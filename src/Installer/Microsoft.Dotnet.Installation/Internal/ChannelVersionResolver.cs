@@ -34,29 +34,13 @@ internal class ChannelVersionResolver
     /// </summary>
     internal const int MaxReasonableMajorVersion = 99;
 
-    private readonly ReleaseManifest _releaseManifest = new();
-
-    /// <summary>
-    /// Exposes the underlying <see cref="ReleaseManifest"/> so callers (e.g. the install
-    /// workflow) can flow it into <see cref="ResolvedInstallRequest.ReleaseManifest"/> and
-    /// avoid creating a second instance for the orchestrator's PrepareInstall path. Without
-    /// this sharing the orchestrator would re-download (and re-verify) both manifests.
-    /// </summary>
-    internal ReleaseManifest Manifest => _releaseManifest;
-
     public ChannelVersionResolver()
     {
-
-    }
-
-    public ChannelVersionResolver(ReleaseManifest releaseManifest)
-    {
-        _releaseManifest = releaseManifest;
     }
 
     public IEnumerable<string> GetSupportedChannels(bool includeFeatureBands = true)
     {
-        var productIndex = _releaseManifest.GetReleasesIndex();
+        var productIndex = ReleaseManifest.Default.GetReleasesIndex();
         return [..KnownChannelKeywords,
             ..productIndex
                 .Where(p => p.IsSupported)
@@ -72,7 +56,7 @@ internal class ChannelVersionResolver
             }
 
             return [product.ProductVersion,
-                .._releaseManifest.GetReleases(product)
+                ..ReleaseManifest.Default.GetReleases(product)
                     .SelectMany(r => r.Sdks)
                     .Select(sdk => sdk.Version)
                     .OrderByDescending(v => v)
@@ -208,17 +192,17 @@ internal class ChannelVersionResolver
     {
         if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = _releaseManifest.GetReleasesIndex();
+            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
             return GetLatestVersionByReleaseType(productIndex, ReleaseType.LTS, component);
         }
         else if (string.Equals(channel.Name, PreviewChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = _releaseManifest.GetReleasesIndex();
+            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
             return GetLatestPreviewVersion(productIndex, component);
         }
         else if (string.Equals(channel.Name, LatestChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = _releaseManifest.GetReleasesIndex();
+            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
             return GetLatestActiveVersion(productIndex, component);
         }
 
@@ -237,7 +221,7 @@ internal class ChannelVersionResolver
         }
 
         // Load the index manifest
-        var index = _releaseManifest.GetReleasesIndex();
+        var index = ReleaseManifest.Default.GetReleasesIndex();
         if (minor < 0)
         {
             return GetLatestVersionForMajorOrMajorMinor(index, major, component); // Major Only (e.g., "9")
@@ -354,7 +338,7 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Gets the latest version for a feature band channel (e.g., "9.0.1xx").
     /// </summary>
-    private ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
+    private static ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
     {
         if (component != InstallComponent.SDK)
         {
@@ -364,7 +348,7 @@ internal class ChannelVersionResolver
         var validProducts = GetProductsInMajorOrMajorMinor(index, major, minor);
         var latestProduct = validProducts.FirstOrDefault();
         var releases = latestProduct is not null
-            ? _releaseManifest.GetReleases(latestProduct).ToList()
+            ? ReleaseManifest.Default.GetReleases(latestProduct).ToList()
             : new List<ProductRelease>();
         var normalizedFeatureBand = NormalizeFeatureBandInput(featureBand);
 

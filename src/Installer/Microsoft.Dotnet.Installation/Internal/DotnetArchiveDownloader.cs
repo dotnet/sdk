@@ -21,7 +21,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     private readonly DownloadCache _downloadCache;
 
     public DotnetArchiveDownloader()
-        : this(new ReleaseManifest())
+        : this(ReleaseManifest.Default)
     {
     }
 

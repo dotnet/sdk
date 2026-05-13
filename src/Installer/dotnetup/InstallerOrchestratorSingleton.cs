@@ -243,9 +243,9 @@ internal class InstallerOrchestratorSingleton
         var installRequest = resolvedRequest.Request;
         var versionToInstall = resolvedRequest.ResolvedVersion;
         var install = new DotnetInstall(installRequest.InstallRoot, versionToInstall, installRequest.Component);
-        // Reuse the ReleaseManifest from version resolution so we share its signed in-memory
-        // caches (index + per-product releases) instead of re-downloading both JSON tiers.
-        ReleaseManifest releaseManifest = resolvedRequest.ReleaseManifest;
+        // The process-wide ReleaseManifest singleton; sharing it is what keeps signature
+        // verification at one verify per JSON per process (caches are on the instance).
+        ReleaseManifest releaseManifest = ReleaseManifest.Default;
         var manifest = installRequest.Options.Untracked ? null : new DotnetupSharedManifest(installRequest.Options.ManifestPath);
 
         using (var finalizeLock = ModifyInstallStateMutex())
