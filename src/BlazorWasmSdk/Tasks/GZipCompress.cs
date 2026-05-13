@@ -56,18 +56,30 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because file is newer than '{1}'.", inputFullPath, outputRelativePath);
                 }
 
-                try
+                const int maxRetries = 3;
+                for (int retry = 0; retry <= maxRetries; retry++)
                 {
-                    using var sourceStream = File.OpenRead(file.ItemSpec);
-                    using var fileStream = File.Create(outputRelativePath);
-                    using var stream = new GZipStream(fileStream, CompressionLevel.Optimal);
+                    try
+                    {
+                        using var sourceStream = File.OpenRead(file.ItemSpec);
+                        using var fileStream = File.Create(outputRelativePath);
+                        using var stream = new GZipStream(fileStream, CompressionLevel.Optimal);
 
-                    sourceStream.CopyTo(stream);
-                }
-                catch (Exception e)
-                {
-                    Log.LogErrorFromException(e);
-                    return;
+                        sourceStream.CopyTo(stream);
+                        break;
+                    }
+                    catch (IOException) when (retry < maxRetries)
+                    {
+                        Log.LogMessage(MessageImportance.High,
+                            "Unable to access file '{0}' during GZip compression. Retrying ({1}/{2})...",
+                            outputRelativePath, retry + 1, maxRetries);
+                        Thread.Sleep(100 * (retry + 1));
+                    }
+                    catch (Exception e)
+                    {
+                        Log.LogErrorFromException(e);
+                        return;
+                    }
                 }
             });
 
