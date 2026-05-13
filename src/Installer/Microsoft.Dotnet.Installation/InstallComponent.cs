@@ -47,19 +47,15 @@ public static class InstallComponentExtensions
 
     /// <summary>
     /// Formats a version string to a fixed display width so progress rows align.
-    /// Short versions like "9.0.312" are left-padded; long versions like
-    /// "11.0.100-preview.2.26159.112" are truncated to "..59.112".
-    /// Target width matches the common format "10.0.201" (8 chars).
+    /// Short versions like "9.0.312" are left-padded to <paramref name="minWidth"/>
+    /// (default 8, matching the common "10.0.201" format). Longer versions are
+    /// returned at their natural width — never truncated. Pass the maximum version
+    /// length across a batch as <paramref name="minWidth"/> to keep all rows aligned.
     /// </summary>
-    public static string FormatVersionForDisplay(string version)
+    public static string FormatVersionForDisplay(string version, int minWidth = 8)
     {
-        const int targetWidth = 8;
-        if (version.Length <= targetWidth)
-        {
-            return version.PadLeft(targetWidth);
-        }
-
-        return ".." + version[^(targetWidth - 2)..];
+        int width = Math.Max(minWidth, version.Length);
+        return version.PadLeft(width);
     }
 
     /// <summary>

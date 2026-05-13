@@ -15,6 +15,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _shouldDisposeDownloader;
     private readonly bool _ownsProgressReporter = true;
+    private readonly int _versionDisplayWidth;
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -32,25 +33,26 @@ internal class DotnetArchiveExtractor : IDisposable
         IProgressTarget progressTarget,
         IArchiveDownloader? archiveDownloader = null,
         string? cacheDirectory = null)
-        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory, versionDisplayWidth: resolvedVersion.ToString().Length)
     {
         _progressTarget = progressTarget;
     }
 
     /// <summary>
-    /// Constructor that accepts a shared IProgressReporter, allowing multiple extractors
-    /// to display progress tasks within the same progress widget.
+    /// Constructor for batched installs. The supplied <see cref="InstallBatchContext"/> carries
+    /// the shared progress reporter (so multiple extractors render tasks in the same widget) and
+    /// the batch's version-display width (so progress rows align across differing version lengths).
     /// </summary>
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
-        IProgressReporter sharedReporter,
+        InstallBatchContext batchContext,
         IArchiveDownloader? archiveDownloader = null,
         string? cacheDirectory = null)
-        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory)
+        : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory, batchContext.VersionDisplayWidth)
     {
-        _progressReporter = sharedReporter;
+        _progressReporter = batchContext.Reporter;
         _ownsProgressReporter = false;
     }
 
@@ -59,10 +61,12 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
         IArchiveDownloader? archiveDownloader,
-        string? cacheDirectory = null)
+        string? cacheDirectory,
+        int versionDisplayWidth)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
+        _versionDisplayWidth = versionDisplayWidth;
         ScratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
 
         if (archiveDownloader != null)
@@ -89,7 +93,7 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     private IProgressReporter ProgressReporter => _progressReporter ??= _progressTarget!.CreateProgressReporter();
 
-    private ExtractorProgressTracker ProgressTracker { get => field ??= new ExtractorProgressTracker(ProgressReporter, _request.Component, _resolvedVersion.ToString()); }
+    private ExtractorProgressTracker ProgressTracker { get => field ??= new ExtractorProgressTracker(ProgressReporter, _request.Component, _resolvedVersion.ToString(), _versionDisplayWidth); }
 
     public void Prepare()
     {
