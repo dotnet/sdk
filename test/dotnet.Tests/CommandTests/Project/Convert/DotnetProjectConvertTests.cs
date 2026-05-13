@@ -1727,6 +1727,69 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void Directives_IncludeCompile_DefaultCompileItemsDisabled()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
+            #:property EnableDefaultCompileItems=false
+            #:include Util.cs
+            Console.WriteLine(Util.GetMessage());
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            static class Util
+            {
+                public static string GetMessage() => "Hello from Util";
+            }
+            """);
+
+        var expectedOutput = "Hello from Util";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
+            .Should().Match($"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <UserSecretsId>Program-*</UserSecretsId>
+                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <Compile Include="Program.cs" />
+                    <Compile Include="Util.cs" />
+                  </ItemGroup>
+
+                </Project>
+
+                """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "Program"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
     public void Directives_IncludeDll()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

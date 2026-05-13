@@ -170,8 +170,10 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     projectFile,
                     sourceDirectory,
                     outputDirectory,
+                    targetFile,
+                    fileBuilder.EntryPointSourceFile,
                     includeItems,
-                    fileDirectives).ToImmutableArray();
+                    fileDirectives);
                 if (!explicitProjectItemDirectives.IsEmpty)
                 {
                     WriteProjectFile(projectFile, projectDirectives, explicitProjectItemDirectives);
@@ -403,26 +405,23 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
-        IEnumerable<CSharpDirective.IncludeOrExclude> FindExplicitProjectItemDirectives(
+        ImmutableArray<CSharpDirective.IncludeOrExclude> FindExplicitProjectItemDirectives(
             string projectFile,
             string sourceDirectory,
             string outputDirectory,
+            string entryPointOutputPath,
+            SourceFile entryPointSourceFile,
             List<(string ItemType, string FullPath, string RelativePath)> includeItems,
             ImmutableArray<CSharpDirective> directives)
         {
             // The converted project is evaluated after files are copied so SDK defaults can pick up
             // items such as Compile/None/Content naturally. Keep only the #:include directives whose
-            // copied items are missing from that evaluation so the project writer doesn't infer item
-            // types from mapping again.
+            // copied items are missing from that evaluation, plus the entry point when Compile defaults
+            // do not include it, so the project writer doesn't infer item types from mapping again.
             var candidateItems = includeItems
                 .Select(item => (item.ItemType, item.RelativePath, SourceFullPath: item.FullPath, OutputFullPath: Path.GetFullPath(Path.Combine(outputDirectory, item.RelativePath))))
                 .Distinct()
                 .ToArray();
-
-            if (candidateItems.Length == 0)
-            {
-                yield break;
-            }
 
             using var outputProjectCollection = new ProjectCollection();
             var outputProject = ProjectInstance.FromFile(projectFile, new ProjectOptions
@@ -432,7 +431,11 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
             var itemComparer = new ProjectItemComparer();
             var automaticallyIncludedItems = new HashSet<(string ItemType, string FullPath)>(itemComparer);
-            foreach (var itemType in candidateItems.Select(static item => item.ItemType).Distinct(StringComparer.OrdinalIgnoreCase))
+            var itemTypes = candidateItems
+                .Select(static item => item.ItemType)
+                .Append("Compile")
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+            foreach (var itemType in itemTypes)
             {
                 foreach (var item in outputProject.GetItems(itemType))
                 {
@@ -442,6 +445,16 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
 
             var addedExplicitItems = new HashSet<(string ItemType, string FullPath)>(itemComparer);
+
+            var entryPointOutputFullPath = Path.GetFullPath(entryPointOutputPath);
+            var explicitProjectItemDirectives = ImmutableArray.CreateBuilder<CSharpDirective.IncludeOrExclude>();
+            if (!automaticallyIncludedItems.Contains(("Compile", entryPointOutputFullPath)))
+            {
+                var directiveName = Path.GetRelativePath(outputDirectory, entryPointOutputFullPath);
+                explicitProjectItemDirectives.Add(CreateIncludeDirective(entryPointSourceFile, directiveName, "Compile"));
+                addedExplicitItems.Add(("Compile", entryPointOutputFullPath));
+            }
+
             foreach (var directive in directives.OfType<CSharpDirective.IncludeOrExclude>())
             {
                 if (directive.Kind != CSharpDirective.IncludeOrExcludeKind.Include || directive.ItemType is null)
@@ -466,14 +479,33 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
                 if (TryGetOutputDirectiveName(directive, sourceDirectory, outputDirectory, missingItems, out var directiveName))
                 {
-                    yield return directive.WithName(directiveName);
+                    explicitProjectItemDirectives.Add(directive.WithName(directiveName));
                     continue;
                 }
 
                 foreach (var item in missingItems)
                 {
-                    yield return directive.WithName(item.RelativePath);
+                    explicitProjectItemDirectives.Add(directive.WithName(item.RelativePath));
                 }
+            }
+
+            return explicitProjectItemDirectives.ToImmutable();
+
+            static CSharpDirective.IncludeOrExclude CreateIncludeDirective(SourceFile sourceFile, string name, string itemType)
+            {
+                return new CSharpDirective.IncludeOrExclude(new CSharpDirective.ParseInfo
+                {
+                    SourceFile = sourceFile,
+                    Span = default,
+                    LeadingWhiteSpace = default,
+                    TrailingWhiteSpace = default,
+                })
+                {
+                    OriginalName = name,
+                    Name = name,
+                    Kind = CSharpDirective.IncludeOrExcludeKind.Include,
+                    ItemType = itemType,
+                };
             }
 
             static bool DirectiveIncludesItem(CSharpDirective.IncludeOrExclude directive, string sourceDirectory, string itemFullPath)
