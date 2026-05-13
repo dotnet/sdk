@@ -149,8 +149,8 @@
 
     <!--
       Updates to any of these versions will require the updating of that package version in the
-      source-build-reference-packages repo as a text-only package.
-      See https://github.com/dotnet/source-build-reference-packages?tab=readme-ov-file#text-only
+      source-build-assets repo as a text-only package.
+      See https://github.com/dotnet/source-build-assets?tab=readme-ov-file#text-only
     -->
     <MauiWorkloadManifestVersion>11.0.0-preview.1.26102.3</MauiWorkloadManifestVersion>
     <XamarinAndroidWorkloadManifestVersion>36.1.99-preview.1.119</XamarinAndroidWorkloadManifestVersion>

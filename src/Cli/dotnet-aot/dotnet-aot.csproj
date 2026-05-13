@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -29,6 +29,14 @@
       https://github.com/dotnet/docs/blob/main/docs/core/deploying/native-aot/security.md#control-flow-guard
     -->
     <ControlFlowGuard>Guard</ControlFlowGuard>
+
+    <!--
+      Declare RuntimeIdentifier so that centralized NuGet restore (via sdk.slnx) generates
+      the RID-specific target (e.g. net11.0/win-x64) in project.assets.json. Without this,
+      the assets file only has the TFM target and Publish fails with NETSDK1047.
+      Conditioned to platforms where NativeAOT publish is supported.
+    -->
+    <RuntimeIdentifier Condition="$(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx'))">$(TargetRid)</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
