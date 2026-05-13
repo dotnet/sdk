@@ -99,6 +99,15 @@ public class TestCommand(
                 ? [.. parseResult.UnmatchedTokens.TakeWhile(x => x != settings[1])]
                 : parseResult.UnmatchedTokens;
 
+            // Pre-set the legacy VSTest stdout workaround env var BEFORE invoking MSBuild's
+            // CommandLineParser below. MSBuild caches MSBUILDENSURESTDOUTFORTASKPROCESSES in a
+            // readonly singleton (Traits.Instance.EscapeHatches.EnsureStdOutForChildNodesIsPrimaryStdout)
+            // on first access; once any MSBuild type is touched in this process, that value is locked.
+            // If we set it later (in SetLegacyVSTestWorkarounds), MSBuild will already have locked it
+            // as "false" and parallel cross-targeting builds will lose stdout from one inner build.
+            // The previous value is captured above and restored in the finally block below.
+            Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, "1");
+
             var useTerminalLogger = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(unmatchedTokensWithoutSettings);
 
             if (useTerminalLogger == TerminalLoggerMode.Invalid)
