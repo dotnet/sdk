@@ -5,9 +5,6 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 
 /// <summary>
 /// Stable identifiers for every spec-violation the <see cref="SignatureVerifier"/> can emit.
-/// Mirrors the failure codes documented in
-/// <c>detached_signature_validation/signature_requirements.md</c>.
-/// </summary>
 internal enum FailureCode
 {
     None = 0,
