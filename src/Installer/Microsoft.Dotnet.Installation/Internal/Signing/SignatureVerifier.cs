@@ -225,7 +225,13 @@ internal static class SignatureVerifier
                 tsaCert,
                 extraStore: tsaCms.Certificates,
                 customRoots: timestampRoots,
-                verificationTime: tsaTimestampUtc.Value.UtcDateTime,
+                // The TSA chain is built without a fixed VerificationTime so the chain engine
+                // uses "now" — the TSA cert validity is what attests to *when* the timestamp
+                // was issued, so anchoring its own validity check to its own output is
+                // chicken-and-egg. Mirrors NuGet's CertificateChainUtility.SetCertBuildChainPolicy
+                // which skips VerificationTime when CertificateType == Timestamp.
+                verificationTime: null,
+                applicationPolicyEku: EkuTimeStamping,
                 revocationMode: options.RevocationMode,
                 timeoutCode: FailureCode.TimestampRevocationUnavailable,
                 revokedCode: FailureCode.TimestampChainFailed,
@@ -250,6 +256,7 @@ internal static class SignatureVerifier
                 extraStore: cms.Certificates,
                 customRoots: codesignRoots,
                 verificationTime: verificationTime,
+                applicationPolicyEku: EkuCodeSigning,
                 revocationMode: options.RevocationMode,
                 timeoutCode: FailureCode.RevocationUnavailable,
                 revokedCode: FailureCode.Revoked,
@@ -481,7 +488,8 @@ internal static class SignatureVerifier
         X509Certificate2 leaf,
         X509Certificate2Collection extraStore,
         X509Certificate2Collection customRoots,
-        DateTime verificationTime,
+        DateTime? verificationTime,
+        string applicationPolicyEku,
         RevocationCheckMode revocationMode,
         FailureCode timeoutCode,
         FailureCode revokedCode,
@@ -499,41 +507,105 @@ internal static class SignatureVerifier
             _ => X509RevocationMode.Online,
         };
         chain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
+        // Defense-in-depth: tell the chain engine to enforce the EKU as part of the build.
+        // Mirrors NuGet's CertificateChainUtility.SetCertBuildChainPolicy. Catches
+        // mis-purposed intermediates / cross-signed scenarios where an intermediate
+        // constrains the leaf's permitted purposes.
+        chain.ChainPolicy.ApplicationPolicy.Add(new Oid(applicationPolicyEku));
         chain.ChainPolicy.UrlRetrievalTimeout = RevocationRetrievalTimeout;
+        // We deliberately do NOT set X509VerificationFlags.IgnoreNotTimeValid here,
+        // unlike NuGet's package-verification path. Release manifests are intended to be
+        // FRESH artifacts: an expired signer cert at time of consumption means the
+        // manifest is stale even if the signature was correct when produced. NuGet
+        // ignores NotTimeValid because packages are immutable historical artifacts;
+        // we are not. Surface NotTimeValid as ChainBuildFailed.
         chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
-        chain.ChainPolicy.VerificationTime = verificationTime;
+        if (verificationTime.HasValue)
+        {
+            chain.ChainPolicy.VerificationTime = verificationTime.Value;
+        }
+        // else: TSA chain — use "now" so we don't anchor TSA validity to its own output.
 
         chain.ChainPolicy.ExtraStore.AddRange(extraStore);
 
         chain.ChainPolicy.CustomTrustStore.AddRange(customRoots);
         chain.ChainPolicy.CustomTrustStore.AddRange(s_osRoots.Value);
 
+        bool ok = BuildWithUntrustedRootRetry(chain, leaf);
+        try
+        {
+            if (ok && chain.ChainStatus.Length == 0)
+                return;
+
+            X509ChainStatusFlags flags = X509ChainStatusFlags.NoError;
+            foreach (X509ChainStatus s in chain.ChainStatus)
+                flags |= s.Status;
+
+            if ((flags & X509ChainStatusFlags.Revoked) != 0)
+            {
+                result.Add(revokedCode, $"{role} chain reports revoked certificate: {DescribeChainStatus(chain)}");
+                return;
+            }
+
+            const X509ChainStatusFlags offline =
+                X509ChainStatusFlags.OfflineRevocation |
+                X509ChainStatusFlags.RevocationStatusUnknown;
+
+            if ((flags & offline) != 0)
+            {
+                result.Add(timeoutCode,
+                    $"{role} chain could not confirm revocation status (offline or unreachable). Detail: {DescribeChainStatus(chain)}");
+                return;
+            }
+
+            result.Add(genericCode, $"{role} chain build failed: {DescribeChainStatus(chain)}");
+        }
+        finally
+        {
+            // X509Certificate2 holds an OS handle. Disposing each chain element's certificate
+            // immediately avoids finalizer pressure (and on Linux can prevent ulimit issues
+            // under heavy verification load). Mirrors NuGet's X509ChainHolder.Dispose.
+            foreach (X509ChainElement element in chain.ChainElements)
+            {
+                element.Certificate.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Builds the chain, retrying on transient <see cref="X509ChainStatusFlags.UntrustedRoot" />
+    /// failures on Windows. Mirrors NuGet's RetriableX509ChainBuildPolicy, which defends
+    /// against a documented Windows transient where the OS root store reports UntrustedRoot
+    /// briefly under load. Windows-only because NuGet's factory only enables retry there.
+    /// </summary>
+    private static bool BuildWithUntrustedRootRetry(X509Chain chain, X509Certificate2 leaf)
+    {
+        const int RetryCount = 3;
+        TimeSpan sleepInterval = TimeSpan.FromMilliseconds(1000);
+
         bool ok = chain.Build(leaf);
-        if (ok && chain.ChainStatus.Length == 0)
-            return;
+        if (ok || !OperatingSystem.IsWindows())
+            return ok;
 
-        X509ChainStatusFlags flags = X509ChainStatusFlags.NoError;
-        foreach (X509ChainStatus s in chain.ChainStatus)
-            flags |= s.Status;
-
-        if ((flags & X509ChainStatusFlags.Revoked) != 0)
+        for (int i = 0; i < RetryCount && !ok; i++)
         {
-            result.Add(revokedCode, $"{role} chain reports revoked certificate: {DescribeChainStatus(chain)}");
-            return;
+            bool hasUntrustedRoot = false;
+            foreach (X509ChainStatus status in chain.ChainStatus)
+            {
+                if ((status.Status & X509ChainStatusFlags.UntrustedRoot) != 0)
+                {
+                    hasUntrustedRoot = true;
+                    break;
+                }
+            }
+            if (!hasUntrustedRoot)
+                break;
+
+            Thread.Sleep(sleepInterval);
+            ok = chain.Build(leaf);
         }
 
-        const X509ChainStatusFlags offline =
-            X509ChainStatusFlags.OfflineRevocation |
-            X509ChainStatusFlags.RevocationStatusUnknown;
-
-        if ((flags & offline) != 0)
-        {
-            result.Add(timeoutCode,
-                $"{role} chain could not confirm revocation status (offline or unreachable). Detail: {DescribeChainStatus(chain)}");
-            return;
-        }
-
-        result.Add(genericCode, $"{role} chain build failed: {DescribeChainStatus(chain)}");
+        return ok;
     }
 
     private static X509Certificate2Collection LoadOsRoots()

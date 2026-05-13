@@ -400,4 +400,89 @@ public class SignatureVerifierTests
             "collect-all behavior is a contract per signature_requirements.md §10");
         result.IsValid.Should().BeFalse();
     }
+
+    // ---------------- NuGet-parity regression tests ----------------
+    //
+    // Guard the chain-policy decisions that mirror NuGet's signing stack so that future
+    // BCL or CTL changes don't silently regress them. See the design notes at the top of
+    // SignatureVerifier.cs for the full set of NuGet sources we mirrored.
+    //
+    // Several behaviors we'd like to cover require fixtures or test seams we don't have
+    // today. Those are captured below as Skip-reason tests so they appear as TODOs in
+    // test output rather than getting forgotten.
+
+    [Fact]
+    public void Verify_RepeatedCalls_DoNotLeakOsHandles()
+    {
+        // Spec §6 mirrors NuGet's X509ChainHolder.Dispose by disposing every
+        // X509ChainElement.Certificate after chain build. Without that, repeated verify
+        // calls would accumulate OS-handle pressure (each X509Certificate2 holds a handle
+        // released only by GC finalizer). On Linux this can hit ulimit under load.
+        //
+        // We can't directly observe SafeHandle.Dispose, so we measure HandleCount before
+        // and after a tight loop and assert that growth stays in a small constant range.
+        // GC.Collect / WaitForPendingFinalizers between samples removes the noise of any
+        // unrelated transient handles that the test runner may have allocated.
+        const int iterations = 50;
+
+        byte[] content = LoadAsset("releases-directory.json");
+        byte[] sig = LoadAsset("releases-directory.json.20260505084330.p7s");
+        var options = ProductionOptions();
+
+        // Warm-up: first verify primes any one-time caches (PEM load, OS root store).
+        SignatureVerifier.Verify(content, sig, options, s_pinnedNow);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        long beforeHandles = System.Diagnostics.Process.GetCurrentProcess().HandleCount;
+
+        for (int i = 0; i < iterations; i++)
+        {
+            SignatureVerifier.Verify(content, sig, options, s_pinnedNow);
+        }
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        long afterHandles = System.Diagnostics.Process.GetCurrentProcess().HandleCount;
+        long growth = afterHandles - beforeHandles;
+
+        // A small constant ceiling: we expect ~zero growth from the verifier itself, but
+        // unrelated test-runner noise is non-deterministic. If chain-element disposal
+        // regressed, growth would scale roughly with iterations * chain-length (~4-5 certs).
+        growth.Should().BeLessThan(iterations,
+            $"handle count grew by {growth} over {iterations} verify calls; chain-element " +
+            $"disposal in EvaluateChain may have regressed (before={beforeHandles}, after={afterHandles})");
+    }
+
+    [Fact(Skip = "TODO: requires a custom cert chain whose intermediate constrains EKU away " +
+                 "from code-signing. Track via dotnet/sdk issue 'dnup signing tests: mint " +
+                 "EKU-constrained intermediate fixture'. Until then, ApplicationPolicy " +
+                 "enforcement on chain build is covered only by manual review against NuGet's " +
+                 "CertificateChainUtility.SetCertBuildChainPolicy.")]
+    public void Verify_IntermediateConstrainedAwayFromCodeSigning_FailsChainBuild()
+    {
+    }
+
+    [Fact(Skip = "TODO: requires a test seam in BuildWithUntrustedRootRetry, or a way to " +
+                 "simulate the OS root store reporting UntrustedRoot transiently. Track via " +
+                 "dotnet/sdk issue 'dnup signing tests: cover Windows UntrustedRoot retry'. " +
+                 "Until then the retry path is covered only by manual review against NuGet's " +
+                 "RetriableX509ChainBuildPolicy.")]
+    public void Verify_TransientUntrustedRootOnWindows_RetriesAndSucceeds()
+    {
+    }
+
+    [Fact(Skip = "TODO: requires a fixture signed with a now-expired cert (or a TSA timestamp " +
+                 "outside the signer cert validity window). Real Microsoft .NET Release certs " +
+                 "are long-lived, so this can't be triggered against production fixtures. The " +
+                 "spec §6 'NotTimeValid is fatal' clause is enforced by NOT setting " +
+                 "X509VerificationFlags.IgnoreNotTimeValid in EvaluateChain — confirmed by " +
+                 "code review. Track via dotnet/sdk issue 'dnup signing tests: expired-cert " +
+                 "fixture for NotTimeValid coverage'.")]
+    public void Verify_ExpiredSignerCert_FailsAsChainBuildFailed_NotIgnored()
+    {
+    }
 }
