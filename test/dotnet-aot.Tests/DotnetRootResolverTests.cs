@@ -11,49 +11,63 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  Tests for <see cref="DotnetRootResolver"/> with injectable dependencies.
 ///  Validates DOTNET_ROOT resolution, architecture-specific env vars,
 ///  process path walk-up, and hostfxr discovery.
+///  Path construction uses Path.Combine for cross-platform compatibility.
 /// </summary>
 public class DotnetRootResolverTests
 {
+    // Helper to build platform-appropriate paths for test inputs/outputs.
+    // When isWindows=true, uses a Windows-style root; otherwise Unix-style.
+    private static string BuildPath(bool isWindows, params string[] segments)
+    {
+        string root = isWindows ? @"C:\" : "/";
+        return segments.Length == 0 ? root : Path.Combine(root, Path.Combine(segments));
+    }
+
     [Fact]
     public void ResolveDotnetRoot_WithDotnetRootEnvVar_ReturnsThatPath()
     {
+        string dotnetDir = BuildPath(true, "dotnet");
+        string fallback = BuildPath(true, "fallback") + Path.DirectorySeparatorChar;
+
         string result = DotnetRootResolver.ResolveDotnetRoot(
-            getEnvVar: name => name == "DOTNET_ROOT" ? @"C:\dotnet" : null,
+            getEnvVar: name => name == "DOTNET_ROOT" ? dotnetDir : null,
             processPath: null,
             processArch: Architecture.X64,
             isWindows: true,
             directoryExists: _ => true,
             fileExists: _ => false,
-            baseDirectory: @"C:\fallback\");
+            baseDirectory: fallback);
 
-        Assert.Equal(@"C:\dotnet", result);
+        Assert.Equal(dotnetDir, result);
     }
 
     [Fact]
     public void ResolveDotnetRoot_WithArchSpecificEnvVar_OnWindows_ReturnsThatPath()
     {
+        string dotnetX64 = BuildPath(true, "dotnet-x64");
+        string fallback = BuildPath(true, "fallback") + Path.DirectorySeparatorChar;
+
         string result = DotnetRootResolver.ResolveDotnetRoot(
-            getEnvVar: name => name == "DOTNET_ROOT(x64)" ? @"C:\dotnet-x64" : null,
+            getEnvVar: name => name == "DOTNET_ROOT(x64)" ? dotnetX64 : null,
             processPath: null,
             processArch: Architecture.X64,
             isWindows: true,
             directoryExists: _ => true,
             fileExists: _ => false,
-            baseDirectory: @"C:\fallback\");
+            baseDirectory: fallback);
 
-        Assert.Equal(@"C:\dotnet-x64", result);
+        Assert.Equal(dotnetX64, result);
     }
 
     [Fact]
     public void ResolveDotnetRoot_ArchSpecificEnvVar_IgnoredOnNonWindows()
     {
-        string baseDir = "/usr/lib/dotnet/";
-        // Expected: parent of baseDirectory (Path.GetDirectoryName normalizes separators on Windows)
+        string baseDir = BuildPath(false, "usr", "lib", "dotnet") + Path.DirectorySeparatorChar;
         string expected = Path.GetDirectoryName(
             baseDir.TrimEnd(Path.DirectorySeparatorChar))!;
 
         string result = DotnetRootResolver.ResolveDotnetRoot(
-            getEnvVar: name => name == "DOTNET_ROOT(x64)" ? "/usr/share/dotnet-x64" : null,
+            getEnvVar: name => name == "DOTNET_ROOT(x64)" ? BuildPath(false, "usr", "share", "dotnet-x64") : null,
             processPath: null,
             processArch: Architecture.X64,
             isWindows: false,
@@ -68,108 +82,132 @@ public class DotnetRootResolverTests
     [Fact]
     public void ResolveDotnetRoot_WithDotnetRootNotExisting_SkipsIt()
     {
+        string nonexistent = BuildPath(true, "nonexistent");
+        string baseDir = BuildPath(true, "fallback", "sdk") + Path.DirectorySeparatorChar;
+        string expected = BuildPath(true, "fallback");
+
         string result = DotnetRootResolver.ResolveDotnetRoot(
-            getEnvVar: name => name == "DOTNET_ROOT" ? @"C:\nonexistent" : null,
+            getEnvVar: name => name == "DOTNET_ROOT" ? nonexistent : null,
             processPath: null,
             processArch: Architecture.X64,
             isWindows: true,
-            directoryExists: path => path != @"C:\nonexistent",
+            directoryExists: path => path != nonexistent,
             fileExists: _ => false,
-            baseDirectory: @"C:\fallback\sdk\");
+            baseDirectory: baseDir);
 
         // Non-existent DOTNET_ROOT is skipped; falls to baseDirectory parent
-        Assert.Equal(@"C:\fallback", result);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
     public void ResolveDotnetRoot_WalksUpFromProcessPath()
     {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string processPath = Path.Combine(dotnetRoot, "sdk", "11.0.100", "dn.exe");
+        string dotnetExe = Path.Combine(dotnetRoot, "dotnet.exe");
+        string fallback = BuildPath(true, "fallback") + Path.DirectorySeparatorChar;
+
         string result = DotnetRootResolver.ResolveDotnetRoot(
             getEnvVar: _ => null,
-            processPath: @"C:\dotnet\sdk\11.0.100\dn.exe",
+            processPath: processPath,
             processArch: Architecture.X64,
             isWindows: true,
             directoryExists: _ => false,
-            fileExists: path => path == @"C:\dotnet\dotnet.exe",
-            baseDirectory: @"C:\fallback\");
+            fileExists: path => path == dotnetExe,
+            baseDirectory: fallback);
 
-        Assert.Equal(@"C:\dotnet", result);
+        Assert.Equal(dotnetRoot, result);
     }
 
     [Fact]
     public void ResolveDotnetRoot_NoDotnetAncestor_FallsBackToBaseDirectory()
     {
+        string processPath = BuildPath(true, "app", "bin", "myapp.exe");
+        string baseDir = BuildPath(true, "fallback", "sdk") + Path.DirectorySeparatorChar;
+        string expected = BuildPath(true, "fallback");
+
         string result = DotnetRootResolver.ResolveDotnetRoot(
             getEnvVar: _ => null,
-            processPath: @"C:\app\bin\myapp.exe",
+            processPath: processPath,
             processArch: Architecture.X64,
             isWindows: true,
             directoryExists: _ => false,
             fileExists: _ => false,
-            baseDirectory: @"C:\fallback\sdk\");
+            baseDirectory: baseDir);
 
         // Last resort: parent of baseDirectory
-        Assert.Equal(@"C:\fallback", result);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
     public void ResolveHostfxrPath_WithValidFxrDir_ReturnsPath()
     {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string fxrVersion = Path.Combine(fxrDir, "9.0.0");
+        string expectedPath = Path.Combine(fxrVersion, "hostfxr.dll");
+
         string result = DotnetRootResolver.ResolveHostfxrPath(
-            dotnetRoot: @"C:\dotnet",
+            dotnetRoot: dotnetRoot,
             isWindows: true,
             isMacOS: false,
-            directoryExists: path => path == @"C:\dotnet\host\fxr",
-            getDirectories: _ => new[] { @"C:\dotnet\host\fxr\9.0.0" },
-            fileExists: path => path == @"C:\dotnet\host\fxr\9.0.0\hostfxr.dll");
+            directoryExists: path => path == fxrDir,
+            getDirectories: _ => new[] { fxrVersion },
+            fileExists: path => path == expectedPath);
 
-        Assert.Equal(@"C:\dotnet\host\fxr\9.0.0\hostfxr.dll", result);
+        Assert.Equal(expectedPath, result);
     }
 
     [Fact]
     public void ResolveHostfxrPath_PicksHighestVersion()
     {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string v800 = Path.Combine(fxrDir, "8.0.0");
+        string v901 = Path.Combine(fxrDir, "9.0.1");
+        string v900 = Path.Combine(fxrDir, "9.0.0");
+        string expectedPath = Path.Combine(v901, "hostfxr.dll");
+
         string result = DotnetRootResolver.ResolveHostfxrPath(
-            dotnetRoot: @"C:\dotnet",
+            dotnetRoot: dotnetRoot,
             isWindows: true,
             isMacOS: false,
             directoryExists: _ => true,
-            getDirectories: _ => new[]
-            {
-                @"C:\dotnet\host\fxr\8.0.0",
-                @"C:\dotnet\host\fxr\9.0.1",
-                @"C:\dotnet\host\fxr\9.0.0"
-            },
+            getDirectories: _ => new[] { v800, v901, v900 },
             fileExists: _ => true);
 
-        Assert.Equal(@"C:\dotnet\host\fxr\9.0.1\hostfxr.dll", result);
+        Assert.Equal(expectedPath, result);
     }
 
     [Fact]
     public void ResolveHostfxrPath_SkipsPrereleaseDirectories()
     {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string preview = Path.Combine(fxrDir, "10.0.0-preview.5");
+        string v900 = Path.Combine(fxrDir, "9.0.0");
+        string expectedPath = Path.Combine(v900, "hostfxr.dll");
+
         // Version.TryParse fails for prerelease strings like "10.0.0-preview.5"
         string result = DotnetRootResolver.ResolveHostfxrPath(
-            dotnetRoot: @"C:\dotnet",
+            dotnetRoot: dotnetRoot,
             isWindows: true,
             isMacOS: false,
             directoryExists: _ => true,
-            getDirectories: _ => new[]
-            {
-                @"C:\dotnet\host\fxr\10.0.0-preview.5",
-                @"C:\dotnet\host\fxr\9.0.0"
-            },
+            getDirectories: _ => new[] { preview, v900 },
             fileExists: _ => true);
 
         // Should pick 9.0.0 since the preview dir is skipped
-        Assert.Equal(@"C:\dotnet\host\fxr\9.0.0\hostfxr.dll", result);
+        Assert.Equal(expectedPath, result);
     }
 
     [Fact]
     public void ResolveHostfxrPath_MissingFxrDirectory_ReturnsEmpty()
     {
+        string dotnetRoot = BuildPath(true, "dotnet");
+
         string result = DotnetRootResolver.ResolveHostfxrPath(
-            dotnetRoot: @"C:\dotnet",
+            dotnetRoot: dotnetRoot,
             isWindows: true,
             isMacOS: false,
             directoryExists: _ => false,
@@ -182,12 +220,16 @@ public class DotnetRootResolverTests
     [Fact]
     public void ResolveHostfxrPath_FxrDirExistsButNoHostfxrFile_ReturnsEmpty()
     {
+        string dotnetRoot = BuildPath(true, "dotnet");
+        string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
+        string fxrVersion = Path.Combine(fxrDir, "9.0.0");
+
         string result = DotnetRootResolver.ResolveHostfxrPath(
-            dotnetRoot: @"C:\dotnet",
+            dotnetRoot: dotnetRoot,
             isWindows: true,
             isMacOS: false,
             directoryExists: _ => true,
-            getDirectories: _ => new[] { @"C:\dotnet\host\fxr\9.0.0" },
+            getDirectories: _ => new[] { fxrVersion },
             fileExists: _ => false);
 
         Assert.Equal(string.Empty, result);
@@ -196,7 +238,7 @@ public class DotnetRootResolverTests
     [Fact]
     public void ResolveHostfxrPath_OnMacOS_LooksForDylib()
     {
-        string dotnetRoot = "/usr/local/share/dotnet";
+        string dotnetRoot = Path.Combine("/", "usr", "local", "share", "dotnet");
         string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
         string fxrVersion = Path.Combine(fxrDir, "9.0.0");
         string expectedPath = Path.Combine(fxrVersion, "libhostfxr.dylib");
@@ -215,7 +257,7 @@ public class DotnetRootResolverTests
     [Fact]
     public void ResolveHostfxrPath_OnLinux_LooksForSo()
     {
-        string dotnetRoot = "/usr/share/dotnet";
+        string dotnetRoot = Path.Combine("/", "usr", "share", "dotnet");
         string fxrDir = Path.Combine(dotnetRoot, "host", "fxr");
         string fxrVersion = Path.Combine(fxrDir, "9.0.0");
         string expectedPath = Path.Combine(fxrVersion, "libhostfxr.so");

@@ -14,7 +14,6 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  Validates that --version, --info, and default usage work correctly,
 ///  and that unsupported commands produce parse errors.
 /// </summary>
-[Collection("AOT")]
 public class AotParserTests
 {
     [Fact]

@@ -12,7 +12,6 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  Note: Tests that hit the managed fallback path (ManagedHost.RunApp) will get the
 ///  "managed fallback not found" error because test env doesn't have dotnet.dll in sdkDir.
 /// </summary>
-[Collection("AOT")]
 public class NativeEntryPointTests : IDisposable
 {
     private readonly string? _originalEnableAot;

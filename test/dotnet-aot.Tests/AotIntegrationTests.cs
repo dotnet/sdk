@@ -21,15 +21,6 @@ public class AotIntegrationTests
         _log = log;
     }
 
-    /// <summary>
-    ///  Checks if the AOT binary is in the layout. Tests should return early if not.
-    /// </summary>
-    private static bool IsDnAvailable(out string dnPath)
-    {
-        dnPath = FindDnPath() ?? string.Empty;
-        return !string.IsNullOrEmpty(dnPath);
-    }
-
     private static string? FindDnPath()
     {
         // Look for dn in the SDK layout (same location as dotnet)
@@ -89,15 +80,19 @@ public class AotIntegrationTests
 
         using var process = Process.Start(psi)!;
 
-        // Read output after WaitForExit to avoid potential deadlocks
+        // Read streams asynchronously before WaitForExit to avoid deadlocks
+        // when the child process fills the OS pipe buffer.
+        Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
+        Task<string> stderrTask = process.StandardError.ReadToEndAsync();
+
         if (!process.WaitForExit(timeoutMs))
         {
             process.Kill();
             return (-1, "", "[TIMEOUT]");
         }
 
-        string stdout = process.StandardOutput.ReadToEnd();
-        string stderr = process.StandardError.ReadToEnd();
+        string stdout = stdoutTask.GetAwaiter().GetResult();
+        string stderr = stderrTask.GetAwaiter().GetResult();
 
         _log.WriteLine($"  Exit code: {process.ExitCode}");
         if (!string.IsNullOrEmpty(stdout)) _log.WriteLine($"  Stdout: {stdout.TrimEnd()}");
@@ -108,7 +103,7 @@ public class AotIntegrationTests
 
     private void SkipIfDnUnavailable()
     {
-        if (!IsDnAvailable(out _))
+        if (FindDnPath() is null)
         {
             Assert.Skip("AOT binary (dn) not found in SDK layout. Build with NativeAOT to enable these tests.");
         }
