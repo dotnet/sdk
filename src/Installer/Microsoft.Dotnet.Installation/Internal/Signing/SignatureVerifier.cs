@@ -94,18 +94,54 @@ internal static class SignatureVerifier
 
         var result = new VerificationResult();
 
-        X509Certificate2Collection codesignRoots = options.TrustedCodeSigningRoots;
-        X509Certificate2Collection timestampRoots = options.TrustedTimestampRoots;
+        EvaluateTrustedRoots(options, result);
 
-        if (codesignRoots.Count == 0)
+        DecodeCms(content, signature, result, out SignedCms? cms, out SignerInfo? signer, out X509Certificate2? signerCert);
+        EvaluateAlgorithmPolicy(signer, signerCert, result);
+        EvaluateSignerCertificatePolicy(signerCert, result);
+
+        DateTime? claimedSigningTimeUtc = TryEvaluateSignedAttributes(signer, result);
+
+        (DateTimeOffset? tsaTimestampUtc, SignedCms? tsaCms, X509Certificate2? tsaCert) =
+            TryEvaluateTimestamp(signer, claimedSigningTimeUtc, result);
+
+        EvaluateTimestampChain(tsaCert, tsaCms, tsaTimestampUtc, signer, options, result);
+        EvaluatePrimaryChain(signerCert, cms, tsaTimestampUtc, options, nowOverride, result);
+        MaybeEvaluateJsonExpiration(content, tsaTimestampUtc, options, nowOverride, result);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Records <see cref="FailureCode.TrustedRootsEmpty"/> if either anchor collection is empty.
+    /// Misconfigured callers (e.g. a bad PEM resource) would otherwise silently fall back to an
+    /// OS-only chain build and accept things they shouldn't.
+    /// </summary>
+    private static void EvaluateTrustedRoots(SignatureVerificationOptions options, VerificationResult result)
+    {
+        if (options.TrustedCodeSigningRoots.Count == 0)
             result.Add(FailureCode.TrustedRootsEmpty, "TrustedCodeSigningRoots is empty.");
-        if (timestampRoots.Count == 0)
+        if (options.TrustedTimestampRoots.Count == 0)
             result.Add(FailureCode.TrustedRootsEmpty, "TrustedTimestampRoots is empty.");
+    }
 
-        // ---- CMS decode ----
-        SignedCms? cms = new SignedCms(new ContentInfo(new Oid(OidIdData), content), detached: true);
-        SignerInfo? signer = null;
-        X509Certificate2? signerCert = null;
+    /// <summary>
+    /// Decodes the detached CMS blob, runs <see cref="SignedCms.CheckSignature(bool)"/> for
+    /// cryptographic integrity, and surfaces the signer + cert (when present) to the caller.
+    /// All three out-params can be null on failure; downstream sections handle that with
+    /// <see cref="VerificationResult.AddSkip"/> rather than short-circuiting.
+    /// </summary>
+    private static void DecodeCms(
+        byte[] content,
+        byte[] signature,
+        VerificationResult result,
+        out SignedCms? cms,
+        out SignerInfo? signer,
+        out X509Certificate2? signerCert)
+    {
+        cms = new SignedCms(new ContentInfo(new Oid(OidIdData), content), detached: true);
+        signer = null;
+        signerCert = null;
 
         try
         {
@@ -115,36 +151,38 @@ internal static class SignatureVerifier
         {
             result.Add(FailureCode.SigDecodeFailed, $"Signature is not a valid PKCS#7/CMS SignedData blob: {ex.Message}");
             cms = null;
+            return;
         }
 
-        if (cms is not null)
+        if (cms.ContentInfo.ContentType.Value != OidIdData)
+            result.Add(FailureCode.SigNotCms, $"Unexpected encapsulated content-type OID {cms.ContentInfo.ContentType.Value}; expected id-data ({OidIdData}).");
+
+        if (cms.SignerInfos.Count != 1)
+            result.Add(FailureCode.SigMultipleSigners, $"Expected exactly one signer; found {cms.SignerInfos.Count}.");
+
+        if (cms.SignerInfos.Count >= 1)
         {
-            if (cms.ContentInfo.ContentType.Value != OidIdData)
-                result.Add(FailureCode.SigNotCms, $"Unexpected encapsulated content-type OID {cms.ContentInfo.ContentType.Value}; expected id-data ({OidIdData}).");
-
-            if (cms.SignerInfos.Count != 1)
-                result.Add(FailureCode.SigMultipleSigners, $"Expected exactly one signer; found {cms.SignerInfos.Count}.");
-
-            if (cms.SignerInfos.Count >= 1)
-            {
-                signer = cms.SignerInfos[0];
-                signerCert = signer.Certificate;
-                if (signerCert is null)
-                    result.Add(FailureCode.SignerCertMissing, "SignerInfo does not carry the signer certificate.");
-            }
-
-            // ---- Cryptographic integrity ----
-            try
-            {
-                cms.CheckSignature(verifySignatureOnly: true);
-            }
-            catch (CryptographicException ex)
-            {
-                result.Add(FailureCode.SigCryptoInvalid, $"CMS cryptographic verification failed: {ex.Message}");
-            }
+            signer = cms.SignerInfos[0];
+            signerCert = signer.Certificate;
+            if (signerCert is null)
+                result.Add(FailureCode.SignerCertMissing, "SignerInfo does not carry the signer certificate.");
         }
 
-        // ---- Algorithm policy ----
+        try
+        {
+            cms.CheckSignature(verifySignatureOnly: true);
+        }
+        catch (CryptographicException ex)
+        {
+            result.Add(FailureCode.SigCryptoInvalid, $"CMS cryptographic verification failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Enforces the digest + public-key algorithm allow-list from spec §4.
+    /// </summary>
+    private static void EvaluateAlgorithmPolicy(SignerInfo? signer, X509Certificate2? signerCert, VerificationResult result)
+    {
         if (signer is not null)
         {
             string digestOid = signer.DigestAlgorithm.Value ?? string.Empty;
@@ -166,123 +204,154 @@ internal static class SignatureVerifier
         {
             result.AddSkip("Public-key algorithm policy not evaluated: no signer certificate available.");
         }
+    }
 
-        // ---- Subject DN ----
-        if (signerCert is not null)
-        {
-            if (!DistinguishedNameMatches(signerCert.SubjectName, RequiredSubjectRdns, "Subject", out string subjectDetail))
-                result.Add(FailureCode.SubjectMismatch, subjectDetail);
-        }
-        else
+    /// <summary>
+    /// Pins the signer's subject DN, immediate-issuer DN, and EKU per spec §5.
+    /// </summary>
+    private static void EvaluateSignerCertificatePolicy(X509Certificate2? signerCert, VerificationResult result)
+    {
+        if (signerCert is null)
         {
             result.AddSkip("Subject DN not evaluated: no signer certificate available.");
-        }
-
-        // ---- Issuer DN ----
-        if (signerCert is not null)
-        {
-            if (!DistinguishedNameMatches(signerCert.IssuerName, RequiredIssuerRdns, "Issuer", out string issuerDetail))
-                result.Add(FailureCode.IssuerMismatch, issuerDetail);
-        }
-        else
-        {
             result.AddSkip("Issuer DN not evaluated: no signer certificate available.");
-        }
-
-        // ---- EKU (primary) ----
-        if (signerCert is not null)
-            EvaluateEku(signerCert, EkuCodeSigning, primary: true, result);
-        else
             result.AddSkip("Primary EKU not evaluated: no signer certificate available.");
-
-        // ---- Signed attributes (optional under PKCS#7) ----
-        DateTime? claimedSigningTimeUtc = null;
-        if (signer is not null && signer.SignedAttributes.Count > 0)
-        {
-            EvaluateContentTypeAttribute(signer, result);
-            EvaluateMessageDigestAttribute(signer, result);
-            claimedSigningTimeUtc = TryReadSigningTimeAttribute(signer, result);
+            return;
         }
 
-        // ---- Timestamp ----
-        DateTimeOffset? tsaTimestampUtc = null;
-        SignedCms? tsaCms = null;
-        X509Certificate2? tsaCert = null;
-        if (signer is not null)
-        {
-            (tsaTimestampUtc, tsaCms, tsaCert) = EvaluateTimestamp(signer, claimedSigningTimeUtc, result);
-        }
-        else
+        if (!DistinguishedNameMatches(signerCert.SubjectName, RequiredSubjectRdns, "Subject", out string subjectDetail))
+            result.Add(FailureCode.SubjectMismatch, subjectDetail);
+
+        if (!DistinguishedNameMatches(signerCert.IssuerName, RequiredIssuerRdns, "Issuer", out string issuerDetail))
+            result.Add(FailureCode.IssuerMismatch, issuerDetail);
+
+        EvaluateEku(signerCert, EkuCodeSigning, primary: true, result);
+    }
+
+    /// <summary>
+    /// PKCS#9 signed-attribute checks (spec §8). Returns the claimed signing time when present,
+    /// for later TSA-drift comparison.
+    /// </summary>
+    private static DateTime? TryEvaluateSignedAttributes(SignerInfo? signer, VerificationResult result)
+    {
+        if (signer is null || signer.SignedAttributes.Count == 0)
+            return null;
+
+        EvaluateContentTypeAttribute(signer, result);
+        EvaluateMessageDigestAttribute(signer, result);
+        return TryReadSigningTimeAttribute(signer, result);
+    }
+
+    private static (DateTimeOffset? Timestamp, SignedCms? TsaCms, X509Certificate2? TsaCert) TryEvaluateTimestamp(
+        SignerInfo? signer,
+        DateTime? claimedSigningTimeUtc,
+        VerificationResult result)
+    {
+        if (signer is null)
         {
             result.AddSkip("Timestamp not evaluated: no SignerInfo available.");
+            return (null, null, null);
         }
 
-        // ---- TSA chain ----
-        if (tsaCert is not null && tsaCms is not null && tsaTimestampUtc is not null)
+        return EvaluateTimestamp(signer, claimedSigningTimeUtc, result);
+    }
+
+    /// <summary>
+    /// Builds the TSA chain when a timestamp was extracted; otherwise records a skip.
+    /// </summary>
+    private static void EvaluateTimestampChain(
+        X509Certificate2? tsaCert,
+        SignedCms? tsaCms,
+        DateTimeOffset? tsaTimestampUtc,
+        SignerInfo? signer,
+        SignatureVerificationOptions options,
+        VerificationResult result)
+    {
+        if (tsaCert is null || tsaCms is null || tsaTimestampUtc is null)
         {
-            EvaluateEku(tsaCert, EkuTimeStamping, primary: false, result);
-            EvaluateChain(
-                tsaCert,
-                extraStore: tsaCms.Certificates,
-                customRoots: timestampRoots,
-                // The TSA chain is built without a fixed VerificationTime so the chain engine
-                // uses "now" — the TSA cert validity is what attests to *when* the timestamp
-                // was issued, so anchoring its own validity check to its own output is
-                // chicken-and-egg. Mirrors NuGet's CertificateChainUtility.SetCertBuildChainPolicy
-                // which skips VerificationTime when CertificateType == Timestamp.
-                verificationTime: null,
-                applicationPolicyEku: EkuTimeStamping,
-                revocationMode: options.RevocationMode,
-                timeoutCode: FailureCode.TimestampRevocationUnavailable,
-                revokedCode: FailureCode.TimestampChainFailed,
-                genericCode: FailureCode.TimestampChainFailed,
-                role: "timestamp authority",
-                result);
-        }
-        else if (signer is not null)
-        {
-            result.AddSkip("Timestamp chain not evaluated: timestamp could not be extracted.");
+            if (signer is not null)
+                result.AddSkip("Timestamp chain not evaluated: timestamp could not be extracted.");
+            return;
         }
 
-        // ---- Primary chain ----
-        if (signerCert is not null && cms is not null)
-        {
-            DateTime verificationTime = tsaTimestampUtc?.UtcDateTime ?? (nowOverride ?? DateTimeOffset.UtcNow).UtcDateTime;
-            if (tsaTimestampUtc is null)
-                result.AddSkip($"Primary chain verification time fell back to current UTC ({verificationTime:O}) because no TSA timestamp was available.");
+        EvaluateEku(tsaCert, EkuTimeStamping, primary: false, result);
+        EvaluateChain(
+            tsaCert,
+            extraStore: tsaCms.Certificates,
+            customRoots: options.TrustedTimestampRoots,
+            // The TSA chain is built without a fixed VerificationTime so the chain engine
+            // uses "now" — the TSA cert validity is what attests to *when* the timestamp
+            // was issued, so anchoring its own validity check to its own output is
+            // chicken-and-egg. Mirrors NuGet's CertificateChainUtility.SetCertBuildChainPolicy
+            // which skips VerificationTime when CertificateType == Timestamp.
+            verificationTime: null,
+            applicationPolicyEku: EkuTimeStamping,
+            revocationMode: options.RevocationMode,
+            timeoutCode: FailureCode.TimestampRevocationUnavailable,
+            revokedCode: FailureCode.TimestampChainFailed,
+            genericCode: FailureCode.TimestampChainFailed,
+            role: "timestamp authority",
+            result);
+    }
 
-            EvaluateChain(
-                signerCert,
-                extraStore: cms.Certificates,
-                customRoots: codesignRoots,
-                verificationTime: verificationTime,
-                applicationPolicyEku: EkuCodeSigning,
-                revocationMode: options.RevocationMode,
-                timeoutCode: FailureCode.RevocationUnavailable,
-                revokedCode: FailureCode.Revoked,
-                genericCode: FailureCode.ChainBuildFailed,
-                role: "primary signer",
-                result);
-        }
-        else
+    /// <summary>
+    /// Builds the primary signer chain at the TSA-attested time when available; otherwise
+    /// falls back to "now" and records a skip explaining the fallback.
+    /// </summary>
+    private static void EvaluatePrimaryChain(
+        X509Certificate2? signerCert,
+        SignedCms? cms,
+        DateTimeOffset? tsaTimestampUtc,
+        SignatureVerificationOptions options,
+        DateTimeOffset? nowOverride,
+        VerificationResult result)
+    {
+        if (signerCert is null || cms is null)
         {
             result.AddSkip("Primary chain not evaluated: signer certificate or CMS missing.");
+            return;
         }
 
-        // ---- JSON expiration policy ----
-        if (options.RequireJsonExpirationField)
+        DateTime verificationTime = tsaTimestampUtc?.UtcDateTime ?? (nowOverride ?? DateTimeOffset.UtcNow).UtcDateTime;
+        if (tsaTimestampUtc is null)
+            result.AddSkip($"Primary chain verification time fell back to current UTC ({verificationTime:O}) because no TSA timestamp was available.");
+
+        EvaluateChain(
+            signerCert,
+            extraStore: cms.Certificates,
+            customRoots: options.TrustedCodeSigningRoots,
+            verificationTime: verificationTime,
+            applicationPolicyEku: EkuCodeSigning,
+            revocationMode: options.RevocationMode,
+            timeoutCode: FailureCode.RevocationUnavailable,
+            revokedCode: FailureCode.Revoked,
+            genericCode: FailureCode.ChainBuildFailed,
+            role: "primary signer",
+            result);
+    }
+
+    /// <summary>
+    /// Spec §9 — JSON expiration policy. Skipped silently when the caller opted out via
+    /// <see cref="SignatureVerificationOptions.RequireJsonExpirationField"/>; logged as a
+    /// skip when no TSA timestamp anchors the comparison.
+    /// </summary>
+    private static void MaybeEvaluateJsonExpiration(
+        byte[] content,
+        DateTimeOffset? tsaTimestampUtc,
+        SignatureVerificationOptions options,
+        DateTimeOffset? nowOverride,
+        VerificationResult result)
+    {
+        if (!options.RequireJsonExpirationField)
+            return;
+
+        if (tsaTimestampUtc is null)
         {
-            if (tsaTimestampUtc is null)
-            {
-                result.AddSkip("JSON expiration policy not evaluated: no TSA timestamp.");
-            }
-            else
-            {
-                EvaluateJsonExpiration(content, tsaTimestampUtc.Value, nowOverride ?? DateTimeOffset.UtcNow, result);
-            }
+            result.AddSkip("JSON expiration policy not evaluated: no TSA timestamp.");
+            return;
         }
 
-        return result;
+        EvaluateJsonExpiration(content, tsaTimestampUtc.Value, nowOverride ?? DateTimeOffset.UtcNow, result);
     }
 
     // ---------------- Helpers ----------------
@@ -498,6 +567,40 @@ internal static class SignatureVerifier
         VerificationResult result)
     {
         using var chain = new X509Chain();
+        ConfigureChainPolicy(chain, extraStore, customRoots, verificationTime, applicationPolicyEku, revocationMode);
+
+        bool ok = BuildWithUntrustedRootRetry(chain, leaf);
+        try
+        {
+            InterpretChainStatus(chain, ok, role, timeoutCode, revokedCode, genericCode, result);
+        }
+        finally
+        {
+            // X509Certificate2 holds an OS handle. Disposing each chain element's certificate
+            // immediately avoids finalizer pressure (and on Linux can prevent ulimit issues
+            // under heavy verification load). Mirrors NuGet's X509ChainHolder.Dispose.
+            foreach (X509ChainElement element in chain.ChainElements)
+            {
+                element.Certificate.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sets up <see cref="X509ChainPolicy"/> per the spec: custom-root trust (no Windows
+    /// system roots beyond what we add explicitly), entire-chain revocation, EKU enforcement
+    /// at chain-build time (defense-in-depth on top of the leaf-only EKU bag check), and a
+    /// strict <see cref="X509VerificationFlags.NoFlag"/> — release manifests are FRESH
+    /// artifacts so we surface NotTimeValid as a failure rather than ignoring it.
+    /// </summary>
+    private static void ConfigureChainPolicy(
+        X509Chain chain,
+        X509Certificate2Collection extraStore,
+        X509Certificate2Collection customRoots,
+        DateTime? verificationTime,
+        string applicationPolicyEku,
+        RevocationCheckMode revocationMode)
+    {
         chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
         chain.ChainPolicy.RevocationMode = revocationMode switch
         {
@@ -527,49 +630,48 @@ internal static class SignatureVerifier
         // else: TSA chain — use "now" so we don't anchor TSA validity to its own output.
 
         chain.ChainPolicy.ExtraStore.AddRange(extraStore);
-
         chain.ChainPolicy.CustomTrustStore.AddRange(customRoots);
         chain.ChainPolicy.CustomTrustStore.AddRange(s_osRoots.Value);
+    }
 
-        bool ok = BuildWithUntrustedRootRetry(chain, leaf);
-        try
+    /// <summary>
+    /// Maps post-build <see cref="X509Chain.ChainStatus"/> flags to the role-specific
+    /// <see cref="FailureCode"/>s. Revoked &gt; offline-revocation &gt; generic build failure.
+    /// </summary>
+    private static void InterpretChainStatus(
+        X509Chain chain,
+        bool buildSucceeded,
+        string role,
+        FailureCode timeoutCode,
+        FailureCode revokedCode,
+        FailureCode genericCode,
+        VerificationResult result)
+    {
+        if (buildSucceeded && chain.ChainStatus.Length == 0)
+            return;
+
+        X509ChainStatusFlags flags = X509ChainStatusFlags.NoError;
+        foreach (X509ChainStatus s in chain.ChainStatus)
+            flags |= s.Status;
+
+        if ((flags & X509ChainStatusFlags.Revoked) != 0)
         {
-            if (ok && chain.ChainStatus.Length == 0)
-                return;
-
-            X509ChainStatusFlags flags = X509ChainStatusFlags.NoError;
-            foreach (X509ChainStatus s in chain.ChainStatus)
-                flags |= s.Status;
-
-            if ((flags & X509ChainStatusFlags.Revoked) != 0)
-            {
-                result.Add(revokedCode, $"{role} chain reports revoked certificate: {DescribeChainStatus(chain)}");
-                return;
-            }
-
-            const X509ChainStatusFlags offline =
-                X509ChainStatusFlags.OfflineRevocation |
-                X509ChainStatusFlags.RevocationStatusUnknown;
-
-            if ((flags & offline) != 0)
-            {
-                result.Add(timeoutCode,
-                    $"{role} chain could not confirm revocation status (offline or unreachable). Detail: {DescribeChainStatus(chain)}");
-                return;
-            }
-
-            result.Add(genericCode, $"{role} chain build failed: {DescribeChainStatus(chain)}");
+            result.Add(revokedCode, $"{role} chain reports revoked certificate: {DescribeChainStatus(chain)}");
+            return;
         }
-        finally
+
+        const X509ChainStatusFlags offline =
+            X509ChainStatusFlags.OfflineRevocation |
+            X509ChainStatusFlags.RevocationStatusUnknown;
+
+        if ((flags & offline) != 0)
         {
-            // X509Certificate2 holds an OS handle. Disposing each chain element's certificate
-            // immediately avoids finalizer pressure (and on Linux can prevent ulimit issues
-            // under heavy verification load). Mirrors NuGet's X509ChainHolder.Dispose.
-            foreach (X509ChainElement element in chain.ChainElements)
-            {
-                element.Certificate.Dispose();
-            }
+            result.Add(timeoutCode,
+                $"{role} chain could not confirm revocation status (offline or unreachable). Detail: {DescribeChainStatus(chain)}");
+            return;
         }
+
+        result.Add(genericCode, $"{role} chain build failed: {DescribeChainStatus(chain)}");
     }
 
     /// <summary>

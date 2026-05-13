@@ -5,6 +5,7 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 
 /// <summary>
 /// Stable identifiers for every spec-violation the <see cref="SignatureVerifier"/> can emit.
+/// </summary>
 internal enum FailureCode
 {
     None = 0,
