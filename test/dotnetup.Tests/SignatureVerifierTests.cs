@@ -419,42 +419,70 @@ public class SignatureVerifierTests
         // calls would accumulate OS-handle pressure (each X509Certificate2 holds a handle
         // released only by GC finalizer). On Linux this can hit ulimit under load.
         //
-        // We can't directly observe SafeHandle.Dispose, so we measure HandleCount before
-        // and after a tight loop and assert that growth stays in a small constant range.
-        // GC.Collect / WaitForPendingFinalizers between samples removes the noise of any
-        // unrelated transient handles that the test runner may have allocated.
-        const int iterations = 50;
+        // Process.HandleCount is process-wide and noisy (xUnit threads, file watchers, GC
+        // threads can allocate or release handles between samples). To make this test
+        // deterministic without losing the regression signal, run two batches of very
+        // different sizes and assert the per-iteration growth is bounded by a small
+        // constant in BOTH batches. If the verifier is leaking, growth scales linearly with
+        // batch size and the per-iteration ratio stays nonzero. If it's clean, the
+        // per-iteration ratio approaches zero as batch size grows because the constant
+        // background noise gets amortized away.
+        const int smallBatch = 50;
+        const int largeBatch = 500;
+
+        // Per-iteration growth threshold: chain build allocates ~4–5 cert handles per
+        // verify (signer + 2–3 intermediates + root, ×2 for primary + TSA chains). If
+        // disposal regresses we'd expect ≥4 leaked handles per call. We allow up to 1
+        // handle per iteration as headroom for runtime/test-host noise; anything >1 is
+        // a real regression.
+        const double maxHandlesPerIteration = 1.0;
 
         byte[] content = LoadAsset("releases-directory.json");
         byte[] sig = LoadAsset("releases-directory.json.20260505084330.p7s");
         var options = ProductionOptions();
 
-        // Warm-up: first verify primes any one-time caches (PEM load, OS root store).
-        SignatureVerifier.Verify(content, sig, options, s_pinnedNow);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        // Warm-up: first verify primes any one-time caches (PEM load, OS root store) and
+        // tier-up JIT for the verifier methods.
+        for (int i = 0; i < 5; i++)
+        {
+            SignatureVerifier.Verify(content, sig, options, s_pinnedNow);
+        }
+        ForceFullGc();
 
-        long beforeHandles = System.Diagnostics.Process.GetCurrentProcess().HandleCount;
+        double smallGrowthPerIter = MeasurePerIterationHandleGrowth(content, sig, options, smallBatch);
+        double largeGrowthPerIter = MeasurePerIterationHandleGrowth(content, sig, options, largeBatch);
+
+        smallGrowthPerIter.Should().BeLessThanOrEqualTo(maxHandlesPerIteration,
+            $"verifier leaked >{maxHandlesPerIteration} handle/call over {smallBatch} iterations");
+        largeGrowthPerIter.Should().BeLessThanOrEqualTo(maxHandlesPerIteration,
+            $"verifier leaked >{maxHandlesPerIteration} handle/call over {largeBatch} iterations");
+    }
+
+    private static double MeasurePerIterationHandleGrowth(byte[] content, byte[] sig, SignatureVerificationOptions options, int iterations)
+    {
+        ForceFullGc();
+        long before = System.Diagnostics.Process.GetCurrentProcess().HandleCount;
 
         for (int i = 0; i < iterations; i++)
         {
             SignatureVerifier.Verify(content, sig, options, s_pinnedNow);
         }
 
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        ForceFullGc();
+        long after = System.Diagnostics.Process.GetCurrentProcess().HandleCount;
+        long growth = Math.Max(0, after - before);
+        return (double)growth / iterations;
+    }
 
-        long afterHandles = System.Diagnostics.Process.GetCurrentProcess().HandleCount;
-        long growth = afterHandles - beforeHandles;
-
-        // A small constant ceiling: we expect ~zero growth from the verifier itself, but
-        // unrelated test-runner noise is non-deterministic. If chain-element disposal
-        // regressed, growth would scale roughly with iterations * chain-length (~4-5 certs).
-        growth.Should().BeLessThan(iterations,
-            $"handle count grew by {growth} over {iterations} verify calls; chain-element " +
-            $"disposal in EvaluateChain may have regressed (before={beforeHandles}, after={afterHandles})");
+    private static void ForceFullGc()
+    {
+        // Two-pass collect: finalizable cert objects need one GC to be queued for
+        // finalization, finalization to run, then another GC to actually collect them.
+        for (int i = 0; i < 2; i++)
+        {
+            GC.Collect(generation: GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+            GC.WaitForPendingFinalizers();
+        }
     }
 
     [Fact(Skip = "TODO: requires a custom cert chain whose intermediate constrains EKU away " +
