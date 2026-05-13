@@ -151,7 +151,8 @@ internal static class MSBuildUtility
             parseResult.GetValue(definition.NoLaunchProfileOption),
             parseResult.GetValue(definition.NoLaunchProfileArgumentsOption),
             otherArgs,
-            msbuildArgs);
+            msbuildArgs,
+            Device: parseResult.GetValue(definition.DeviceOption));
     }
 
     private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(List<string> otherArgs)

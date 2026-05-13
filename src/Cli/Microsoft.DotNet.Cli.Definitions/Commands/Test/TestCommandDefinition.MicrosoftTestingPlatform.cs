@@ -124,6 +124,12 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CommandOptionNoLaunchProfileArgumentsDescription
         };
 
+        public readonly Option<string> DeviceOption = new("--device")
+        {
+            Description = CommandDefinitionStrings.CommandOptionDeviceDescription,
+            HelpName = CommandDefinitionStrings.CommandOptionDeviceHelpName
+        };
+
         public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
 
         public const string BuildTargetName = "_MTPBuild";
@@ -159,6 +165,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(ListTestsOption);
             Options.Add(NoLaunchProfileOption);
             Options.Add(NoLaunchProfileArgumentsOption);
+            Options.Add(DeviceOption);
             Options.Add(MTPTargetOption);
         }
 

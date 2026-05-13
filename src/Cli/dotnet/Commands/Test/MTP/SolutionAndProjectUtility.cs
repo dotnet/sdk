@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ProjectTools;
@@ -236,6 +238,8 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
+            TrySelectDeviceForProject(projectInstance, projectFilePath, buildOptions);
+
             if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
@@ -264,6 +268,8 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
+                    TrySelectDeviceForProject(projectInstance, projectFilePath, buildOptions);
+
                     if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
                     {
                         projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
@@ -277,6 +283,8 @@ internal static class SolutionAndProjectUtility
                 {
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+
+                    TrySelectDeviceForProject(projectInstance, projectFilePath, buildOptions);
 
                     if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
                     {
@@ -293,6 +301,70 @@ internal static class SolutionAndProjectUtility
         }
 
         return projects;
+    }
+
+    /// <summary>
+    /// Selects a device for the given project instance if the project supports device selection
+    /// (has a ComputeAvailableDevices target) and no device was pre-specified via --device.
+    /// When --device is specified, the device is already set as an MSBuild property via the build args.
+    /// </summary>
+    private static void TrySelectDeviceForProject(ProjectInstance projectInstance, string projectFilePath, BuildOptions buildOptions)
+    {
+        // If --device was specified, the device is already in MSBuild args from HandleDeviceWithTargetFrameworkSelection
+        if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+        {
+            return;
+        }
+
+        // Check if this project supports device selection
+        if (!projectInstance.Targets.ContainsKey(Constants.ComputeAvailableDevices))
+        {
+            return;
+        }
+
+        // Create a RunCommandSelector for this project/TFM to handle device selection.
+        // Build/restore was already done by dotnet test, so we use noRestore: true.
+        var tfm = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
+        var msbuildArgsToAppend = buildOptions.MSBuildArgs;
+        if (!string.IsNullOrEmpty(tfm))
+        {
+            msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.TargetFramework}={tfm}");
+        }
+
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            msbuildArgsToAppend,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateMSBuildTargetOption(),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption());
+
+        using var selector = new RunCommandSelector(
+            projectFilePath,
+            !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment(),
+            msbuildArgs,
+            ImmutableDictionary<string, string>.Empty);
+
+        if (!selector.TrySelectDevice(
+            listDevices: false,
+            noRestore: true,
+            out var selectedDevice,
+            out var runtimeIdentifier,
+            out _))
+        {
+            // Device selection failed - error already written to stderr by TrySelectDevice
+            throw new GracefulException(
+                string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+        }
+
+        if (selectedDevice is not null)
+        {
+            projectInstance.SetProperty("Device", selectedDevice);
+            if (!string.IsNullOrEmpty(runtimeIdentifier))
+            {
+                projectInstance.SetProperty("RuntimeIdentifier", runtimeIdentifier);
+            }
+        }
     }
 
     private static TestModule? GetModuleFromProject(ProjectInstance project, BuildOptions buildOptions)
