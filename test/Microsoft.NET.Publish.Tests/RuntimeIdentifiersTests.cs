@@ -361,5 +361,85 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
         }
+
+        [Fact]
+        public void UseDefaultPublishRuntimeIdentifierFalsePreventsInference()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            // PublishSingleFile would normally trigger PublishRuntimeIdentifier inference
+            testProject.AdditionalProperties["PublishSingleFile"] = "true";
+            testProject.AdditionalProperties["UseDefaultPublishRuntimeIdentifier"] = "false";
+            testProject.RecordProperties("PublishRuntimeIdentifier");
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: ToolsetInfo.CurrentTargetFramework);
+            properties["PublishRuntimeIdentifier"].Should().BeEmpty();
+        }
+
+        [Fact]
+        public void PublishRuntimeIdentifierIsAppendedToRuntimeIdentifiersByDefault()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = "linux-x64";
+            testProject.AdditionalProperties["PublishRuntimeIdentifier"] = "win-x64";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimeIdentifiers")
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var rids = getValuesCommand.GetValues();
+            rids.Should().Contain("linux-x64");
+            rids.Should().Contain("win-x64");
+        }
+
+        [Fact]
+        public void AppendPublishRuntimeIdentifierToRuntimeIdentifiersFalseOptOut()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = "linux-x64";
+            testProject.AdditionalProperties["PublishRuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["AppendPublishRuntimeIdentifierToRuntimeIdentifiers"] = "false";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimeIdentifiers")
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var rids = getValuesCommand.GetValues();
+            rids.Should().Equal(["linux-x64"]);
+        }
     }
 }
