@@ -40,6 +40,11 @@ function InitializeCustomSDKToolset {
   local native_arch
   native_arch=$(GetNativeMachineArchitecture)
 
+  # Use the pipeline's target architecture for runtime installation when set,
+  # otherwise fall back to the native machine architecture. This handles
+  # cross-compilation scenarios (e.g., x64 build machine targeting arm64).
+  local runtime_arch="${TARGET_ARCHITECTURE:-$native_arch}"
+
   # On macOS arm64 running under Rosetta 2, uname -m reports x86_64 and
   # Arcade installs the x64 SDK. Reinstall with the native architecture so
   # the dotnet host and shared frameworks match the hardware.
@@ -56,11 +61,11 @@ function InitializeCustomSDKToolset {
     done
   fi
 
-  InstallDotNetSharedFramework "6.0.0" "$native_arch"
-  InstallDotNetSharedFramework "7.0.0" "$native_arch"
-  InstallDotNetSharedFramework "8.0.0" "$native_arch"
-  InstallDotNetSharedFramework "9.0.0" "$native_arch"
-  InstallDotNetSharedFramework "10.0.0" "$native_arch"
+  InstallDotNetSharedFramework "6.0.0" "$runtime_arch"
+  InstallDotNetSharedFramework "7.0.0" "$runtime_arch"
+  InstallDotNetSharedFramework "8.0.0" "$runtime_arch"
+  InstallDotNetSharedFramework "9.0.0" "$runtime_arch"
+  InstallDotNetSharedFramework "10.0.0" "$runtime_arch"
 
   CreateBuildEnvScript
 }
