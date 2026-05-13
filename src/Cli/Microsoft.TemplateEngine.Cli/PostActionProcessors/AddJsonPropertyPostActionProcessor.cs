@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
@@ -12,18 +13,20 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 {
     internal class AddJsonPropertyPostActionProcessor : PostActionProcessorBase
     {
+        private const string AllowFileCreationArgument = "allowFileCreation";
+        private const string AllowPathCreationArgument = "allowPathCreation";
         private const string JsonFileNameArgument = "jsonFileName";
         private const string ParentPropertyPathArgument = "parentPropertyPath";
         private const string NewJsonPropertyNameArgument = "newJsonPropertyName";
         private const string NewJsonPropertyValueArgument = "newJsonPropertyValue";
 
-        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions SerializerOptions = new()
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             WriteIndented = true
         };
 
-        private static readonly JsonDocumentOptions DeserializerOptions = new JsonDocumentOptions
+        private static readonly JsonDocumentOptions DeserializerOptions = new()
         {
             AllowTrailingCommas = true,
             CommentHandling = JsonCommentHandling.Skip
@@ -46,12 +49,25 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return false;
             }
 
-            IReadOnlyList<string> jsonFiles = FindFilesInCurrentProjectOrSolutionFolder(environment.Host.FileSystem, outputBasePath, matchPattern: jsonFileName, maxAllowedAboveDirectories: 1);
+            IReadOnlyList<string> jsonFiles = FindFilesInCurrentFolderOrParentFolder(environment.Host.FileSystem, outputBasePath, jsonFileName);
 
             if (jsonFiles.Count == 0)
             {
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_ModifyJson_Error_NoJsonFile);
-                return false;
+                if (!bool.TryParse(action.Args.GetValueOrDefault(AllowFileCreationArgument, "false"), out bool createFile))
+                {
+                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, AllowFileCreationArgument));
+                    return false;
+                }
+
+                if (!createFile)
+                {
+                    Reporter.Error.WriteLine(LocalizableStrings.PostAction_ModifyJson_Error_NoJsonFile);
+                    return false;
+                }
+
+                string newJsonFilePath = Path.Combine(outputBasePath, jsonFileName);
+                environment.Host.FileSystem.WriteAllText(newJsonFilePath, "{}");
+                jsonFiles = new List<string> { newJsonFilePath };
             }
 
             if (jsonFiles.Count > 1)
@@ -73,7 +89,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 newJsonElementProperties!.ParentProperty,
                 ":",
                 newJsonElementProperties.NewJsonPropertyName,
-                newJsonElementProperties.NewJsonPropertyValue);
+                newJsonElementProperties.NewJsonPropertyValue,
+                action);
 
             if (newJsonContent == null)
             {
@@ -87,7 +104,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             return true;
         }
 
-        private static JsonNode? AddElementToJson(IPhysicalFileSystem fileSystem, string targetJsonFile, string? propertyPath, string propertyPathSeparator, string newJsonPropertyName, string newJsonPropertyValue)
+        private static JsonNode? AddElementToJson(IPhysicalFileSystem fileSystem, string targetJsonFile, string? propertyPath, string propertyPathSeparator, string newJsonPropertyName, string newJsonPropertyValue, IPostAction action)
         {
             JsonNode? jsonContent = JsonNode.Parse(fileSystem.ReadAllText(targetJsonFile), nodeOptions: null, documentOptions: DeserializerOptions);
 
@@ -96,7 +113,13 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return null;
             }
 
-            JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, propertyPathSeparator);
+            if (!bool.TryParse(action.Args.GetValueOrDefault(AllowPathCreationArgument, "false"), out bool createPath))
+            {
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, AllowPathCreationArgument));
+                return false;
+            }
+
+            JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, propertyPathSeparator, createPath);
 
             if (parentProperty == null)
             {
@@ -116,7 +139,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             return jsonContent;
         }
 
-        private static JsonNode? FindJsonNode(JsonNode content, string? nodePath, string pathSeparator)
+        private static JsonNode? FindJsonNode(JsonNode content, string? nodePath, string pathSeparator, bool createPath)
         {
             if (nodePath == null)
             {
@@ -134,18 +157,22 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     return null;
                 }
 
-                node = node[property];
+                JsonNode? childNode = node[property];
+                if (childNode is null && createPath)
+                {
+                    node[property] = childNode = new JsonObject();
+                }
+
+                node = childNode;
             }
 
             return node;
         }
 
-        private static IReadOnlyList<string> FindFilesInCurrentProjectOrSolutionFolder(
+        private static string[] FindFilesInCurrentFolderOrParentFolder(
             IPhysicalFileSystem fileSystem,
             string startPath,
-            string matchPattern,
-            Func<string, bool>? secondaryFilter = null,
-            int maxAllowedAboveDirectories = 250)
+            string matchPattern)
         {
             string? directory = fileSystem.DirectoryExists(startPath) ? startPath : Path.GetDirectoryName(startPath);
 
@@ -158,22 +185,20 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 
             do
             {
-                List<string> filesInDir = fileSystem.EnumerateFileSystemEntries(directory, matchPattern, SearchOption.AllDirectories).ToList();
-                List<string> matches = new();
+                Reporter.Verbose.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile, matchPattern, directory));
+                string[] filesInDir = fileSystem.EnumerateFileSystemEntries(directory, matchPattern, SearchOption.AllDirectories).ToArray();
 
-                matches = secondaryFilter == null ? filesInDir : filesInDir.Where(x => secondaryFilter(x)).ToList();
-
-                if (matches.Count > 0)
+                if (filesInDir.Length > 0)
                 {
-                    return matches;
+                    return filesInDir;
                 }
 
                 directory = Path.GetPathRoot(directory) != directory ? Directory.GetParent(directory)?.FullName : null;
                 numberOfUpLevels++;
             }
-            while (directory != null && numberOfUpLevels <= maxAllowedAboveDirectories);
+            while (directory != null && numberOfUpLevels <= 1);
 
-            return new List<string>();
+            return Array.Empty<string>();
         }
 
         private class JsonContentParameters

@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="CannotCombineSearchStringAndVersion">
+        <source>Cannot specify both the {0} and {1} arguments.</source>
+        <target state="translated">{0} 인수와 {1} 인수를 모두 지정할 수 없습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Search for available workloads.</source>
         <target state="translated">사용 가능한 워크로드를 검색합니다.</target>
@@ -12,9 +17,29 @@
         <target state="translated">설명</target>
         <note />
       </trans-unit>
+      <trans-unit id="FormatOptionDescription">
+        <source>Changes the format of outputted workload versions. Can take 'json' or 'list'</source>
+        <target state="translated">출력된 워크로드 버전의 형식을 변경합니다. 'json' 또는 'list'를 사용할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadVersionsFound">
+        <source>No workload versions found for SDK feature band {0}.</source>
+        <target state="translated">SDK 기능 대역 {0}에 대한 워크로드 버전을 찾을 수 없습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PlatformColumnName">
         <source>Platforms</source>
         <target state="translated">플랫폼</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrintSetVersionsDescription">
+        <source>Output a list of the latest released workload versions. Takes the --take option to specify how many to provide and --format to alter the format.</source>
+        <target state="translated">릴리스된 최신 워크로드 버전 목록을 출력합니다. --take 옵션을 사용하여 얼마나 제공할지 지정하고 --format을 사용하여 형식을 변경합니다.</target>
+        <note>Do not localize --take or --format</note>
+      </trans-unit>
+      <trans-unit id="TakeOptionMustBePositive">
+        <source>The --take option must be positive.</source>
+        <target state="translated">--take 옵션은 양수여야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdColumnName">
@@ -30,6 +55,26 @@
       <trans-unit id="WorkloadIdStubArgumentName">
         <source>SEARCH_STRING</source>
         <target state="translated">SEARCH_STRING</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestFeatureBandColumn">
+        <source>Manifest feature band</source>
+        <target state="translated">매니페스트 기능 밴드</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestIdColumn">
+        <source>Workload manifest ID</source>
+        <target state="translated">워크로드 매니페스트 ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgument">
+        <source>WORKLOAD_VERSION</source>
+        <target state="translated">WORKLOAD_VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgumentDescription">
+        <source>Output workload manifest versions associated with the provided workload version.</source>
+        <target state="translated">제공된 워크로드 버전과 연결된 워크로드 매니페스트 버전을 출력합니다.</target>
         <note />
       </trans-unit>
     </body>

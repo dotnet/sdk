@@ -654,7 +654,6 @@ namespace Microsoft.NET.Build.Containers.Resources {
             }
         }
 
-
         /// <summary>
         ///   Looks up a localized string similar to Unable to create tarball for oci image with multiple tags..
         /// </summary>

@@ -470,12 +470,12 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</source>
         <target state="translated">パッケージ バージョン</target>
         <note />
       </trans-unit>
-      <trans-unit id="DetailsCommand_UnableToLoadResorce">
+      <trans-unit id="DetailsCommand_UnableToLoadResource">
         <source>Could not parse NuGet source '{0}', so it was discarded</source>
         <target state="translated">NuGet ソース '{0}' は、解析できなかったために破棄されました</target>
         <note />
       </trans-unit>
-      <trans-unit id="DetailsCommand_UnableToLoadResorces">
+      <trans-unit id="DetailsCommand_UnableToLoadResources">
         <source>Failed to load NuGet sources configured for the folder {0}</source>
         <target state="translated">フォルダー {0} に対して構成された NuGet ソースを読み込むことができませんでした</target>
         <note />
@@ -825,6 +825,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">このアクションを実行しますか［{0} (はい) |{1} (いいえ)] ですか?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
+        <source>Post action argument '{0}' is not a valid boolean value.</source>
+        <target state="translated">事後アクションの引数 '{0}' は有効なブール値ではありません。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
         <source>Post action argument '{0}' is mandatory, but not configured.</source>
         <target state="translated">事後アクション引数 '{0}' は必須ですが、構成されていません。</target>
@@ -848,6 +853,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="PostAction_ModifyJson_Succeeded">
         <source>Successfully modified {0}.</source>
         <target state="translated">{0} が正常に変更されました。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile">
+        <source>Attempting to find json file '{0}' in '{1}'</source>
+        <target state="translated">'{1}' で json ファイル '{0}' を検索しています</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">
