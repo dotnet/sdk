@@ -1,6 +1,0 @@
-/.dotnet
-/.packages
-/artifacts
-/prereqs/packages
-/src/nuget-client/NuGet.config
-*.binlog

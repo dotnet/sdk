@@ -9,20 +9,24 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
     public class CreateZipFile : Task
     {
         [Required]
-        public string FolderToZip { get; set; }
+        public string? FolderToZip { get; set; }
 
         [Required]
-        public string ProjectName { get; set; }
+        public string? ProjectName { get; set; }
 
         [Required]
-        public string PublishIntermediateTempPath { get; set; }
+        public string? PublishIntermediateTempPath { get; set; }
 
         [Output]
-        public string CreatedZipPath { get; private set; }
+        public string? CreatedZipPath { get; private set; }
 
         public override bool Execute()
         {
             string zipFileName = ProjectName + "-" + DateTime.Now.ToString("yyyyMMddHHmmssFFF") + ".zip";
+            if (PublishIntermediateTempPath is null || FolderToZip is null)
+            {
+                return false;
+            }
             CreatedZipPath = Path.Combine(PublishIntermediateTempPath, zipFileName);
             ZipFile.CreateFromDirectory(FolderToZip, CreatedZipPath);
             return true;

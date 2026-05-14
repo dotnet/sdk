@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
@@ -104,7 +105,7 @@ namespace Microsoft.DotNet.GenAPI
             catch (ArgumentException ex)
             {
                 // re-throw the ArgumentException with the symbol that caused it.
-                throw new ArgumentException(ex.Message, symbol.ToDisplayString());
+                throw new ArgumentException(ex.Message, symbol.ToDisplayString(), innerException: ex);
             }
         }
 

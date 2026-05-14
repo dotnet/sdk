@@ -1,13 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.BuildServer;
+#nullable disable
+
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Moq;
-using LocalizableStrings = Microsoft.DotNet.BuildServer.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.BuildServerTests
 {
@@ -29,7 +32,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .EnumerateBuildServers(ServerEnumerationFlags.MSBuild)
                 .Select(s => s.Name)
                 .Should()
-                .Equal(LocalizableStrings.MSBuildServer);
+                .Equal(CliStrings.MSBuildServer);
         }
 
         [Fact]
@@ -43,7 +46,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 .EnumerateBuildServers(ServerEnumerationFlags.VBCSCompiler)
                 .Select(s => s.Name)
                 .Should()
-                .Equal(LocalizableStrings.VBCSCompilerServer);
+                .Equal(CliStrings.VBCSCompilerServer);
         }
 
         [Fact]
@@ -123,7 +126,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
             var razorServer = servers.First() as RazorServer;
             razorServer.Should().NotBeNull();
             razorServer.ProcessId.Should().Be(ProcessId);
-            razorServer.Name.Should().Be(LocalizableStrings.RazorServer);
+            razorServer.Name.Should().Be(CliStrings.RazorServer);
             razorServer.PidFile.Should().NotBeNull();
             razorServer.PidFile.Path.Value.Should().Be(pidFilePath);
             razorServer.PidFile.ProcessId.Should().Be(ProcessId);
@@ -173,7 +176,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
 
             reporter.Lines.Should().Equal(
                 string.Format(
-                    LocalizableStrings.FailedToReadPidFile,
+                    CliStrings.FailedToReadPidFile,
                     pidFilePath,
                     ErrorMessage).Yellow());
         }
