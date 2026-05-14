@@ -2726,6 +2726,21 @@ Proceed?</value>
   <data name="DurationColon" xml:space="preserve">
     <value>duration:</value>
   </data>
+  <data name="DurationDaysAbbreviation" xml:space="preserve">
+    <value>d</value>
+  </data>
+  <data name="DurationHoursAbbreviation" xml:space="preserve">
+    <value>h</value>
+  </data>
+  <data name="DurationMinutesAbbreviation" xml:space="preserve">
+    <value>m</value>
+  </data>
+  <data name="DurationSecondsAbbreviation" xml:space="preserve">
+    <value>s</value>
+  </data>
+  <data name="DurationMillisecondsAbbreviation" xml:space="preserve">
+    <value>ms</value>
+  </data>
   <data name="WorkloadSetHasMissingManifests" xml:space="preserve">
     <value>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</value>
     <comment>{0} is the workload set version. {Locked="dotnet workload repair"}</comment>

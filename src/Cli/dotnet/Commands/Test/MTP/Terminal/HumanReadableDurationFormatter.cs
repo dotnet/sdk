@@ -7,6 +7,12 @@ namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 internal static class HumanReadableDurationFormatter
 {
+    private static string DaysAbbreviation => CliCommandStrings.DurationDaysAbbreviation;
+    private static string HoursAbbreviation => CliCommandStrings.DurationHoursAbbreviation;
+    private static string MinutesAbbreviation => CliCommandStrings.DurationMinutesAbbreviation;
+    private static string SecondsAbbreviation => CliCommandStrings.DurationSecondsAbbreviation;
+    private static string MillisecondsAbbreviation => CliCommandStrings.DurationMillisecondsAbbreviation;
+
     public static void Append(ITerminal terminal, TimeSpan duration, bool wrapInParentheses = true)
     {
         bool hasParentValue = false;
@@ -16,34 +22,33 @@ internal static class HumanReadableDurationFormatter
             terminal.Append('(');
         }
 
-        // TODO: Do these abbrevations (d for days, h for hours, etc) need to be localized?
         if (duration.Days > 0)
         {
-            terminal.Append($"{duration.Days}d");
+            terminal.Append($"{duration.Days}{DaysAbbreviation}");
             hasParentValue = true;
         }
 
         if (duration.Hours > 0 || hasParentValue)
         {
-            terminal.Append(GetFormattedPart(duration.Hours, hasParentValue, "h"));
+            terminal.Append(GetFormattedPart(duration.Hours, hasParentValue, HoursAbbreviation));
             hasParentValue = true;
         }
 
         if (duration.Minutes > 0 || hasParentValue)
         {
-            terminal.Append(GetFormattedPart(duration.Minutes, hasParentValue, "m"));
+            terminal.Append(GetFormattedPart(duration.Minutes, hasParentValue, MinutesAbbreviation));
             hasParentValue = true;
         }
 
         if (duration.Seconds > 0 || hasParentValue)
         {
-            terminal.Append(GetFormattedPart(duration.Seconds, hasParentValue, "s"));
+            terminal.Append(GetFormattedPart(duration.Seconds, hasParentValue, SecondsAbbreviation));
             hasParentValue = true;
         }
 
         if (duration.Milliseconds >= 0 || hasParentValue)
         {
-            terminal.Append(GetFormattedPart(duration.Milliseconds, hasParentValue, "ms", paddingWitdh: 3));
+            terminal.Append(GetFormattedPart(duration.Milliseconds, hasParentValue, MillisecondsAbbreviation, paddingWitdh: 3));
         }
 
         if (wrapInParentheses)
@@ -73,25 +78,25 @@ internal static class HumanReadableDurationFormatter
 
         if (duration.Value.Days > 0)
         {
-            stringBuilder.Append(CultureInfo.CurrentCulture, $"{duration.Value.Days}d");
+            stringBuilder.Append(CultureInfo.CurrentCulture, $"{duration.Value.Days}{DaysAbbreviation}");
             hasParentValue = true;
         }
 
         if (duration.Value.Hours > 0 || hasParentValue)
         {
-            stringBuilder.Append(GetFormattedPart(duration.Value.Hours, hasParentValue, "h"));
+            stringBuilder.Append(GetFormattedPart(duration.Value.Hours, hasParentValue, HoursAbbreviation));
             hasParentValue = true;
         }
 
         if (duration.Value.Minutes > 0 || hasParentValue)
         {
-            stringBuilder.Append(GetFormattedPart(duration.Value.Minutes, hasParentValue, "m"));
+            stringBuilder.Append(GetFormattedPart(duration.Value.Minutes, hasParentValue, MinutesAbbreviation));
             hasParentValue = true;
         }
 
         if (duration.Value.Seconds > 0 || hasParentValue || !showMilliseconds)
         {
-            stringBuilder.Append(GetFormattedPart(duration.Value.Seconds, hasParentValue, "s"));
+            stringBuilder.Append(GetFormattedPart(duration.Value.Seconds, hasParentValue, SecondsAbbreviation));
             hasParentValue = true;
         }
 
@@ -99,7 +104,7 @@ internal static class HumanReadableDurationFormatter
         {
             if (duration.Value.Milliseconds >= 0 || hasParentValue)
             {
-                stringBuilder.Append(GetFormattedPart(duration.Value.Milliseconds, hasParentValue, "ms", paddingWitdh: 3));
+                stringBuilder.Append(GetFormattedPart(duration.Value.Milliseconds, hasParentValue, MillisecondsAbbreviation, paddingWitdh: 3));
             }
         }
 
