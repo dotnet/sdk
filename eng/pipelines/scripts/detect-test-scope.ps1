@@ -46,9 +46,14 @@ elseif ($env:BUILD_REASON -eq 'PullRequest') {
         $targetBranch = $targetBranch -replace '^refs/heads/', ''
 
         # Fetch the target branch to have a merge base for diffing
-        & git fetch origin $targetBranch --depth=1 2>$null
+        # Use Start-Process or temp ErrorActionPreference to avoid PowerShell
+        # treating git's stderr progress output as a terminating error
+        $prevEAP = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        & git fetch origin $targetBranch --depth=1 2>&1 | Out-Null
+        $ErrorActionPreference = $prevEAP
 
-        $changedFiles = & git diff --name-only "origin/$targetBranch...HEAD" 2>$null
+        $changedFiles = & git diff --name-only "origin/$targetBranch...HEAD" 2>&1 | Where-Object { $_ -is [string] }
         if (-not $changedFiles) {
             Write-Host "##[warning]Could not determine changed files - running all tests"
         }
