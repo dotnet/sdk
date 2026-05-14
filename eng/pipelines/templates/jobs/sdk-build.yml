@@ -131,6 +131,23 @@ jobs:
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
           MSBUILDALWAYSRETRY: true
 
+    ############### TEST SCOPE DETECTION ###############
+    - ${{ if eq(parameters.runTests, true) }}:
+      # Determine which test groups to run based on changed files in the PR.
+      # For non-PR builds and codeflow PRs, all tests run (variables default to 'true').
+      - ${{ if eq(parameters.pool.os, 'windows') }}:
+        - powershell: eng/pipelines/scripts/detect-test-scope.ps1
+          displayName: 🟣 Detect test scope
+          condition: succeeded()
+          env:
+            FORCE_RUN_ALL_TESTS: $(ForceRunAllTests)
+      - ${{ else }}:
+        - script: bash $(Build.SourcesDirectory)/eng/pipelines/scripts/detect-test-scope.sh
+          displayName: 🟣 Detect test scope
+          condition: succeeded()
+          env:
+            FORCE_RUN_ALL_TESTS: $(ForceRunAllTests)
+
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
       - ${{ if eq(parameters.runAoTTests, true) }}:
@@ -149,6 +166,12 @@ jobs:
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /p:RunAnalyzerTests=$(RunAnalyzerTests)
+            /p:RunBlazorTests=$(RunBlazorTests)
+            /p:RunSwaTests=$(RunSwaTests)
+            /p:RunWatchTests=$(RunWatchTests)
+            /p:RunTemplateTests=$(RunTemplateTests)
+            /p:RunContainerTests=$(RunContainerTests)
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: 🟣 Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
@@ -173,6 +196,12 @@ jobs:
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+            /p:RunAnalyzerTests=$(RunAnalyzerTests)
+            /p:RunBlazorTests=$(RunBlazorTests)
+            /p:RunSwaTests=$(RunSwaTests)
+            /p:RunWatchTests=$(RunWatchTests)
+            /p:RunTemplateTests=$(RunTemplateTests)
+            /p:RunContainerTests=$(RunContainerTests)
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: 🟣 Run ${{ parameters.categoryName }} Tests
           condition: succeeded()

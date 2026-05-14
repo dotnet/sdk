@@ -32,11 +32,18 @@ parameters:
   displayName: Enables the ARM64 job
   type: boolean
   default: true
+- name: runAllTests
+  displayName: Run all tests (disables path-based filtering)
+  type: boolean
+  default: false
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngPublicBuildPool
 - template: /eng/common/templates/variables/pool-providers.yml
+# When runAllTests is true, bypass path-based test filtering
+- name: ForceRunAllTests
+  value: ${{ parameters.runAllTests }}
 
 resources:
   containers:

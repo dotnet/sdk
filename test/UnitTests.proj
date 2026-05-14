@@ -14,6 +14,18 @@
     <XUnitWorkItemTimeout>02:00:00</XUnitWorkItemTimeout>
   </PropertyGroup>
 
+  <!-- PR test scope filtering: when these properties are not set (e.g. CI builds, local runs),
+       they default to 'true' so all tests run. The detect-test-scope script sets them to 'false'
+       for PR builds where the relevant source areas have not changed. -->
+  <PropertyGroup>
+    <RunAnalyzerTests Condition="'$(RunAnalyzerTests)' == ''">true</RunAnalyzerTests>
+    <RunBlazorTests Condition="'$(RunBlazorTests)' == ''">true</RunBlazorTests>
+    <RunSwaTests Condition="'$(RunSwaTests)' == ''">true</RunSwaTests>
+    <RunWatchTests Condition="'$(RunWatchTests)' == ''">true</RunWatchTests>
+    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
+    <RunContainerTests Condition="'$(RunContainerTests)' == ''">true</RunContainerTests>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Remove="AwesomeAssertions" />
   </ItemGroup>
@@ -59,6 +71,42 @@
   <ItemGroup Condition="'$(RunAoTTests)' == 'true'">
     <SDKCustomXUnitProject Remove="@(SDKCustomXUnitProject)" />
     <SDKCustomXUnitProject Include="**\*.AoT.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- PR test scope filtering: remove test projects for areas that haven't changed.
+       These conditions are only 'false' during PR builds where detect-test-scope determined
+       the relevant source area was not modified. In CI builds and local runs they are always 'true'. -->
+  <ItemGroup Condition="'$(RunAnalyzerTests)' == 'false'">
+    <SDKCustomXUnitProject Remove="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RunBlazorTests)' == 'false'">
+    <SDKCustomXUnitProject Remove="Microsoft.NET.Sdk.BlazorWebAssembly.Tests\Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RunSwaTests)' == 'false'">
+    <SDKCustomXUnitProject Remove="Microsoft.NET.Sdk.StaticWebAssets.Tests\Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RunWatchTests)' == 'false'">
+    <SDKCustomXUnitProject Remove="dotnet-watch.Tests\dotnet-watch.Tests.csproj" />
+    <SDKCustomXUnitProject Remove="Microsoft.AspNetCore.Watch.BrowserRefresh.Tests\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj" />
+    <SDKCustomXUnitProject Remove="Microsoft.DotNet.HotReload.Watch.Aspire.Tests\Microsoft.DotNet.HotReload.Watch.Aspire.Tests.csproj" />
+    <SDKCustomXUnitProject Remove="Microsoft.DotNet.HotReload.Client.Tests\Microsoft.DotNet.HotReload.Client.Tests.csproj" />
+    <SDKCustomXUnitProject Remove="Microsoft.Extensions.DotNetDeltaApplier.Tests\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RunTemplateTests)' == 'false'">
+    <SDKCustomXUnitProject Remove="TemplateEngine\**\*.csproj" />
+    <SDKCustomXUnitProject Remove="Microsoft.TemplateEngine.Cli.UnitTests\Microsoft.TemplateEngine.Cli.UnitTests.csproj" />
+    <SDKCustomXUnitProject Remove="dotnet-new.IntegrationTests\dotnet-new.IntegrationTests.csproj" />
+    <SDKCustomXUnitProject Remove="Microsoft.DotNet.TemplateLocator.Tests\Microsoft.DotNet.TemplateLocator.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RunContainerTests)' == 'false'">
+    <SDKCustomXUnitProject Remove="Microsoft.NET.Build.Containers.UnitTests\Microsoft.NET.Build.Containers.UnitTests.csproj" />
+    <SDKCustomXUnitProject Remove="Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
+    <SDKCustomXUnitProject Remove="containerize.UnitTests\containerize.UnitTests.csproj" />
   </ItemGroup>
 
   <!-- Consolidate Helix shards for assemblies with very short test durations.
