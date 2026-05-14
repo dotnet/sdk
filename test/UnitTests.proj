@@ -1,17 +1,21 @@
-﻿<Project Sdk="Microsoft.DotNet.Helix.Sdk">
+﻿<Project>
+  <!--
+    PoC: Run SDK tests locally on the AzDO agent instead of sending them to Helix.
+    Uses explicit Helix SDK imports so we can override CoreTest after Sdk.targets.
+
+    The build/publish infrastructure from XUnitRunner.targets is preserved so the
+    EXACT same test assemblies are built.  Only the execution phase is replaced:
+    instead of SendHelixJob, we run 'dotnet test' on each published assembly
+    directly on the agent, in parallel via MSBuild batching.
+  -->
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Helix.Sdk" />
 
   <PropertyGroup>
-    <HelixType>test/product/</HelixType>
-    <Creator Condition="'$(BUILD_BUILDNUMBER)' != '' and '$(HelixAccessToken)' == ''">sdk-dev</Creator>
-
+    <!-- Keep IncludeDotNetCli=false; we're running tests with the built SDK directly -->
     <IncludeDotNetCli>false</IncludeDotNetCli>
-
-    <EnableAzurePipelinesReporter Condition="'$(BUILD_BUILDNUMBER)' != ''">true</EnableAzurePipelinesReporter>
-
-    <!-- Helix SDK specifies the default run name to be: $(TestRunNamePrefix)$(_CurrentTargetQueue)$(TestRunNameSuffix) -->
-    <TestRunNamePrefix Condition="'$(AGENT_JOBNAME)' != ''">$(AGENT_JOBNAME) run on </TestRunNamePrefix>
-    <TestRunNameSuffix Condition="'$(SYSTEM_JOBATTEMPT)' != ''"> (attempt $(SYSTEM_JOBATTEMPT))</TestRunNameSuffix>
     <XUnitWorkItemTimeout>02:00:00</XUnitWorkItemTimeout>
+    <!-- Results directory for TRX files (picked up by PublishTestResults in AzDO) -->
+    <LocalTestResultsDir Condition="'$(LocalTestResultsDir)' == ''">$(RepoRoot)artifacts/TestResults/$(Configuration)</LocalTestResultsDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,9 +65,8 @@
     <SDKCustomXUnitProject Include="**\*.AoT.Tests.csproj" />
   </ItemGroup>
 
-  <!-- Consolidate Helix shards for assemblies with very short test durations.
-       MethodLimitMultiplier increases the methods-per-shard threshold, producing
-       fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
+  <!-- MethodLimitMultiplier metadata is irrelevant for local execution (no sharding),
+       but we keep it so the project list stays byte-identical with the original. -->
   <ItemGroup>
     <SDKCustomXUnitProject Update="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj">
       <MethodLimitMultiplier>5</MethodLimitMultiplier>
@@ -76,135 +79,83 @@
     </SDKCustomXUnitProject>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(CustomHelixTargetQueue)' != '' ">
-    <HelixTargetQueue Include="$(CustomHelixTargetQueue)" />
+  <!-- We still need to set a HelixTargetQueue so XUnitRunner.targets' IsPosixShell
+       logic works (it uses HelixTargetQueue to determine shell type for the build step).
+       We just set it to a descriptive value; it will never be sent to Helix. -->
+  <ItemGroup>
+    <HelixTargetQueue Condition="'$(CustomHelixTargetQueue)' != ''" Include="$(CustomHelixTargetQueue)" />
+    <HelixTargetQueue Condition="'$(CustomHelixTargetQueue)' == '' and $([MSBuild]::IsOSPlatform('Windows'))" Include="windows.amd64.local" />
+    <HelixTargetQueue Condition="'$(CustomHelixTargetQueue)' == '' and !$([MSBuild]::IsOSPlatform('Windows'))" Include="linux.amd64.local" />
   </ItemGroup>
 
+  <!-- Import XUnitRunner.targets for Restore + Build/Publish of test projects.
+       This populates PublishDirectory and TargetPath metadata on SDKCustomXUnitProject items.
+       The CreateSDKCustomXUnitWorkItems target from XUnitRunner.targets will be
+       overridden below (it runs BeforeTargets=CoreTest, but we redefine CoreTest). -->
   <Import Project="xunit-runner\XUnitRunner.targets" />
 
-  <!-- need to be a target in order to have IsPosixShell available -->
-  <Target Name="CopyHelixFiles" AfterTargets="Publish">
+  <!-- Import Helix SDK targets to get the target framework (CoreBuild, Restore, etc.) -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Helix.Sdk" />
 
+  <!--
+    ╔══════════════════════════════════════════════════════════════════════════╗
+    ║  OVERRIDE: Replace Helix CoreTest with local parallel test execution   ║
+    ╚══════════════════════════════════════════════════════════════════════════╝
+
+    This target REPLACES the Helix SDK's CoreTest (which calls SendHelixJob).
+    Because it is defined AFTER the Sdk.targets import, MSBuild uses this definition.
+
+    The CreateSDKCustomXUnitWorkItems target (BeforeTargets=CoreTest) still runs
+    and creates HelixWorkItem items, but we ignore them.  Instead, we iterate the
+    published SDKCustomXUnitProject items and run 'dotnet test' on each assembly.
+  -->
+  <Target Name="CoreTest">
+    <MakeDir Directories="$(LocalTestResultsDir)" />
+
+    <Message Importance="High" Text="" />
+    <Message Importance="High" Text="╔══════════════════════════════════════════════════════════════╗" />
+    <Message Importance="High" Text="║  LOCAL TEST EXECUTION (PoC - No Helix)                      ║" />
+    <Message Importance="High" Text="║  Running @(SDKCustomXUnitProject->Count()) test assemblies on the local agent  ║" />
+    <Message Importance="High" Text="╚══════════════════════════════════════════════════════════════╝" />
+    <Message Importance="High" Text="" />
+    <Message Importance="High" Text="Results directory: $(LocalTestResultsDir)" />
+    <Message Importance="High" Text="" />
+
+    <!-- List all test projects that will be run -->
+    <Message Importance="High" Text="  ▸ %(SDKCustomXUnitProject.Filename) → %(SDKCustomXUnitProject.PublishDirectory)" />
+
+    <!-- Build a wrapper item for each test project pointing to RunSingleLocalTest.proj
+         with per-project properties.  MSBuild will run these in parallel across nodes
+         when invoked with /maxcpucount. -->
     <ItemGroup>
-      <BuiltSdks Include="$(RepoRoot)artifacts\bin\$(Configuration)\Sdks\**\*.*" />
-
-      <!-- All the following files are just to get full framework msbuild while avoid to duplicated arcade logic by copying
-      arcade and run it -->
-      <Engfolder Include="$(RepoRoot)eng\**\*.*" />
-      <DotToolsFolder Include="$(RepoRoot).tools\**\*.*" />
-      <GlobalJson Include="$(RepoRoot)global.json" />
-      <!-- Get full framework msbuild end -->
-
-      <!-- include .dotnet folder. So there is no extra first run experience run during the test -->
-      <DotnetCliHome Include="$(TestLayoutDir).dotnet\**\*.*" />
-
-      <Testpackages Include="$(TestLayoutDir)testpackages\**\*.*" />
-
-      <!-- include Container artifacts for running test in Helix -->
-      <ContainerFiles Include="$(TestLayoutDir)Container\**\*.*" />
-
-      <LockFiles Include="Microsoft.NET.Build.Tasks.Tests\LockFiles\**\*.*" />
-
-      <AssetFiles Include="TestAssets\**\*.*" />
-
-      <!-- Include the template_feed directory from the repo root so tests that reference RepoTemplatePackages work in Helix. -->
-      <TemplateFeedFiles Include="$(RepoRoot)template_feed\**\*.*" />
-
-      <!-- Include the TemplateEngine sample templates so tests that reference SampleTemplatesLocation work in Helix. -->
-      <TemplateSampleFiles Include="$(RepoRoot)documentation\TemplateEngine\Samples\**\*.*" />
-
-      <!-- Files in testExecutionDirectory to prevent environment interference -->
-      <TestExecutionDirectoryFiles Include="$(TestLayoutDir)NuGet.config" />
-      <TestExecutionDirectoryFiles Include="$(TestLayoutDir)Directory.Build.props" />
-      <TestExecutionDirectoryFiles Include="$(TestLayoutDir)Directory.Build.targets" />
-      <TestExecutionDirectoryFiles Include="$(RepoRoot)testAsset.props" />
-      <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\Versions.props">
-        <DestinationFolder>eng/</DestinationFolder>
-      </TestExecutionDirectoryFiles>
-      <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\Version.Details.props">
-        <DestinationFolder>eng/</DestinationFolder>
-      </TestExecutionDirectoryFiles>
-      <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\ManualVersions.props">
-        <DestinationFolder>eng/</DestinationFolder>
-      </TestExecutionDirectoryFiles>
-
-      <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />
-      <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\SetupHelixEnvironment.cmd" />
-      <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\SetupHelixEnvironment.sh" />
-      <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\helix-debug-entitlements.plist" />
+      <_LocalTestWrapper Include="@(SDKCustomXUnitProject->'$(MSBuildThisFileDirectory)xunit-runner/RunSingleLocalTest.proj')">
+        <AdditionalProperties>
+          TestProjectPath=%(SDKCustomXUnitProject.Identity);
+          TestProjectName=%(SDKCustomXUnitProject.Filename);
+          PublishDir=%(SDKCustomXUnitProject.PublishDirectory);
+          LocalTestResultsDir=$(LocalTestResultsDir);
+          Configuration=$(Configuration);
+          TestDotNetRoot=$(TestHostDotNetRoot)
+        </AdditionalProperties>
+      </_LocalTestWrapper>
     </ItemGroup>
 
-    <PropertyGroup>
-      <HelixPayloadOnHost>$(RepoRoot)artifacts\tmp\Helixpayload</HelixPayloadOnHost>
-    </PropertyGroup>
+    <MSBuild Projects="@(_LocalTestWrapper)"
+             BuildInParallel="true"
+             ContinueOnError="ErrorAndContinue" />
 
-    <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(HelixPayloadOnHost)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(DotToolsFolder)" DestinationFiles="@(DotToolsFolder->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <Copy SourceFiles="@(FilesInHelixRoot)" DestinationFiles="@(FilesInHelixRoot->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <Copy SourceFiles="@(TestExecutionDirectoryFiles)" DestinationFiles="@(TestExecutionDirectoryFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\%(RecursiveDir)%(DestinationFolder)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(DotnetCliHome)" DestinationFiles="@(DotnetCliHome->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\.dotnet\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(Testpackages)" DestinationFiles="@(Testpackages->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\Testpackages\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(ContainerFiles)" DestinationFiles="@(ContainerFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\Container\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(LockFiles)" DestinationFiles="@(LockFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\LockFiles\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(AssetFiles)" DestinationFiles="@(AssetFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TestAssets\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(TemplateFeedFiles)" DestinationFiles="@(TemplateFeedFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\template_feed\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(TemplateSampleFiles)" DestinationFiles="@(TemplateSampleFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\TemplateSamples\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Message Importance="High" Text="" />
+    <Message Importance="High" Text="══════════════════════════════════════════════════════════════" />
+    <Message Importance="High" Text="  ALL LOCAL TEST EXECUTIONS COMPLETE" />
+    <Message Importance="High" Text="  TRX results: $(LocalTestResultsDir)" />
+    <Message Importance="High" Text="══════════════════════════════════════════════════════════════" />
   </Target>
 
-  <Target Name="AppendHelixPreCommand" BeforeTargets="CoreTest" DependsOnTargets="CopyHelixFiles">
-    <PropertyGroup>
-      <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
-      <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
-      <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
-      <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
-      <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -print0 | xargs -0 -I@ cp @ "$HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
-      <TestDotnetVersion>$(Version)</TestDotnetVersion>
-      <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
-      <HelixStage0Targz>$(RepoRoot)artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
-      <MicrosoftNETBuildExtensions>$(RepoRoot)artifacts\bin\$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MicrosoftNETBuildExtensions>
-      <ArtifactsShippingPackages>$(RepoRoot)artifacts\packages\$(Configuration)\Shipping</ArtifactsShippingPackages>
-    </PropertyGroup>
-
-    <TarGzFileCreateFromDirectory
-        Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' "
-        SourceDirectory="$(TestHostDotNetRoot)"
-        DestinationArchive="$(HelixStage0Targz)"
-        OverwriteDestination="true" />
-
-    <ItemGroup>
-      <HelixCorrelationPayload Include="$(HelixPayloadOnHost)">
-        <Destination>t</Destination>
-      </HelixCorrelationPayload>
-
-      <HelixCorrelationPayload Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(HelixStage0Targz)">
-        <Destination>d</Destination>
-      </HelixCorrelationPayload>
-
-      <HelixCorrelationPayload Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(TestHostDotNetRoot)">
-        <Destination>d</Destination>
-      </HelixCorrelationPayload>
-
-      <HelixCorrelationPayload Include="$(MicrosoftNETBuildExtensions)">
-        <Destination>ex</Destination>
-      </HelixCorrelationPayload>
-
-      <HelixCorrelationPayload Include="$(MSBuildSdkResolverDir)">
-        <Destination>r</Destination>
-      </HelixCorrelationPayload>
-
-      <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
-        <Destination>d/.nuget</Destination>
-      </HelixCorrelationPayload>
-    </ItemGroup>
-  </Target>
-
-  <Target Name="CreateLocalHelixTestLayout" DependsOnTargets="AppendHelixPreCommand">
-    <CreateLocalHelixTestLayout
-        HelixCorrelationPayload="@(HelixCorrelationPayload)"
-        TestOutputDirectory="$(RepoRoot)artifacts\bin\localHelixTestLayout" />
-  </Target>
+  <!--
+    Disable the Helix-specific targets that are no longer needed.
+    CopyHelixFiles and AppendHelixPreCommand prepare payloads for Helix agents.
+  -->
+  <Target Name="CopyHelixFiles" />
+  <Target Name="AppendHelixPreCommand" />
 
 </Project>

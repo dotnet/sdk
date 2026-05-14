@@ -1,0 +1,44 @@
+<Project>
+
+  <!--
+    Helper project invoked once per test assembly by UnitTests.proj's CoreTest target.
+    MSBuild runs multiple instances of this in parallel via BuildInParallel="true".
+
+    Required properties (passed via AdditionalProperties):
+      TestProjectPath:  Full path to the test .csproj
+      TestProjectName:  Assembly/project name (for TRX naming)
+      PublishDir:       The publish output directory for this test project
+      LocalTestResultsDir: Where to write TRX files
+      TestDotNetRoot:   Path to the dotnet host to use for running tests
+  -->
+
+  <Target Name="Build">
+    <PropertyGroup>
+      <_TrxFileName>$(TestProjectName).trx</_TrxFileName>
+      <_DotNet Condition="'$(TestDotNetRoot)' != ''">$(TestDotNetRoot)/dotnet</_DotNet>
+      <_DotNet Condition="'$(TestDotNetRoot)' == ''">dotnet</_DotNet>
+    </PropertyGroup>
+
+    <Message Importance="High" Text="▶ [LOCAL] Running tests: $(TestProjectName)" />
+    <Message Importance="High" Text="         from: $(PublishDir)" />
+
+    <!--
+      Run dotnet test from the publish directory, using the same flags Helix uses:
+      - blame-hang: detect and kill stuck tests (60 min timeout, same as Helix)
+      - logger trx: produce TRX files for AzDO PublishTestResults
+      - logger console: show output in the build log
+      - no-build: the project was already published by BuildSDKCustomXUnitProjects
+    -->
+    <Exec Command="&quot;$(_DotNet)&quot; test &quot;$(TestProjectPath)&quot; --no-build --configuration $(Configuration) --results-directory &quot;$(LocalTestResultsDir)&quot; --logger &quot;trx;LogFileName=$(_TrxFileName)&quot; --logger &quot;console;verbosity=normal&quot; --blame-hang --blame-hang-timeout 60min"
+          WorkingDirectory="$(PublishDir)"
+          IgnoreExitCode="true"
+          ContinueOnError="true"
+          EnvironmentVariables="DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$(PublishDir)">
+      <Output TaskParameter="ExitCode" PropertyName="_TestExitCode" />
+    </Exec>
+
+    <Message Condition="'$(_TestExitCode)' == '0'" Importance="High" Text="✓ [LOCAL] PASSED: $(TestProjectName)" />
+    <Warning Condition="'$(_TestExitCode)' != '0'" Text="✗ [LOCAL] FAILED: $(TestProjectName) (exit code: $(_TestExitCode))" />
+  </Target>
+
+</Project>

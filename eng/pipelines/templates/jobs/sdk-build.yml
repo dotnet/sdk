@@ -149,20 +149,17 @@ jobs:
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /maxcpucount
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: 🟣 Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
           env:
-            # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
             TestFullMSBuild: ${{ parameters.testFullMSBuild }}
 
       - ${{ else }}:
         # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
-        # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
-        # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
         - script: eng/common/build.sh
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
@@ -173,16 +170,28 @@ jobs:
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+            /maxcpucount
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: 🟣 Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
           env:
-            # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
 
     ############### POST ###############
+    # PoC: Publish TRX results from local test execution (replaces Helix reporter)
+    - task: PublishTestResults@2
+      displayName: 🟣 Publish Local Test Results (TRX)
+      inputs:
+        testResultsFormat: VSTest
+        testResultsFiles: artifacts/TestResults/$(buildConfiguration)/*.trx
+        testRunTitle: '$(System.PhaseName) (Local)'
+        buildPlatform: ${{ parameters.targetArchitecture }}
+        buildConfiguration: $(buildConfiguration)
+        mergeTestResults: true
+      continueOnError: true
+      condition: always()
+
     - ${{ if eq(parameters.publishXunitResults, true) }}:
       # This is only necessary for non-Helix tests.
       - task: PublishTestResults@2
