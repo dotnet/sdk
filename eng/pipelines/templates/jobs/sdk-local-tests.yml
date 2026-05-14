@@ -1,0 +1,133 @@
+# PoC: Run SDK tests locally on the AzDO agent instead of using Helix.
+# This template replaces the Helix submission step with local parallel execution.
+#
+# To use: Replace the test step in your pipeline with a reference to this template.
+# The agent must have enough CPU/RAM to run tests in parallel (recommend 8+ cores, 32GB+ RAM).
+#
+# Key differences from Helix:
+#   - All tests run on a SINGLE machine (the AzDO agent) instead of distributed across Helix queue
+#   - Tests run in parallel up to /maxcpucount (defaults to CPU count)
+#   - Test results are published directly via PublishTestResults task (no Helix reporter needed)
+#   - No Helix access token required
+
+parameters:
+  configuration: 'Release'
+  targetArchitecture: 'x64'
+  pool: ''
+  # Maximum parallel test processes. 0 = use all available CPUs.
+  maxParallelTests: 0
+  testProjects: '$(Build.SourcesDirectory)/test/LocalTests.proj'
+  categoryName: 'Unit'
+
+steps:
+  - ${{ if eq(parameters.pool.os, 'windows') }}:
+    - powershell: |
+        $startTime = Get-Date
+        Write-Host "Starting local test run at $startTime"
+        Write-Host "Max parallel tests: ${{ parameters.maxParallelTests }}"
+        Write-Host "Test projects: ${{ parameters.testProjects }}"
+
+        eng/common/build.ps1 `
+          -restore -build -test -ci -prepareMachine -nativeToolsOnMachine `
+          -configuration ${{ parameters.configuration }} `
+          /p:Projects=`"${{ parameters.testProjects }}`" `
+          /p:TargetArchitecture=${{ parameters.targetArchitecture }} `
+          /p:MaxParallelTests=${{ parameters.maxParallelTests }} `
+          /maxcpucount `
+          /bl:$(Build.SourcesDirectory)/artifacts/log/${{ parameters.configuration }}/${{ parameters.categoryName }}LocalTests.binlog
+
+        $endTime = Get-Date
+        $duration = $endTime - $startTime
+        Write-Host "##[section]Local test run completed in $($duration.ToString())"
+        Write-Host "##vso[task.setvariable variable=TestDuration]$($duration.TotalMinutes.ToString('F1')) minutes"
+      displayName: '🧪 Run ${{ parameters.categoryName }} Tests (Local - No Helix)'
+      condition: succeeded()
+      env:
+        RunAoTTests: ${{ parameters.runAoTTests }}
+        TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+
+  - ${{ else }}:
+    - script: |
+        START_TIME=$(date +%s)
+        echo "Starting local test run at $(date)"
+        echo "Max parallel tests: ${{ parameters.maxParallelTests }}"
+
+        eng/common/build.sh \
+          -restore -build -test -ci -prepareMachine \
+          -configuration ${{ parameters.configuration }} \
+          '/p:Projects="${{ parameters.testProjects }}"' \
+          /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
+          /p:MaxParallelTests=${{ parameters.maxParallelTests }} \
+          /maxcpucount \
+          /bl:$(Build.SourcesDirectory)/artifacts/log/${{ parameters.configuration }}/${{ parameters.categoryName }}LocalTests.binlog
+
+        END_TIME=$(date +%s)
+        DURATION=$((END_TIME - START_TIME))
+        echo "##[section]Local test run completed in $((DURATION / 60))m $((DURATION % 60))s"
+        echo "##vso[task.setvariable variable=TestDuration]$((DURATION / 60)) minutes"
+      displayName: '🧪 Run ${{ parameters.categoryName }} Tests (Local - No Helix)'
+      condition: succeeded()
+      env:
+        RunAoTTests: ${{ parameters.runAoTTests }}
+
+  # Publish test results to AzDO (TRX format from dotnet test --logger trx)
+  - task: PublishTestResults@2
+    displayName: '📊 Publish Test Results (TRX)'
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: 'artifacts/TestResults/${{ parameters.configuration }}/*.trx'
+      testRunTitle: '${{ parameters.categoryName }} Tests (Local) - $(System.PhaseName)'
+      buildPlatform: ${{ parameters.targetArchitecture }}
+      buildConfiguration: ${{ parameters.configuration }}
+      mergeTestResults: true
+    continueOnError: true
+    condition: always()
+
+  # Also publish any xUnit XML results (fallback/additional coverage)
+  - task: PublishTestResults@2
+    displayName: '📊 Publish Test Results (xUnit XML)'
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: 'artifacts/TestResults/${{ parameters.configuration }}/*.xml'
+      testRunTitle: '${{ parameters.categoryName }} Tests xUnit (Local) - $(System.PhaseName)'
+      buildPlatform: ${{ parameters.targetArchitecture }}
+      buildConfiguration: ${{ parameters.configuration }}
+      mergeTestResults: true
+    continueOnError: true
+    condition: always()
+
+  # Copy test logs for debugging
+  - task: CopyFiles@2
+    displayName: '📁 Copy Test Logs'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/${{ parameters.configuration }}'
+      Contents: '**'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/TestResults'
+    continueOnError: true
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: '📦 Publish Test Artifacts'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/TestResults'
+      ArtifactName: 'TestResults_${{ parameters.categoryName }}_Local'
+    continueOnError: true
+    condition: always()
+
+  # Publish the binlog for debugging MSBuild issues
+  - task: CopyFiles@2
+    displayName: '📁 Copy Binlog'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)/artifacts/log/${{ parameters.configuration }}'
+      Contents: '*LocalTests.binlog'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/Logs'
+    continueOnError: true
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: '📦 Publish Binlog'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/Logs'
+      ArtifactName: 'Logs_${{ parameters.categoryName }}_Local'
+    continueOnError: true
+    condition: always()

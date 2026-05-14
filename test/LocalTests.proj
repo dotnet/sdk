@@ -1,0 +1,125 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+
+  <!--
+    PoC: Run SDK tests locally on the AzDO agent instead of sending them to Helix.
+    This project collects the SAME test projects as UnitTests.proj and runs them
+    in parallel via 'dotnet test' on the local machine.
+
+    Usage (after building the SDK with build.sh/build.cmd):
+      dotnet msbuild test/LocalTests.proj /t:RestoreAndTest /p:Configuration=Release /maxcpucount
+
+    In CI (with AzDO variables set):
+      eng/common/build.sh -restore -test -ci -configuration Release /p:Projects="test/LocalTests.proj"
+
+    Key properties:
+      - MaxParallelTests: Max concurrent test processes (0 = CPU count, default)
+      - TestResultsDir: Where TRX files are written (default: artifacts/TestResults/$(Configuration))
+
+    This ensures the EXACT same tests run locally as would run on Helix, providing
+    an apples-to-apples wall-clock comparison.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Results output directory -->
+    <TestResultsDir Condition="'$(TestResultsDir)' == ''">$(RepoRoot)artifacts$(DS)TestResults$(DS)$(Configuration)</TestResultsDir>
+    <DS>$([System.IO.Path]::DirectorySeparatorChar)</DS>
+  </PropertyGroup>
+
+  <!-- ========================== Test Project Collection ==========================
+       This mirrors the EXACT same set from test/UnitTests.proj to ensure parity.
+       Any change to UnitTests.proj project list should be reflected here. -->
+  <ItemGroup>
+    <SDKTestProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj" />
+    <SDKTestProject Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
+    <SDKTestProject Include="**\*UnitTests.csproj;**\*IntegrationTests.csproj" Exclude="TestAssets\**\*" />
+
+    <!-- Same exclusions as UnitTests.proj -->
+    <SDKTestProject Remove="dotnet-MsiInstallation.Tests\**\*" />
+    <SDKTestProject Remove="dotnet-format.UnitTests\dotnet-format.UnitTests.csproj" />
+    <SDKTestProject Remove="Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj" />
+    <SDKTestProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
+    <SDKTestProject Include="
+      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
+      Microsoft.DotNet.ApiCompat.Tests\Microsoft.DotNet.ApiCompat.Tests.csproj;
+      Microsoft.DotNet.ApiCompatibility.Tests\Microsoft.DotNet.ApiCompatibility.Tests.csproj;
+      Microsoft.DotNet.ApiSymbolExtensions.Tests\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;
+      Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj;
+      Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj;
+      Microsoft.DotNet.TemplateLocator.Tests\Microsoft.DotNet.TemplateLocator.Tests.csproj;
+      Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj;
+      Microsoft.NET.Sdk.WorkloadManifestReader.Tests\Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj;
+      Microsoft.Win32.Msi.Tests\Microsoft.Win32.Msi.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RunAoTTests)' == 'true'">
+    <SDKTestProject Remove="@(SDKTestProject)" />
+    <SDKTestProject Include="**\*.AoT.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- ========================== Targets ========================== -->
+
+  <!--
+    Main entry point: Restore, Build, then Test all projects in parallel.
+    Use /maxcpucount on the command line to control MSBuild node parallelism.
+  -->
+  <Target Name="RestoreAndTest" DependsOnTargets="RestoreTestProjects;BuildAndTestInParallel" />
+
+  <!-- Restore all test projects in parallel -->
+  <Target Name="RestoreTestProjects">
+    <Message Importance="High" Text="╔══════════════════════════════════════════════════════════════╗" />
+    <Message Importance="High" Text="║  LOCAL TEST RUN - PoC: No Helix                             ║" />
+    <Message Importance="High" Text="║  Running the SAME tests that Helix would run, but locally.   ║" />
+    <Message Importance="High" Text="╚══════════════════════════════════════════════════════════════╝" />
+    <Message Importance="High" Text="Total test projects to run: @(SDKTestProject->Count())" />
+    <Message Importance="High" Text="" />
+    <Message Importance="High" Text="Restoring test projects..." />
+
+    <MSBuild Projects="@(SDKTestProject)"
+             Targets="Restore"
+             Properties="Configuration=$(Configuration)"
+             BuildInParallel="true" />
+  </Target>
+
+  <!--
+    Build and run tests in parallel using MSBuild's BuildInParallel.
+    Each test project's VSTest target is invoked, which runs 'dotnet test' internally.
+
+    We pass properties to configure:
+    - VSTestLogger: TRX output for AzDO
+    - VSTestResultsDirectory: Centralized results location
+    - RunSettingsArguments: blame-hang for detecting stuck tests
+    - VSTestVerbosity: match Helix's detailed console output
+  -->
+  <Target Name="BuildAndTestInParallel">
+    <MakeDir Directories="$(TestResultsDir)" />
+    <Message Importance="High" Text="Building and testing all projects in parallel..." />
+    <Message Importance="High" Text="Results directory: $(TestResultsDir)" />
+
+    <MSBuild Projects="@(SDKTestProject)"
+             Targets="Build;VSTest"
+             Properties="
+               Configuration=$(Configuration);
+               VSTestLogger=trx;
+               VSTestResultsDirectory=$(TestResultsDir);
+               VSTestBlame=true;
+               VSTestBlameCrash=true;
+               VSTestBlameCrashDumpType=full;
+               VSTestBlameHang=true;
+               VSTestBlameHangTimeout=60min"
+             BuildInParallel="true"
+             ContinueOnError="ErrorAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="_TestOutputs" />
+    </MSBuild>
+
+    <Message Importance="High" Text="" />
+    <Message Importance="High" Text="══════════════════════════════════════════════════════════════" />
+    <Message Importance="High" Text="  ALL LOCAL TEST EXECUTIONS COMPLETE" />
+    <Message Importance="High" Text="  Results: $(TestResultsDir)" />
+    <Message Importance="High" Text="══════════════════════════════════════════════════════════════" />
+  </Target>
+
+</Project>
