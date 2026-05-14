@@ -2728,18 +2728,23 @@ Proceed?</value>
   </data>
   <data name="DurationDaysAbbreviation" xml:space="preserve">
     <value>d</value>
+    <comment>Abbreviation for day(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</comment>
   </data>
   <data name="DurationHoursAbbreviation" xml:space="preserve">
     <value>h</value>
+    <comment>Abbreviation for hour(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</comment>
   </data>
   <data name="DurationMinutesAbbreviation" xml:space="preserve">
     <value>m</value>
+    <comment>Abbreviation for minute(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</comment>
   </data>
   <data name="DurationSecondsAbbreviation" xml:space="preserve">
     <value>s</value>
+    <comment>Abbreviation for second(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</comment>
   </data>
   <data name="DurationMillisecondsAbbreviation" xml:space="preserve">
     <value>ms</value>
+    <comment>Abbreviation for millisecond(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</comment>
   </data>
   <data name="WorkloadSetHasMissingManifests" xml:space="preserve">
     <value>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</value>

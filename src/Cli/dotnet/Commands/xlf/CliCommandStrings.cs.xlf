@@ -115,27 +115,27 @@
       <trans-unit id="DurationDaysAbbreviation">
         <source>d</source>
         <target state="new">d</target>
-        <note />
+        <note>Abbreviation for day(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</note>
       </trans-unit>
       <trans-unit id="DurationHoursAbbreviation">
         <source>h</source>
         <target state="new">h</target>
-        <note />
+        <note>Abbreviation for hour(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</note>
       </trans-unit>
       <trans-unit id="DurationMillisecondsAbbreviation">
         <source>ms</source>
         <target state="new">ms</target>
-        <note />
+        <note>Abbreviation for millisecond(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</note>
       </trans-unit>
       <trans-unit id="DurationMinutesAbbreviation">
         <source>m</source>
         <target state="new">m</target>
-        <note />
+        <note>Abbreviation for minute(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</note>
       </trans-unit>
       <trans-unit id="DurationSecondsAbbreviation">
         <source>s</source>
         <target state="new">s</target>
-        <note />
+        <note>Abbreviation for second(s) in the human-readable duration shown by 'dotnet test' MTP output. Appended directly after the numeric value with no extra spacing.</note>
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>

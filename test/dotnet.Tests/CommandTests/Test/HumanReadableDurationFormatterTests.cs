@@ -10,7 +10,7 @@ namespace dotnet.Tests.CommandTests.Test;
 public class HumanReadableDurationFormatterTests
 {
     [Fact]
-    public void Render_UsesLocalizedUnitAbbreviations()
+    public void Render_FormatsDurationWithResourceBackedUnitAbbreviations()
     {
         var duration = new TimeSpan(days: 1, hours: 2, minutes: 3, seconds: 4, milliseconds: 5);
 
@@ -20,7 +20,7 @@ public class HumanReadableDurationFormatterTests
     }
 
     [Fact]
-    public void Append_UsesLocalizedUnitAbbreviations()
+    public void Append_FormatsDurationWithResourceBackedUnitAbbreviations()
     {
         var duration = new TimeSpan(days: 1, hours: 2, minutes: 3, seconds: 4, milliseconds: 5);
         var terminal = new RecordingTerminal();
