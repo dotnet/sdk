@@ -72,7 +72,9 @@ internal sealed class DailyChannelResolver : IDisposable
 
         // Bare "daily": probe major+1 first so we pick up a new major as soon
         // as it starts producing daily builds, before its first GA release
-        // updates the manifest.
+        // updates the manifest. TryResolvePartialVersion returns null when
+        // aka.ms doesn't have a link for the requested major, so the fallback
+        // to the manifest's highest major runs as designed.
         if (channel.Name.Equals(ChannelVersionResolver.DailyChannel, StringComparison.OrdinalIgnoreCase))
         {
             int latestMajor = GetLatestManifestMajor();
@@ -148,6 +150,14 @@ internal sealed class DailyChannelResolver : IDisposable
                 ex);
         }
 
+        if (IsAkaMsShortlinkNotFound(finalUri))
+        {
+            // aka.ms redirects unknown shortlinks to https://www.bing.com/?ref=aka&shorturl=...
+            // Treat that as "no daily build available for this partial version" so callers
+            // (like the bare 'daily' probe of major+1) can fall back to the next candidate.
+            return null;
+        }
+
         if (!IsAllowedRedirectTarget(finalUri))
         {
             throw new DotnetInstallException(
@@ -178,6 +188,26 @@ internal sealed class DailyChannelResolver : IDisposable
         }
 
         return AllowedRedirectHosts.Any(host => uri.Host.Equals(host, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Detects the aka.ms "shortlink not found" redirect: when an aka.ms URL
+    /// has no registered target, the service redirects to a Bing landing page
+    /// of the form <c>https://www.bing.com/?ref=aka&amp;shorturl=&lt;original-path&gt;</c>.
+    /// The <c>ref=aka</c> query parameter is the unambiguous marker that the
+    /// redirect originated from aka.ms's not-found fallback (rather than a
+    /// legitimate redirect chain that happens to terminate on bing.com).
+    /// </summary>
+    public static bool IsAkaMsShortlinkNotFound(Uri uri)
+    {
+        if (!uri.Host.Equals("www.bing.com", StringComparison.OrdinalIgnoreCase)
+            && !uri.Host.Equals("bing.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var query = uri.Query;
+        return query.Contains("ref=aka", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

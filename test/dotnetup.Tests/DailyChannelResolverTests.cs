@@ -102,6 +102,23 @@ public class DailyChannelResolverTests
     }
 
     [Theory]
+    // Real aka.ms not-found redirect shape (observed against https://aka.ms/dotnet/12.0/daily/...):
+    [InlineData("https://www.bing.com/?ref=aka&shorturl=dotnet/12.0/daily/dotnet-sdk-win-x64.zip", true)]
+    [InlineData("https://bing.com/?ref=aka&shorturl=dotnet/12.0/daily/dotnet-sdk-linux-x64.tar.gz", true)]
+    // Case-insensitive host and query.
+    [InlineData("https://WWW.BING.COM/?REF=AKA&shorturl=dotnet/12.0/daily/dotnet-sdk-osx-arm64.tar.gz", true)]
+    // Plain bing.com without the ref=aka marker — could be a real user-facing redirect chain; don't treat as not-found.
+    [InlineData("https://www.bing.com/search?q=dotnet+sdk", false)]
+    [InlineData("https://www.bing.com/", false)]
+    // Legitimate daily-build hosts: never match the not-found pattern.
+    [InlineData("https://ci.dot.net/public/Sdk/10.0.100/dotnet-sdk.zip", false)]
+    [InlineData("https://builds.dotnet.microsoft.com/sdk/10.0.100/dotnet-sdk.zip", false)]
+    public void IsAkaMsShortlinkNotFound_RecognizesBingFallbackPattern(string url, bool expected)
+    {
+        DailyChannelResolver.IsAkaMsShortlinkNotFound(new Uri(url)).Should().Be(expected);
+    }
+
+    [Theory]
     [InlineData("https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip", "10.0.100-preview.4.25216.37")]
     [InlineData("https://builds.dotnet.microsoft.com/sdk/9.0.103/dotnet-sdk-9.0.103-win-x64.zip", "9.0.103")]
     [InlineData("https://ci.dot.net/no-version-here/file.zip", null)]

@@ -99,6 +99,29 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
             );
         }
 
+        /// <summary>
+        /// Daily-channel resolution against the live aka.ms infrastructure. Probes the
+        /// three forms a user might type. Bare <c>daily</c> tries major+1 first and falls
+        /// back to the manifest's highest major; channel-scoped forms (<c>10.0-daily</c>,
+        /// <c>11.0-daily</c>) target a specific major.minor. If aka.ms isn't redirecting
+        /// for one of these majors (e.g. a fresh major hasn't started producing dailies),
+        /// the version comes back null and the test fails — that's the signal we want.
+        /// </summary>
+        [Theory]
+        [InlineData("daily")]
+        [InlineData("10.0-daily")]
+        [InlineData("11.0-daily")]
+        public void GetLatestVersionForChannel_Daily_ResolvesAgainstLiveAkaMs(string channelName)
+        {
+            var resolver = new ChannelVersionResolver();
+            var version = resolver.GetLatestVersionForChannel(new UpdateChannel(channelName), InstallComponent.SDK);
+
+            Log.WriteLine($"Daily channel '{channelName}' resolved to: {version}");
+
+            Assert.NotNull(version);
+            Assert.False(string.IsNullOrEmpty(version.Prerelease), $"Daily-channel version {version} should have a prerelease tag");
+        }
+
         [Theory]
         [InlineData("latest", true)]
         [InlineData("preview", true)]
