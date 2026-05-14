@@ -345,3 +345,33 @@ extends:
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
+
+      ############### BAR registration ###############
+      # Stages the per-RID standalone binaries into a single manifest + BlobArtifacts
+      # layout and registers the build with the Build Asset Registry. The dotnetup Daily
+      # default-channel mapping (in maestro-configuration) auto-promotes the build, and
+      # the channel's TargetChannelConfig (in arcade) routes the binaries to
+      # ci.dot.net/public/dotnetup/<SemVer>/ with stable aka.ms/dotnet/dotnetup/daily/...
+      # links. See dotnetup-publish-to-bar.yml.
+      - stage: publish_to_bar
+        displayName: 📦 Register dotnetup with BAR
+        dependsOn:
+        - executable_win_x64
+        - executable_win_arm64
+        - executable_linux_x64
+        - executable_linux_arm64
+        - executable_linux_musl_x64
+        - executable_linux_musl_arm64
+        - executable_osx_x64
+        - executable_osx_arm64
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        jobs:
+        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-publish-to-bar.yml@self
+          parameters:
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-windows-2022
+              os: windows
+            oneESCompat:
+              templateFolderName: templates-official
+              publishTaskPrefix: 1ES.

@@ -110,9 +110,10 @@ jobs:
           # Copy the published (and signed) output to the artifact staging directory
           $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)\artifacts\bin\dotnetup\Release" -Directory | Select-Object -First 1
           Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\*" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup\${{ parameters.rid }}\" -Recurse -Force
-          # Copy just the binary to the standalone artifact staging directory
+          # Copy just the binary and version file to the standalone artifact staging directory
           New-Item -ItemType Directory -Path "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}" -Force | Out-Null
           Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\dotnetup.exe" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}\"
+          Copy-Item -Path "$($publishDir.FullName)\${{ parameters.rid }}\publish\dotnetup.version.txt" -Destination "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}\"
         displayName: 📦 Stage dotnetup artifacts (${{ parameters.rid }})
       - powershell: |
           $standaloneDir = "$(Build.SourcesDirectory)\artifacts\publish\dotnetup-standalone\${{ parameters.rid }}"
@@ -198,6 +199,7 @@ jobs:
           cp -r "$PUBLISH_DIR/${{ parameters.rid }}/publish/"* "$(Build.SourcesDirectory)/artifacts/publish/dotnetup/${{ parameters.rid }}/"
           mkdir -p "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"
           cp "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup" "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}/"
+          cp "$PUBLISH_DIR/${{ parameters.rid }}/publish/dotnetup.version.txt" "$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}/"
         displayName: 📦 Stage dotnetup artifacts (${{ parameters.rid }})
       - script: |
           STANDALONE_DIR="$(Build.SourcesDirectory)/artifacts/publish/dotnetup-standalone/${{ parameters.rid }}"

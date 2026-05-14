@@ -82,4 +82,16 @@
     <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Tools.Bootstrapper" />
   </ItemGroup>
 
+  <!--
+    Emit the computed SemVer to dotnetup.version.txt in the publish output so downstream
+    pipeline stages (e.g. the BAR-registration job that builds asset manifest paths) can
+    read the version without parsing csproj/props or running the AOT-published binary.
+  -->
+  <Target Name="WriteDotnetupVersionFile" AfterTargets="Publish">
+    <WriteLinesToFile File="$(PublishDir)dotnetup.version.txt"
+                      Lines="$(Version)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+  </Target>
+
 </Project>

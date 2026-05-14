@@ -1,0 +1,205 @@
+parameters:
+  # Pool to run the staging job on. The actual blob upload is performed by the shared
+  # Maestro Promotion Pipeline (dnceng/internal #750) which uses its own pool; we just
+  # need a normal Windows agent here to download artifacts and emit the manifest.
+  pool: {}
+  oneESCompat:
+    templateFolderName: templates
+    publishTaskPrefix: ''
+  # Maps to <Blob Id="..." /> entries in the manifest. The id is the path inside the
+  # target storage container; we pick a layout under dotnetup/<SemVer>/ where SemVer
+  # comes from the published dotnetup.version.txt file.
+  rids:
+  - rid: win-x64
+    isWindows: true
+  - rid: win-arm64
+    isWindows: true
+  - rid: linux-x64
+    isWindows: false
+  - rid: linux-arm64
+    isWindows: false
+  - rid: linux-musl-x64
+    isWindows: false
+  - rid: linux-musl-arm64
+    isWindows: false
+  - rid: osx-x64
+    isWindows: false
+  - rid: osx-arm64
+    isWindows: false
+
+jobs:
+# ---------------------------------------------------------------------------
+# stage_for_bar
+#
+# Collect all per-RID dotnetup standalone binaries (and their .sha512 siblings)
+# from the executable stages, lay them out under "dotnetup/<SemVer>/<asset>",
+# hand-craft an asset manifest XML in the format the Build Asset Registry expects,
+# and publish two pipeline artifacts:
+#
+#  AssetManifests/  -> read by publish-build-assets.yml to register with BAR
+#  BlobArtifacts/   -> read by the Maestro Promotion Pipeline (#750) to upload
+#
+# Both contain a copy of MergedManifest.xml; BlobArtifacts also contains the
+# binaries laid out at the paths declared in the manifest.
+# ---------------------------------------------------------------------------
+- job: stage_for_bar
+  displayName: 📦 Stage dotnetup artifacts for BAR
+  pool: ${{ parameters.pool }}
+  timeoutInMinutes: 30
+  templateContext:
+    outputs:
+    # AssetManifests can be a pipeline artifact — only this job writes to it; the
+    # publish-build-assets job downloads it via DownloadPipelineArtifact and never
+    # writes back to the same name.
+    - output: pipelineArtifact
+      displayName: 'Publish AssetManifests'
+      targetPath: $(Build.StagingDirectory)/AssetManifests
+      artifactName: AssetManifests
+      publishLocation: Container
+
+  steps:
+  - checkout: none
+
+  - ${{ each entry in parameters.rids }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download dotnetup-standalone-${{ entry.rid }}
+      inputs:
+        artifact: dotnetup-standalone-${{ entry.rid }}
+        path: $(Pipeline.Workspace)/standalone/${{ entry.rid }}
+
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      # Read the SemVer from dotnetup.version.txt, which the publish step emitted to each
+      # standalone artifact. WriteDotnetupVersionFile (in dotnetup.csproj) writes $(Version),
+      # which Arcade SDK has already composed as <prefix>-<label>.<BuildId> with the right
+      # patch/iteration numbers. Probe each downloaded RID artifact in turn so a single
+      # missing RID doesn't break the whole BAR registration.
+      $semver = $null
+      foreach ($rid in @('win-x64','win-arm64','linux-x64','linux-arm64','linux-musl-x64','linux-musl-arm64','osx-x64','osx-arm64')) {
+        $candidate = Join-Path '$(Pipeline.Workspace)' "standalone/$rid/dotnetup.version.txt"
+        if (Test-Path $candidate) {
+          $semver = (Get-Content -LiteralPath $candidate -Raw).Trim()
+          if (-not [string]::IsNullOrWhiteSpace($semver)) {
+            Write-Host "Using SemVer '$semver' (read from $candidate)"
+            break
+          }
+        }
+      }
+      if ([string]::IsNullOrWhiteSpace($semver)) {
+        throw "No usable dotnetup.version.txt found in any of the downloaded standalone RID artifacts."
+      }
+
+      $buildNumber = '$(Build.BuildNumber)'
+      $blobBase    = Join-Path '$(Build.StagingDirectory)' 'BlobArtifacts'
+      $assetBase   = Join-Path '$(Build.StagingDirectory)' 'AssetManifests'
+
+      New-Item -ItemType Directory -Path $blobBase  -Force | Out-Null
+      New-Item -ItemType Directory -Path $assetBase -Force | Out-Null
+
+      # Map RIDs to source filenames and target filenames (RID-suffixed).
+      $rids = @(
+        @{ rid='win-x64';        sourceName='dotnetup.exe'; targetName='dotnetup-win-x64.exe' },
+        @{ rid='win-arm64';      sourceName='dotnetup.exe'; targetName='dotnetup-win-arm64.exe' },
+        @{ rid='linux-x64';      sourceName='dotnetup';     targetName='dotnetup-linux-x64' },
+        @{ rid='linux-arm64';    sourceName='dotnetup';     targetName='dotnetup-linux-arm64' },
+        @{ rid='linux-musl-x64'; sourceName='dotnetup';     targetName='dotnetup-linux-musl-x64' },
+        @{ rid='linux-musl-arm64';sourceName='dotnetup';    targetName='dotnetup-linux-musl-arm64' },
+        @{ rid='osx-x64';        sourceName='dotnetup';     targetName='dotnetup-osx-x64' },
+        @{ rid='osx-arm64';      sourceName='dotnetup';     targetName='dotnetup-osx-arm64' }
+      )
+
+      $blobIds = New-Object System.Collections.Generic.List[string]
+      foreach ($r in $rids) {
+        $srcDir = Join-Path '$(Pipeline.Workspace)' ("standalone/" + $r.rid)
+        $src    = Join-Path $srcDir $r.sourceName
+        $hash   = Join-Path $srcDir ($r.sourceName + '.sha512')
+        if (-not (Test-Path $src))  { throw "Missing binary: $src" }
+        if (-not (Test-Path $hash)) { throw "Missing checksum: $hash" }
+
+        # Stage files FLAT under BlobArtifacts/. Arcade's PublishArtifactsInManifest
+        # downloads source blobs by basename only (BlobArtifacts/<filename>), but uses
+        # the full Blob Id path as the upload destination (ci.dot.net/dev/<Id>).
+        Copy-Item -LiteralPath $src  -Destination (Join-Path $blobBase $r.targetName)
+        Copy-Item -LiteralPath $hash -Destination (Join-Path $blobBase ($r.targetName + '.sha512'))
+
+        $blobIds.Add("dotnetup/$semver/" + $r.targetName)
+        $blobIds.Add("dotnetup/$semver/" + $r.targetName + '.sha512')
+      }
+
+      # Compose the asset manifest XML. The attribute set mirrors what Arcade's
+      # PushToBuildStorage task emits when authored from source; PublishBuildAssets
+      # only requires a subset (Name, PublishingVersion, AzureDevOps* identity).
+      $manifestPath = Join-Path $blobBase 'MergedManifest.xml'
+      $xml = [System.Xml.XmlWriterSettings]@{ Indent = $true; OmitXmlDeclaration = $false }
+      $writer = [System.Xml.XmlWriter]::Create($manifestPath, $xml)
+      try {
+        $writer.WriteStartDocument()
+        $writer.WriteStartElement('Build')
+        $writer.WriteAttributeString('PublishingVersion', '3')
+        # Name is the GitHub repository identifier — BAR keys subscriptions, default-channel
+        # mappings, and queries on this value as https://github.com/<Name>. dotnetup builds
+        # out of dotnet/sdk so we use that identifier. (BAR will associate this build with
+        # the dotnet/sdk repo record; eng-services queries on the SDK repo will see this
+        # build alongside main SDK builds, distinguished by AzureDevOpsBuildNumber.)
+        $writer.WriteAttributeString('Name', 'dotnet/sdk')
+        $writer.WriteAttributeString('BuildId', $buildNumber)
+        $writer.WriteAttributeString('ProductVersion', $semver)
+        $writer.WriteAttributeString('Branch', '$(Build.SourceBranch)')
+        $writer.WriteAttributeString('Commit', '$(Build.SourceVersion)')
+        $writer.WriteAttributeString('AzureDevOpsRepository', '$(Build.Repository.Uri)')
+        $writer.WriteAttributeString('AzureDevOpsBranch', '$(Build.SourceBranch)')
+        $writer.WriteAttributeString('AzureDevOpsBuildNumber', '$(Build.BuildNumber)')
+        $writer.WriteAttributeString('AzureDevOpsAccount', 'dnceng')
+        $writer.WriteAttributeString('AzureDevOpsProject', 'internal')
+        $writer.WriteAttributeString('AzureDevOpsBuildDefinitionId', '$(System.DefinitionId)')
+        $writer.WriteAttributeString('AzureDevOpsBuildId', '$(Build.BuildId)')
+        $writer.WriteAttributeString('InitialAssetsLocation', 'https://dotnetbuilds.blob.core.windows.net/public')
+        $writer.WriteAttributeString('IsStable', 'false')
+        $writer.WriteAttributeString('IsReleaseOnlyPackageVersion', 'false')
+        foreach ($id in $blobIds) {
+          $writer.WriteStartElement('Blob')
+          $writer.WriteAttributeString('Id', $id)
+          $writer.WriteEndElement()
+        }
+        $writer.WriteEndElement()
+        $writer.WriteEndDocument()
+      } finally {
+        $writer.Dispose()
+      }
+
+      # The promotion pipeline expects the manifest inside BlobArtifacts/.
+      # publish-build-assets.yml expects it inside AssetManifests/. Copy to both.
+      Copy-Item -LiteralPath $manifestPath -Destination (Join-Path $assetBase 'MergedManifest.xml') -Force
+
+      Write-Host "===== Manifest ====="
+      Get-Content $manifestPath
+      Write-Host "===== BlobArtifacts layout ====="
+      Get-ChildItem -Recurse $blobBase | Select-Object FullName, Length
+    displayName: 🛠 Generate asset manifest and lay out BlobArtifacts
+
+  # PublishBuildToMaestro (called by publish-build-assets.yml below) writes its
+  # MergedManifest.xml and uploads it to the "BlobArtifacts" name via the legacy
+  # `##vso[artifact.upload]` logging command. AzDO does not allow merging a legacy
+  # build artifact with a pipeline artifact under the same name, so we have to use
+  # the legacy 1ES.PublishBuildArtifacts@1 task here (rather than declaring this
+  # as a `pipelineArtifact` in `templateContext.outputs`) so Arcade's append works.
+  - task: 1ES.PublishBuildArtifacts@1
+    displayName: 'Publish BlobArtifacts (build artifact)'
+    inputs:
+      PathtoPublish: $(Build.StagingDirectory)/BlobArtifacts
+      ArtifactName: BlobArtifacts
+      PublishLocation: Container
+
+# ---------------------------------------------------------------------------
+# publish_to_bar (the standard Arcade publish-build-assets job)
+# Reads AssetManifests and registers the build in BAR via Maestro. The dotnetup Daily
+# default-channel mapping then triggers the Maestro Promotion Pipeline (#750) to upload
+# the BlobArtifacts to ci.dot.net/public/dotnetup/<SemVer>/ and create stable
+# aka.ms/dotnet/dotnetup/daily/<file> shortlinks.
+# ---------------------------------------------------------------------------
+- template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/publish-build-assets.yml@self
+  parameters:
+    publishingVersion: 3
+    publishAssetsImmediately: false
+    dependsOn: stage_for_bar
+    pool: ${{ parameters.pool }}
