@@ -4,21 +4,16 @@
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Utils;
 
 public static class ArtifactWriter
 {
-    public static readonly JsonSerializerOptions ArtifactJsonSerializationOptions = new()
+    public static void PersistFileIfChanged<T>(this Task task, T manifest, string artifactPath, JsonTypeInfo<T> serializer)
     {
-        WriteIndented = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    };
-
-    public static void PersistFileIfChanged<T>(this Task task, T manifest, string artifactPath)
-    {
-        var data = JsonSerializer.SerializeToUtf8Bytes(manifest, ArtifactJsonSerializationOptions);
+        var data = JsonSerializer.SerializeToUtf8Bytes(manifest, serializer);
         var newHash = ComputeHash(data);
         var fileExists = File.Exists(artifactPath);
         var existingManifestHash = fileExists ? ComputeHash(artifactPath) : null;

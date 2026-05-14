@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly string _downloadPath;
         private readonly bool _manifestDownload;
         private NuGetVersion _lastPackageVersion = new("1.0.0");
+        private IEnumerable<NuGetVersion> _packageVersions;
 
         public List<(PackageId id, NuGetVersion version, DirectoryPath? downloadFolder, PackageSourceLocation packageSourceLocation)> DownloadCallParams = new();
 
@@ -22,7 +23,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public HashSet<string> PackageIdsToNotFind { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public MockNuGetPackageDownloader(string dotnetRoot = null, bool manifestDownload = false)
+        public MockNuGetPackageDownloader(string dotnetRoot = null, bool manifestDownload = false, IEnumerable<NuGetVersion> packageVersions = null)
         {
             _manifestDownload = manifestDownload;
             _downloadPath = dotnetRoot == null ? string.Empty : Path.Combine(dotnetRoot, "metadata", "temp");
@@ -30,6 +31,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 Directory.CreateDirectory(_downloadPath);
             }
+
+            _packageVersions = packageVersions;
         }
 
         public Task<string> DownloadPackageAsync(PackageId packageId,
@@ -79,7 +82,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(new List<string>() as IEnumerable<string>);
         }
 
-        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => Task.FromResult(Enumerable.Empty<NuGetVersion>());
+        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => Task.FromResult(_packageVersions ?? Enumerable.Empty<NuGetVersion>());
 
         public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
         {

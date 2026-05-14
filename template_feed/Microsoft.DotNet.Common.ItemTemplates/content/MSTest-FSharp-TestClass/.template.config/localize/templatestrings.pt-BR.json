@@ -1,0 +1,16 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Classe de teste MSTest",
+  "description": "Cria uma nova classe de teste do MSTest",
+  "symbols/Fixture/description": "Selecione os tipos de acessório a serem incluídos no projeto.",
+  "symbols/Fixture/displayName": "Acessório",
+  "symbols/Fixture/choices/None/description": "Nenhum método de acessório",
+  "symbols/Fixture/choices/None/displayName": "Nenhum",
+  "symbols/Fixture/choices/AssemblyInitialize/description": "Método acessório AssemblyInitialize",
+  "symbols/Fixture/choices/AssemblyCleanup/description": "Método de acessório AssemblyCleanup",
+  "symbols/Fixture/choices/ClassInitialize/description": "Método de acessório ClassInitialize",
+  "symbols/Fixture/choices/ClassCleanup/description": "Método de acessório ClassCleanup",
+  "symbols/Fixture/choices/TestInitialize/description": "Método de acessório TestInitialize",
+  "symbols/Fixture/choices/TestCleanup/description": "Método de acessório TestCleanup",
+  "postActions/openInEditor/description": "Abre Test1.cs no editor."
+}

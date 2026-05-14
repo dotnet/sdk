@@ -27,6 +27,11 @@
         <target state="translated">{0} オプションと {1} オプションを同時に使用することはできません。いずれかのオプションを削除してください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
+        <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
+        <target state="translated">--version オプションを使用してワークロードのバージョンを指定する一方で、workload@version構文を使用してインストールするバージョンを指定することはできません。</target>
+        <note>{Locked="--version"}</note>
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">global.json ファイル {0} に既にバージョンが指定されている場合は、コマンド ラインで --version または --from-history を使用して特定のワークロード バージョンを指定することはできません。グローバルにインストールされたワークロード バージョンを更新するには、その global.json ファイルを含むパスの外部でコマンドを実行するか、global.json ファイルで指定されたバージョンを更新して、"dotnet workload update" を実行します。</target>
@@ -35,7 +40,7 @@
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
         <target state="translated">ワークロードのバージョンが global.json で指定されている場合、{0} オプションは使用できません。{0} オプションを削除するか、{1} から 'workloadVersion' 要素を削除してください。</target>
-        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+        <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
@@ -393,8 +398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload version.</source>
-        <target state="translated">指定されたワークロード バージョンに更新します。</target>
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="translated">表示するワークロードのバージョン、または '@' 文字で結合された 1 つ以上のワークロードとそのバージョン。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
