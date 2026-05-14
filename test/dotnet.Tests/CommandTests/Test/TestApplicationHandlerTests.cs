@@ -12,7 +12,7 @@ namespace dotnet.Tests.CommandTests.Test;
 public class TestApplicationHandlerTests
 {
     [Fact]
-    public void OnTestProcessExited_AfterControllerHandshakeWithoutTestHostHandshake_DoesNotThrowAndReportsHandshakeFailure()
+    public void OnTestProcessExited_WithOnlyControllerHandshake_ReportsHandshakeFailure()
     {
         var consoleMock = new Mock<IConsole>();
         consoleMock.SetupGet(c => c.BufferWidth).Returns(120);
