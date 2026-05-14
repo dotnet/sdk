@@ -232,6 +232,22 @@
     <value>CONTAINER2010: Invalid {0} provided: {1}. {0} must be a semicolon-delimited list of valid image tags. Image tags must be alphanumeric, underscore, hyphen, or period.</value>
     <comment>{StrBegins="CONTAINER2010: "}</comment>
   </data>
+  <data name="InvalidRegistryAuthResponse" xml:space="preserve">
+    <value>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</value>
+    <comment>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</comment>
+  </data>
+  <data name="InvalidAuthResponse_DisallowedScheme" xml:space="preserve">
+    <value>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</value>
+    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</comment>
+  </data>
+  <data name="InvalidAuthResponse_RelativeOrUnparseableRealm" xml:space="preserve">
+    <value>bearer realm '{0}' is not a valid absolute URI</value>
+    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</comment>
+  </data>
+  <data name="InvalidAuthResponse_PrivateIpLiteralRealm" xml:space="preserve">
+    <value>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</value>
+    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</comment>
+  </data>
   <data name="InvalidTokenResponse" xml:space="preserve">
     <value>CONTAINER1003: Token response had neither token nor access_token.</value>
     <comment>{StrBegins="CONTAINER1003: "}</comment>

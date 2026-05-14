@@ -3223,8 +3223,8 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">'{0}' aracı zaten yüklü.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3676,16 +3676,6 @@ karşılık gelen paket kimliklerini bulmak için
       <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
         <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
         <target state="translated">Komut satırından iş yüklerini {0} ile güncelleştirmek için belirtildi, ancak global.json dosyası {1} kullanmak için {2} olarak ayarlandı.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">'{0}' aracı, ön sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">'{0}' aracı, kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

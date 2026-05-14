@@ -12,16 +12,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class GetAssemblyAttributes : TaskBase, IMultiThreadableTask
     {
-#if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
-            set => _taskEnvironment = value;
-        }
-#else
-        public TaskEnvironment TaskEnvironment { get; set; }
-#endif
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         [Required]
         public string PathToTemplateFile { get; set; }

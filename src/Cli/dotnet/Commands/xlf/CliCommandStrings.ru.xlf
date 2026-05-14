@@ -3223,8 +3223,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">Инструмент "{0}" уже установлен.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3677,16 +3677,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
         <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
         <target state="translated">Указано для обновления рабочих нагрузок с помощью {0} из командной строки, но файл global.json в {1} указывает на использование {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">Инструмент "{0}" был переустановлен. Установлена предварительная версия (версия "{1}").</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">Инструмент "{0}" был переустановлен. Установлена стабильная версия (версия "{1}").</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
