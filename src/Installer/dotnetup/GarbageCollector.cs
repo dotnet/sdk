@@ -182,7 +182,11 @@ internal class GarbageCollector
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
+                        var lockInfo = FileLockDetector.GetLockingProcessDescription(subDir);
+                        var lockMessage = lockInfo is not null
+                            ? $" File is in use by: {lockInfo}"
+                            : "";
+                        Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}{lockMessage}");
                         ++failedCount;
                         lastFailedPath = relativePath;
                         DotnetupTelemetry.Instance.RecordException(op, ex, errorCode: "gc.delete_failed");
