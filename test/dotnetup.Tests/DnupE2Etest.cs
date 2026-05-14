@@ -376,6 +376,31 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     }
 
     /// <summary>
+    /// Installs the latest daily-channel SDK end-to-end. Exercises the full path:
+    /// `dotnetup sdk daily` → DailyChannelResolver hits aka.ms to discover the latest
+    /// daily prerelease version → DotnetArchiveDownloader pulls the matching archive
+    /// from the blob feed → install completes and is recorded in the manifest.
+    /// </summary>
+    [Fact]
+    public void SdkInstall_DailyChannel()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildSdkArguments("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        // Like SdkInstall_FullySpecifiedPreviewVersion_UsesBlobFeedFallback, we don't
+        // pin the manifest's recorded version because daily channel resolves to a
+        // rolling prerelease that changes day-to-day.
+        VerifyManifestContains(testEnv, InstallComponent.SDK, install =>
+        {
+            install.Version.Should().NotBeNullOrEmpty();
+            // Daily versions are always prerelease.
+            install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+        });
+    }
+
+    /// <summary>
     /// Looks up the current daily preview SDK version by following the aka.ms redirect
     /// for the SDK archive on the channel with the highest major version in the release
     /// manifest. If that channel doesn't yield a prerelease, probes the next-major
