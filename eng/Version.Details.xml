@@ -3,16 +3,16 @@
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.118">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>6657c3f36952e4920cbf5c24a49085ea4623092a</Sha>
+      <Sha>484cd68c76750df419e06cea4a63ea50e59a5029</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.118-servicing.26256.4">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.118-servicing.26262.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>6657c3f36952e4920cbf5c24a49085ea4623092a</Sha>
+      <Sha>484cd68c76750df419e06cea4a63ea50e59a5029</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.118-servicing.26256.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.118-servicing.26262.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>6657c3f36952e4920cbf5c24a49085ea4623092a</Sha>
+      <Sha>484cd68c76750df419e06cea4a63ea50e59a5029</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.15">
@@ -451,9 +451,9 @@
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-assets" Version="9.0.0-alpha.1.26261.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-assets" Version="9.0.0-alpha.1.26262.4">
       <Uri>https://github.com/dotnet/source-build-assets</Uri>
-      <Sha>23e11cbd47bfcb1aaee8284291a98c45cef2a5d7</Sha>
+      <Sha>3a687f7154d73a6425d98a1deeb40424bbd7cb38</Sha>
       <SourceBuild RepoName="source-build-assets" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25059.4">
@@ -631,14 +631,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>e156e649f28395d9d0ee1e848225a689b59e0fd3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.26256.3">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.26263.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>c2069dde2cb60983e985c6ca397783cf23f2f603</Sha>
+      <Sha>d130a15593a5a26d1c35da3d4204e35bf99e1e9d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.26256.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.26263.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>c2069dde2cb60983e985c6ca397783cf23f2f603</Sha>
+      <Sha>d130a15593a5a26d1c35da3d4204e35bf99e1e9d</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
