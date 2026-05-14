@@ -74,7 +74,7 @@ internal sealed class TestModulesFilterHandler : ITestHandler
         return actionQueue.CompleteEnqueueAndWait();
     }
 
-    private static List<string> GetMatchedModulePaths(string testModules, string? rootDirectory)
+    internal static List<string> GetMatchedModulePaths(string testModules, string? rootDirectory)
     {
         if (string.IsNullOrEmpty(rootDirectory))
         {

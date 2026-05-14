@@ -127,6 +127,38 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Fact]
+        public void ExclusionOnlyFilterPattern_MatchesAllFilesExceptExcluded()
+        {
+            var testDir = TestAssetsManager.CreateTestDirectory();
+
+            // Create three dummy files in the temp directory
+            File.WriteAllText(Path.Combine(testDir.Path, "TestAssembly.dll"), string.Empty);
+            File.WriteAllText(Path.Combine(testDir.Path, "OtherAssembly.dll"), string.Empty);
+            File.WriteAllText(Path.Combine(testDir.Path, "ExcludeMe.dll"), string.Empty);
+
+            // Use only an exclusion pattern — no explicit include
+            var matched = TestModulesFilterHandler.GetMatchedModulePaths("!ExcludeMe.dll", testDir.Path);
+            var fileNames = matched.Select(Path.GetFileName).OrderBy(f => f).ToList();
+
+            Assert.Equal(["OtherAssembly.dll", "TestAssembly.dll"], fileNames);
+        }
+
+        [Fact]
+        public void ExclusionOnlyFilterPattern_WithSpaceAfterBang_MatchesCorrectly()
+        {
+            var testDir = TestAssetsManager.CreateTestDirectory();
+
+            File.WriteAllText(Path.Combine(testDir.Path, "TestAssembly.dll"), string.Empty);
+            File.WriteAllText(Path.Combine(testDir.Path, "ExcludeMe.dll"), string.Empty);
+
+            // Pattern with whitespace around the '!' and after it
+            var matched = TestModulesFilterHandler.GetMatchedModulePaths("! ExcludeMe.dll", testDir.Path);
+            var fileNames = matched.Select(Path.GetFileName).ToList();
+
+            Assert.Equal(["TestAssembly.dll"], fileNames);
+        }
+
+        [Fact]
         public void RunTestProjectsWithIncludeAndExcludeFilterOfDll_ShouldReturnExitCodeSuccess()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
