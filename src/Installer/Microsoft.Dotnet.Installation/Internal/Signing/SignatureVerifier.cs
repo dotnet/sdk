@@ -326,8 +326,20 @@ internal static class SignatureVerifier
     }
 
     /// <summary>
-    /// Builds the TSA chain when a timestamp was extracted; otherwise records a skip.
+    /// Builds the TSA chain when a timestamp was extracted; otherwise records a diagnostic
+    /// skip pointing at the upstream failure that already made the result invalid.
     /// </summary>
+    /// <remarks>
+    /// RFC 3161 timestamping is required (spec §7); it is NOT a spec-permitted optional
+    /// check. Reaching the null-input branch here means <see cref="EvaluateTimestamp"/>
+    /// already added one of <see cref="FailureCode.TimestampMissing"/>,
+    /// <see cref="FailureCode.TimestampMalformed"/>, or
+    /// <see cref="FailureCode.TimestampBindingInvalid"/>, so <c>result.IsValid</c> is
+    /// already false. In short-circuit mode (the production default) this branch is
+    /// unreachable — the pipeline bails before re-entering. In collect-all mode the skip is
+    /// a diagnostic breadcrumb only; it does not soften policy. Same pattern as
+    /// <see cref="EvaluateAlgorithmPolicy"/>.
+    /// </remarks>
     private static void EvaluateTimestampChain(
         X509Certificate2? tsaCert,
         SignedCms? tsaCms,
@@ -340,7 +352,7 @@ internal static class SignatureVerifier
         {
             if (signer is not null)
             {
-                result.AddSkip("Timestamp chain not evaluated: timestamp could not be extracted.");
+                result.AddSkip("Timestamp chain not evaluated: the TSA token was missing, malformed, or did not bind to the primary signer (see upstream Timestamp* failure for the specific cause).");
             }
             return;
         }
