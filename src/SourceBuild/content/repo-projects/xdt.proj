@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <!-- Remove nuget.org from auditSources to avoid reaching the internet during CI builds. -->
+    <RemoveBlockedAuditSources>true</RemoveBlockedAuditSources>
   </PropertyGroup>
 
   <ItemGroup>
