@@ -12,6 +12,8 @@
     <BuildArgs>$(BuildArgs) /p:GenerateResourceUsePreserializedResources=true</BuildArgs>
     <!-- Avoid passing -dotnetEngine msbuild switch, which nuget doesn't recognize. -->
     <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
+    <!-- Remove nuget.org from auditSources to avoid reaching the internet during CI builds. -->
+    <RemoveBlockedAuditSources>true</RemoveBlockedAuditSources>
   </PropertyGroup>
 
   <ItemGroup>
