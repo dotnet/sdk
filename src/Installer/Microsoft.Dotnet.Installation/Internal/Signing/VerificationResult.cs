@@ -79,7 +79,7 @@ internal sealed record VerificationFailure(FailureCode Code, string Reason);
 /// </summary>
 internal sealed class VerificationResult
 {
-    private readonly List<VerificationFailure> _failures = new();
+    private readonly List<VerificationFailure> _failures = [];
     private readonly bool _shortCircuit;
 
     public IReadOnlyList<VerificationFailure> Failures => _failures;

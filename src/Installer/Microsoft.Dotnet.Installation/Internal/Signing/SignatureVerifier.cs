@@ -20,23 +20,23 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 internal static class SignatureVerifier
 {
     // Required signer subject DN (RDN set; OID-based, order-insensitive). Spec §5.1.
-    private static readonly (string Oid, string Value)[] RequiredSubjectRdns =
-    {
+    private static readonly (string Oid, string Value)[] s_requiredSubjectRdns =
+    [
         ("2.5.4.3",  "Microsoft Corporation"), // CN
         ("2.5.4.11", ".NET Release"),          // OU
         ("2.5.4.10", "Microsoft Corporation"), // O
         ("2.5.4.7",  "Redmond"),               // L
         ("2.5.4.8",  "Washington"),            // S
         ("2.5.4.6",  "US"),                    // C
-    };
+    ];
 
     // Required signer issuer DN (DigiCert code-signing intermediate). Spec §5.2.
-    private static readonly (string Oid, string Value)[] RequiredIssuerRdns =
-    {
+    private static readonly (string Oid, string Value)[] s_requiredIssuerRdns =
+    [
         ("2.5.4.3",  "DigiCert Trusted G4 Code Signing RSA4096 SHA384 2021 CA1"),
         ("2.5.4.10", "DigiCert, Inc."),
         ("2.5.4.6",  "US"),
-    };
+    ];
 
     private const string EkuCodeSigning = "1.3.6.1.5.5.7.3.3";   // id-kp-codeSigning (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
     private const string EkuTimeStamping = "1.3.6.1.5.5.7.3.8";  // id-kp-timeStamping (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
@@ -53,15 +53,16 @@ internal static class SignatureVerifier
 
     // SHA-2 digest algorithm OIDs (NIST CSOR 2.16.840.1.101.3.4.2; registered in RFC 5754 §2)
     // https://datatracker.ietf.org/doc/html/rfc5754#section-2
-    private static readonly HashSet<string> AllowedDigestOids = new(StringComparer.Ordinal)
-    {
+    // Default HashSet<string> equality comparer is ordinal, matching the OID strings.
+    private static readonly HashSet<string> s_allowedDigestOids =
+    [
         "2.16.840.1.101.3.4.2.1", // id-sha256
         "2.16.840.1.101.3.4.2.2", // id-sha384
         "2.16.840.1.101.3.4.2.3", // id-sha512
-    };
+    ];
 
-    private static readonly TimeSpan SigningTimeTolerance = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan RevocationRetrievalTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan s_signingTimeTolerance = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan s_revocationRetrievalTimeout = TimeSpan.FromSeconds(30);
 
     // The OS root store (StoreName.Root for both CurrentUser and LocalMachine) is read into
     // every X509Chain we build. Opening the OS store on each call costs 50–200ms on Windows;
@@ -93,29 +94,29 @@ internal static class SignatureVerifier
         var result = new VerificationResult(shortCircuit: mode == VerificationMode.ShortCircuit);
 
         EvaluateTrustedRoots(options, result);
-        if (result.ShouldStop) return result;
+        if (result.ShouldStop) { return result; }
 
         DecodeCms(content, signature, result, out SignedCms? cms, out SignerInfo? signer, out X509Certificate2? signerCert);
-        if (result.ShouldStop) return result;
+        if (result.ShouldStop) { return result; }
 
         EvaluateAlgorithmPolicy(signer, signerCert, result);
-        if (result.ShouldStop) return result;
+        if (result.ShouldStop) { return result; }
 
         EvaluateSignerCertificatePolicy(signerCert, result);
-        if (result.ShouldStop) return result;
+        if (result.ShouldStop) { return result; }
 
         DateTime? claimedSigningTimeUtc = TryEvaluateSignedAttributes(signer, result);
-        if (result.ShouldStop) return result;
+        if (result.ShouldStop) { return result; }
 
         (DateTimeOffset? tsaTimestampUtc, SignedCms? tsaCms, X509Certificate2? tsaCert) =
             TryEvaluateTimestamp(signer, claimedSigningTimeUtc, result);
-        if (result.ShouldStop) return result;
+        if (result.ShouldStop) { return result; }
 
         EvaluateTimestampChain(tsaCert, tsaCms, tsaTimestampUtc, signer, options, result);
-        if (result.ShouldStop) return result;
+        if (result.ShouldStop) { return result; }
 
         EvaluatePrimaryChain(signerCert, cms, tsaTimestampUtc, options, nowOverride, result);
-        if (result.ShouldStop) return result;
+        if (result.ShouldStop) { return result; }
 
         MaybeEvaluateJsonExpiration(content, tsaTimestampUtc, options, nowOverride, result);
 
@@ -206,7 +207,7 @@ internal static class SignatureVerifier
         if (signer is not null)
         {
             string digestOid = signer.DigestAlgorithm.Value ?? string.Empty;
-            if (!AllowedDigestOids.Contains(digestOid))
+            if (!s_allowedDigestOids.Contains(digestOid))
             {
                 result.Add(FailureCode.WeakDigest, $"Digest algorithm OID {digestOid} is not permitted.");
             }
@@ -219,7 +220,7 @@ internal static class SignatureVerifier
         if (signerCert is not null)
         {
             string keyOid = signerCert.PublicKey.Oid.Value ?? string.Empty;
-            if (keyOid != OidRsa && keyOid != OidEcdsa)
+            if (keyOid is not OidRsa and not OidEcdsa)
             {
                 result.Add(FailureCode.WeakSignatureAlgorithm, $"Signer public-key algorithm OID {keyOid} is not permitted (RSA or ECDSA required).");
             }
@@ -243,12 +244,12 @@ internal static class SignatureVerifier
             return;
         }
 
-        if (!DistinguishedNameMatches(signerCert.SubjectName, RequiredSubjectRdns, "Subject", out string subjectDetail))
+        if (!DistinguishedNameMatches(signerCert.SubjectName, s_requiredSubjectRdns, "Subject", out string subjectDetail))
         {
             result.Add(FailureCode.SubjectMismatch, subjectDetail);
         }
 
-        if (!DistinguishedNameMatches(signerCert.IssuerName, RequiredIssuerRdns, "Issuer", out string issuerDetail))
+        if (!DistinguishedNameMatches(signerCert.IssuerName, s_requiredIssuerRdns, "Issuer", out string issuerDetail))
         {
             result.Add(FailureCode.IssuerMismatch, issuerDetail);
         }
@@ -263,7 +264,9 @@ internal static class SignatureVerifier
     private static DateTime? TryEvaluateSignedAttributes(SignerInfo? signer, VerificationResult result)
     {
         if (signer is null || signer.SignedAttributes.Count == 0)
+        {
             return null;
+        }
 
         EvaluateContentTypeAttribute(signer, result);
         EvaluateMessageDigestAttribute(signer, result);
@@ -375,7 +378,9 @@ internal static class SignatureVerifier
         VerificationResult result)
     {
         if (!options.RequireJsonExpirationField)
+        {
             return;
+        }
 
         if (tsaTimestampUtc is null)
         {
@@ -583,10 +588,10 @@ internal static class SignatureVerifier
         if (claimedSigningTimeUtc is { } claimed)
         {
             TimeSpan drift = (tsaTime - new DateTimeOffset(claimed, TimeSpan.Zero)).Duration();
-            if (drift > SigningTimeTolerance)
+            if (drift > s_signingTimeTolerance)
             {
                 result.Add(FailureCode.SigningTimeMismatch,
-                    $"Claimed signing-time {claimed:O} drifts {drift} from TSA timestamp {tsaTime:O} (max {SigningTimeTolerance}).");
+                    $"Claimed signing-time {claimed:O} drifts {drift} from TSA timestamp {tsaTime:O} (max {s_signingTimeTolerance}).");
             }
         }
 
@@ -655,7 +660,7 @@ internal static class SignatureVerifier
         // mis-purposed intermediates / cross-signed scenarios where an intermediate
         // constrains the leaf's permitted purposes.
         chain.ChainPolicy.ApplicationPolicy.Add(new Oid(applicationPolicyEku));
-        chain.ChainPolicy.UrlRetrievalTimeout = RevocationRetrievalTimeout;
+        chain.ChainPolicy.UrlRetrievalTimeout = s_revocationRetrievalTimeout;
         // We deliberately do NOT set X509VerificationFlags.IgnoreNotTimeValid here,
         // unlike NuGet's package-verification path. Release manifests are intended to be
         // FRESH artifacts: an expired signer cert at time of consumption means the

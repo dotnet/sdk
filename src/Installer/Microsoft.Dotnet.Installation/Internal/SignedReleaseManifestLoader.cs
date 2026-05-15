@@ -3,7 +3,6 @@
 
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal.Signing;
@@ -30,7 +29,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// </summary>
 internal sealed class SignedReleaseManifestLoader : IDisposable
 {
-    private static readonly TimeSpan ManifestFetchTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan s_manifestFetchTimeout = TimeSpan.FromSeconds(30);
 
     private readonly HttpClient _httpClient;
     private readonly SignatureVerificationOptions _options;
@@ -98,7 +97,9 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
     internal Uri GetReleaseUriForConfiguredHost(Uri originalUrl)
     {
         if (string.Equals(originalUrl.Authority, _indexUrl.Authority, StringComparison.OrdinalIgnoreCase))
+        {
             return originalUrl;
+        }
 
         var builder = new UriBuilder(originalUrl)
         {
@@ -123,7 +124,7 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         // Manifest fetches use a tight per-request timeout independent of DefaultHttpClient.Instance's
         // 10-minute timeout (sized for archive downloads). A slow/stalling mirror should fail fast on
         // small JSON+sig fetches rather than hanging the install for 10 minutes.
-        using var cts = new CancellationTokenSource(ManifestFetchTimeout);
+        using var cts = new CancellationTokenSource(s_manifestFetchTimeout);
 
         // 1. Download JSON bytes.
         byte[] jsonBytes = _httpClient.GetByteArrayAsync(jsonUrl, cts.Token).GetAwaiter().GetResult();
@@ -183,7 +184,7 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
     internal static string? ParseSignatureFileField(byte[] jsonBytes)
     {
         using var doc = JsonDocument.Parse(jsonBytes);
-        if (doc.RootElement.ValueKind != JsonValueKind.Object) return null;
+        if (doc.RootElement.ValueKind != JsonValueKind.Object) { return null; }
 
         if (!doc.RootElement.TryGetProperty("signature", out JsonElement sig) ||
             sig.ValueKind != JsonValueKind.Object ||
@@ -194,7 +195,7 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         }
 
         string? file = fileEl.GetString();
-        if (string.IsNullOrWhiteSpace(file)) return null;
+        if (string.IsNullOrWhiteSpace(file)) { return null; }
 
         // Bare filename only — no path traversal, no absolute URL, no directory navigation.
         // The signing protocol publishes filenames like "releases-index.json.<timestamp>.p7s".
@@ -244,7 +245,9 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         try
         {
             if (Directory.Exists(_tempDir))
+            {
                 Directory.Delete(_tempDir, recursive: true);
+            }
         }
         catch
         {

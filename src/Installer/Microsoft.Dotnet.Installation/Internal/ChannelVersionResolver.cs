@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -38,6 +39,7 @@ internal class ChannelVersionResolver
     {
     }
 
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Kept as instance for API symmetry with other resolver methods and to allow future stateful caching.")]
     public IEnumerable<string> GetSupportedChannels(bool includeFeatureBands = true)
     {
         var productIndex = ReleaseManifest.Default.GetReleasesIndex();
@@ -48,7 +50,7 @@ internal class ChannelVersionResolver
                 .SelectMany(p => GetChannelsForProduct(p, includeFeatureBands))
         ];
 
-        IEnumerable<string> GetChannelsForProduct(Product product, bool includeFeatureBands)
+        static IEnumerable<string> GetChannelsForProduct(Product product, bool includeFeatureBands)
         {
             if (!includeFeatureBands)
             {
@@ -188,6 +190,7 @@ internal class ChannelVersionResolver
     /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "preview")</param>
     /// <param name="component">The component to check (ie SDK or runtime)</param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Kept as instance for API symmetry with other resolver methods and to allow future stateful caching.")]
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
     {
         if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))
@@ -349,7 +352,7 @@ internal class ChannelVersionResolver
         var latestProduct = validProducts.FirstOrDefault();
         var releases = latestProduct is not null
             ? ReleaseManifest.Default.GetReleases(latestProduct).ToList()
-            : new List<ProductRelease>();
+            : [];
         var normalizedFeatureBand = NormalizeFeatureBandInput(featureBand);
 
         foreach (var release in releases)

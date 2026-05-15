@@ -14,9 +14,7 @@ the `Microsoft.Dotnet.Installation` library. It is cross-platform (Windows,
 Linux, macOS) and uses only the BCL (`System.Security.Cryptography.Pkcs`,
 `System.Security.Cryptography.X509Certificates`, `System.Text.Json`).
 
-The verifier is content-agnostic — it operates over arbitrary byte arrays,
-so the same code path can verify a manifest JSON document or a release
-archive accompanied by a sibling `.p7s`. The only content-specific check
+The only content-specific check
 (§9, JSON expiration) is opt-in via
 `SignatureVerificationOptions.RequireJsonExpirationField`.
 
