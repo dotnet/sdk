@@ -38,6 +38,17 @@ internal static class SignatureVerifier
         ("2.5.4.6",  "US"),
     ];
 
+    // Required TSA-cert immediate-issuer DN (DigiCert timestamping intermediate). Spec §7.
+    // Defense-in-depth: tightens the TSA chain beyond "any cert chaining to a root in
+    // timestampctl.pem" by also pinning the intermediate that issued the TSA leaf, mirroring
+    // the code-signing intermediate pin in §5.2.
+    private static readonly (string Oid, string Value)[] s_requiredTimestampIssuerRdns =
+    [
+        ("2.5.4.3",  "DigiCert Trusted G4 TimeStamping RSA4096 SHA256 2025 CA1"),
+        ("2.5.4.10", "DigiCert, Inc."),
+        ("2.5.4.6",  "US"),
+    ];
+
     private const string EkuCodeSigning = "1.3.6.1.5.5.7.3.3";   // id-kp-codeSigning (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
     private const string EkuTimeStamping = "1.3.6.1.5.5.7.3.8";  // id-kp-timeStamping (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
     private const string EkuAnyExtended = "2.5.29.37.0";         // anyExtendedKeyUsage (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
@@ -308,6 +319,12 @@ internal static class SignatureVerifier
         }
 
         EvaluateEku(tsaCert, EkuTimeStamping, primary: false, result);
+
+        if (!DistinguishedNameMatches(tsaCert.IssuerName, s_requiredTimestampIssuerRdns, "TSA Issuer", out string tsaIssuerDetail))
+        {
+            result.Add(FailureCode.TimestampIssuerMismatch, tsaIssuerDetail);
+        }
+
         EvaluateChain(
             tsaCert,
             extraStore: tsaCms.Certificates,

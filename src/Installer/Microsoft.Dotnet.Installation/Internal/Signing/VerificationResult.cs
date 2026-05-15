@@ -47,6 +47,7 @@ internal enum FailureCode
     TimestampBindingInvalid,
     TimestampChainFailed,
     TimestampEkuInvalid,
+    TimestampIssuerMismatch,
     TimestampRevocationUnavailable,
 
     // JSON policy

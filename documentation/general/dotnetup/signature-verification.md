@@ -214,6 +214,17 @@ to:
   the primary signature's `EncryptedDigest`.
 - The TSA certificate MUST carry EKU exactly `1.3.6.1.5.5.7.3.8`
   (`id-kp-timeStamping`), exclusive of any other OID.
+- The TSA certificate's **immediate issuer** Distinguished Name MUST
+  consist of exactly the following RDNs (same comparison rules as §5.1).
+  This pins the TSA leaf to a specific DigiCert timestamping
+  intermediate as a defense-in-depth check on top of the chain build:
+
+  | OID        | Short | Value                                                           |
+  | ---------- | ----- | --------------------------------------------------------------- |
+  | `2.5.4.3`  | `CN`  | `DigiCert Trusted G4 TimeStamping RSA4096 SHA256 2025 CA1`      |
+  | `2.5.4.10` | `O`   | `DigiCert, Inc.`                                                |
+  | `2.5.4.6`  | `C`   | `US`                                                            |
+
 - The TSA certificate chain MUST build under the same rules as §6,
   except:
   - `CustomTrustStore` is the union of `options.TrustedTimestampRoots` +
@@ -237,7 +248,8 @@ window, JSON policy) is `token.TokenInfo.Timestamp` (UTC), not the
 signer's claimed signing-time attribute.
 
 Failures: `TimestampMissing`, `TimestampMalformed`,
-`TimestampBindingInvalid`, `TimestampEkuInvalid`, `TimestampChainFailed`,
+`TimestampBindingInvalid`, `TimestampEkuInvalid`,
+`TimestampIssuerMismatch`, `TimestampChainFailed`,
 `TimestampRevocationUnavailable`.
 
 ## 8. Signed attributes (PKCS#9, optional)
