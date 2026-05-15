@@ -376,10 +376,7 @@ internal static class SignatureVerifier
             verificationTime: null,
             applicationPolicyEku: EkuTimeStamping,
             revocationMode: options.RevocationMode,
-            timeoutCode: FailureCode.TimestampRevocationUnavailable,
-            revokedCode: FailureCode.TimestampChainFailed,
-            genericCode: FailureCode.TimestampChainFailed,
-            role: "timestamp authority",
+            kind: ChainKind.TimestampAuthority,
             result);
     }
 
@@ -414,10 +411,7 @@ internal static class SignatureVerifier
             verificationTime: verificationTime,
             applicationPolicyEku: EkuCodeSigning,
             revocationMode: options.RevocationMode,
-            timeoutCode: FailureCode.RevocationUnavailable,
-            revokedCode: FailureCode.Revoked,
-            genericCode: FailureCode.ChainBuildFailed,
-            role: "primary signer",
+            kind: ChainKind.PrimarySigner,
             result);
     }
 
@@ -654,6 +648,25 @@ internal static class SignatureVerifier
         return (tsaTime, tsaCms, tsaCert);
     }
 
+    /// <summary>
+    /// Identifies which of the two chains is being built so <see cref="EvaluateChain"/> /
+    /// <see cref="InterpretChainStatus"/> can pick the correct role label and the correct
+    /// triple of <see cref="FailureCode"/>s (timeout / revoked / generic-build-failure).
+    /// The mapping is fixed so callers cannot mismatch the codes with the role.
+    /// </summary>
+    private enum ChainKind
+    {
+        PrimarySigner,
+        TimestampAuthority,
+    }
+
+    private static (string Role, FailureCode Timeout, FailureCode Revoked, FailureCode Generic) GetChainCodes(ChainKind kind) => kind switch
+    {
+        ChainKind.PrimarySigner => ("primary signer", FailureCode.RevocationUnavailable, FailureCode.Revoked, FailureCode.ChainBuildFailed),
+        ChainKind.TimestampAuthority => ("timestamp authority", FailureCode.TimestampRevocationUnavailable, FailureCode.TimestampChainFailed, FailureCode.TimestampChainFailed),
+        _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+    };
+
     private static void EvaluateChain(
         X509Certificate2 leaf,
         X509Certificate2Collection extraStore,
@@ -661,10 +674,7 @@ internal static class SignatureVerifier
         DateTime? verificationTime,
         string applicationPolicyEku,
         RevocationCheckMode revocationMode,
-        FailureCode timeoutCode,
-        FailureCode revokedCode,
-        FailureCode genericCode,
-        string role,
+        ChainKind kind,
         VerificationResult result)
     {
         using var chain = new X509Chain();
@@ -673,7 +683,7 @@ internal static class SignatureVerifier
         bool ok = BuildWithUntrustedRootRetry(chain, leaf);
         try
         {
-            InterpretChainStatus(chain, ok, role, timeoutCode, revokedCode, genericCode, result);
+            InterpretChainStatus(chain, ok, kind, result);
         }
         finally
         {
@@ -742,16 +752,15 @@ internal static class SignatureVerifier
     private static void InterpretChainStatus(
         X509Chain chain,
         bool buildSucceeded,
-        string role,
-        FailureCode timeoutCode,
-        FailureCode revokedCode,
-        FailureCode genericCode,
+        ChainKind kind,
         VerificationResult result)
     {
         if (buildSucceeded && chain.ChainStatus.Length == 0)
         {
             return;
         }
+
+        var (role, timeoutCode, revokedCode, genericCode) = GetChainCodes(kind);
 
         X509ChainStatusFlags flags = X509ChainStatusFlags.NoError;
         foreach (X509ChainStatus s in chain.ChainStatus)
