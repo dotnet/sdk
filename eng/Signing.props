@@ -140,6 +140,8 @@
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.rpm" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.msi" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.cab" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)dotnetup\*"
+                 Exclude="$(ArtifactsShippingPackagesDir)dotnetup\*.sha512" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
 
