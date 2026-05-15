@@ -74,8 +74,20 @@ internal static class SignatureVerifier
         "2.16.840.1.101.3.4.2.3", // id-sha512
     ];
 
-    private static readonly TimeSpan s_signingTimeTolerance = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan s_revocationRetrievalTimeout = TimeSpan.FromSeconds(30);
+    // Maximum permitted clock skew between the signer's claimed signingTime attribute and the
+    // TSA-attested timestamp (spec §8). 5 minutes matches the Kerberos default clock-skew
+    // window (RFC 4430 §5.2 / MIT krb5 `clockskew`) and NuGet's signing time tolerance
+    // (NuGet.Packaging.Signing.SigningSpecifications.MaxAllowedTimestampError). Large enough
+    // to absorb signer/TSA NTP drift; small enough that a backdated signingTime is rejected.
+    private const int SigningTimeToleranceMinutes = 5;
+    private static readonly TimeSpan s_signingTimeTolerance = TimeSpan.FromMinutes(SigningTimeToleranceMinutes);
+
+    // Per-URL timeout the chain engine applies when fetching CRL / OCSP / AIA artifacts during
+    // revocation checking. 30s mirrors NuGet's CertificateChainUtility default
+    // (NuGet.Packaging.Signing.SigningSpecifications.RevocationUrlRetrievalTimeoutInSeconds)
+    // and is generous enough for slow networks while bounding hangs when a CDP is unreachable.
+    private const int RevocationRetrievalTimeoutSeconds = 30;
+    private static readonly TimeSpan s_revocationRetrievalTimeout = TimeSpan.FromSeconds(RevocationRetrievalTimeoutSeconds);
 
     // The OS root store (StoreName.Root for both CurrentUser and LocalMachine) is read into
     // every X509Chain we build. Opening the OS store on each call costs 50–200ms on Windows;
