@@ -1,11 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <!-- This project is a library; its compiled assembly is consumed by:
+         - src/Installer/dotnetup/dotnetup.csproj (the NativeAOT Exe that ships as the
+           dotnetup standalone executable), and
+         - test/dotnetup.Tests/dotnetup.Tests.csproj (via InternalsVisibleTo).
+         The Exe-style entry point (`DotnetupProgram.Main`) lives in this assembly so the
+         AOT Exe can forward to it without duplicating the bootstrap logic. Keeping this
+         project a Library avoids the SDK's NETSDK1150 / NETSDK1151 errors that would
+         result from an Exe-to-Exe ProjectReference between dotnetup (self-contained)
+         and a non-self-contained dotnetup.Library that tests still need to reference. -->
+    <OutputType>Library</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PublishAot>true</PublishAot>
+    <!-- IsAotCompatible (rather than PublishAot) enables AOT analyzer warnings without
+         forcing this Library project to AOT-publish on its own — the publish happens in
+         dotnetup.csproj, which references this assembly. -->
+    <IsAotCompatible>true</IsAotCompatible>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ControlFlowGuard>Guard</ControlFlowGuard>
@@ -34,6 +46,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="dotnetup" />
     <InternalsVisibleTo Include="dotnetup.Tests" />
   </ItemGroup>
 
