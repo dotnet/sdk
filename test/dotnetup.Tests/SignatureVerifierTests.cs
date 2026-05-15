@@ -424,7 +424,7 @@ public class SignatureVerifierTests
             new byte[] { 0xFF, 0xFE, 0xFD },
             OptionsWithEmptyRoots(),
             s_pinnedNow);
-            // mode parameter omitted — default is ShortCircuit per the production design.
+        // mode parameter omitted — default is ShortCircuit per the production design.
 
         result.IsValid.Should().BeFalse();
         result.ShouldStop.Should().BeTrue();

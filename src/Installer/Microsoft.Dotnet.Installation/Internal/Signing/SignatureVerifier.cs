@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Formats.Asn1;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -137,9 +138,13 @@ internal static class SignatureVerifier
     private static void EvaluateTrustedRoots(SignatureVerificationOptions options, VerificationResult result)
     {
         if (options.TrustedCodeSigningRoots.Count == 0)
+        {
             result.Add(FailureCode.TrustedRootsEmpty, "TrustedCodeSigningRoots is empty.");
+        }
         if (options.TrustedTimestampRoots.Count == 0)
+        {
             result.Add(FailureCode.TrustedRootsEmpty, "TrustedTimestampRoots is empty.");
+        }
     }
 
     /// <summary>
@@ -172,17 +177,23 @@ internal static class SignatureVerifier
         }
 
         if (cms.ContentInfo.ContentType.Value != OidIdData)
+        {
             result.Add(FailureCode.SigNotCms, $"Unexpected encapsulated content-type OID {cms.ContentInfo.ContentType.Value}; expected id-data ({OidIdData}).");
+        }
 
         if (cms.SignerInfos.Count != 1)
+        {
             result.Add(FailureCode.SigMultipleSigners, $"Expected exactly one signer; found {cms.SignerInfos.Count}.");
+        }
 
         if (cms.SignerInfos.Count >= 1)
         {
             signer = cms.SignerInfos[0];
             signerCert = signer.Certificate;
             if (signerCert is null)
+            {
                 result.Add(FailureCode.SignerCertMissing, "SignerInfo does not carry the signer certificate.");
+            }
         }
 
         try
@@ -204,7 +215,9 @@ internal static class SignatureVerifier
         {
             string digestOid = signer.DigestAlgorithm.Value ?? string.Empty;
             if (!AllowedDigestOids.Contains(digestOid))
+            {
                 result.Add(FailureCode.WeakDigest, $"Digest algorithm OID {digestOid} is not permitted.");
+            }
         }
         else
         {
@@ -215,7 +228,9 @@ internal static class SignatureVerifier
         {
             string keyOid = signerCert.PublicKey.Oid.Value ?? string.Empty;
             if (keyOid != OidRsa && keyOid != OidEcdsa)
+            {
                 result.Add(FailureCode.WeakSignatureAlgorithm, $"Signer public-key algorithm OID {keyOid} is not permitted (RSA or ECDSA required).");
+            }
         }
         else
         {
@@ -237,10 +252,14 @@ internal static class SignatureVerifier
         }
 
         if (!DistinguishedNameMatches(signerCert.SubjectName, RequiredSubjectRdns, "Subject", out string subjectDetail))
+        {
             result.Add(FailureCode.SubjectMismatch, subjectDetail);
+        }
 
         if (!DistinguishedNameMatches(signerCert.IssuerName, RequiredIssuerRdns, "Issuer", out string issuerDetail))
+        {
             result.Add(FailureCode.IssuerMismatch, issuerDetail);
+        }
 
         EvaluateEku(signerCert, EkuCodeSigning, primary: true, result);
     }
@@ -287,7 +306,9 @@ internal static class SignatureVerifier
         if (tsaCert is null || tsaCms is null || tsaTimestampUtc is null)
         {
             if (signer is not null)
+            {
                 result.AddSkip("Timestamp chain not evaluated: timestamp could not be extracted.");
+            }
             return;
         }
 
@@ -331,7 +352,9 @@ internal static class SignatureVerifier
 
         DateTime verificationTime = tsaTimestampUtc?.UtcDateTime ?? (nowOverride ?? DateTimeOffset.UtcNow).UtcDateTime;
         if (tsaTimestampUtc is null)
+        {
             result.AddSkip($"Primary chain verification time fell back to current UTC ({verificationTime:O}) because no TSA timestamp was available.");
+        }
 
         EvaluateChain(
             signerCert,
@@ -449,7 +472,10 @@ internal static class SignatureVerifier
         var oids = new List<string>(eku.EnhancedKeyUsages.Count);
         foreach (Oid o in eku.EnhancedKeyUsages)
         {
-            if (o.Value is null) continue;
+            if (o.Value is null)
+            {
+                continue;
+            }
             oids.Add(o.Value);
         }
 
@@ -461,7 +487,7 @@ internal static class SignatureVerifier
         }
     }
 
-    private static bool TryGetSignedAttribute(SignerInfo signer, string oid, out AsnEncodedData? data)
+    private static bool TryGetSignedAttribute(SignerInfo signer, string oid, [NotNullWhen(true)] out AsnEncodedData? data)
     {
         foreach (CryptographicAttributeObject attr in signer.SignedAttributes)
         {
@@ -475,7 +501,7 @@ internal static class SignatureVerifier
         return false;
     }
 
-    private static bool TryGetUnsignedAttribute(SignerInfo signer, string oid, out AsnEncodedData? data)
+    private static bool TryGetUnsignedAttribute(SignerInfo signer, string oid, [NotNullWhen(true)] out AsnEncodedData? data)
     {
         foreach (CryptographicAttributeObject attr in signer.UnsignedAttributes)
         {
@@ -491,7 +517,7 @@ internal static class SignatureVerifier
 
     private static void EvaluateContentTypeAttribute(SignerInfo signer, VerificationResult result)
     {
-        if (!TryGetSignedAttribute(signer, OidContentTypeAttr, out AsnEncodedData? ctData) || ctData is null)
+        if (!TryGetSignedAttribute(signer, OidContentTypeAttr, out AsnEncodedData? ctData))
         {
             result.Add(FailureCode.ContentTypeAttributeInvalid, "Missing signed content-type attribute.");
             return;
@@ -500,7 +526,9 @@ internal static class SignatureVerifier
         {
             string ctOid = AsnDecoder.ReadObjectIdentifier(ctData.RawData, AsnEncodingRules.DER, out _);
             if (ctOid != OidIdData)
+            {
                 result.Add(FailureCode.ContentTypeAttributeInvalid, $"Signed content-type is {ctOid}; expected id-data.");
+            }
         }
         catch (AsnContentException ex)
         {
@@ -511,12 +539,14 @@ internal static class SignatureVerifier
     private static void EvaluateMessageDigestAttribute(SignerInfo signer, VerificationResult result)
     {
         if (!TryGetSignedAttribute(signer, OidMessageDigestAttr, out _))
+        {
             result.Add(FailureCode.MessageDigestMismatch, "Missing signed message-digest attribute.");
+        }
     }
 
     private static DateTime? TryReadSigningTimeAttribute(SignerInfo signer, VerificationResult result)
     {
-        if (!TryGetSignedAttribute(signer, OidSigningTime, out AsnEncodedData? stData) || stData is null)
+        if (!TryGetSignedAttribute(signer, OidSigningTime, out AsnEncodedData? stData))
         {
             // signingTime is optional under RFC 5652; absence is not a failure.
             return null;
@@ -537,7 +567,7 @@ internal static class SignatureVerifier
         DateTime? claimedSigningTimeUtc,
         VerificationResult result)
     {
-        if (!TryGetUnsignedAttribute(primarySigner, OidTimestampToken, out AsnEncodedData? tsData) || tsData is null)
+        if (!TryGetUnsignedAttribute(primarySigner, OidTimestampToken, out AsnEncodedData? tsData))
         {
             result.Add(FailureCode.TimestampMissing, "Missing RFC 3161 timestamp token (signatureTimeStampToken unsigned attribute).");
             return (null, null, null);
@@ -549,8 +579,7 @@ internal static class SignatureVerifier
             return (null, null, null);
         }
 
-        X509Certificate2? tsaCert = null;
-        if (!token.VerifySignatureForSignerInfo(primarySigner, out tsaCert) || tsaCert is null)
+        if (!token.VerifySignatureForSignerInfo(primarySigner, out X509Certificate2? tsaCert) || tsaCert is null)
         {
             result.Add(FailureCode.TimestampBindingInvalid, "Timestamp does not cover the primary signature (VerifySignatureForSignerInfo failed).");
             tsaCert = null;
@@ -563,8 +592,10 @@ internal static class SignatureVerifier
         {
             TimeSpan drift = (tsaTime - new DateTimeOffset(claimed, TimeSpan.Zero)).Duration();
             if (drift > SigningTimeTolerance)
+            {
                 result.Add(FailureCode.SigningTimeMismatch,
                     $"Claimed signing-time {claimed:O} drifts {drift} from TSA timestamp {tsaTime:O} (max {SigningTimeTolerance}).");
+            }
         }
 
         return (tsaTime, tsaCms, tsaCert);
@@ -665,11 +696,15 @@ internal static class SignatureVerifier
         VerificationResult result)
     {
         if (buildSucceeded && chain.ChainStatus.Length == 0)
+        {
             return;
+        }
 
         X509ChainStatusFlags flags = X509ChainStatusFlags.NoError;
         foreach (X509ChainStatus s in chain.ChainStatus)
+        {
             flags |= s.Status;
+        }
 
         if ((flags & X509ChainStatusFlags.Revoked) != 0)
         {
@@ -704,7 +739,9 @@ internal static class SignatureVerifier
 
         bool ok = chain.Build(leaf);
         if (ok || !OperatingSystem.IsWindows())
+        {
             return ok;
+        }
 
         for (int i = 0; i < RetryCount && !ok; i++)
         {
@@ -718,7 +755,9 @@ internal static class SignatureVerifier
                 }
             }
             if (!hasUntrustedRoot)
+            {
                 break;
+            }
 
             Thread.Sleep(sleepInterval);
             ok = chain.Build(leaf);
@@ -748,10 +787,15 @@ internal static class SignatureVerifier
 
     private static string DescribeChainStatus(X509Chain chain)
     {
-        if (chain.ChainStatus.Length == 0) return "no status";
+        if (chain.ChainStatus.Length == 0)
+        {
+            return "no status";
+        }
         var parts = new List<string>(chain.ChainStatus.Length);
         foreach (X509ChainStatus s in chain.ChainStatus)
+        {
             parts.Add($"{s.Status}:{s.StatusInformation?.Trim()}");
+        }
         return string.Join(" | ", parts);
     }
 
@@ -801,12 +845,16 @@ internal static class SignatureVerifier
             }
 
             if (signingTimeUtc >= expiration)
+            {
                 result.Add(FailureCode.SignedAfterExpiration,
                     $"Content was signed at {signingTimeUtc:O} which is not before its expiration {expiration:O}.");
+            }
 
             if (nowUtc >= expiration)
+            {
                 result.Add(FailureCode.ExpiredNow,
                     $"Current time {nowUtc:O} is not before content expiration {expiration:O}.");
+            }
         }
     }
 }
