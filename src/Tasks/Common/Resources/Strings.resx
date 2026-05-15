@@ -169,6 +169,10 @@
     <value>NETSDK1013: The TargetFramework value '{0}' was not recognized. It may be misspelled. If not, then the TargetFrameworkIdentifier and/or TargetFrameworkVersion properties must be specified explicitly.</value>
     <comment>{StrBegins="NETSDK1013: "}</comment>
   </data>
+  <data name="TargetFrameworkEmpty" xml:space="preserve">
+    <value>NETSDK1013: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</value>
+    <comment>{StrBegins="NETSDK1013: "}</comment>
+  </data>
   <data name="ContentItemDoesNotProvideOutputPath" xml:space="preserve">
     <value>NETSDK1014: Content item for '{0}' sets '{1}', but does not provide  '{2}' or '{3}'.</value>
     <comment>{StrBegins="NETSDK1014: "}</comment>

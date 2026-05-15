@@ -106,7 +106,10 @@ Copyright (c) .NET Foundation. All rights reserved.
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform;RunResolvePackageDependencies;GetFrameworkPaths;GetReferenceAssemblyPaths;Restore"
           Condition="'$(_UnsupportedTargetFrameworkError)' == 'true'"
           >
-    <NETSdkError Condition="!$(TargetFramework.Contains(';'))"
+    <NETSdkError Condition="'$(TargetFramework)' == ''"
+                 ResourceName="TargetFrameworkEmpty" />
+
+    <NETSdkError Condition="'$(TargetFramework)' != '' and !$(TargetFramework.Contains(';'))"
                  ResourceName="CannotInferTargetFrameworkIdentifierAndVersion"
                  FormatArguments="$([MSBuild]::Escape('$(TargetFramework)'))" />
 
