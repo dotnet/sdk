@@ -102,6 +102,7 @@ public class SignatureVerifierTests
             s_pinnedNow);
 
         result.Failures.Select(f => f.Code).Should().Contain(FailureCode.TrustedRootsEmpty);
+        result.IsValid.Should().BeFalse();
     }
 
     // ---------------- CMS shape and crypto ----------------
@@ -116,6 +117,7 @@ public class SignatureVerifierTests
             s_pinnedNow);
 
         result.Failures.Select(f => f.Code).Should().Contain(FailureCode.SigDecodeFailed);
+        result.IsValid.Should().BeFalse();
     }
 
     [Fact]
@@ -134,20 +136,22 @@ public class SignatureVerifierTests
             s_pinnedNow);
 
         result.Failures.Select(f => f.Code).Should().Contain(FailureCode.SigCryptoInvalid);
+        result.IsValid.Should().BeFalse();
     }
 
     [Fact]
     public void Verify_AuthenticReleasesManifest_PassesAllSignerDNAndAlgorithmChecks()
     {
-        // The fixture is real so it MUST pass every check that doesn't depend on hitting
-        // a live CRL/OCSP endpoint. We can't assert IsValid because the chain build will
-        // still report status under NoCheck for OS-store gaps in CI; instead, assert that
-        // none of the DN/EKU/algorithm/CMS-shape/timestamp-shape failures fired.
+        // The fixture is real and the bundled CTL chains it cleanly. With
+        // RevocationCheckMode.NoCheck the verifier MUST report IsValid=true end-to-end.
+        // If this assertion regresses, something in the verifier broke the happy path.
         var result = SignatureVerifier.Verify(
             LoadAsset("releases-directory.json"),
             LoadAsset("releases-directory.json.20260505084330.p7s"),
             ProductionOptions(),
             s_pinnedNow);
+
+        result.IsValid.Should().BeTrue($"verifier reported failures: {string.Join("; ", result.Failures.Select(f => f.Code + ": " + f.Reason))}");
 
         var codes = result.Failures.Select(f => f.Code).ToHashSet();
 
@@ -173,6 +177,7 @@ public class SignatureVerifierTests
         codes.Should().NotContain(FailureCode.TimestampMalformed);
         codes.Should().NotContain(FailureCode.TimestampBindingInvalid);
         codes.Should().NotContain(FailureCode.TimestampEkuInvalid);
+        codes.Should().NotContain(FailureCode.TimestampIssuerMismatch);
 
         // JSON expiration policy.
         codes.Should().NotContain(FailureCode.JsonParseFailed);
@@ -193,6 +198,7 @@ public class SignatureVerifierTests
             new DateTimeOffset(2027, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         result.Failures.Select(f => f.Code).Should().Contain(FailureCode.ExpiredNow);
+        result.IsValid.Should().BeFalse();
     }
 
     [Fact]
@@ -212,6 +218,7 @@ public class SignatureVerifierTests
 
         // Both will fire; we care that expiration check ran (collect-all behavior).
         result.Failures.Select(f => f.Code).Should().Contain(FailureCode.ExpirationMissing);
+        result.IsValid.Should().BeFalse();
     }
 
     [Fact]
@@ -233,6 +240,10 @@ public class SignatureVerifierTests
         codes.Should().NotContain(FailureCode.SignedAfterExpiration);
         codes.Should().NotContain(FailureCode.ExpiredNow);
         codes.Should().NotContain(FailureCode.JsonParseFailed);
+        // SigCryptoInvalid still fires on the array-vs-real-content mismatch, so IsValid is
+        // false here for reasons other than JSON policy. We assert the JSON section was
+        // skipped, not that overall verification passed.
+        result.IsValid.Should().BeFalse();
     }
 
     // ---------------- Foreign signer (negative DN/issuer/EKU paths) ----------------
@@ -259,6 +270,7 @@ public class SignatureVerifierTests
             VerificationMode.CollectAll);
 
         result.Failures.Select(f => f.Code).Should().Contain(FailureCode.SubjectMismatch);
+        result.IsValid.Should().BeFalse();
     }
 
     [Fact]
@@ -284,6 +296,7 @@ public class SignatureVerifierTests
         var codes = result.Failures.Select(f => f.Code).ToHashSet();
         codes.Should().Contain(FailureCode.IssuerMismatch, "the older DigiCert intermediate is not the spec §5.2 pin");
         codes.Should().Contain(FailureCode.SubjectMismatch, "the NuGet signer subject lacks the required OU=.NET Release");
+        result.IsValid.Should().BeFalse();
     }
 
     [Fact]
@@ -306,6 +319,9 @@ public class SignatureVerifierTests
         codes.Should().NotContain(FailureCode.EkuNotExclusiveCodeSign);
         codes.Should().NotContain(FailureCode.SigMultipleSigners);
         codes.Should().NotContain(FailureCode.SignerCertMissing);
+        // The fixture is a foreign signer, so overall verification still fails (DN pins,
+        // crypto). This test only asserts the algorithm/EKU sub-checks didn't over-fire.
+        result.IsValid.Should().BeFalse();
     }
 
     // ---------------- Timestamp-shape coverage from earlier signing-protocol drafts ----------------
@@ -353,6 +369,7 @@ public class SignatureVerifierTests
         // pass) when the TSA timestamp is unavailable.
         codes.Where(c => c == FailureCode.CheckSkipped).Should().HaveCountGreaterThanOrEqualTo(2,
             "TSA chain and JSON expiration policy must both report CheckSkipped when no TSA timestamp is available");
+        result.IsValid.Should().BeFalse();
     }
 
     [Fact]
@@ -389,6 +406,7 @@ public class SignatureVerifierTests
 
         // The producer-side binding bug — must fire.
         codes.Should().Contain(FailureCode.TimestampBindingInvalid);
+        result.IsValid.Should().BeFalse();
     }
 
     // ---------------- Collect-all behavior ----------------
