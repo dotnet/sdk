@@ -79,7 +79,7 @@ function EnsureDotnetupBuilt {
 
     if ($shouldBuild) {
         Write-Host "Building dotnetup..."
-        $dotnetupProject = Join-Path $RepoRoot "src\Installer\dotnetup\dotnetup.csproj"
+        $dotnetupProject = Join-Path $RepoRoot "src\Installer\dotnetup.Library\dotnetup.Library.csproj"
         $dotnetupOutDir = Join-Path $PSScriptRoot "dotnetup"
 
         # Determine RID based on architecture

@@ -27,7 +27,7 @@
                 "type": "coreclr",
                 "request": "launch",
                 "preLaunchTask": "build-and-link",
-                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug/current/dotnetup.dll",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug/current/dotnetup.Library.dll",
                 "args": "${input:dotnetupArgs}",
                 "cwd": "${workspaceFolder:installer}/dotnetup",
                 "console": "integratedTerminal",
@@ -128,7 +128,7 @@
                 "command": "${workspaceFolder:sdk}/.dotnet/dotnet",
                 "args": [
                     "build",
-                    "dotnetup/dotnetup.csproj",
+                    "dotnetup.Library/dotnetup.Library.csproj",
                     "/property:GenerateFullPaths=true",
                     "/consoleloggerparameters:NoSummary",
                     "/p:ContinuousIntegrationBuild=false",
@@ -161,7 +161,7 @@
                     "-File",
                     "${workspaceFolder:installer}/hooks/link-current-tfm.ps1",
                     "-BinDir",
-                    "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                    "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug"
                 ],
                 "windows": {
                     "command": "pwsh",
@@ -170,21 +170,21 @@
                         "-File",
                         "${workspaceFolder:installer}/hooks/link-current-tfm.ps1",
                         "-BinDir",
-                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug"
                     ]
                 },
                 "linux": {
                     "command": "bash",
                     "args": [
                         "${workspaceFolder:installer}/hooks/link-current-tfm.sh",
-                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug"
                     ]
                 },
                 "osx": {
                     "command": "bash",
                     "args": [
                         "${workspaceFolder:installer}/hooks/link-current-tfm.sh",
-                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup/Debug"
+                        "${workspaceFolder:installer}/../../artifacts/bin/dotnetup.Library/Debug"
                     ]
                 },
                 "presentation": {
@@ -209,7 +209,7 @@
                 "command": "dotnet",
                 "args": [
                     "publish",
-                    "dotnetup/dotnetup.csproj",
+                    "dotnetup.Library/dotnetup.Library.csproj",
                     "--self-contained",
                     "/property:GenerateFullPaths=true",
                     "/consoleloggerparameters:NoSummary"

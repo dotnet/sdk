@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="dotnetup" />
+    <InternalsVisibleTo Include="dotnetup.Library" />
     <InternalsVisibleTo Include="dotnetup.Tests" />
   </ItemGroup>
 
