@@ -89,7 +89,13 @@ internal sealed class VerificationResult
     /// <summary>
     /// True when verification should stop running additional checks. Flips on the first
     /// <see cref="Add"/> call when the result was constructed in short-circuit mode; stays
-    /// false in collect-all mode. Skips never set this — they are informational, not failures.
+    /// false in collect-all mode. <see cref="AddSkip"/> also flips it in short-circuit mode
+    /// as a defense-in-depth measure: skips are only recorded when an upstream failure
+    /// already required the section to bail, so by the time a skip would fire in
+    /// short-circuit mode <see cref="ShouldStop"/> should already be true. Setting it here
+    /// ensures the pipeline cannot accidentally proceed past a skip in short-circuit mode
+    /// even if a future change introduces a code path that records a skip without an
+    /// upstream <see cref="Add"/>.
     /// </summary>
     public bool ShouldStop { get; private set; }
 
@@ -107,5 +113,12 @@ internal sealed class VerificationResult
         }
     }
 
-    internal void AddSkip(string reason) => _failures.Add(new VerificationFailure(FailureCode.CheckSkipped, reason));
+    internal void AddSkip(string reason)
+    {
+        _failures.Add(new VerificationFailure(FailureCode.CheckSkipped, reason));
+        if (_shortCircuit)
+        {
+            ShouldStop = true;
+        }
+    }
 }
