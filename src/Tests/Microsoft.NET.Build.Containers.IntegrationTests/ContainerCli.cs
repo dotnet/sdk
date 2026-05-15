@@ -7,11 +7,12 @@ static class ContainerCli
 {
     public static bool IsPodman => _isPodman.Value;
 
+    public static bool IsAvailable => _isAvailable.Value;
+
+    public static bool IsContainerdStoreEnabledForDocker => DockerCli.IsContainerdStoreEnabledForDocker();
+
     public static RunExeCommand PullCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "pull", args);
-
-    public static RunExeCommand TagCommand(ITestOutputHelper log, params string[] args)
-      => CreateCommand(log, "tag", args);
 
     public static RunExeCommand PushCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "push", args);
@@ -60,4 +61,7 @@ static class ContainerCli
 
     private static readonly Lazy<bool> _isPodman =
       new(() => new DockerCli(loggerFactory: new TestLoggerFactory()).GetCommand() == DockerCli.PodmanCommand);
+
+    private static readonly Lazy<bool> _isAvailable =
+      new(() => new DockerCli(loggerFactory: new TestLoggerFactory()).IsAvailable());
 }

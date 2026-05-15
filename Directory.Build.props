@@ -14,8 +14,11 @@
     <SdkTargetFramework>net8.0</SdkTargetFramework>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
     
-    <!-- VS for Mac is retired so no need to target a downlevel .NET for its resolver. -->
-    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
+    <!-- VS for Mac may run on a lower version of .NET than the SDK is targeting, but needs to load the resolvers.  So the resolvers and dependencies
+         may target a lower version of .NET -->
+    <ResolverTargetFramework>net8.0</ResolverTargetFramework>
+    <!-- Source build does not need to worry about running on VS for Mac -->
+    <ResolverTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">$(SdkTargetFramework)</ResolverTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
@@ -36,6 +39,11 @@
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+
+    <!-- Enable NuGet Audit to check for security vulnerabilities -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
@@ -46,6 +54,11 @@
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51466 -->
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <!-- Global usings -->

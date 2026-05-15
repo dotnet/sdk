@@ -38,6 +38,7 @@ namespace Microsoft.DotNet.Cli
             NewCommandParser.GetCommand(),
             NuGetCommandParser.GetCommand(),
             PackCommandParser.GetCommand(),
+            PackageCommandParser.GetCommand(),
             ParseCommandParser.GetCommand(),
             PublishCommandParser.GetCommand(),
             RemoveCommandParser.GetCommand(),

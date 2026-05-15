@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetBuildInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        const string ExpectedPrefix = "-maxcpucount -verbosity:m";
+        const string ExpectedPrefix = "-maxcpucount -verbosity:m -nologo";
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
@@ -64,6 +64,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
                                   "-target:Restore -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild",
                                   "-property:TargetFramework=tfm -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild")]
+        [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" }, "-target:Restore -nologo -verbosity:quiet", "-property:TargetFramework=tfm -getItem:Compile -getProperty:TargetFramework -getTargetResult:Build")]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
             string[] args,
             string expectedAdditionalArgsForRestore,
