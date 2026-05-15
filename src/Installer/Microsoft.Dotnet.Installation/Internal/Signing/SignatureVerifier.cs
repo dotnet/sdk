@@ -13,10 +13,9 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 
 /// <summary>
 /// CMS detached-signature verifier for .NET release artifacts (manifest JSON or archives).
-/// Implements the dotnetup signature spec at
-/// <c>documentation/general/dotnetup/signature-verification-spec.md</c>. The verifier is
-/// content-agnostic — the JSON expiration check (§9) is opt-in via
-/// <see cref="SignatureVerificationOptions.RequireJsonExpirationField"/>.
+/// See <c>documentation/general/dotnetup/signature-verification.md</c> for the descriptive
+/// behavior reference. The verifier is content-agnostic — the JSON expiration check (§9)
+/// is opt-in via <see cref="SignatureVerificationOptions.RequireJsonExpirationField"/>.
 /// </summary>
 internal static class SignatureVerifier
 {

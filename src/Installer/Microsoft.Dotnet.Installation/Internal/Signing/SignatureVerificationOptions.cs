@@ -36,8 +36,8 @@ internal sealed class SignatureVerificationOptions
 
     /// <summary>
     /// When <see langword="true"/> (default), JSON files MUST contain a <c>signature.expiration</c>
-    /// field (or top-level <c>expiration</c>) and the value must be in the future. Per the
-    /// dotnetup signature spec §9.
+    /// field (or top-level <c>expiration</c>) and the value must be in the future. See the dotnetup
+    /// signature-verification doc §9.
     /// </summary>
     public bool RequireJsonExpirationField { get; init; } = true;
 

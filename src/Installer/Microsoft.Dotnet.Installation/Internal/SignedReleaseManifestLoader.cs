@@ -91,7 +91,7 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
     ///
     /// <para>
     /// Trust note: signature verification is signer-pinned (cert subject DN, EKU, chain),
-    /// not host-pinned (dotnetup signature spec §5–6). Rebasing onto a private mirror does
+    /// not host-pinned (dotnetup signature-verification doc §5–6). Rebasing onto a private mirror does
     /// not weaken the cryptographic check.
     /// </para>
     /// </summary>
