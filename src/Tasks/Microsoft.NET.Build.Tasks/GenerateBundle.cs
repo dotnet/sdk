@@ -55,7 +55,10 @@ namespace Microsoft.NET.Build.Tasks
             OSPlatform targetOS = RuntimeIdentifier.StartsWith("win") ? OSPlatform.Windows :
                                   RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX :
                                   RuntimeIdentifier.StartsWith("freebsd") ? OSPlatform.Create("FREEBSD") :
+                                  RuntimeIdentifier.StartsWith("openbsd") ? OSPlatform.Create("OPENBSD") :
                                   RuntimeIdentifier.StartsWith("illumos") ? OSPlatform.Create("ILLUMOS") :
+                                  RuntimeIdentifier.StartsWith("solaris") ? OSPlatform.Create("SOLARIS") :
+                                  RuntimeIdentifier.StartsWith("haiku") ? OSPlatform.Create("HAIKU") :
                                   OSPlatform.Linux;
 
             Architecture targetArch = RuntimeIdentifier.EndsWith("-x64") || RuntimeIdentifier.Contains("-x64-") ? Architecture.X64 :

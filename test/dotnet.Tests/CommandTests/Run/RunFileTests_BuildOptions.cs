@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Framework;
-using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.ProjectTools;
@@ -11,14 +9,13 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTestBase(log)
 {
-
     /// <summary>
     /// Main method is supported just like top-level statements.
     /// </summary>
     [Fact]
     public void MainMethod()
     {
-        var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp").WithSource();
+        var testInstance = TestAssetsManager.CopyTestAsset("MSBuildTestApp").WithSource();
         File.Delete(Path.Join(testInstance.Path, "MSBuildTestApp.csproj"));
 
         new DotnetCommand(Log, "run", "Program.cs")
@@ -34,7 +31,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void EmptyFile()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), string.Empty);
 
         new DotnetCommand(Log, "run", "Program.cs")
@@ -50,7 +47,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Theory, CombinatorialData]
     public void WorkingDirectory(bool cscOnly)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
         var programPath = Path.Join(testInstance.Path, "Program.cs");
 
         var code = """
@@ -101,7 +98,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void WorkingDirectory_CscOnly_AfterMSBuild()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         var programPath = Path.Join(testInstance.Path, "Program.cs");
 
         var code = """
@@ -174,7 +171,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void DirectoryBuildProps()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
             <Project>
@@ -199,7 +196,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void DirectoryBuildProps_SymbolicLink()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var dir1 = Path.Join(testInstance.Path, "dir1");
         Directory.CreateDirectory(dir1);
@@ -253,7 +250,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void DefaultProps_DirectoryBuildProps()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Console.WriteLine("Hi");
             """);
@@ -293,7 +290,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void DefaultProps_CustomSdk()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var sdkDir = Path.Join(testInstance.Path, "MySdk");
         Directory.CreateDirectory(sdkDir);
@@ -372,7 +369,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void ComputeRunArguments_Success()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
             <Project>
@@ -397,7 +394,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void ComputeRunArguments_Failure()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
             <Project>
@@ -427,7 +424,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [InlineData("-c;Debug;--xyz", "--xyz")]
     public void Arguments_PassThrough(string input, string output)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, ["run", "Program.cs", .. input.Split(';')])
@@ -446,7 +443,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void Arguments_Unrecognized()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, ["run", "--arg", "Program.cs"])
@@ -465,7 +462,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Theory, CombinatorialData]
     public void Arguments_Recognized(bool beforeFile)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         string[] args = beforeFile
@@ -489,7 +486,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Theory, CombinatorialData]
     public void BinaryLog_Run(bool beforeFile)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         string[] args = beforeFile
@@ -511,7 +508,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Theory, CombinatorialData]
     public void BinaryLog_Build([CombinatorialValues("restore", "build")] string command, bool beforeFile)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         string[] args = beforeFile
@@ -540,7 +537,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [InlineData("-bl:another.binlog")]
     public void BinaryLog_ArgumentForms(string arg)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", arg)
@@ -560,7 +557,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void BinaryLog_Multiple()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "-bl:one.binlog", "two.binlog", "/bl:three.binlog")
@@ -581,7 +578,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void BinaryLog_WrongExtension()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "Program.cs", "-bl:test.test")
@@ -602,7 +599,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void BinaryLog_NotSpecified()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "Program.cs")
@@ -623,7 +620,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void BinaryLog_EvaluationData()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "-bl")
@@ -645,7 +642,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void BinaryLog_EvaluationData_MultiFile()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"),
             $"""
@@ -691,7 +688,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void BinaryLog_EvaluationData_UpToDate()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, s_program);
@@ -722,7 +719,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Theory, CombinatorialData]
     public void TerminalLogger(bool on)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -747,7 +744,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void Verbosity_Run()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -764,7 +761,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact] // https://github.com/dotnet/sdk/issues/50227
     public void Verbosity_Build()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
@@ -779,7 +776,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void Verbosity_CompilationDiagnostics()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             string x = null;
@@ -810,7 +807,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void MissingShebangWarning()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         // Single-file program without shebang should NOT produce CA2266
         // (the warning only fires when there are multiple files via #:include).
@@ -875,7 +872,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void MissingShebangWarning_CompileItemFromDirectoryBuildProps()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         // Directory.Build.props adds a Compile item, effectively making
         // the compilation multi-file (same as #:include).
@@ -923,7 +920,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void EmbeddedResource()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
 
@@ -988,7 +985,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     {
         bool considered = ext is "sln" or "slnx" or "csproj";
 
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             #:property EnableDefaultEmbeddedResourceItems=true
             {s_programReadingEmbeddedResource}

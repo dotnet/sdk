@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("All")]
         public void It_respects_opt_outs(string attributeToOptOut)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: Path.DirectorySeparatorChar + attributeToOptOut)
                 .WithSource();
 
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var command = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), testProject.TargetFrameworks, valueName: "InformationalVersion");
             command.Execute().Should().Pass();
@@ -108,7 +108,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -139,7 +139,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -171,7 +171,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -207,7 +207,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges((path, project) =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -245,7 +245,7 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource();
 
@@ -274,7 +274,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             // Given a project that has already been built
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource();
             BuildProject(versionPrefix: "1.2.3");
@@ -301,7 +301,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_respects_custom_assembly_attribute_items_on_incremental_build()
         {
             var targetFramework = "netstandard1.5";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("KitchenSink", identifier: targetFramework)
                 .WithSource();
 
@@ -339,7 +339,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_includes_internals_visible_to()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -368,7 +368,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false, false, ToolsetInfo.CurrentTargetFramework)]
         public void TestPreviewFeatures(bool enablePreviewFeatures, bool generateRequiresPreviewFeaturesAttribute, string targetFramework)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: $"{enablePreviewFeatures}${generateRequiresPreviewFeaturesAttribute}${targetFramework}")
                 .WithSource()
                 .WithTargetFramework(targetFramework)
@@ -434,7 +434,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_doesnt_includes_requires_preview_features()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
@@ -496,7 +496,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties["GenerateDisableRuntimeMarshallingAttribute"] = generateDisableRuntimeMarshallingAttribute.Value.ToString();
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: disableRuntimeMarshalling.ToString() + "_" + generateDisableRuntimeMarshallingAttribute + "_" + targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: disableRuntimeMarshalling.ToString() + "_" + generateDisableRuntimeMarshallingAttribute + "_" + targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -531,7 +531,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_respects_out_out_of_internals_visible_to()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -558,7 +558,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_includes_internals_visible_to_with_key()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -584,7 +584,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_includes_internals_visible_to_with_project_publickey()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -611,7 +611,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_includes_assembly_metadata()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -637,7 +637,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_respects_opt_out_of_assembly_metadata()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("netstandard2.0")
@@ -686,7 +686,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Extensions.Configuration.UserSecrets", "3.0.0"));
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: referenceAspNetCore.ToString() + referenceExtensionsUserSecrets.ToString())
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: referenceAspNetCore.ToString() + referenceExtensionsUserSecrets.ToString())
                 .Restore(Log, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -725,7 +725,7 @@ namespace Microsoft.NET.Build.Tests
                 ReferencedProjects = { testProject }
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testTestProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testTestProject);
 
             File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.props"), @"
 <Project>
@@ -768,7 +768,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties["RepositoryUrl"] = fakeUrl;
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: privateRepo.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: privateRepo.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
@@ -793,7 +793,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["RepositoryUrl"] = fakeUrl;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
@@ -850,7 +850,7 @@ class Program
         Console.WriteLine(str);
     }
 }";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworkVersion);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFrameworkVersion);
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.WithWorkingDirectory(testAsset.Path)
                 .Execute()

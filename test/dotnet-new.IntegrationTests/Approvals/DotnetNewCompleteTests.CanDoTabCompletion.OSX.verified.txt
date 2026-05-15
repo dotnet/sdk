@@ -35,6 +35,7 @@ webapi
 webapiaot
 webapp
 webconfig
+webworker
 winforms
 winformscontrollib
 winformslib

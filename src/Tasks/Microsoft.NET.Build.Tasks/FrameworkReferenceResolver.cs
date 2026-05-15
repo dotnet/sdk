@@ -7,12 +7,33 @@ using Microsoft.Extensions.DependencyModel.Resolution;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    internal static class FrameworkReferenceResolver
+    internal class FrameworkReferenceResolver
     {
-        public static string GetDefaultReferenceAssembliesPath()
+        private readonly Func<string, string> _getEnvironmentVariable;
+
+        /// <summary>
+        /// Creates an instance that reads environment variables from the process environment.
+        /// </summary>
+        public FrameworkReferenceResolver()
+            : this(Environment.GetEnvironmentVariable)
         {
-            // Allow setting the reference assemblies path via an environment variable
-            var referenceAssembliesPath = DotNetReferenceAssembliesPathResolver.Resolve();
+        }
+
+        /// <summary>
+        /// Creates an instance that reads environment variables via the supplied delegate.
+        /// Use this from MSBuild tasks to route reads through TaskEnvironment.
+        /// </summary>
+        public FrameworkReferenceResolver(Func<string, string> getEnvironmentVariable)
+        {
+            _getEnvironmentVariable = getEnvironmentVariable ?? throw new ArgumentNullException(nameof(getEnvironmentVariable));
+        }
+
+        public string GetDefaultReferenceAssembliesPath()
+        {
+            // Allow setting the reference assemblies path via an environment variable.
+            // We read this directly instead of calling DotNetReferenceAssembliesPathResolver.Resolve()
+            // because that runtime method uses process-global Environment.GetEnvironmentVariable.
+            var referenceAssembliesPath = _getEnvironmentVariable(DotNetReferenceAssembliesPathResolver.DotNetReferenceAssembliesPathEnv);
 
             if (!string.IsNullOrEmpty(referenceAssembliesPath))
             {
@@ -28,12 +49,12 @@ namespace Microsoft.NET.Build.Tasks
 
             // References assemblies are in %ProgramFiles(x86)% on
             // 64 bit machines
-            var programFiles = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+            var programFiles = _getEnvironmentVariable("ProgramFiles(x86)");
 
             if (string.IsNullOrEmpty(programFiles))
             {
                 // On 32 bit machines they are in %ProgramFiles%
-                programFiles = Environment.GetEnvironmentVariable("ProgramFiles");
+                programFiles = _getEnvironmentVariable("ProgramFiles");
             }
 
             if (string.IsNullOrEmpty(programFiles))

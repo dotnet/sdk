@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 ***********************************************************************************************
 Microsoft.NET.SupportedTargetFrameworks.targets
 
@@ -29,6 +29,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v8.0" DisplayName=".NET 8.0" Alias="net8.0" />
         <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v9.0" DisplayName=".NET 9.0" Alias="net9.0" />
         <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v10.0" DisplayName=".NET 10.0" Alias="net10.0" />
+        <!-- NET11TFM add condition for which VS version to light up net11 targeting in -->
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v11.0" DisplayName=".NET 11.0" Alias="net11.0" />
     </ItemGroup>
 
     <!-- VS retargeting list: conditional inclusion ensures customers using new SDKs with older VS versions do not see
@@ -40,9 +42,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                                             Condition="!$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '18.0.0'))"/>
     </ItemGroup>
 
-    <PropertyGroup>
+    <PropertyGroup Condition="'$(NETCoreAppMaximumVersion)' != ''">
         <!-- This is for a better error experience when using an older VS (with an older SDK) to target a newer TFM. The value should be the min VS version for N+1 version-->
         <UnsupportedTargetFrameworkVersion>$([MSBuild]::Add($(NETCoreAppMaximumVersion), 1)).0</UnsupportedTargetFrameworkVersion>
+        <MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>19.0</MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion>
     </PropertyGroup>
 
     <!-- .NET Standard -->

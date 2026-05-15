@@ -23,7 +23,9 @@ namespace Microsoft.NET.Build.Tasks
         public bool ShowCompilerWarnings { get; set; }
         public bool UseCrossgen2 { get; set; }
         public string Crossgen2ExtraCommandLineArgs { get; set; }
+        public string Crossgen2CompositeExtraCommandLineArgs { get; set; }
         public ITaskItem[] Crossgen2PgoFiles { get; set; }
+        public string Crossgen2ContainerFormat { get; set; }
 
         [Output]
         public bool WarningsDetected { get; set; }
@@ -34,6 +36,8 @@ namespace Microsoft.NET.Build.Tasks
         private string _outputPDBImage;
         private string _createPDBCommand;
         private bool _createCompositeImage;
+        private bool _partialCompile;
+        private string _r2rHeaderSymbolName;
 
         private bool IsPdbCompilation => !string.IsNullOrEmpty(_createPDBCommand);
         private bool ActuallyUseCrossgen2 => UseCrossgen2 && !IsPdbCompilation;
@@ -82,6 +86,8 @@ namespace Microsoft.NET.Build.Tasks
             _createPDBCommand = CompilationEntry.GetMetadata(MetadataKeys.CreatePDBCommand);
             string createCompositeImageMetadata = CompilationEntry.GetMetadata(MetadataKeys.CreateCompositeImage);
             _createCompositeImage = !string.IsNullOrEmpty(createCompositeImageMetadata) && bool.Parse(createCompositeImageMetadata);
+            string partialCompilationMetadata = CompilationEntry.GetMetadata(MetadataKeys.PartialCompile);
+            _partialCompile = !string.IsNullOrEmpty(partialCompilationMetadata) && bool.Parse(partialCompilationMetadata);
 
             if (IsPdbCompilation && CrossgenTool == null)
             {
@@ -211,6 +217,8 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     Log.LogError(Strings.MissingOutputPDBImagePath);
                 }
+
+                _r2rHeaderSymbolName = CompilationEntry.GetMetadata(MetadataKeys.R2RHeaderSymbolName);
             }
 
             return true;
@@ -342,18 +350,49 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+            if (!string.IsNullOrEmpty(Crossgen2ContainerFormat))
+            {
+                result.AppendLine($"--obj-format:{Crossgen2ContainerFormat}");
+            }
+
             if (!string.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))
             {
-                foreach (string extraArg in Crossgen2ExtraCommandLineArgs.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (string extraArg in Crossgen2ExtraCommandLineArgs.Split([';'], StringSplitOptions.RemoveEmptyEntries))
                 {
                     result.AppendLine(extraArg);
                 }
             }
 
-            if (_createCompositeImage)
+            // Arguments that are only valid for full composite builds (e.g. --strip-il-bodies).
+            // These arguments will not be applied to any assemblies that have been excluded from the composite image.
+            if (_createCompositeImage && !_partialCompile
+                && !string.IsNullOrEmpty(Crossgen2CompositeExtraCommandLineArgs))
+            {
+                foreach (string extraArg in Crossgen2CompositeExtraCommandLineArgs.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+                {
+                    result.AppendLine(extraArg);
+                }
+            }
+
+            if (_partialCompile)
+            {
+                result.AppendLine("--partial");
+            }
+
+            // Emit --composite for composite images, or for non-PE container formats
+            // (we only support PE as the envelope for metadata).
+            if (_createCompositeImage || (!string.IsNullOrEmpty(Crossgen2ContainerFormat) && Crossgen2ContainerFormat != "pe"))
             {
                 result.AppendLine("--composite");
 
+                if (!string.IsNullOrEmpty(_r2rHeaderSymbolName))
+                {
+                    result.AppendLine($"--rtr-header-symbol-name:{_r2rHeaderSymbolName}");
+                }
+            }
+
+            if (_createCompositeImage)
+            {
                 // Crossgen2 v5 only supported compilation with --inputbubble specified
                 if (Crossgen2IsVersion5)
                     result.AppendLine("--inputbubble");

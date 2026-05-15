@@ -1946,7 +1946,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """);
         }
 
-        [Fact()]
+        [Fact]
         public void TestBaseTypeWithAmbiguousNonDefaultConstructorsRegression31655()
         {
             RunTest(original: """

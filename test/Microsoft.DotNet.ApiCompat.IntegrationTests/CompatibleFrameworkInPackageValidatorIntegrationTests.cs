@@ -54,7 +54,7 @@ namespace PackageValidationTests
     }
 }";
             testProject.SourceFiles.Add("Hello.cs", sourceCode);
-            TestAsset asset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            TestAsset asset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
             PackCommand packCommand = new(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
@@ -95,7 +95,7 @@ namespace PackageValidationTests
 }";
 
             testProject.SourceFiles.Add("Hello.cs", sourceCode);
-            TestAsset asset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            TestAsset asset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
             PackCommand packCommand = new(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);

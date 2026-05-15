@@ -374,6 +374,11 @@
         <target state="translated">NETSDK1156: No se encontró el ejecutable del host de .NET "{0}".</target>
         <note>{StrBegins="NETSDK1156: "}</note>
       </trans-unit>
+      <trans-unit id="DotnetToolDoesNotSupportCustomNuspecFile">
+        <source>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</source>
+        <target state="new">NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</target>
+        <note>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</note>
+      </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
         <source>NETSDK1055: DotnetTool does not support target framework lower than netcoreapp2.1.</source>
         <target state="translated">NETSDK1055: DotnetTool no admite una plataforma de destino anterior a netcoreapp2.1.</target>
@@ -851,6 +856,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1094: No se pueden optimizar los ensamblados para mejorar el rendimiento: no se ha encontrado un paquete en tiempo de ejecución válido. Establezca la propiedad PublishReadyToRun en false o use un identificador en tiempo de ejecución compatible al publicar. Cuando el destino sea .NET 6 o una versión posterior, asegúrese de restaurar los paquetes con la propiedad PublishReadyToRun establecida en true.</target>
         <note>{StrBegins="NETSDK1094: "}</note>
       </trans-unit>
+      <trans-unit id="ReadyToRunPartialCompileIgnoredInCompositeMode">
+        <source>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</source>
+        <target state="new">NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</target>
+        <note>{StrBegins="NETSDK1237: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
         <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
         <target state="translated">NETSDK1095: No se admite la optimización del rendimiento de los ensamblados para la plataforma o la arquitectura de destino seleccionadas. Compruebe que está usando un identificador en tiempo de ejecución compatible o establezca la propiedad PublishReadyToRun en false.</target>
@@ -910,6 +920,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</source>
         <target state="translated">NETSDK1179: Se requiere una de las opciones "--self-contained" o "--no-self-contained" cuando se usa "--runtime".</target>
         <note>{StrBegins="NETSDK1179: "}{Locked="--self-contained"}{Locked="--no-self-contained"}{Locked="--runtime"}</note>
+      </trans-unit>
+      <trans-unit id="SingleFileBundleUnexpectedExclusion">
+        <source>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</source>
+        <target state="new">NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</target>
+        <note>{StrBegins="NETSDK1236: "}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
         <source>NETSDK1048: 'AdditionalProbingPaths' were specified for GenerateRuntimeConfigurationFiles, but are being skipped because 'RuntimeConfigDevPath' is empty.</source>

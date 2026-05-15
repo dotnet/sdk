@@ -37,6 +37,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     private string _relatedAsset;
     private string _assetTraitName;
     private string _assetTraitValue;
+    private string _assetGroups;
+    private Dictionary<string, string> _assetGroupValues;
     private string _fingerprint;
     private string _integrity;
     private string _copyToOutputDirectory;
@@ -68,6 +70,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         _relatedAsset = asset.RelatedAsset;
         _assetTraitName = asset.AssetTraitName;
         _assetTraitValue = asset.AssetTraitValue;
+        _assetGroups = asset.AssetGroups;
         _copyToOutputDirectory = asset.CopyToOutputDirectory;
         _copyToPublishDirectory = asset.CopyToPublishDirectory;
         _originalItemSpec = asset.OriginalItemSpec;
@@ -225,6 +228,265 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             _modified = true;
             _assetTraitValue = value;
         }
+    }
+
+    public string AssetGroups
+    {
+        get => _assetGroups ??= GetOriginalItemMetadata(nameof(AssetGroups));
+        set
+        {
+            _modified = true;
+            _assetGroups = value;
+            _assetGroupValues = null;
+        }
+    }
+
+    internal IReadOnlyDictionary<string, string> GetAssetGroupValues()
+    {
+        _assetGroupValues ??= ParseAssetGroupValues(AssetGroups);
+        return _assetGroupValues;
+    }
+
+    // Returns true if the asset's group requirements are all satisfied by the declared groups.
+    // When skipDeferred is true, groups marked Deferred are treated as provisionally satisfied.
+    // When sourceId is non-null, assets whose SourceId does not match pass through unconditionally.
+    internal bool MatchesGroups(Dictionary<(string SourceId, string Name), StaticWebAssetGroup> groups, bool skipDeferred = false, string sourceId = null)
+    {
+        if (!string.IsNullOrEmpty(sourceId) && !string.Equals(SourceId, sourceId, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        var requirements = GetAssetGroupValues();
+        if (requirements.Count == 0)
+        {
+            return true;
+        }
+
+        foreach (var requirement in requirements)
+        {
+            if (!groups.TryGetValue((SourceId, requirement.Key), out var group))
+            {
+                return false;
+            }
+
+            if (skipDeferred && group.Deferred)
+            {
+                continue;
+            }
+
+            if (!string.Equals(group.Value, requirement.Value, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Sorts assets by RelatedAsset, then filters by group with cascading exclusion.
+    // Assets whose parent was excluded are also excluded.
+    // When sourceId is non-null, only assets with matching SourceId are evaluated;
+    // others pass through unconditionally.
+    internal static (List<StaticWebAsset> included, HashSet<string> excluded) FilterByGroup(
+        StaticWebAsset[] assets,
+        Dictionary<(string SourceId, string Name), StaticWebAssetGroup> groups,
+        bool skipDeferred,
+        string sourceId = null)
+    {
+        SortByRelatedAssetInPlace(assets);
+        var included = new List<StaticWebAsset>(assets.Length);
+        var excluded = new HashSet<string>(OSPath.PathComparer);
+
+        foreach (var asset in assets)
+        {
+            if (!string.IsNullOrEmpty(asset.RelatedAsset) && excluded.Contains(asset.RelatedAsset))
+            {
+                excluded.Add(asset.Identity);
+                continue;
+            }
+
+            if (asset.MatchesGroups(groups, skipDeferred, sourceId))
+            {
+                included.Add(asset);
+            }
+            else
+            {
+                excluded.Add(asset.Identity);
+            }
+        }
+
+        return (included, excluded);
+    }
+
+    // In-place topological sort by RelatedAsset using a two-pointer approach.
+    // Mutates the input span so that parents appear before dependents.
+    // O(n) amortized time — i and tail each visit every index at most once.
+    // O(n) auxiliary space for the seen/deferred maps; no result array allocated.
+    internal static void SortByRelatedAssetInPlace(Span<StaticWebAsset> assets)
+    {
+        if (assets.Length <= 1)
+        {
+            return;
+        }
+
+        var seen = new HashSet<string>(assets.Length, OSPath.PathComparer);
+        var deferred = new Dictionary<string, int>(OSPath.PathComparer);
+        var tail = assets.Length - 1;
+
+        for (var i = 0; i < assets.Length; i++)
+        {
+            while (!IsPlaceable(assets[i], seen))
+            {
+                // Strategy 1: the parent was displaced earlier and we know where it is.
+                var parentIndex = FindInDeferred(assets[i], deferred);
+                if (parentIndex >= 0)
+                {
+                    deferred.Remove(assets[i].RelatedAsset);
+                    deferred[assets[i].Identity] = parentIndex;
+                    (assets[i], assets[parentIndex]) = (assets[parentIndex], assets[i]);
+                    continue;
+                }
+
+                // Strategy 2: scan backward from tail for any placeable element.
+                var placeableIndex = ScanTailForPlaceable(assets, seen, deferred, i, ref tail);
+                if (placeableIndex < 0)
+                {
+                    break; // tail exhausted — orphan, place as-is
+                }
+
+                deferred[assets[i].Identity] = placeableIndex;
+                (assets[i], assets[placeableIndex]) = (assets[placeableIndex], assets[i]);
+            }
+
+            seen.Add(assets[i].Identity);
+        }
+    }
+
+    private static bool IsPlaceable(StaticWebAsset asset, HashSet<string> seen) =>
+        string.IsNullOrEmpty(asset.RelatedAsset) || seen.Contains(asset.RelatedAsset);
+
+    private static int FindInDeferred(StaticWebAsset asset, Dictionary<string, int> deferred) =>
+        deferred.TryGetValue(asset.RelatedAsset, out var index) ? index : -1;
+
+    // Walks tail downward, deferring every non-placeable element it passes,
+    // and returns the index of the first placeable element found (or -1).
+    private static int ScanTailForPlaceable(
+        Span<StaticWebAsset> assets, HashSet<string> seen,
+        Dictionary<string, int> deferred, int floor, ref int tail)
+    {
+        while (tail > floor)
+        {
+            if (IsPlaceable(assets[tail], seen))
+            {
+                return tail--;
+            }
+
+            deferred[assets[tail].Identity] = tail;
+            tail--;
+        }
+
+        return -1;
+    }
+
+    // List<T> overload: delegates to Span on modern .NET, uses IList indexer on net472.
+    internal static void SortByRelatedAssetInPlace(List<StaticWebAsset> assets)
+    {
+#if NET6_0_OR_GREATER
+        SortByRelatedAssetInPlace(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(assets));
+#else
+        if (assets.Count <= 1)
+        {
+            return;
+        }
+
+        var seen = new HashSet<string>(assets.Count, OSPath.PathComparer);
+        var deferred = new Dictionary<string, int>(OSPath.PathComparer);
+        var tail = assets.Count - 1;
+
+        for (var i = 0; i < assets.Count; i++)
+        {
+            while (!IsPlaceable(assets[i], seen))
+            {
+                var parentIndex = FindInDeferred(assets[i], deferred);
+                if (parentIndex >= 0)
+                {
+                    deferred.Remove(assets[i].RelatedAsset);
+                    deferred[assets[i].Identity] = parentIndex;
+                    (assets[i], assets[parentIndex]) = (assets[parentIndex], assets[i]);
+                    continue;
+                }
+
+                var placeableIndex = ScanTailForPlaceable(assets, seen, deferred, i, ref tail);
+                if (placeableIndex < 0)
+                {
+                    break;
+                }
+
+                deferred[assets[i].Identity] = placeableIndex;
+                (assets[i], assets[placeableIndex]) = (assets[placeableIndex], assets[i]);
+            }
+
+            seen.Add(assets[i].Identity);
+        }
+#endif
+    }
+
+#if !NET6_0_OR_GREATER
+    private static int ScanTailForPlaceable(
+        List<StaticWebAsset> assets, HashSet<string> seen,
+        Dictionary<string, int> deferred, int floor, ref int tail)
+    {
+        while (tail > floor)
+        {
+            if (IsPlaceable(assets[tail], seen))
+            {
+                return tail--;
+            }
+
+            deferred[assets[tail].Identity] = tail;
+            tail--;
+        }
+
+        return -1;
+    }
+#endif
+
+    internal bool TryGetAssetGroupValue(string key, out string value)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            value = null;
+            return false;
+        }
+
+        return GetAssetGroupValues().TryGetValue(key, out value);
+    }
+
+    private static Dictionary<string, string> ParseAssetGroupValues(string assetGroups)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (string.IsNullOrEmpty(assetGroups))
+        {
+            return result;
+        }
+
+        var requirements = assetGroups.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var requirement in requirements)
+        {
+            var eqIdx = requirement.IndexOf('=');
+            if (eqIdx <= 0 || eqIdx == requirement.Length - 1)
+            {
+                throw new InvalidOperationException(
+                    $"Malformed AssetGroups segment '{requirement}' in value '{assetGroups}'. Expected 'Name=Value' format.");
+            }
+
+            var reqName = requirement.Substring(0, eqIdx);
+            var reqValue = requirement.Substring(eqIdx + 1);
+            result[reqName] = reqValue;
+        }
+
+        return result;
     }
 
     public string Fingerprint
@@ -385,7 +647,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
     }
 
-    internal static bool ValidateAssetGroup(string path, (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group, out string reason)
+    internal static bool ValidateAssetGroup(string path, (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group, out string reason, HashSet<string> reusableGroupSet)
     {
         var prototypeItem = group.First;
         StaticWebAsset build = null;
@@ -395,6 +657,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         if (group.Second == null)
         {
             // Most common case, only one asset for the given path
+            reason = null;
+            return true;
+        }
+
+        // If assets at the same path have different non-empty AssetGroups values, they are variant
+        // alternatives that will be disambiguated by group filtering on the consumer side.
+        // Allow them to coexist in the manifest.
+        if (AllAssetsHaveDistinctGroups(group, reusableGroupSet))
+        {
             reason = null;
             return true;
         }
@@ -472,6 +743,59 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
         reason = null;
         return true;
+    }
+
+    private static bool AllAssetsHaveDistinctGroups(
+        (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group,
+        HashSet<string> reusableGroupSet)
+    {
+        reusableGroupSet.Clear();
+
+        if (!TryAddAssetGroup(reusableGroupSet, group.First))
+        {
+            return false;
+        }
+
+        if (group.Second != null && !TryAddAssetGroup(reusableGroupSet, group.Second))
+        {
+            return false;
+        }
+
+        if (group.Others != null)
+        {
+            foreach (var item in group.Others)
+            {
+                if (!TryAddAssetGroup(reusableGroupSet, item))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return reusableGroupSet.Count > 0;
+    }
+
+    internal static bool AllAssetsHaveDistinctGroups(IEnumerable<StaticWebAsset> assets, HashSet<string> reusableGroupSet)
+    {
+        reusableGroupSet.Clear();
+
+        foreach (var asset in assets)
+        {
+            if (!TryAddAssetGroup(reusableGroupSet, asset))
+            {
+                return false;
+            }
+        }
+        return reusableGroupSet.Count > 0;
+    }
+
+    private static bool TryAddAssetGroup(HashSet<string> groups, StaticWebAsset asset)
+    {
+        if (string.IsNullOrEmpty(asset.AssetGroups))
+        {
+            return false;
+        }
+        return groups.Add(asset.AssetGroups);
     }
 
     private bool HasKind(string assetKind) =>
@@ -556,7 +880,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string ComputeTargetPath(string pathPrefix, char separator) => CombineNormalizedPaths(
             pathPrefix,
-            IsDiscovered() || IsComputed() ? "" : BasePath,
+            IsDiscovered() || IsComputed() || IsFramework() ? "" : BasePath,
             RelativePath, separator);
 
     public static string CombineNormalizedPaths(string prefix, string basePath, string route, char separator)
@@ -590,6 +914,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             case SourceTypes.Computed:
             case SourceTypes.Project:
             case SourceTypes.Package:
+            case SourceTypes.Framework:
                 break;
             default:
                 throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
@@ -771,6 +1096,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public bool IsPackage()
         => string.Equals(SourceType, SourceTypes.Package, StringComparison.Ordinal);
+
+    public bool IsFramework()
+        => string.Equals(SourceType, SourceTypes.Framework, StringComparison.Ordinal);
 
     public bool IsBuildOnly()
         => string.Equals(AssetKind, AssetKinds.Build, StringComparison.Ordinal);
@@ -1017,8 +1345,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         public const string Computed = nameof(Computed);
         public const string Project = nameof(Project);
         public const string Package = nameof(Package);
+        public const string Framework = nameof(Framework);
 
         public static bool IsPackage(string sourceType) => string.Equals(Package, sourceType, StringComparison.Ordinal);
+        public static bool IsFramework(string sourceType) => string.Equals(Framework, sourceType, StringComparison.Ordinal);
     }
 
     public static class AssetCopyOptions
@@ -1060,7 +1390,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         var prefix = pathPrefix != null ? Normalize(pathPrefix) : "";
         // These have been normalized already, so only contain forward slashes
-        var computedBasePath = IsDiscovered() || IsComputed() ? "" : BasePath;
+        var computedBasePath = IsDiscovered() || IsComputed() || IsFramework() ? "" : BasePath;
         if (computedBasePath == "/")
         {
             // We need to special case the base path "/" to make sure it gets correctly combined with the prefix
@@ -1074,10 +1404,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return pathWithTokens;
     }
 
-    public string ComputeTargetPath(string pathPrefix, char separator, StaticWebAssetTokenResolver providedTokens)
+    public string ComputeTargetPath(string pathPrefix, char separator, StaticWebAssetTokenResolver providedTokens, TokenResolveMode resolveMode = TokenResolveMode.Serve)
     {
         var pathWithTokens = CreatePathString(pathPrefix, separator);
-        return ReplaceTokens(pathWithTokens, providedTokens);
+        return ReplaceTokens(pathWithTokens, providedTokens, resolveMode);
     }
 
     // Tokens in static web assets represent a similar concept to tokens within routing. They can be used to identify logical
@@ -1102,10 +1432,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // to be embedded in other contexts.
     // We might include other tokens in the future, like `[{basepath}]` to give a file the ability to have its path be relative to the consuming
     // project base path, etc.
-    public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens)
+    public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens, TokenResolveMode resolveMode = TokenResolveMode.Serve)
     {
         var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
-        return pattern.ReplaceTokens(this, tokens, applyPreferences: true).Path;
+        return pattern.ReplaceTokens(this, tokens, resolveMode).Path;
     }
 
     public string ComputePathWithoutTokens(string pathWithTokens)
@@ -1251,6 +1581,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return result;
     }
 
+    internal static ITaskItem[] ToTaskItems(IEnumerable<StaticWebAsset> assets)
+    {
+        return assets.Select(a => a.ToTaskItem()).ToArray();
+    }
+
     internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind)
     {
         // We return either the selected asset or a list with all the candidates that were found to be ambiguous
@@ -1340,6 +1675,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         nameof(RelatedAsset),
         nameof(AssetTraitName),
         nameof(AssetTraitValue),
+        nameof(AssetGroups),
         nameof(Fingerprint),
         nameof(Integrity),
         nameof(CopyToOutputDirectory),
@@ -1393,6 +1729,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             nameof(RelatedAsset) => RelatedAsset ?? "",
             nameof(AssetTraitName) => AssetTraitName ?? "",
             nameof(AssetTraitValue) => AssetTraitValue ?? "",
+            nameof(AssetGroups) => AssetGroups ?? "",
             nameof(Fingerprint) => Fingerprint ?? "",
             nameof(Integrity) => Integrity ?? "",
             nameof(CopyToOutputDirectory) => CopyToOutputDirectory ?? "",
@@ -1454,6 +1791,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             case nameof(AssetTraitValue):
                 AssetTraitValue = metadataValue;
                 break;
+            case nameof(AssetGroups):
+                AssetGroups = metadataValue;
+                break;
             case nameof(Fingerprint):
                 Fingerprint = metadataValue;
                 break;
@@ -1502,6 +1842,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             { nameof(RelatedAsset), RelatedAsset  ?? "" },
             { nameof(AssetTraitName), AssetTraitName  ?? "" },
             { nameof(AssetTraitValue), AssetTraitValue  ?? "" },
+            { nameof(AssetGroups), AssetGroups  ?? "" },
             { nameof(Fingerprint), Fingerprint  ?? "" },
             { nameof(Integrity), Integrity  ?? "" },
             { nameof(CopyToOutputDirectory), CopyToOutputDirectory  ?? "" },
@@ -1541,6 +1882,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         destinationItem.SetMetadata(nameof(RelatedAsset), RelatedAsset ?? "");
         destinationItem.SetMetadata(nameof(AssetTraitName), AssetTraitName ?? "");
         destinationItem.SetMetadata(nameof(AssetTraitValue), AssetTraitValue ?? "");
+        destinationItem.SetMetadata(nameof(AssetGroups), AssetGroups ?? "");
         destinationItem.SetMetadata(nameof(Fingerprint), Fingerprint ?? "");
         destinationItem.SetMetadata(nameof(Integrity), Integrity ?? "");
         destinationItem.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory ?? "");

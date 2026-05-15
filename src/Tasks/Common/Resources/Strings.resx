@@ -1010,5 +1010,17 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</value>
     <comment>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</comment>
   </data>
-  <!-- The latest message added is RoslynCompilerTypeFrameworkIsDeprecated. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="DotnetToolDoesNotSupportCustomNuspecFile" xml:space="preserve">
+    <value>NETSDK1235: .NET Tools do not support using a custom .nuspec file, but the nuspec file '{0}' was provided. .NET Tools use a custom package layout and package identifier convention and must be customized through MSBuild logic only. Remove the NuspecFile property from this project to enable packing it as a .NET Tool.</value>
+    <comment>{StrBegins="NETSDK1235: "}{Locked="{0}"}{Locked="NuspecFile"}</comment>
+  </data>
+  <data name="SingleFileBundleUnexpectedExclusion" xml:space="preserve">
+    <value>NETSDK1236: The single-file bundle generation task excluded files that were expected to be included: {0}. This may indicate a mismatch between the SDK's bundle filtering logic and the bundler task.</value>
+    <comment>{StrBegins="NETSDK1236: "}</comment>
+  </data>
+  <data name="ReadyToRunPartialCompileIgnoredInCompositeMode" xml:space="preserve">
+    <value>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</value>
+    <comment>{StrBegins="NETSDK1237: "}{Locked="{0}"}</comment>
+  </data>
+  <!-- The latest message added is ReadyToRunPartialCompileIgnoredInCompositeMode. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
