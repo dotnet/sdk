@@ -77,7 +77,11 @@ internal class ReleaseManifest
     internal static void ResetDefault() =>
         s_default = new Lazy<ReleaseManifest>(() => new ReleaseManifest());
 
-    private ProductCollection? _productCollection;
+    // Lazy index: parallel PrepareInstall calls would otherwise race on _productCollection,
+    // each kicking off an independent download + signature verification of releases-index.json.
+    // ExecutionAndPublication (the Lazy<T> default) guarantees single-instantiation. Reset
+    // when the underlying loader is replaced via the test seam.
+    private Lazy<ProductCollection> _productCollection;
 
     // Per-product release cache. Wrapping the value in Lazy<T> with ExecutionAndPublication
     // is required: ConcurrentDictionary.GetOrAdd does NOT guarantee single-invocation of the
@@ -99,6 +103,7 @@ internal class ReleaseManifest
             DefaultHttpClient.Instance,
             DefaultSignatureOptions.Instance,
             indexUrl: ProductCollection.ReleasesIndexDefaultUrl));
+        _productCollection = new Lazy<ProductCollection>(() => _loader.Value.GetVerifiedReleasesIndex());
     }
 
     /// <summary>
@@ -108,6 +113,7 @@ internal class ReleaseManifest
     {
         ArgumentNullException.ThrowIfNull(loader);
         _loader = new Lazy<SignedReleaseManifestLoader>(() => loader);
+        _productCollection = new Lazy<ProductCollection>(() => _loader.Value.GetVerifiedReleasesIndex());
     }
 
     /// <summary>
@@ -171,19 +177,13 @@ internal class ReleaseManifest
     }
 
     /// <summary>
-    /// Gets or loads the ProductCollection.
+    /// Gets or loads the ProductCollection. Backed by a <see cref="Lazy{T}"/> so concurrent
+    /// callers (the orchestrator's parallel PrepareInstall path) cannot race on the
+    /// download + signature verify — ExecutionAndPublication mode guarantees one verify per
+    /// process for the index JSON, matching the per-product cache contract below.
     /// TODO: Caching of the manifest or product collection after the program exits would be ideal.
     /// </summary>
-    public ProductCollection GetReleasesIndex()
-    {
-        if (_productCollection is not null)
-        {
-            return _productCollection;
-        }
-
-        _productCollection = _loader.Value.GetVerifiedReleasesIndex();
-        return _productCollection;
-    }
+    public ProductCollection GetReleasesIndex() => _productCollection.Value;
 
     /// <summary>
     /// Returns releases for a product. Downloaded + signature-verified once per process per
