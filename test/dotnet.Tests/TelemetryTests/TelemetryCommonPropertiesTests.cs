@@ -59,6 +59,7 @@ public class TelemetryCommonPropertiesTests : SdkTest
 
         Guid.TryParse((string?)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         Guid.TryParse((string?)assignedMachineIdOld, out var _).Should().BeTrue("it should be a guid");
+        assignedMachineId.Should().NotBe(assignedMachineIdOld, "it should generate a new fallback guid each time");
     }
 
     [Fact]
