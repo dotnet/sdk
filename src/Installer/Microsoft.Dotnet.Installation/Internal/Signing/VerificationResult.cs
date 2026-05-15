@@ -69,19 +69,45 @@ internal enum FailureCode
 internal sealed record VerificationFailure(FailureCode Code, string Reason);
 
 /// <summary>
-/// Aggregated verification result. The verifier collects all failures rather than stopping at
-/// the first one so callers can surface every spec violation in a single error message.
-/// Mutation is restricted to the verifier itself — once <see cref="SignatureVerifier.Verify"/>
-/// returns, the result is effectively read-only to callers.
+/// Aggregated verification result. Mutation is restricted to the verifier itself — once
+/// <see cref="SignatureVerifier.Verify"/> returns, the result is effectively read-only to callers.
+///
+/// <para>
+/// Construct with <c>shortCircuit: true</c> (the default for <see cref="SignatureVerifier.Verify"/>)
+/// for production callers that only care about whether verification succeeded — <see cref="ShouldStop"/>
+/// flips on the first real failure and the verifier exits without running additional checks. Construct
+/// with <c>shortCircuit: false</c> for diagnostics / tests that want to see every spec violation in a
+/// single run.
+/// </para>
 /// </summary>
 internal sealed class VerificationResult
 {
     private readonly List<VerificationFailure> _failures = new();
+    private readonly bool _shortCircuit;
 
     public IReadOnlyList<VerificationFailure> Failures => _failures;
     public bool IsValid => _failures.Count == 0;
 
-    internal void Add(FailureCode code, string reason) => _failures.Add(new VerificationFailure(code, reason));
+    /// <summary>
+    /// True when verification should stop running additional checks. Flips on the first
+    /// <see cref="Add"/> call when the result was constructed in short-circuit mode; stays
+    /// false in collect-all mode. Skips never set this — they are informational, not failures.
+    /// </summary>
+    public bool ShouldStop { get; private set; }
+
+    public VerificationResult(bool shortCircuit = true)
+    {
+        _shortCircuit = shortCircuit;
+    }
+
+    internal void Add(FailureCode code, string reason)
+    {
+        _failures.Add(new VerificationFailure(code, reason));
+        if (_shortCircuit)
+        {
+            ShouldStop = true;
+        }
+    }
 
     internal void AddSkip(string reason) => _failures.Add(new VerificationFailure(FailureCode.CheckSkipped, reason));
 }

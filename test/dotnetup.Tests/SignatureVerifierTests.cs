@@ -199,14 +199,16 @@ public class SignatureVerifierTests
     public void Verify_NonObjectJsonContent_FlagsExpirationMissing()
     {
         // The verifier requires an object root; a JSON array trips ExpirationMissing
-        // (the sig is also wrong but the checks are independent).
+        // (the sig is also wrong but the checks are independent). Use CollectAll so the
+        // JSON-policy section runs even after SigCryptoInvalid fires upstream.
         byte[] arrayContent = System.Text.Encoding.UTF8.GetBytes("[1,2,3]");
 
         var result = SignatureVerifier.Verify(
             arrayContent,
             LoadAsset("releases-directory.json.20260505084330.p7s"),
             ProductionOptions(),
-            s_pinnedNow);
+            s_pinnedNow,
+            VerificationMode.CollectAll);
 
         // Both will fire; we care that expiration check ran (collect-all behavior).
         result.Failures.Select(f => f.Code).Should().Contain(FailureCode.ExpirationMissing);
@@ -247,11 +249,14 @@ public class SignatureVerifierTests
         // the same DigiCert "Trusted G4 Code Signing RSA4096 SHA384 2021 CA1" intermediate
         // that .NET Release uses (signed in the same era), so the issuer pin (spec §5.2)
         // legitimately passes. Use the 3.1.x NuGet sig fixture below for IssuerMismatch.
+        //
+        // CollectAll: SigCryptoInvalid would otherwise short-circuit before SubjectMismatch.
         var result = SignatureVerifier.Verify(
             LoadAsset("releases-directory.json"),  // wrong content — that's fine, checks are independent
             LoadAsset("vscode-runtime.signature.p7s"),
             ProductionOptions(requireExpiration: false),
-            s_pinnedNow);
+            s_pinnedNow,
+            VerificationMode.CollectAll);
 
         result.Failures.Select(f => f.Code).Should().Contain(FailureCode.SubjectMismatch);
     }
@@ -273,7 +278,8 @@ public class SignatureVerifierTests
             LoadAsset("releases-directory.json"),
             LoadAsset("nuget-aspnetcore-3.1.32.signature.p7s"),
             ProductionOptions(requireExpiration: false),
-            s_pinnedNow);
+            s_pinnedNow,
+            VerificationMode.CollectAll);
 
         var codes = result.Failures.Select(f => f.Code).ToHashSet();
         codes.Should().Contain(FailureCode.IssuerMismatch, "the older DigiCert intermediate is not the spec §5.2 pin");
@@ -322,12 +328,14 @@ public class SignatureVerifierTests
         // The v1 fixture (May 2026 draft) has no RFC 3161 timestamp attribute at all.
         // The verifier must positively fire TimestampMissing AND, because all downstream
         // chain/JSON-policy checks rely on the TSA timestamp, must record CheckSkipped
-        // entries for the TSA chain, primary chain, and JSON expiration.
+        // entries for the TSA chain, primary chain, and JSON expiration. CollectAll so the
+        // downstream sections actually run after TimestampMissing fires.
         var result = SignatureVerifier.Verify(
             LoadAsset("releases-directory-v1.json"),
             LoadAsset("releases-directory-v1.json.20260424114016.sig"),
             ProductionOptions(),
-            s_pinnedNow);
+            s_pinnedNow,
+            VerificationMode.CollectAll);
 
         var codes = result.Failures.Select(f => f.Code).ToList();
 
@@ -388,17 +396,40 @@ public class SignatureVerifierTests
     [Fact]
     public void Verify_CollectsAllFailures_DoesNotShortCircuit()
     {
-        // Garbage signature + missing roots + non-JSON content. The verifier must report
-        // multiple distinct failures rather than bailing on the first.
+        // Garbage signature + missing roots + non-JSON content. With CollectAll mode the
+        // verifier must report multiple distinct failures rather than bailing on the first.
+        var result = SignatureVerifier.Verify(
+            new byte[] { 0xFF, 0xFE, 0xFD },
+            new byte[] { 0xFF, 0xFE, 0xFD },
+            OptionsWithEmptyRoots(),
+            s_pinnedNow,
+            VerificationMode.CollectAll);
+
+        result.Failures.Select(f => f.Code).Distinct().Count().Should().BeGreaterThan(1,
+            "collect-all behavior is a contract for callers that opt into VerificationMode.CollectAll");
+        result.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Verify_DefaultMode_ShortCircuitsOnFirstFailure()
+    {
+        // Same inputs as the CollectAll test above, but with the default ShortCircuit mode.
+        // Section atomicity: within EvaluateTrustedRoots both empty-root checks run before
+        // ShouldStop is checked at the section boundary — so we may see up to 2 failures
+        // from that one section, but the verifier MUST NOT proceed to DecodeCms (which would
+        // record SigDecodeFailed on the garbage signature). Asserting the failure list
+        // contains only TrustedRootsEmpty proves short-circuit kicked in between sections.
         var result = SignatureVerifier.Verify(
             new byte[] { 0xFF, 0xFE, 0xFD },
             new byte[] { 0xFF, 0xFE, 0xFD },
             OptionsWithEmptyRoots(),
             s_pinnedNow);
+            // mode parameter omitted — default is ShortCircuit per the production design.
 
-        result.Failures.Select(f => f.Code).Distinct().Count().Should().BeGreaterThan(1,
-            "collect-all behavior is a contract per signature_requirements.md §10");
         result.IsValid.Should().BeFalse();
+        result.ShouldStop.Should().BeTrue();
+        result.Failures.Select(f => f.Code).Should().AllBeEquivalentTo(FailureCode.TrustedRootsEmpty,
+            "ShortCircuit must stop after the first failing section; CMS-decode must not have run.");
     }
 
     // ---------------- NuGet-parity regression tests ----------------

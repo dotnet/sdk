@@ -76,37 +76,52 @@ internal static class SignatureVerifier
 
     /// <summary>
     /// Verifies <paramref name="content"/> against the detached CMS signature in <paramref name="signature"/>.
-    /// Collects every spec violation it can detect; the result is valid only when zero failures are recorded.
+    /// In the default <see cref="VerificationMode.ShortCircuit"/> mode, returns on the first failure;
+    /// in <see cref="VerificationMode.CollectAll"/> mode, runs every check and returns every failure.
     /// </summary>
     /// <param name="content">Bytes of the signed JSON document.</param>
     /// <param name="signature">Bytes of the detached CMS / PKCS#7 SignedData blob (.p7s).</param>
     /// <param name="options">Trust anchors and policy knobs.</param>
     /// <param name="nowOverride">When set, used in place of <see cref="DateTimeOffset.UtcNow"/> for tests.</param>
+    /// <param name="mode">Short-circuit (default) or collect-all. See <see cref="VerificationMode"/>.</param>
     public static VerificationResult Verify(
         byte[] content,
         byte[] signature,
         SignatureVerificationOptions options,
-        DateTimeOffset? nowOverride = null)
+        DateTimeOffset? nowOverride = null,
+        VerificationMode mode = VerificationMode.ShortCircuit)
     {
         ArgumentNullException.ThrowIfNull(content);
         ArgumentNullException.ThrowIfNull(signature);
         ArgumentNullException.ThrowIfNull(options);
 
-        var result = new VerificationResult();
+        var result = new VerificationResult(shortCircuit: mode == VerificationMode.ShortCircuit);
 
         EvaluateTrustedRoots(options, result);
+        if (result.ShouldStop) return result;
 
         DecodeCms(content, signature, result, out SignedCms? cms, out SignerInfo? signer, out X509Certificate2? signerCert);
+        if (result.ShouldStop) return result;
+
         EvaluateAlgorithmPolicy(signer, signerCert, result);
+        if (result.ShouldStop) return result;
+
         EvaluateSignerCertificatePolicy(signerCert, result);
+        if (result.ShouldStop) return result;
 
         DateTime? claimedSigningTimeUtc = TryEvaluateSignedAttributes(signer, result);
+        if (result.ShouldStop) return result;
 
         (DateTimeOffset? tsaTimestampUtc, SignedCms? tsaCms, X509Certificate2? tsaCert) =
             TryEvaluateTimestamp(signer, claimedSigningTimeUtc, result);
+        if (result.ShouldStop) return result;
 
         EvaluateTimestampChain(tsaCert, tsaCms, tsaTimestampUtc, signer, options, result);
+        if (result.ShouldStop) return result;
+
         EvaluatePrimaryChain(signerCert, cms, tsaTimestampUtc, options, nowOverride, result);
+        if (result.ShouldStop) return result;
+
         MaybeEvaluateJsonExpiration(content, tsaTimestampUtc, options, nowOverride, result);
 
         return result;

@@ -62,3 +62,21 @@ internal enum RevocationCheckMode
     /// <summary>Skip revocation entirely. Should be paired with <see cref="SignatureVerificationOptions.MaxAcceptableSigningAge"/>.</summary>
     NoCheck,
 }
+
+/// <summary>Controls how aggressively <see cref="SignatureVerifier.Verify"/> runs its checks.</summary>
+internal enum VerificationMode
+{
+    /// <summary>
+    /// Stop on the first real failure (skips never trigger this). Production default —
+    /// callers only need to know whether verification succeeded, and skipping later checks
+    /// shaves CPU and avoids a second chain build on what's already a known-bad signature.
+    /// </summary>
+    ShortCircuit,
+
+    /// <summary>
+    /// Run every check and report every failure. Useful for diagnostics, signing producers,
+    /// and tests that want to assert spec coverage in one run. Spec §10 originally documented
+    /// this as the only mode; ShortCircuit is now the default for production callers.
+    /// </summary>
+    CollectAll,
+}
