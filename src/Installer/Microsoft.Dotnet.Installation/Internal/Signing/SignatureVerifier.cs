@@ -212,6 +212,13 @@ internal static class SignatureVerifier
 
         try
         {
+            // verifySignatureOnly:true checks message-digest + signature-value only.
+            // We deliberately do NOT let CheckSignature build the chain here: passing false
+            // would build it against the OS root store with default ChainPolicy — no
+            // CustomTrustStore (so our pinned codesignctl.pem / timestampctl.pem roots are
+            // ignored), no ApplicationPolicy EKU pin, no TSA-anchored VerificationTime, no
+            // EntireChain revocation, no UntrustedRoot retry. EvaluatePrimaryChain and
+            // EvaluateTimestampChain build both chains explicitly with the spec policy.
             cms.CheckSignature(verifySignatureOnly: true);
         }
         catch (CryptographicException ex)
