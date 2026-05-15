@@ -115,10 +115,11 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
 
     /// <summary>
     /// Downloads JSON bytes, fetches the sibling <c>.p7s</c>, runs signature verification, and
-    /// writes the verified bytes to a temp file under <see cref="_tempDir"/>. Returns the temp
-    /// path. Caller is responsible for not retaining the path beyond
-    /// <see cref="Dispose"/> (the path is deleted with the temp directory).
+    /// writes the verified bytes to a temp file under <see cref="_tempDir"/>. Caller is
+    /// responsible for not retaining the returned path beyond <see cref="Dispose"/> (the path
+    /// is deleted with the temp directory).
     /// </summary>
+    /// <returns>The on-disk path to the downloaded and signature-verified releases JSON file.</returns>
     private string DownloadAndVerify(Uri jsonUrl)
     {
         // Manifest fetches use a tight per-request timeout independent of DefaultHttpClient.Instance's
@@ -186,15 +187,16 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         using var doc = JsonDocument.Parse(jsonBytes);
         if (doc.RootElement.ValueKind != JsonValueKind.Object) { return null; }
 
+        JsonElement signatureFileUriLocation;
         if (!doc.RootElement.TryGetProperty("signature", out JsonElement sig) ||
             sig.ValueKind != JsonValueKind.Object ||
-            !sig.TryGetProperty("file", out JsonElement fileEl) ||
-            fileEl.ValueKind != JsonValueKind.String)
+            !sig.TryGetProperty("file", out signatureFileUriLocation) ||
+            signatureFileUriLocation.ValueKind != JsonValueKind.String)
         {
             return null;
         }
 
-        string? file = fileEl.GetString();
+        string? file = signatureFileUriLocation.GetString();
         if (string.IsNullOrWhiteSpace(file)) { return null; }
 
         // Bare filename only — no path traversal, no absolute URL, no directory navigation.

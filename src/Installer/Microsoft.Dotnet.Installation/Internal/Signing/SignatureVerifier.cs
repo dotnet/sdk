@@ -30,13 +30,23 @@ internal static class SignatureVerifier
         ("2.5.4.6",  "US"),                    // C
     ];
 
-    // Required signer issuer DN, also used as the required TSA-cert immediate-issuer DN.
-    // Spec §5.2 (code-signing intermediate) and §7 (TSA intermediate, defense-in-depth on
-    // top of the chain build through timestampctl.pem). DigiCert is currently used for both;
-    // if that ever splits, factor this into two arrays.
+    // Required signer issuer DN (DigiCert code-signing intermediate). Spec §5.2.
     private static readonly (string Oid, string Value)[] s_requiredIssuerRdns =
     [
         ("2.5.4.3",  "DigiCert Trusted G4 Code Signing RSA4096 SHA384 2021 CA1"),
+        ("2.5.4.10", "DigiCert, Inc."),
+        ("2.5.4.6",  "US"),
+    ];
+
+    // Required TSA-cert immediate-issuer DN (DigiCert timestamping intermediate). Spec §7.
+    // Defense-in-depth: tightens the TSA chain beyond "any cert chaining to a root in
+    // timestampctl.pem" by also pinning the intermediate that issued the TSA leaf, mirroring
+    // the code-signing intermediate pin in §5.2. The CN intentionally differs from
+    // s_requiredIssuerRdns above (timestamping vs. code-signing intermediates are distinct
+    // certs in the DigiCert hierarchy) — the visual similarity is not duplication.
+    private static readonly (string Oid, string Value)[] s_requiredTimestampIssuerRdns =
+    [
+        ("2.5.4.3",  "DigiCert Trusted G4 TimeStamping RSA4096 SHA256 2025 CA1"),
         ("2.5.4.10", "DigiCert, Inc."),
         ("2.5.4.6",  "US"),
     ];
@@ -96,32 +106,36 @@ internal static class SignatureVerifier
 
         var result = new VerificationResult(shortCircuit: mode == VerificationMode.ShortCircuit);
 
-        EvaluateTrustedRoots(options, result);
-        if (result.ShouldStop) { return result; }
+        SignedCms? cms = null;
+        SignerInfo? signer = null;
+        X509Certificate2? signerCert = null;
+        DateTime? claimedSigningTimeUtc = null;
+        DateTimeOffset? tsaTimestampUtc = null;
+        SignedCms? tsaCms = null;
+        X509Certificate2? tsaCert = null;
 
-        DecodeCms(content, signature, result, out SignedCms? cms, out SignerInfo? signer, out X509Certificate2? signerCert);
-        if (result.ShouldStop) { return result; }
+        // Pipeline of verification steps. Steps run in order; in ShortCircuit mode the loop
+        // bails as soon as any step records a failure. Centralizing the gate here keeps each
+        // step focused on its own check and avoids repeating the short-circuit guard at every
+        // call site.
+        var steps = new Action[]
+        {
+            () => EvaluateTrustedRootOptions(options, result),
+            () => DecodeCms(content, signature, result, out cms, out signer, out signerCert),
+            () => EvaluateAlgorithmPolicy(signer, signerCert, result),
+            () => EvaluateSignerCertificatePolicy(signerCert, result),
+            () => claimedSigningTimeUtc = TryEvaluateSignedAttributes(signer, result),
+            () => (tsaTimestampUtc, tsaCms, tsaCert) = TryEvaluateTimestamp(signer, claimedSigningTimeUtc, result),
+            () => EvaluateTimestampChain(tsaCert, tsaCms, tsaTimestampUtc, signer, options, result),
+            () => EvaluatePrimaryChain(signerCert, cms, tsaTimestampUtc, options, nowOverride, result),
+            () => MaybeEvaluateJsonExpiration(content, tsaTimestampUtc, options, nowOverride, result),
+        };
 
-        EvaluateAlgorithmPolicy(signer, signerCert, result);
-        if (result.ShouldStop) { return result; }
-
-        EvaluateSignerCertificatePolicy(signerCert, result);
-        if (result.ShouldStop) { return result; }
-
-        DateTime? claimedSigningTimeUtc = TryEvaluateSignedAttributes(signer, result);
-        if (result.ShouldStop) { return result; }
-
-        (DateTimeOffset? tsaTimestampUtc, SignedCms? tsaCms, X509Certificate2? tsaCert) =
-            TryEvaluateTimestamp(signer, claimedSigningTimeUtc, result);
-        if (result.ShouldStop) { return result; }
-
-        EvaluateTimestampChain(tsaCert, tsaCms, tsaTimestampUtc, signer, options, result);
-        if (result.ShouldStop) { return result; }
-
-        EvaluatePrimaryChain(signerCert, cms, tsaTimestampUtc, options, nowOverride, result);
-        if (result.ShouldStop) { return result; }
-
-        MaybeEvaluateJsonExpiration(content, tsaTimestampUtc, options, nowOverride, result);
+        foreach (var step in steps)
+        {
+            if (result.ShouldStop) { break; }
+            step();
+        }
 
         return result;
     }
@@ -129,9 +143,10 @@ internal static class SignatureVerifier
     /// <summary>
     /// Records <see cref="FailureCode.TrustedRootsEmpty"/> if either anchor collection is empty.
     /// Misconfigured callers (e.g. a bad PEM resource) would otherwise silently fall back to an
-    /// OS-only chain build and accept things they shouldn't.
+    /// OS-only chain build and accept things they shouldn't. This evaluates only the option
+    /// configuration; it does not inspect the signature itself.
     /// </summary>
-    private static void EvaluateTrustedRoots(SignatureVerificationOptions options, VerificationResult result)
+    private static void EvaluateTrustedRootOptions(SignatureVerificationOptions options, VerificationResult result)
     {
         if (options.TrustedCodeSigningRoots.Count == 0)
         {
@@ -177,19 +192,22 @@ internal static class SignatureVerifier
             result.Add(FailureCode.SigNotCms, $"Unexpected encapsulated content-type OID {cms.ContentInfo.ContentType.Value}; expected id-data ({OidIdData}).");
         }
 
+        if (cms.SignerInfos.Count == 0)
+        {
+            result.Add(FailureCode.SigMultipleSigners, "Expected exactly one signer; found 0.");
+            return;
+        }
+
         if (cms.SignerInfos.Count != 1)
         {
             result.Add(FailureCode.SigMultipleSigners, $"Expected exactly one signer; found {cms.SignerInfos.Count}.");
         }
 
-        if (cms.SignerInfos.Count >= 1)
+        signer = cms.SignerInfos[0];
+        signerCert = signer.Certificate;
+        if (signerCert is null)
         {
-            signer = cms.SignerInfos[0];
-            signerCert = signer.Certificate;
-            if (signerCert is null)
-            {
-                result.Add(FailureCode.SignerCertMissing, "SignerInfo does not carry the signer certificate.");
-            }
+            result.Add(FailureCode.SignerCertMissing, "SignerInfo does not carry the signer certificate.");
         }
 
         try
@@ -312,7 +330,7 @@ internal static class SignatureVerifier
 
         EvaluateEku(tsaCert, EkuTimeStamping, primary: false, result);
 
-        if (!DistinguishedNameMatches(tsaCert.IssuerName, s_requiredIssuerRdns, "TSA Issuer", out string tsaIssuerDetail))
+        if (!DistinguishedNameMatches(tsaCert.IssuerName, s_requiredTimestampIssuerRdns, "TSA Issuer", out string tsaIssuerDetail))
         {
             result.Add(FailureCode.TimestampIssuerMismatch, tsaIssuerDetail);
         }

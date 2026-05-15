@@ -13,11 +13,13 @@ using Xunit;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
-/// Unit tests for <see cref="SignatureVerifier"/>. The verifier is collect-all (it never
-/// short-circuits), so these tests assert that specific <see cref="FailureCode"/>s are or are
-/// not present in the result rather than asserting overall validity. That lets us exercise
-/// every spec check on real-world fixtures without needing a perfect signed-and-still-valid
-/// blob whose chain we can build hermetically.
+/// Unit tests for <see cref="SignatureVerifier"/>. The verifier defaults to short-circuit
+/// mode (production behavior); these tests opt into <see cref="VerificationMode.CollectAll"/>
+/// where they need to assert that specific <see cref="FailureCode"/>s are or are not present
+/// after later sections run. Collect-all lets us exercise every spec check on real-world
+/// fixtures without needing a perfect signed-and-still-valid blob whose chain we can build
+/// hermetically. A dedicated test (<c>Verify_DefaultMode_ShortCircuitsOnFirstFailure</c>)
+/// covers the default short-circuit contract.
 ///
 /// <para>Fixtures (under TestAssets/Signing/):</para>
 /// <list type="bullet">
@@ -49,7 +51,8 @@ public class SignatureVerifierTests
     private static SignatureVerificationOptions ProductionOptions(bool requireExpiration = true) =>
         new(TrustedRootsLoader.CodeSigningRoots, TrustedRootsLoader.TimestampRoots)
         {
-            RevocationMode = RevocationCheckMode.NoCheck, // tests are hermetic; CRL/OCSP unreachable
+            // Use the production default RevocationMode (Online). Tests already hit the
+            // network for revocation; failing on CRL/OCSP unreachability is acceptable.
             RequireJsonExpirationField = requireExpiration,
         };
 
@@ -463,7 +466,7 @@ public class SignatureVerifierTests
     [Fact]
     public void Verify_RepeatedCalls_DoNotLeakOsHandles()
     {
-        // Spec §6 mirrors NuGet's X509ChainHolder.Dispose by disposing every
+        // dotnetup mirrors NuGet's X509ChainHolder.Dispose by disposing every
         // X509ChainElement.Certificate after chain build. Without that, repeated verify
         // calls would accumulate OS-handle pressure (each X509Certificate2 holds a handle
         // released only by GC finalizer). On Linux this can hit ulimit under load.
