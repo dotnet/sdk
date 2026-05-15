@@ -557,32 +557,173 @@ public class SignatureVerifierTests
         }
     }
 
-    [Fact(Skip = "TODO: requires a custom cert chain whose intermediate constrains EKU away " +
-                 "from code-signing. Track via dotnet/sdk issue 'dnup signing tests: mint " +
-                 "EKU-constrained intermediate fixture'. Until then, ApplicationPolicy " +
-                 "enforcement on chain build is covered only by manual review against NuGet's " +
-                 "CertificateChainUtility.SetCertBuildChainPolicy.")]
+    [Fact]
     public void Verify_IntermediateConstrainedAwayFromCodeSigning_FailsChainBuild()
     {
+        // Defense-in-depth: chain.ChainPolicy.ApplicationPolicy enforces the codeSigning EKU
+        // at chain-build time, mirroring NuGet's CertificateChainUtility.SetCertBuildChainPolicy.
+        // Mint a chain whose intermediate carries an EKU that excludes codeSigning. Per
+        // RFC 5280 §4.2.1.12 the effective EKU of a leaf is the intersection along the
+        // chain, so the leaf's codeSigning EKU is narrowed away to nothing and X509Chain.Build
+        // reports NotValidForUsage. EvaluateChain must surface that as ChainBuildFailed.
+        byte[] content = Encoding.UTF8.GetBytes("{\"signature\":{\"expiration\":\"2099-01-01T00:00:00Z\"}}");
+        var fixture = BuildTestSignedFixture(
+            content,
+            intermediateEkuOid: "1.3.6.1.5.5.7.3.4", // id-kp-emailProtection (NOT codeSigning)
+            leafNotAfter: DateTimeOffset.UtcNow.AddYears(2));
+        using (fixture.Root) using (fixture.Intermediate) using (fixture.Leaf)
+        {
+            var result = SignatureVerifier.Verify(
+                content,
+                fixture.Signature,
+                BuildOptionsTrusting(fixture.Root),
+                mode: VerificationMode.CollectAll);
+
+            var chainFailure = result.Failures.FirstOrDefault(f => f.Code == FailureCode.ChainBuildFailed);
+            chainFailure.Should().NotBeNull(
+                "intermediate's EKU constraint excludes codeSigning, so chain build must fail " +
+                "with NotValidForUsage \u2014 ApplicationPolicy enforcement is the regression target");
+            chainFailure!.Reason.Should().Contain("NotValidForUsage",
+                "X509Chain reports NotValidForUsage when ApplicationPolicy is not satisfied along the chain");
+        }
     }
 
-    [Fact(Skip = "TODO: requires a test seam in BuildWithUntrustedRootRetry, or a way to " +
-                 "simulate the OS root store reporting UntrustedRoot transiently. Track via " +
-                 "dotnet/sdk issue 'dnup signing tests: cover Windows UntrustedRoot retry'. " +
-                 "Until then the retry path is covered only by manual review against NuGet's " +
-                 "RetriableX509ChainBuildPolicy.")]
-    public void Verify_TransientUntrustedRootOnWindows_RetriesAndSucceeds()
-    {
-    }
-
-    [Fact(Skip = "TODO: requires a fixture signed with a now-expired cert (or a TSA timestamp " +
-                 "outside the signer cert validity window). Real Microsoft .NET Release certs " +
-                 "are long-lived, so this can't be triggered against production fixtures. The " +
-                 "spec §6 'NotTimeValid is fatal' clause is enforced by NOT setting " +
-                 "X509VerificationFlags.IgnoreNotTimeValid in EvaluateChain — confirmed by " +
-                 "code review. Track via dotnet/sdk issue 'dnup signing tests: expired-cert " +
-                 "fixture for NotTimeValid coverage'.")]
+    [Fact]
     public void Verify_ExpiredSignerCert_FailsAsChainBuildFailed_NotIgnored()
     {
+        // Spec §6: NotTimeValid is fatal. The verifier deliberately does NOT set
+        // X509VerificationFlags.IgnoreNotTimeValid (NuGet ignores it for immutable
+        // packages, we don't because release manifests are fresh artifacts). Mint a
+        // chain whose leaf's NotAfter is in the past; verifier must surface
+        // ChainBuildFailed with NotTimeValid in the chain-status description.
+        byte[] content = Encoding.UTF8.GetBytes("{\"signature\":{\"expiration\":\"2099-01-01T00:00:00Z\"}}");
+        var fixture = BuildTestSignedFixture(
+            content,
+            intermediateEkuOid: null, // unconstrained intermediate; only leaf validity matters
+            leafNotAfter: DateTimeOffset.UtcNow.AddDays(-1));
+        using (fixture.Root) using (fixture.Intermediate) using (fixture.Leaf)
+        {
+            var result = SignatureVerifier.Verify(
+                content,
+                fixture.Signature,
+                BuildOptionsTrusting(fixture.Root),
+                mode: VerificationMode.CollectAll);
+
+            var chainFailure = result.Failures.FirstOrDefault(f => f.Code == FailureCode.ChainBuildFailed);
+            chainFailure.Should().NotBeNull(
+                "expired signer cert must fail chain build because IgnoreNotTimeValid is intentionally NOT set");
+            chainFailure!.Reason.Should().Contain("NotTimeValid",
+                "X509Chain reports NotTimeValid for a leaf whose NotAfter is in the past");
+        }
+    }
+
+    // ---------------- Test-fixture helpers (in-process cert minting) ----------------
+
+    /// <summary>
+    /// Builds an in-memory 3-cert chain (root → intermediate → leaf) and a detached
+    /// CMS signature over <paramref name="content"/>. Subject and issuer DNs are minted
+    /// to satisfy <see cref="SignatureVerifier"/>'s pinned RDN set so the test can drive
+    /// chain-build behavior (EKU constraint, validity window) without tripping the DN
+    /// pins first.
+    /// </summary>
+    private static (X509Certificate2 Root, X509Certificate2 Intermediate, X509Certificate2 Leaf, byte[] Signature) BuildTestSignedFixture(
+        byte[] content,
+        string? intermediateEkuOid,
+        DateTimeOffset leafNotAfter)
+    {
+        var notBefore = DateTimeOffset.UtcNow.AddYears(-1);
+
+        // Root: self-signed CA, untrusted by the OS but added to the verifier's CustomTrustStore.
+        using var rootKey = RSA.Create(2048);
+        var rootReq = new CertificateRequest(
+            new X500DistinguishedName("CN=dnup-test-root"), rootKey, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        rootReq.CertificateExtensions.Add(new X509BasicConstraintsExtension(true, false, 0, true));
+        rootReq.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, true));
+        rootReq.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(rootReq.PublicKey, false));
+        var root = rootReq.CreateSelfSigned(notBefore, DateTimeOffset.UtcNow.AddYears(10));
+
+        // Intermediate: subject DN must match SignatureVerifier.s_requiredIssuerRdns so the
+        // leaf's IssuerName passes the pin.
+        using var intKey = RSA.Create(2048);
+        var intReq = new CertificateRequest(BuildPinnedIssuerDn(), intKey, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        intReq.CertificateExtensions.Add(new X509BasicConstraintsExtension(true, false, 0, true));
+        intReq.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, true));
+        intReq.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(intReq.PublicKey, false));
+        if (intermediateEkuOid is not null)
+        {
+            intReq.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(
+                new OidCollection { new Oid(intermediateEkuOid) }, critical: true));
+        }
+        byte[] intSerial = new byte[16]; RandomNumberGenerator.Fill(intSerial);
+        using var intermediateNoKey = intReq.Create(root, notBefore, DateTimeOffset.UtcNow.AddYears(5), intSerial);
+        var intermediate = intermediateNoKey.CopyWithPrivateKey(intKey);
+
+        // Leaf: subject DN must match SignatureVerifier.s_requiredSubjectRdns; EKU is
+        // codeSigning. The intermediate's constraint (if any) is what should narrow the
+        // effective EKU at chain-build time.
+        using var leafKey = RSA.Create(2048);
+        var leafReq = new CertificateRequest(BuildPinnedSubjectDn(), leafKey, HashAlgorithmName.SHA384, RSASignaturePadding.Pkcs1);
+        leafReq.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
+        leafReq.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, true));
+        leafReq.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(
+            new OidCollection { new Oid("1.3.6.1.5.5.7.3.3") }, critical: false)); // id-kp-codeSigning
+        leafReq.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(leafReq.PublicKey, false));
+        byte[] leafSerial = new byte[16]; RandomNumberGenerator.Fill(leafSerial);
+        using var leafNoKey = leafReq.Create(intermediate, notBefore, leafNotAfter, leafSerial);
+        var leaf = leafNoKey.CopyWithPrivateKey(leafKey);
+
+        // Detached CMS signature with SHA-384 digest (matches the v3 production fixture).
+        // Include the intermediate in the signed-data CertificateSet so the verifier's chain
+        // build (which uses cms.Certificates as ExtraStore) can find it.
+        var contentInfo = new ContentInfo(content);
+        var cms = new SignedCms(contentInfo, detached: true);
+        var signer = new CmsSigner(SubjectIdentifierType.IssuerAndSerialNumber, leaf)
+        {
+            DigestAlgorithm = new Oid("2.16.840.1.101.3.4.2.2"), // id-sha384
+            IncludeOption = X509IncludeOption.EndCertOnly,
+        };
+        signer.Certificates.Add(intermediate);
+        cms.ComputeSignature(signer);
+        return (root, intermediate, leaf, cms.Encode());
+    }
+
+    /// <summary>
+    /// Trust the test root for both code-signing and timestamp anchors (EvaluateTrustedRootOptions
+    /// records TrustedRootsEmpty if either collection is empty). Disables revocation because
+    /// the test certs have no CRL/OCSP endpoints; no timestamp is present so MaxAcceptableSigningAge
+    /// is irrelevant for these tests.
+    /// </summary>
+    private static SignatureVerificationOptions BuildOptionsTrusting(X509Certificate2 testRoot)
+    {
+        var roots = new X509Certificate2Collection { testRoot };
+        return new SignatureVerificationOptions(roots, roots)
+        {
+            RevocationMode = RevocationCheckMode.NoCheck,
+            RequireJsonExpirationField = false,
+        };
+    }
+
+    private static X500DistinguishedName BuildPinnedSubjectDn() =>
+        BuildDnFromRdns(SignatureVerifier.s_requiredSubjectRdns);
+
+    private static X500DistinguishedName BuildPinnedIssuerDn() =>
+        BuildDnFromRdns(SignatureVerifier.s_requiredIssuerRdns);
+
+    /// <summary>
+    /// Builds an X.500 DN from the verifier's pinned RDN tuples. Sourcing the RDNs
+    /// directly from <see cref="SignatureVerifier"/> means future spec changes (cert
+    /// rotation, new RDN component) only need to be made in one place \u2014 these tests
+    /// pick the new pin up automatically. Order is preserved from the source array;
+    /// the verifier's <c>DistinguishedNameMatches</c> is order-insensitive but the
+    /// total RDN count must match exactly, so we emit each tuple once.
+    /// </summary>
+    private static X500DistinguishedName BuildDnFromRdns((string Oid, string Value)[] rdns)
+    {
+        var b = new X500DistinguishedNameBuilder();
+        foreach (var (oid, value) in rdns)
+        {
+            b.Add(oid, value);
+        }
+        return b.Build();
     }
 }

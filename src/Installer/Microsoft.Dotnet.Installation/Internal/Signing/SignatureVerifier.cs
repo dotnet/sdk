@@ -20,7 +20,9 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 internal static class SignatureVerifier
 {
     // Required signer subject DN (RDN set; OID-based, order-insensitive). Spec §5.1.
-    private static readonly (string Oid, string Value)[] s_requiredSubjectRdns =
+    // internal: tests mint cert chains with this exact DN to drive chain-build behavior
+    // (EKU constraint, validity window) without tripping the DN pin first.
+    internal static readonly (string Oid, string Value)[] s_requiredSubjectRdns =
     [
         ("2.5.4.3",  "Microsoft Corporation"), // CN
         ("2.5.4.11", ".NET Release"),          // OU
@@ -31,7 +33,8 @@ internal static class SignatureVerifier
     ];
 
     // Required signer issuer DN (DigiCert code-signing intermediate). Spec §5.2.
-    private static readonly (string Oid, string Value)[] s_requiredIssuerRdns =
+    // internal: see s_requiredSubjectRdns.
+    internal static readonly (string Oid, string Value)[] s_requiredIssuerRdns =
     [
         ("2.5.4.3",  "DigiCert Trusted G4 Code Signing RSA4096 SHA384 2021 CA1"),
         ("2.5.4.10", "DigiCert, Inc."),
