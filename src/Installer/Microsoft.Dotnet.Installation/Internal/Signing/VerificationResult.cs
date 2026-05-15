@@ -11,9 +11,6 @@ internal enum FailureCode
     None = 0,
 
     // Inputs
-    ContentFileMissing,
-    SignatureFileMissing,
-    TrustedRootsNotFound,
     TrustedRootsEmpty,
 
     // CMS shape

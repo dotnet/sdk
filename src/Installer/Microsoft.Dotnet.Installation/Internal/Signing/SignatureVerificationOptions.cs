@@ -36,8 +36,8 @@ internal sealed class SignatureVerificationOptions
 
     /// <summary>
     /// When <see langword="true"/> (default), JSON files MUST contain a <c>signature.expiration</c>
-    /// field (or top-level <c>expiration</c>) and the value must be in the future. Per
-    /// <c>signature_requirements.md</c> §9.
+    /// field (or top-level <c>expiration</c>) and the value must be in the future. Per the
+    /// dotnetup signature spec §9.
     /// </summary>
     public bool RequireJsonExpirationField { get; init; } = true;
 
@@ -75,8 +75,7 @@ internal enum VerificationMode
 
     /// <summary>
     /// Run every check and report every failure. Useful for diagnostics, signing producers,
-    /// and tests that want to assert spec coverage in one run. Spec §10 originally documented
-    /// this as the only mode; ShortCircuit is now the default for production callers.
+    /// and tests that want to assert spec coverage in one run.
     /// </summary>
     CollectAll,
 }

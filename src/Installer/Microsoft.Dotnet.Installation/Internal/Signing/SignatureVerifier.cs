@@ -12,18 +12,11 @@ using System.Text.Json;
 namespace Microsoft.Dotnet.Installation.Internal.Signing;
 
 /// <summary>
-/// CMS detached-signature verifier for .NET release manifest JSON files.
-/// Ported from <c>detached_signature_validation/src/DotnetSignatureVerifier/SignatureVerifier.cs</c>.
-/// Implements the spec at <c>detached_signature_validation/signature_requirements.md</c>.
-/// Differences from the standalone tool:
-/// <list type="bullet">
-///   <item>Takes <see cref="byte"/>[] inputs instead of file paths.</item>
-///   <item>Receives trusted roots from <see cref="SignatureVerificationOptions"/> instead of loading PEMs from disk.</item>
-///   <item>JSON expiration check runs whenever <see cref="SignatureVerificationOptions.RequireJsonExpirationField"/>
-///         is <see langword="true"/> (no file-extension probe).</item>
-///   <item><c>RevocationMode</c> is configurable via <see cref="SignatureVerificationOptions.RevocationMode"/>;
-///         the standalone tool hardcodes <c>Online</c>.</item>
-/// </list>
+/// CMS detached-signature verifier for .NET release artifacts (manifest JSON or archives).
+/// Implements the dotnetup signature spec at
+/// <c>documentation/general/dotnetup/signature-verification-spec.md</c>. The verifier is
+/// content-agnostic — the JSON expiration check (§9) is opt-in via
+/// <see cref="SignatureVerificationOptions.RequireJsonExpirationField"/>.
 /// </summary>
 internal static class SignatureVerifier
 {
@@ -82,7 +75,7 @@ internal static class SignatureVerifier
     /// In the default <see cref="VerificationMode.ShortCircuit"/> mode, returns on the first failure;
     /// in <see cref="VerificationMode.CollectAll"/> mode, runs every check and returns every failure.
     /// </summary>
-    /// <param name="content">Bytes of the signed JSON document.</param>
+    /// <param name="content">Bytes of the signed content (manifest JSON or archive).</param>
     /// <param name="signature">Bytes of the detached CMS / PKCS#7 SignedData blob (.p7s).</param>
     /// <param name="options">Trust anchors and policy knobs.</param>
     /// <param name="nowOverride">When set, used in place of <see cref="DateTimeOffset.UtcNow"/> for tests.</param>
