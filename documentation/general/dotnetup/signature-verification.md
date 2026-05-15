@@ -225,6 +225,15 @@ to:
   | `2.5.4.10` | `O`   | `DigiCert, Inc.`                                                |
   | `2.5.4.6`  | `C`   | `US`                                                            |
 
+  > **Note:** Today the verifier accepts exactly one TSA-issuer CN.
+  > DigiCert (and any future TSA provider) rotates these intermediates
+  > periodically — when that happens, this single-value pin will be
+  > generalized to an allow-list of accepted CNs (each entry still
+  > requiring exact match against the same `O` / `C` RDNs). The intent
+  > stays the same: the TSA leaf must be issued by a known, named
+  > intermediate, not just any cert that chains to a trusted timestamping
+  > root.
+
 - The TSA certificate chain MUST build under the same rules as §6,
   except:
   - `CustomTrustStore` is the union of `options.TrustedTimestampRoots` +
