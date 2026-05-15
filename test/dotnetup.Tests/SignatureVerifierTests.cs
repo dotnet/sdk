@@ -5,7 +5,10 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using FluentAssertions;
 using Microsoft.Dotnet.Installation.Internal.Signing;
 using Xunit;
@@ -48,11 +51,12 @@ public class SignatureVerifierTests
     /// substitute self-signed fixtures because the spec pins the signer DN to the real
     /// "Microsoft Corporation, OU=.NET Release" identity, which we cannot fabricate.
     /// </summary>
-    private static SignatureVerificationOptions ProductionOptions(bool requireExpiration = true) =>
+    private static SignatureVerificationOptions ProductionOptions(
+        bool requireExpiration = true,
+        RevocationCheckMode revocationMode = RevocationCheckMode.Online) =>
         new(TrustedRootsLoader.CodeSigningRoots, TrustedRootsLoader.TimestampRoots)
         {
-            // Use the production default RevocationMode (Online). Tests already hit the
-            // network for revocation; failing on CRL/OCSP unreachability is acceptable.
+            RevocationMode = revocationMode,
             RequireJsonExpirationField = requireExpiration,
         };
 
@@ -145,9 +149,10 @@ public class SignatureVerifierTests
     [Fact]
     public void Verify_AuthenticReleasesManifest_PassesAllSignerDNAndAlgorithmChecks()
     {
-        // The fixture is real and the bundled CTL chains it cleanly. With
-        // RevocationCheckMode.NoCheck the verifier MUST report IsValid=true end-to-end.
-        // If this assertion regresses, something in the verifier broke the happy path.
+        // The fixture is real and the bundled CTL chains it cleanly. With production options
+        // (RevocationMode.Online — DigiCert CRL/OCSP must be reachable) the verifier MUST
+        // report IsValid=true end-to-end. If this assertion regresses, something in the
+        // verifier broke the happy path.
         var result = SignatureVerifier.Verify(
             LoadAsset("releases-directory.json"),
             LoadAsset("releases-directory.json.20260505084330.p7s"),
@@ -229,13 +234,17 @@ public class SignatureVerifierTests
     {
         // Same garbage content as above, but turn RequireJsonExpirationField off — none
         // of the JSON-policy failure codes should appear regardless of content shape.
+        // CollectAll mode is required: SigCryptoInvalid would otherwise short-circuit the
+        // pipeline before the JSON-policy section is reached, making the NotContain
+        // assertions vacuously pass and proving nothing about the option.
         byte[] arrayContent = System.Text.Encoding.UTF8.GetBytes("[1,2,3]");
 
         var result = SignatureVerifier.Verify(
             arrayContent,
             LoadAsset("releases-directory.json.20260505084330.p7s"),
             ProductionOptions(requireExpiration: false),
-            s_pinnedNow);
+            s_pinnedNow,
+            VerificationMode.CollectAll);
 
         var codes = result.Failures.Select(f => f.Code).ToHashSet();
         codes.Should().NotContain(FailureCode.ExpirationMissing);
@@ -309,11 +318,15 @@ public class SignatureVerifierTests
         // legitimate Microsoft NuGet signer: SHA-256 digest is allowed (not WeakDigest),
         // RSA public key is allowed (not WeakSignatureAlgorithm), and the EKU is exactly
         // id-kp-codeSigning (not EkuMissing or EkuNotExclusiveCodeSign).
+        // CollectAll mode is required: SigCryptoInvalid (the sig was computed over a NuGet
+        // package, not our JSON) would otherwise short-circuit before EvaluateAlgorithmPolicy
+        // / EvaluateSignerCertificatePolicy run, making the NotContain assertions vacuous.
         var result = SignatureVerifier.Verify(
             LoadAsset("releases-directory.json"),
             LoadAsset("nuget-aspnetcore-3.1.32.signature.p7s"),
             ProductionOptions(requireExpiration: false),
-            s_pinnedNow);
+            s_pinnedNow,
+            VerificationMode.CollectAll);
 
         var codes = result.Failures.Select(f => f.Code).ToHashSet();
         codes.Should().NotContain(FailureCode.WeakDigest);
@@ -368,10 +381,13 @@ public class SignatureVerifierTests
         codes.Should().NotContain(FailureCode.EkuMissing);
         codes.Should().NotContain(FailureCode.EkuNotExclusiveCodeSign);
 
-        // Downstream cascades — the verifier must record CheckSkipped (not crash, not silently
-        // pass) when the TSA timestamp is unavailable.
-        codes.Where(c => c == FailureCode.CheckSkipped).Should().HaveCountGreaterThanOrEqualTo(2,
-            "TSA chain and JSON expiration policy must both report CheckSkipped when no TSA timestamp is available");
+        // Downstream cascades — the verifier must record CheckSkipped breadcrumbs (not
+        // crash, not silently pass) when the TSA timestamp is unavailable. Skips are
+        // appended to the same Failures list as real failures (signature-verification
+        // doc §10): a CheckSkipped only ever appears as a consequence of an upstream
+        // failure, so it correctly contributes to IsValid == false.
+        result.Failures.Count(f => f.Code == FailureCode.CheckSkipped).Should().BeGreaterThanOrEqualTo(2,
+            "TSA chain and JSON expiration policy must both record skips when no TSA timestamp is available");
         result.IsValid.Should().BeFalse();
     }
 
@@ -491,7 +507,11 @@ public class SignatureVerifierTests
 
         byte[] content = LoadAsset("releases-directory.json");
         byte[] sig = LoadAsset("releases-directory.json.20260505084330.p7s");
-        var options = ProductionOptions();
+        // RevocationMode.NoCheck: this test exercises the chain-element disposal regression
+        // (handle leak), not the network revocation path. With Online revocation enabled,
+        // 555 verifications drive 555*N CRL/OCSP lookups against DigiCert from CI — slow,
+        // flaky on offline runners, and unrelated to what we're regressing here.
+        var options = ProductionOptions(revocationMode: RevocationCheckMode.NoCheck);
 
         // Warm-up: first verify primes any one-time caches (PEM load, OS root store) and
         // tier-up JIT for the verifier methods.
