@@ -30,21 +30,13 @@ internal static class SignatureVerifier
         ("2.5.4.6",  "US"),                    // C
     ];
 
-    // Required signer issuer DN (DigiCert code-signing intermediate). Spec §5.2.
+    // Required signer issuer DN, also used as the required TSA-cert immediate-issuer DN.
+    // Spec §5.2 (code-signing intermediate) and §7 (TSA intermediate, defense-in-depth on
+    // top of the chain build through timestampctl.pem). DigiCert is currently used for both;
+    // if that ever splits, factor this into two arrays.
     private static readonly (string Oid, string Value)[] s_requiredIssuerRdns =
     [
         ("2.5.4.3",  "DigiCert Trusted G4 Code Signing RSA4096 SHA384 2021 CA1"),
-        ("2.5.4.10", "DigiCert, Inc."),
-        ("2.5.4.6",  "US"),
-    ];
-
-    // Required TSA-cert immediate-issuer DN (DigiCert timestamping intermediate). Spec §7.
-    // Defense-in-depth: tightens the TSA chain beyond "any cert chaining to a root in
-    // timestampctl.pem" by also pinning the intermediate that issued the TSA leaf, mirroring
-    // the code-signing intermediate pin in §5.2.
-    private static readonly (string Oid, string Value)[] s_requiredTimestampIssuerRdns =
-    [
-        ("2.5.4.3",  "DigiCert Trusted G4 TimeStamping RSA4096 SHA256 2025 CA1"),
         ("2.5.4.10", "DigiCert, Inc."),
         ("2.5.4.6",  "US"),
     ];
@@ -320,7 +312,7 @@ internal static class SignatureVerifier
 
         EvaluateEku(tsaCert, EkuTimeStamping, primary: false, result);
 
-        if (!DistinguishedNameMatches(tsaCert.IssuerName, s_requiredTimestampIssuerRdns, "TSA Issuer", out string tsaIssuerDetail))
+        if (!DistinguishedNameMatches(tsaCert.IssuerName, s_requiredIssuerRdns, "TSA Issuer", out string tsaIssuerDetail))
         {
             result.Add(FailureCode.TimestampIssuerMismatch, tsaIssuerDetail);
         }
