@@ -72,11 +72,11 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 new HashSet<string>(StringComparer.OrdinalIgnoreCase), usedFolderNames);
         }
 
-        var (_, _, _, includeItems) = ConvertFile(file, entryPointOutputDir, isEntryPointFile: true);
+        var convertedEntryPoint = ConvertFile(file, entryPointOutputDir, isEntryPointFile: true);
 
         // Convert referenced files (#:ref directives) into library projects.
         var convertedRefFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var refIncludeItems = new List<(string ItemType, string FullPath, string RelativePath)>();
+        var refIncludeItems = new List<IncludedItem>();
         ConvertReferencedFiles(evaluatedDirectives, Path.GetDirectoryName(file)!);
 
         // Handle deletion of source files if requested.
@@ -87,7 +87,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             DeleteFile(file);
 
             // Delete all included items (e.g., via #:include directives and default items)
-            foreach (var item in includeItems)
+            foreach (var item in convertedEntryPoint.IncludeItems)
             {
                 DeleteFile(item.FullPath);
             }
@@ -106,8 +106,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
         return 0;
 
-        (VirtualProjectBuilder builder, ProjectInstance projectInstance, ImmutableArray<CSharpDirective> evaluatedDirectives, List<(string ItemType, string FullPath, string RelativePath)> includeItems)
-            ConvertFile(string sourceFile, string outputDirectory, bool isEntryPointFile)
+        ConvertedFile ConvertFile(string sourceFile, string outputDirectory, bool isEntryPointFile)
         {
             var sourceDirectory = Path.GetDirectoryName(sourceFile)!;
 
@@ -135,7 +134,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
 
             // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
-            var includeItems = FindIncludedItems(fileBuilder, fileProjectInstance, sourceFile).ToList();
+            var includeItems = FindIncludedItems(fileBuilder, fileProjectInstance, sourceFile).ToImmutableArray();
 
             CreateDirectory(outputDirectory);
 
@@ -175,12 +174,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 }
             }
 
-            return (fileBuilder, fileProjectInstance, fileDirectives, includeItems);
+            return new ConvertedFile(fileDirectives, includeItems);
 
             void WriteProjectFile(
                 string projectFile,
                 ImmutableArray<CSharpDirective> projectDirectives,
-                ImmutableArray<(string ItemType, string Include)> explicitProjectItems = default)
+                ImmutableArray<VirtualProjectBuilder.ExplicitProjectItem> explicitProjectItems = default)
             {
                 using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
                 using var writer = new StreamWriter(stream, Encoding.UTF8);
@@ -234,7 +233,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
-        void CopyIncludedItems(List<(string ItemType, string FullPath, string RelativePath)> items, string outputDirectory)
+        void CopyIncludedItems(ImmutableArray<IncludedItem> items, string outputDirectory)
         {
             foreach (var item in items)
             {
@@ -289,12 +288,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 var refDir = Path.GetDirectoryName(refPath)!;
                 var refTargetDirectory = Path.Combine(targetDirectory, refName);
 
-                var (_, _, refEvaluatedDirectives, items) = ConvertFile(refPath, refTargetDirectory, isEntryPointFile: false);
+                var convertedReference = ConvertFile(refPath, refTargetDirectory, isEntryPointFile: false);
 
-                refIncludeItems.AddRange(items);
+                refIncludeItems.AddRange(convertedReference.IncludeItems);
 
                 // Recursively convert referenced files in the referenced file.
-                ConvertReferencedFiles(refEvaluatedDirectives, refDir);
+                ConvertReferencedFiles(convertedReference.EvaluatedDirectives, refDir);
             }
         }
 
@@ -341,7 +340,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             }
         }
 
-        IEnumerable<(string ItemType, string FullPath, string RelativePath)> FindIncludedItems(
+        IEnumerable<IncludedItem> FindIncludedItems(
             VirtualProjectBuilder fileBuilder, ProjectInstance fileProjectInstance, string sourceFile)
         {
             string sourceFileDirectory = PathUtilities.EnsureTrailingSlash(Path.GetDirectoryName(sourceFile)!);
@@ -396,15 +395,15 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     }
                 }
 
-                yield return (item.ItemType, FullPath: itemFullPath, RelativePath: itemRelativePath);
+                yield return new IncludedItem(item.ItemType, itemFullPath, itemRelativePath);
             }
         }
 
-        ImmutableArray<(string ItemType, string Include)> FindExplicitProjectItems(
+        ImmutableArray<VirtualProjectBuilder.ExplicitProjectItem> FindExplicitProjectItems(
             string projectFile,
             string outputDirectory,
             string entryPointOutputPath,
-            List<(string ItemType, string FullPath, string RelativePath)> includeItems)
+            ImmutableArray<IncludedItem> includeItems)
         {
             // The converted project is evaluated after files are copied so SDK defaults can pick up
             // items such as Compile/None/Content naturally. Explicitly write only copied items that are
@@ -420,8 +419,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 ProjectCollection = outputProjectCollection,
             });
 
-            var itemComparer = new ProjectItemComparer();
-            var automaticallyIncludedItems = new HashSet<(string ItemType, string FullPath)>(itemComparer);
+            var automaticallyIncludedItems = new HashSet<ProjectItemKey>(ProjectItemComparer.Instance);
             var itemTypes = candidateItems
                 .Select(static item => item.ItemType)
                 .Append("Compile")
@@ -431,12 +429,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                 foreach (var item in outputProject.GetItems(itemType))
                 {
                     var fullPath = Path.GetFullPath(item.GetMetadataValue("FullPath"), outputDirectory);
-                    automaticallyIncludedItems.Add((itemType, fullPath));
+                    automaticallyIncludedItems.Add(new ProjectItemKey(itemType, fullPath));
                 }
             }
 
-            var addedExplicitItems = new HashSet<(string ItemType, string FullPath)>(itemComparer);
-            var explicitProjectItems = ImmutableArray.CreateBuilder<(string ItemType, string Include)>();
+            var addedExplicitItems = new HashSet<ProjectItemKey>(ProjectItemComparer.Instance);
+            var explicitProjectItems = ImmutableArray.CreateBuilder<VirtualProjectBuilder.ExplicitProjectItem>();
 
             var entryPointOutputFullPath = Path.GetFullPath(entryPointOutputPath);
             AddExplicitProjectItem("Compile", entryPointOutputFullPath, Path.GetRelativePath(outputDirectory, entryPointOutputFullPath));
@@ -450,10 +448,10 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
 
             void AddExplicitProjectItem(string itemType, string fullPath, string include)
             {
-                var itemKey = (itemType, fullPath);
+                var itemKey = new ProjectItemKey(itemType, fullPath);
                 if (!automaticallyIncludedItems.Contains(itemKey) && addedExplicitItems.Add(itemKey))
                 {
-                    explicitProjectItems.Add((itemType, include));
+                    explicitProjectItems.Add(new VirtualProjectBuilder.ExplicitProjectItem(itemType, include));
                 }
             }
         }
@@ -561,15 +559,27 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         }
     }
 
-    private sealed class ProjectItemComparer : IEqualityComparer<(string ItemType, string FullPath)>
+    private sealed record ConvertedFile(
+        ImmutableArray<CSharpDirective> EvaluatedDirectives,
+        ImmutableArray<IncludedItem> IncludeItems);
+
+    private readonly record struct IncludedItem(string ItemType, string FullPath, string RelativePath);
+
+    private readonly record struct ProjectItemKey(string ItemType, string FullPath);
+
+    private sealed class ProjectItemComparer : IEqualityComparer<ProjectItemKey>
     {
-        public bool Equals((string ItemType, string FullPath) x, (string ItemType, string FullPath) y)
+        public static ProjectItemComparer Instance { get; } = new();
+
+        private ProjectItemComparer() { }
+
+        public bool Equals(ProjectItemKey x, ProjectItemKey y)
         {
             return string.Equals(x.ItemType, y.ItemType, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(x.FullPath, y.FullPath, StringComparison.OrdinalIgnoreCase);
         }
 
-        public int GetHashCode((string ItemType, string FullPath) obj)
+        public int GetHashCode(ProjectItemKey obj)
         {
             return HashCode.Combine(
                 StringComparer.OrdinalIgnoreCase.GetHashCode(obj.ItemType),

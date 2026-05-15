@@ -18,6 +18,8 @@ namespace Microsoft.DotNet.ProjectTools;
 
 public sealed class VirtualProjectBuilder
 {
+    internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
+
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
@@ -480,7 +482,7 @@ public sealed class VirtualProjectBuilder
         string? artifactsPath = null,
         bool includeRuntimeConfigInformation = true,
         string? userSecretsId = null,
-        ImmutableArray<(string ItemType, string Include)> explicitProjectItems = default)
+        ImmutableArray<ExplicitProjectItem> explicitProjectItems = default)
     {
         Debug.Assert(userSecretsId == null || !isVirtualProject);
 
