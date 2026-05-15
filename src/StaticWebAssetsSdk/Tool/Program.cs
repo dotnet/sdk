@@ -30,10 +30,16 @@ internal static class Program
             Description = "The filenames to output the compressed file to.",
             AllowMultipleArgumentsPerToken = false
         };
+        Option<int> maxDegreeOfParallelismOption = new("--max-degree-of-parallelism")
+        {
+            DefaultValueFactory = (_) => -1,
+            Description = "The maximum number of concurrent compression operations."
+        };
 
         brotli.Add(compressionLevelOption);
         brotli.Add(sourcesOption);
         brotli.Add(outputsOption);
+        brotli.Add(maxDegreeOfParallelismOption);
 
         rootCommand.Add(brotli);
 
@@ -42,8 +48,22 @@ internal static class Program
             var c = parseResults.GetValue(compressionLevelOption);
             var s = parseResults.GetValue(sourcesOption);
             var o = parseResults.GetValue(outputsOption);
+            var m = parseResults.GetValue(maxDegreeOfParallelismOption);
 
-            Parallel.For(0, s.Count, i =>
+            if (m == 0 || m < -1)
+            {
+                Console.Error.WriteLine("--max-degree-of-parallelism must be -1 or a positive integer.");
+                return 1;
+            }
+
+            if (s.Count != o.Count)
+            {
+                Console.Error.WriteLine("The number of source files must match the number of output files.");
+                return 1;
+            }
+
+            var failed = 0;
+            Parallel.For(0, s.Count, new ParallelOptions { MaxDegreeOfParallelism = m }, i =>
             {
                 var source = s[i];
                 var output = o[i];
@@ -59,8 +79,11 @@ internal static class Program
                 {
                     Console.Error.WriteLine($"Error compressing '{source}' into '{output}'");
                     Console.Error.WriteLine(ex.ToString());
+                    Interlocked.Exchange(ref failed, 1);
                 }
             });
+
+            return failed;
         });
 
         return rootCommand.Parse(args).Invoke();

@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Globalization;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -17,6 +18,8 @@ public class BrotliCompress : ToolTask
     public ITaskItem[] FilesToCompress { get; set; }
 
     public string CompressionLevel { get; set; }
+
+    public int MaxDegreeOfParallelism { get; set; } = -1;
 
     [Required]
     public string ToolAssembly { get; set; }
@@ -59,6 +62,17 @@ public class BrotliCompress : ToolTask
 
     protected override string GenerateCommandLineCommands() => Quote(ToolAssembly);
 
+    protected override bool ValidateParameters()
+    {
+        if (MaxDegreeOfParallelism == 0 || MaxDegreeOfParallelism < -1)
+        {
+            Log.LogError($"{nameof(MaxDegreeOfParallelism)} must be -1 or a positive integer.");
+            return false;
+        }
+
+        return base.ValidateParameters();
+    }
+
     protected override string GenerateResponseFileCommands()
     {
         var builder = new StringBuilder();
@@ -69,6 +83,11 @@ public class BrotliCompress : ToolTask
         {
             builder.AppendLine("-c");
             builder.AppendLine(CompressionLevel);
+        }
+        if (MaxDegreeOfParallelism > 0)
+        {
+            builder.AppendLine("--max-degree-of-parallelism");
+            builder.AppendLine(MaxDegreeOfParallelism.ToString(CultureInfo.InvariantCulture));
         }
 
         var outputDirectories = FilesToCompress

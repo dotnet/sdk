@@ -96,7 +96,7 @@ public partial class DefineStaticWebAssets : Task
         {
             if (manifestPath != null && File.Exists(manifestPath))
             {
-                using var existingManifestFile = File.OpenRead(manifestPath);
+                using var existingManifestFile = new FileStream(manifestPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
                 var cache = JsonSerializer.Deserialize(existingManifestFile, DefineStaticWebAssetsSerializerContext.Default.DefineStaticWebAssetsCache);
                 if (cache == null)
                 {
@@ -115,10 +115,70 @@ public partial class DefineStaticWebAssets : Task
         {
             if (_manifestPath != null && !_cacheUpToDate && InputHashes.Count > 0)
             {
-                using var manifestFile = File.OpenWrite(_manifestPath);
-                manifestFile.SetLength(0);
-                JsonSerializer.Serialize(manifestFile, this, DefineStaticWebAssetsSerializerContext.Default.DefineStaticWebAssetsCache);
+                string? tempPath = Path.Combine(Path.GetDirectoryName(_manifestPath) ?? ".", Path.GetRandomFileName());
+                try
+                {
+                    using (var manifestFile = File.Create(tempPath))
+                    {
+                        JsonSerializer.Serialize(manifestFile, this, DefineStaticWebAssetsSerializerContext.Default.DefineStaticWebAssetsCache);
+                    }
+                    ReplaceCacheManifest(tempPath);
+                    tempPath = null;
+                }
+                finally
+                {
+                    if (tempPath != null)
+                    {
+                        try
+                        {
+                            File.Delete(tempPath);
+                        }
+                        catch (IOException)
+                        {
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                        }
+                    }
+                }
             }
+        }
+
+        private void ReplaceCacheManifest(string tempPath)
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                try
+                {
+                    ReplaceCacheManifestOnce(tempPath);
+                    return;
+                }
+                catch (IOException ex)
+                {
+                    LogRetry(ex);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    LogRetry(ex);
+                }
+
+                Thread.Sleep(10);
+            }
+
+            ReplaceCacheManifestOnce(tempPath);
+        }
+
+        private void LogRetry(Exception ex) => _log?.LogMessage(MessageImportance.Low, "Retrying static web assets cache manifest update after: {0}", ex.Message);
+
+        private void ReplaceCacheManifestOnce(string tempPath)
+        {
+            if (File.Exists(_manifestPath))
+            {
+                File.Replace(tempPath, _manifestPath!, destinationBackupFileName: null);
+                return;
+            }
+
+            File.Move(tempPath, _manifestPath!);
         }
 
         internal void AppendAsset(string hash, StaticWebAsset asset, ITaskItem item)

@@ -753,6 +753,85 @@ for path 'candidate.js'");
         }
 
         [Fact]
+        public void DefineStaticWebAssetsCache_CanReplaceManifestWhileReadersShareDelete()
+        {
+            var manifestPath = Path.Combine(Environment.CurrentDirectory, "CanReplaceManifest.json");
+            File.Delete(manifestPath);
+            try
+            {
+                var (cache, _) = SetupCache([], [], manifestPath: manifestPath);
+                cache.InputHashes = ["input"];
+                cache.CachedAssets["input"] = new StaticWebAsset { Identity = "input", RelativePath = "input.txt" };
+                cache.WriteCacheManifest();
+
+                using var reader = new FileStream(manifestPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                cache.WriteCacheManifest();
+
+                DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(CreateLogger(), manifestPath)
+                    .CachedAssets.Should().ContainKey("input");
+            }
+            finally
+            {
+                File.Delete(manifestPath);
+            }
+        }
+
+        [Fact]
+        public void DefineStaticWebAssetsCache_CanHandleConcurrentWriters()
+        {
+            var directory = Path.Combine(Path.GetTempPath(), nameof(DefineStaticWebAssetsCache_CanHandleConcurrentWriters), Guid.NewGuid().ToString("N"));
+            var manifestPath = Path.Combine(directory, "cache.json");
+            Directory.CreateDirectory(directory);
+            try
+            {
+                var caches = Enumerable.Range(0, 8).Select(i =>
+                {
+                    var (cache, _) = SetupCache([], [], manifestPath: manifestPath);
+                    var key = $"input{i}";
+                    cache.InputHashes = [key];
+                    cache.CachedAssets[key] = new StaticWebAsset { Identity = key, RelativePath = $"{key}.txt" };
+                    return cache;
+                }).ToArray();
+
+                using var ready = new CountdownEvent(caches.Length);
+                using var start = new ManualResetEvent(initialState: false);
+                var exceptions = new System.Collections.Concurrent.ConcurrentQueue<Exception>();
+                var threads = caches.Select(cache => new Thread(() =>
+                {
+                    try
+                    {
+                        ready.Signal();
+                        start.WaitOne();
+                        cache.WriteCacheManifest();
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Enqueue(ex);
+                    }
+                })).ToArray();
+                foreach (var thread in threads)
+                {
+                    thread.Start();
+                }
+                ready.WaitHandle.WaitOne(TimeSpan.FromSeconds(30)).Should().BeTrue();
+                start.Set();
+                foreach (var thread in threads)
+                {
+                    thread.Join(TimeSpan.FromSeconds(30)).Should().BeTrue();
+                }
+                exceptions.Should().BeEmpty();
+
+                DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(CreateLogger(), manifestPath)
+                    .CachedAssets.Should().HaveCount(1);
+                Directory.GetFiles(directory).Should().Equal(manifestPath);
+            }
+            finally
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+
+        [Fact]
         public void ComputesRelativePath_ForDiscoveredAssetsWithFullPath()
         {
             var errorMessages = new List<string>();

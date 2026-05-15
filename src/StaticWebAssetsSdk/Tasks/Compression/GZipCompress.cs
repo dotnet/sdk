@@ -14,8 +14,16 @@ public class GZipCompress : Task
     [Required]
     public ITaskItem[] FilesToCompress { get; set; }
 
+    public int MaxDegreeOfParallelism { get; set; } = -1;
+
     public override bool Execute()
     {
+        if (MaxDegreeOfParallelism == 0 || MaxDegreeOfParallelism < -1)
+        {
+            Log.LogError($"{nameof(MaxDegreeOfParallelism)} must be -1 or a positive integer.");
+            return false;
+        }
+
         var outputDirectories = FilesToCompress
             .Select(f => Path.GetDirectoryName(f.ItemSpec))
             .Where(td => !string.IsNullOrWhiteSpace(td))
@@ -27,7 +35,8 @@ public class GZipCompress : Task
             Log.LogMessage(MessageImportance.Low, "Created directory '{0}'.", outputDirectory);
         }
 
-        Parallel.For(0, FilesToCompress.Length, i =>
+        var options = new ParallelOptions { MaxDegreeOfParallelism = MaxDegreeOfParallelism };
+        Parallel.For(0, FilesToCompress.Length, options, i =>
         {
             var file = FilesToCompress[i];
             var outputRelativePath = file.ItemSpec;
