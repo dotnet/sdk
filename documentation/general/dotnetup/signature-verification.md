@@ -308,21 +308,29 @@ Failures: `JsonParseFailed`, `ExpirationMissing`, `ExpirationMalformed`,
 
 The verifier returns a `VerificationResult` aggregating
 `VerificationFailure { FailureCode Code, string Reason }` entries.
-`VerificationResult.IsValid` is `true` only when no failure entries were
-recorded (skips do not count).
+`VerificationResult.IsValid` is `true` only when no entries (failures or
+skips) were recorded. Skips are stored in the same list as failures and
+count against `IsValid` — see the §10 paragraph below for rationale.
 
 Two execution modes are supported via `VerificationMode`:
 
-- **`ShortCircuit` (default)** — verifier returns on the first real
-  failure. Production default; callers only need to know whether
-  verification succeeded.
+- **`ShortCircuit` (default)** — verifier returns on the first recorded
+  entry, whether failure or `CheckSkipped`. Production default; callers
+  only need to know whether verification succeeded.
 - **`CollectAll`** — verifier runs every check and reports every failure.
   Useful for diagnostics and tests that want full coverage in one run.
 
 When a check cannot meaningfully run because a precondition failed (e.g.
 CMS would not decode), the verifier emits a `CheckSkipped` entry naming
-the missing precondition. Skipped entries are informational and do not
-affect `IsValid`.
+the missing precondition. Skipped entries are appended to the same
+`Failures` list as real failures and do contribute to `IsValid`: a
+`CheckSkipped` only ever appears when an upstream failure already removed
+its input, so the upstream failure has already invalidated the result —
+the skip is the diagnostic breadcrumb explaining which downstream checks
+could not be evaluated as a consequence. Treating skips as
+non-invalidating would let a result with a `CheckSkipped` (and no other
+entries) report `IsValid == true`, which is never correct: the only path
+to a `CheckSkipped` is through a prior failure.
 
 ## 11. Non-goals
 

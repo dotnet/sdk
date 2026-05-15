@@ -157,8 +157,13 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         }
         catch (HttpRequestException ex)
         {
+            // Network-layer failure fetching the .p7s sibling — distinct from a crypto /
+            // policy verification failure on a successfully-downloaded signature. Using a
+            // dedicated SignatureDownloadFailed code keeps the telemetry classifier from
+            // having to special-case SignatureVerificationFailed as "sometimes network,
+            // sometimes crypto" (which would silently drop HTTP details on the crypto path).
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.SignatureVerificationFailed,
+                DotnetInstallErrorCode.SignatureDownloadFailed,
                 $"Failed to download detached signature for {jsonUrl} from {sigUrl}: {ex.Message}",
                 ex);
         }

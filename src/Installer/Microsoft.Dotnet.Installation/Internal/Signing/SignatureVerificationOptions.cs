@@ -67,9 +67,13 @@ internal enum RevocationCheckMode
 internal enum VerificationMode
 {
     /// <summary>
-    /// Stop on the first real failure (skips never trigger this). Production default —
-    /// callers only need to know whether verification succeeded, and skipping later checks
-    /// shaves CPU and avoids a second chain build on what's already a known-bad signature.
+    /// Stop on the first recorded entry — failure or <see cref="FailureCode.CheckSkipped"/>.
+    /// Production default: callers only need to know whether verification succeeded, and
+    /// skipping later checks shaves CPU and avoids a second chain build on what's already a
+    /// known-bad signature. Skips are appended to the same <c>Failures</c> list as real
+    /// failures (a skip only ever appears as a downstream consequence of an upstream
+    /// failure), so they invalidate the result and trip short-circuit just like a failure.
+    /// See <see cref="VerificationResult.AddSkip"/> for the rationale.
     /// </summary>
     ShortCircuit,
 
