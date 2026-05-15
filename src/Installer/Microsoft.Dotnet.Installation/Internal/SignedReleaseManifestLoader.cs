@@ -213,23 +213,12 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
 
     /// <summary>
     /// Derives a sibling URL by replacing the last path segment of <paramref name="jsonUrl"/>
-    /// with <paramref name="sigFileName"/>. Preserves scheme, host, port, query, fragment.
+    /// with <paramref name="sigFileName"/>. <paramref name="sigFileName"/> is required to be a
+    /// bare filename (validated upstream by <see cref="ParseSignatureFileField"/>), so the
+    /// <see cref="Uri(Uri, string)"/> relative-resolution rules give the desired behavior:
+    /// the last segment of the base path is replaced and scheme/host/port are preserved.
     /// </summary>
-    internal static Uri DeriveSiblingUrl(Uri jsonUrl, string sigFileName)
-    {
-        var builder = new UriBuilder(jsonUrl);
-        int lastSlash = builder.Path.LastIndexOf('/', StringComparison.Ordinal);
-        if (lastSlash < 0)
-        {
-            // Defensive: shouldn't happen for HTTP URLs which always have at least one '/'.
-            builder.Path = "/" + sigFileName;
-        }
-        else
-        {
-            builder.Path = string.Concat(builder.Path.AsSpan(0, lastSlash + 1), sigFileName);
-        }
-        return builder.Uri;
-    }
+    internal static Uri DeriveSiblingUrl(Uri jsonUrl, string sigFileName) => new(jsonUrl, sigFileName);
 
     private static string FormatVerificationFailure(VerificationResult result, Uri url)
     {

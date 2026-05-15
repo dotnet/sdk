@@ -223,6 +223,16 @@ internal static class SignatureVerifier
     /// <summary>
     /// Enforces the digest + public-key algorithm allow-list from spec §4.
     /// </summary>
+    /// <remarks>
+    /// When <paramref name="signer"/> or <paramref name="signerCert"/> is null we record an
+    /// <see cref="VerificationResult.AddSkip"/> rather than a fresh failure: the missing
+    /// signer / signer-cert is already surfaced upstream by <see cref="DecodeCms"/> as
+    /// <see cref="FailureCode.SignerCertMissing"/> (or its predecessors). Adding another
+    /// failure here would just be a duplicate of the same root cause; the skip is a
+    /// diagnostic breadcrumb in collect-all output that says "this check ran but had no
+    /// input." The same pattern is used in <see cref="EvaluateSignerCertificatePolicy"/>,
+    /// <see cref="TryEvaluateTimestamp"/>, and <see cref="EvaluatePrimaryChain"/>.
+    /// </remarks>
     private static void EvaluateAlgorithmPolicy(SignerInfo? signer, X509Certificate2? signerCert, VerificationResult result)
     {
         if (signer is not null)
