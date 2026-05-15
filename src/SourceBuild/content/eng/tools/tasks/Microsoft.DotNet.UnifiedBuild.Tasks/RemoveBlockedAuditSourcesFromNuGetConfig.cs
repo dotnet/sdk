@@ -9,6 +9,8 @@ using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
+#nullable enable
+
 namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     /// <summary>
