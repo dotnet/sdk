@@ -45,24 +45,26 @@ internal static class SignatureVerifier
         ("2.5.4.6",  "US"),
     };
 
-    private const string EkuCodeSigning = "1.3.6.1.5.5.7.3.3";   // id-kp-codeSigning
-    private const string EkuTimeStamping = "1.3.6.1.5.5.7.3.8";  // id-kp-timeStamping
-    private const string EkuAnyExtended = "2.5.29.37.0";         // anyExtendedKeyUsage
+    private const string EkuCodeSigning = "1.3.6.1.5.5.7.3.3";   // id-kp-codeSigning (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
+    private const string EkuTimeStamping = "1.3.6.1.5.5.7.3.8";  // id-kp-timeStamping (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
+    private const string EkuAnyExtended = "2.5.29.37.0";         // anyExtendedKeyUsage (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
 
-    private const string OidSigningTime = "1.2.840.113549.1.9.5";
-    private const string OidContentTypeAttr = "1.2.840.113549.1.9.3";
-    private const string OidMessageDigestAttr = "1.2.840.113549.1.9.4";
-    private const string OidIdData = "1.2.840.113549.1.7.1";
-    private const string OidTimestampToken = "1.2.840.113549.1.9.16.2.14";
+    private const string OidSigningTime = "1.2.840.113549.1.9.5";          // id-signingTime (RFC 5652 §11.3) https://datatracker.ietf.org/doc/html/rfc5652#section-11.3
+    private const string OidContentTypeAttr = "1.2.840.113549.1.9.3";      // id-contentType (RFC 5652 §11.1) https://datatracker.ietf.org/doc/html/rfc5652#section-11.1
+    private const string OidMessageDigestAttr = "1.2.840.113549.1.9.4";    // id-messageDigest (RFC 5652 §11.2) https://datatracker.ietf.org/doc/html/rfc5652#section-11.2
+    private const string OidIdData = "1.2.840.113549.1.7.1";               // id-data (RFC 5652 §4) https://datatracker.ietf.org/doc/html/rfc5652#section-4
+    private const string OidTimestampToken = "1.2.840.113549.1.9.16.2.14"; // id-aa-signatureTimeStampToken (RFC 3161 Appendix A https://datatracker.ietf.org/doc/html/rfc3161#appendix-A / RFC 5126 §6.1.1 https://datatracker.ietf.org/doc/html/rfc5126#section-6.1.1)
 
-    private const string OidRsa = "1.2.840.113549.1.1.1";
-    private const string OidEcdsa = "1.2.840.10045.2.1";
+    private const string OidRsa = "1.2.840.113549.1.1.1"; // rsaEncryption (RFC 8017 Appendix C) https://datatracker.ietf.org/doc/html/rfc8017#appendix-C
+    private const string OidEcdsa = "1.2.840.10045.2.1";  // id-ecPublicKey (RFC 5480 §2.1.1) https://datatracker.ietf.org/doc/html/rfc5480#section-2.1.1
 
+    // SHA-2 digest algorithm OIDs (NIST CSOR 2.16.840.1.101.3.4.2; registered in RFC 5754 §2)
+    // https://datatracker.ietf.org/doc/html/rfc5754#section-2
     private static readonly HashSet<string> AllowedDigestOids = new(StringComparer.Ordinal)
     {
-        "2.16.840.1.101.3.4.2.1", // SHA-256
-        "2.16.840.1.101.3.4.2.2", // SHA-384
-        "2.16.840.1.101.3.4.2.3", // SHA-512
+        "2.16.840.1.101.3.4.2.1", // id-sha256
+        "2.16.840.1.101.3.4.2.2", // id-sha384
+        "2.16.840.1.101.3.4.2.3", // id-sha512
     };
 
     private static readonly TimeSpan SigningTimeTolerance = TimeSpan.FromMinutes(5);
