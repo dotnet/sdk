@@ -81,7 +81,7 @@ internal class ReleaseManifest
     // each kicking off an independent download + signature verification of releases-index.json.
     // ExecutionAndPublication (the Lazy<T> default) guarantees single-instantiation. Reset
     // when the underlying loader is replaced via the test seam.
-    private Lazy<ProductCollection> _productCollection;
+    private readonly Lazy<ProductCollection> _productCollection;
 
     // Per-product release cache. Wrapping the value in Lazy<T> with ExecutionAndPublication
     // is required: ConcurrentDictionary.GetOrAdd does NOT guarantee single-invocation of the
@@ -103,7 +103,12 @@ internal class ReleaseManifest
             DefaultHttpClient.Instance,
             DefaultSignatureOptions.Instance,
             indexUrl: ProductCollection.ReleasesIndexDefaultUrl));
-        _productCollection = new Lazy<ProductCollection>(() => _loader.Value.GetVerifiedReleasesIndex());
+        // Method-group form satisfies IDE0200. The instance expression `_loader.Value` is
+        // evaluated eagerly when the method group is bound (here in the constructor), which
+        // forces the loader Lazy. That's fine: constructing SignedReleaseManifestLoader is
+        // a cheap field-store; the expensive network + verify lives inside
+        // GetVerifiedReleasesIndex, which still defers until _productCollection.Value fires.
+        _productCollection = new Lazy<ProductCollection>(_loader.Value.GetVerifiedReleasesIndex);
     }
 
     /// <summary>
@@ -112,8 +117,10 @@ internal class ReleaseManifest
     internal ReleaseManifest(SignedReleaseManifestLoader loader)
     {
         ArgumentNullException.ThrowIfNull(loader);
-        _loader = new Lazy<SignedReleaseManifestLoader>(() => loader);
-        _productCollection = new Lazy<ProductCollection>(() => _loader.Value.GetVerifiedReleasesIndex());
+        // Already-constructed value — use the value-taking Lazy ctor (publishes the value
+        // directly, no factory). Satisfies IDE0200.
+        _loader = new Lazy<SignedReleaseManifestLoader>(loader);
+        _productCollection = new Lazy<ProductCollection>(_loader.Value.GetVerifiedReleasesIndex);
     }
 
     /// <summary>
