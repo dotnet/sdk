@@ -3,12 +3,12 @@
 
 #nullable enable
 
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Tools.Add.PackageReference;
-using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Add.ProjectToProjectReference;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Restore;
 using Microsoft.DotNet.Tools.Sln.Add;
-using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Tools.New
 {
@@ -38,7 +38,8 @@ namespace Microsoft.DotNet.Tools.New
         internal static bool RestoreProject(string pathToRestore)
         {
             PathUtility.EnsureAllPathsExist(new[] { pathToRestore }, CommonLocalizableStrings.FileNotFound, allowDirectories: true);
-            return RestoreCommand.Run(new string[] { pathToRestore }) == 0;
+            // for the implicit restore we do not want the terminal logger to emit any output unless there are errors
+            return RestoreCommand.Run([pathToRestore, "-tlp:verbosity=quiet"]) == 0;
         }
 
         internal static bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder, bool? inRoot)
