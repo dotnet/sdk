@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime;buildTransitive" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime;buildTransitive" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
     <PackageReference Include="NuGet.ProjectModel" />

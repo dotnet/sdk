@@ -215,6 +215,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         private class TestableGenerateRuntimeConfigurationFiles : GenerateRuntimeConfigurationFiles
         {
+            public TestableGenerateRuntimeConfigurationFiles()
+            {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest();
+            }
+
             public void PublicExecuteCore()
             {
                 base.ExecuteCore();

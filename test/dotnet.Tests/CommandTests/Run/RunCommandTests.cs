@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
@@ -68,7 +69,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("TEST_VAR1=<<<VALUE1>>>")
             .And.HaveStdOutContaining("ARGS=arg1,arg2,arg3");
 
-        cmd.StdErr.Should().BeEmpty();
+        cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
     }
 
     [Fact]

@@ -167,6 +167,7 @@ build_property.ProjectTypeGuids =
 build_property.InvariantGlobalization = 
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = {EntryPointFileFullPath}
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = {FileNameWithoutExtension}
 build_property.ProjectDir = {BaseDirectoryWithTrailingSeparator}
@@ -187,6 +188,7 @@ global using System.Collections.Generic;
 global using System.IO;
 global using System.Linq;
 global using System.Net.Http;
+global using System.Net.Http.Json;
 global using System.Threading;
 global using System.Threading.Tasks;
 

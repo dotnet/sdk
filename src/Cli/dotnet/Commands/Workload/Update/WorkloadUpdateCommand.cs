@@ -90,14 +90,10 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
         }
         else if (_printDownloadLinkOnly)
         {
-            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
+            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
                 TempPackagesDirectory,
-                filePermissionSetter: null,
-                new FirstPartyNuGetPackageSigningVerifier(),
-                new NullLogger(),
-                NullReporter.Instance,
-                restoreActionConfig: RestoreActionConfiguration,
-                verifySignatures: VerifySignatures);
+                VerifySignatures,
+                restoreActionConfig: RestoreActionConfiguration);
 
             var packageUrls = GetUpdatablePackageUrlsAsync(_includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
             Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, WorkloadInstallJsonSerializerContext.Default.IEnumerableString));

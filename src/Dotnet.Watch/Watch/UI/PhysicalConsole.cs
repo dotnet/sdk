@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
+using System.Diagnostics;
+
 namespace Microsoft.DotNet.Watch;
 
 internal sealed class PhysicalConsole : IConsole
@@ -13,7 +16,15 @@ internal sealed class PhysicalConsole : IConsole
     public PhysicalConsole(TestFlags testFlags)
     {
         Console.OutputEncoding = Encoding.UTF8;
-        _ = testFlags.HasFlag(TestFlags.ReadKeyFromStdin) ? ListenToStandardInputAsync() : ListenToConsoleKeyPressAsync();
+
+        if (testFlags.HasFlag(TestFlags.ReadKeyFromStdin))
+        {
+            _ = ListenToStandardInputAsync();
+        }
+        else if (!Console.IsInputRedirected)
+        {
+            _ = ListenToConsoleKeyPressAsync();
+        }
     }
 
     private async Task ListenToStandardInputAsync()
@@ -47,7 +58,23 @@ internal sealed class PhysicalConsole : IConsole
                     else
                     {
                         Console.WriteLine($"Sending SIGTERM to {processId}");
-                        error = ProcessUtilities.SendPosixSignal(processId, ProcessUtilities.SIGTERM);
+                        error = null;
+                        try
+                        {
+                            using var process = Process.GetProcessById(processId);
+                            process.SafeHandle.Signal(PosixSignal.SIGTERM);
+                        }
+                        catch (Win32Exception ex)
+                        {
+                            // Signal returns false when the given process has already exited.
+                            // So it can throw only when we try to kill a non-child process
+                            // that we don't have permission to kill.
+                            error = ex.Message;
+                        }
+                        catch (ArgumentException)
+                        {
+                            // Process has already exited
+                        }
                     }
 
                     if (error != null)
@@ -62,9 +89,12 @@ internal sealed class PhysicalConsole : IConsole
             {
                 CtrlC => new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true),
                 CtrlR => new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true),
+                '\r' or '\n' => new ConsoleKeyInfo('\r', ConsoleKey.Enter, shift: false, alt: false, control: false),
                 >= 'a' and <= 'z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'a'), shift: false, alt: false, control: false),
                 >= 'A' and <= 'Z' => new ConsoleKeyInfo(c, ConsoleKey.A + (c - 'A'), shift: true, alt: false, control: false),
                 >= '0' and <= '9' => new ConsoleKeyInfo(c, ConsoleKey.NumPad0 + (c - '0'), shift: false, alt: false, control: false),
+                '.' => new ConsoleKeyInfo('.', ConsoleKey.OemPeriod, shift: false, alt: false, control: false),
+                '-' => new ConsoleKeyInfo('-', ConsoleKey.OemMinus, shift: false, alt: false, control: false),
                 _ => default
             };
 

@@ -27,6 +27,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var command = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(asset.Path);
 
+            // Launch dotnet run in a new process group so that GenerateConsoleCtrlEvent
+            // targets only the child group and does not propagate to the test host.
+            command.CreateNewProcessGroup = true;
+
             bool signaled = false;
             bool sawClosingGracefully = false;
             Process child = null;

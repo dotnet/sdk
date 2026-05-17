@@ -713,7 +713,7 @@ public static class E
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp14,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)

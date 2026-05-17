@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.VisualBasic.Testing;
+using Xunit;
 
 namespace Test.Utilities
 {
@@ -31,7 +32,7 @@ namespace Test.Utilities
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static async Task VerifyCodeFixAsync(string source, string fixedSource)
@@ -49,7 +50,7 @@ namespace Test.Utilities
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

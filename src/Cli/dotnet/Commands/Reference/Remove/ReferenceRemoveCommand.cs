@@ -17,7 +17,7 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
     public ReferenceRemoveCommand(ParseResult parseResult)
         : base(parseResult)
     {
-        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult);
+        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult) ?? Directory.GetCurrentDirectory();
         _arguments = parseResult.GetValue(Definition.ProjectPathArgument).ToList().AsReadOnly();
 
         if (_arguments.Count == 0)

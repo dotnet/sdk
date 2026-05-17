@@ -448,7 +448,7 @@ class A
 using System.Collections.Generic;
 
 public record MyRecord(IList<int> Items);",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4461, "https://github.com/dotnet/roslyn-analyzers/issues/4461")]
@@ -470,7 +470,7 @@ struct S
 {
     public IList<int> L { get; init; }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

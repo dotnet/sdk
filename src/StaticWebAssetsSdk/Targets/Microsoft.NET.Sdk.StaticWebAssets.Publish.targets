@@ -34,6 +34,24 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestPath="$(StaticWebAssetPublishManifestPath)">
     </GenerateStaticWebAssetsManifest>
 
+    <!-- Filter the current project's own grouped assets after the publish manifest has been written. -->
+    <FilterStaticWebAssetGroups
+      Assets="@(_FinalPublishStaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      StaticWebAssetGroups="@(StaticWebAssetGroup)"
+      Source="$(PackageId)"
+      SkipDeferred="true">
+      <Output TaskParameter="FilteredAssets" ItemName="_FilteredPublishAssets" />
+      <Output TaskParameter="SurvivingEndpoints" ItemName="_FilteredPublishEndpoints" />
+    </FilterStaticWebAssetGroups>
+
+    <ItemGroup>
+      <_FinalPublishStaticWebAsset Remove="@(_FinalPublishStaticWebAsset)" />
+      <_FinalPublishStaticWebAsset Include="@(_FilteredPublishAssets)" />
+      <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_FilteredPublishEndpoints)" />
+    </ItemGroup>
+
     <GenerateStaticWebAssetEndpointsManifest
       Source="$(PackageId)"
       ManifestType="Publish"
@@ -242,7 +260,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
 
   </Target>
-  
+
   <Target Name="_PublishCopyStaticWebAssetsIfDifferent"
     AfterTargets="_SplitPublishStaticWebAssetsByCopyOptions"
     Condition=" '@(_PublishStaticWebAssetsIfDifferent)' != '' ">

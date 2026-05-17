@@ -394,6 +394,42 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to bearer realm &apos;{0}&apos; uses scheme &apos;{1}&apos; which is not allowed; only &apos;https&apos; is accepted (or &apos;http&apos; when the registry is configured as insecure).
+        /// </summary>
+        internal static string InvalidAuthResponse_DisallowedScheme {
+            get {
+                return ResourceManager.GetString("InvalidAuthResponse_DisallowedScheme", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to bearer realm &apos;{0}&apos; resolves to &apos;{1}&apos; which is a private, loopback, link-local, or unspecified IP literal address.
+        /// </summary>
+        internal static string InvalidAuthResponse_PrivateIpLiteralRealm {
+            get {
+                return ResourceManager.GetString("InvalidAuthResponse_PrivateIpLiteralRealm", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to bearer realm &apos;{0}&apos; is not a valid absolute URI.
+        /// </summary>
+        internal static string InvalidAuthResponse_RelativeOrUnparseableRealm {
+            get {
+                return ResourceManager.GetString("InvalidAuthResponse_RelativeOrUnparseableRealm", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1019: The registry &apos;{0}&apos; returned an invalid authentication response: {1}.
+        /// </summary>
+        internal static string InvalidRegistryAuthResponse {
+            get {
+                return ResourceManager.GetString("InvalidRegistryAuthResponse", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2031: The container image format &apos;{0}&apos; is not supported. Supported formats are &apos;{1}&apos;..
         /// </summary>
         internal static string InvalidContainerImageFormat {

@@ -135,7 +135,7 @@ internal class ContainerizeCommand : RootCommand
                 {
                     if (ContainerHelpers.TryParsePort(split[0], split[1], out var portInfo, out var portError))
                     {
-                        goodPorts.Add(portInfo.Value);
+                        goodPorts.Add(portInfo!.Value);
                     }
                     else
                     {
@@ -147,7 +147,7 @@ internal class ContainerizeCommand : RootCommand
                 {
                     if (ContainerHelpers.TryParsePort(split[0], out var portInfo, out var portError))
                     {
-                        goodPorts.Add(portInfo.Value);
+                        goodPorts.Add(portInfo!.Value);
                     }
                     else
                     {

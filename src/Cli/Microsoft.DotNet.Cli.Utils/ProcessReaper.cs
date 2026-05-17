@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Win32.SafeHandles;
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
 using Windows.Win32.System.JobObjects;
 #endif
 
@@ -52,7 +52,7 @@ internal class ProcessReaper : IDisposable
             static extern bool SetConsoleCtrlHandler(Delegate? handler, bool add);
         }
 
-#if !DOTNET_BUILDSOURCEONLY
+#if TARGET_WINDOWS
         private SafeWaitHandle? _job;
 
         public override void NotifyProcessStarted()

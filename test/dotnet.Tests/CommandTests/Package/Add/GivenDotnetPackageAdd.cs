@@ -3,7 +3,6 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Commands;
-using Xunit.Runners;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
 {
@@ -363,7 +362,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be($"""
-                #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
+                #:package {sourceFilePackageId}@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
                 Console.WriteLine();
                 """);
         }
@@ -379,7 +378,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = $"""
-                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:property RestoreAdditionalProjectSources={restoreSources}
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
@@ -416,7 +415,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = $"""
-                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:property RestoreAdditionalProjectSources={restoreSources}
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
@@ -472,7 +471,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Fail()
-                .And.HaveStdErrContaining(CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime);
+                .And.HaveStdOutContaining(CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime);
 
             File.ReadAllText(file).Should().Be(source);
         }
@@ -600,27 +599,51 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 </Project>
                 """);
 
-            new DotnetCommand(Log, args)
+            var directoryPackagesPropsOriginal = File.ReadAllText(directoryPackagesProps);
+
+            var result = new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute()
-                .Should().Pass();
+                .Execute();
 
-            File.ReadAllText(file).Should().Be("""
-                #:package Newtonsoft.Json
+            if (wasInFile && !noRestore)
+            {
+                // When a version is already pinned in both the #:package directive and
+                // Directory.Packages.props, this is the same invalid state as a project-based CPM
+                // app with version on both <PackageReference> and <PackageVersion>. NuGet rejects it.
+                result.Should().Fail();
+                File.ReadAllText(file).Should().Be(source);
+                File.ReadAllText(directoryPackagesProps).Should().Be(directoryPackagesPropsOriginal);
+            }
+            else
+            {
+                result.Should().Pass();
 
-                Console.WriteLine();
-                """);
+                if (wasInFile)
+                {
+                    // With --no-restore, NuGet doesn't validate the conflicting state. The command
+                    // succeeds, the source file is unchanged but the CPM version is updated.
+                    File.ReadAllText(file).Should().Be(source);
+                }
+                else
+                {
+                    File.ReadAllText(file).Should().Be("""
+                        #:package Newtonsoft.Json
 
-            File.ReadAllText(directoryPackagesProps).Should().Be($"""
-                <Project>
-                  <PropertyGroup>
-                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-                  </PropertyGroup>
-                  <ItemGroup>
-                    <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
-                  </ItemGroup>
-                </Project>
-                """);
+                        Console.WriteLine();
+                        """);
+                }
+
+                File.ReadAllText(directoryPackagesProps).Should().Be($"""
+                    <Project>
+                      <PropertyGroup>
+                        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                      </PropertyGroup>
+                      <ItemGroup>
+                        <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
+                      </ItemGroup>
+                    </Project>
+                    """);
+            }
         }
 
         [Theory, CombinatorialData]
@@ -637,7 +660,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = $"""
-                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:property RestoreAdditionalProjectSources={restoreSources}
                 Console.WriteLine();
                 """;
             File.WriteAllText(file, source);
@@ -687,7 +710,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var file = Path.Join(testInstance.Path, "Program.cs");
             var source = $"""
-                #:property RestoreSources=$(RestoreSources);{restoreSources}
+                #:property RestoreAdditionalProjectSources={restoreSources}
                 #:package A
                 Console.WriteLine();
                 """;

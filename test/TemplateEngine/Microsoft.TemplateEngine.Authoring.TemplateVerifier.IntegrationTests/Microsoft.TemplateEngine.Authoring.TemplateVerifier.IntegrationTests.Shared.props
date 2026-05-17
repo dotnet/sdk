@@ -1,0 +1,11 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>
