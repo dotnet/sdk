@@ -44,9 +44,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     We have multiple target frameworks:
      * We do nothing inside the inner builds.
      * We look at the TargetFrameworks and pick the one with the 'highest' static web assets version.
-       * For example, if you have netstandard2.0 and net6.0, one is swa V1 and the other is swa V2. When packing
-         we always want to use V2, since the metadata is backwards compatible.
-      * We resolve the path for the pack manifest generated for that target version as well as the static web assets
+     * We resolve the path for the pack manifest generated for that target version as well as the static web assets
         build manifest.
       * We remove any static web asset from the content/none item groups as we are in charge of the packing process.
       * We read the pack manifest and add the static web assets as content with the appropriate package path.
@@ -107,14 +105,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestPath="$(StaticWebAssetPackManifestPath)"
     >
       <Output TaskParameter="Files" ItemName="_StaticWebAssetsFilesToPack" />
-      <!-- This is only used by V1 static web assets as they don't generate a build manifest -->
-      <Output TaskParameter="AdditionalElementsToRemoveFromPacking" ItemName="_LegacyAssetsToRemoveFromPacking" />
     </StaticWebAssetsReadPackManifest>
 
     <ItemGroup>
-      <Content Remove="@(_LegacyAssetsToRemoveFromPacking)" />
-      <None Remove="@(_LegacyAssetsToRemoveFromPacking)" />
-
       <Content Include="@(_StaticWebAssetsFilesToPack)"
         Pack="true"
         CopyToOutputDirectory="Never"

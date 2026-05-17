@@ -47,7 +47,7 @@ public class UpdatePackageStaticWebAssets : Task
                 if (StaticWebAsset.SourceTypes.IsPackage(sourceType))
                 {
                     originalAssets.Add(candidate);
-                    updatedAssets.Add(StaticWebAsset.FromV1TaskItem(candidate).ToTaskItem());
+                    updatedAssets.Add(StaticWebAsset.FromTaskItemWithDefaults(candidate).ToTaskItem());
                 }
                 else if (StaticWebAsset.SourceTypes.IsFramework(sourceType))
                 {
@@ -130,7 +130,7 @@ public class UpdatePackageStaticWebAssets : Task
 
     private (StaticWebAsset, string) MaterializeFrameworkAsset(ITaskItem candidate)
     {
-        var asset = StaticWebAsset.FromV1TaskItem(candidate);
+        var asset = StaticWebAsset.FromTaskItemWithDefaults(candidate);
 
         var originalSourceId = asset.SourceId;
         var relativePath = asset.RelativePath;

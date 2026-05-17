@@ -801,7 +801,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     private bool HasKind(string assetKind) =>
         AssetKinds.IsKind(AssetKind, assetKind);
 
-    public static StaticWebAsset FromV1TaskItem(ITaskItem item)
+    public static StaticWebAsset FromTaskItemWithDefaults(ITaskItem item)
     {
         var result = FromTaskItemCore(item);
         result.ApplyDefaults();

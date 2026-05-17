@@ -4,10 +4,22 @@
 #nullable disable
 
 using System.Text.Json;
-using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
+#pragma warning disable IDE1006 // Naming Styles
+    internal class AssetsManifestFile
+    {
+        public string version { get; set; }
+        public AssetsManifestFileEntry[] assets { get; set; }
+    }
+
+    internal class AssetsManifestFileEntry
+    {
+        public string url { get; set; }
+        public string hash { get; set; }
+    }
+#pragma warning restore IDE1006 // Naming Styles
     internal static class ServiceWorkerAssert
     {
         internal static void VerifyServiceWorkerFiles(TestAsset testAsset,

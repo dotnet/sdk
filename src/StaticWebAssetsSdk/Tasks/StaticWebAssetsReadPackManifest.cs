@@ -16,8 +16,6 @@ public class StaticWebAssetsReadPackManifest : Task
 
     [Output] public ITaskItem[] Files { get; set; }
 
-    [Output] public ITaskItem[] AdditionalElementsToRemoveFromPacking { get; set; }
-
     public override bool Execute()
     {
         if (!File.Exists(ManifestPath))
@@ -30,7 +28,6 @@ public class StaticWebAssetsReadPackManifest : Task
         {
             var manifest = JsonSerializer.Deserialize<StaticWebAssetsPackManifest>(File.ReadAllBytes(ManifestPath));
             Files = manifest.Files.Select(ToTaskItem).ToArray();
-            AdditionalElementsToRemoveFromPacking = manifest.ElementsToRemove?.Select(e => new TaskItem(e)).ToArray() ?? Array.Empty<ITaskItem>();
         }
         catch (Exception ex)
         {
@@ -57,7 +54,5 @@ public class StaticWebAssetsReadPackManifest : Task
     private sealed class StaticWebAssetsPackManifest
     {
         public StaticWebAssetPackageFile[] Files { get; set; }
-
-        public string[] ElementsToRemove { get; set; }
     }
 }

@@ -194,7 +194,7 @@
           SkipUnchangedFiles="true"/>
   </Target>
 
-  <Target Name="PublishNetSdks" DependsOnTargets="PublishNETAnalyzers;PublishDotnetFormat;PublishBlazorWasmTools;PublishStaticWebAssetsTools;PublishRazorSdkTools">
+  <Target Name="PublishNetSdks" DependsOnTargets="PublishNETAnalyzers;PublishDotnetFormat;PublishStaticWebAssetsTools;PublishRazorSdkTools">
     <ItemGroup>
       <WebSdkProjectFile Include="$(RepoRoot)src\WebSdk\**\*.csproj" />
     </ItemGroup>
@@ -361,25 +361,6 @@
     <Delete Files="$(FSharpDirectory)/tool_fsc.deps.json" />
   </Target>
 
-  <Target Name="PublishBlazorWasmTools">
-    <MSBuild
-      Targets="Publish"
-      Projects="$(RepoRoot)/src/BlazorWasmSdk/Tool/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.csproj"
-      Properties="Configuration=$(Configuration)" />
-
-    <ItemGroup>
-      <_WebAssemblyToolsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly.Tool\$(Configuration)\$(SdkTargetFramework)\publish\*.*" />
-    </ItemGroup>
-
-    <Error
-      Text="WebAssembly SDK tools outputs were not found in $(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly.Tool\$(Configuration)\$(SdkTargetFramework)\publish"
-      Condition="'@(_WebAssemblyToolsOutput->Count())' == '0'" />
-
-    <Copy
-      SourceFiles="@(_WebAssemblyToolsOutput)"
-      DestinationFolder="$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(SdkTargetFramework)\"
-      SkipUnchangedFiles="true" />
-  </Target>
 
   <Target Name="PublishStaticWebAssetsTools">
     <MSBuild

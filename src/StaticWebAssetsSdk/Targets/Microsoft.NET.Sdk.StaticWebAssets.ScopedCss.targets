@@ -59,7 +59,6 @@ Integration with static web assets:
 
   <ResolveScopedCssAssetsDependsOn>
     $(ResolveScopedCssAssetsDependsOn);
-    UpdateLegacyPackageScopedCssBundles;
     GenerateScopedCssFiles;
     ResolveBundledCssAssets;
   </ResolveScopedCssAssetsDependsOn>
@@ -479,51 +478,5 @@ Integration with static web assets:
   </ItemGroup>
 
 </Target>
-
-<!-- Back-compat -->
-
-  <Target Name="UpdateLegacyPackageScopedCssBundles" DependsOnTargets="UpdateExistingPackageStaticWebAssets">
-    <ItemGroup>
-      <_LegacyOverrides Include="AssetMode" />
-      <_PackageProjectBundleCandidates Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Package'" />
-    </ItemGroup>
-    <DefineStaticWebAssets
-      CandidateAssets="@(_PackageProjectBundleCandidates)"
-      RelativePathFilter="**/*.bundle.scp.css"
-      PropertyOverrides="@(_LegacyOverrides)"
-      AssetMode="Reference"
-      AssetRole="Primary"
-      RelatedAsset=""
-      AssetMergeSource="$(StaticWebAssetMergeTarget)"
-      AssetTraitName="ScopedCss"
-      AssetTraitValue="ProjectBundle"
-    >
-      <Output TaskParameter="Assets" ItemName="_UpdatedLegacyProjectBundles" />
-    </DefineStaticWebAssets>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_PackageProjectBundleCandidates)"
-      RelativePathFilter="**/*.styles.css"
-      PropertyOverrides="@(_LegacyOverrides)"
-      AssetMode="CurrentProject"
-      AssetRole="Primary"
-      RelatedAsset=""
-      AssetMergeSource="$(StaticWebAssetMergeTarget)"
-      AssetTraitName="ScopedCss"
-      AssetTraitValue="ApplicationBundle"
-    >
-    <Output TaskParameter="Assets" ItemName="_UpdatedLegacyAppBundles" />
-  </DefineStaticWebAssets>
-
-
-    <ItemGroup>
-      <StaticWebAsset Remove="@(_UpdatedLegacyProjectBundles->'%(OriginalItemSpec)')" />
-      <StaticWebAsset Include="@(_UpdatedLegacyProjectBundles)" />
-
-      <StaticWebAsset Remove="@(_UpdatedLegacyAppBundles->'%(OriginalItemSpec)')" />
-      <StaticWebAsset Include="@(_UpdatedLegacyAppBundles)" />
-    </ItemGroup>
-
-  </Target>
 
 </Project>

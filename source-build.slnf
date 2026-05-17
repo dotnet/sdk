@@ -3,7 +3,6 @@
     "path": "sdk.slnx",
     "projects": [
       "src\\BlazorWasmSdk\\Tasks\\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj",
-      "src\\BlazorWasmSdk\\Tool\\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.csproj",
       "src\\Dotnet.Watch\\BrowserRefresh\\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj",
       "src\\Dotnet.Watch\\DotNetDeltaApplier\\Microsoft.Extensions.DotNetDeltaApplier.csproj",
       "src\\Dotnet.Watch\\DotNetWatchTasks\\DotNetWatchTasks.csproj",

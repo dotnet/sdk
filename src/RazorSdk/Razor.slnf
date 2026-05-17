@@ -3,7 +3,6 @@
     "path": "..\\..\\sdk.slnx",
     "projects": [
       "src\\BlazorWasmSdk\\Tasks\\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj",
-      "src\\BlazorWasmSdk\\Tool\\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.csproj",
       "src\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
       "src\\Cli\\Microsoft.DotNet.InternalAbstractions\\Microsoft.DotNet.InternalAbstractions.csproj",
       "src\\RazorSdk\\Tasks\\Microsoft.NET.Sdk.Razor.Tasks.csproj",

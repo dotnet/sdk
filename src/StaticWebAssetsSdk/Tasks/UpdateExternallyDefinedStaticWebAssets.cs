@@ -38,7 +38,7 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
 
     public override bool Execute()
     {
-        var assets = Assets.Select(StaticWebAsset.FromV1TaskItem).ToArray();
+        var assets = Assets.Select(StaticWebAsset.FromTaskItemWithDefaults).ToArray();
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
         var groupLookup = StaticWebAssetGroup.FromItemGroup(StaticWebAssetGroups);
         var endpointByAsset = endpoints

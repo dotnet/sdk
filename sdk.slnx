@@ -32,7 +32,6 @@
   </Folder>
   <Folder Name="/src/BlazorWasmSdk/">
     <Project Path="src/BlazorWasmSdk/Tasks/Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj" />
-    <Project Path="src/BlazorWasmSdk/Tool/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.csproj" />
   </Folder>
   <Folder Name="/src/BlazorWasmSdk/Targets/">
     <File Path="src/BlazorWasmSdk/Targets/BlazorWasm.web.config" />
