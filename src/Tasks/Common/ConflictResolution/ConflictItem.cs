@@ -37,10 +37,13 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     // Wraps an ITask item and adds lazy evaluated properties used by Conflict resolution.
     internal class ConflictItem : IConflictItem
     {
-        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType)
+        private readonly TaskEnvironment? _taskEnvironment;
+
+        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType, TaskEnvironment? taskEnvironment = null)
         {
             OriginalItem = originalItem;
             ItemType = itemType;
+            _taskEnvironment = taskEnvironment;
         }
 
         public ConflictItem(string fileName, string packageId, Version? assemblyVersion, Version? fileVersion)
@@ -72,7 +75,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePath ?? string.Empty);
+                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePathForFileAccess ?? string.Empty);
                     }
 
                     // assemblyVersion may be null but don't try to recalculate it
@@ -97,7 +100,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 if (_exists == null)
                 {
-                    _exists = ItemType == ConflictItemType.Platform || File.Exists(SourcePath);
+                    _exists = ItemType == ConflictItemType.Platform || File.Exists(SourcePathForFileAccess);
                 }
 
                 return _exists.Value;
@@ -136,7 +139,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _fileVersion = FileUtilities.GetFileVersion(SourcePath);
+                        _fileVersion = FileUtilities.GetFileVersion(SourcePathForFileAccess);
                     }
 
                     // fileVersion may be null but don't try to recalculate it
@@ -213,6 +216,25 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 return _sourcePath.Length == 0 ? null : _sourcePath;
             }
             private set { _sourcePath = value; }
+        }
+
+        private string? _sourcePathForFileAccess;
+        private bool _hasSourcePathForFileAccess;
+        private string? SourcePathForFileAccess
+        {
+            get
+            {
+                if (!_hasSourcePathForFileAccess)
+                {
+                    var sourcePath = SourcePath;
+                    _sourcePathForFileAccess = sourcePath != null && _taskEnvironment != null
+                        ? _taskEnvironment.GetAbsolutePath(sourcePath)
+                        : sourcePath;
+                    _hasSourcePathForFileAccess = true;
+                }
+
+                return _sourcePathForFileAccess;
+            }
         }
 
         private string? _displayName;
