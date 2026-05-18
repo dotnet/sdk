@@ -15,42 +15,42 @@
       <Sha>c96cefdd04b806246127b9ad69dcb60c31b56e6f</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.16">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.NetCore.SharedFramework.x64.9.0" Version="9.0.16-servicing.26229.23">
+    <Dependency Name="VS.Redist.Common.NetCore.SharedFramework.x64.9.0" Version="9.0.17-servicing.26264.16">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.9.0" Version="9.0.16-servicing.26229.23">
+    <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.9.0" Version="9.0.17-servicing.26264.16">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="9.0.16">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Host.win-x64" Version="9.0.16">
+    <Dependency Name="Microsoft.NETCore.App.Host.win-x64" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="9.0.16-servicing.26229.23">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="9.0.17-servicing.26264.16">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.HostModel" Version="9.0.16-servicing.26229.23">
+    <Dependency Name="Microsoft.NET.HostModel" Version="9.0.17-servicing.26264.16">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="9.0.16">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.16-servicing.26229.23">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.17-servicing.26264.16">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
     <!-- Change blob version in GenerateLayout.targets if this is unpinned to service targeting pack -->
@@ -59,18 +59,18 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.16-servicing.26221.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.17-servicing.26258.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>e2909c00ead6fb5d18a5167ca78f259c639084e0</Sha>
+      <Sha>b634e009d59f72e9254f984a6b89e685955e0eb8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100" Version="9.0.16" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100" Version="9.0.17" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>e2909c00ead6fb5d18a5167ca78f259c639084e0</Sha>
+      <Sha>b634e009d59f72e9254f984a6b89e685955e0eb8</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.emsdk" Version="9.0.16-servicing.26221.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.emsdk" Version="9.0.17-servicing.26258.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>e2909c00ead6fb5d18a5167ca78f259c639084e0</Sha>
+      <Sha>b634e009d59f72e9254f984a6b89e685955e0eb8</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.12.57">
@@ -230,29 +230,29 @@
       <Sha>bc9161306b23641b0364b8f93d546da4d48da1eb</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.16">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.CodeDom" Version="9.0.16">
+    <Dependency Name="System.CodeDom" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Formats.Asn1" Version="9.0.16">
+    <Dependency Name="System.Formats.Asn1" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.ProtectedData" Version="9.0.16">
+    <Dependency Name="System.Security.Cryptography.ProtectedData" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encoding.CodePages" Version="9.0.16">
+    <Dependency Name="System.Text.Encoding.CodePages" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Resources.Extensions" Version="9.0.16">
+    <Dependency Name="System.Resources.Extensions" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
@@ -503,89 +503,89 @@
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.16">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="9.0.16">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.16">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.16">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
-    <Dependency Name="System.ServiceProcess.ServiceController" Version="9.0.16">
+    <Dependency Name="System.ServiceProcess.ServiceController" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="9.0.16">
+    <Dependency Name="System.Text.Json" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="9.0.16">
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="9.0.16">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.ObjectPool" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>5d6e3342e5d3b1d82f5ac41a027c00ae56f31ea2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Win32.SystemEvents" Version="9.0.16">
+    <Dependency Name="Microsoft.Win32.SystemEvents" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Composition.AttributedModel" Version="9.0.16">
+    <Dependency Name="System.Composition.AttributedModel" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Composition.Convention" Version="9.0.16">
+    <Dependency Name="System.Composition.Convention" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Composition.Hosting" Version="9.0.16">
+    <Dependency Name="System.Composition.Hosting" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Composition.Runtime" Version="9.0.16">
+    <Dependency Name="System.Composition.Runtime" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Composition.TypedParts" Version="9.0.16">
+    <Dependency Name="System.Composition.TypedParts" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Configuration.ConfigurationManager" Version="9.0.16">
+    <Dependency Name="System.Configuration.ConfigurationManager" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Pkcs" Version="9.0.16">
+    <Dependency Name="System.Security.Cryptography.Pkcs" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Xml" Version="9.0.16">
+    <Dependency Name="System.Security.Cryptography.Xml" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="9.0.16">
+    <Dependency Name="System.Security.Permissions" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
-    <Dependency Name="System.Windows.Extensions" Version="9.0.16">
+    <Dependency Name="System.Windows.Extensions" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -619,9 +619,9 @@
       <Sha>f843e65cdfc9e9af05d987f2f7f2e6f6a6106eb5</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.16">
+    <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>a1e6809fb8318884882ceff057000654f558738a</Sha>
+      <Sha>f2c8152eed158e72950025393fde498c90a57a6b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25317.4">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
