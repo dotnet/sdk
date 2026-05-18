@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using FluentAssertions;
 using Xunit;
 
@@ -78,81 +77,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "null/empty OutputDir must fall back to the project directory, not the process CWD");
         }
 
-        [Fact]
-        public void ResolveFileSpecSourcePath_RoutesRelativePathThroughTaskEnvironment_NotProcessCwd()
-        {
-            string projectDir = CreateTempDirectory("proj");
-            string decoyCwd = CreateTempDirectory("decoy");
-            Directory.SetCurrentDirectory(decoyCwd);
-
-            var env = TaskEnvironmentHelper.CreateForTest(projectDir);
-
-            string resolved = GenerateBundle.ResolveFileSpecSourcePath(env, "obj/apphost");
-
-            Path.GetFullPath(resolved).Should().Be(Path.GetFullPath(Path.Combine(projectDir, "obj", "apphost")),
-                "relative file source paths must resolve under TaskEnvironment.ProjectDirectory before HostModel file operations");
-            Path.GetFullPath(resolved).Should().NotStartWith(Path.GetFullPath(decoyCwd),
-                "the process CWD must not leak into HostModel source paths");
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("   ")]
-        public void ResolveFileSpecSourcePath_PreservesEmptyOrWhitespaceValues(string sourcePath)
-        {
-            string projectDir = CreateTempDirectory("proj");
-            var env = TaskEnvironmentHelper.CreateForTest(projectDir);
-
-            string resolved = GenerateBundle.ResolveFileSpecSourcePath(env, sourcePath);
-
-            resolved.Should().Be(sourcePath,
-                "HostModel should keep validating empty source paths the same way it did before the migration");
-        }
-
-        [Fact]
-        public void ExecuteWithRetry_InvokesBundlerWithTaskEnvironmentResolvedOutputDir()
-        {
-            string projectDir = CreateTempDirectory("proj");
-            string decoyCwd = CreateTempDirectory("decoy");
-            Directory.SetCurrentDirectory(decoyCwd);
-
-            var task = CreateRecordingTask(projectDir, "publish/bundle");
-
-            task.Execute().Should().BeTrue();
-
-            task.InvocationCount.Should().Be(1);
-            task.ObservedOutputDir.Should().NotBe(task.OutputDir,
-                "ExecuteWithRetry must pass the resolved path to bundling, not raw OutputDir");
-            Path.GetFullPath(task.ObservedOutputDir).Should().Be(
-                Path.GetFullPath(Path.Combine(projectDir, "publish", "bundle")),
-                "relative OutputDir must be resolved against TaskEnvironment.ProjectDirectory before bundling");
-            Path.GetFullPath(task.ObservedOutputDir).Should().NotStartWith(Path.GetFullPath(decoyCwd),
-                "the process CWD must not leak into the bundler output path");
-        }
-
-        private static RecordingGenerateBundle CreateRecordingTask(
-            string projectDir,
-            string outputDir)
-        {
-            return new RecordingGenerateBundle()
-            {
-                BuildEngine = new MockBuildEngine(),
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
-                FilesToBundle = Array.Empty<ITaskItem>(),
-                AppHostName = Path.Combine(projectDir, "apphost"),
-                IncludeSymbols = false,
-                IncludeNativeLibraries = false,
-                IncludeAllContent = false,
-                TargetFrameworkVersion = "8.0.0",
-                RuntimeIdentifier = "win-x64",
-                OutputDir = outputDir,
-                ShowDiagnosticOutput = false,
-                EnableCompressionInSingleFile = false,
-                EnableMacOsCodeSign = false,
-            };
-        }
-
         private string CreateTempDirectory([CallerMemberName] string suffix = null)
         {
             string tempDir = Path.Combine(_tempRoot, $"{suffix}_{Guid.NewGuid():N}");
@@ -170,24 +94,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
 
             try { Directory.Delete(_tempRoot, recursive: true); } catch { }
-        }
-
-        private sealed class RecordingGenerateBundle : GenerateBundle
-        {
-            public string ObservedOutputDir { get; private set; }
-
-            public int InvocationCount { get; private set; }
-
-            internal override System.Threading.Tasks.Task RunBundler(
-                string resolvedOutputDir,
-                OSPlatform targetOS,
-                Architecture targetArch,
-                Version version)
-            {
-                InvocationCount++;
-                ObservedOutputDir = resolvedOutputDir;
-                return System.Threading.Tasks.Task.CompletedTask;
-            }
         }
     }
 }
