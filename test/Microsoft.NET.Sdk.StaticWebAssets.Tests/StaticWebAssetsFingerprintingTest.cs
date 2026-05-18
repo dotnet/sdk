@@ -146,7 +146,7 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
 
         var indexEndpoint = endpoints.Endpoints.Single(e => e.Route == "index.html" && e.Selectors.Length == 0);
         var defaultDocumentEndpoint = endpoints.Endpoints.Single(e => e.Route == "/" && e.Selectors.Length == 0);
-        var spaFallbackEndpoint = endpoints.Endpoints.Single(e => e.Route == "{**fallback:nonfile}");
+        var spaFallbackEndpoint = endpoints.Endpoints.Single(e => e.Route == "{**fallback:nonfile}" && e.Selectors.Length == 0);
 
         defaultDocumentEndpoint.AssetFile.Should().Be(indexEndpoint.AssetFile);
         spaFallbackEndpoint.AssetFile.Should().Be(indexEndpoint.AssetFile);
