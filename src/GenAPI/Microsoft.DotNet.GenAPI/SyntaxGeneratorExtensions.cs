@@ -80,22 +80,13 @@ namespace Microsoft.DotNet.GenAPI
                 }
             }
 
-            if (symbol is IEventSymbol eventSymbol)
+            if (symbol is IEventSymbol eventSymbol && !eventSymbol.IsAbstract)
             {
-                if (eventSymbol.IsAbstract)
-                {
-                    // TODO: remove a work around solution after the Roslyn issue https://github.com/dotnet/roslyn/issues/66966 is fixed
-                    EventFieldDeclarationSyntax eventDeclaration = (EventFieldDeclarationSyntax)syntaxGenerator.Declaration(symbol);
-                    return eventDeclaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.AbstractKeyword));
-                }
-                else
-                {
-                    // adds generation of add & remove accessors for the non abstract events.
-                    return syntaxGenerator.CustomEventDeclaration(eventSymbol.Name,
-                        syntaxGenerator.TypeExpression(eventSymbol.Type),
-                        eventSymbol.DeclaredAccessibility,
-                        DeclarationModifiers.From(eventSymbol));
-                }
+                // adds generation of add & remove accessors for the non abstract events.
+                return syntaxGenerator.CustomEventDeclaration(eventSymbol.Name,
+                    syntaxGenerator.TypeExpression(eventSymbol.Type),
+                    eventSymbol.DeclaredAccessibility,
+                    DeclarationModifiers.From(eventSymbol));
             }
 
             if (symbol is IPropertySymbol propertySymbol)

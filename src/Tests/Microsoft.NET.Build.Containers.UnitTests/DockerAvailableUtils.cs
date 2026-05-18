@@ -25,17 +25,20 @@ public class DockerAvailableFactAttribute : FactAttribute
 {
     public static string LocalRegistry => DockerCliStatus.LocalRegistry;
 
-    public DockerAvailableFactAttribute(bool skipPodman = false)
+    public DockerAvailableFactAttribute(bool skipPodman = false, bool checkContainerdStoreAvailability = false)
     {
         if (!DockerCliStatus.IsAvailable)
         {
             base.Skip = "Skipping test because Docker is not available on this host.";
         }
-
-        if (skipPodman && DockerCliStatus.Command == DockerCli.PodmanCommand)
+        else if (checkContainerdStoreAvailability && !DockerCli.IsContainerdStoreEnabledForDocker())
+        {
+            base.Skip = "Skipping test because Docker daemon is not using containerd as the storage driver.";
+        }
+        else if (skipPodman && DockerCliStatus.Command == DockerCli.PodmanCommand)
         {
             base.Skip = $"Skipping test with {DockerCliStatus.Command} cli.";
-        }
+        }      
     }
 }
 

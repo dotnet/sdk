@@ -3,14 +3,18 @@
 
 using System.CommandLine;
 using System.IO;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
@@ -31,6 +35,9 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly SdkFeatureBand _sdkFeatureBand;
         protected readonly ReleaseVersion _targetSdkVersion;
         protected readonly string _fromRollbackDefinition;
+        protected string _workloadSetVersionFromCommandLine;
+        protected string _globalJsonPath;
+        protected string _workloadSetVersionFromGlobalJson;
         protected readonly PackageSourceLocation _packageSourceLocation;
         protected readonly IWorkloadResolverFactory _workloadResolverFactory;
         protected IWorkloadResolver _workloadResolver;
@@ -38,6 +45,10 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly IWorkloadManifestUpdater _workloadManifestUpdaterFromConstructor;
         protected IInstaller _workloadInstaller;
         protected IWorkloadManifestUpdater _workloadManifestUpdater;
+
+        protected bool UseRollback => !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+        protected bool SpecifiedWorkloadSetVersionOnCommandLine => !string.IsNullOrWhiteSpace(_workloadSetVersionFromCommandLine);
+        protected bool SpecifiedWorkloadSetVersionInGlobalJson => !string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson);
 
         public InstallingWorkloadCommand(
             ParseResult parseResult,
@@ -55,6 +66,8 @@ namespace Microsoft.DotNet.Workloads.Workload
             _downloadToCacheOption = parseResult.GetValue(InstallingWorkloadCommandParser.DownloadToCacheOption);
 
             _fromRollbackDefinition = parseResult.GetValue(InstallingWorkloadCommandParser.FromRollbackFileOption);
+            _workloadSetVersionFromCommandLine = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+
             var configOption = parseResult.GetValue(InstallingWorkloadCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValue(InstallingWorkloadCommandParser.SourceOption);
             _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
@@ -86,39 +99,167 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             _workloadInstallerFromConstructor = workloadInstaller;
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
+
+            _globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+            _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPath);
+
+            if (SpecifiedWorkloadSetVersionInGlobalJson && (SpecifiedWorkloadSetVersionOnCommandLine || UseRollback))
+            {
+                throw new GracefulException(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, _globalJsonPath), isUserError: true);
+            }
+
+            if (SpecifiedWorkloadSetVersionOnCommandLine && UseRollback)
+            {
+                throw new GracefulException(string.Format(Update.LocalizableStrings.CannotCombineOptions,
+                    InstallingWorkloadCommandParser.FromRollbackFileOption.Name,
+                    InstallingWorkloadCommandParser.WorkloadSetVersionOption.Name), isUserError: true);
+            }
+
+            //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, and SpecifiedWorkloadSetVersionInGlobalJson is true
         }
 
-        protected internal void UpdateInstallState(bool createDefaultJson, IEnumerable<ManifestVersionUpdate> manifestVersionUpdates)
-        {
-            var defaultJsonPath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-            if (createDefaultJson)
-            {
-                var jsonContents = WorkloadSet.FromManifests(
+        protected static Dictionary<string, string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
+            WorkloadSet.FromManifests(
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
                     ).ToDictionaryForJson();
-                Directory.CreateDirectory(Path.GetDirectoryName(defaultJsonPath));
-                File.WriteAllLines(defaultJsonPath, ToJsonEnumerable(jsonContents));
+
+        InstallStateContents GetCurrentInstallState()
+        {
+            return GetCurrentInstallState(_sdkFeatureBand, _dotnetPath);
+        }
+
+        static InstallStateContents GetCurrentInstallState(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
+            return InstallStateContents.FromPath(path);
+        }
+
+        public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        {
+            return GetCurrentInstallState(sdkFeatureBand, dotnetDir).UseWorkloadSets ?? false;
+        }
+
+        protected void UpdateWorkloadManifests(ITransactionContext context, DirectoryPath? offlineCache)
+        {
+            var updateToLatestWorkloadSet = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
+            if (UseRollback && updateToLatestWorkloadSet)
+            {
+                // Rollback files are only for loose manifests. Update the mode to be loose manifests.
+                Reporter.WriteLine(Update.LocalizableStrings.UpdateFromRollbackSwitchesModeToLooseManifests);
+                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
+                updateToLatestWorkloadSet = false;
+            }
+
+            if (SpecifiedWorkloadSetVersionOnCommandLine)
+            {
+                updateToLatestWorkloadSet = false;
+
+                //  If a workload set version is specified, then switch to workload set update mode
+                //  Check to make sure the value needs to be changed, as updating triggers a UAC prompt
+                //  for MSI-based installs.
+                if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
+                {
+                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+                }
+            }
+
+            string resolvedWorkloadSetVersion = _workloadSetVersionFromGlobalJson ??_workloadSetVersionFromCommandLine;
+            if (string.IsNullOrWhiteSpace(resolvedWorkloadSetVersion) && !UseRollback)
+            {
+                _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, updateToLatestWorkloadSet, offlineCache).Wait();
+                if (updateToLatestWorkloadSet)
+                {
+                    resolvedWorkloadSetVersion = _workloadManifestUpdater.GetAdvertisedWorkloadSetVersion();
+                }
+            }
+
+            if (updateToLatestWorkloadSet && resolvedWorkloadSetVersion == null)
+            {
+                Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
+                return;
+            }
+
+            IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
+            if (resolvedWorkloadSetVersion != null)
+            {
+                manifestsToUpdate = InstallWorkloadSet(context, resolvedWorkloadSetVersion);
             }
             else
             {
-                if (File.Exists(defaultJsonPath))
-                {
-                    File.Delete(defaultJsonPath);
-                }
+                manifestsToUpdate = UseRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                                                  _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
+
+            InstallStateContents oldInstallState = GetCurrentInstallState();
+
+            context.Run(
+                action: () =>
+                {
+                    foreach (var manifestUpdate in manifestsToUpdate)
+                    {
+                        _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache);
+                    }
+
+                    if (!SpecifiedWorkloadSetVersionInGlobalJson)
+                    {
+                        if (UseRollback)
+                        {
+                            _workloadInstaller.SaveInstallStateManifestVersions(_sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
+                        }
+                        else if (SpecifiedWorkloadSetVersionOnCommandLine)
+                        {
+                            _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, resolvedWorkloadSetVersion);
+                        }
+                        else if (this is WorkloadUpdateCommand)
+                        {
+                            //  For workload updates, if you don't specify a rollback file, or a workload version then we should update to a new version of the manifests or workload set, and
+                            //  should remove the install state that pins to the other version
+                            _workloadInstaller.RemoveManifestsFromInstallState(_sdkFeatureBand);
+                            _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, null);
+                        }
+                    }
+
+                    _workloadResolver.RefreshWorkloadManifests();
+                },
+                rollback: () =>
+                {
+                    //  Reset install state
+                    var currentInstallState = GetCurrentInstallState();
+                    if (currentInstallState.UseWorkloadSets != oldInstallState.UseWorkloadSets)
+                    {
+                        _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, oldInstallState.UseWorkloadSets);
+                    }
+
+                    if ((currentInstallState.Manifests == null && oldInstallState.Manifests != null) ||
+                        (currentInstallState.Manifests != null && oldInstallState.Manifests == null) ||
+                        (currentInstallState.Manifests != null && oldInstallState.Manifests != null &&
+                         (currentInstallState.Manifests.Count != oldInstallState.Manifests.Count ||
+                         !currentInstallState.Manifests.All(m => oldInstallState.Manifests.TryGetValue(m.Key, out var val) && val.Equals(m.Value)))))
+                    {
+                        _workloadInstaller.SaveInstallStateManifestVersions(_sdkFeatureBand, oldInstallState.Manifests);
+                    }
+
+                    if (currentInstallState.WorkloadVersion != oldInstallState.WorkloadVersion)
+                    {
+                        _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, oldInstallState.WorkloadVersion);
+                    }
+
+                    //  We will refresh the workload manifests to make sure that the resolver has the updated state after the rollback
+                    _workloadResolver.RefreshWorkloadManifests();
+                });
         }
 
-        private IEnumerable<string> ToJsonEnumerable(Dictionary<string, string> dict)
+        private IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(ITransactionContext context, string workloadSetVersion)
         {
-            yield return "{";
-            yield return "\"manifests\": {";
-            foreach (KeyValuePair<string, string> line in dict)
-            {
-                yield return $"\"{line.Key}\": \"{line.Value}\",";
-            }
-            yield return "}";
-            yield return "}";
-            yield break;
+            PrintWorkloadSetTransition(workloadSetVersion);
+            var workloadSet = _workloadInstaller.InstallWorkloadSet(context, workloadSetVersion);
+
+            return workloadSet is null ? Enumerable.Empty<ManifestVersionUpdate>() : _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
+        }
+
+        private void PrintWorkloadSetTransition(string newVersion)
+        {
+            Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)
@@ -217,10 +358,26 @@ namespace Microsoft.DotNet.Workloads.Workload
                 return workloads ?? Enumerable.Empty<WorkloadId>();
             }
         }
+
+        protected IEnumerable<WorkloadId> WriteSDKInstallRecordsForVSWorkloads(IEnumerable<WorkloadId> workloadsWithExistingInstallRecords)
+        {
+#if !DOT_NET_BUILD_FROM_SOURCE
+            if (OperatingSystem.IsWindows())
+            {
+                return VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, workloadsWithExistingInstallRecords, Reporter);
+            }
+#endif
+            return workloadsWithExistingInstallRecords;
+        }
     }
 
     internal static class InstallingWorkloadCommandParser
     {
+        public static readonly CliOption<string> WorkloadSetVersionOption = new("--version")
+        {
+            Description = Strings.WorkloadSetVersionOptionDescription
+        };
+
         public static readonly CliOption<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")
         {
             Description = Strings.PrintDownloadLinkOnlyDescription,
