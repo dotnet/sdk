@@ -523,9 +523,8 @@
     Only runs for native builds (TargetRid == HostRid) on supported platforms.
     Cross-compilation is not supported as NativeAOT requires native toolchain for target platform.
   -->
-  <!-- <Target Name="PublishDotnetAot"
-          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))"> -->
-  <Target Name="PublishDotnetAot" Condition="false">
+  <Target Name="PublishDotnetAot"
+          Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))">
     <PropertyGroup>
       <!-- Define platform-specific native library naming -->
       <_DotnetAotNativeLibPrefix Condition="'$(OSName)' != 'win'">lib</_DotnetAotNativeLibPrefix>
@@ -535,15 +534,18 @@
       <_DotnetAotNativeLibName>$(_DotnetAotNativeLibPrefix)dotnet-aot$(_DotnetAotNativeLibExtension)</_DotnetAotNativeLibName>
 
       <_DotnetAotPublishDir>$(ArtifactsBinDir)dotnet-aot-redist\$(Configuration)\$(SdkTargetFramework)\$(TargetRid)\publish\</_DotnetAotPublishDir>
-      <!-- Use separate intermediate directory to avoid restore conflicts with main build -->
-      <_DotnetAotIntermediateDir>$(ArtifactsObjDir)dotnet-aot-redist\$(Configuration)\$(TargetRid)\</_DotnetAotIntermediateDir>
     </PropertyGroup>
 
-    <!-- Restore and publish the dotnet-aot project as a NativeAOT shared library -->
-    <MSBuild
-      Targets="Restore;Publish"
-      Projects="$(RepoRoot)/src/Cli/dotnet-aot/dotnet-aot.csproj"
-      Properties="Configuration=$(Configuration);RuntimeIdentifier=$(TargetRid);PublishDir=$(_DotnetAotPublishDir);IntermediateOutputPath=$(_DotnetAotIntermediateDir)" />
+    <!--
+      Publish via Exec in a separate process to avoid BuildManager caching/scheduling
+      interference in CI's multi-node parallel build context.
+      
+      The dotnet-aot project declares RuntimeIdentifier=$(TargetRid) so that centralized
+      NuGet restore (via sdk.slnx) generates the RID-specific target in project.assets.json.
+      Restore is skipped here since the initial restore is sufficient.
+    -->
+    <Exec Command="&quot;$(DotNetTool)&quot; publish &quot;$(RepoRoot)src/Cli/dotnet-aot/dotnet-aot.csproj&quot; --no-restore -c $(Configuration) -r $(TargetRid) -o &quot;$(_DotnetAotPublishDir)&quot;"
+          IgnoreStandardErrorWarningFormat="true" />
 
     <!-- Verify the native library was produced -->
     <Error Condition="!Exists('$(_DotnetAotPublishDir)$(_DotnetAotNativeLibName)')"

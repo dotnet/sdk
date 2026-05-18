@@ -63,17 +63,19 @@ public class TelemetryClient : ITelemetryClient
         s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
-            .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddOtlpExporter();
 
         s_tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddSource(Activities.Source.Name)
-            .AddHttpClientInstrumentation()
             .AddOtlpExporter()
-            .AddInMemoryExporter(s_activities)
             .SetSampler(new AlwaysOnSampler());
+
+        if (!string.IsNullOrWhiteSpace(s_diskLogPath))
+        {
+            s_tracerProviderBuilder.AddInMemoryExporter(s_activities);
+        }
 
         if (!s_disableTraceExport)
         {

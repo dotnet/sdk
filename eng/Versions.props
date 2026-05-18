@@ -81,7 +81,7 @@
     <MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>9.0.0</MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsToolsetPackageVersion>9.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsToolsetPackageVersion>
     <SystemBuffersToolsetPackageVersion>4.5.1</SystemBuffersToolsetPackageVersion>
-    <SystemCollectionsImmutableToolsetPackageVersion>9.0.0</SystemCollectionsImmutableToolsetPackageVersion>
+    <SystemCollectionsImmutableToolsetPackageVersion>9.0.11</SystemCollectionsImmutableToolsetPackageVersion>
     <SystemMemoryToolsetPackageVersion>4.5.5</SystemMemoryToolsetPackageVersion>
     <SystemReflectionMetadataLoadContextToolsetPackageVersion>9.0.0</SystemReflectionMetadataLoadContextToolsetPackageVersion>
     <SystemReflectionMetadataToolsetPackageVersion>9.0.0</SystemReflectionMetadataToolsetPackageVersion>
@@ -111,8 +111,8 @@
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes.
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
-    <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.14.28</MicrosoftBuildMinimumVersion>
-    <MinimumVSVersion>18.0</MinimumVSVersion>
+    <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">18.6.0-preview-26208-110</MicrosoftBuildMinimumVersion>
+    <MinimumVSVersion>18.6</MinimumVSVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -149,8 +149,8 @@
 
     <!--
       Updates to any of these versions will require the updating of that package version in the
-      source-build-reference-packages repo as a text-only package.
-      See https://github.com/dotnet/source-build-reference-packages?tab=readme-ov-file#text-only
+      source-build-assets repo as a text-only package.
+      See https://github.com/dotnet/source-build-assets?tab=readme-ov-file#text-only
     -->
     <MauiWorkloadManifestVersion>11.0.0-preview.1.26102.3</MauiWorkloadManifestVersion>
     <XamarinAndroidWorkloadManifestVersion>36.1.99-preview.1.119</XamarinAndroidWorkloadManifestVersion>
