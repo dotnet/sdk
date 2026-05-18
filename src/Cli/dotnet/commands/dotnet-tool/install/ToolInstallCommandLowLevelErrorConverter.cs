@@ -10,38 +10,21 @@ namespace Microsoft.DotNet.Tools.Tool.Install
     {
         public static IEnumerable<string> GetUserFacingMessages(Exception ex, PackageId packageId)
         {
-            string[] userFacingMessages = null;
             if (ex is ToolPackageException)
             {
-                userFacingMessages = new[]
-                {
-                    ex.Message,
-                    string.Format(LocalizableStrings.ToolInstallationFailedWithRestoreGuidance, packageId),
-                };
+                yield return ex.Message;
+                yield return string.Format(LocalizableStrings.ToolInstallationFailedWithRestoreGuidance, packageId);
             }
             else if (ex is ToolConfigurationException)
             {
-                userFacingMessages = new[]
-                {
-                    string.Format(
-                        LocalizableStrings.InvalidToolConfiguration,
-                        ex.Message),
-                    string.Format(LocalizableStrings.ToolInstallationFailedContactAuthor, packageId)
-                };
+                yield return string.Format(LocalizableStrings.InvalidToolConfiguration, ex.Message);
+                yield return string.Format(LocalizableStrings.ToolInstallationFailedContactAuthor, packageId);
             }
             else if (ex is ShellShimException)
             {
-                userFacingMessages = new[]
-                {
-                    string.Format(
-                        LocalizableStrings.FailedToCreateToolShim,
-                        packageId,
-                        ex.Message),
-                    string.Format(LocalizableStrings.ToolInstallationFailed, packageId)
-                };
+                yield return string.Format(LocalizableStrings.FailedToCreateToolShim, packageId, ex.Message);
+                yield return string.Format(LocalizableStrings.ToolInstallationFailed, packageId);
             }
-
-            return userFacingMessages;
         }
 
         public static bool ShouldConvertToUserFacingError(Exception ex)

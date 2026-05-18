@@ -8,7 +8,7 @@ export async function receiveHotReloadAsync() {
     const deltas = await response.json();
     if (deltas) {
       try {
-        deltas.forEach(d => window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta));
+        deltas.forEach(d => window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta, d.updatedTypes));
       } catch (error) {
         console.warn(error);
         return;

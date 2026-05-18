@@ -33,8 +33,8 @@
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
-        <source>{0} is not found in NuGet feeds {1}".</source>
-        <target state="translated">Balíček {0} se nenašel v informačních kanálech NuGet {1}“.</target>
+        <source>{0} is not found in NuGet feeds {1}.</source>
+        <target state="translated">Balíček {0} se nenašel v informačních kanálech NuGet {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">

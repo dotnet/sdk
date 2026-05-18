@@ -32,6 +32,11 @@
         <target state="translated">Aktualizacje są dostępne dla następujących obciążeń: {0}. Uruchom polecenie `dotnet workload update`, aby uzyskać najnowszą wersję.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(nie zainstalowano)</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

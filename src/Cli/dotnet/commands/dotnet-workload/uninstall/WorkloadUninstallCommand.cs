@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
         private readonly string _dotnetPath;
         private readonly ReleaseVersion _sdkVersion;
         private readonly string _userProfileDir;
-        
+        private readonly WorkloadHistoryRecorder _recorder;
 
         public WorkloadUninstallCommand(
             ParseResult parseResult,
@@ -46,34 +46,39 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
 
             var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
             _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
+            _recorder = new(_workloadResolverFactory.Create().WorkloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
+            _recorder.HistoryRecord.CommandName = "uninstall";
         }
 
         public override int Execute()
         {
             try
             {
-                Reporter.WriteLine();
-
-                var featureBand = new SdkFeatureBand(_sdkVersion);
-                var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(featureBand);
-                var unrecognizedWorkloads = _workloadIds.Where(workloadId => !installedWorkloads.Contains(workloadId));
-                if (unrecognizedWorkloads.Any())
+                _recorder.Run(() =>
                 {
-                    throw new Exception(string.Format(LocalizableStrings.WorkloadNotInstalled, string.Join(" ", unrecognizedWorkloads)));
-                }
+                    Reporter.WriteLine();
 
-                foreach (var workloadId in _workloadIds)
-                {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.RemovingWorkloadInstallationRecord, workloadId));
-                    _workloadInstaller.GetWorkloadInstallationRecordRepository()
-                        .DeleteWorkloadInstallationRecord(workloadId, featureBand);
-                }
+                    var featureBand = new SdkFeatureBand(_sdkVersion);
+                    var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(featureBand);
+                    var unrecognizedWorkloads = _workloadIds.Where(workloadId => !installedWorkloads.Contains(workloadId));
+                    if (unrecognizedWorkloads.Any())
+                    {
+                        throw new Exception(string.Format(LocalizableStrings.WorkloadNotInstalled, string.Join(" ", unrecognizedWorkloads)));
+                    }
 
-                _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+                    foreach (var workloadId in _workloadIds)
+                    {
+                        Reporter.WriteLine(string.Format(LocalizableStrings.RemovingWorkloadInstallationRecord, workloadId));
+                        _workloadInstaller.GetWorkloadInstallationRecordRepository()
+                            .DeleteWorkloadInstallationRecord(workloadId, featureBand);
+                    }
 
-                Reporter.WriteLine();
-                Reporter.WriteLine(string.Format(LocalizableStrings.UninstallSucceeded, string.Join(" ", _workloadIds)));
-                Reporter.WriteLine();
+                    _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+
+                    Reporter.WriteLine();
+                    Reporter.WriteLine(string.Format(LocalizableStrings.UninstallSucceeded, string.Join(" ", _workloadIds)));
+                    Reporter.WriteLine();
+                });
             }
             catch (Exception e)
             {
