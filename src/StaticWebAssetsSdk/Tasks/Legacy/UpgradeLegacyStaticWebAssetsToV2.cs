@@ -1,5 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using Microsoft.Build.Framework;
 
@@ -19,7 +21,7 @@ public class UpgradeLegacyStaticWebAssetsToV2 : Task
         {
             // Set the upgraded assets
             UpgradedAssets = new ITaskItem[Assets.Length];
-            for (int i = 0; i < Assets.Length; i++)
+            for (var i = 0; i < Assets.Length; i++)
             {
                 Log.LogMessage(MessageImportance.Low, $"Upgrading {Assets[i].ItemSpec}");
                 var asset = StaticWebAsset.FromV1TaskItem(Assets[i]);
