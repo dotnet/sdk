@@ -15,7 +15,6 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class GetAssemblyVersion : TaskBase
     {
-
         /// <summary>
         /// The nuget version from which to get an assembly version portion.
         /// </summary>
