@@ -436,9 +436,11 @@
     <Project Path="test/Microsoft.DotNet.PackageValidation.Tests/Microsoft.DotNet.PackageValidation.Tests.csproj" />
   </Folder>
   <Folder Name="/test/Compatibility/ApiDiff/">
+    <Project Path="test/Microsoft.DotNet.ApiDiff.IntegrationTests/Microsoft.DotNet.ApiDiff.IntegrationTests.csproj" />
     <Project Path="test/Microsoft.DotNet.ApiDiff.Tests/Microsoft.DotNet.ApiDiff.Tests.csproj" />
   </Folder>
   <Folder Name="/test/Compatibility/GenAPI/">
+    <Project Path="test/Microsoft.DotNet.GenAPI.IntegrationTests/Microsoft.DotNet.GenAPI.IntegrationTests.csproj" />
     <Project Path="test/Microsoft.DotNet.GenAPI.Tests/Microsoft.DotNet.GenAPI.Tests.csproj" />
   </Folder>
 </Solution>
