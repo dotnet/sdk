@@ -911,6 +911,26 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1185: Pakiet środowiska uruchomieniowego dla elementu FrameworkReference „{0}” był niedostępny. Może to być spowodowane tym, że parametr DisableTransitiveFrameworkReferenceDownloads został ustawiony na wartość true.</target>
         <note>{StrBegins="NETSDK1185: "}</note>
       </trans-unit>
+      <trans-unit id="SdkFeatureBandDiscontinued">
+        <source>NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</source>
+        <target state="new">NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</target>
+        <note>{StrBegins="NETSDK1240: "}{Locked="{0}"}{Locked="{1}"}</note>
+      </trans-unit>
+      <trans-unit id="SdkVersionHasVulnerabilities">
+        <source>NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</source>
+        <target state="new">NETSDK1238: The current .NET SDK ({0}) has known vulnerabilities ({1}).{2} See https://dotnet.microsoft.com/download</target>
+        <note>{StrBegins="NETSDK1238: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
+      </trans-unit>
+      <trans-unit id="SdkVersionIsEol">
+        <source>NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</source>
+        <target state="new">NETSDK1239: The current .NET SDK ({0}) is end of life as of {1}. It will receive no further security updates: https://dotnet.microsoft.com/download</target>
+        <note>{StrBegins="NETSDK1239: "}{Locked="{0}"}{Locked="{1}"}</note>
+      </trans-unit>
+      <trans-unit id="SdkVersionUpdateRecommendation_Info">
+        <source>Update to version {0}.</source>
+        <target state="new">Update to version {0}.</target>
+        <note>{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="SelfContainedExeCannotReferenceNonSelfContained">
         <source>NETSDK1150: The referenced project '{0}' is a non self-contained executable.  A non self-contained executable cannot be referenced by a self-contained executable.  For more information, see https://aka.ms/netsdk1150</source>
         <target state="translated">NETSDK1150: Projekt „{0}”, do którego istnieje odwołanie, jest niesamodzielnym plikiem wykonywalnym.  Niesamodzielny plik wykonywalny nie może być przywoływany przez samodzielny plik wykonywalny. Aby uzyskać więcej informacji, zobacz: https://aka.ms/netsdk1150</target>
