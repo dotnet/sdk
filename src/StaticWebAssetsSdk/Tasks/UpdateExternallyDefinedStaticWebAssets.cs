@@ -108,18 +108,14 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
             }
         }
 
-        // Update RelatedAsset on compressed/alternative assets that reference materialized framework assets.
+        // Remove alternative assets (e.g., compressed variants) whose primary was materialized as a
+        // framework asset. These alternatives will be regenerated from the materialized primary by the
+        // consuming project's compression step, so keeping the originals would cause conflicts.
         if (assetMapping.Count > 0)
         {
-            for (var i = 0; i < filteredAssets.Count; i++)
-            {
-                var asset = filteredAssets[i];
-                if (!string.IsNullOrEmpty(asset.RelatedAsset) &&
-                    assetMapping.TryGetValue(asset.RelatedAsset, out var mapping))
-                {
-                    asset.RelatedAsset = mapping.NewIdentity;
-                }
-            }
+            filteredAssets.RemoveAll(asset =>
+                !string.IsNullOrEmpty(asset.RelatedAsset) &&
+                assetMapping.ContainsKey(asset.RelatedAsset));
         }
 
         UpdatedAssets = StaticWebAsset.ToTaskItems(filteredAssets);
