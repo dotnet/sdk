@@ -87,7 +87,7 @@ jobs:
           --skip-commit-verification
           --branch '${{ parameters.vmrBranch }}'
           --remote-url '$(vmrInternalUrl)'
-          --azdev-pat '$(dn-bot-dnceng-build-rw-code-rw)'
+          --azdev-pat '$(AzdoToken)'
           --verbose
         displayName: Push changes to dotnet-dotnet (internal)
         workingDirectory: $(Agent.BuildDirectory)/sdk
