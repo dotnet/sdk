@@ -3223,8 +3223,8 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">L'outil '{0}' est déjà installé.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3676,16 +3676,6 @@ et les ID de package correspondants aux outils installés, utilisez la commande
       <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
         <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
         <target state="translated">Spécifié pour mettre à jour les charges de travail à l’aide de {0} à partir de la ligne de commande, mais le fichier global.json à {1} spécifie d’utiliser {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">L'outil « {0} » a été réinstallé avec la version préliminaire (version « {1} »).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">L'outil « {0} » a été réinstallé avec la version stable (version « {1} »).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

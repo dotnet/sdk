@@ -3223,8 +3223,8 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">Nástroj {0} je už nainstalovaný.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3676,16 +3676,6 @@ příkazu „dotnet tool list“.</target>
       <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
         <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
         <target state="translated">Určeno pro aktualizaci úloh pomocí {0} z příkazového řádku, ale soubor global.json v {1} je zadán pro použití {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">Nástroj {0} se přeinstaloval na předběžnou verzi (verze {1}).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">Nástroj {0} se přeinstaloval na stabilní verzi (verze {1}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

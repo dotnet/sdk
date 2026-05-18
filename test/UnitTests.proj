@@ -31,23 +31,33 @@
     <!-- dotnet-format unit tests are run under the DOTNET_FORMAT pipeline section. -->
     <SDKCustomXUnitProject Remove="dotnet-format.UnitTests\dotnet-format.UnitTests.csproj" />
 
-    <!-- ApiCompat integration tests are only run with TestFullMSBuild=true (see below). -->
-    <SDKCustomXUnitProject Remove="Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj" />
-
     <!-- Filter out .NET Framework only test projects and add them manually. -->
     <SDKCustomXUnitProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- Run the compatibility-tooling integration tests under desktop MSBuild whenever the
+       FullFramework leg runs (it's part of every PR build, so the Runtime="NET" taskhost path
+       is exercised on every PR). The default *IntegrationTests glob above already adds these
+       projects under .NETCoreApp on every leg; this entry only adds the additional
+       net472/desktop-MSBuild row. ApiDiff has no MSBuild task so it runs only under .NETCoreApp.
+
+       This row is conditioned on TestFullMSBuild=true because:
+       - net472 binaries can't be loaded on Linux/macOS, so scheduling a net472 work item
+         to those queues fails at chmod+x time on the missing native exe.
+       - The FullFramework leg sets TestFullMSBuild=true and uses a Windows queue. -->
+  <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
+    <SDKCustomXUnitProject Include="
+      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
+      Microsoft.DotNet.GenAPI.IntegrationTests\Microsoft.DotNet.GenAPI.IntegrationTests.csproj"
+                           TargetFramework="net472"
+                           RuntimeTargetFramework="net472" />
   </ItemGroup>
 
   <!-- When TestFullMSBuild=true, include the .NET Framework tests. .NETCoreApp tests are also executed
        as that validates running tests with desktop msbuild. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
     <SDKCustomXUnitProject Include="
-      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
-      Microsoft.DotNet.ApiCompat.Tests\Microsoft.DotNet.ApiCompat.Tests.csproj;
-      Microsoft.DotNet.ApiCompatibility.Tests\Microsoft.DotNet.ApiCompatibility.Tests.csproj;
-      Microsoft.DotNet.ApiSymbolExtensions.Tests\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;
       Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj;
-      Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj;
       Microsoft.DotNet.TemplateLocator.Tests\Microsoft.DotNet.TemplateLocator.Tests.csproj;
       Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj;
       Microsoft.NET.Sdk.WorkloadManifestReader.Tests\Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj;

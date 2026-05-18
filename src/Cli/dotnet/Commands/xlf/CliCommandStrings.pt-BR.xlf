@@ -3223,8 +3223,8 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">A ferramenta '{0}' já está instalada.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3676,16 +3676,6 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
       <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
         <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
         <target state="translated">Especificado para atualizar cargas de trabalho usando {0} da linha de comando, mas o arquivo global.json em {1} especificado para usar {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">A ferramenta "{0}" foi reinstalada com a versão de pré-lançamento mais recente (versão "{1}").</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">A ferramenta "{0}" foi reinstalada com a versão estável mais recente (versão "{1}").</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
