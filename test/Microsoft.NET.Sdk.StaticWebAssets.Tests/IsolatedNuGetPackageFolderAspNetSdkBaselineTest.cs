@@ -12,7 +12,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
         public IsolatedNuGetPackageFolderAspNetSdkBaselineTest(ITestOutputHelper log, string restoreNugetPackagePath) : base(log)
         {
-            _cachePath = Path.GetFullPath(Path.Combine(TestContext.Current.TestExecutionDirectory, Shorten(restoreNugetPackagePath)));
+            _cachePath = Path.GetFullPath(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, Shorten(restoreNugetPackagePath)));
         }
 
         private static string Shorten(string restoreNugetPackagePath) =>

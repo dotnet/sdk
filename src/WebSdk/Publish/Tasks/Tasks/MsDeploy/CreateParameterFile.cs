@@ -307,7 +307,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                         }
                     }
                 }
-#if NET472
+#if NETFRAMEWORK
                 catch (Xml.XmlException ex)
                 {
                     Uri sourceUri = new(ex.SourceUri);

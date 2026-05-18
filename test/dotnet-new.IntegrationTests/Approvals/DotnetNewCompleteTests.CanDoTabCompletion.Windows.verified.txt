@@ -25,6 +25,7 @@ proto
 razorclasslib
 razorcomponent
 sln
+slnf
 tool-manifest
 view
 viewimports
