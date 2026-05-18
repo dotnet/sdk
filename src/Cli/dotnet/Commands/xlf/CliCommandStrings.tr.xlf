@@ -1802,7 +1802,7 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
         <source>Tool '{0}' (version '{1}') is already installed.</source>
-        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
+        <target state="translated">'{0}' aracı (sürüm '{1}') zaten yüklü.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommonNoManifestGuide">

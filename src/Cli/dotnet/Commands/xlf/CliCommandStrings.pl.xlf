@@ -1802,7 +1802,7 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
         <source>Tool '{0}' (version '{1}') is already installed.</source>
-        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
+        <target state="translated">Narzędzie „{0}” (wersja: „{1}”) jest już zainstalowane.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommonNoManifestGuide">

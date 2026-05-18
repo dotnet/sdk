@@ -1802,7 +1802,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
         <source>Tool '{0}' (version '{1}') is already installed.</source>
-        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
+        <target state="translated">Lo strumento '{0}' (versione '{1}') è già installato.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommonNoManifestGuide">
