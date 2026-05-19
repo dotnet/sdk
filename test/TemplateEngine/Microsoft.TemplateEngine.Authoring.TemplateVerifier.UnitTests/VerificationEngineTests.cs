@@ -21,6 +21,60 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         }
 
         [Fact]
+        public async Task DefaultExcludePatternsFilterNestedObjAndBinFiles()
+        {
+            string verifyLocation = "foo/bar/baz";
+
+            // Use forward slashes since the Glob implementation uses '/' as path separator
+            Dictionary<string, string> files = new Dictionary<string, string>()
+            {
+                { "Program.cs", "hello world" },
+                { "obj/Debug/net10.0/AssemblyInfo.cs", "generated assembly info" },
+                { "obj/project.assets.json", "assets" },
+                { "bin/Debug/net10.0/MyApp.dll", "binary" },
+                { "bin/Debug/net10.0/MyApp.pdb", "symbols" },
+                { "src/obj/nested/deep/file.txt", "deep nested obj" },
+            };
+
+            IPhysicalFileSystemEx fileSystem = A.Fake<IPhysicalFileSystemEx>();
+            A.CallTo(() => fileSystem.EnumerateFiles(verifyLocation, "*", SearchOption.AllDirectories)).Returns(files.Keys);
+            A.CallTo(() => fileSystem.ReadAllTextAsync(A<string>._, A<CancellationToken>._))
+                .ReturnsLazily((string fileName, CancellationToken _) => Task.FromResult(files[fileName]));
+            A.CallTo(() => fileSystem.PathRelativeTo(A<string>._, A<string>._))
+                .ReturnsLazily((string target, string relativeTo) => target);
+
+            Dictionary<string, string> resultContents = new Dictionary<string, string>();
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "console")
+            {
+                TemplateSpecificArgs = null,
+                OutputDirectory = verifyLocation,
+                UniqueFor = null,
+            }
+                .WithCustomDirectoryVerifier(
+                    async (content, contentFetcher) =>
+                    {
+                        await foreach (var (filePath, scrubbedContent) in contentFetcher.Value)
+                        {
+                            resultContents[filePath] = scrubbedContent;
+                        }
+                    });
+
+            await VerificationEngine.CreateVerificationTask(
+                new VerificationEngine.CallerInfo()
+                {
+                    ContentDirectory = verifyLocation,
+                    CallerSourceFile = "callerLocation",
+                    CallerMethod = null
+                },
+                options,
+                fileSystem);
+
+            // Only Program.cs should remain - all obj/bin files (including nested) should be excluded
+            resultContents.Keys.Should().BeEquivalentTo(new[] { "Program.cs" });
+        }
+
+        [Fact]
         public async Task CreateVerificationTaskWithCustomScrubbersAndVerifier()
         {
             string verifyLocation = "foo\\bar\\baz";
