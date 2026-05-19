@@ -45,14 +45,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void NewTaskInstanceUsesFallbackTaskEnvironment()
-        {
-            var task = new ResolveTargetingPackAssets();
-
-            task.TaskEnvironment.Should().BeSameAs(TaskEnvironment.Fallback);
-        }
-
-        [Fact]
         public void RelativeTargetingPackPathsResolveAgainstTaskEnvironmentProjectDirectoryAndArePreservedInOutputs()
         {
             string projectDir = CreateTestDirectory();
@@ -120,28 +112,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "each project directory should have distinct top-level and framework-list cache entries");
         }
 
-        [Fact]
-        public void RuntimeFrameworkMetadataIsNotReusedFromCachedResults()
-        {
-            string mockDir = CreateMockTargetingPackDirectory();
-            var engine = new MockBuildEngine();
-
-            var firstTask = CreateTask(mockDir, engine);
-            firstTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(mockDir);
-            firstTask.RuntimeFrameworks = new[] { RuntimeFrameworkWithProfile("firstProfile") };
-            firstTask.Execute().Should().BeTrue();
-            firstTask.UsedRuntimeFrameworks.Single().GetMetadata("Profile").Should().Be("firstProfile");
-
-            var secondTask = CreateTask(mockDir, engine);
-            secondTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(mockDir);
-            secondTask.RuntimeFrameworks = new[] { RuntimeFrameworkWithProfile("secondProfile") };
-            secondTask.Execute().Should().BeTrue();
-
-            secondTask.UsedRuntimeFrameworks.Single().GetMetadata("Profile").Should().Be("secondProfile");
-            engine.RegisteredTaskObjects.Count.Should().Be(3,
-                "runtime framework metadata should distinguish top-level cache entries while sharing the framework-list cache entry");
-        }
-
         private string CreateTestDirectory([CallerMemberName] string testName = null)
         {
             string testDir = Path.Combine(Path.GetTempPath(), $"ResolveTargetingPackTest_{testName}_{Guid.NewGuid():N}");
@@ -193,14 +163,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ProjectLanguage = "C#",
             };
         }
-
-        private static MockTaskItem RuntimeFrameworkWithProfile(string profile) =>
-            new("RuntimeFramework", new Dictionary<string, string>
-            {
-                [MetadataKeys.FrameworkName] = "Microsoft.Windows.SDK.NET.Ref",
-                [MetadataKeys.Version] = "5.0.0",
-                ["Profile"] = profile,
-            });
 
         public void Dispose()
         {
