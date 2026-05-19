@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="de" original="../Resources.resx">
+    <body>
+      <trans-unit id="AddMemberThrowsException">
+        <source>Adding member '{0}' to the named type '{1}' failed with exception '{2}'.</source>
+        <target state="translated">Fehler beim Hinzufügen des Elements „{0}“ zum benannten Typ „{1}“ mit der Ausnahme von „{2}“.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ResolveTypeForwardFailed">
+        <source>Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</source>
+        <target state="translated">Der Typ „{0}“ in der enthaltenden Assembly „{1}“ konnte nicht über die Typweiterleitung aufgelöst werden. Stellen Sie sicher, dass die Assembly als Verweis bereitgestellt wird und den Typ enthält.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

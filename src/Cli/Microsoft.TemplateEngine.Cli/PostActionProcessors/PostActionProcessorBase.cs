@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             return results;
         }
 
-        protected static IReadOnlyList<string>? GetConfiguredFiles(
+        protected static IReadOnlyList<string> GetConfiguredFiles(
             IReadOnlyDictionary<string, string> postActionArgs,
             ICreationEffects creationEffects,
             string argName,
@@ -56,47 +56,20 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
         {
             if (creationEffects is not ICreationEffects2 creationEffects2)
             {
-                return null;
+                return new List<string>();
             }
             if (!postActionArgs.TryGetValue(argName, out string? targetFiles))
             {
-                return null;
+                return new List<string>();
             }
             if (string.IsNullOrWhiteSpace(targetFiles))
             {
-                return null;
+                return new List<string>();
             }
 
-            // try to parse the argument as json; if it is not valid json, use it as a string
-            if (targetFiles.TryParse(out JToken? config))
+            if (TryParseAsJson(targetFiles, out IReadOnlyList<string> paths))
             {
-                if (config == null)
-                {
-                    return null;
-                }
-
-                if (config.Type == JTokenType.String)
-                {
-                    return ProcessPaths(config.ToString().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
-                }
-                else if (config is JArray arr)
-                {
-                    List<string> parts = new();
-
-                    foreach (JToken token in arr)
-                    {
-                        if (token.Type != JTokenType.String)
-                        {
-                            continue;
-                        }
-                        parts.Add(token.ToString());
-                    }
-
-                    if (parts.Count > 0)
-                    {
-                        return ProcessPaths(parts);
-                    }
-                }
+                return ProcessPaths(paths);
             }
 
             return ProcessPaths(targetFiles.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
@@ -111,11 +84,72 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             }
         }
 
+        protected static IReadOnlyList<string>? GetTargetFilesPaths(
+            IReadOnlyDictionary<string, string> postActionArgs,
+            string outputBasePath)
+        {
+            postActionArgs.TryGetValue("targetFiles", out string? targetFiles);
+            if (string.IsNullOrWhiteSpace(targetFiles))
+            {
+                return null;
+            }
+
+            // try to parse the argument as json; if it is not valid json, use it as a string
+            if (TryParseAsJson(targetFiles, out IReadOnlyList<string> paths))
+            {
+                return GetFullPaths(paths);
+            }
+
+            return GetFullPaths(targetFiles.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
+
+            IReadOnlyList<string> GetFullPaths(IEnumerable<string> paths)
+            {
+                var fullPaths = paths
+                    .Select(p => Path.GetFullPath(p, outputBasePath))
+                    .ToList();
+
+                return fullPaths.AsReadOnly();
+            }
+        }
+
         protected abstract bool ProcessInternal(
             IEngineEnvironmentSettings environment,
             IPostAction action,
             ICreationEffects creationEffects,
             ICreationResult templateCreationResult,
             string outputBasePath);
+
+        private static bool TryParseAsJson(string targetFiles, out IReadOnlyList<string> paths)
+        {
+            paths = new List<string>();
+            targetFiles.TryParse(out JToken? config);
+            if (config is null)
+            {
+                return false;
+            }
+
+            if (config.Type == JTokenType.String)
+            {
+                paths = config.ToString().Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                return true;
+            }
+
+            if (config is not JArray arr)
+            {
+                return false;
+            }
+
+            var parts = arr
+                .Where(token => token.Type == JTokenType.String)
+                .Select(token => token.ToString()).ToList();
+
+            if (parts.Count == 0)
+            {
+                return false;
+            }
+
+            paths = parts.AsReadOnly();
+            return true;
+        }
     }
 }
