@@ -128,14 +128,13 @@ public static class Parser
                 string slnFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory);
                 if (slnFileFullPath.HasExtension(".slnx"))
                 {
-                    Reporter.Error.WriteLine("The solution is already in the slnx format.".Red());
+                    Reporter.Error.WriteLine("Only .sln files can be migrated to .slnx format.".Red());
                     return 1;
                 }
                 string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
                 SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(slnFileFullPath);
                 SolutionSerializers.SlnXml.SaveAsync(slnxFileFullPath, solution, CancellationToken.None).Wait();
-                Reporter.Output.WriteLine("The solution was migrated successfully.");
-                Reporter.Output.WriteLine(slnxFileFullPath);
+                Reporter.Output.WriteLine(string.Format(".slnx file {0} generated.", slnxFileFullPath));
                 return 0;
             }
             catch (GracefulException ex)
@@ -174,6 +173,17 @@ public static class Parser
                 if (projects.Length == 0)
                 {
                     Reporter.Error.WriteLine("You must specify at least one project to remove.".Red());
+                    return 1;
+                }
+
+                // Detect misplaced solution file in project arguments
+                var misplacedSlnFile = projects.FirstOrDefault(p => p.HasExtension(".sln") || p.HasExtension(".slnx"));
+                if (misplacedSlnFile != null)
+                {
+                    var projectArgs = string.Join(" ", projects.Where(p => !p.HasExtension(".sln") && !p.HasExtension(".slnx")));
+                    Reporter.Error.WriteLine(string.Format("Solution argument '{0}' appears to be misplaced.", misplacedSlnFile).Red());
+                    Reporter.Error.WriteLine("Did you mean:");
+                    Reporter.Error.WriteLine(string.Format("  dotnet solution {0} remove {1}", misplacedSlnFile, projectArgs));
                     return 1;
                 }
 
