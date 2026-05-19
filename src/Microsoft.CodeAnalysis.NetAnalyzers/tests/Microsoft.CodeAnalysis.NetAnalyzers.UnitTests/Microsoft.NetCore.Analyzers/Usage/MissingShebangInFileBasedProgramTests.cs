@@ -246,8 +246,8 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     ExpectedDiagnostics =
                     {
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
-                        // Preprocessor directives must appear as the first non-whitespace character on a line
-                        DiagnosticResult.CompilerError("CS1040").WithSpan("Test0.cs", 2, 1, 2, 2),
+                        // Test0.cs(2,1): error CS9378: '#!' must be the first characters on the first line of the file
+                        DiagnosticResult.CompilerError("CS9378").WithSpan("Test0.cs", 2, 1, 2, 2),
                     },
                 },
                 SolutionTransforms =
