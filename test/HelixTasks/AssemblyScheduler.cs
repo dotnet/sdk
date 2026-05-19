@@ -193,6 +193,26 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             return assemblyInfoList;
         }
 
+        /// <summary>
+        /// Produces one partition per discovered test class in the assembly.
+        /// This is useful for heavy integration tests where each class should run
+        /// in its own Helix work item.
+        /// </summary>
+        public IEnumerable<AssemblyPartitionInfo> PartitionByClass(string assemblyPath)
+        {
+            var typeInfoList = GetTypeInfoList(assemblyPath);
+
+            if (typeInfoList.Count == 0)
+            {
+                return new[] { CreateAssemblyInfo(assemblyPath) };
+            }
+
+            return typeInfoList.Select((typeInfo, i) => new AssemblyPartitionInfo(
+                assemblyPath,
+                displayName: $"{Path.GetFileName(assemblyPath)}.{typeInfo.FullName}",
+                classListArgumentString: $"{typeInfo.FullName}."));
+        }
+
         public AssemblyPartitionInfo CreateAssemblyInfo(string assemblyPath)
         {
             return new AssemblyPartitionInfo(assemblyPath);
