@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class GenerateDepsFile : TaskBase, IMultiThreadableTask
     {
-        public TaskEnvironment TaskEnvironment { get; set; }
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         [Required]
         public string ProjectPath { get; set; }
@@ -136,13 +136,13 @@ namespace Microsoft.NET.Build.Tasks
             return filteredPackages;
         }
 
-        private void WriteDepsFile(AbsolutePath projectPath, AbsolutePath depsFilePath, TaskEnvironment taskEnvironment)
+        private void WriteDepsFile(AbsolutePath projectPath, AbsolutePath depsFilePath)
         {
             ProjectContext projectContext = null;
             LockFileLookup lockFileLookup = null;
             if (AssetsFilePath != null)
             {
-                AbsolutePath absoluteAssetsFilePath = taskEnvironment.GetAbsolutePath(AssetsFilePath);
+                AbsolutePath absoluteAssetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
                 LockFile lockFile = new LockFileCache(this).GetLockFile(absoluteAssetsFilePath);
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
@@ -225,7 +225,7 @@ namespace Microsoft.NET.Build.Tasks
                 RuntimeGraph runtimeGraph = null;
                 if (IsSelfContained)
                 {
-                    AbsolutePath absoluteRuntimeGraphPath = taskEnvironment.GetAbsolutePath(RuntimeGraphPath);
+                    AbsolutePath absoluteRuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
                     runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(absoluteRuntimeGraphPath);
                 }
 
@@ -318,12 +318,9 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            TaskEnvironment taskEnvironment = TaskEnvironment
-                ?? throw new InvalidOperationException($"{nameof(GenerateDepsFile)} requires MSBuild to provide a {nameof(TaskEnvironment)}.");
-
-            AbsolutePath absoluteProjectPath = taskEnvironment.GetAbsolutePath(ProjectPath);
-            AbsolutePath absoluteDepsFilePath = taskEnvironment.GetAbsolutePath(DepsFilePath);
-            WriteDepsFile(absoluteProjectPath, absoluteDepsFilePath, taskEnvironment);
+            AbsolutePath absoluteProjectPath = TaskEnvironment.GetAbsolutePath(ProjectPath);
+            AbsolutePath absoluteDepsFilePath = TaskEnvironment.GetAbsolutePath(DepsFilePath);
+            WriteDepsFile(absoluteProjectPath, absoluteDepsFilePath);
         }
     }
 }
