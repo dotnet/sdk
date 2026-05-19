@@ -9,12 +9,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     [MSBuildMultiThreadableTask]
     public class ResolvePackageFileConflicts : TaskBase, IMultiThreadableTask
     {
-        private TaskEnvironment? _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ?? throw new InvalidOperationException($"{nameof(TaskEnvironment)} must be set before executing {nameof(ResolvePackageFileConflicts)}.");
-            set => _taskEnvironment = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         private HashSet<ITaskItem?> referenceConflicts = new();
         private HashSet<ITaskItem?> analyzerConflicts = new();
