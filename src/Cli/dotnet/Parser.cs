@@ -5,9 +5,11 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Command = System.CommandLine.Command;
+using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -148,8 +150,66 @@ public static class Parser
             }
         });
 
+        // sln remove
+        var removeSlnArg = new Argument<string>("SLN_FILE")
+        {
+            Description = "The solution file or directory to operate on. If not specified, the command searches the current directory.",
+            Arity = ArgumentArity.ZeroOrOne,
+            DefaultValueFactory = _ => Directory.GetCurrentDirectory()
+        };
+        var removeProjectsArg = new Argument<string[]>("PROJECT_PATH")
+        {
+            Description = "The paths to the projects to remove from the solution.",
+            Arity = ArgumentArity.OneOrMore
+        };
+        var removeCommand = new Command("remove", "Remove one or more projects from a solution file.") { removeSlnArg, removeProjectsArg };
+        removeCommand.SetAction(parseResult =>
+        {
+            try
+            {
+                string fileOrDirectory = parseResult.GetValue(removeSlnArg) ?? Directory.GetCurrentDirectory();
+                string[] projects = parseResult.GetValue(removeProjectsArg) ?? [];
+                string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles: true);
+
+                if (projects.Length == 0)
+                {
+                    Reporter.Error.WriteLine("You must specify at least one project to remove.".Red());
+                    return 1;
+                }
+
+                var relativeProjectPaths = projects
+                    .Select(p => Path.GetFullPath(p))
+                    .Select(p => Path.GetRelativePath(
+                        Path.GetDirectoryName(solutionFileFullPath)!,
+                        Directory.Exists(p)
+                            ? GetProjectFileFromDirectory(p)
+                            : p));
+
+                if (solutionFileFullPath.HasExtension(SlnfFileHelper.SlnfExtension))
+                {
+                    RemoveProjectsFromSolutionFilter(solutionFileFullPath, relativeProjectPaths);
+                }
+                else
+                {
+                    RemoveProjectsFromSolution(solutionFileFullPath, relativeProjectPaths);
+                }
+                return 0;
+            }
+            catch (GracefulException ex)
+            {
+                Reporter.Error.WriteLine(ex.Message.Red());
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(removeSlnArg) ?? "", ex.Message).Red());
+                return 1;
+            }
+        });
+
         slnCommand.Subcommands.Add(listCommand);
         slnCommand.Subcommands.Add(migrateCommand);
+        slnCommand.Subcommands.Add(removeCommand);
 
         slnCommand.SetAction(parseResult =>
         {
@@ -160,6 +220,7 @@ public static class Parser
             Reporter.Output.WriteLine("Commands:");
             Reporter.Output.WriteLine("  list       List all projects in a solution file.");
             Reporter.Output.WriteLine("  migrate    Migrate a solution file to the new slnx format.");
+            Reporter.Output.WriteLine("  remove     Remove one or more projects from a solution file.");
             return 1;
         });
 
@@ -169,6 +230,134 @@ public static class Parser
     public static ParseResult Parse(string[] args) => RootCommand.Parse(args);
 
     public static int Invoke(ParseResult parseResult) => parseResult.Invoke();
+
+    /// <summary>
+    /// Find a single *proj file in the given directory.
+    /// </summary>
+    private static string GetProjectFileFromDirectory(string projectDirectory)
+    {
+        DirectoryInfo dir;
+        try
+        {
+            dir = new DirectoryInfo(projectDirectory);
+        }
+        catch (ArgumentException)
+        {
+            throw new GracefulException(string.Format("Could not find a project or directory `{0}`.", projectDirectory));
+        }
+
+        if (!dir.Exists)
+        {
+            throw new GracefulException(string.Format("Could not find a project or directory `{0}`.", projectDirectory));
+        }
+
+        FileInfo[] files = dir.GetFiles("*proj");
+        if (files.Length == 0)
+        {
+            throw new GracefulException(string.Format("Could not find any project in `{0}`.", projectDirectory));
+        }
+
+        if (files.Length > 1)
+        {
+            throw new GracefulException(string.Format("Found more than one project in `{0}`. Specify which one to use.", projectDirectory));
+        }
+
+        return files[0].FullName;
+    }
+
+    private static void RemoveProjectsFromSolution(string solutionFileFullPath, IEnumerable<string> projectPaths)
+    {
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+        ISolutionSerializer serializer = solution.SerializerExtension!.Serializer;
+
+        // set UTF-8 BOM encoding for .sln
+        if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
+        {
+            solution.SerializerExtension = v12Serializer.CreateModelExtension(new()
+            {
+                Encoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
+            });
+        }
+
+        foreach (var projectPath in projectPaths)
+        {
+            var project = solution.FindProject(projectPath);
+            // If the project is not found, try to find it by name without extension
+            if (project is null && !Path.HasExtension(projectPath))
+            {
+                var projectsMatchByName = solution.SolutionProjects.Where(p => Path.GetFileNameWithoutExtension(p.DisplayName)?.Equals(projectPath) == true);
+                project = projectsMatchByName.Count() == 1 ? projectsMatchByName.First() : null;
+            }
+            if (project is null)
+            {
+                Reporter.Output.WriteLine(CliStrings.ProjectNotFoundInTheSolution, projectPath);
+            }
+            else
+            {
+                solution.RemoveProject(project);
+                Reporter.Output.WriteLine("Project `{0}` removed from the solution.", projectPath);
+            }
+        }
+
+        // Remove empty solution folders
+        for (int i = 0; i < solution.SolutionFolders.Count; i++)
+        {
+            var folder = solution.SolutionFolders[i];
+            int nonFolderDescendants = 0;
+            Stack<SolutionFolderModel> stack = new();
+            stack.Push(folder);
+
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+                nonFolderDescendants += current.Files?.Count ?? 0;
+                foreach (var child in solution.SolutionItems)
+                {
+                    if (child is { Parent: var parent } && parent == current)
+                    {
+                        if (child is SolutionFolderModel childFolder)
+                        {
+                            stack.Push(childFolder);
+                        }
+                        else
+                        {
+                            nonFolderDescendants++;
+                        }
+                    }
+                }
+            }
+
+            if (nonFolderDescendants == 0)
+            {
+                solution.RemoveFolder(folder);
+                i--;
+            }
+        }
+
+        serializer.SaveAsync(solutionFileFullPath, solution, CancellationToken.None).GetAwaiter().GetResult();
+    }
+
+    private static void RemoveProjectsFromSolutionFilter(string slnfFileFullPath, IEnumerable<string> projectPaths)
+    {
+        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(slnfFileFullPath);
+        string parentSolutionPath = filteredSolution.Description!;
+
+        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
+
+        foreach (var projectPath in projectPaths)
+        {
+            if (existingProjects.Remove(projectPath))
+            {
+                Reporter.Output.WriteLine("Project `{0}` removed from the solution.", projectPath);
+            }
+            else
+            {
+                Reporter.Output.WriteLine(CliStrings.ProjectNotFoundInTheSolution, projectPath);
+            }
+        }
+
+        SlnfFileHelper.SaveSolutionFilter(slnfFileFullPath, parentSolutionPath, existingProjects.OrderBy(p => p));
+    }
 }
 
 #else
