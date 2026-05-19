@@ -94,6 +94,8 @@
     <FileSignInfo Include="SimpleInfoName.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Verify.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Verify.DiffPlex.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Verify.XunitV3.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -107,6 +109,8 @@
   <!-- Filter out any test packages from ItemsToSign -->
   <ItemGroup>
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
+    <ItemsToSign Remove="$(ArtifactsPackagesDir)**\Microsoft.TemplateEngine.Mocks.*.nupkg" />
+    <ItemsToSign Remove="$(ArtifactsPackagesDir)**\Microsoft.TemplateEngine.TestHelper.*.nupkg" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'true'">

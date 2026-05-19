@@ -54,7 +54,7 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
         {
             try
             {
-                await ReceiveAndApplyUpdatesAsync(initialUpdates: false, cancellationToken);
+                await ReceiveAndApplyUpdatesAsync(initialUpdates: false, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
@@ -72,35 +72,35 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
     {
         agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
 
-        await transport.SendAsync(new ClientInitializationResponse(agent.Capabilities), cancellationToken);
+        await transport.SendAsync(new ClientInitializationResponse(agent.Capabilities), cancellationToken).ConfigureAwait(false);
 
         // Apply updates made before this process was launched to avoid executing unupdated versions of the affected modules.
 
         // We should only receive ManagedCodeUpdate when when the debugger isn't attached,
         // otherwise the initialization should send InitialUpdatesCompleted immediately.
         // The debugger itself applies these updates when launching process with the debugger attached.
-        await ReceiveAndApplyUpdatesAsync(initialUpdates: true, cancellationToken);
+        await ReceiveAndApplyUpdatesAsync(initialUpdates: true, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task ReceiveAndApplyUpdatesAsync(bool initialUpdates, CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            using var request = await transport.ReceiveAsync(cancellationToken);
+            using var request = await transport.ReceiveAsync(cancellationToken).ConfigureAwait(false);
             if (request.Stream == null)
             {
                 break;
             }
 
-            var payloadType = (RequestType)await request.Stream.ReadByteAsync(cancellationToken);
+            var payloadType = (RequestType)await request.Stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);
             switch (payloadType)
             {
                 case RequestType.ManagedCodeUpdate:
-                    await ReadAndApplyManagedCodeUpdateAsync(request.Stream, cancellationToken);
+                    await ReadAndApplyManagedCodeUpdateAsync(request.Stream, cancellationToken).ConfigureAwait(false);
                     break;
 
                 case RequestType.StaticAssetUpdate:
-                    await ReadAndApplyStaticAssetUpdateAsync(request.Stream, cancellationToken);
+                    await ReadAndApplyStaticAssetUpdateAsync(request.Stream, cancellationToken).ConfigureAwait(false);
                     break;
 
                 case RequestType.InitialUpdatesCompleted when initialUpdates:
@@ -115,7 +115,7 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
 
     private async ValueTask ReadAndApplyManagedCodeUpdateAsync(Stream stream, CancellationToken cancellationToken)
     {
-        var request = await ManagedCodeUpdateRequest.ReadAsync(stream, cancellationToken);
+        var request = await ManagedCodeUpdateRequest.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
         bool success;
         try
@@ -132,12 +132,12 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
 
         var logEntries = agent.Reporter.GetAndClearLogEntries(request.ResponseLoggingLevel);
 
-        await SendResponseAsync(new UpdateResponse(logEntries, success), cancellationToken);
+        await SendResponseAsync(new UpdateResponse(logEntries, success), cancellationToken).ConfigureAwait(false);
     }
 
     private async ValueTask ReadAndApplyStaticAssetUpdateAsync(Stream stream, CancellationToken cancellationToken)
     {
-        var request = await StaticAssetUpdateRequest.ReadAsync(stream, cancellationToken);
+        var request = await StaticAssetUpdateRequest.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -153,7 +153,7 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
         // Updating static asset only invokes ContentUpdate metadata update handlers.
         // Failures of these handlers are reported to the log and ignored.
         // Therefore, this request always succeeds.
-        await SendResponseAsync(new UpdateResponse(logEntries, success: true), cancellationToken);
+        await SendResponseAsync(new UpdateResponse(logEntries, success: true), cancellationToken).ConfigureAwait(false);
     }
 
     internal async ValueTask SendResponseAsync<T>(T response, CancellationToken cancellationToken)
@@ -161,8 +161,8 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
     {
         try
         {
-            await _messageToClientLock.WaitAsync(cancellationToken);
-            await transport.SendAsync(response, cancellationToken);
+            await _messageToClientLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await transport.SendAsync(response, cancellationToken).ConfigureAwait(false);
         }
         finally
         {

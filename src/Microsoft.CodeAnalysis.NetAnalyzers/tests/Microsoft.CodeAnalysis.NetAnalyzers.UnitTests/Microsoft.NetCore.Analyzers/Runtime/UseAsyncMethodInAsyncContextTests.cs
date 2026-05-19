@@ -142,7 +142,7 @@ class Test {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = testCS,
             };
-            await csTestVerify.RunAsync();
+            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
 
             var testVB = @"
 Imports System
@@ -168,7 +168,7 @@ End Module
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic16_9,
                 TestCode = testVB,
             };
-            await vbTestVerify.RunAsync();
+            await vbTestVerify.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1263,7 +1263,7 @@ class Test {
     }
 }",
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1282,7 +1282,7 @@ class Test {
     }
 }",
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1300,7 +1300,7 @@ class Test {
     }
 }",
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1320,7 +1320,7 @@ class Test {
     }
 }",
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1563,7 +1563,7 @@ class Test {
                 TestCode = testCS,
             };
 
-            await csTestVerify.RunAsync();
+            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task CreateCSTestAndRunAsync(string testCS, params DiagnosticResult[] expectedDiagnostics)
@@ -1574,7 +1574,7 @@ class Test {
             };
 
             csTestVerify.ExpectedDiagnostics.AddRange(expectedDiagnostics);
-            await csTestVerify.RunAsync();
+            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task CreateVBTestAndRunAsync(string testCS)
@@ -1584,7 +1584,7 @@ class Test {
                 TestCode = testCS,
             };
 
-            await csTestVerify.RunAsync();
+            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task CreateVBTestAndRunAsync(string testCS, params DiagnosticResult[] expectedDiagnostics)
@@ -1595,7 +1595,7 @@ class Test {
             };
 
             csTestVerify.ExpectedDiagnostics.AddRange(expectedDiagnostics);
-            await csTestVerify.RunAsync();
+            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -1,3 +1,8 @@
+# This workflow updates snapshots for CLI completion tests when
+# /fixcompletions or /completions is commented on a pull request.
+# Action: https://github.com/dotnet/sdk/actions/workflows/fix-completions-on-comment.yml
+# Keep documentation/project-docs/developer-guide.md up to date with changes in
+# this workflow.
 name: Fix completion snapshots on command
 
 on:

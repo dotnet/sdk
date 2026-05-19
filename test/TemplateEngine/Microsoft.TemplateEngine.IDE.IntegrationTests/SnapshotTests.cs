@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithPreferDefaultName")
                 {
                     TemplatePath = templateLocation,
-                    SnapshotsDirectory = "Approvals",
+                    SnapshotsDirectory = ApprovalsDirectory,
                     DoNotPrependTemplateNameToScenarioName = true,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     ScenarioName = "Basic"
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithOnlyIfStatement")
                 {
                     TemplatePath = templateLocation,
-                    SnapshotsDirectory = "Approvals",
+                    SnapshotsDirectory = ApprovalsDirectory,
                     DoNotPrependTemplateNameToScenarioName = true,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     ScenarioName = "Basic"
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>() { { "default-port", "3332" } });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithOnlyIfForLocalhost")
                 {
                     TemplatePath = templateLocation,
-                    SnapshotsDirectory = "Approvals",
+                    SnapshotsDirectory = ApprovalsDirectory,
                     DoNotPrependTemplateNameToScenarioName = true,
                     DoNotAppendTemplateArgsToScenarioName = true,
                     ScenarioName = "Basic"
@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>() { { "default-port", "3332" } });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options);
+            return engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -99,7 +99,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDirectory,
                 DoNotPrependTemplateNameToScenarioName = true,
                 DoNotAppendTemplateArgsToScenarioName = true,
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             .WithInstantiationThroughTemplateCreatorApi(parameters);
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDirectory,
                 DoNotPrependTemplateNameToScenarioName = true,
                 DoNotAppendTemplateArgsToScenarioName = false,
@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             .WithInstantiationThroughTemplateCreatorApi(parameters);
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -169,7 +169,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithPortsAndCoalesce")
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDirectory,
                 DoNotPrependTemplateNameToScenarioName = true,
                 DoNotAppendTemplateArgsToScenarioName = false,
@@ -190,7 +190,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             .WithInstantiationThroughTemplateCreatorApi(parameters);
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         private Dictionary<string, string?> ConvertToParameters(string?[]? parametersArray)

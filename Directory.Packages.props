@@ -14,6 +14,7 @@
     <PackageVersion Include="Basic.CompilerLog.Util" Version="0.9.18" />
     <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <PackageVersion Include="BenchmarkDotNet.Diagnostics.Windows" Version="$(BenchmarkDotNetDiagnosticsWindowsPackageVersion)" />
+    <PackageVersion Include="JsonSchema.Net" Version="7.3.2" />
     <PackageVersion Include="MessagePack" Version="3.1.4" />
     <PackageVersion Include="MicroBuild.Plugins.SwixBuild.Dotnet" Version="1.1.87-gba258badda" />
     <PackageVersion Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />
@@ -68,6 +69,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
+    <PackageVersion Include="Microsoft.IO.Redist" Version="6.1.0" />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
     <PackageVersion Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
@@ -79,12 +81,6 @@
     <PackageVersion Include="Microsoft.NETCore.Targets" Version="2.1.0" />
     <!-- The MicrosoftSignedWixVersion property comes from the Arcade SDK DefaultVersions.props -->
     <PackageVersion Include="Microsoft.Signed.Wix" Version="$(MicrosoftSignedWixVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3" Version="$(MicrosoftTemplateEngineAuthoringTemplateVerifierXunitV3PackageVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.Edge" Version="$(MicrosoftTemplateEngineEdgePackageVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.Mocks.XunitV3" Version="$(MicrosoftTemplateEngineMocksXunitV3PackageVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="$(MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion)" />
-    <PackageVersion Include="Microsoft.TemplateEngine.TestHelper.XunitV3" Version="$(MicrosoftTemplateEngineTestHelperXunitV3PackageVersion)" />
-    <PackageVersion Include="Microsoft.TemplateSearch.Common" Version="$(MicrosoftTemplateSearchCommonPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
@@ -110,6 +106,7 @@
     <PackageVersion Include="NuGet.Commands" Version="$(NuGetCommandsPackageVersion)" />
     <PackageVersion Include="NuGet.Common" Version="$(NuGetCommonPackageVersion)" />
     <PackageVersion Include="NuGet.Configuration" Version="$(NuGetConfigurationPackageVersion)" />
+    <PackageVersion Include="NuGet.Credentials" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageVersion Include="NuGet.LibraryModel" Version="$(NuGetProjectModelPackageVersion)" />
     <PackageVersion Include="NuGet.Localization" Version="$(NuGetLocalizationPackageVersion)" />
@@ -122,7 +119,7 @@
     <PackageVersion Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
-    <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="$(SystemCommandLineNamingConventionBinderVersion)" />

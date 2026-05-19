@@ -1,0 +1,138 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <AssemblyName>dn</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.DotNet.Cli</RootNamespace>
+    <PublishAot>true</PublishAot>
+    <IsAotCompatible>true</IsAotCompatible>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">true</PublicSign>
+    <UseAppHost>true</UseAppHost>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <PackageReference Include="Microsoft.Windows.CsWin32" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!--
+    When building inside Visual Studio, publish the AOT binaries and overlay managed dependencies
+    so the "Debug dn (AOT native)" launch profile is ready to go.
+  -->
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <_DnPublishDir>$(ArtifactsBinDir)dn\$(Configuration)\$(SdkTargetFramework)\$(TargetRid)\publish\</_DnPublishDir>
+    <_DotnetAotPublishDir>$(ArtifactsBinDir)dotnet-aot\$(Configuration)\$(SdkTargetFramework)\$(TargetRid)\publish\</_DotnetAotPublishDir>
+    <_DotnetManagedOutDir>$(ArtifactsBinDir)dotnet\$(Configuration)\$(SdkTargetFramework)\</_DotnetManagedOutDir>
+  </PropertyGroup>
+
+  <Target Name="PublishAotForDebug" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+
+    <!-- 1. Publish dotnet-aot (native shared library) -->
+    <Exec Command="&quot;$(DotNetTool)&quot; publish &quot;$(MSBuildThisFileDirectory)..\dotnet-aot\dotnet-aot.csproj&quot; -r $(TargetRid) -c $(Configuration)" ConsoleToMSBuild="true" />
+
+    <!-- 2. Publish dn (native AOT host) -->
+    <Exec Command="&quot;$(DotNetTool)&quot; publish &quot;$(MSBuildProjectFullPath)&quot; -r $(TargetRid) -c $(Configuration)" ConsoleToMSBuild="true" />
+
+    <!-- 3. Build managed dotnet to get the latest managed assemblies -->
+    <Exec Command="&quot;$(DotNetTool)&quot; build &quot;$(MSBuildThisFileDirectory)..\dotnet\dotnet.csproj&quot; -c $(Configuration)" ConsoleToMSBuild="true" />
+
+    <!-- 4. Copy dotnet-aot native library into dn's publish directory -->
+    <Copy SourceFiles="$(_DotnetAotPublishDir)dotnet-aot.dll" DestinationFolder="$(_DnPublishDir)" SkipUnchangedFiles="true" />
+
+    <!-- 5. Overlay managed dotnet output into dn's publish directory -->
+    <ItemGroup>
+      <_DotnetManagedFiles Include="$(_DotnetManagedOutDir)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_DotnetManagedFiles)" DestinationFiles="@(_DotnetManagedFiles->'$(_DnPublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+
+    <!-- 6. Generate launchSettings.json with absolute paths for this machine.
+         This profile uses mixed-mode debugging (nativeDebugging: true) where the managed
+         debugger is primary. Use this profile for setting breakpoints in managed Layer 3
+         code (dotnet.dll) that runs after the CLR loads via hostfxr.
+         For breakpoints in AOT-compiled code (Layers 1 & 2), use the dn-native-debug
+         project instead (set it as startup project). -->
+    <PropertyGroup>
+      <_DnExePath>$([MSBuild]::NormalizePath('$(_DnPublishDir)', 'dn.exe'))</_DnExePath>
+      <_DnCwdPath>$([MSBuild]::NormalizePath('$(_DnPublishDir)'))</_DnCwdPath>
+      <_DotnetRootPath>$([MSBuild]::NormalizePath('$(RepoRoot)', '.dotnet'))</_DotnetRootPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_LaunchSettingsLines Include="{" />
+      <_LaunchSettingsLines Include="  %22profiles%22: {" />
+      <_LaunchSettingsLines Include="    %22Debug dn (managed path)%22: {" />
+      <_LaunchSettingsLines Include="      %22commandName%22: %22Executable%22," />
+      <_LaunchSettingsLines Include="      %22executablePath%22: %22$(_DnExePath.Replace('\','\\'))%22," />
+      <_LaunchSettingsLines Include="      %22commandLineArgs%22: %22--info%22," />
+      <_LaunchSettingsLines Include="      %22workingDirectory%22: %22$(_DnCwdPath.Replace('\','\\'))%22," />
+      <_LaunchSettingsLines Include="      %22environmentVariables%22: {" />
+      <_LaunchSettingsLines Include="        %22DOTNET_ROOT%22: %22$(_DotnetRootPath.Replace('\','\\'))%22," />
+      <_LaunchSettingsLines Include="        %22DOTNET_CLI_ENABLEAOT%22: %22true%22" />
+      <_LaunchSettingsLines Include="      }," />
+      <_LaunchSettingsLines Include="      %22nativeDebugging%22: true" />
+      <_LaunchSettingsLines Include="    }" />
+      <_LaunchSettingsLines Include="  }" />
+      <_LaunchSettingsLines Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(MSBuildThisFileDirectory)Properties\launchSettings.json" Lines="@(_LaunchSettingsLines)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+
+    <!--
+      6b. Generate dn-native-debug.vcxproj.user with absolute paths for this machine.
+      The vcxproj has relative/computed paths that work generally, but the .user file
+      provides machine-specific overrides that VS reads at project load time.
+    -->
+    <ItemGroup>
+      <_VcxUserLines Include="&lt;?xml version=%221.0%22 encoding=%22utf-8%22?&gt;" />
+      <_VcxUserLines Include="&lt;Project ToolsVersion=%2217.0%22 xmlns=%22http://schemas.microsoft.com/developer/msbuild/2003%22&gt;" />
+      <_VcxUserLines Include="  &lt;PropertyGroup Condition=%22'$(Configuration)|$(Platform)'=='$(Configuration)|x64'%22&gt;" />
+      <_VcxUserLines Include="    &lt;LocalDebuggerCommand&gt;$(_DnExePath)&lt;/LocalDebuggerCommand&gt;" />
+      <_VcxUserLines Include="    &lt;LocalDebuggerCommandArguments&gt;--info&lt;/LocalDebuggerCommandArguments&gt;" />
+      <_VcxUserLines Include="    &lt;LocalDebuggerWorkingDirectory&gt;$(_DnCwdPath)&lt;/LocalDebuggerWorkingDirectory&gt;" />
+      <_VcxUserLines Include="    &lt;LocalDebuggerEnvironment&gt;DOTNET_ROOT=$(_DotnetRootPath)&#xA;DOTNET_CLI_ENABLEAOT=true&lt;/LocalDebuggerEnvironment&gt;" />
+      <_VcxUserLines Include="    &lt;DebuggerFlavor&gt;WindowsLocalDebugger&lt;/DebuggerFlavor&gt;" />
+      <_VcxUserLines Include="  &lt;/PropertyGroup&gt;" />
+      <_VcxUserLines Include="&lt;/Project&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(MSBuildThisFileDirectory)dn-native-debug.vcxproj.user" Lines="@(_VcxUserLines)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+
+    <!--
+      7. Generate debug-dn.cmd convenience script.
+
+      Published NativeAOT binaries are pure native executables. The managed debugger
+      cannot bind C# breakpoints in them. Visual Studio's launchSettings "nativeDebugging"
+      flag enables mixed-mode (managed + native), but the managed side finds no CLR so
+      C# breakpoints may not bind.
+
+      The documented workflow for debugging NativeAOT apps in Visual Studio is to open
+      the executable directly: File > Open > Project > select dn.exe. This launches the
+      native-only debugger which reads the PDB and binds source breakpoints correctly.
+
+      This script automates that: it runs "devenv /debugexe dn.exe" which opens the
+      published binary under the Visual Studio native debugger. Set breakpoints in the
+      Source Files view and press F5 to start.
+
+      See: https://learn.microsoft.com/dotnet/core/deploying/native-aot/diagnostics#native-debugging
+    -->
+    <ItemGroup>
+      <_DebugScriptLines Include="@echo off" />
+      <_DebugScriptLines Include="REM Launch the published NativeAOT dn.exe under Visual Studio's native debugger." />
+      <_DebugScriptLines Include="REM This opens a new VS instance with the native debugger attached." />
+      <_DebugScriptLines Include="REM Set breakpoints in the source file view and press F5 to start." />
+      <_DebugScriptLines Include="REM" />
+      <_DebugScriptLines Include="REM Tip: to break on managed exceptions, add a Function Breakpoint on RhThrowEx" />
+      <_DebugScriptLines Include="REM      (Debug > Windows > Breakpoints > New > Function, Language = All Languages)." />
+      <_DebugScriptLines Include="REM" />
+      <_DebugScriptLines Include="set DOTNET_ROOT=$(_DotnetRootPath)" />
+      <_DebugScriptLines Include="set DOTNET_CLI_ENABLEAOT=true" />
+      <_DebugScriptLines Include="devenv /debugexe %22$(_DnExePath)%22 --info" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(MSBuildThisFileDirectory)debug-dn.cmd" Lines="@(_DebugScriptLines)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+
+</Project>

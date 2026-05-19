@@ -156,7 +156,7 @@ extends:
         parameters:
           pool:
             name: $(DncEngInternalBuildPool)
-            image: 1es-ubuntu-2204
+            image: build.azurelinux.3.amd64
             os: linux
           helixTargetQueue: ubuntu.2204.amd64
           oneESCompat:

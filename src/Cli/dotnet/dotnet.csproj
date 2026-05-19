@@ -37,6 +37,7 @@
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\NuGetUtils.NuGet.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\SdkVulnerabilityCacheReader.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetOS)' != 'windows'">
@@ -79,11 +80,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />
-    <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" GlobalPropertiesToRemove="PublishDir" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
@@ -91,7 +91,7 @@
     <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" Condition="'$(TargetOS)' == 'windows'">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
+    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBA. -->
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
   </ItemGroup>
