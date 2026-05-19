@@ -54,13 +54,28 @@
     <PropertyGroup>
       <PackAsAnalyzerPath>analyzers/dotnet</PackAsAnalyzerPath>
       <PackAsAnalyzerPath Condition="'$(AnalyzerRoslynVersion)' != ''">$(PackAsAnalyzerPath)/roslyn$(AnalyzerRoslynVersion)</PackAsAnalyzerPath>
-      <PackAsAnalyzerPath Condition="'$(AnalyzerLanguage)' != ''">$(PackAsAnalyzerPath)/$(AnalyzerLanguage)</PackAsAnalyzerPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackAsAnalyzerFile Include="@(_BuildOutputInPackage)" />
-      <PackAsAnalyzerFile Include="@(_TargetPathsToSymbols)" IsSymbol="true" />
-      <PackAsAnalyzerFile PackagePath="$(PackAsAnalyzerPath)/%(TargetPath)" />
+      <_PackAsAnalyzerAssembly Include="@(_BuildOutputInPackage)" />
+      <_PackAsAnalyzerAssembly Include="@(_TargetPathsToSymbols)" IsSymbol="true" />
+    </ItemGroup>
+
+    <!-- Language-specific analyzers go under analyzers/dotnet/<lang>/. -->
+    <ItemGroup Condition="'$(AnalyzerLanguage)' != ''">
+      <PackAsAnalyzerFile Include="@(_PackAsAnalyzerAssembly)"
+                          PackagePath="$(PackAsAnalyzerPath)/$(AnalyzerLanguage)/%(_PackAsAnalyzerAssembly.TargetPath)" />
+    </ItemGroup>
+
+    <!-- Language-agnostic analyzers (no AnalyzerLanguage) are duplicated into every language
+         folder so each language-specific analyzer sits alongside the agnostic assembly it
+         depends on. Roslyn requires an analyzer and its dependencies to live in the same
+         directory; see https://github.com/dotnet/sdk/issues/54350. -->
+    <ItemGroup Condition="'$(AnalyzerLanguage)' == ''">
+      <PackAsAnalyzerFile Include="@(_PackAsAnalyzerAssembly)"
+                          PackagePath="$(PackAsAnalyzerPath)/cs/%(_PackAsAnalyzerAssembly.TargetPath)" />
+      <PackAsAnalyzerFile Include="@(_PackAsAnalyzerAssembly)"
+                          PackagePath="$(PackAsAnalyzerPath)/vb/%(_PackAsAnalyzerAssembly.TargetPath)" />
     </ItemGroup>
   </Target>
 
