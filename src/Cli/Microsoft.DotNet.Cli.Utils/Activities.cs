@@ -3,8 +3,6 @@
 
 #if NET
 
-using System.Diagnostics;
-
 namespace Microsoft.DotNet.Cli.Utils;
 
 /// <summary>

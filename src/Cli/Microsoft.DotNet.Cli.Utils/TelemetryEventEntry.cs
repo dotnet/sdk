@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
+using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
@@ -10,104 +10,71 @@ public static class TelemetryEventEntry
     public static event EventHandler<InstrumentationEventArgs>? EntryPosted;
     public static ITelemetryFilter TelemetryFilter { get; set; } = new BlockFilter();
 
-    public static void TrackEvent(
-        string? eventName = null,
-        IDictionary<string, string?>? properties = null,
-        IDictionary<string, double>? measurements = null)
+    public static void TrackEvent(string eventName, IDictionary<string, string?>? properties = null)
     {
-        EntryPosted?.Invoke(typeof(TelemetryEventEntry),
-            new InstrumentationEventArgs(eventName, properties, measurements));
+        EntryPosted?.Invoke(typeof(TelemetryEventEntry), new InstrumentationEventArgs(eventName, properties));
     }
 
-    public static void SendFiltered(object? o = null)
-    {
-        if (o == null)
-        {
-            return;
-        }
+    public static void SendFiltered(ParseResult parseResult) =>
+        SendFiltered(TelemetryFilter.Filter(parseResult));
 
-        foreach (ApplicationInsightsEntryFormat entry in TelemetryFilter.Filter(o))
+    public static void SendFiltered(ParseResultWithGlobalJsonState parseData) =>
+        SendFiltered(TelemetryFilter.Filter(parseData));
+
+    public static void SendFiltered(InstallerSuccessReport report) =>
+        SendFiltered(TelemetryFilter.Filter(report));
+
+    public static void SendFiltered(Exception exception) =>
+        SendFiltered(TelemetryFilter.Filter(exception));
+
+    private static void SendFiltered(IEnumerable<TelemetryEntryFormat> entries)
+    {
+        foreach (TelemetryEntryFormat entry in entries)
         {
-            TrackEvent(entry.EventName, entry.Properties, entry.Measurements);
+            TrackEvent(entry.EventName, entry.Properties);
         }
     }
 
-    public static void Subscribe(Action<string?, IDictionary<string, string?>?, IDictionary<string, double>?> subscriber)
+    public static void Subscribe(Action<string, IDictionary<string, string?>?> subscriber)
     {
         void Handler(object? sender, InstrumentationEventArgs eventArgs)
         {
-            subscriber(eventArgs.EventName, eventArgs.Properties, eventArgs.Measurements);
+            subscriber(eventArgs.EventName, eventArgs.Properties);
         }
 
         EntryPosted += Handler;
     }
 }
 
-public sealed class PerformanceMeasurement : IDisposable
-{
-    private readonly Stopwatch? _timer;
-    private readonly Dictionary<string, double>? _data;
-    private readonly string? _name;
-
-    public PerformanceMeasurement(Dictionary<string, double>? data, string name)
-    {
-        // Measurement is a no-op if we don't have a dictionary to store the entry.
-        if (data == null)
-        {
-            return;
-        }
-
-        _data = data;
-        _name = name;
-        _timer = Stopwatch.StartNew();
-    }
-
-    public void Dispose()
-    {
-        if (_name is not null && _timer is not null)
-        {
-            _data?.Add(_name, _timer.Elapsed.TotalMilliseconds);
-        }
-    }
-}
-
 public class BlockFilter : ITelemetryFilter
 {
-    public IEnumerable<ApplicationInsightsEntryFormat> Filter(object o)
-    {
-        return [];
-    }
+    private static readonly TelemetryEntryFormat[] s_emptyEntries = [];
+
+    public IEnumerable<TelemetryEntryFormat> Filter(ParseResult parseResult) => s_emptyEntries;
+
+    public IEnumerable<TelemetryEntryFormat> Filter(ParseResultWithGlobalJsonState parseData) => s_emptyEntries;
+
+    public IEnumerable<TelemetryEntryFormat> Filter(InstallerSuccessReport report) => s_emptyEntries;
+
+    public IEnumerable<TelemetryEntryFormat> Filter(Exception exception) => s_emptyEntries;
 }
 
-public class InstrumentationEventArgs : EventArgs
+public class InstrumentationEventArgs(string eventName, IDictionary<string, string?>? properties = null) : EventArgs
 {
-    internal InstrumentationEventArgs(
-        string? eventName,
-        IDictionary<string, string?>? properties,
-        IDictionary<string, double>? measurements)
-    {
-        EventName = eventName;
-        Properties = properties;
-        Measurements = measurements;
-    }
-
-    public string? EventName { get; }
-    public IDictionary<string, string?>? Properties { get; }
-    public IDictionary<string, double>? Measurements { get; }
-}
-
-public class ApplicationInsightsEntryFormat(
-    string? eventName = null,
-    IDictionary<string, string?>? properties = null,
-    IDictionary<string, double>? measurements = null)
-{
-    public string? EventName { get; } = eventName;
+    public string EventName { get; } = eventName;
     public IDictionary<string, string?>? Properties { get; } = properties;
-    public IDictionary<string, double>? Measurements { get; } = measurements;
+}
 
-    public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string?, string> func)
+public class TelemetryEntryFormat(string eventName, IDictionary<string, string?>? properties = null)
+{
+    public string EventName { get; } = eventName;
+    public IDictionary<string, string?>? Properties { get; } = properties;
+
+    public TelemetryEntryFormat WithAppliedToPropertiesValue(Func<string, string> func)
     {
-        var appliedProperties = Properties?.ToDictionary(p => p.Key, p => (string?)func(p.Value));
-        return new ApplicationInsightsEntryFormat(EventName, appliedProperties, Measurements);
+        var appliedProperties = Properties?.ToDictionary(p => p.Key, p => (string?)func(p.Value ?? string.Empty));
+        return new TelemetryEntryFormat(EventName, appliedProperties);
     }
 }
+
+public record ParseResultWithGlobalJsonState(ParseResult ParseResult, string? GlobalJsonState);

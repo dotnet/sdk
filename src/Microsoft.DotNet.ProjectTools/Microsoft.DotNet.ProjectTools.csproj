@@ -5,6 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <IsPackable>true</IsPackable>
 
     <!--
       Mark as Native AOT compatible. This will enable relevant analyzers.
@@ -18,14 +19,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="dotnet" />
+    <InternalsVisibleTo Include="dotnet-watch.Tests" />
     <InternalsVisibleTo Include="dotnet.Tests" />
-    <InternalsVisibleTo Include="Microsoft.DotNet.HotReload.Watch" />
+    <InternalsVisibleTo Include="Microsoft.NET.Build.Tests" Key="$(MicrosoftSharedPublicKey)" />
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Cli" />
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Cli.UnitTests" />
   </ItemGroup>
 
   <Import Project="..\Cli\Microsoft.DotNet.FileBasedPrograms\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />

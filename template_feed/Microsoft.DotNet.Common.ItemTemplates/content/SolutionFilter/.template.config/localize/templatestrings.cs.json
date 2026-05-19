@@ -1,7 +1,7 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Solution Filter File",
-  "description": "Create a solution filter file that references a parent solution",
-  "symbols/ParentSolution/displayName": "Parent solution file",
-  "symbols/ParentSolution/description": "The parent solution file (sln or slnx) that this filter references (default: same name with .slnx extension)."
+  "name": "Soubor filtru řešení",
+  "description": "Vytvořit soubor filtru řešení, který odkazuje na nadřazené řešení",
+  "symbols/ParentSolution/displayName": "Nadřazený soubor řešení",
+  "symbols/ParentSolution/description": "Nadřazený soubor řešení (sln nebo slnx), na který tento filtr odkazuje (výchozí: stejný název s příponou .slnx)."
 }

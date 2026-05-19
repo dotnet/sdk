@@ -17,7 +17,7 @@ internal class WorkloadElevateCommand(ParseResult parseResult)
             throw new GracefulException(CliCommandStrings.RequiresWindows, isUserError: false);
         }
 
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         NetSdkMsiInstallerServer? server = null;
 
         try

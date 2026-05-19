@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="VerificationEngine_Error_InstallUnexpectedFail">
+        <source>Template installation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">템플릿 설치는 통과해야 하지만 종료 코드 '{0}'이(가) 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_ScrubberExtension">
+        <source>File extension passed to scrubber should not start with dot.</source>
+        <target state="translated">스크러버에 전달된 파일 확장자는 점으로 시작하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_StdOutFolderExists">
+        <source>The folder [{0}] should not exist in the template output - cannot verify stdout/stderr in such case.</source>
+        <target state="translated">폴더 [{0}]은(는) 템플릿 출력에 없어야 합니다. 이 경우 stdout/stderr을 확인할 수 없습니다.</target>
+        <note>{0} is a folder path</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_TemplateNameMandatory">
+        <source>Template name is mandatory, but was not supplied.</source>
+        <target state="translated">템플릿 이름은 필수 항목이지만 제공되지 않았습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_Unexpected">
+        <source>Unexpected error encountered.</source>
+        <target state="translated">예기치 않은 오류가 발생했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedFail">
+        <source>Template instantiation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">템플릿 인스턴스화를 통과해야 하지만 종료 코드 '{0}'이(가) 있습니다.</target>
+        <note>{0} is an exit code number</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedPass">
+        <source>Template instantiation expected to fail but it passed.</source>
+        <target state="translated">템플릿 인스턴스화가 실패할 것으로 예상되었지만 통과했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedStdErr">
+        <source>Template instantiation expected not to have any stderr output, but stderr output was encountered:{0}{1}</source>
+        <target state="translated">템플릿 인스턴스화에는 stderr 출력이 없을 것으로 예상되지만 stderr 출력이 발생했습니다.{0}{1}</target>
+        <note>{0} is newline, {1} is the standard error content</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_WorkDirExists">
+        <source>The working directory already exists and is not empty.</source>
+        <target state="translated">작업 디렉터리가 이미 존재하며 비어 있지 않습니다.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

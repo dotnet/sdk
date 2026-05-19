@@ -124,6 +124,8 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CommandOptionNoLaunchProfileArgumentsDescription
         };
 
+        public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
+
         public const string BuildTargetName = "_MTPBuild";
 
         public readonly Option<string[]> MTPTargetOption = CommonOptions.CreateRequiredMSBuildTargetOption(BuildTargetName);
@@ -150,6 +152,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(VerbosityOption);
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
+            Options.Add(ArtifactsPathOption);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);
             Options.Add(OutputOption);

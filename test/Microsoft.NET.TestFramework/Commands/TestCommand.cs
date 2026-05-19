@@ -9,20 +9,20 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public abstract class TestCommand
     {
-        private Dictionary<string, string> _environment = new();
+        private readonly Dictionary<string, string> _environment = [];
         private bool _doNotEscapeArguments;
-
         public ITestOutputHelper Log { get; }
-
         public string? WorkingDirectory { get; set; }
-
-        public List<string> Arguments { get; set; } = new List<string>();
-
-        public List<string> EnvironmentToRemove { get; } = new List<string>();
-
+        public List<string> Arguments { get; set; } = [];
+        public List<string> EnvironmentToRemove { get; } = [];
         public bool RedirectStandardInput { get; set; }
-
         public bool DisableOutputAndErrorRedirection { get; set; }
+
+        /// <summary>
+        /// When true, the child process is launched in a new process group so that
+        /// console signals (e.g. Ctrl+C) sent to it do not propagate to the test host.
+        /// </summary>
+        public bool CreateNewProcessGroup { get; set; }
 
         //  These only work via Execute(), not when using GetProcessStartInfo()
         public Action<string>? CommandOutputHandler { get; set; }
@@ -116,6 +116,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
             commandSpec.RedirectStandardInput = RedirectStandardInput;
             commandSpec.DisableOutputAndErrorRedirection = DisableOutputAndErrorRedirection;
+            commandSpec.CreateNewProcessGroup = CreateNewProcessGroup;
 
             return commandSpec;
         }
@@ -190,10 +191,24 @@ namespace Microsoft.NET.TestFramework.Commands
 
             if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
             {
-                var binlogFiles = Directory.GetFiles(spec.WorkingDirectory ?? Environment.CurrentDirectory, "*.binlog");
+                var workingDir = spec.WorkingDirectory ?? Environment.CurrentDirectory;
+                var binlogFiles = Directory.GetFiles(workingDir, "*.binlog");
+                // Multiple tests in the same Helix work item often produce binlogs with the same
+                // relative filename (e.g. "msbuild0.binlog"). Prefix with the last two segments of
+                // the working directory (typically "<TestInstance>---<GUID>-<ProjectDir>") so each
+                // upload is uniquely identifiable.
+                var parts = workingDir
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    .Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
+                var prefix = parts.Length >= 2
+                    ? $"{parts[parts.Length - 2]}-{parts[parts.Length - 1]}"
+                    : (parts.Length == 1 ? parts[0] : string.Empty);
                 foreach (string binlogFile in binlogFiles)
                 {
-                    File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
+                    var destName = string.IsNullOrEmpty(prefix)
+                        ? Path.GetFileName(binlogFile)
+                        : $"{prefix}-{Path.GetFileName(binlogFile)}";
+                    File.Copy(binlogFile, Path.Combine(uploadRoot, destName), true);
                 }
             }
 
@@ -203,7 +218,7 @@ namespace Microsoft.NET.TestFramework.Commands
         public static void LogCommandResult(ITestOutputHelper log, CommandResult result)
         {
             log.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
-            log.WriteLine(result.StdOut);
+            log.WriteLine(result.StdOut ?? string.Empty);
 
             if (!string.IsNullOrEmpty(result.StdErr))
             {

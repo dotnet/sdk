@@ -33,6 +33,10 @@ internal sealed class RunCommandSelector : IDisposable
     private ProjectCollection? _collection;
     private Microsoft.Build.Evaluation.Project? _project;
 
+    // Project/collection without TargetFramework, used for restore. Lazily populated.
+    private ProjectCollection? _restoreCollection;
+    private Microsoft.Build.Evaluation.Project? _restoreProject;
+
     /// <summary>
     /// Gets whether the selector has a valid project that can be evaluated.
     /// This is false for .sln files or other invalid project files.
@@ -137,15 +141,29 @@ internal sealed class RunCommandSelector : IDisposable
     /// </summary>
     public void InvalidateGlobalProperties(Dictionary<string, string> updatedProperties)
     {
+        // When TargetFramework is first added, save the current project for restore use
+        // instead of disposing it. See https://github.com/dotnet/sdk/issues/53488
+        if (_restoreProject is null &&
+            _project is not null &&
+            updatedProperties.ContainsKey("TargetFramework") &&
+            !_globalProperties.ContainsKey("TargetFramework"))
+        {
+            _restoreProject = _project;
+            _restoreCollection = _collection;
+        }
+        else
+        {
+            _collection?.Dispose();
+        }
+
         // Update our stored global properties
         foreach (var (key, value) in updatedProperties)
         {
             _globalProperties[key] = value;
         }
 
-        // Dispose existing project to force re-evaluation
+        // Reset to force re-evaluation with new global properties
         _project = null;
-        _collection?.Dispose();
         _collection = null;
         HasValidProject = false;
     }
@@ -188,6 +206,38 @@ internal sealed class RunCommandSelector : IDisposable
     {
         // NOTE: _binaryLogger is not disposed here because it is *owned* by the caller
         _collection?.Dispose();
+        _restoreCollection?.Dispose();
+    }
+
+    /// <summary>
+    /// Creates a ProjectInstance without TargetFramework for use during restore,
+    /// preventing the TFM from cascading to dependency projects.
+    /// Reuses the pre-TF project when available (saved by InvalidateGlobalProperties),
+    /// or the current project if it was already loaded without TargetFramework.
+    /// </summary>
+    private ProjectInstance CreateRestoreProjectInstance()
+    {
+        if (_restoreProject is not null)
+        {
+            return _restoreProject.CreateProjectInstance();
+        }
+
+        // If the current project was loaded without TargetFramework, reuse it directly.
+        if (_project is not null && !_globalProperties.ContainsKey("TargetFramework"))
+        {
+            return _project.CreateProjectInstance();
+        }
+
+        // TargetFramework is set and no pre-TF project was saved (e.g. --framework was explicit).
+        // Create a new project without TargetFramework.
+        var restoreProperties = new Dictionary<string, string>(_globalProperties, StringComparer.OrdinalIgnoreCase);
+        restoreProperties.Remove("TargetFramework");
+        _restoreCollection = new ProjectCollection(
+            globalProperties: restoreProperties,
+            loggers: null,
+            toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        _restoreProject = _restoreCollection.LoadProject(_projectFilePath);
+        return _restoreProject.CreateProjectInstance();
     }
 
     /// <summary>
@@ -290,8 +340,9 @@ internal sealed class RunCommandSelector : IDisposable
         // If restore is allowed, run restore first so device computation sees the restored assets
         if (!noRestore)
         {
-            // Run the Restore target
-            var restoreResult = projectInstance.Build(
+            // Run restore without TargetFramework to prevent it from cascading to
+            // dependency projects. See https://github.com/dotnet/sdk/issues/53488
+            var restoreResult = CreateRestoreProjectInstance().Build(
                 targets: ["Restore"],
                 loggers: GetLoggers(),
                 remoteLoggers: null,

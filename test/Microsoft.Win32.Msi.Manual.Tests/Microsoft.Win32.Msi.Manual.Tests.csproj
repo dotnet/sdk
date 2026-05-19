@@ -22,6 +22,5 @@
     <Using Remove="Microsoft.NET.TestFramework.ProjectConstruction" />
     <Using Remove="Microsoft.NET.TestFramework.Utilities" />
     <Using Remove="Xunit" />
-    <Using Remove="Xunit.Abstractions" />
   </ItemGroup>
 </Project>

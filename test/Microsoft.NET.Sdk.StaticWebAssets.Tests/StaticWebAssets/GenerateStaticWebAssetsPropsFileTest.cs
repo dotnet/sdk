@@ -510,6 +510,354 @@ namespace Microsoft.NET.Sdk.Razor.Test
             }
         }
 
+        [Fact]
+        public void WritesFrameworkSourceType_WhenAssetMatchesFrameworkPattern()
+        {
+            // Arrange
+            var file = Path.GetTempFileName();
+            var expectedDocument = @"<Project>
+  <ItemGroup>
+    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))"">
+      <SourceType>Package</SourceType>
+      <SourceId>MyLibrary</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/mylibrary</BasePath>
+      <RelativePath>css/site.css</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>css-fingerprint</Fingerprint>
+      <Integrity>css-integrity</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>10</FileLength>
+      <LastWriteTime>Thu, 15 Nov 1990 00:00:00 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\framework.js'))"">
+      <SourceType>Framework</SourceType>
+      <SourceId>MyLibrary</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/mylibrary</BasePath>
+      <RelativePath>js/framework.js</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>js-fingerprint</Fingerprint>
+      <Integrity>js-integrity</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <FileLength>10</FileLength>
+      <LastWriteTime>Thu, 15 Nov 1990 00:00:00 GMT</LastWriteTime>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\framework.js'))</OriginalItemSpec>
+    </StaticWebAsset>
+  </ItemGroup>
+</Project>";
+
+            try
+            {
+                var buildEngine = new Mock<IBuildEngine>();
+
+                var task = new GenerateStaticWebAssetsPropsFile
+                {
+                    BuildEngine = buildEngine.Object,
+                    TargetPropsFilePath = file,
+                    FrameworkPattern = "**/*.js",
+                    StaticWebAssets = new TaskItem[]
+                    {
+                        CreateItem(Path.Combine("wwwroot","js","framework.js"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "Discovered",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "_content/mylibrary",
+                            ["RelativePath"] = "js/framework.js",
+                            ["AssetKind"] = "All",
+                            ["AssetMode"] = "All",
+                            ["AssetRole"] = "Primary",
+                            ["RelatedAsset"] = "",
+                            ["AssetTraitName"] = "",
+                            ["AssetTraitValue"] = "",
+                            ["Fingerprint"] = "js-fingerprint",
+                            ["Integrity"] = "js-integrity",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","js","framework.js"),
+                            ["CopyToOutputDirectory"] = "Never",
+                            ["CopyToPublishDirectory"] = "PreserveNewest",
+                            ["FileLength"] = "10",
+                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
+                        }),
+                        CreateItem(Path.Combine("wwwroot","css","site.css"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "Discovered",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "_content/mylibrary",
+                            ["RelativePath"] = "css/site.css",
+                            ["AssetKind"] = "All",
+                            ["AssetMode"] = "All",
+                            ["AssetRole"] = "Primary",
+                            ["RelatedAsset"] = "",
+                            ["AssetTraitName"] = "",
+                            ["AssetTraitValue"] = "",
+                            ["Fingerprint"] = "css-fingerprint",
+                            ["Integrity"] = "css-integrity",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","css","site.css"),
+                            ["CopyToOutputDirectory"] = "Never",
+                            ["CopyToPublishDirectory"] = "PreserveNewest",
+                            ["FileLength"] = "10",
+                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
+                        }),
+                    }
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                Assert.True(result);
+                var document = File.ReadAllText(file);
+                Assert.Equal(expectedDocument, document, ignoreLineEndingDifferences: true);
+            }
+            finally
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
+        }
+
+        [Fact]
+        public void WritesAllAsPackage_WhenFrameworkPatternIsNull()
+        {
+            // Arrange
+            var file = Path.GetTempFileName();
+
+            try
+            {
+                var buildEngine = new Mock<IBuildEngine>();
+
+                var task = new GenerateStaticWebAssetsPropsFile
+                {
+                    BuildEngine = buildEngine.Object,
+                    TargetPropsFilePath = file,
+                    FrameworkPattern = null,
+                    StaticWebAssets = new TaskItem[]
+                    {
+                        CreateItem(Path.Combine("wwwroot","js","app.js"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "Discovered",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "_content/mylibrary",
+                            ["RelativePath"] = "js/app.js",
+                            ["AssetKind"] = "All",
+                            ["AssetMode"] = "All",
+                            ["AssetRole"] = "Primary",
+                            ["RelatedAsset"] = "",
+                            ["AssetTraitName"] = "",
+                            ["AssetTraitValue"] = "",
+                            ["Fingerprint"] = "fp",
+                            ["Integrity"] = "int",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","js","app.js"),
+                            ["CopyToOutputDirectory"] = "Never",
+                            ["CopyToPublishDirectory"] = "PreserveNewest",
+                            ["FileLength"] = "10",
+                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
+                        }),
+                    }
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                var document = File.ReadAllText(file);
+                document.Should().Contain("<SourceType>Package</SourceType>");
+                document.Should().NotContain("<SourceType>Framework</SourceType>");
+            }
+            finally
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
+        }
+
+        [Fact]
+        public void WritesFrameworkSourceType_WithMultiplePatterns()
+        {
+            // Arrange
+            var file = Path.GetTempFileName();
+
+            try
+            {
+                var buildEngine = new Mock<IBuildEngine>();
+
+                var task = new GenerateStaticWebAssetsPropsFile
+                {
+                    BuildEngine = buildEngine.Object,
+                    TargetPropsFilePath = file,
+                    FrameworkPattern = "**/*.js;**/*.css",
+                    StaticWebAssets = new TaskItem[]
+                    {
+                        CreateItem(Path.Combine("wwwroot","js","app.js"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "Discovered",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "_content/mylibrary",
+                            ["RelativePath"] = "js/app.js",
+                            ["AssetKind"] = "All",
+                            ["AssetMode"] = "All",
+                            ["AssetRole"] = "Primary",
+                            ["RelatedAsset"] = "",
+                            ["AssetTraitName"] = "",
+                            ["AssetTraitValue"] = "",
+                            ["Fingerprint"] = "fp1",
+                            ["Integrity"] = "int1",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","js","app.js"),
+                            ["CopyToOutputDirectory"] = "Never",
+                            ["CopyToPublishDirectory"] = "PreserveNewest",
+                            ["FileLength"] = "10",
+                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
+                        }),
+                        CreateItem(Path.Combine("wwwroot","css","site.css"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "Discovered",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "_content/mylibrary",
+                            ["RelativePath"] = "css/site.css",
+                            ["AssetKind"] = "All",
+                            ["AssetMode"] = "All",
+                            ["AssetRole"] = "Primary",
+                            ["RelatedAsset"] = "",
+                            ["AssetTraitName"] = "",
+                            ["AssetTraitValue"] = "",
+                            ["Fingerprint"] = "fp2",
+                            ["Integrity"] = "int2",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","css","site.css"),
+                            ["CopyToOutputDirectory"] = "Never",
+                            ["CopyToPublishDirectory"] = "PreserveNewest",
+                            ["FileLength"] = "10",
+                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
+                        }),
+                        CreateItem(Path.Combine("wwwroot","images","logo.png"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "Discovered",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "_content/mylibrary",
+                            ["RelativePath"] = "images/logo.png",
+                            ["AssetKind"] = "All",
+                            ["AssetMode"] = "All",
+                            ["AssetRole"] = "Primary",
+                            ["RelatedAsset"] = "",
+                            ["AssetTraitName"] = "",
+                            ["AssetTraitValue"] = "",
+                            ["Fingerprint"] = "fp3",
+                            ["Integrity"] = "int3",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","images","logo.png"),
+                            ["CopyToOutputDirectory"] = "Never",
+                            ["CopyToPublishDirectory"] = "PreserveNewest",
+                            ["FileLength"] = "10",
+                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
+                        }),
+                    }
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                var document = File.ReadAllText(file);
+                // JS and CSS files should be Framework, PNG should be Package
+                var lines = document.Split('\n').Select(l => l.Trim()).ToList();
+                var sourceTypeLines = lines.Where(l => l.StartsWith("<SourceType>")).ToList();
+                // Order is: css/site.css, images/logo.png, js/app.js (sorted by BasePath then RelativePath)
+                sourceTypeLines.Should().HaveCount(3);
+                sourceTypeLines[0].Should().Be("<SourceType>Framework</SourceType>"); // css/site.css
+                sourceTypeLines[1].Should().Be("<SourceType>Package</SourceType>");   // images/logo.png
+                sourceTypeLines[2].Should().Be("<SourceType>Framework</SourceType>"); // js/app.js
+            }
+            finally
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
+        }
+
+        [Fact]
+        public void WritesAllAsPackage_WhenFrameworkPatternMatchesNothing()
+        {
+            // Arrange
+            var file = Path.GetTempFileName();
+
+            try
+            {
+                var buildEngine = new Mock<IBuildEngine>();
+
+                var task = new GenerateStaticWebAssetsPropsFile
+                {
+                    BuildEngine = buildEngine.Object,
+                    TargetPropsFilePath = file,
+                    FrameworkPattern = "**/*.wasm",
+                    StaticWebAssets = new TaskItem[]
+                    {
+                        CreateItem(Path.Combine("wwwroot","js","app.js"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "Discovered",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "_content/mylibrary",
+                            ["RelativePath"] = "js/app.js",
+                            ["AssetKind"] = "All",
+                            ["AssetMode"] = "All",
+                            ["AssetRole"] = "Primary",
+                            ["RelatedAsset"] = "",
+                            ["AssetTraitName"] = "",
+                            ["AssetTraitValue"] = "",
+                            ["Fingerprint"] = "fp",
+                            ["Integrity"] = "int",
+                            ["OriginalItemSpec"] = Path.Combine("wwwroot","js","app.js"),
+                            ["CopyToOutputDirectory"] = "Never",
+                            ["CopyToPublishDirectory"] = "PreserveNewest",
+                            ["FileLength"] = "10",
+                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
+                        }),
+                    }
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                var document = File.ReadAllText(file);
+                document.Should().Contain("<SourceType>Package</SourceType>");
+                document.Should().NotContain("<SourceType>Framework</SourceType>");
+            }
+            finally
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
+        }
+
         private static TaskItem CreateItem(
             string spec,
             IDictionary<string, string> metadata)
