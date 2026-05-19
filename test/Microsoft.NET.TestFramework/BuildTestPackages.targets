@@ -168,6 +168,16 @@
         <ProjectName>Microsoft.TemplateSearch.TemplateDiscovery.csproj</ProjectName>
         <Version>$(Version)</Version>
       </BaseTestPackageProject>
+      <BaseTestPackageProject Include="src/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompat.Task">
+        <Name>Microsoft.DotNet.ApiCompat.Task</Name>
+        <ProjectName>Microsoft.DotNet.ApiCompat.Task.csproj</ProjectName>
+        <Version>$(Version)</Version>
+      </BaseTestPackageProject>
+      <BaseTestPackageProject Include="src/Compatibility/GenAPI/Microsoft.DotNet.GenAPI.Task">
+        <Name>Microsoft.DotNet.GenAPI.Task</Name>
+        <ProjectName>Microsoft.DotNet.GenAPI.Task.csproj</ProjectName>
+        <Version>$(Version)</Version>
+      </BaseTestPackageProject>
 
       <BaseTestPackageProject>
         <NuPkgName Condition=" '%(NuPkgName)' == '' ">%(Name)</NuPkgName>

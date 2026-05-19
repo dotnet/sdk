@@ -3223,8 +3223,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">'{0}' 도구가 이미 설치되어 있습니다.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3676,16 +3676,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
         <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
         <target state="translated">명령줄에서 {0}을(를) 사용하여 워크로드를 업데이트하도록 지정되었지만, {1}에서 {2}을(를) 사용하도록 지정된 global.json 파일입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">'{0}' 도구가 시험판 버전('{1}' 버전)으로 다시 설치되었습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">'{0}' 도구가 안정화 버전('{1}' 버전)으로 다시 설치되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

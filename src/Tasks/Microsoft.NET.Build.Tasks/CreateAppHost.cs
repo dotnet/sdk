@@ -55,16 +55,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public string AppRelativeDotNet { get; set; } = null;
 
-        #if NETFRAMEWORK
-        private TaskEnvironment _taskEnvironment;
-        public TaskEnvironment TaskEnvironment
-        {
-            get => _taskEnvironment ??= TaskEnvironmentDefaults.Create();
-            set => _taskEnvironment = value;
-        }
-        #else
-        public TaskEnvironment TaskEnvironment { get; set; }
-        #endif
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         protected override void ExecuteCore()
         {
