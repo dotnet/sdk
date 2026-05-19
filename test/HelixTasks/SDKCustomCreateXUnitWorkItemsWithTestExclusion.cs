@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// - [Optional] Arguments: a string of arguments to be passed to the XUnit console runner
         /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to BaseMethodLimit
         ///   used for partitioning tests into Helix shards
+        /// - [Optional] PartitionByClass: when set to "true", bypasses the method-count scheduler and creates
+        ///   one Helix work item per test class discovered in the assembly
         /// The two required parameters will be automatically created if XUnitProject.Identity is set to the path of the XUnit csproj file
         /// </summary>
         [Required]
@@ -195,29 +197,45 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 msbuildAdditionalSdkResolverFolder = "";
             }
 
-            var methodLimit = BaseMethodLimit;
-            if (xunitProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
+            // When PartitionByClass is "true", bypass the automatic method-count scheduler
+            // and create one Helix work item per test class discovered in the assembly.
+            // This is useful for heavy integration tests where each class should run
+            // in its own shard (e.g., dotnet-format integration tests).
+            List<(string DisplayName, string FilterString)> partitions;
+            if (string.Equals(xunitProject.GetMetadata("PartitionByClass"), "true", StringComparison.OrdinalIgnoreCase))
             {
-                if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
+                var scheduler = new AssemblyScheduler();
+                partitions = scheduler.PartitionByClass(targetPath)
+                    .Select(p => (p.DisplayName, p.ClassListArgumentString))
+                    .ToList();
+            }
+            else
+            {
+                var methodLimit = BaseMethodLimit;
+                if (xunitProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
                 {
-                    methodLimit *= multiplier;
+                    if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
+                    {
+                        methodLimit *= multiplier;
+                    }
+                    else
+                    {
+                        Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
+                    }
                 }
-                else
-                {
-                    Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
-                }
+                var scheduler = new AssemblyScheduler(methodLimit: methodLimit);
+                partitions = scheduler.Schedule(targetPath)
+                    .Select(p => (p.DisplayName, p.ClassListArgumentString))
+                    .ToList();
             }
 
-            var scheduler = new AssemblyScheduler(methodLimit: methodLimit);
-            var assemblyPartitionInfos = scheduler.Schedule(targetPath);
-
             var partitionedWorkItem = new List<ITaskItem>();
-            foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
+            foreach (var (displayName, filterString) in partitions)
             {
                 string enableDiagLogging = IsPosixShell ? "-d $HELIX_WORKITEM_UPLOAD_ROOT//dotnetTestLog.log" : "-d %HELIX_WORKITEM_UPLOAD_ROOT%\\dotnetTestLog.log";
                 arguments = string.IsNullOrEmpty(arguments) ? "" : "-- " + arguments;
 
-                var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
+                var testFilter = string.IsNullOrEmpty(filterString) ? "" : $"--filter \"{filterString}\"";
 
                 // xUnit v3 tests run out-of-process: the VSTest adapter launches the AppHost executable.
                 // On POSIX, the execute bit is lost when the Helix SDK packages the payload as a zip archive,
@@ -230,11 +248,11 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 string command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
                           $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {testFilter} {enableDiagLogging} {arguments}";
 
-                Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
+                Log.LogMessage($"Creating work item with properties Identity: {displayName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
-                partitionedWorkItem.Add(new Microsoft.Build.Utilities.TaskItem(assemblyPartitionInfo.DisplayName + testIdentityDifferentiator, new Dictionary<string, string>()
+                partitionedWorkItem.Add(new Microsoft.Build.Utilities.TaskItem(displayName + testIdentityDifferentiator, new Dictionary<string, string>()
                 {
-                    { "Identity", assemblyPartitionInfo.DisplayName + testIdentityDifferentiator},
+                    { "Identity", displayName + testIdentityDifferentiator},
                     { "PayloadDirectory", publishDirectory },
                     { "Command", command },
                     { "Timeout", timeout.ToString() },

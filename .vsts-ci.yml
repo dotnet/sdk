@@ -278,16 +278,6 @@ extends:
               targetArchitecture: arm64
               runtimeIdentifier: osx-arm64
 
-      ############### DOTNET-FORMAT ###############
-      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
-        - template: /eng/dotnet-format/dotnet-format-integration.yml@self
-          parameters:
-            oneESCompat:
-              templateFolderName: templates-official
-              publishTaskPrefix: 1ES.
-            populateInternalRuntimeVariables: true
-            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-
     ############### PUBLISH STAGE ###############
     - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       - stage: publish
