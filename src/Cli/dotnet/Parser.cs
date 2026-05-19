@@ -54,20 +54,23 @@ public static class Parser
         var slnCommand = new Command("solution", "Manage .NET solution files.");
         slnCommand.Aliases.Add("sln");
 
-        // sln list
-        var listSlnArg = new Argument<string>("SLN_FILE")
+        // SLN_FILE argument on the parent sln command, matching managed CLI structure
+        var slnArg = new Argument<string>("SLN_FILE")
         {
             Description = "The solution file or directory to operate on. If not specified, the command searches the current directory.",
             Arity = ArgumentArity.ZeroOrOne,
             DefaultValueFactory = _ => Directory.GetCurrentDirectory()
         };
+        slnCommand.Arguments.Add(slnArg);
+
+        // sln list
         var solutionFolderOption = new Option<bool>("--solution-folders") { Description = "Display solution folders." };
-        var listCommand = new Command("list", "List all projects in a solution file.") { listSlnArg, solutionFolderOption };
+        var listCommand = new Command("list", "List all projects in a solution file.") { solutionFolderOption };
         listCommand.SetAction(parseResult =>
         {
             try
             {
-                string fileOrDirectory = parseResult.GetValue(listSlnArg) ?? Directory.GetCurrentDirectory();
+                string fileOrDirectory = parseResult.GetValue(slnArg) ?? Directory.GetCurrentDirectory();
                 bool displaySolutionFolders = parseResult.GetValue(solutionFolderOption);
                 string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles: true);
                 SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
@@ -107,24 +110,18 @@ public static class Parser
             }
             catch (Exception ex)
             {
-                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(listSlnArg) ?? "", ex.Message).Red());
+                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(slnArg) ?? "", ex.Message).Red());
                 return 1;
             }
         });
 
         // sln migrate
-        var migrateSlnArg = new Argument<string>("SLN_FILE")
-        {
-            Description = "The solution file or directory to operate on. If not specified, the command searches the current directory.",
-            Arity = ArgumentArity.ZeroOrOne,
-            DefaultValueFactory = _ => Directory.GetCurrentDirectory()
-        };
-        var migrateCommand = new Command("migrate", "Migrate a solution file to the new slnx format.") { migrateSlnArg };
+        var migrateCommand = new Command("migrate", "Migrate a solution file to the new slnx format.");
         migrateCommand.SetAction(parseResult =>
         {
             try
             {
-                string fileOrDirectory = parseResult.GetValue(migrateSlnArg) ?? Directory.GetCurrentDirectory();
+                string fileOrDirectory = parseResult.GetValue(slnArg) ?? Directory.GetCurrentDirectory();
                 string slnFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory);
                 if (slnFileFullPath.HasExtension(".slnx"))
                 {
@@ -133,7 +130,7 @@ public static class Parser
                 }
                 string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
                 SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(slnFileFullPath);
-                SolutionSerializers.SlnXml.SaveAsync(slnxFileFullPath, solution, CancellationToken.None).Wait();
+                SolutionSerializers.SlnXml.SaveAsync(slnxFileFullPath, solution, CancellationToken.None).GetAwaiter().GetResult();
                 Reporter.Output.WriteLine(string.Format(".slnx file {0} generated.", slnxFileFullPath));
                 return 0;
             }
@@ -144,29 +141,23 @@ public static class Parser
             }
             catch (Exception ex)
             {
-                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(migrateSlnArg) ?? "", ex.Message).Red());
+                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(slnArg) ?? "", ex.Message).Red());
                 return 1;
             }
         });
 
         // sln remove
-        var removeSlnArg = new Argument<string>("SLN_FILE")
-        {
-            Description = "The solution file or directory to operate on. If not specified, the command searches the current directory.",
-            Arity = ArgumentArity.ZeroOrOne,
-            DefaultValueFactory = _ => Directory.GetCurrentDirectory()
-        };
         var removeProjectsArg = new Argument<string[]>("PROJECT_PATH")
         {
             Description = "The paths to the projects to remove from the solution.",
             Arity = ArgumentArity.OneOrMore
         };
-        var removeCommand = new Command("remove", "Remove one or more projects from a solution file.") { removeSlnArg, removeProjectsArg };
+        var removeCommand = new Command("remove", "Remove one or more projects from a solution file.") { removeProjectsArg };
         removeCommand.SetAction(parseResult =>
         {
             try
             {
-                string fileOrDirectory = parseResult.GetValue(removeSlnArg) ?? Directory.GetCurrentDirectory();
+                string fileOrDirectory = parseResult.GetValue(slnArg) ?? Directory.GetCurrentDirectory();
                 string[] projects = parseResult.GetValue(removeProjectsArg) ?? [];
                 string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles: true);
 
@@ -212,7 +203,7 @@ public static class Parser
             }
             catch (Exception ex)
             {
-                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(removeSlnArg) ?? "", ex.Message).Red());
+                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(slnArg) ?? "", ex.Message).Red());
                 return 1;
             }
         });
@@ -221,18 +212,8 @@ public static class Parser
         slnCommand.Subcommands.Add(migrateCommand);
         slnCommand.Subcommands.Add(removeCommand);
 
-        slnCommand.SetAction(parseResult =>
-        {
-            Reporter.Output.WriteLine("Required command was not provided.");
-            Reporter.Output.WriteLine();
-            Reporter.Output.WriteLine("Usage: dotnet solution [command] [options]");
-            Reporter.Output.WriteLine();
-            Reporter.Output.WriteLine("Commands:");
-            Reporter.Output.WriteLine("  list       List all projects in a solution file.");
-            Reporter.Output.WriteLine("  migrate    Migrate a solution file to the new slnx format.");
-            Reporter.Output.WriteLine("  remove     Remove one or more projects from a solution file.");
-            return 1;
-        });
+        // No action on the parent sln command — let it produce a parse error
+        // so NativeEntryPoint falls back to managed CLI for help/missing-subcommand.
 
         rootCommand.Subcommands.Add(slnCommand);
     }
