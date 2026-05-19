@@ -13,7 +13,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class ResolveTargetingPackAssets : TaskBase, IMultiThreadableTask
     {
-        public TaskEnvironment TaskEnvironment { get; set; } = null!;
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, object> s_cacheLocks = new(StringComparer.Ordinal);
 
@@ -51,22 +51,17 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] UsedRuntimeFrameworks { get; set; }
 
-        private TaskEnvironment RequiredTaskEnvironment =>
-            TaskEnvironment ?? throw new InvalidOperationException($"{nameof(TaskEnvironment)} must be set before executing {nameof(ResolveTargetingPackAssets)}.");
-
         public ResolveTargetingPackAssets()
         {
         }
 
         protected override void ExecuteCore()
         {
-            TaskEnvironment taskEnvironment = RequiredTaskEnvironment;
-
-            StronglyTypedInputs inputs = GetInputs(taskEnvironment);
+            StronglyTypedInputs inputs = GetInputs();
 
             string cacheKey = inputs.CacheKey();
 
-            bool allowCacheLookup = taskEnvironment.GetEnvironmentVariable(ALLOW_TARGETING_PACK_CACHING) != "0";
+            bool allowCacheLookup = TaskEnvironment.GetEnvironmentVariable(ALLOW_TARGETING_PACK_CACHING) != "0";
 
             ResolvedAssetsCacheEntry results;
 
@@ -112,18 +107,41 @@ namespace Microsoft.NET.Build.Tasks
             UsedRuntimeFrameworks = results.UsedRuntimeFrameworks;
         }
 
-        internal StronglyTypedInputs GetInputs() => GetInputs(RequiredTaskEnvironment);
-
-        private StronglyTypedInputs GetInputs(TaskEnvironment taskEnvironment) => new(
+        internal StronglyTypedInputs GetInputs() => new(
                         FrameworkReferences,
-                        ResolvedTargetingPacks,
+                        GetResolvedTargetingPacks(),
                         RuntimeFrameworks,
                         GenerateErrorForMissingTargetingPacks,
                         NuGetRestoreSupported,
                         DisableTransitiveFrameworkReferenceDownloads,
                         NetCoreTargetingPackRoot,
-                        ProjectLanguage,
-                        taskEnvironment);
+                        ProjectLanguage);
+
+        private TargetingPack[] GetResolvedTargetingPacks() => ResolvedTargetingPacks.Select(
+            item =>
+            {
+                string targetingPackPath = item.GetMetadata(MetadataKeys.Path);
+                string resolvedTargetingPackPath = targetingPackPath;
+                string originalTargetingPackPath = targetingPackPath;
+
+                if (!string.IsNullOrEmpty(targetingPackPath))
+                {
+                    AbsolutePath absolutePath = TaskEnvironment.GetAbsolutePath(targetingPackPath);
+                    resolvedTargetingPackPath = absolutePath.Value;
+                    originalTargetingPackPath = absolutePath.OriginalValue;
+                }
+
+                return new TargetingPack(
+                    item.ItemSpec,
+                    resolvedTargetingPackPath,
+                    originalTargetingPackPath,
+                    item.GetMetadata("TargetingPackFormat"),
+                    item.GetMetadata("TargetFramework"),
+                    item.GetMetadata("Profile"),
+                    item.GetMetadata(MetadataKeys.NuGetPackageId),
+                    item.GetMetadata(MetadataKeys.NuGetPackageVersion),
+                    item.GetMetadata(MetadataKeys.PackageConflictPreferredPackages));
+            }).ToArray();
 
         private static object GetCacheLock(string cacheKey) => s_cacheLocks.GetOrAdd(cacheKey, static _ => new object());
 
@@ -523,42 +541,16 @@ namespace Microsoft.NET.Build.Tasks
 
             public StronglyTypedInputs(
                 ITaskItem[] frameworkReferences,
-                ITaskItem[] resolvedTargetingPacks,
+                TargetingPack[] resolvedTargetingPacks,
                 ITaskItem[] runtimeFrameworks,
                 bool generateErrorForMissingTargetingPacks,
                 bool nuGetRestoreSupported,
                 bool disableTransitiveFrameworkReferences,
                 string netCoreTargetingPackRoot,
-                string projectLanguage,
-                TaskEnvironment taskEnvironment)
+                string projectLanguage)
             {
                 FrameworkReferences = frameworkReferences.Select(fr => new FrameworkReference(fr.ItemSpec)).ToArray();
-                ResolvedTargetingPacks = resolvedTargetingPacks.Select(
-                    item =>
-                    {
-                        string targetingPackPath = item.GetMetadata(MetadataKeys.Path);
-                        string resolvedTargetingPackPath = targetingPackPath;
-                        string originalTargetingPackPath = targetingPackPath;
-
-                        if (!string.IsNullOrEmpty(targetingPackPath))
-                        {
-                            AbsolutePath absolutePath = taskEnvironment.GetAbsolutePath(targetingPackPath);
-                            resolvedTargetingPackPath = absolutePath.Value;
-                            originalTargetingPackPath = absolutePath.OriginalValue;
-                        }
-
-                        return new TargetingPack(
-                            item.ItemSpec,
-                            resolvedTargetingPackPath,
-                            originalTargetingPackPath,
-                            item.GetMetadata("TargetingPackFormat"),
-                            item.GetMetadata("TargetFramework"),
-                            item.GetMetadata("Profile"),
-                            item.GetMetadata(MetadataKeys.NuGetPackageId),
-                            item.GetMetadata(MetadataKeys.NuGetPackageVersion),
-                            item.GetMetadata(MetadataKeys.PackageConflictPreferredPackages));
-                    })
-                    .ToArray();
+                ResolvedTargetingPacks = resolvedTargetingPacks;
                 RuntimeFrameworks = runtimeFrameworks.Select(item => new RuntimeFramework(item.ItemSpec, item.GetMetadata(MetadataKeys.FrameworkName), item)).ToArray();
                 GenerateErrorForMissingTargetingPacks = generateErrorForMissingTargetingPacks;
                 NuGetRestoreSupported = nuGetRestoreSupported;

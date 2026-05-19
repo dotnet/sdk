@@ -303,14 +303,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             StronglyTypedInputs defaultObject = new(
                 frameworkReferences: DefaultFrameworkReferences(),
-                resolvedTargetingPacks: DefaultTargetingPacks(Path.GetTempPath()),
+                resolvedTargetingPacks: DefaultStronglyTypedTargetingPacks(Path.GetTempPath()),
                 runtimeFrameworks: new[] { new MockTaskItem("RuntimeFramework1", new Dictionary<string, string>()) },
                 generateErrorForMissingTargetingPacks: true,
                 nuGetRestoreSupported: true,
                 disableTransitiveFrameworkReferences: false,
-            netCoreTargetingPackRoot: "netCoreTargetingPackRoot",
-            projectLanguage: "C#",
-            taskEnvironment: TaskEnvironmentHelper.CreateForTest());
+                netCoreTargetingPackRoot: "netCoreTargetingPackRoot",
+                projectLanguage: "C#");
 
             List<string> seenKeys = new();
 
@@ -418,6 +417,20 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 }
             }
         }
+
+        private static TargetingPack[] DefaultStronglyTypedTargetingPacks(string mockPackageDirectory) => new[]
+        {
+            new TargetingPack(
+                "Microsoft.Windows.SDK.NET.Ref",
+                mockPackageDirectory,
+                mockPackageDirectory,
+                string.Empty,
+                "net5.0",
+                string.Empty,
+                "Microsoft.Windows.SDK.NET.Ref",
+                "5.0.0-preview1",
+                "Microsoft.Windows.SDK.NET.Ref;")
+        };
     }
 }
 
