@@ -42,9 +42,12 @@
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
     <Compile Include="ManagedHost.cs" />
+    <Compile Include="CliStrings.cs" />
     <Compile Include="..\dotnet\Program.cs" Link="Program.cs" />
     <Compile Include="..\dotnet\CommandLineInfo.cs" Link="CommandLineInfo.cs" />
     <Compile Include="..\dotnet\Parser.cs" Link="Parser.cs" />
+    <Compile Include="..\dotnet\SlnFileFactory.cs" Link="SlnFileFactory.cs" />
+    <Compile Include="..\dotnet\SlnfFileHelper.cs" Link="SlnfFileHelper.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
   </ItemGroup>
 
@@ -55,6 +58,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
   </ItemGroup>
 
 </Project>

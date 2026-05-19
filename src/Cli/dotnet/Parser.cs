@@ -4,6 +4,10 @@
 #if CLI_AOT
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Command = System.CommandLine.Command;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -38,7 +42,128 @@ public static class Parser
             return 0;
         });
 
+        ConfigureSolutionCommand(rootCommand);
+
         return rootCommand;
+    }
+
+    private static void ConfigureSolutionCommand(RootCommand rootCommand)
+    {
+        var slnCommand = new Command("solution", "Manage .NET solution files.");
+        slnCommand.Aliases.Add("sln");
+
+        // sln list
+        var listSlnArg = new Argument<string>("SLN_FILE")
+        {
+            Description = "The solution file or directory to operate on. If not specified, the command searches the current directory.",
+            Arity = ArgumentArity.ZeroOrOne,
+            DefaultValueFactory = _ => Directory.GetCurrentDirectory()
+        };
+        var solutionFolderOption = new Option<bool>("--solution-folders") { Description = "Display solution folders." };
+        var listCommand = new Command("list", "List all projects in a solution file.") { listSlnArg, solutionFolderOption };
+        listCommand.SetAction(parseResult =>
+        {
+            try
+            {
+                string fileOrDirectory = parseResult.GetValue(listSlnArg) ?? Directory.GetCurrentDirectory();
+                bool displaySolutionFolders = parseResult.GetValue(solutionFolderOption);
+                string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles: true);
+                SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+
+                string[] paths;
+                if (displaySolutionFolders)
+                {
+                    paths = [.. solution.SolutionFolders
+                        .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/')) ?? string.Empty)];
+                }
+                else
+                {
+                    paths = [.. solution.SolutionProjects.Select(project => project.FilePath)];
+                }
+
+                if (paths.Length == 0)
+                {
+                    Reporter.Output.WriteLine(CliStrings.NoProjectsFound);
+                }
+                else
+                {
+                    Array.Sort(paths);
+                    string header = displaySolutionFolders ? "Solution Folder(s)" : "Project(s)";
+                    Reporter.Output.WriteLine(header);
+                    Reporter.Output.WriteLine(new string('-', header.Length));
+                    foreach (string path in paths)
+                    {
+                        Reporter.Output.WriteLine(path);
+                    }
+                }
+                return 0;
+            }
+            catch (GracefulException ex)
+            {
+                Reporter.Error.WriteLine(ex.Message.Red());
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(listSlnArg) ?? "", ex.Message).Red());
+                return 1;
+            }
+        });
+
+        // sln migrate
+        var migrateSlnArg = new Argument<string>("SLN_FILE")
+        {
+            Description = "The solution file or directory to operate on. If not specified, the command searches the current directory.",
+            Arity = ArgumentArity.ZeroOrOne,
+            DefaultValueFactory = _ => Directory.GetCurrentDirectory()
+        };
+        var migrateCommand = new Command("migrate", "Migrate a solution file to the new slnx format.") { migrateSlnArg };
+        migrateCommand.SetAction(parseResult =>
+        {
+            try
+            {
+                string fileOrDirectory = parseResult.GetValue(migrateSlnArg) ?? Directory.GetCurrentDirectory();
+                string slnFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory);
+                if (slnFileFullPath.HasExtension(".slnx"))
+                {
+                    Reporter.Error.WriteLine("The solution is already in the slnx format.".Red());
+                    return 1;
+                }
+                string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
+                SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(slnFileFullPath);
+                SolutionSerializers.SlnXml.SaveAsync(slnxFileFullPath, solution, CancellationToken.None).Wait();
+                Reporter.Output.WriteLine("The solution was migrated successfully.");
+                Reporter.Output.WriteLine(slnxFileFullPath);
+                return 0;
+            }
+            catch (GracefulException ex)
+            {
+                Reporter.Error.WriteLine(ex.Message.Red());
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(migrateSlnArg) ?? "", ex.Message).Red());
+                return 1;
+            }
+        });
+
+        slnCommand.Subcommands.Add(listCommand);
+        slnCommand.Subcommands.Add(migrateCommand);
+
+        slnCommand.SetAction(parseResult =>
+        {
+            Reporter.Output.WriteLine("Required command was not provided.");
+            Reporter.Output.WriteLine();
+            Reporter.Output.WriteLine("Usage: dotnet solution [command] [options]");
+            Reporter.Output.WriteLine();
+            Reporter.Output.WriteLine("Commands:");
+            Reporter.Output.WriteLine("  list       List all projects in a solution file.");
+            Reporter.Output.WriteLine("  migrate    Migrate a solution file to the new slnx format.");
+            return 1;
+        });
+
+        rootCommand.Subcommands.Add(slnCommand);
     }
 
     public static ParseResult Parse(string[] args) => RootCommand.Parse(args);
