@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToControlGeneratedAssemblyInfo : SdkTest
@@ -48,19 +50,19 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var expectedInfo = new SortedDictionary<string, string>
+            var expectedInfo = new HashSet<(string Key, string Value)>
             {
-                { "AssemblyInformationalVersionAttribute", "1.2.3-beta" },
-                { "AssemblyFileVersionAttribute", "4.5.6.7" },
-                { "AssemblyVersionAttribute", "8.9.10.11" },
-                { "AssemblyCompanyAttribute", "TestCompany" },
-                { "AssemblyConfigurationAttribute", "Release" },
-                { "AssemblyCopyrightAttribute", "TestCopyright" },
-                { "AssemblyDescriptionAttribute", "TestDescription" },
-                { "AssemblyProductAttribute", "TestProduct" },
-                { "AssemblyTitleAttribute", "TestTitle" },
-                { "AssemblyTrademarkAttribute", "TestTrademark" },
-                { "NeutralResourcesLanguageAttribute", "fr" },
+                ("AssemblyInformationalVersionAttribute", "1.2.3-beta"),
+                ("AssemblyFileVersionAttribute", "4.5.6.7"),
+                ("AssemblyVersionAttribute", "8.9.10.11"),
+                ("AssemblyCompanyAttribute", "TestCompany"),
+                ("AssemblyConfigurationAttribute", "Release"),
+                ("AssemblyCopyrightAttribute", "TestCopyright"),
+                ("AssemblyDescriptionAttribute", "TestDescription"),
+                ("AssemblyProductAttribute", "TestProduct"),
+                ("AssemblyTitleAttribute", "TestTitle"),
+                ("AssemblyTrademarkAttribute", "TestTrademark"),
+                ("NeutralResourcesLanguageAttribute", "fr"),
             };
 
             if (attributeToOptOut == "All")
@@ -69,15 +71,15 @@ namespace Microsoft.NET.Build.Tests
             }
             else
             {
-                expectedInfo.Remove(attributeToOptOut);
+                expectedInfo.RemoveWhere(i => i.Key == attributeToOptOut);
             }
 
-            expectedInfo.Add("TargetFrameworkAttribute", $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}");
+            expectedInfo.Add(("TargetFrameworkAttribute", $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}"));
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework, "Release").FullName, "HelloWorld.dll");
             var actualInfo = AssemblyInfo.Get(assemblyPath);
 
-            actualInfo.Should().Equal(expectedInfo);
+            actualInfo.Should().BeEquivalentTo(expectedInfo);
         }
 
         [Fact]
@@ -233,7 +235,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().Should().BeEquivalentTo(new[] { "1.2.3+abc.xyz" });
         }
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         [InlineData("net45")]
         public void It_respects_version_prefix(string targetFramework)
@@ -256,9 +258,9 @@ namespace Microsoft.NET.Build.Tests
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(targetFramework).FullName, "HelloWorld.dll");
             var info = AssemblyInfo.Get(assemblyPath);
 
-            info["AssemblyVersionAttribute"].Should().Be("1.2.3.0");
-            info["AssemblyFileVersionAttribute"].Should().Be("1.2.3.0");
-            info["AssemblyInformationalVersionAttribute"].Should().Be("1.2.3");
+            info.Should().Contain(("AssemblyVersionAttribute", "1.2.3.0"));
+            info.Should().Contain(("AssemblyFileVersionAttribute", "1.2.3.0"));
+            info.Should().Contain(("AssemblyInformationalVersionAttribute", "1.2.3"));
         }
 
         [WindowsOnlyTheory]
@@ -283,7 +285,7 @@ namespace Microsoft.NET.Build.Tests
             // Then the version of the built assembly shall match the provided VersionPrefix
             var assemblyPath = Path.Combine(incrementalBuildCommand.GetOutputDirectory(targetFramework).FullName, "HelloWorld.dll");
             var info = AssemblyInfo.Get(assemblyPath);
-            info["AssemblyVersionAttribute"].Should().Be("1.2.4.0");
+            info.Should().Contain(("AssemblyVersionAttribute", "1.2.4.0"));
 
             BuildCommand BuildProject(string versionPrefix)
             {
@@ -305,7 +307,7 @@ namespace Microsoft.NET.Build.Tests
 
             var firstBuildCommand = BuildProject(buildNumber: "1");
             var assemblyPath = Path.Combine(firstBuildCommand.GetOutputDirectory(targetFramework).FullName, "TestLibrary.dll");
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("BuildNumber:1");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "BuildNumber:1"));
 
             var firstWriteTime = File.GetLastWriteTimeUtc(assemblyPath);
 
@@ -322,7 +324,7 @@ namespace Microsoft.NET.Build.Tests
             File.GetLastWriteTimeUtc(assemblyPath).Should().NotBe(firstWriteTime);
 
             // and the custom assembly should be generated with the updated value.
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("BuildNumber:2");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "BuildNumber:2"));
 
             BuildCommand BuildProject(string buildNumber)
             {
@@ -356,7 +358,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            AssemblyInfo.Get(assemblyPath)["InternalsVisibleToAttribute"].Should().Be("Tests");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("InternalsVisibleToAttribute", "Tests"));
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -550,7 +552,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            Assert.False(AssemblyInfo.Get(assemblyPath).ContainsKey("InternalsVisibleToAttribute"));
+            AssemblyInfo.Get(assemblyPath).Should().NotContain(i => i.Key == "InternalsVisibleToAttribute");
         }
 
         [Fact]
@@ -576,7 +578,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            AssemblyInfo.Get(assemblyPath)["InternalsVisibleToAttribute"].Should().Be("Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("InternalsVisibleToAttribute", "Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2"));
         }
 
         [Fact]
@@ -603,7 +605,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            AssemblyInfo.Get(assemblyPath)["InternalsVisibleToAttribute"].Should().Be("Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("InternalsVisibleToAttribute", "Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2"));
         }
 
         [Fact]
@@ -629,11 +631,11 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("MetadataKey:MetadataValue");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "MetadataKey:MetadataValue"));
         }
 
         [Fact]
-        public void It_respects_out_out_of_assembly_metadata()
+        public void It_respects_opt_out_of_assembly_metadata()
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld")
@@ -657,7 +659,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netstandard2.0").FullName, "HelloWorld.dll");
 
-            Assert.False(AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute"));
+            AssemblyInfo.Get(assemblyPath).Should().NotContain(i => i.Key == "AssemblyMetadataAttribute");
         }
 
         [Theory]
@@ -697,11 +699,11 @@ namespace Microsoft.NET.Build.Tests
 
             if (shouldHaveAttribute)
             {
-                AssemblyInfo.Get(assemblyPath)["UserSecretsIdAttribute"].Should().Be("SecretsIdValue");
+                AssemblyInfo.Get(assemblyPath).Should().Contain(("UserSecretsIdAttribute", "SecretsIdValue"));
             }
             else
             {
-                AssemblyInfo.Get(assemblyPath).Should().NotContainKey("SecretsIdValue");
+                AssemblyInfo.Get(assemblyPath).Should().NotContain(i => i.Key == "SecretsIdValue");
             }
         }
 
@@ -741,7 +743,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(testTestProject.TargetFrameworks).FullName, testTestProject.Name + ".dll");
 
-            AssemblyInfo.Get(assemblyPath)["UserSecretsIdAttribute"].Should().Be("SecretsIdValue");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("UserSecretsIdAttribute", "SecretsIdValue"));
         }
 
         [Theory]
@@ -773,7 +775,7 @@ namespace Microsoft.NET.Build.Tests
 
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName, testProject.Name + ".dll");
 
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("RepositoryUrl:" + fakeUrl);
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "RepositoryUrl:" + fakeUrl));
         }
 
         [Theory]
@@ -802,11 +804,11 @@ namespace Microsoft.NET.Build.Tests
 
             if (containsAttribute)
             {
-                AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("RepositoryUrl:" + fakeUrl);
+                AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "RepositoryUrl:" + fakeUrl));
             }
             else
             {
-                AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute").Should().Be(false);
+                AssemblyInfo.Get(assemblyPath).Should().NotContain(i => i.Key == "AssemblyMetadataAttribute");
             }
         }
 
@@ -855,11 +857,11 @@ class Program
                 .Should()
                 .Pass();
 
-            var result = new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(Path.Combine(testAsset.Path, testProject.Name))
-                .Execute();
+            var exePath = Path.Combine(buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName, testProject.Name + ".dll");
+
+            var result = new DotnetCommand(Log, "exec", exePath).Execute();
             result.Should().Pass();
-            result.StdOut.StripTerminalLoggerProgressIndicators().Should().BeEquivalentTo(expectedFrameworkDisplayName);
+            result.StdOut.Should().BeEquivalentTo(expectedFrameworkDisplayName);
         }
     }
 }

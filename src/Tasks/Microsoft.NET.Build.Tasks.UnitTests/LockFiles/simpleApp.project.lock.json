@@ -1,0 +1,67 @@
+{
+  "version": 3,
+  "targets": {
+    "net10.0": {}
+  },
+  "libraries": {},
+  "projectFileDependencyGroups": {
+    "net10.0": []
+  },
+  "packageFolders": {
+    "C:\\Users\\nmytelka\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\git\\repro\\consoletest\\consoletest.csproj",
+      "projectName": "consoletest",
+      "projectPath": "C:\\git\\repro\\consoletest\\consoletest.csproj",
+      "packagesPath": "C:\\Users\\username\\.nuget\\packages\\",
+      "outputPath": "C:\\git\\repro\\consoletest\\obj\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [],
+      "configFilePaths": [
+        "C:\\Users\\username\\AppData\\Roaming\\NuGet\\NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net10.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net10.0": {
+          "targetAlias": "net10.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "all"
+      },
+      "SdkAnalysisLevel": "10.0.100"
+    },
+    "frameworks": {
+      "net10.0": {
+        "targetAlias": "net10.0",
+        "imports": [
+          "net472",
+          "net481"
+        ],
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\git\\sdk\\artifacts\\bin\\redist\\Debug\\dotnet\\sdk\\10.0.100-dev\\RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

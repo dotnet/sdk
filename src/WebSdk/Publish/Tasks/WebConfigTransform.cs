@@ -7,28 +7,28 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 {
     public static class WebConfigTransform
     {
-        public static XDocument Transform(XDocument webConfig, string appName, bool configureForAzure, bool useAppHost, string extension, string aspNetCoreModuleName, string aspNetCoreHostingModel, string environmentName, string projectFullPath)
+        public static XDocument Transform(XDocument? webConfig, string appName, bool configureForAzure, bool useAppHost, string? extension, string? aspNetCoreModuleName, string? aspNetCoreHostingModel, string? environmentName, string? projectFullPath)
         {
             const string HandlersElementName = "handlers";
             const string aspNetCoreElementName = "aspNetCore";
             const string envVariablesElementName = "environmentVariables";
 
-            if (webConfig == null || webConfig.Root.Name.LocalName != "configuration")
+            if (webConfig?.Root == null || webConfig.Root.Name.LocalName != "configuration")
             {
                 webConfig = XDocument.Parse(WebConfigTemplate.Template);
             }
 
-            XElement rootElement = null;
+            XElement? rootElement = null;
 
             // Find the first aspNetCore element. If it is null use the default logic. Else use the root containing the aspNetCore element.
-            var firstAspNetCoreElement = webConfig.Root.Descendants(aspNetCoreElementName).FirstOrDefault();
+            var firstAspNetCoreElement = webConfig.Root?.Descendants(aspNetCoreElementName).FirstOrDefault();
             if (firstAspNetCoreElement == null)
             {
-                rootElement = webConfig.Root.Element("location") == null ? webConfig.Root : webConfig.Root.Element("location");
+                rootElement = webConfig.Root?.Element("location") == null ? webConfig.Root : webConfig.Root.Element("location");
             }
             else
             {
-                rootElement = firstAspNetCoreElement.Ancestors("location").FirstOrDefault() == null ? webConfig.Root : webConfig.Root.Element("location");
+                rootElement = firstAspNetCoreElement.Ancestors("location").FirstOrDefault() == null ? webConfig.Root : webConfig.Root?.Element("location");
             }
 
             var webServerSection = GetOrCreateChild(rootElement, "system.webServer");
@@ -37,9 +37,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             TransformHandlers(handlerSection, aspNetCoreModuleName);
 
             // aspNetCoreModuleName might not get set if the web.config already has a different module name defined.
-            string aspNetCoreModuleNameFinalValue =
-                    (string)handlerSection.Elements("add")
-                   .FirstOrDefault(e => string.Equals((string)e.Attribute("name"), "aspnetcore", StringComparison.OrdinalIgnoreCase))
+            string? aspNetCoreModuleNameFinalValue =
+                    (string?)handlerSection?.Elements("add")
+                   .FirstOrDefault(e => string.Equals((string?)e.Attribute("name"), "aspnetcore", StringComparison.OrdinalIgnoreCase))?
                    .Attribute("modules");
 
             var aspNetCoreSection = GetOrCreateChild(webServerSection, aspNetCoreElementName);
@@ -50,22 +50,22 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             }
 
             // make sure that the aspNetCore element is after handlers element
-            var aspNetCoreElement = webServerSection.Element(HandlersElementName)
+            var aspNetCoreElement = webServerSection?.Element(HandlersElementName)?
                 .ElementsBeforeSelf(aspNetCoreElementName).SingleOrDefault();
             if (aspNetCoreElement != null)
             {
                 aspNetCoreElement.Remove();
-                webServerSection.Element(HandlersElementName).AddAfterSelf(aspNetCoreElement);
+                webServerSection?.Element(HandlersElementName)?.AddAfterSelf(aspNetCoreElement);
             }
 
             return webConfig;
         }
 
-        private static void TransformHandlers(XElement handlersElement, string aspNetCoreModuleName)
+        private static void TransformHandlers(XElement handlersElement, string? aspNetCoreModuleName)
         {
             var aspNetCoreElement =
                 handlersElement.Elements("add")
-                    .FirstOrDefault(e => string.Equals((string)e.Attribute("name"), "aspnetcore", StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(e => string.Equals((string?)e.Attribute("name"), "aspnetcore", StringComparison.OrdinalIgnoreCase));
 
             if (aspNetCoreElement == null)
             {
@@ -86,7 +86,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             SetAttributeValueIfEmpty(aspNetCoreElement, "resourceType", "Unspecified");
         }
 
-        private static void TransformAspNetCore(XElement aspNetCoreElement, string appName, bool configureForAzure, bool useAppHost, string extension, string aspNetCoreModuleName, string aspNetCoreHostingModelValue, string projectFullPath)
+        private static void TransformAspNetCore(XElement aspNetCoreElement, string appName, bool configureForAzure, bool useAppHost, string? extension, string? aspNetCoreModuleName, string? aspNetCoreHostingModelValue, string? projectFullPath)
         {
             // Forward slashes currently work neither in AspNetCoreModule nor in dotnet so they need to be
             // replaced with backwards slashes when the application is published on a non-Windows machine
@@ -115,12 +115,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 var attributes = aspNetCoreElement.Attributes().ToList();
                 var processPathIndex = attributes.FindIndex(a => a.Name.LocalName == "processPath");
                 // if the app path is already there in the web.config, don't do anything.
-                if (string.Equals(appPath, (string)argumentsAttribute, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(appPath, (string?)argumentsAttribute, StringComparison.OrdinalIgnoreCase))
                 {
                     appPath = string.Empty;
                 }
                 attributes.Insert(processPathIndex + 1,
-                    new XAttribute("arguments", (appPath + " " + (string)argumentsAttribute).Trim()));
+                    new XAttribute("arguments", (appPath + " " + (string?)argumentsAttribute).Trim()));
 
                 aspNetCoreElement.Attributes().Remove();
                 aspNetCoreElement.Add(attributes);
@@ -143,11 +143,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 
             var hostingModelAttributeValue = aspNetCoreElement.Attribute("hostingModel");
 
-            string projectWebConfigPath = null;
+            string? projectWebConfigPath = null;
             if (!string.IsNullOrEmpty(projectFullPath))
             {
-                string projectFolder = Path.GetDirectoryName(projectFullPath);
-                projectWebConfigPath = Path.Combine(projectFolder, "web.config");
+                string? projectFolder = Path.GetDirectoryName(projectFullPath);
+                if (projectFolder is not null)
+                {
+                    projectWebConfigPath = Path.Combine(projectFolder, "web.config");
+                }
             }
 
             if (File.Exists(projectWebConfigPath))
@@ -165,11 +168,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         }
 
 
-        private static void SetAspNetCoreHostingModel(string aspNetCoreHostingModelValue, string aspNetCoreModuleName, XElement aspNetCoreElement)
+        private static void SetAspNetCoreHostingModel(string? aspNetCoreHostingModelValue, string? aspNetCoreModuleName, XElement aspNetCoreElement)
         {
             if (!string.IsNullOrEmpty(aspNetCoreHostingModelValue))
             {
-                switch (aspNetCoreHostingModelValue.ToUpperInvariant())
+                switch (aspNetCoreHostingModelValue?.ToUpperInvariant())
                 {
                     case "INPROCESS":
                         // In process is not supported for AspNetCoreModule.
@@ -188,11 +191,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             }
         }
 
-        private static void TransformEnvironmentVariables(XElement envVariablesElement, string environmentName)
+        private static void TransformEnvironmentVariables(XElement envVariablesElement, string? environmentName)
         {
             var envVariableElement =
                 envVariablesElement.Elements("environmentVariable")
-                .FirstOrDefault(e => string.Equals((string)e.Attribute("name"), "ASPNETCORE_ENVIRONMENT", StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(e => string.Equals((string?)e.Attribute("name"), "ASPNETCORE_ENVIRONMENT", StringComparison.OrdinalIgnoreCase));
 
             if (envVariableElement == null)
             {
@@ -204,25 +207,25 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             envVariableElement.SetAttributeValue("value", environmentName);
         }
 
-        private static XElement GetOrCreateChild(XElement parent, string childName)
+        private static XElement GetOrCreateChild(XElement? parent, string childName)
         {
-            var childElement = parent.Element(childName);
+            var childElement = parent?.Element(childName);
             if (childElement == null)
             {
                 childElement = new XElement(childName);
-                parent.Add(childElement);
+                parent?.Add(childElement);
             }
             return childElement;
         }
 
-        private static void SetAttributeValueIfEmpty(XElement element, string attributeName, string value)
+        private static void SetAttributeValueIfEmpty(XElement element, string attributeName, string? value)
         {
-            element.SetAttributeValue(attributeName, (string)element.Attribute(attributeName) ?? value);
+            element.SetAttributeValue(attributeName, (string?)element.Attribute(attributeName) ?? value);
         }
 
         private static void RemoveLauncherArgs(XElement aspNetCoreElement)
         {
-            var arguments = (string)aspNetCoreElement.Attribute("arguments");
+            var arguments = (string?)aspNetCoreElement.Attribute("arguments");
 
             if (arguments != null)
             {
@@ -240,16 +243,16 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             }
         }
 
-        public static XDocument AddProjectGuidToWebConfig(XDocument document, string projectGuid, bool ignoreProjectGuid)
+        public static XDocument? AddProjectGuidToWebConfig(XDocument? document, string? projectGuid, bool ignoreProjectGuid)
         {
             try
             {
                 if (document != null && !string.IsNullOrEmpty(projectGuid))
                 {
                     IEnumerable<XComment> comments = document.DescendantNodes().OfType<XComment>();
-                    projectGuid = projectGuid.Trim('{', '}', '(', ')').Trim();
+                    projectGuid = projectGuid?.Trim('{', '}', '(', ')').Trim();
                     string projectGuidValue = string.Format("ProjectGuid: {0}", projectGuid);
-                    XComment projectGuidComment = comments.FirstOrDefault(comment => string.Equals(comment.Value, projectGuidValue, StringComparison.OrdinalIgnoreCase));
+                    XComment? projectGuidComment = comments.FirstOrDefault(comment => string.Equals(comment.Value, projectGuidValue, StringComparison.OrdinalIgnoreCase));
                     if (projectGuidComment != null)
                     {
                         if (ignoreProjectGuid)
@@ -262,7 +265,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 
                     if (!ignoreProjectGuid)
                     {
-                        document.LastNode.AddAfterSelf(new XComment(projectGuidValue));
+                        document?.LastNode?.AddAfterSelf(new XComment(projectGuidValue));
                         return document;
                     }
                 }
