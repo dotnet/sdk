@@ -3,14 +3,20 @@
 
 #nullable disable
 
+#if !CLI_AOT
 extern alias DotNetNativeWrapper;
+#endif
 
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
+#if CLI_AOT
+using EnvironmentProvider = Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
+#else
 using EnvironmentProvider = DotNetNativeWrapper::Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
+#endif
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
@@ -82,7 +88,11 @@ public class SdkCheckCommand : CommandBase
 
     public static int Run(ParseResult parseResult)
     {
+#if CLI_AOT
+        return new SdkCheckCommand(parseResult, dotnetRoot: Program.DotnetRoot).Execute();
+#else
         return new SdkCheckCommand(parseResult).Execute();
+#endif
     }
 }
 

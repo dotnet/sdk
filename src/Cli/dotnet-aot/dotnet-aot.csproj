@@ -46,6 +46,23 @@
     <Compile Include="..\dotnet\CommandLineInfo.cs" Link="CommandLineInfo.cs" />
     <Compile Include="..\dotnet\Parser.cs" Link="Parser.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+
+    <!-- sdk check command infrastructure -->
+    <Compile Include="..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
+    <Compile Include="..\dotnet\PrintableTable.cs" Link="PrintableTable.cs" />
+
+    <!-- sdk check command -->
+    <Compile Include="..\dotnet\Commands\Sdk\Check\SdkCheckCommand.cs" Link="Commands\Sdk\Check\SdkCheckCommand.cs" />
+    <Compile Include="..\dotnet\Commands\Sdk\Check\IProductCollectionProvider.cs" Link="Commands\Sdk\Check\IProductCollectionProvider.cs" />
+    <Compile Include="..\dotnet\Commands\Sdk\Check\ProductCollectionProvider.cs" Link="Commands\Sdk\Check\ProductCollectionProvider.cs" />
+    <Compile Include="..\dotnet\Commands\Sdk\Check\BundleOutputWriter.cs" Link="Commands\Sdk\Check\BundleOutputWriter.cs" />
+    <Compile Include="..\dotnet\Commands\Sdk\Check\SdkOutputWriter.cs" Link="Commands\Sdk\Check\SdkOutputWriter.cs" />
+    <Compile Include="..\dotnet\Commands\Sdk\Check\RuntimeOutputWriter.cs" Link="Commands\Sdk\Check\RuntimeOutputWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\dotnet\CliStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
+    <EmbeddedResource Include="..\dotnet\Commands\CliCommandStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,6 +72,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
   </ItemGroup>
 
 </Project>

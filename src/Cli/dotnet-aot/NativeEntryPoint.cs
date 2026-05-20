@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Cli;
@@ -15,6 +16,26 @@ static unsafe partial class NativeEntryPoint
         nint hostfxrPathPtr,   // const char_t* hostfxr_path
         int argc,              // int argc (user args, no dotnet exe)
         nint argvPtr)          // const char_t** argv
+    {
+        try
+        {
+            return ExecuteCore(hostPathPtr, dotnetRootPtr, sdkDirPtr, hostfxrPathPtr, argc, argvPtr);
+        }
+        catch (Exception e)
+        {
+            // No managed exception must escape an [UnmanagedCallersOnly] method.
+            try { Console.Error.WriteLine(e.Message); } catch { }
+            return 1;
+        }
+    }
+
+    static int ExecuteCore(
+        nint hostPathPtr,
+        nint dotnetRootPtr,
+        nint sdkDirPtr,
+        nint hostfxrPathPtr,
+        int argc,
+        nint argvPtr)
     {
         string hostPath = PlatformStringMarshaller.ConvertToManaged(hostPathPtr) ?? string.Empty;
         string dotnetRoot = PlatformStringMarshaller.ConvertToManaged(dotnetRootPtr) ?? string.Empty;
@@ -37,10 +58,24 @@ static unsafe partial class NativeEntryPoint
         // Try the AOT-compiled path for supported commands (if enabled)
         if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
         {
-            var parseResult = Parser.Parse(args);
-            if (parseResult.Errors.Count == 0)
+            Program.DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
+            try
             {
-                return Parser.Invoke(parseResult);
+                var parseResult = Parser.Parse(args);
+                if (parseResult.Errors.Count == 0)
+                {
+                    return Parser.Invoke(parseResult);
+                }
+            }
+            catch (Exception e) when (e.ShouldBeDisplayedAsError())
+            {
+                Reporter.Error.WriteLine(e.Message);
+                return 1;
+            }
+            catch (Exception e)
+            {
+                Reporter.Error.WriteLine(e.ToString());
+                return 1;
             }
         }
 

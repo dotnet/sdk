@@ -29,10 +29,29 @@ namespace Microsoft.DotNet.Cli;
 public class Program
 {
 #if CLI_AOT
+    /// <summary>
+    ///  When set by the native entry point, commands use this instead of
+    ///  discovering the dotnet root via PATH / environment probing.
+    /// </summary>
+    internal static string? DotnetRoot { get; set; }
+
     public static int Main(string[] args)
     {
-        var parseResult = Parser.Parse(args);
-        return Parser.Invoke(parseResult);
+        try
+        {
+            var parseResult = Parser.Parse(args);
+            return Parser.Invoke(parseResult);
+        }
+        catch (Exception e) when (e.ShouldBeDisplayedAsError())
+        {
+            Reporter.Error.WriteLine(e.Message);
+            return 1;
+        }
+        catch (Exception e)
+        {
+            Reporter.Error.WriteLine(e.ToString());
+            return 1;
+        }
     }
 #else
     private static readonly string s_toolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";

@@ -3,6 +3,8 @@
 
 #if CLI_AOT
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Sdk.Check;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli;
@@ -21,6 +23,21 @@ public static class Parser
             versionOption,
             infoOption,
         };
+
+        // sdk check command
+        var sdkCheckCommand = new System.CommandLine.Command("check", CliCommandStrings.SdkCheckAppFullName);
+        sdkCheckCommand.SetAction(SdkCheckCommand.Run);
+
+        var sdkCommand = new System.CommandLine.Command("sdk", CliCommandStrings.SdkAppFullName)
+        {
+            sdkCheckCommand,
+        };
+        sdkCommand.SetAction(parseResult =>
+        {
+            parseResult.InvocationConfiguration.Error.WriteLine(CliStrings.RequiredCommandNotPassed);
+            return 1;
+        });
+        rootCommand.Add(sdkCommand);
 
         rootCommand.SetAction(parseResult =>
         {

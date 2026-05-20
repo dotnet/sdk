@@ -4,7 +4,9 @@
 #nullable disable
 
 using System.CommandLine;
+#if !CLI_AOT
 using Microsoft.DotNet.Cli.Extensions;
+#endif
 
 namespace Microsoft.DotNet.Cli;
 
@@ -22,7 +24,9 @@ public abstract class CommandBase
 
     protected virtual void ShowHelpOrErrorIfAppropriate(ParseResult parseResult)
     {
+#if !CLI_AOT
         parseResult.ShowHelpOrErrorIfAppropriate();
+#endif
     }
 
     public abstract int Execute();
