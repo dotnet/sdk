@@ -160,7 +160,7 @@
         <Version>$(Version)</Version>
       </BaseTestPackageProject>
       <!-- Microsoft.TemplateEngine.Authoring.Tasks and Microsoft.TemplateSearch.TemplateDiscovery
-           are excluded here because they are in the solution. Packing them again with
+           are excluded here because they are already packed elsewhere. Packing them again with
            different global properties (PackageOutputPath, Version) causes a parallel-build
            race condition on referenced projects' obj/ output DLLs (e.g. RunnableProjects.dll).
            Both projects copy their nupkg to TestPackagesDir themselves. -->
