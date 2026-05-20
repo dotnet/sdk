@@ -2,8 +2,7 @@
 <Project>
 
   <PropertyGroup>
-    <DotNetGenAPITaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\netframework\Microsoft.DotNet.GenAPI.Task.dll</DotNetGenAPITaskAssembly>
-    <DotNetGenAPITaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net\Microsoft.DotNet.GenAPI.Task.dll</DotNetGenAPITaskAssembly>
+    <DotNetGenAPITaskAssembly>$(MSBuildThisFileDirectory)..\tools\Microsoft.DotNet.GenAPI.Task.dll</DotNetGenAPITaskAssembly>
 
     <!-- Hook onto the TargetsTriggeredByCompilation target which only runs when the compiler is invoked. -->
     <TargetsTriggeredByCompilation Condition="'$(GenAPIGenerateReferenceAssemblySource)' == 'true'">
@@ -23,7 +22,12 @@
     </PropertyGroup>
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.GenAPI.Task.GenAPITask" AssemblyFile="$(DotNetGenAPITaskAssembly)" />
+  <!-- Architecture="*" so MSBuild can launch the .NET task host in any available architecture
+       (the .NET SDK only ships x64/arm64 task hosts; without "*", an x86 desktop MSBuild process
+       defaults to looking for an x86 task host that doesn't exist and fails with MSB4216).
+       TODO: Remove Architecture="*" once https://github.com/dotnet/msbuild/issues/13739 is fixed
+       and a new MSBuild with that fix is consumed. -->
+  <UsingTask TaskName="Microsoft.DotNet.GenAPI.Task.GenAPITask" AssemblyFile="$(DotNetGenAPITaskAssembly)" Runtime="NET" Architecture="*" />
 
   <Target Name="GenAPIGenerateReferenceAssemblySource"
           DependsOnTargets="$(GenAPIGenerateReferenceAssemblySourceDependsOn)">

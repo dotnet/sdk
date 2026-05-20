@@ -605,4 +605,68 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
         return true;
     }
+
+    /// <summary>
+    /// Remaps the Route (and label endpoint property) on an endpoint by stripping the old base path
+    /// prefix and prepending the new base path. Used when materializing framework assets to update
+    /// endpoint routes from the library's base path to the consuming project's base path.
+    /// </summary>
+    public static void RemapEndpointRoute(
+        StaticWebAssetEndpoint endpoint,
+        string oldBasePath,
+        string newBasePath,
+        List<PathTokenizer.Segment> routeSegments,
+        List<PathTokenizer.Segment> basePathSegments)
+    {
+        var normalizedOldBase = oldBasePath is null or "/" ? "" : StaticWebAsset.Normalize(oldBasePath);
+
+        if (!string.IsNullOrEmpty(normalizedOldBase) &&
+            RouteHasPathPrefix(endpoint.Route, normalizedOldBase, routeSegments, basePathSegments))
+        {
+            var remaining = endpoint.Route.Length > normalizedOldBase.Length
+                ? endpoint.Route.Substring(normalizedOldBase.Length).TrimStart('/')
+                : "";
+            endpoint.Route = StaticWebAsset.CombineNormalizedPaths("", newBasePath, remaining, '/');
+
+            // Also remap the label endpoint property (used by fingerprinting/HTML asset placeholders).
+            RemapLabelProperty(endpoint, normalizedOldBase, newBasePath, routeSegments, basePathSegments);
+        }
+        else if (string.IsNullOrEmpty(normalizedOldBase))
+        {
+            // Old base path was empty/root — prepend the new base path to the existing route.
+            endpoint.Route = StaticWebAsset.CombineNormalizedPaths("", newBasePath, endpoint.Route, '/');
+
+            for (var j = 0; j < endpoint.EndpointProperties.Length; j++)
+            {
+                ref var property = ref endpoint.EndpointProperties[j];
+                if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase))
+                {
+                    property.Value = StaticWebAsset.CombineNormalizedPaths("", newBasePath, property.Value, '/');
+                    endpoint.MarkProperiesAsModified();
+                }
+            }
+        }
+    }
+
+    private static void RemapLabelProperty(
+        StaticWebAssetEndpoint endpoint,
+        string normalizedOldBase,
+        string newBasePath,
+        List<PathTokenizer.Segment> routeSegments,
+        List<PathTokenizer.Segment> basePathSegments)
+    {
+        for (var j = 0; j < endpoint.EndpointProperties.Length; j++)
+        {
+            ref var property = ref endpoint.EndpointProperties[j];
+            if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase) &&
+                RouteHasPathPrefix(property.Value, normalizedOldBase, routeSegments, basePathSegments))
+            {
+                var labelRemaining = property.Value.Length > normalizedOldBase.Length
+                    ? property.Value.Substring(normalizedOldBase.Length).TrimStart('/')
+                    : "";
+                property.Value = StaticWebAsset.CombineNormalizedPaths("", newBasePath, labelRemaining, '/');
+                endpoint.MarkProperiesAsModified();
+            }
+        }
+    }
 }

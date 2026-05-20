@@ -35,6 +35,7 @@ public class TelemetryClient : ITelemetryClient
     private static readonly string? s_environmentStoragePath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
     private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
     private static readonly bool s_disableTraceExport = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
+    private static readonly bool s_enableOtlpExporter = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER);
     private static readonly int s_flushTimeoutMs = 200;
 #endif
 
@@ -63,14 +64,22 @@ public class TelemetryClient : ITelemetryClient
         s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
-            .AddRuntimeInstrumentation()
-            .AddOtlpExporter();
+            .AddRuntimeInstrumentation();
+
+        if (s_enableOtlpExporter)
+        {
+            s_metricsProviderBuilder.AddOtlpExporter();
+        }
 
         s_tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddSource(Activities.Source.Name)
-            .AddOtlpExporter()
             .SetSampler(new AlwaysOnSampler());
+
+        if (s_enableOtlpExporter)
+        {
+            s_tracerProviderBuilder.AddOtlpExporter();
+        }
 
         if (!string.IsNullOrWhiteSpace(s_diskLogPath))
         {
