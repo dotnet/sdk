@@ -39,10 +39,12 @@ elif [ "$BUILD_REASON" = "PullRequest" ]; then
     TARGET_BRANCH="${SYSTEM_PULLREQUEST_TARGETBRANCH:-main}"
     TARGET_BRANCH="${TARGET_BRANCH#refs/heads/}"
 
-    # Fetch the target branch to have a merge base for diffing
+    # Fetch the target branch to have a diff base
     git fetch origin "$TARGET_BRANCH" --depth=1 2>/dev/null || true
 
-    CHANGED_FILES=$(git diff --name-only "origin/$TARGET_BRANCH"...HEAD 2>/dev/null || echo "")
+    # Use two-arg diff (tree comparison) instead of three-dot (merge-base)
+    # because AzDO shallow clones lack the history for merge-base computation.
+    CHANGED_FILES=$(git diff --name-only "origin/$TARGET_BRANCH" HEAD 2>/dev/null || echo "")
 
     if [ -z "$CHANGED_FILES" ]; then
       echo "##[warning]Could not determine changed files - running all tests"

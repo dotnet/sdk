@@ -45,15 +45,21 @@ elseif ($env:BUILD_REASON -eq 'PullRequest') {
         if (-not $targetBranch) { $targetBranch = 'main' }
         $targetBranch = $targetBranch -replace '^refs/heads/', ''
 
-        # Fetch the target branch to have a merge base for diffing
-        # Use Start-Process or temp ErrorActionPreference to avoid PowerShell
-        # treating git's stderr progress output as a terminating error
+        # Fetch the target branch to have a diff base.
+        # Temporarily relax ErrorActionPreference so that git's stderr
+        # progress output doesn't become a terminating error in PS 5.1.
         $prevEAP = $ErrorActionPreference
-        $ErrorActionPreference = 'Continue'
+        $ErrorActionPreference = 'SilentlyContinue'
         & git fetch origin $targetBranch --depth=1 2>&1 | Out-Null
         $ErrorActionPreference = $prevEAP
 
-        $changedFiles = & git diff --name-only "origin/$targetBranch...HEAD" 2>&1 | Where-Object { $_ -is [string] }
+        # Use two-arg diff (tree comparison) instead of three-dot (merge-base)
+        # because AzDO shallow clones lack the history for merge-base computation.
+        $prevEAP = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+        $changedFiles = & git diff --name-only "origin/$targetBranch" HEAD 2>&1 | Where-Object { $_ -is [string] }
+        $ErrorActionPreference = $prevEAP
+
         if (-not $changedFiles) {
             Write-Host "##[warning]Could not determine changed files - running all tests"
         }
