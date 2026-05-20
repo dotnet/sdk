@@ -9,6 +9,7 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class GenerateBundle : TaskBase, ICancelableTask, IMultiThreadableTask
     {
+        /// <inheritdoc />
         public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
