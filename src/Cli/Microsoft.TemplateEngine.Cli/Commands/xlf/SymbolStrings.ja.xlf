@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="ja" original="../SymbolStrings.resx">
     <body>
       <trans-unit id="TemplateCommand_Option_AllowScripts">
-        <source>Specifies if post action scripts should run.</source>
-        <target state="translated">事後アクション スクリプトを実行するかどうかを指定します。</target>
+        <source>Specifies if post action scripts should run. Templates can run arbitrary code through MSBuild whether or not this option is enabled; only use templates from trusted sources.</source>
+        <target state="needs-review-translation">事後アクション スクリプトを実行するかどうかを指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_Option_Baseline">
