@@ -1072,7 +1072,8 @@ namespace Microsoft.NET.Publish.Tests
             }
             testProject.PackageReferences.Add(new TestPackageReference("System.Spatial", "5.8.3"));
 
-            // Override Program.cs to look up a French resource string at runtime
+            // Override Program.cs to look up French resource strings at runtime
+            // from both app-authored and package-provided satellite assemblies
             testProject.SourceFiles[$"{projectName}.cs"] = $@"
 using System;
 using System.Globalization;
@@ -1081,10 +1082,19 @@ class Test
 {{
     static int Main()
     {{
-        var rm = new ResourceManager(""{projectName}.Strings"", typeof(Test).Assembly);
-        var value = rm.GetString(""HelloWorld"", CultureInfo.GetCultureInfo(""fr""));
-        Console.WriteLine(value);
-        return value == ""Bonjour"" ? 0 : 1;
+        // Verify app-authored satellite resources resolve in French
+        var appRm = new ResourceManager(""{projectName}.Strings"", typeof(Test).Assembly);
+        var appValue = appRm.GetString(""HelloWorld"", CultureInfo.GetCultureInfo(""fr""));
+        Console.WriteLine(appValue);
+        if (appValue != ""Bonjour"") return 1;
+
+        // Verify package (System.Spatial) satellite resources resolve in French
+        var spatialAsm = typeof(System.Spatial.GeographyPoint).Assembly;
+        var pkgRm = new ResourceManager(""System.Spatial"", spatialAsm);
+        var pkgValue = pkgRm.GetString(""Validator_SridMismatch"", CultureInfo.GetCultureInfo(""fr""));
+        if (string.IsNullOrEmpty(pkgValue)) return 2;
+        Console.WriteLine(""PackageSatelliteOK"");
+        return 0;
     }}
 }}";
 
@@ -1118,9 +1128,11 @@ class Test
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
 
-            // NativeAOT embeds app-defined satellite assemblies into the native binary, so they
+            // NativeAOT embeds satellite assemblies into the native binary, so they
             // should NOT appear as separate files in the publish directory (dotnet/runtime#124191).
             File.Exists(Path.Combine(publishDirectory, "fr", $"{projectName}.resources.dll")).Should().BeFalse("fr app satellite should be embedded, not published separately");
+            File.Exists(Path.Combine(publishDirectory, "fr", "System.Spatial.resources.dll")).Should().BeFalse("fr package satellite should be embedded, not published separately");
+            File.Exists(Path.Combine(publishDirectory, "de", "System.Spatial.resources.dll")).Should().BeFalse("de package satellite should be embedded, not published separately");
 
             // Satellite for a non-selected culture (ja) should be absent
             File.Exists(Path.Combine(publishDirectory, "ja", "System.Spatial.resources.dll")).Should().BeFalse("ja System.Spatial satellite should be filtered out");
@@ -1130,11 +1142,13 @@ class Test
             File.Exists(publishedExe).Should().BeTrue();
             IsNativeImage(publishedExe).Should().BeTrue();
 
-            // Running the native image should resolve the French resource correctly
+            // Running the native image should resolve French resources correctly
+            // from both app-authored and package-provided satellites
             new RunExeCommand(Log, publishedExe)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining("Bonjour");
+                .And.HaveStdOutContaining("Bonjour")
+                .And.HaveStdOutContaining("PackageSatelliteOK");
         }
 
         private void CheckIlcVersions(TestAsset testAsset, string targetFramework, string rid, string expectedVersion, bool useRuntimePackLayout)
