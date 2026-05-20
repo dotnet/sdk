@@ -395,7 +395,12 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     }
                 }
 
-                yield return new IncludedItem(item.ItemType, itemFullPath, itemRelativePath);
+                bool allowConversionToExplicitItem = string.Equals(
+                    item.GetMetadataValue(VirtualProjectBuilder.AllowConversionToExplicitItemMetadataName),
+                    bool.TrueString,
+                    StringComparison.OrdinalIgnoreCase);
+
+                yield return new IncludedItem(item.ItemType, itemFullPath, itemRelativePath, allowConversionToExplicitItem);
             }
         }
 
@@ -409,6 +414,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             // items such as Compile/None/Content naturally. Explicitly write only copied items that are
             // missing from that evaluation, plus the entry point when Compile defaults do not include it.
             var candidateItems = includeItems
+                .Where(static item => item.AllowConversionToExplicitItem)
                 .Select(item => (item.ItemType, item.RelativePath, OutputFullPath: Path.GetFullPath(Path.Combine(outputDirectory, item.RelativePath))))
                 .Distinct()
                 .ToArray();
@@ -563,7 +569,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
         ImmutableArray<CSharpDirective> EvaluatedDirectives,
         ImmutableArray<IncludedItem> IncludeItems);
 
-    private readonly record struct IncludedItem(string ItemType, string FullPath, string RelativePath);
+    private readonly record struct IncludedItem(string ItemType, string FullPath, string RelativePath, bool AllowConversionToExplicitItem);
 
     private readonly record struct ProjectItemKey(string ItemType, string FullPath);
 

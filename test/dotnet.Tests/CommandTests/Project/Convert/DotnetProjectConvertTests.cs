@@ -2013,7 +2013,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     /// <summary>
-    /// If an item added by MSBuild has corresponding FileBasedProgramsItemMapping, conversion copies and writes it to the project file.
+    /// If an item added by MSBuild has corresponding FileBasedProgramsItemMapping, conversion copies it but does not write it to the project file.
     /// </summary>
     [Fact]
     public void Directives_IncludeDll_DirectoryBuildProps_ItemMapping()
@@ -2079,13 +2079,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var outDir = Path.Join(testInstance.Path, "out");
         File.Exists(Path.Join(outDir, "Lib.dll")).Should().BeTrue();
         File.ReadAllText(Path.Join(outDir, "Program.csproj"))
-            .Should().Contain("<Reference Include=\"Lib.dll\" />");
+            .Should().NotContain("<Reference");
 
         new DotnetCommand(Log, "run")
             .WithWorkingDirectory(outDir)
             .Execute()
-            .Should().Pass()
-            .And.HaveStdOut(expectedOutput);
+            .Should().Fail()
+            // error CS0103: The name 'Lib' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
     }
 
     [Fact]

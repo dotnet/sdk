@@ -20,6 +20,8 @@ public sealed class VirtualProjectBuilder
 {
     internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
 
+    internal const string AllowConversionToExplicitItemMetadataName = "FileBasedProgramsAllowConversionToExplicitItem";
+
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
@@ -699,9 +701,18 @@ public sealed class VirtualProjectBuilder
                     continue;
                 }
 
-                writer.WriteLine($"""
-                        <{itemType} {includeOrExclude.KindToMSBuildString()}="{EscapeValue(includeOrExclude.Name)}" />
+                if (includeOrExclude.Kind == CSharpDirective.IncludeOrExcludeKind.Include)
+                {
+                    writer.WriteLine($"""
+                        <{itemType} Include="{EscapeValue(includeOrExclude.Name)}" {AllowConversionToExplicitItemMetadataName}="true" />
                     """);
+                }
+                else
+                {
+                    writer.WriteLine($"""
+                        <{itemType} Remove="{EscapeValue(includeOrExclude.Name)}" />
+                    """);
+                }
             }
 
             writer.WriteLine("""
