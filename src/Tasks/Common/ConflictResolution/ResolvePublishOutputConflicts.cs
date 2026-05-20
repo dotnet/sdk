@@ -8,6 +8,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     [MSBuildMultiThreadableTask]
     public class ResolveOverlappingItemGroupConflicts : TaskBase, IMultiThreadableTask
     {
+        /// <inheritdoc/>
         public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
         [Required]

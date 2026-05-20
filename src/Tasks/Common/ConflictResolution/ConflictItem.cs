@@ -37,9 +37,12 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     // Wraps an ITask item and adds lazy evaluated properties used by Conflict resolution.
     internal class ConflictItem : IConflictItem
     {
+        // Null when constructed from a caller that has not been migrated to a multi-threadable task
+        // (e.g. ResolvePackageFileConflicts), or via the Platform-item constructor which does no file
+        // access. When non-null, SourcePath is absolutized through it before any file I/O.
         private readonly TaskEnvironment? _taskEnvironment;
 
-        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType, TaskEnvironment? taskEnvironment = null)
+        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType, TaskEnvironment? taskEnvironment)
         {
             OriginalItem = originalItem;
             ItemType = itemType;
@@ -227,7 +230,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 if (!_hasSourcePathForFileAccess)
                 {
                     var sourcePath = SourcePath;
-                    _sourcePathForFileAccess = sourcePath != null && _taskEnvironment != null
+                    _sourcePathForFileAccess = !string.IsNullOrEmpty(sourcePath) && _taskEnvironment != null
                         ? _taskEnvironment.GetAbsolutePath(sourcePath)
                         : sourcePath;
                     _hasSourcePathForFileAccess = true;
