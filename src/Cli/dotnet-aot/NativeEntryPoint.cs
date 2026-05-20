@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Cli;
@@ -40,7 +42,15 @@ static unsafe partial class NativeEntryPoint
             var parseResult = Parser.Parse(args);
             if (parseResult.Errors.Count == 0)
             {
-                return Parser.Invoke(parseResult);
+                try
+                {
+                    return Parser.Invoke(parseResult);
+                }
+                catch (Exception ex) when (ex is Utils.GracefulException || (ex.Data.Contains("CLI_User_Displayed_Exception")))
+                {
+                    Reporter.Error.WriteLine(ex.Message.Red());
+                    return 1;
+                }
             }
         }
 

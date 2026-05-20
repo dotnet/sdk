@@ -3,12 +3,10 @@
 
 #if CLI_AOT
 using System.CommandLine;
+using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.VisualStudio.SolutionPersistence;
-using Microsoft.VisualStudio.SolutionPersistence.Model;
-using Microsoft.VisualStudio.SolutionPersistence.Serializer;
-using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
@@ -19,10 +17,10 @@ public static class Parser
 
     private static RootCommand CreateCommand()
     {
-        var versionOption = new Option<bool>("--version") { Description = "Display .NET SDK version." };
-        var infoOption = new Option<bool>("--info") { Description = "Display .NET information." };
+        var versionOption = new Option<bool>("--version") { Arity = ArgumentArity.Zero };
+        var infoOption = new Option<bool>("--info") { Arity = ArgumentArity.Zero };
 
-        var rootCommand = new RootCommand("The .NET CLI")
+        var rootCommand = new RootCommand("dotnet")
         {
             versionOption,
             infoOption,
@@ -40,7 +38,6 @@ public static class Parser
                 CommandLineInfo.PrintInfo();
                 return 0;
             }
-            parseResult.InvocationConfiguration.Output.WriteLine("Usage: dn [options]");
             return 0;
         });
 
@@ -51,304 +48,33 @@ public static class Parser
 
     private static void ConfigureSolutionCommand(RootCommand rootCommand)
     {
-        var slnCommand = new Command("solution", "Manage .NET solution files.");
-        slnCommand.Aliases.Add("sln");
+        var slnDef = new SolutionCommandDefinition();
 
-        // SLN_FILE argument on the parent sln command, matching managed CLI structure
-        var slnArg = new Argument<string>("SLN_FILE")
+        // Remove the 'add' subcommand — it requires MSBuild and is not available for AOT.
+        // When a user runs 'dotnet sln add', the command won't be found in the AOT parser,
+        // causing a parse error that triggers fallback to the managed CLI.
+        slnDef.Subcommands.Remove(slnDef.AddCommand);
+
+        SolutionCommandParser.ConfigureCommand(slnDef);
+
+        // Add a validator that requires a subcommand. Without this, 'dotnet sln' would
+        // parse successfully (SlnArgument is optional) and be handled by AOT with no output.
+        // By producing a validation error, NativeEntryPoint falls back to managed CLI
+        // which shows the proper "missing command" help.
+        slnDef.Validators.Add(result =>
         {
-            Description = "The solution file or directory to operate on. If not specified, the command searches the current directory.",
-            Arity = ArgumentArity.ZeroOrOne,
-            DefaultValueFactory = _ => Directory.GetCurrentDirectory()
-        };
-        slnCommand.Arguments.Add(slnArg);
-
-        // sln list
-        var solutionFolderOption = new Option<bool>("--solution-folders") { Description = "Display solution folders." };
-        var listCommand = new Command("list", "List all projects in a solution file.") { solutionFolderOption };
-        listCommand.SetAction(parseResult =>
-        {
-            try
+            if (result.Children.All(c => c is not System.CommandLine.Parsing.CommandResult))
             {
-                string fileOrDirectory = parseResult.GetValue(slnArg) ?? Directory.GetCurrentDirectory();
-                bool displaySolutionFolders = parseResult.GetValue(solutionFolderOption);
-                string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles: true);
-                SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
-
-                string[] paths;
-                if (displaySolutionFolders)
-                {
-                    paths = [.. solution.SolutionFolders
-                        .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/')) ?? string.Empty)];
-                }
-                else
-                {
-                    paths = [.. solution.SolutionProjects.Select(project => project.FilePath)];
-                }
-
-                if (paths.Length == 0)
-                {
-                    Reporter.Output.WriteLine(CliStrings.NoProjectsFound);
-                }
-                else
-                {
-                    Array.Sort(paths);
-                    string header = displaySolutionFolders ? "Solution Folder(s)" : "Project(s)";
-                    Reporter.Output.WriteLine(header);
-                    Reporter.Output.WriteLine(new string('-', header.Length));
-                    foreach (string path in paths)
-                    {
-                        Reporter.Output.WriteLine(path);
-                    }
-                }
-                return 0;
-            }
-            catch (GracefulException ex)
-            {
-                Reporter.Error.WriteLine(ex.Message.Red());
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(slnArg) ?? "", ex.Message).Red());
-                return 1;
+                result.AddError(CliStrings.RequiredCommandNotPassed);
             }
         });
 
-        // sln migrate
-        var migrateCommand = new Command("migrate", "Migrate a solution file to the new slnx format.");
-        migrateCommand.SetAction(parseResult =>
-        {
-            try
-            {
-                string fileOrDirectory = parseResult.GetValue(slnArg) ?? Directory.GetCurrentDirectory();
-                string slnFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory);
-                if (slnFileFullPath.HasExtension(".slnx"))
-                {
-                    Reporter.Error.WriteLine("Only .sln files can be migrated to .slnx format.".Red());
-                    return 1;
-                }
-                string slnxFileFullPath = Path.ChangeExtension(slnFileFullPath, "slnx");
-                SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(slnFileFullPath);
-                SolutionSerializers.SlnXml.SaveAsync(slnxFileFullPath, solution, CancellationToken.None).GetAwaiter().GetResult();
-                Reporter.Output.WriteLine(string.Format(".slnx file {0} generated.", slnxFileFullPath));
-                return 0;
-            }
-            catch (GracefulException ex)
-            {
-                Reporter.Error.WriteLine(ex.Message.Red());
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(slnArg) ?? "", ex.Message).Red());
-                return 1;
-            }
-        });
-
-        // sln remove
-        var removeProjectsArg = new Argument<string[]>("PROJECT_PATH")
-        {
-            Description = "The paths to the projects to remove from the solution.",
-            Arity = ArgumentArity.OneOrMore
-        };
-        var removeCommand = new Command("remove", "Remove one or more projects from a solution file.") { removeProjectsArg };
-        removeCommand.SetAction(parseResult =>
-        {
-            try
-            {
-                string fileOrDirectory = parseResult.GetValue(slnArg) ?? Directory.GetCurrentDirectory();
-                string[] projects = parseResult.GetValue(removeProjectsArg) ?? [];
-                string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles: true);
-
-                if (projects.Length == 0)
-                {
-                    Reporter.Error.WriteLine("You must specify at least one project to remove.".Red());
-                    return 1;
-                }
-
-                // Detect misplaced solution file in project arguments
-                var misplacedSlnFile = projects.FirstOrDefault(p => p.HasExtension(".sln") || p.HasExtension(".slnx"));
-                if (misplacedSlnFile != null)
-                {
-                    var projectArgs = string.Join(" ", projects.Where(p => !p.HasExtension(".sln") && !p.HasExtension(".slnx")));
-                    Reporter.Error.WriteLine(string.Format("Solution argument '{0}' appears to be misplaced.", misplacedSlnFile).Red());
-                    Reporter.Error.WriteLine("Did you mean:");
-                    Reporter.Error.WriteLine(string.Format("  dotnet solution {0} remove {1}", misplacedSlnFile, projectArgs));
-                    return 1;
-                }
-
-                var relativeProjectPaths = projects
-                    .Select(p => Path.GetFullPath(p))
-                    .Select(p => Path.GetRelativePath(
-                        Path.GetDirectoryName(solutionFileFullPath)!,
-                        Directory.Exists(p)
-                            ? GetProjectFileFromDirectory(p)
-                            : p));
-
-                if (solutionFileFullPath.HasExtension(SlnfFileHelper.SlnfExtension))
-                {
-                    RemoveProjectsFromSolutionFilter(solutionFileFullPath, relativeProjectPaths);
-                }
-                else
-                {
-                    RemoveProjectsFromSolution(solutionFileFullPath, relativeProjectPaths);
-                }
-                return 0;
-            }
-            catch (GracefulException ex)
-            {
-                Reporter.Error.WriteLine(ex.Message.Red());
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidSolutionFormatString, parseResult.GetValue(slnArg) ?? "", ex.Message).Red());
-                return 1;
-            }
-        });
-
-        slnCommand.Subcommands.Add(listCommand);
-        slnCommand.Subcommands.Add(migrateCommand);
-        slnCommand.Subcommands.Add(removeCommand);
-
-        // No action on the parent sln command — let it produce a parse error
-        // so NativeEntryPoint falls back to managed CLI for help/missing-subcommand.
-
-        rootCommand.Subcommands.Add(slnCommand);
+        rootCommand.Subcommands.Add(slnDef);
     }
 
     public static ParseResult Parse(string[] args) => RootCommand.Parse(args);
 
     public static int Invoke(ParseResult parseResult) => parseResult.Invoke();
-
-    /// <summary>
-    /// Find a single *proj file in the given directory.
-    /// </summary>
-    private static string GetProjectFileFromDirectory(string projectDirectory)
-    {
-        DirectoryInfo dir;
-        try
-        {
-            dir = new DirectoryInfo(projectDirectory);
-        }
-        catch (ArgumentException)
-        {
-            throw new GracefulException(string.Format("Could not find a project or directory `{0}`.", projectDirectory));
-        }
-
-        if (!dir.Exists)
-        {
-            throw new GracefulException(string.Format("Could not find a project or directory `{0}`.", projectDirectory));
-        }
-
-        FileInfo[] files = dir.GetFiles("*proj");
-        if (files.Length == 0)
-        {
-            throw new GracefulException(string.Format("Could not find any project in `{0}`.", projectDirectory));
-        }
-
-        if (files.Length > 1)
-        {
-            throw new GracefulException(string.Format("Found more than one project in `{0}`. Specify which one to use.", projectDirectory));
-        }
-
-        return files[0].FullName;
-    }
-
-    private static void RemoveProjectsFromSolution(string solutionFileFullPath, IEnumerable<string> projectPaths)
-    {
-        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
-        ISolutionSerializer serializer = solution.SerializerExtension!.Serializer;
-
-        // set UTF-8 BOM encoding for .sln
-        if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
-        {
-            solution.SerializerExtension = v12Serializer.CreateModelExtension(new()
-            {
-                Encoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
-            });
-        }
-
-        foreach (var projectPath in projectPaths)
-        {
-            var project = solution.FindProject(projectPath);
-            // If the project is not found, try to find it by name without extension
-            if (project is null && !Path.HasExtension(projectPath))
-            {
-                var projectsMatchByName = solution.SolutionProjects.Where(p => Path.GetFileNameWithoutExtension(p.DisplayName)?.Equals(projectPath) == true);
-                project = projectsMatchByName.Count() == 1 ? projectsMatchByName.First() : null;
-            }
-            if (project is null)
-            {
-                Reporter.Output.WriteLine(CliStrings.ProjectNotFoundInTheSolution, projectPath);
-            }
-            else
-            {
-                solution.RemoveProject(project);
-                Reporter.Output.WriteLine("Project `{0}` removed from the solution.", projectPath);
-            }
-        }
-
-        // Remove empty solution folders
-        for (int i = 0; i < solution.SolutionFolders.Count; i++)
-        {
-            var folder = solution.SolutionFolders[i];
-            int nonFolderDescendants = 0;
-            Stack<SolutionFolderModel> stack = new();
-            stack.Push(folder);
-
-            while (stack.Count > 0)
-            {
-                var current = stack.Pop();
-                nonFolderDescendants += current.Files?.Count ?? 0;
-                foreach (var child in solution.SolutionItems)
-                {
-                    if (child is { Parent: var parent } && parent == current)
-                    {
-                        if (child is SolutionFolderModel childFolder)
-                        {
-                            stack.Push(childFolder);
-                        }
-                        else
-                        {
-                            nonFolderDescendants++;
-                        }
-                    }
-                }
-            }
-
-            if (nonFolderDescendants == 0)
-            {
-                solution.RemoveFolder(folder);
-                i--;
-            }
-        }
-
-        serializer.SaveAsync(solutionFileFullPath, solution, CancellationToken.None).GetAwaiter().GetResult();
-    }
-
-    private static void RemoveProjectsFromSolutionFilter(string slnfFileFullPath, IEnumerable<string> projectPaths)
-    {
-        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(slnfFileFullPath);
-        string parentSolutionPath = filteredSolution.Description!;
-
-        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
-
-        foreach (var projectPath in projectPaths)
-        {
-            if (existingProjects.Remove(projectPath))
-            {
-                Reporter.Output.WriteLine("Project `{0}` removed from the solution.", projectPath);
-            }
-            else
-            {
-                Reporter.Output.WriteLine(CliStrings.ProjectNotFoundInTheSolution, projectPath);
-            }
-        }
-
-        SlnfFileHelper.SaveSolutionFilter(slnfFileFullPath, parentSolutionPath, existingProjects.OrderBy(p => p));
-    }
 }
 
 #else
