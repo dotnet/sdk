@@ -4,9 +4,11 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
+using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -29,7 +31,7 @@ namespace Microsoft.DotNet.Cli
             // since commands can have arguments, we must take those as well in order to get accurate help
             var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
             tokenList.Add("-h");
-            Parser.Instance.Parse(tokenList).Invoke();
+            Instance.Parse(tokenList).Invoke();
         }
 
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
@@ -52,7 +54,7 @@ namespace Microsoft.DotNet.Cli
                 }
             }
 
-            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary> 
+            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary>
             static string[] DistinctFormatStringParts(string formatString)
             {
                 return Regex.Split(formatString, @"{[0-9]+}"); // match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'
@@ -62,7 +64,8 @@ namespace Microsoft.DotNet.Cli
             /// <summary>given a string and a series of parts, ensures that all parts are present in the string in sequential order</summary>
             static bool ErrorContainsAllParts(ReadOnlySpan<char> error, string[] parts)
             {
-                foreach(var part in parts) {
+                foreach (var part in parts)
+                {
                     var foundIndex = error.IndexOf(part);
                     if (foundIndex != -1)
                     {
@@ -88,19 +91,19 @@ namespace Microsoft.DotNet.Cli
         public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
         {
             return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
-                Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
+                GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
         }
 
         public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
         {
-            return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+            return parseResult.CommandResult.Command.Equals(RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
         }
 
         public static bool CanBeInvoked(this ParseResult parseResult)
         {
-            return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
+            return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
                 parseResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
-                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.DotnetSubCommand)));
+                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
         }
 
         public static int HandleMissingCommand(this ParseResult parseResult)
@@ -156,25 +159,12 @@ namespace Microsoft.DotNet.Cli
             return false;
         }
 
-        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult)
+        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
         {
-            if (symbolResult.Token() == default)
-            {
-                return parseResult.GetResult(Parser.DotnetSubCommand)?.GetValueOrDefault<string>();
-            }
-            else if (symbolResult.Token().Type.Equals(CliTokenType.Command))
-            {
-                return ((System.CommandLine.Parsing.CommandResult)symbolResult).Command.Name;
-            }
-            else if (symbolResult.Token().Type.Equals(CliTokenType.Argument))
-            {
-                return symbolResult.Token().Value;
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
+            CommandResult commandResult => commandResult.Command.Name,
+            ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
+            _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
+        };
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
             (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
@@ -183,8 +173,8 @@ namespace Microsoft.DotNet.Cli
 
         internal static string GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
         {
-            return parseResult.HasOption(RunCommandParser.RuntimeOption) ?
-                parseResult.GetValue(RunCommandParser.RuntimeOption) :
+            return parseResult.HasOption(CommonOptions.RuntimeOption) ?
+                parseResult.GetValue(CommonOptions.RuntimeOption) :
                 parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
                 parseResult.HasOption(CommonOptions.ArchitectureOption) ||
                 parseResult.HasOption(CommonOptions.LongFormArchitectureOption) ?
@@ -228,10 +218,19 @@ namespace Microsoft.DotNet.Cli
         private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
         {
             var optionString = shorthand ? "-p" : "--property";
-            var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(CliTokenType.Option));
-            var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
-            var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t=> t.Value)).ToArray();
+            var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
+            var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
+
+            static CliToken GetOptionTokenOrDefault(SymbolResult symbolResult)
+            {
+                if (symbolResult is not OptionResult optionResult)
+                {
+                    return null;
+                }
+
+                return optionResult.IdentifierToken ?? new CliToken($"--{optionResult.Option.Name}", CliTokenType.Option, optionResult.Option);
+            }
         }
 
         [Conditional("DEBUG")]
@@ -255,8 +254,9 @@ namespace Microsoft.DotNet.Cli
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
                 return optionResult.GetValue(optionToGet);
-            } 
-            else {
+            }
+            else
+            {
                 return default;
             }
         }

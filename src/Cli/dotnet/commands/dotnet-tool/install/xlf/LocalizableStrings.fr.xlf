@@ -93,6 +93,16 @@ Si vous souhaitez créer un manifeste, utilisez l’option `--create-manifest-if
         <target state="translated">Autorisez un outil .NET à être restauré par progression vers des versions plus récentes du runtime .NET si le runtime qu’il cible n’est pas installé.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">Remplacer toutes les sources de package NuGet à utiliser pendant l’installation par celles-ci.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">SOURCE</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">Version du package d'outils à installer.</target>
@@ -183,8 +193,8 @@ Pour plus d'informations, notamment sur le nommage de package, accédez à https
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

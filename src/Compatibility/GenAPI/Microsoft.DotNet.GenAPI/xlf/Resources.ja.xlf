@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ja" original="../Resources.resx">
+    <body>
+      <trans-unit id="AddMemberThrowsException">
+        <source>Adding member '{0}' to the named type '{1}' failed with exception '{2}'.</source>
+        <target state="translated">名前付き型 '{0}' にメンバー '{1}' を追加できませんでした。例外 '{2}'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ResolveTypeForwardFailed">
+        <source>Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</source>
+        <target state="translated">アセンブリ '{1}' の型 '{0}' を型順方向で解決できませんでした。アセンブリが参照として指定され、型が含まれていることを確認してください。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

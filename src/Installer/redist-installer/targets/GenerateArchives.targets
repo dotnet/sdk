@@ -1,0 +1,31 @@
+<Project>
+
+  <Target Name="GenerateArchives"
+          DependsOnTargets="GenerateLayout;GetCurrentRuntimeInformation"
+          BeforeTargets="AfterBuild">
+    <!-- When running in Docker under a Windows host, tar is warning "file changed as we read it" for several files and returning exit code 1.
+         So this flag allows that to be ignored. -->
+    <PropertyGroup Condition="'$(IgnoreTarExitCode)' == ''">
+      <IgnoreTarExitCode>false</IgnoreTarExitCode>
+      <IgnoreTarExitCode Condition="'$(DOTNET_CORESDK_IGNORE_TAR_EXIT_CODE)' == '1'">true</IgnoreTarExitCode>
+    </PropertyGroup>
+
+    <!-- Ensure output directories are created -->
+    <MakeDir Directories="$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)" />
+
+    <!-- Create .tar.gz files on Linux/MacOS, and .zip files on Windows -->
+    <ZipFileCreateFromDirectory
+        Condition=" '$(OSName)' == 'win' "
+        SourceDirectory="$(RedistLayoutPath)"
+        DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).zip"
+        OverwriteDestination="true" />
+
+    <TarGzFileCreateFromDirectory
+        Condition=" '$(OSName)' != 'win' "
+        SourceDirectory="$(RedistLayoutPath)"
+        DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).tar.gz"
+        OverwriteDestination="true"
+        IgnoreExitCode="$(IgnoreTarExitCode)" />
+  </Target>
+
+</Project>
