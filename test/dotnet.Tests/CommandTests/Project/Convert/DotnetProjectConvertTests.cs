@@ -1875,6 +1875,69 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
+    [Fact]
+    public void Directives_IncludeDll_Wildcard()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "LibClass.cs"), """
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        new DotnetCommand(Log, "build", "Lib.csproj")
+            .WithWorkingDirectory(libDir)
+            .Execute()
+            .Should().Pass();
+
+        File.Copy(
+            Path.Join(libDir, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll"),
+            Path.Join(testInstance.Path, "Lib.dll"));
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property FileBasedProgramsItemMapping=.dll=Reference
+            #:include *.dll
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        var expectedOutput = "Hello from Lib";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
+            .Should().Contain("<Reference Include=\"Lib.dll\" />");
+
+        File.Exists(Path.Join(testInstance.Path, "Program", "Lib.dll")).Should().BeTrue();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "Program"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
     /// <summary>
     /// If a file is included only via MSBuild code but is not in the mapped conversion item set, conversion won't copy it to the output directory.
     /// </summary>
