@@ -25,7 +25,6 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         {
             string verifyLocation = "foo/bar/baz";
 
-            // Use forward slashes since the Glob implementation uses '/' as path separator
             Dictionary<string, string> files = new Dictionary<string, string>()
             {
                 { "Program.cs", "hello world" },
