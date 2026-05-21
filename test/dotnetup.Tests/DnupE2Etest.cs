@@ -387,7 +387,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     private static string? TryResolveCurrentDailyPreviewSdkVersion()
     {
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
-        string ext = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
+        string ext = ".tar.gz";
 
         int latestManifestMajor = new ReleaseManifest().GetReleasesIndex()
             .Select(product =>

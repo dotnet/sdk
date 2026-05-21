@@ -43,12 +43,18 @@ internal class MockArchiveDownloader : IArchiveDownloader
         ReleaseVersion Version,
         string DestinationPath);
 
-    public void DownloadArchiveWithVerification(
+    /// <summary>
+    /// The extension to append to the base path. Defaults to ".tar.gz".
+    /// </summary>
+    public string ArchiveFileExtension { get; set; } = ".tar.gz";
+
+    public string DownloadArchiveWithVerification(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion,
-        string destinationPath,
+        string destinationBasePath,
         IProgress<DownloadProgress>? progress = null)
     {
+        string destinationPath = destinationBasePath + ArchiveFileExtension;
         DownloadCalls.Add(new DownloadCall(installRequest, resolvedVersion, destinationPath));
 
         if (ExceptionToThrow != null)
@@ -71,6 +77,8 @@ internal class MockArchiveDownloader : IArchiveDownloader
 
         // Report progress completion
         progress?.Report(new DownloadProgress(100, 100));
+
+        return destinationPath;
     }
 
     public void Dispose()

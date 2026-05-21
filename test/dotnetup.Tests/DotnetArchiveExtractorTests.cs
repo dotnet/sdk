@@ -178,7 +178,7 @@ public class DotnetArchiveExtractorTests
         call.Request.Should().Be(request);
         call.Version.Should().Be(version);
         call.DestinationPath.Should().StartWith(extractor.ScratchDownloadDirectory);
-        call.DestinationPath.Should().EndWith(DotnetupUtilities.GetArchiveFileExtensionForPlatform());
+        call.DestinationPath.Should().EndWith(".tar.gz");
 
         _log.WriteLine($"Download was called with version {call.Version} to {call.DestinationPath}");
     }
@@ -418,6 +418,130 @@ public class DotnetArchiveExtractorTests
         // Subcomponent file should be skipped
         File.Exists(Path.Combine(existingDir, "System.dll")).Should().BeFalse(
             "files in existing subcomponents should be skipped");
+    }
+
+    [Fact]
+    public void Commit_ExtractsTarGzArchive_Correctly()
+    {
+        // Arrange — create a real tar.gz archive and verify the full Prepare → Commit path
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var version = new ReleaseVersion(9, 0, 0);
+
+        var request = new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel("9.0"),
+            InstallComponent.Runtime,
+            new InstallRequestOptions());
+
+        byte[] tarGzContent = CreateTarGzWithFiles(
+            ("shared/Microsoft.NETCore.App/9.0.0/System.Runtime.dll", "runtime-content"),
+            ("dotnet" + DotnetupUtilities.ExeSuffix, "muxer-content"));
+
+        var mockDownloader = new MockArchiveDownloader
+        {
+            CreateFakeArchive = true,
+            FakeArchiveContent = tarGzContent,
+            ArchiveFileExtension = ".tar.gz"
+        };
+
+        var releaseManifest = new ReleaseManifest();
+        var progressTarget = new NullProgressTarget();
+
+        using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
+
+        // Act
+        extractor.Prepare();
+        extractor.Commit();
+
+        // Assert
+        var runtimeFile = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "9.0.0", "System.Runtime.dll");
+        File.Exists(runtimeFile).Should().BeTrue("tar.gz extraction should create files in the install path");
+        File.ReadAllText(runtimeFile).Should().Be("runtime-content");
+    }
+
+    [PlatformSpecificFact(TestPlatforms.Windows)]
+    public void Commit_ExtractsZipArchive_Correctly()
+    {
+        // Arrange — create a real zip archive and verify the full Prepare → Commit path
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var version = new ReleaseVersion(9, 0, 0);
+
+        var request = new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel("9.0"),
+            InstallComponent.Runtime,
+            new InstallRequestOptions());
+
+        byte[] zipContent = CreateZipWithFiles(
+            ("shared/Microsoft.NETCore.App/9.0.0/System.Runtime.dll", "runtime-content"),
+            ("dotnet" + DotnetupUtilities.ExeSuffix, "muxer-content"));
+
+        var mockDownloader = new MockArchiveDownloader
+        {
+            CreateFakeArchive = true,
+            FakeArchiveContent = zipContent,
+            ArchiveFileExtension = ".zip"
+        };
+
+        var releaseManifest = new ReleaseManifest();
+        var progressTarget = new NullProgressTarget();
+
+        using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
+
+        // Act
+        extractor.Prepare();
+        extractor.Commit();
+
+        // Assert
+        var runtimeFile = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "9.0.0", "System.Runtime.dll");
+        File.Exists(runtimeFile).Should().BeTrue("zip extraction should create files in the install path");
+        File.ReadAllText(runtimeFile).Should().Be("runtime-content");
+    }
+
+    /// <summary>
+    /// Creates a tar.gz archive in memory with the specified file entries.
+    /// </summary>
+    private static byte[] CreateTarGzWithFiles(params (string path, string content)[] files)
+    {
+        using var ms = new MemoryStream();
+        using (var gzStream = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Compress, leaveOpen: true))
+        using (var writer = new TarWriter(gzStream))
+        {
+            foreach (var (path, content) in files)
+            {
+                var entry = new PaxTarEntry(TarEntryType.RegularFile, path)
+                {
+                    DataStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content))
+                };
+                writer.WriteEntry(entry);
+            }
+        }
+
+        return ms.ToArray();
+    }
+
+    /// <summary>
+    /// Creates a zip archive in memory with the specified file entries.
+    /// </summary>
+    private static byte[] CreateZipWithFiles(params (string path, string content)[] files)
+    {
+        using var ms = new MemoryStream();
+        using (var zip = new System.IO.Compression.ZipArchive(ms, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var (path, content) in files)
+            {
+                var entry = zip.CreateEntry(path);
+                using var stream = entry.Open();
+                var bytes = System.Text.Encoding.UTF8.GetBytes(content);
+                stream.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+        return ms.ToArray();
     }
 }
 
