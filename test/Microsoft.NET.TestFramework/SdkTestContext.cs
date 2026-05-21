@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -8,8 +8,31 @@ namespace Microsoft.NET.TestFramework
 {
     public class SdkTestContext
     {
+        private string? _repoTemplatePackages;
+        private string? _testAssetsDirectory;
         //  Generally the folder the test DLL is in
         private string? _testExecutionDirectory;
+        private string? _testPackages;
+
+        /// <summary>
+        /// Gets the path to the template_feed directory maintained in the repository root.
+        /// In Helix environments, this is set via the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable.
+        /// </summary>
+        public string RepoTemplatePackages
+        {
+            get
+            {
+                if (_repoTemplatePackages == null)
+                {
+                    throw new InvalidOperationException("RepoTemplatePackages is not set. Ensure the 'template_feed' directory exists in the repo root or set the DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES environment variable.");
+                }
+                return _repoTemplatePackages;
+            }
+            set
+            {
+                _repoTemplatePackages = value;
+            }
+        }
 
         public string TestExecutionDirectory
         {
@@ -27,7 +50,6 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        private string? _testAssetsDirectory;
 
         public string TestAssetsDirectory
         {
@@ -45,7 +67,21 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        public string? TestPackages { get; set; }
+        public string TestPackages
+        {
+            get
+            {
+                if (_testPackages == null)
+                {
+                    throw new InvalidOperationException("TestPackages should never be null.");
+                }
+                return _testPackages;
+            }
+            set
+            {
+                _testPackages = value;
+            }
+        }
 
         //  For tests which want the global packages folder isolated in the repo, but
         //  can share it with other tests
@@ -57,7 +93,63 @@ namespace Microsoft.NET.TestFramework
 
         public string? NuGetExePath { get; set; }
 
-        public string? SdkVersion { get; set; }
+        public string? ShippingPackagesDirectory { get; set; }
+
+        /// <summary>
+        /// Finds a single SDK acquisition artifact (tar.gz, pkg, deb, rpm) matching the specified pattern
+        /// in the <see cref="ShippingPackagesDirectory"/>.
+        /// </summary>
+        /// <param name="filePattern">The file pattern to search for (e.g., "dotnet-sdk-*.tar.gz").</param>
+        /// <returns>The full path to the matching artifact.</returns>
+        public static string FindSdkAcquisitionArtifact(string filePattern)
+        {
+            if (!FindOptionalSdkAcquisitionArtifact(filePattern, [], out string? artifactPath))
+            {
+                throw new InvalidOperationException(
+                    $"No files matching '{filePattern}' found in '{Current.ShippingPackagesDirectory}'.");
+            }
+            return artifactPath!;
+        }
+
+        /// <summary>
+        /// Finds an optional SDK acquisition artifact matching the pattern. Returns false if no artifacts
+        /// exist (e.g., platform doesn't produce this artifact type). Throws if multiple artifacts match
+        /// after filtering (unexpected configuration error).
+        /// </summary>
+        /// <param name="filePattern">The file pattern to search for (e.g., "dotnet-sdk-*.pkg").</param>
+        /// <param name="excludeSubstrings">Substrings to exclude from filenames (e.g., "-internal", "-newkey").</param>
+        /// <param name="artifactPath">The full path to the matching artifact, or null if not found.</param>
+        /// <returns>True if exactly one matching artifact was found; false if no artifacts exist.</returns>
+        public static bool FindOptionalSdkAcquisitionArtifact(string filePattern, string[] excludeSubstrings, out string? artifactPath)
+        {
+            string? shippingDir = Current.ShippingPackagesDirectory;
+            if (string.IsNullOrEmpty(shippingDir) || !Directory.Exists(shippingDir))
+            {
+                throw new InvalidOperationException($"ShippingPackagesDirectory '{shippingDir}' does not exist.");
+            }
+
+            var files = Directory.GetFiles(shippingDir, filePattern);
+            if (files.Length == 0)
+            {
+                artifactPath = null;
+                return false;
+            }
+
+            var filteredFiles = files.Where(f =>
+            {
+                var fileName = Path.GetFileNameWithoutExtension(f);
+                return !excludeSubstrings.Any(suffix => fileName.Contains(suffix));
+            }).ToArray();
+
+            if (filteredFiles.Length != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Expected 1 {filePattern} file after filtering. Found: [{string.Join(", ", files.Select(Path.GetFileName))}], filtered: [{string.Join(", ", filteredFiles.Select(Path.GetFileName))}]");
+            }
+
+            artifactPath = filteredFiles[0];
+            return true;
+        }
 
         private ToolsetInfo? _toolsetUnderTest;
 
@@ -85,11 +177,9 @@ namespace Microsoft.NET.TestFramework
             {
                 if (_current == null)
                 {
-                    //  Initialize test context in cases where it hasn't been initialized via the entry point
-                    //  (ie when using test explorer or another runner)
-                    Initialize(TestCommandLine.Parse(Array.Empty<string>()));
+                    Initialize();
                 }
-                return _current ?? throw new InvalidOperationException("TestContext.Current should never be null.");
+                return _current ?? throw new InvalidOperationException("SdkTestContext.Current should never be null.");
             }
             set
             {
@@ -112,8 +202,6 @@ namespace Microsoft.NET.TestFramework
 
         public void AddTestEnvironmentVariables(IDictionary<string, string?> environment)
         {
-            environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
-
             //  Set NUGET_PACKAGES environment variable to match value from build.ps1
             if(NuGetCachePath is not null)
             {
@@ -126,22 +214,19 @@ namespace Microsoft.NET.TestFramework
             //  Prevent test MSBuild nodes from persisting
             environment["MSBUILDDISABLENODEREUSE"] = "1";
 
+            //  Prevent local test runs from modifying the developer's user PATH.
+            //  Tests that validate first-time PATH setup can opt back in explicitly.
+            environment["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = "0";
+
             ToolsetUnderTest.AddTestEnvironmentVariables(environment);
         }
 
 
-        public static void Initialize(TestCommandLine commandLine)
+        public static void Initialize()
         {
             //  Show verbose debugging output for tests
             CommandLoggingContext.SetVerbose(true);
             Reporter.Reset();
-
-            foreach (var (name, value) in commandLine.EnvironmentVariables)
-            {
-                Environment.SetEnvironmentVariable(name, value);
-            }
-
-            Environment.SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
 
             //  Reset this environment variable so that if the dotnet under test is different than the
             //  one running the tests, it won't interfere
@@ -149,70 +234,25 @@ namespace Microsoft.NET.TestFramework
 
             SdkTestContext testContext = new();
 
-            bool runAsTool = false;
-            if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "TestAssets")))
-            {
-                runAsTool = true;
-                testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "TestAssets");
-            }
-            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_AS_TOOL")))
-            {
-                //  Pretend to run as a tool, but use the test assets found in the repo
-                //  This allows testing most of the "tests as global tool" behavior by setting an environment
-                //  variable instead of packing the test, and installing it as a global tool.
-                runAsTool = true;
-                string? FindFolder = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
-                if (FindFolder is not null)
-                {
-                    testContext.TestAssetsDirectory = FindFolder;
-                }
-            }
-            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")) && Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY") is not null)
-            {
-                testContext.TestAssetsDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")!;
-            }
+            string basePath = Path.Combine(AppContext.BaseDirectory, "TestAssets");
+            string? envTestAssetsDir = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY");
+            testContext.TestAssetsDirectory =
+                (Directory.Exists(basePath) ? basePath : null)
+                ?? (!string.IsNullOrEmpty(envTestAssetsDir) ? envTestAssetsDir : null)
+                ?? FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory)!;
 
-            string? repoRoot = null;
 #if DEBUG
             string repoConfiguration = "Debug";
 #else
             string repoConfiguration = "Release";
 #endif
 
-            if (commandLine.SDKRepoPath != null)
-            {
-                repoRoot = commandLine.SDKRepoPath;
-            }
-            else if (!commandLine.NoRepoInference && !runAsTool)
-            {
-                repoRoot = GetRepoRoot();
-            }
+            string? repoRoot = GetRepoRoot();
 
-            if (!string.IsNullOrEmpty(commandLine.TestExecutionDirectory) && commandLine.TestExecutionDirectory is not null)
-            {
-                testContext.TestExecutionDirectory = commandLine.TestExecutionDirectory;
-            }
-            else if (Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY") != null)
-            {
-                testContext.TestExecutionDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY")!;
-            }
-            else if (runAsTool)
-            {
-                testContext.TestExecutionDirectory = Path.Combine(Path.GetTempPath(), "dotnetSdkTests", Path.GetRandomFileName());
-            }
-            else
-            {
-                string? FindFolder1 = FindFolderInTree("artifacts", AppContext.BaseDirectory);
-                string? FindFolder2 = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
-                if (FindFolder1 is not null)
-                {
-                    testContext.TestExecutionDirectory = Path.Combine(FindFolder1, "tmp", repoConfiguration, "testing");
-                }
-                if (FindFolder2 is not null)
-                {
-                    testContext.TestAssetsDirectory = FindFolder2;
-                }
-            }
+            string? envTestExecDir = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY");
+            testContext.TestExecutionDirectory =
+                (!string.IsNullOrEmpty(envTestExecDir) ? envTestExecDir : null)
+                ?? Path.Combine(FindFolderInTree("artifacts", AppContext.BaseDirectory)!, "tmp", repoConfiguration, "testing");
 
             Directory.CreateDirectory(testContext.TestExecutionDirectory);
 
@@ -238,18 +278,7 @@ namespace Microsoft.NET.TestFramework
                 testContext.NuGetCachePath = Path.Combine(artifactsDir, ".nuget", "packages");
 
                 testContext.TestPackages = Path.Combine(artifactsDir, "tmp", repoConfiguration, "testing", "testpackages");
-            }
-            else if (runAsTool)
-            {
-                testContext.NuGetFallbackFolder = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "NuGetFallbackFolder");
-                testContext.NuGetExePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", $"nuget{Constants.ExeSuffix}");
-                testContext.NuGetCachePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
-
-                var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
-                if (Directory.Exists(testPackages))
-                {
-                    testContext.TestPackages = testPackages;
-                }
+                testContext.ShippingPackagesDirectory = Path.Combine(artifactsDir, "packages", repoConfiguration, "Shipping");
             }
             else
             {
@@ -267,15 +296,33 @@ namespace Microsoft.NET.TestFramework
                 }
             }
 
-            if (commandLine.SdkVersion != null)
+            if (testContext.ShippingPackagesDirectory is null)
             {
-                testContext.SdkVersion = commandLine.SdkVersion;
+                string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+                if (!string.IsNullOrEmpty(dotnetRoot))
+                {
+                    testContext.ShippingPackagesDirectory = Path.Combine(dotnetRoot, ".nuget");
+                }
             }
 
-            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration, commandLine);
+            string? envRepoTemplatePackages = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES");
+            if (!string.IsNullOrEmpty(envRepoTemplatePackages) && Directory.Exists(envRepoTemplatePackages))
+            {
+                testContext.RepoTemplatePackages = envRepoTemplatePackages;
+            }
+            else if (repoRoot != null)
+            {
+                string repoTemplatePackagesFallback = Path.Combine(repoRoot, "template_feed");
+                if (Directory.Exists(repoTemplatePackagesFallback))
+                {
+                    testContext.RepoTemplatePackages = repoTemplatePackagesFallback;
+                }
+            }
 
-            //  Important to set this before below code which ends up calling through TestContext.Current, which would
-            //  result in infinite recursion / stack overflow if TestContext.Current wasn't set
+            testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration);
+
+            //  Important to set this before below code which ends up calling through SdkTestContext.Current, which would
+            //  result in infinite recursion / stack overflow if SdkTestContext.Current wasn't set
             Current = testContext;
 
             //  Set up test hooks for in-process tests
@@ -346,24 +393,6 @@ namespace Microsoft.NET.TestFramework
                     }
                 }
                 currentPath = parent.FullName;
-            }
-        }
-
-        public void WriteGlobalJson(string path)
-        {
-            WriteGlobalJson(path, SdkVersion);
-        }
-
-        public static void WriteGlobalJson(string path, string? sdkVersion)
-        {
-            if (!string.IsNullOrEmpty(sdkVersion))
-            {
-                string globalJsonPath = Path.Combine(path, "global.json");
-                File.WriteAllText(globalJsonPath, @"{
-  ""sdk"": {
-    ""version"": """ + sdkVersion + @"""
-  }
-}");
             }
         }
 

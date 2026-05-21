@@ -69,12 +69,9 @@
 
     <!-- Create layout: Binaries -->
     <Error Condition="'@(CLISdkFiles)' == ''" Text="The 'CLISdkFiles' items are empty. This shouldn't happen!" />
-    <Copy
-      DestinationFiles="@(CLISdkFiles->'$(OutputPath)/sdk/%(RecursiveDir)%(Filename)%(Extension)')"
+    <CopyPreservingRelativeSymlinks
       SourceFiles="@(CLISdkFiles)"
-      OverwriteReadOnlyFiles="True"
-      SkipUnchangedFiles="False"
-      UseHardlinksIfPossible="False" />
+      DestinationFiles="@(CLISdkFiles->'$(OutputPath)/sdk/%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <!-- Create layout: Templates -->
     <Error Condition="'@(TemplatesFiles)' == ''" Text="The 'TemplatesFiles' items are empty. This shouldn't happen!" />

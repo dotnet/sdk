@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
@@ -38,7 +39,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
     public void EnvironmentVariableExpansion_Project()
     {
         var testAppName = "AppThatOutputsDotnetLaunchProfile";
-        var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+        var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
             .WithSource();
 
         var testProjectDirectory = testInstance.Path;
@@ -68,13 +69,13 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("TEST_VAR1=<<<VALUE1>>>")
             .And.HaveStdOutContaining("ARGS=arg1,arg2,arg3");
 
-        cmd.StdErr.Should().BeEmpty();
+        cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
     }
 
     [Fact]
     public void Executable_DefaultWorkingDirectory()
     {
-        var root = _testAssetsManager.CreateTestDirectory().Path;
+        var root = TestAssetsManager.CreateTestDirectory().Path;
         var dir = Path.Combine(root, "dir");
 
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");
@@ -98,7 +99,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void Executable_NoLaunchProfileArguments()
     {
-        var root = _testAssetsManager.CreateTestDirectory().Path;
+        var root = TestAssetsManager.CreateTestDirectory().Path;
         var dir = Path.Combine(root, "dir");
 
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");
@@ -121,7 +122,7 @@ public sealed class RunCommandTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void Executable_ApplicationArguments()
     {
-        var root = _testAssetsManager.CreateTestDirectory().Path;
+        var root = TestAssetsManager.CreateTestDirectory().Path;
         var dir = Path.Combine(root, "dir");
 
         var launchSettingsPath = Path.Combine(dir, "launchSettings.json");

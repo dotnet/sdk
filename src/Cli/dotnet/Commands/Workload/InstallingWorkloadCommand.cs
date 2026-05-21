@@ -215,7 +215,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             {
                 var versions = WorkloadSearchVersionsCommand.FindBestWorkloadSetsFromComponents(
                     _sdkFeatureBand,
+#if !TARGET_WINDOWS
+                    _workloadInstaller,
+#else
                     _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
+#endif
                     _sdkFeatureBand.IsPrerelease,
                     PackageDownloader,
                     _workloadSetVersionFromCommandLine,
@@ -450,7 +454,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
 
     protected IEnumerable<WorkloadId> WriteSDKInstallRecordsForVSWorkloads(IEnumerable<WorkloadId> workloadsWithExistingInstallRecords)
     {
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         if (OperatingSystem.IsWindows())
         {
             return VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, workloadsWithExistingInstallRecords, Reporter);

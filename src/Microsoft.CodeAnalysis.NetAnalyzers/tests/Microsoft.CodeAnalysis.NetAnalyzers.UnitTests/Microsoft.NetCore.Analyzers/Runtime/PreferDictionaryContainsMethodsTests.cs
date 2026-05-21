@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -57,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -76,7 +77,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -96,7 +97,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -115,7 +116,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -135,7 +136,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -154,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -174,7 +175,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, CSExplicitContainsKeyDictionarySource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -193,7 +194,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, VBExplicitContainsKeyDictionarySource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -213,7 +214,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, CSCustomFacadeCollectionsDictionarySource, CSIEnumerableFacadeCollectionsSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -232,7 +233,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, VBCustomFacadeCollectionsDictionarySource, VBIEnumerableFacadeCollectionsSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -252,7 +253,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, CSCustomFacadeCollectionsDictionarySource, CSIEnumerableFacadeCollectionsSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -271,7 +272,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, VBCustomFacadeCollectionsDictionarySource, VBIEnumerableFacadeCollectionsSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 
@@ -286,7 +287,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -299,7 +300,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -313,7 +314,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestState = { Sources = { testCode, CSExplicitContainsKeyDictionarySource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -327,7 +328,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestState = { Sources = { testCode, VBExplicitContainsKeyDictionarySource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -345,7 +346,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestState = { Sources = { testCode, CSCustomFacadeCollectionsDictionarySource, facadeCollectionSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -363,7 +364,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestState = { Sources = { testCode, VBCustomFacadeCollectionsDictionarySource, facadeCollectionSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
