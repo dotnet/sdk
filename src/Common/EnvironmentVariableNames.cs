@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
+
 namespace Microsoft.DotNet.Cli;
 
 internal static class EnvironmentVariableNames
@@ -37,7 +39,7 @@ internal static class EnvironmentVariableNames
     // Standard OpenTelemetry OTLP exporter environment variables. Presence of any of these
     // signals that the user has configured the OTLP exporter and intends to enable it.
     // See https://opentelemetry.io/docs/specs/otel/protocol/exporter/ for the full spec.
-    public static readonly string[] OtlpExporterEnvVars =
+    public static readonly ImmutableHashSet<string> OtlpExporterEnvVars =
     [
         "OTEL_EXPORTER_OTLP_ENDPOINT",
         "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
@@ -52,6 +54,8 @@ internal static class EnvironmentVariableNames
         "OTEL_EXPORTER_OTLP_TRACES_TIMEOUT",
         "OTEL_EXPORTER_OTLP_METRICS_TIMEOUT",
     ];
+    // top-level enable/disable flag for the Otel SDK entirely.
+    public static readonly string OTEL_SDK_DISABLED = "OTEL_SDK_DISABLED";
     public static readonly string SDK_VULNERABILITY_CHECK_DISABLE = "DOTNET_SDK_VULNERABILITY_CHECK_DISABLE";
     public static readonly string SDK_VULNERABILITY_CHECK_INTERVAL_HOURS = "DOTNET_SDK_VULNERABILITY_CHECK_INTERVAL_HOURS";
 
