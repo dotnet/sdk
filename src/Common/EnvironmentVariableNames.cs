@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
-
 namespace Microsoft.DotNet.Cli;
 
 internal static class EnvironmentVariableNames
@@ -39,7 +37,7 @@ internal static class EnvironmentVariableNames
     // Standard OpenTelemetry OTLP exporter environment variables. Presence of any of these
     // signals that the user has configured the OTLP exporter and intends to enable it.
     // See https://opentelemetry.io/docs/specs/otel/protocol/exporter/ for the full spec.
-    public static readonly ImmutableHashSet<string> OtlpExporterEnvVars =
+    public static readonly string[] OtlpExporterEnvVars =
     [
         "OTEL_EXPORTER_OTLP_ENDPOINT",
         "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
