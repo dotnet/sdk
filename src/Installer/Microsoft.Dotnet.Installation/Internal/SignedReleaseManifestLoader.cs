@@ -122,11 +122,6 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
     /// <returns>The on-disk path to the downloaded and signature-verified releases JSON file.</returns>
     private string DownloadAndVerify(Uri jsonUrl)
     {
-        // Per-request (not combined) timeout: a slow-but-successful JSON fetch must not
-        // eat into the .p7s budget on the same combined CTS. Each fetch gets its own
-        // independent 30-second window. The verifier's own work is CPU-bound (~100ms)
-        // so it does not need a network timeout.
-
         // 1. Download JSON bytes.
         byte[] jsonBytes;
         using (var jsonCts = new CancellationTokenSource(s_manifestFetchTimeout))
