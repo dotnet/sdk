@@ -691,16 +691,17 @@ internal static class SignatureVerifier
         using var chain = new X509Chain();
         ConfigureChainPolicy(chain, extraStore, customRoots, verificationTime, applicationPolicyEku, revocationMode);
 
-        bool ok = BuildWithUntrustedRootRetry(chain, leaf);
+        bool ok = chain.Build(leaf);
         try
         {
             InterpretChainStatus(chain, ok, kind, result);
         }
         finally
         {
-            // X509Certificate2 holds an OS handle. Disposing each chain element's certificate
-            // immediately avoids finalizer pressure (and on Linux can prevent ulimit issues
-            // under heavy verification load). Mirrors NuGet's X509ChainHolder.Dispose.
+            // Dispose each chain element's certificate eagerly. X509Certificate2 implements
+            // IDisposable; without explicit Dispose() the underlying handle is released only
+            // by the finalizer, which adds finalization-queue pressure on hot paths. Mirrors
+            // NuGet's X509ChainHolder.Dispose.
             foreach (X509ChainElement element in chain.ChainElements)
             {
                 element.Certificate.Dispose();
@@ -709,11 +710,13 @@ internal static class SignatureVerifier
     }
 
     /// <summary>
-    /// Sets up <see cref="X509ChainPolicy"/> per the spec: custom-root trust (no Windows
-    /// system roots beyond what we add explicitly), entire-chain revocation, EKU enforcement
-    /// at chain-build time (defense-in-depth on top of the leaf-only EKU bag check), and a
-    /// strict <see cref="X509VerificationFlags.NoFlag"/> — release manifests are FRESH
-    /// artifacts so we surface NotTimeValid as a failure rather than ignoring it.
+    /// Sets up <see cref="X509ChainPolicy"/>: <see cref="X509ChainTrustMode.CustomRootTrust"/>
+    /// against ONLY the explicitly-supplied <paramref name="customRoots"/> (the pinned PEMs
+    /// in <c>codesignctl.pem</c> / <c>timestampctl.pem</c>) — the OS root store is intentionally
+    /// NOT merged in. Entire-chain revocation, EKU enforcement at chain-build time
+    /// (defense-in-depth on top of the leaf-only EKU bag check), and a strict
+    /// <see cref="X509VerificationFlags.NoFlag"/> (release manifests are FRESH artifacts so we
+    /// surface NotTimeValid as a failure rather than ignoring it).
     /// </summary>
     private static void ConfigureChainPolicy(
         X509Chain chain,
@@ -755,6 +758,10 @@ internal static class SignatureVerifier
         chain.ChainPolicy.CustomTrustStore.AddRange(customRoots);
         // OS root store is NOT merged in. The bundled codesignctl.pem / timestampctl.pem
         // already contain the DigiCert root anchors that the .NET Release signer chains to;
+        // augmenting them with the OS-root union would (a) silently widen trust beyond what
+        // the pinned CTLs declare, and (b) re-introduce a snapshot-vs-live consistency
+        // problem if the system store is rotated during a long-lived process. Spec
+        // signature-verification.md §6 / §11 documents this as intentional.
     }
 
     /// <summary>
@@ -798,46 +805,6 @@ internal static class SignatureVerifier
         }
 
         result.Add(genericCode, $"{role} chain build failed: {DescribeChainStatus(chain)}");
-    }
-
-    /// <summary>
-    /// Builds the chain, retrying on transient <see cref="X509ChainStatusFlags.UntrustedRoot" />
-    /// failures on Windows. Mirrors NuGet's RetriableX509ChainBuildPolicy, which defends
-    /// against a documented Windows transient where the OS root store reports UntrustedRoot
-    /// briefly under load. Windows-only because NuGet's factory only enables retry there.
-    /// </summary>
-    private static bool BuildWithUntrustedRootRetry(X509Chain chain, X509Certificate2 leaf)
-    {
-        const int RetryCount = 3;
-        TimeSpan sleepInterval = TimeSpan.FromMilliseconds(1000);
-
-        bool ok = chain.Build(leaf);
-        if (ok || !OperatingSystem.IsWindows())
-        {
-            return ok;
-        }
-
-        for (int i = 0; i < RetryCount && !ok; i++)
-        {
-            bool hasUntrustedRoot = false;
-            foreach (X509ChainStatus status in chain.ChainStatus)
-            {
-                if ((status.Status & X509ChainStatusFlags.UntrustedRoot) != 0)
-                {
-                    hasUntrustedRoot = true;
-                    break;
-                }
-            }
-            if (!hasUntrustedRoot)
-            {
-                break;
-            }
-
-            Thread.Sleep(sleepInterval);
-            ok = chain.Build(leaf);
-        }
-
-        return ok;
     }
 
     private static string DescribeChainStatus(X509Chain chain)
