@@ -2560,12 +2560,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             // `this = ...` may use different `r` values. Restricting the
             // IInstanceReferenceOperation equivalence to reference types
             // suppresses the diagnostic in this case.
+            //
+            // The field must be readonly: a mutable field is already rejected
+            // by the field-equivalence check in AreOperandsEquivalent, so a
+            // non-readonly field here would pass even without the new
+            // IInstanceReferenceOperation restriction.
             var source = """
                 using System.Text.RegularExpressions;
 
                 struct S
                 {
-                    public Regex r;
+                    public readonly Regex r;
 
                     public S(Regex regex) { r = regex; }
 
