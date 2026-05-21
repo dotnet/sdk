@@ -477,13 +477,13 @@ internal static class SignatureVerifier
             }
             catch (InvalidOperationException)
             {
-                detail = $"{label} contains a multi-valued RDN which is not permitted. {label}={dn.Name}";
+                detail = $"{label} contains a multi-valued RDN which is not permitted. {label}='{dn.Name}'";
                 return false;
             }
 
             if (type?.Value is null || value is null)
             {
-                detail = $"{label} contains an unparseable RDN. {label}={dn.Name}";
+                detail = $"{label} contains an unparseable RDN. {label}='{dn.Name}'";
                 return false;
             }
             actual.Add((type.Value, value));
@@ -491,7 +491,7 @@ internal static class SignatureVerifier
 
         if (actual.Count != required.Length)
         {
-            detail = $"{label} has {actual.Count} RDNs; expected exactly {required.Length}. {label}={dn.Name}";
+            detail = $"{label} has {actual.Count} RDNs; expected exactly {required.Length}. {label}='{dn.Name}'";
             return false;
         }
 
@@ -502,7 +502,7 @@ internal static class SignatureVerifier
                 string.Equals(a.Value, req.Value, StringComparison.Ordinal));
             if (idx < 0)
             {
-                detail = $"{label} missing required RDN {req.Oid}={req.Value}. {label}={dn.Name}";
+                detail = $"{label} missing required RDN {req.Oid}='{req.Value}'. {label}='{dn.Name}'";
                 return false;
             }
             actual.RemoveAt(idx);
