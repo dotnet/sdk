@@ -46,7 +46,7 @@ static unsafe partial class NativeEntryPoint
                 {
                     return Parser.Invoke(parseResult);
                 }
-                catch (Exception ex) when (ex is Utils.GracefulException || (ex.Data.Contains("CLI_User_Displayed_Exception")))
+                catch (Utils.GracefulException ex)
                 {
                     Reporter.Error.WriteLine(ex.Message.Red());
                     return 1;
