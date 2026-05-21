@@ -692,7 +692,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     {
         public const string MappingPropertyName = "FileBasedProgramsItemMapping";
 
-        public static string DefaultMappingString => ".cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content";
+        public static string DefaultMappingString => ".cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference";
 
         public static ImmutableArray<(string Extension, string ItemType)> DefaultMapping
         {
@@ -706,6 +706,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                         (".resx", "EmbeddedResource"),
                         (".json", "None"),
                         (".razor", "Content"),
+                        (".dll", "Reference"),
                     ];
                 }
 
