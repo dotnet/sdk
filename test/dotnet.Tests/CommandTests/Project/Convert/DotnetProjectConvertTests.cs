@@ -1951,7 +1951,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
-                <{CSharpDirective.IncludeOrExclude.MappingPropertyName}></{CSharpDirective.IncludeOrExclude.MappingPropertyName}>
                 <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
               </PropertyGroup>
             </Project>
@@ -1974,6 +1973,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.WriteAllText(Path.Join(srcDir, "Directory.Build.props"), $"""
             <Project>
+              <PropertyGroup>
+                <{CSharpDirective.IncludeOrExclude.MappingPropertyName}></{CSharpDirective.IncludeOrExclude.MappingPropertyName}>
+              </PropertyGroup>
               <ItemGroup>
                 <Reference Include="$(MSBuildThisFileDirectory){libDllPropsPath}" />
               </ItemGroup>
