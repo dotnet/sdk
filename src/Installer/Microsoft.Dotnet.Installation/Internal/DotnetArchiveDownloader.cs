@@ -31,9 +31,6 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         _downloadCache = new DownloadCache(cacheDirectory);
         if (httpClient == null)
         {
-            // Reuse the process-wide proxy-aware client. We must NOT dispose it: it is shared
-            // with SignedReleaseManifestLoader and any other consumers; disposing it here would
-            // tear down their HTTP stack mid-flight.
             _httpClient = DefaultHttpClient.Instance;
             _shouldDisposeHttpClient = false;
         }
