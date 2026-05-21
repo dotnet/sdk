@@ -834,7 +834,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             SourceFile sourceFile,
             ErrorReporter errorReporter)
         {
-            var pairs = value.Split(';');
+            var pairs = value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             var builder = ImmutableArray.CreateBuilder<(string Extension, string ItemType)>(pairs.Length);
 
