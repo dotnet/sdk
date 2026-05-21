@@ -67,14 +67,21 @@ internal static class SignatureVerifier
     private const string OidRsa = "1.2.840.113549.1.1.1"; // rsaEncryption (RFC 8017 Appendix C) https://datatracker.ietf.org/doc/html/rfc8017#appendix-C
     private const string OidEcdsa = "1.2.840.10045.2.1";  // id-ecPublicKey (RFC 5480 §2.1.1) https://datatracker.ietf.org/doc/html/rfc5480#section-2.1.1
 
-    // SHA-2 digest algorithm OIDs (NIST CSOR 2.16.840.1.101.3.4.2; registered in RFC 5754 §2)
-    // https://datatracker.ietf.org/doc/html/rfc5754#section-2
+    // SHA-2 and SHA-3 digest algorithm OIDs (NIST CSOR 2.16.840.1.101.3.4.2; SHA-2 registered
+    // in RFC 5754 §2, SHA-3 in RFC 8702 §2). https://datatracker.ietf.org/doc/html/rfc5754#section-2
+    // https://datatracker.ietf.org/doc/html/rfc8702#section-2
+    // SHA-1 / MD5 deliberately omitted. PQC digest OIDs (SHAKE-128/256 and the ML-DSA /
+    // SLH-DSA SignedCms hash modes) will be added when those signature schemes are wired in;
+    // see signature-verification.md §4 "Forward-looking algorithms."
     // Default HashSet<string> equality comparer is ordinal, matching the OID strings.
     private static readonly HashSet<string> s_allowedDigestOids =
     [
-        "2.16.840.1.101.3.4.2.1", // id-sha256
-        "2.16.840.1.101.3.4.2.2", // id-sha384
-        "2.16.840.1.101.3.4.2.3", // id-sha512
+        "2.16.840.1.101.3.4.2.1",  // id-sha256
+        "2.16.840.1.101.3.4.2.2",  // id-sha384
+        "2.16.840.1.101.3.4.2.3",  // id-sha512
+        "2.16.840.1.101.3.4.2.8",  // id-sha3-256
+        "2.16.840.1.101.3.4.2.9",  // id-sha3-384
+        "2.16.840.1.101.3.4.2.10", // id-sha3-512
     ];
 
     // Maximum permitted clock skew between the signer's claimed signingTime attribute and the

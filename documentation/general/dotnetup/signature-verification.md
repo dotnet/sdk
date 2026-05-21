@@ -99,8 +99,8 @@ Failure: `SigCryptoInvalid`.
 
 ## 4. Algorithm policy
 
-- Digest algorithm MUST be one of: SHA-256, SHA-384, SHA-512. SHA-1 and
-  MD5 are rejected.
+- Digest algorithm MUST be one of: SHA-2 (256, 384, 512) or SHA-3 (256, 384, 512). SHA-1
+  and MD5 are rejected.
 - Signer public-key algorithm MUST be RSA (`1.2.840.113549.1.1.1`) or
   ECDSA (`1.2.840.10045.2.1`). DSA and other algorithms are rejected.
 
