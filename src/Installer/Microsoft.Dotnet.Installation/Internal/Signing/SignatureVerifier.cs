@@ -263,7 +263,7 @@ internal static class SignatureVerifier
             string digestOid = signer.DigestAlgorithm.Value ?? string.Empty;
             if (!s_allowedDigestOids.Contains(digestOid))
             {
-                result.Add(FailureCode.WeakDigest, $"Digest algorithm OID {digestOid} is not permitted.");
+                result.Add(FailureCode.WeakDigest, $"Digest algorithm OID '{digestOid}' is not permitted.");
             }
         }
         else
@@ -274,9 +274,9 @@ internal static class SignatureVerifier
         if (signerCert is not null)
         {
             string keyOid = signerCert.PublicKey.Oid.Value ?? string.Empty;
-            if (keyOid is not OidRsa and not OidEcdsa)
+            if (keyOid is not (OidRsa or OidEcdsa))
             {
-                result.Add(FailureCode.WeakSignatureAlgorithm, $"Signer public-key algorithm OID {keyOid} is not permitted (RSA or ECDSA required).");
+                result.Add(FailureCode.WeakSignatureAlgorithm, $"Signer public-key algorithm OID '{keyOid}' is not permitted (RSA or ECDSA required).");
             }
         }
         else
