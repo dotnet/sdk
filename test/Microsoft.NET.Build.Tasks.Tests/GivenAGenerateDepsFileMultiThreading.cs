@@ -12,12 +12,12 @@ using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    [CollectionDefinition("CwdSensitive", DisableParallelization = true)]
-    public sealed class CwdSensitiveCollection
+    [CollectionDefinition(nameof(GenerateDepsFileCwdSensitiveCollection), DisableParallelization = true)]
+    public sealed class GenerateDepsFileCwdSensitiveCollection
     {
     }
 
-    [Collection("CwdSensitive")]
+    [Collection(nameof(GenerateDepsFileCwdSensitiveCollection))]
     public class GivenAGenerateDepsFilePathResolution : IDisposable
     {
         private readonly List<string> _tempDirs = new();
