@@ -12,10 +12,8 @@
     (Parser, DotnetRootResolver, NativeEntryPoint) works correctly when compiled
     ahead-of-time.
 
-    xUnit v3's test runner does not currently support NativeAOT (it relies on
-    Assembly.Location which is empty in AOT), so the AOT binary uses a standalone
-    smoke test runner (AotTestEntryPoint.cs) that exercises key test scenarios
-    directly.
+    The test project uses xUnit v3 AOT packages (xunit.v3.core.aot) which use
+    source generators for test discovery, replacing runtime reflection.
 
 .PARAMETER Configuration
     Build configuration (Debug or Release). Default: Debug.

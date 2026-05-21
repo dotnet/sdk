@@ -3,6 +3,7 @@
 # The .NET Foundation licenses this file to you under the MIT license.
 
 # Publishes and runs the dotnet-aot tests as a NativeAOT binary.
+# Uses xUnit v3 AOT packages (source-generator-based test discovery).
 # See run-aot-tests.ps1 for detailed documentation.
 #
 # Usage:
