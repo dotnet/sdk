@@ -11,11 +11,37 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
     public class MissingShebangInFileBasedProgramTests
     {
         private const string GlobalConfig = "is_global = true\r\nbuild_property.EntryPointFilePath = Test0.cs";
+        private const string GlobalConfigWithIncludeDirectiveMetadata = GlobalConfig + "\r\nbuild_metadata.Compile.FileBasedProgramsFromIncludeDirective = true";
 
         [Fact]
         public async Task EntryPointWithoutShebang_MultipleFiles_WarningAsync()
         {
-            // Entry point file without shebang, multiple files - warning expected.
+            // Entry point file without shebang and a #:include file - warning expected.
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """class Program { static void Main() { } }"""),
+                        ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.globalconfig", GlobalConfigWithIncludeDirectiveMetadata),
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
+                    },
+                },
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task ExtraCompileFileNotFromIncludeDirective_NoDiagnosticAsync()
+        {
+            // A second Compile item from other MSBuild code does not require a shebang.
             await new VerifyCS.Test
             {
                 TestState =
@@ -26,10 +52,6 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
-                    ExpectedDiagnostics =
-                    {
-                        new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
-                    },
                 },
             }.RunAsync();
         }
@@ -76,7 +98,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                         ("Test0.cs", """class Program { static void Main() { } }"""),
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.globalconfig", GlobalConfigWithIncludeDirectiveMetadata),
+                    },
                     ExpectedDiagnostics =
                     {
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
@@ -171,7 +196,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                         ("Test0.cs", """class Program { static void Main() { } }"""),
                         ("Test1.g.cs", """class Generated { }"""),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.globalconfig", GlobalConfigWithIncludeDirectiveMetadata),
+                    },
                 },
             }.RunAsync();
         }
@@ -214,7 +242,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                         ("Util.cs", """class Util { }"""),
                         ("Test1.g.cs", """class Generated { }"""),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.globalconfig", GlobalConfigWithIncludeDirectiveMetadata),
+                    },
                     ExpectedDiagnostics =
                     {
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
@@ -241,7 +272,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             """),
                         ("Util.cs", """class Util { }"""),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.globalconfig", GlobalConfigWithIncludeDirectiveMetadata),
+                    },
                     ExpectedDiagnostics =
                     {
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),

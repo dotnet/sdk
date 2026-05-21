@@ -1376,6 +1376,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                       <ItemGroup>
                         <Clean Include="/artifacts/*" />
+                        <CompilerVisibleItemMetadata Include="Compile" MetadataName="FileBasedProgramsFromIncludeDirective" />
                       </ItemGroup>
 
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -1463,6 +1464,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                       <ItemGroup>
                         <Clean Include="/artifacts/*" />
+                        <CompilerVisibleItemMetadata Include="Compile" MetadataName="FileBasedProgramsFromIncludeDirective" />
                       </ItemGroup>
 
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -1539,6 +1541,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                       <ItemGroup>
                         <Clean Include="/artifacts/*" />
+                        <CompilerVisibleItemMetadata Include="Compile" MetadataName="FileBasedProgramsFromIncludeDirective" />
                       </ItemGroup>
 
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -1614,6 +1617,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                       <ItemGroup>
                         <Clean Include="/artifacts/*" />
+                        <CompilerVisibleItemMetadata Include="Compile" MetadataName="FileBasedProgramsFromIncludeDirective" />
                       </ItemGroup>
 
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

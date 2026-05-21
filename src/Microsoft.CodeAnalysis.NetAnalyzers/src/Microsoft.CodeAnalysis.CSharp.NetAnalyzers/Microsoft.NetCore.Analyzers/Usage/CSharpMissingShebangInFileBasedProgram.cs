@@ -12,6 +12,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpMissingShebangInFileBasedProgram : MissingShebangInFileBasedProgram
     {
+        private const string FromIncludeDirectiveMetadataName = "build_metadata.Compile.FileBasedProgramsFromIncludeDirective";
+
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
@@ -26,27 +28,31 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                     return;
                 }
 
-                // Count non-generated trees upfront so we can report directly
+                // Find #:include trees upfront so we can report directly
                 // from a SyntaxTreeAction without needing CompilationEnd.
                 // We avoid CompilationEnd so diagnostics appear as live IDE diagnostics.
                 // We replicate Roslyn's generated code detection here because
                 // Compilation.SyntaxTrees is the raw set (unlike RegisterSyntaxTreeAction
                 // which gets automatic filtering via ConfigureGeneratedCodeAnalysis).
-                int nonGeneratedTreeCount = 0;
+                var hasIncludedCompileFile = false;
                 foreach (var tree in context.Compilation.SyntaxTrees)
                 {
-                    if (IsGeneratedCode(tree, context.Options.AnalyzerConfigOptionsProvider))
+                    if (tree.FilePath.Equals(entryPointFilePath, StringComparison.Ordinal) ||
+                        IsGeneratedCode(tree, context.Options.AnalyzerConfigOptionsProvider))
                     {
                         continue;
                     }
 
-                    nonGeneratedTreeCount++;
+                    if (IsFromIncludeDirective(tree, context.Options.AnalyzerConfigOptionsProvider))
+                    {
+                        hasIncludedCompileFile = true;
+                        break;
+                    }
                 }
 
-                // Only report when there are multiple non-generated files
-                // (i.e., #:include directives are used).
+                // Only report when #:include directives are used.
                 // Single-file programs don't need a shebang to distinguish the entry point.
-                if (nonGeneratedTreeCount <= 1)
+                if (!hasIncludedCompileFile)
                 {
                     return;
                 }
@@ -69,6 +75,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                 });
             });
         }
+
+        private static bool IsFromIncludeDirective(SyntaxTree tree, AnalyzerConfigOptionsProvider optionsProvider)
+            => optionsProvider.GetOptions(tree)
+                .TryGetValue(FromIncludeDirectiveMetadataName, out var value) &&
+                value.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Replicates Roslyn's generated code detection which checks:
