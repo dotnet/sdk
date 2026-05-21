@@ -290,7 +290,7 @@ public sealed class VirtualProjectBuilder
 
         if (directives.IsDefault)
         {
-            directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, reportError);
+            directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, reportError, checkDuplicates: false);
         }
 
         (string ProjectFileText, ProjectInstance ProjectInstance, ProjectRootElement ProjectRootElement)? lastProject = null;
@@ -316,6 +316,7 @@ public sealed class VirtualProjectBuilder
         var seenFiles = new HashSet<string>(1, StringComparer.Ordinal) { EntryPointFileFullPath };
         var filesToProcess = new Queue<string>();
         var evaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>();
+        var deduplicator = new DirectiveDeduplicator();
 
         do
         {
@@ -327,6 +328,15 @@ public sealed class VirtualProjectBuilder
 
             // Evaluate directives, e.g., determine item types for #:include/#:exclude from their file extension.
             var fileEvaluatedDirectives = EvaluateDirectives(project, directives, reportError);
+
+            // Detect duplicate directives across all files on evaluated directives.
+            foreach (var directive in fileEvaluatedDirectives)
+            {
+                if (directive is CSharpDirective.Named named)
+                {
+                    deduplicator.CheckDirective(named, reportError);
+                }
+            }
 
             evaluatedDirectiveBuilder.AddRange(fileEvaluatedDirectives);
 
@@ -369,7 +379,7 @@ public sealed class VirtualProjectBuilder
                 }
 
                 var sourceFile = SourceFile.Load(filePath);
-                directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, validateAllDirectives, reportError);
+                directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, validateAllDirectives, reportError, checkDuplicates: false);
                 return true;
             }
 
@@ -437,18 +447,12 @@ public sealed class VirtualProjectBuilder
         ErrorReporter reportError)
     {
         bool? refEnabled = null;
-        bool? transitiveEnabled = null;
 
         foreach (var directive in directives)
         {
             if (directive is CSharpDirective.Ref)
             {
                 CheckFlagEnabled(ref refEnabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, directive);
-            }
-
-            if (directive.Info.SourceFile.Path != EntryPointSourceFile.Path)
-            {
-                CheckFlagEnabled(ref transitiveEnabled, CSharpDirective.IncludeOrExclude.ExperimentalFileBasedProgramEnableTransitiveDirectives, directive);
             }
         }
 
