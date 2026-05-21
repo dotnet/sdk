@@ -1,6 +1,5 @@
 ﻿These templates matched your input: 
 Template
-.NET
 API
 ASP.NET
 Blazor
