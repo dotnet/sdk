@@ -42,7 +42,6 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..") | Select-Object -ExpandProperty Path
 $dotnet = Join-Path $repoRoot ".dotnet" "dotnet"
 $testProject = Join-Path $PSScriptRoot "dotnet-aot.Tests.csproj"
-$publishDir = Join-Path $PSScriptRoot "artifacts" "aot-tests"
 
 # Auto-detect RID
 if (-not $RuntimeIdentifier) {
@@ -60,6 +59,7 @@ if (-not $RuntimeIdentifier) {
     }
 }
 
+$publishDir = Join-Path $PSScriptRoot "artifacts" "aot-tests" $Configuration $RuntimeIdentifier
 $exeName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.Tests.exe" } else { "dotnet-aot.Tests" }
 $exePath = Join-Path $publishDir $exeName
 

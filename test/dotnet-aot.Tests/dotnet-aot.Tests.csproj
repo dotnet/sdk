@@ -16,6 +16,8 @@
   <!-- AOT publish support: dotnet publish -p:PublishAotTests=true -->
   <PropertyGroup Condition="'$(PublishAotTests)' == 'true'">
     <PublishAot>true</PublishAot>
+    <!-- Tell eng/XUnitV3/XUnitV3.targets to use the AOT xUnit packages. -->
+    <UseXUnitAotPackages>true</UseXUnitAotPackages>
     <!-- The xunit.v3.core.aot.mtp-v2 package includes MTP v2 support. Force MTP mode
          to prevent xunit.runner.visualstudio (which transitively brings in the
          reflection-mode xunit.v3.core) from being added. -->
@@ -56,7 +58,7 @@
        that flow transitively from Microsoft.NET.TestFramework. They ship
        DLLs (xunit.v3.core.dll, xunit.v3.assert.dll) that conflict with the
        AOT variants (xunit.v3.core.aot.dll, xunit.v3.assert.aot.dll). -->
-  <ItemGroup Condition="'$(PublishAotTests)' == 'true'">
+  <ItemGroup Condition="'$(UseXUnitAotPackages)' == 'true'">
     <PackageReference Include="xunit.v3.extensibility.core" ExcludeAssets="all" PrivateAssets="all" />
     <PackageReference Include="xunit.v3.assert" VersionOverride="$(XUnitV3Version)" ExcludeAssets="all" PrivateAssets="all" />
     <PackageReference Include="xunit.v3.common" VersionOverride="$(XUnitV3Version)" ExcludeAssets="all" PrivateAssets="all" />

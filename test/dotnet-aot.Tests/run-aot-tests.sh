@@ -15,7 +15,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 DOTNET="$REPO_ROOT/.dotnet/dotnet"
 TEST_PROJECT="$SCRIPT_DIR/dotnet-aot.Tests.csproj"
-PUBLISH_DIR="$SCRIPT_DIR/artifacts/aot-tests"
 
 CONFIGURATION="Debug"
 RID=""
@@ -49,6 +48,7 @@ if [[ -z "$RID" ]]; then
     fi
 fi
 
+PUBLISH_DIR="$SCRIPT_DIR/artifacts/aot-tests/$CONFIGURATION/$RID"
 EXE_PATH="$PUBLISH_DIR/dotnet-aot.Tests"
 
 echo "=== dotnet-aot NativeAOT Test Runner ==="
@@ -87,8 +87,10 @@ echo "Running AOT tests..."
 echo ""
 
 chmod +x "$EXE_PATH"
+set +e
 "$EXE_PATH"
 TEST_EXIT=$?
+set -e
 
 echo ""
 if [[ $TEST_EXIT -eq 0 ]]; then
