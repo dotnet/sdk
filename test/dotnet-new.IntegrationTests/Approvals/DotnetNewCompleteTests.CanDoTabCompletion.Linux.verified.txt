@@ -12,6 +12,7 @@ gitattributes
 gitignore
 globaljson
 grpc
+mcpserver
 mstest
 mstest-class
 mstest-playwright
