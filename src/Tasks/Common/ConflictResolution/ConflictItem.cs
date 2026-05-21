@@ -49,6 +49,11 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             _taskEnvironment = taskEnvironment;
         }
 
+        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType)
+            : this(originalItem, itemType, taskEnvironment: null)
+        {
+        }
+
         public ConflictItem(string fileName, string packageId, Version? assemblyVersion, Version? fileVersion)
         {
             OriginalItem = null;
