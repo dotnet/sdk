@@ -1727,6 +1727,521 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void Directives_IncludeCompile_DefaultCompileItemsDisabled()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
+            #:property EnableDefaultCompileItems=false
+            #:include Util.cs
+            Console.WriteLine(Util.GetMessage());
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            static class Util
+            {
+                public static string GetMessage() => "Hello from Util";
+            }
+            """);
+
+        var expectedOutput = "Hello from Util";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
+            .Should().Match($"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <UserSecretsId>Program-*</UserSecretsId>
+                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <Compile Include="Program.cs" />
+                    <Compile Include="Util.cs" />
+                  </ItemGroup>
+
+                </Project>
+
+                """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "Program"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
+    public void Directives_IncludeDll()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "LibClass.cs"), """
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        new DotnetCommand(Log, "build", "Lib.csproj")
+            .WithWorkingDirectory(libDir)
+            .Execute()
+            .Should().Pass();
+
+        var libDllDirectivePath = $"Lib/bin/Debug/{ToolsetInfo.CurrentTargetFramework}/Lib.dll";
+        var libDllProjectPath = Path.Join("Lib", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $$"""
+            #:property FileBasedProgramsItemMapping=.dll=Reference
+            #:include {{libDllDirectivePath}}
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        var expectedOutput = "Hello from Lib";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
+            .Should().Match($"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <UserSecretsId>Program-*</UserSecretsId>
+                    <FileBasedProgramsItemMapping>.dll=Reference</FileBasedProgramsItemMapping>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <Reference Include="{libDllProjectPath}" />
+                  </ItemGroup>
+
+                </Project>
+
+                """);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Lib", "Program.cs", "Program.csproj"]);
+
+        File.Exists(Path.Join(testInstance.Path, "Program", libDllProjectPath)).Should().BeTrue();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "Program"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
+    public void Directives_IncludeDll_Wildcard()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "LibClass.cs"), """
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        new DotnetCommand(Log, "build", "Lib.csproj")
+            .WithWorkingDirectory(libDir)
+            .Execute()
+            .Should().Pass();
+
+        File.Copy(
+            Path.Join(libDir, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll"),
+            Path.Join(testInstance.Path, "Lib.dll"));
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property FileBasedProgramsItemMapping=.dll=Reference
+            #:include *.dll
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        var expectedOutput = "Hello from Lib";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
+            .Should().Contain("<Reference Include=\"Lib.dll\" />");
+
+        File.Exists(Path.Join(testInstance.Path, "Program", "Lib.dll")).Should().BeTrue();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "Program"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    /// <summary>
+    /// If a file is included only via MSBuild code but is not in the mapped conversion item set, conversion won't copy it to the output directory.
+    /// </summary>
+    [Fact]
+    public void Directives_IncludeDll_DirectoryBuildProps_NoMapping()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var srcDir = Path.Join(testInstance.Path, "src");
+        var appDir = Path.Join(srcDir, "app");
+        var libDir = Path.Join(srcDir, "Lib");
+        Directory.CreateDirectory(appDir);
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "LibClass.cs"), """
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        new DotnetCommand(Log, "build", "Lib.csproj")
+            .WithWorkingDirectory(libDir)
+            .Execute()
+            .Should().Pass();
+
+        var libDllPropsPath = Path.Join("Lib", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll");
+
+        File.WriteAllText(Path.Join(srcDir, "Directory.Build.props"), $"""
+            <Project>
+              <ItemGroup>
+                <Reference Include="$(MSBuildThisFileDirectory){libDllPropsPath}" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(appDir, "Program.cs"), """
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        var expectedOutput = "Hello from Lib";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "-o", "../../out")
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Pass();
+
+        var outDir = Path.Join(testInstance.Path, "out");
+        File.Exists(Path.Join(outDir, "Lib.dll")).Should().BeFalse();
+        File.ReadAllText(Path.Join(outDir, "Program.csproj"))
+            .Should().NotContain("<Reference");
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outDir)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Lib' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+    }
+
+    /// <summary>
+    /// If an item added by MSBuild has corresponding FileBasedProgramsItemMapping, conversion copies it but does not write it to the project file.
+    /// </summary>
+    [Fact]
+    public void Directives_IncludeDll_DirectoryBuildProps_ItemMapping()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var srcDir = Path.Join(testInstance.Path, "src");
+        var appDir = Path.Join(srcDir, "app");
+        var libDir = Path.Join(srcDir, "Lib");
+        Directory.CreateDirectory(appDir);
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "LibClass.cs"), """
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        new DotnetCommand(Log, "build", "Lib.csproj")
+            .WithWorkingDirectory(libDir)
+            .Execute()
+            .Should().Pass();
+
+        var libDllPropsPath = Path.Join("Lib", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll");
+
+        File.WriteAllText(Path.Join(srcDir, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <FileBasedProgramsItemMapping>.dll=Reference</FileBasedProgramsItemMapping>
+              </PropertyGroup>
+              <ItemGroup>
+                <Reference Include="$(MSBuildThisFileDirectory){libDllPropsPath}" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(appDir, "Program.cs"), """
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        var expectedOutput = "Hello from Lib";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "-o", "../../out")
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Pass();
+
+        var outDir = Path.Join(testInstance.Path, "out");
+        File.Exists(Path.Join(outDir, "Lib.dll")).Should().BeTrue();
+        File.ReadAllText(Path.Join(outDir, "Program.csproj"))
+            .Should().NotContain("<Reference");
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outDir)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Lib' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+    }
+
+    [Fact]
+    public void Directives_IncludeDll_ViaIncludedFile()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "LibClass.cs"), """
+            namespace Lib;
+            public static class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        new DotnetCommand(Log, "build", "Lib.csproj")
+            .WithWorkingDirectory(libDir)
+            .Execute()
+            .Should().Pass();
+
+        var libDllDirectivePath = $"Lib/bin/Debug/{ToolsetInfo.CurrentTargetFramework}/Lib.dll";
+        var libDllProjectPath = Path.Join("Lib", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "extra.cs"), $$"""
+            #:property FileBasedProgramsItemMapping=.dll=Reference
+            #:include {{libDllDirectivePath}}
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
+            #:include extra.cs
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        var expectedOutput = "Hello from Lib";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
+            .Should().Contain($"<Reference Include=\"{libDllProjectPath}\" />");
+
+        File.Exists(Path.Join(testInstance.Path, "Program", libDllProjectPath)).Should().BeTrue();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "Program"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
+    public void Directives_IncludeDll_ViaRef()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+
+        var dependencyDir = Path.Join(libDir, "Dependency");
+        Directory.CreateDirectory(dependencyDir);
+
+        File.WriteAllText(Path.Join(dependencyDir, "Dependency.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(dependencyDir, "DependencyClass.cs"), """
+            namespace Dependency;
+            public static class DependencyClass
+            {
+                public static string GetMessage() => "Hello from dependency";
+            }
+            """);
+
+        new DotnetCommand(Log, "build", "Dependency.csproj")
+            .WithWorkingDirectory(dependencyDir)
+            .Execute()
+            .Should().Pass();
+
+        var dependencyDllDirectivePath = $"Dependency/bin/Debug/{ToolsetInfo.CurrentTargetFramework}/Dependency.dll";
+        var dependencyDllProjectPath = Path.Join("Dependency", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Dependency.dll");
+
+        File.WriteAllText(Path.Join(libDir, "lib.cs"), $$"""
+            #:property OutputType=Library
+            #:property FileBasedProgramsItemMapping=.dll=Reference
+            #:include {{dependencyDllDirectivePath}}
+            namespace MyLib;
+            public static class Wrapper
+            {
+                public static string GetMessage() => Dependency.DependencyClass.GetMessage();
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:ref lib/lib.cs
+            Console.WriteLine(MyLib.Wrapper.GetMessage());
+            """);
+
+        var expectedOutput = "Hello from dependency";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "-o", outputDirFullPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(Path.Join(outputDirFullPath, "lib", "lib.csproj"))
+            .Should().Contain($"<Reference Include=\"{dependencyDllProjectPath}\" />");
+
+        File.Exists(Path.Join(outputDirFullPath, "lib", dependencyDllProjectPath)).Should().BeTrue();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(outputDirFullPath, "Program"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
     public void Directives_IncludeExclude_FilesCopied()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

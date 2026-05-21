@@ -1474,7 +1474,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                       </PropertyGroup>
 
                       <ItemGroup>
-                        <Compile Include="{bPath}" />
+                        <Compile Include="{bPath}" FileBasedProgramsFromIncludeDirective="true" />
                       </ItemGroup>
 
                       <ItemGroup>
