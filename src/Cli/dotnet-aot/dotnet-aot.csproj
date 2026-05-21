@@ -47,6 +47,7 @@
     <Compile Include="..\dotnet\Parser.cs" Link="Parser.cs" />
     <Compile Include="..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
     <Compile Include="..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
+    <Compile Include="..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
     <Compile Include="..\dotnet\SlnFileFactory.cs" Link="SlnFileFactory.cs" />
     <Compile Include="..\dotnet\SlnfFileHelper.cs" Link="SlnfFileHelper.cs" />
     <Compile Include="..\dotnet\MsbuildProject.cs" Link="MsbuildProject.cs" />

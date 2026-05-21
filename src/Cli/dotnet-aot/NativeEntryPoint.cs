@@ -46,6 +46,10 @@ static unsafe partial class NativeEntryPoint
                 {
                     return Parser.Invoke(parseResult);
                 }
+                catch (CommandNotAvailableInAotException)
+                {
+                    // Command requires managed CLI — fall through to managed fallback below.
+                }
                 catch (Utils.GracefulException ex)
                 {
                     Reporter.Error.WriteLine(ex.Message.Red());

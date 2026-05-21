@@ -3,7 +3,6 @@
 
 #if CLI_AOT
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -49,26 +48,7 @@ public static class Parser
     private static void ConfigureSolutionCommand(RootCommand rootCommand)
     {
         var slnDef = new SolutionCommandDefinition();
-
-        // Remove the 'add' subcommand — it requires MSBuild and is not available for AOT.
-        // When a user runs 'dotnet sln add', the command won't be found in the AOT parser,
-        // causing a parse error that triggers fallback to the managed CLI.
-        slnDef.Subcommands.Remove(slnDef.AddCommand);
-
         SolutionCommandParser.ConfigureCommand(slnDef);
-
-        // Add a validator that requires a subcommand. Without this, 'dotnet sln' would
-        // parse successfully (SlnArgument is optional) and be handled by AOT with no output.
-        // By producing a validation error, NativeEntryPoint falls back to managed CLI
-        // which shows the proper "missing command" help.
-        slnDef.Validators.Add(result =>
-        {
-            if (result.Children.All(c => c is not System.CommandLine.Parsing.CommandResult))
-            {
-                result.AddError(CliStrings.RequiredCommandNotPassed);
-            }
-        });
-
         rootCommand.Subcommands.Add(slnDef);
     }
 
