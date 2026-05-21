@@ -66,9 +66,10 @@ PEMs are Certificate Trust Lists — concatenations of PEM-encoded X.509
 certificates.
 
 When either trusted-root collection is empty, the verifier emits
-`TrustedRootsEmpty`. Without that check, a misconfigured caller (e.g. a bad
-PEM resource) would silently fall back to an OS-only chain build and accept
-things it shouldn't.
+`TrustedRootsEmpty`. Because the chain build's `CustomTrustStore` is exactly the supplied
+roots (no OS-store union; see §6), an empty trusted-root collection would otherwise leave
+the chain engine with no anchors at all and every chain build would fail with a generic
+status — surfacing `TrustedRootsEmpty` makes the misconfiguration obvious.
 
 > **TODO:** `MaxAcceptableSigningAge` is reserved for an air-gap follow-up.
 > The field is declared on `SignatureVerificationOptions` but the verifier
@@ -154,9 +155,12 @@ Failures: `EkuMissing`, `EkuNotExclusiveCodeSign`.
 The verifier builds an `X509Chain` for the signer certificate with:
 
 - `TrustMode = CustomRootTrust`.
-- `CustomTrustStore` = the union of `options.TrustedCodeSigningRoots` and
-  the OS root store (`StoreName.Root`, both `CurrentUser` and
-  `LocalMachine` where available).
+- `CustomTrustStore` = **exactly** `options.TrustedCodeSigningRoots` (the pinned PEMs in
+  `codesignctl.pem`). The OS root store is intentionally NOT merged in: the bundled CTL
+  already contains the DigiCert root anchors the .NET Release signer chains to, and
+  augmenting them with the system store would silently widen trust beyond what the pinned
+  CTL declares and reintroduce a snapshot-vs-live consistency problem on long-lived
+  processes if the system store is rotated. See §11 (non-goals).
 - `ExtraStore` = the CMS certificate bag from §2. Intermediate
   certificates for both the primary signature and the timestamp signature
   (§7) MUST be embedded in their respective CMS certificate bags; the

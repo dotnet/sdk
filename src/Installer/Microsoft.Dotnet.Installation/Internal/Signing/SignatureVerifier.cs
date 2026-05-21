@@ -99,12 +99,6 @@ internal static class SignatureVerifier
     private const int RevocationRetrievalTimeoutSeconds = 30;
     private static readonly TimeSpan s_revocationRetrievalTimeout = TimeSpan.FromSeconds(RevocationRetrievalTimeoutSeconds);
 
-    // The OS root store (StoreName.Root for both CurrentUser and LocalMachine) is read into
-    // every X509Chain we build. Opening the OS store on each call costs 50–200ms on Windows;
-    // we build two chains per Verify (primary + TSA) so that's 4 store opens per call.
-    // Cache the union once per process — chain build is read-only.
-    private static readonly Lazy<X509Certificate2Collection> s_osRoots = new(LoadOsRoots, LazyThreadSafetyMode.ExecutionAndPublication);
-
     /// <summary>
     /// Verifies <paramref name="content"/> against the detached CMS signature in <paramref name="signature"/>.
     /// In the default <see cref="VerificationMode.ShortCircuit"/> mode, returns on the first failure;
@@ -763,7 +757,8 @@ internal static class SignatureVerifier
 
         chain.ChainPolicy.ExtraStore.AddRange(extraStore);
         chain.ChainPolicy.CustomTrustStore.AddRange(customRoots);
-        chain.ChainPolicy.CustomTrustStore.AddRange(s_osRoots.Value);
+        // OS root store is NOT merged in. The bundled codesignctl.pem / timestampctl.pem
+        // already contain the DigiCert root anchors that the .NET Release signer chains to;
     }
 
     /// <summary>
@@ -847,25 +842,6 @@ internal static class SignatureVerifier
         }
 
         return ok;
-    }
-
-    private static X509Certificate2Collection LoadOsRoots()
-    {
-        var store = new X509Certificate2Collection();
-        foreach (StoreLocation loc in new[] { StoreLocation.CurrentUser, StoreLocation.LocalMachine })
-        {
-            try
-            {
-                using var osStore = new X509Store(StoreName.Root, loc);
-                osStore.Open(OpenFlags.ReadOnly);
-                store.AddRange(osStore.Certificates);
-            }
-            catch (CryptographicException)
-            {
-                // Store may be unavailable on some platforms (e.g. LocalMachine on Linux). Skip.
-            }
-        }
-        return store;
     }
 
     private static string DescribeChainStatus(X509Chain chain)
