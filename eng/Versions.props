@@ -60,8 +60,8 @@
     <!-- When updating MicrosoftVisualStudioSolutionPersistenceVersion make sure to sync with dotnet/msbuild, dotnet/source-build-externals and NuGet/NuGet.Client -->
     <MicrosoftVisualStudioSolutionPersistenceVersion>1.0.52</MicrosoftVisualStudioSolutionPersistenceVersion>
     <AzureMonitorOpenTelemetryExporterPackageVersion>1.4.0</AzureMonitorOpenTelemetryExporterPackageVersion>
-    <OpenTelemetryDotnetVersion>1.15.1</OpenTelemetryDotnetVersion>
-    <OpenTelemetryDotnetContribVersion>1.15.1</OpenTelemetryDotnetContribVersion>
+    <OpenTelemetryDotnetPackageVersion>1.15.1</OpenTelemetryDotnetPackageVersion>
+    <OpenTelemetryDotnetContribPackageVersion>1.15.1</OpenTelemetryDotnetContribPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="MicroBuild.Core version">
