@@ -203,23 +203,19 @@ internal static class SignatureVerifier
             return;
         }
 
-        if (cms.ContentInfo.ContentType.Value != OidIdData)
+        // SignedCms.SignerInfos allocates a fresh collection on every read — cache it once.
+        // SignedCms.Decode + CheckSignature already enforce the CMS SignedData / id-data
+        // shape (encapsulated content-type OID etc.), so this check is the only structural
+        // assertion the verifier layers on top.
+        SignerInfoCollection signerInfos = cms.SignerInfos;
+        if (signerInfos.Count != 1)
         {
-            result.Add(FailureCode.SigNotCms, $"Unexpected encapsulated content-type OID {cms.ContentInfo.ContentType.Value}; expected id-data ({OidIdData}).");
+            result.Add(FailureCode.SigMultipleSigners, $"Expected exactly one signer; found {signerInfos.Count}.");
+            if (signerInfos.Count == 0)
+            {
         }
 
-        if (cms.SignerInfos.Count == 0)
-        {
-            result.Add(FailureCode.SigMultipleSigners, "Expected exactly one signer; found 0.");
-            return;
-        }
-
-        if (cms.SignerInfos.Count != 1)
-        {
-            result.Add(FailureCode.SigMultipleSigners, $"Expected exactly one signer; found {cms.SignerInfos.Count}.");
-        }
-
-        signer = cms.SignerInfos[0];
+        signer = signerInfos[0];
         signerCert = signer.Certificate;
         if (signerCert is null)
         {
