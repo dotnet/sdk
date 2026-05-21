@@ -45,7 +45,7 @@ public class TelemetryClient : ITelemetryClient
     // itself to determine endpoint, protocol, headers, timeout, etc.
     private static readonly bool s_enableOtlpExporter =
         Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER)
-        || IsOtlpExporterConfiguredByStandardEnvVars();
+        || (!Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.OTEL_SDK_DISABLED) && IsOtlpExporterConfiguredByStandardEnvVars());
     private static readonly int s_flushTimeoutMs = 200;
 
     /// <summary>
@@ -53,17 +53,7 @@ public class TelemetryClient : ITelemetryClient
     /// are set, signaling that the user has configured the OTLP exporter and expects it to be used.
     /// See https://opentelemetry.io/docs/specs/otel/protocol/exporter/.
     /// </summary>
-    private static bool IsOtlpExporterConfiguredByStandardEnvVars()
-    {
-        foreach (var name in EnvironmentVariableNames.OtlpExporterEnvVars)
-        {
-            if (!string.IsNullOrEmpty(Env.GetEnvironmentVariable(name)))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+    private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 #endif
 
     public static string? CurrentSessionId { get; private set; } = null;
