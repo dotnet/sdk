@@ -534,11 +534,10 @@ internal static class SignatureVerifier
         var oids = new List<string>(eku.EnhancedKeyUsages.Count);
         foreach (Oid o in eku.EnhancedKeyUsages)
         {
-            if (o.Value is null)
+            if (o.Value is not null)
             {
-                continue;
+                oids.Add(o.Value);
             }
-            oids.Add(o.Value);
         }
 
         if (oids.Count != 1 || oids[0] != requiredOid || oids.Contains(EkuAnyExtended))
