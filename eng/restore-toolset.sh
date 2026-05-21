@@ -116,7 +116,7 @@ function EnsureDotnetupBuilt {
       fi
     fi
 
-    "$DOTNET_INSTALL_DIR/dotnet" publish "$dotnetup_project" -c Release -r "$rid" -o "$dotnetup_dir" /p:_SkipStageDotnetupForShipping=true
+    "$DOTNET_INSTALL_DIR/dotnet" publish "$dotnetup_project" -c Release -r "$rid" -o "$dotnetup_dir"
 
     if [[ $? -ne 0 ]]; then
       echo "Failed to build dotnetup."

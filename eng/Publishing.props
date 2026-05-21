@@ -73,20 +73,22 @@
   </Target>
 
   <!--
-    Set the blob path for the per-RID dotnetup standalone executables (and their .sha512
-    sidecars) so Arcade's publish flow uploads them under a dotnetup-specific blob path
-    (rather than the Sdk/ default prefix that AddRelativeBlobPathToBlobArtifacts assigns).
+    Set RelativeBlobPath on the dotnetup AOT binary and on its .sha512 sidecar.
+    Arcade's GenerateChecksumsFromArtifacts strips RelativeBlobPath from the parent
+    metadata, so we have to set it explicitly here.
 
-    The files are produced by src/Installer/dotnetup/dotnetup.csproj's StageDotnetupForShipping
-    target and land at $(ArtifactsShippingPackagesDir)dotnetup\dotnetup-<rid>[.exe]. They get
-    registered as Kind="Blob" Artifacts via eng/Signing.props's dotnetup\* SdkArtifact glob.
+    Without this override, Arcade's AddRelativeBlobPathToBlobArtifacts would assign the
+    Sdk/<version>/ default prefix to both files.
   -->
-  <Target Name="SetDotnetupBlobArtifactsPath"
+  <Target Name="SetDotnetupBlobPaths"
           DependsOnTargets="GetDotnetupVersion"
+          AfterTargets="GenerateChecksumsFromArtifacts"
           BeforeTargets="AddRelativeBlobPathToBlobArtifacts;PublishToAzureDevOpsArtifacts">
     <ItemGroup>
-      <Artifact Condition="$([System.String]::Copy('%(Directory)').Replace('/', '\').EndsWith('\dotnetup\'))"
-                RelativeBlobPath="dotnetup/$(DotnetupVersion)/%(Filename)%(Extension)" />
+      <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup$(_DotnetupNativeExt)'"
+                RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
+      <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup$(_DotnetupNativeExt).sha512'"
+                RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt).sha512" />
     </ItemGroup>
   </Target>
 

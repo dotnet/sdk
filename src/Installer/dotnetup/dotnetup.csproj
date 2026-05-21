@@ -68,28 +68,8 @@
           Condition="'$(_PublishWasInvokedDirectly)' != 'true'" />
 
   <!--
-    Stage the published native executable into a dotnetup\ subfolder of the shipping packages
-    directory.
-  -->
-  <Target Name="StageDotnetupForShipping"
-          AfterTargets="Publish"
-          Condition="'$(_IsPublishing)' == 'true' and '$(RuntimeIdentifier)' != '' and '$(_SkipStageDotnetupForShipping)' != 'true'">
-    <PropertyGroup>
-      <_NativeExt Condition="$(RuntimeIdentifier.StartsWith('win'))">.exe</_NativeExt>
-      <_PublishedNativePath>$(PublishDir)dotnetup$(_NativeExt)</_PublishedNativePath>
-      <_StagedDotnetupDir>$(ArtifactsShippingPackagesDir)dotnetup\</_StagedDotnetupDir>
-      <_StagedDotnetupPath>$(_StagedDotnetupDir)dotnetup-$(RuntimeIdentifier)$(_NativeExt)</_StagedDotnetupPath>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(_PublishedNativePath)')"
-           Text="dotnetup native binary not found at '$(_PublishedNativePath)'. NativeAOT publish may have failed for RID '$(RuntimeIdentifier)'." />
-    <MakeDir Directories="$(_StagedDotnetupDir)" />
-    <Copy SourceFiles="$(_PublishedNativePath)"
-          DestinationFiles="$(_StagedDotnetupPath)" />
-  </Target>
-
-  <!--
     Lets eng/Publishing.props query the dotnetup SemVer (e.g. 0.1.3-preview.<buildid>) to
-    use as the blob-path prefix when registering the staged executable as a Blob artifact
+    use as the blob-path prefix when registering the NativeAOT binary as a Blob artifact
     for Arcade publishing. Mirrors the ReturnProductVersion pattern on
     src/Layout/redist/redist.csproj.
   -->

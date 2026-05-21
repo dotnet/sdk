@@ -1,5 +1,9 @@
 <Project>
 
+  <!-- Import default TargetRid calculation so it's available to Sign.proj / Publish.proj
+       (which import this file but not /Directory.Build.props). -->
+  <Import Project="TargetRid.props" />
+
   <PropertyGroup>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
   </PropertyGroup>
@@ -105,14 +109,18 @@
     <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="MSBuild" CertificateName="MacDeveloperHarden" />
 
     <!-- dotnetup native executables (produced by src/Installer/dotnetup/dotnetup.csproj).
+         The on-disk file is named `dotnetup` (Linux/macOS) or `dotnetup.exe` (Windows); the
+         RID-encoded blob name (e.g. dotnetup-win-x64.exe) is set on RelativeBlobPath in
+         eng/Publishing.props, not on the local filename.
+
          Windows: MicrosoftDotNet500 (.NET-specific Authenticode cert). Microsoft400 is
                   internal-EKU and gets blocked by Defender SmartScreen; Microsoft402 (EV)
                   isn't provisioned in our MicroBuild signing plugin's ESRPCerts.
          macOS:   MacDeveloperHardenWithNotarization is a virtual cert mapped via
                   CertificatesSignInfo below to MacDeveloperHarden + Apple notarization. -->
-    <FileSignInfo Include="dotnetup-win-x64.exe;dotnetup-win-arm64.exe" CertificateName="MicrosoftDotNet500" />
+    <FileSignInfo Condition="'$(OS)' == 'Windows_NT'" Include="dotnetup.exe" CertificateName="MicrosoftDotNet500" />
     <FileSignInfo Condition="'$(TargetOS)' == 'osx'"
-                  Include="dotnetup-osx-x64;dotnetup-osx-arm64"
+                  Include="dotnetup"
                   CertificateName="MacDeveloperHardenWithNotarization" />
   </ItemGroup>
 
@@ -142,10 +150,12 @@
               Kind="Blob" />
   </ItemGroup>
 
-  <!-- Only publish this file from win-x64 so that we don't end up with duplicates. -->
+  <!-- Only publish this file from win-x64 so that we don't end up with duplicates.
+       Exists() guard handles scoped builds where the file isn't produced (it's generated
+       by redist's GenerateBundledVersions target, which only runs in full SDK builds). -->
   <ItemGroup Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(TargetArchitecture)' == 'x64' and '$(PgoInstrument)' != 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" Condition="Exists('$(ArtifactsShippingPackagesDir)productVersion.txt')" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" Condition="Exists('$(ArtifactsShippingPackagesDir)sdk-productVersion.txt')" />
   </ItemGroup>
 
   <ItemGroup>
@@ -157,8 +167,6 @@
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.rpm" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.msi" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.cab" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)dotnetup\*"
-                 Exclude="$(ArtifactsShippingPackagesDir)dotnetup\*.sha512" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
 
@@ -172,6 +180,26 @@
   <ItemGroup>
     <Artifact Include="@(SdkArtifact)" Kind="Blob">
       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </Artifact>
+  </ItemGroup>
+
+  <!--
+    Register the dotnetup NativeAOT executable directly from its publish output, without
+    staging it under $(ArtifactsShippingPackagesDir). The path uses $(TargetRid) (from
+    eng/TargetRid.props) for the RID-specific publish directory; the TargetFramework
+    segment is wildcarded because $(SdkTargetFramework) / $(NetCurrent) isn't reliably set
+    in Publish.proj scope.
+
+    RelativeBlobPath is set in the SetDotnetupBlobPaths target in eng/Publishing.props.
+  -->
+  <PropertyGroup>
+    <_DotnetupNativeExt Condition="'$(TargetRid)' != '' and $(TargetRid.StartsWith('win'))">.exe</_DotnetupNativeExt>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The '*' wildcard is for the TargetFramework, which isn't set when evaluatingn this file. -->
+    <_DotnetupPublishedBinary Include="$(ArtifactsBinDir)dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup$(_DotnetupNativeExt)" />
+    <Artifact Include="@(_DotnetupPublishedBinary)" Kind="Blob">
+      <ChecksumPath>%(FullPath).sha512</ChecksumPath>
     </Artifact>
   </ItemGroup>
 
