@@ -20,6 +20,17 @@
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <Using Include="FluentAssertions" />
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Xunit" />
+    <Using Include="Xunit.Abstractions" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(OutputType)' == 'Exe' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <Compile Include="$(MSBuildThisFileDirectory)Common\Program.cs" />
   </ItemGroup>

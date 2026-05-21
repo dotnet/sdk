@@ -42,18 +42,17 @@ public class MSBuildForwardingApp : CommandBase
     /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
     /// </summary>
     public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
-        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption()),
+        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption()),
         msbuildPath)
     {
     }
 
-    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null, bool includeLogo = false)
+    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null)
     {
         var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(ConcatTelemetryLogger(msBuildArgs));
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
             modifiedMSBuildArgs,
-            msbuildPath: msbuildPath,
-            includeLogo: includeLogo);
+            msbuildPath: msbuildPath);
 
         // Add the performance log location to the environment of the target process.
         if (PerformanceLogManager.Instance != null && !string.IsNullOrEmpty(PerformanceLogManager.Instance.CurrentLogDirectory))
