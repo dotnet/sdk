@@ -67,13 +67,98 @@ internal static class SignatureVerifier
     private const string OidRsa = "1.2.840.113549.1.1.1"; // rsaEncryption (RFC 8017 Appendix C) https://datatracker.ietf.org/doc/html/rfc8017#appendix-C
     private const string OidEcdsa = "1.2.840.10045.2.1";  // id-ecPublicKey (RFC 5480 §2.1.1) https://datatracker.ietf.org/doc/html/rfc5480#section-2.1.1
 
-    // SHA-2 and SHA-3 digest algorithm OIDs (NIST CSOR 2.16.840.1.101.3.4.2; SHA-2 registered
-    // in RFC 5754 §2, SHA-3 in RFC 8702 §2). https://datatracker.ietf.org/doc/html/rfc5754#section-2
+    // Post-quantum signature algorithm OIDs supported by .NET 11's MLDsa / SlhDsa / CompositeMLDsa BCL types.
+    // Each OID below may appear in CMS SignedData as BOTH:
+    // The signer cert's SubjectPublicKeyInfo.AlgorithmIdentifier
+    // The SignerInfo.DigestAlgorithm
+    // ... per draft-ietf-lamps-cms-ml-dsa, draft-ietf-lamps-pq-composite-sigs.
+    //
+    // Source of truth for the OID list
+    // https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Security/Cryptography/Oids.cs
+    internal static readonly HashSet<string> s_pqcSignatureOids =
+    [
+        // === FIPS 204 ML-DSA (pure mode) — NIST CSOR 2.16.840.1.101.3.4.3.17–19 ===
+        "2.16.840.1.101.3.4.3.17", // ML-DSA-44
+        "2.16.840.1.101.3.4.3.18", // ML-DSA-65
+        "2.16.840.1.101.3.4.3.19", // ML-DSA-87
+
+        // === Pre-hash ML-DSA (.32–.34) ===
+        "2.16.840.1.101.3.4.3.32", // HashML-DSA-44-SHA512
+        "2.16.840.1.101.3.4.3.33", // HashML-DSA-65-SHA512
+        "2.16.840.1.101.3.4.3.34", // HashML-DSA-87-SHA512
+
+        // === FIPS 205 SLH-DSA (pure mode) — .20–.31 ===
+        "2.16.840.1.101.3.4.3.20", // SLH-DSA-SHA2-128s
+        "2.16.840.1.101.3.4.3.21", // SLH-DSA-SHA2-128f
+        "2.16.840.1.101.3.4.3.22", // SLH-DSA-SHA2-192s
+        "2.16.840.1.101.3.4.3.23", // SLH-DSA-SHA2-192f
+        "2.16.840.1.101.3.4.3.24", // SLH-DSA-SHA2-256s
+        "2.16.840.1.101.3.4.3.25", // SLH-DSA-SHA2-256f
+        "2.16.840.1.101.3.4.3.26", // SLH-DSA-SHAKE-128s
+        "2.16.840.1.101.3.4.3.27", // SLH-DSA-SHAKE-128f
+        "2.16.840.1.101.3.4.3.28", // SLH-DSA-SHAKE-192s
+        "2.16.840.1.101.3.4.3.29", // SLH-DSA-SHAKE-192f
+        "2.16.840.1.101.3.4.3.30", // SLH-DSA-SHAKE-256s
+        "2.16.840.1.101.3.4.3.31", // SLH-DSA-SHAKE-256f
+
+        // === Pre-hash SLH-DSA (.35–.46) ===
+        "2.16.840.1.101.3.4.3.35", // HashSLH-DSA-SHA2-128s-SHA256
+        "2.16.840.1.101.3.4.3.36", // HashSLH-DSA-SHA2-128f-SHA256
+        "2.16.840.1.101.3.4.3.37", // HashSLH-DSA-SHA2-192s-SHA512
+        "2.16.840.1.101.3.4.3.38", // HashSLH-DSA-SHA2-192f-SHA512
+        "2.16.840.1.101.3.4.3.39", // HashSLH-DSA-SHA2-256s-SHA512
+        "2.16.840.1.101.3.4.3.40", // HashSLH-DSA-SHA2-256f-SHA512
+        "2.16.840.1.101.3.4.3.41", // HashSLH-DSA-SHAKE-128s-SHAKE128
+        "2.16.840.1.101.3.4.3.42", // HashSLH-DSA-SHAKE-128f-SHAKE128
+        "2.16.840.1.101.3.4.3.43", // HashSLH-DSA-SHAKE-192s-SHAKE256
+        "2.16.840.1.101.3.4.3.44", // HashSLH-DSA-SHAKE-192f-SHAKE256
+        "2.16.840.1.101.3.4.3.45", // HashSLH-DSA-SHAKE-256s-SHAKE256
+        "2.16.840.1.101.3.4.3.46", // HashSLH-DSA-SHAKE-256f-SHAKE256
+
+        // === Composite ML-DSA (draft-ietf-lamps-pq-composite-sigs, 1.3.6.1.5.5.7.6.37–54) ===
+        // Hybrid algorithms combining ML-DSA with a traditional algorithm so a relying
+        // party that has only verified ONE of the two component algorithms still gets some
+        // security; the intended deployment vehicle during the PQC transition.
+        "1.3.6.1.5.5.7.6.37", // MLDSA44-RSA2048-PSS-SHA256
+        "1.3.6.1.5.5.7.6.38", // MLDSA44-RSA2048-PKCS15-SHA256
+        "1.3.6.1.5.5.7.6.39", // MLDSA44-Ed25519-SHA512
+        "1.3.6.1.5.5.7.6.40", // MLDSA44-ECDSA-P256-SHA256
+        "1.3.6.1.5.5.7.6.41", // MLDSA65-RSA3072-PSS-SHA512
+        "1.3.6.1.5.5.7.6.42", // MLDSA65-RSA3072-PKCS15-SHA512
+        "1.3.6.1.5.5.7.6.43", // MLDSA65-RSA4096-PSS-SHA512
+        "1.3.6.1.5.5.7.6.44", // MLDSA65-RSA4096-PKCS15-SHA512
+        "1.3.6.1.5.5.7.6.45", // MLDSA65-ECDSA-P256-SHA512
+        "1.3.6.1.5.5.7.6.46", // MLDSA65-ECDSA-P384-SHA512
+        "1.3.6.1.5.5.7.6.47", // MLDSA65-ECDSA-brainpoolP256r1-SHA512
+        "1.3.6.1.5.5.7.6.48", // MLDSA65-Ed25519-SHA512
+        "1.3.6.1.5.5.7.6.49", // MLDSA87-ECDSA-P384-SHA512
+        "1.3.6.1.5.5.7.6.50", // MLDSA87-ECDSA-brainpoolP384r1-SHA512
+        "1.3.6.1.5.5.7.6.51", // MLDSA87-Ed448-SHAKE256
+        "1.3.6.1.5.5.7.6.52", // MLDSA87-RSA3072-PSS-SHA512
+        "1.3.6.1.5.5.7.6.53", // MLDSA87-RSA4096-PSS-SHA512
+        "1.3.6.1.5.5.7.6.54", // MLDSA87-ECDSA-P521-SHA512
+    ];
+
+    // Allowed signer-certificate public-key algorithm OIDs (SubjectPublicKeyInfo.AlgorithmIdentifier).
+    // Classical (RSA, ECDSA) plus every PQC OID in s_pqcSignatureOids. DSA and other algorithms
+    // are rejected. HashSet<string> uses ordinal equality by default, matching the OID strings.
+    private static readonly HashSet<string> s_allowedPublicKeyOids =
+    [
+        OidRsa,
+        OidEcdsa,
+        .. s_pqcSignatureOids,
+    ];
+
+    // SHA-2, SHA-3, SHAKE, and PQC digest-algorithm OIDs (NIST CSOR 2.16.840.1.101.3.4.2;
+    // SHA-2 registered in RFC 5754 §2, SHA-3 / SHAKE in RFC 8702 §2).
     // https://datatracker.ietf.org/doc/html/rfc8702#section-2
-    // SHA-1 / MD5 deliberately omitted. PQC digest OIDs (SHAKE-128/256 and the ML-DSA /
-    // SLH-DSA SignedCms hash modes) will be added when those signature schemes are wired in;
-    // see signature-verification.md §4 "Forward-looking algorithms."
-    // Default HashSet<string> equality comparer is ordinal, matching the OID strings.
+    // SHA-1 / MD5 deliberately omitted.
+    //
+    // The pure-PQC OIDs in s_pqcSignatureOids are ALSO valid as the SignerInfo.DigestAlgorithm
+    // when the signature scheme is pure ML-DSA / SLH-DSA / Composite ML-DSA, because those
+    // schemes do internal hashing and CMS encodes the algorithm-identifier in both fields
+    // (see comment on s_pqcSignatureOids above). They are unioned into this allow-list via the
+    // collection-expression spread below.
     private static readonly HashSet<string> s_allowedDigestOids =
     [
         "2.16.840.1.101.3.4.2.1",  // id-sha256
@@ -82,6 +167,9 @@ internal static class SignatureVerifier
         "2.16.840.1.101.3.4.2.8",  // id-sha3-256
         "2.16.840.1.101.3.4.2.9",  // id-sha3-384
         "2.16.840.1.101.3.4.2.10", // id-sha3-512
+        "2.16.840.1.101.3.4.2.11", // id-shake128 (RFC 8702; used by ECDSA-with-SHAKE per RFC 8692 and by pure ML-DSA / SLH-DSA-SHAKE variants)
+        "2.16.840.1.101.3.4.2.12", // id-shake256 (RFC 8702)
+        .. s_pqcSignatureOids,
     ];
 
     // Maximum permitted clock skew between the signer's claimed signingTime attribute and the
