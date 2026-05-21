@@ -165,11 +165,11 @@ internal static class SignatureVerifier
     {
         if (options.TrustedCodeSigningRoots.Count == 0)
         {
-            result.Add(FailureCode.TrustedRootsEmpty, "TrustedCodeSigningRoots is empty.");
+            result.Add(FailureCode.TrustedRootsEmpty, $"{nameof(SignatureVerificationOptions.TrustedCodeSigningRoots)} is empty.");
         }
         if (options.TrustedTimestampRoots.Count == 0)
         {
-            result.Add(FailureCode.TrustedRootsEmpty, "TrustedTimestampRoots is empty.");
+            result.Add(FailureCode.TrustedRootsEmpty, $"{nameof(SignatureVerificationOptions.TrustedTimestampRoots)} is empty.");
         }
     }
 
