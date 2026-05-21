@@ -213,6 +213,8 @@ internal static class SignatureVerifier
             result.Add(FailureCode.SigMultipleSigners, $"Expected exactly one signer; found {signerInfos.Count}.");
             if (signerInfos.Count == 0)
             {
+                return;
+            }
         }
 
         signer = signerInfos[0];
@@ -270,9 +272,8 @@ internal static class SignatureVerifier
         if (signerCert is not null)
         {
             string keyOid = signerCert.PublicKey.Oid.Value ?? string.Empty;
-            if (keyOid is not (OidRsa or OidEcdsa))
+            if (!s_allowedPublicKeyOids.Contains(keyOid))
             {
-                result.Add(FailureCode.WeakSignatureAlgorithm, $"Signer public-key algorithm OID '{keyOid}' is not permitted (RSA or ECDSA required).");
             }
         }
         else
