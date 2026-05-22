@@ -61,14 +61,16 @@
     <_PublishWasInvokedDirectly Condition="'$(_IsPublishing)' == 'true'">true</_PublishWasInvokedDirectly>
     <_IsPublishing>true</_IsPublishing>
 
-    <!-- Skip the implicit AOT Publish-on-Build when cross-compiling without a cross-toolchain.
-         The AOT linker invokes the host's clang/ld to produce a native binary for $(RuntimeIdentifier);
-         when host arch/OS differ from the target and $(SysRoot) isn't set, the host linker can't link
-         for the target (e.g. ld.bfd: unrecognised emulation mode: aarch64linux). This trips the main
-         SDK CI's TestBuild cross-RID legs that build the whole repo with /p:RuntimeIdentifier set to
-         a non-host RID. The dedicated dotnetup pipeline either targets the host RID or sets SysRoot
-         and so still runs AOT publish here. -->
-    <_DotnetupSkipPublishOnBuild Condition="('$(TargetArchitecture)' != '$(BuildArchitecture)' or '$(TargetOS)' != '$(HostOS)') and '$(SysRoot)' == ''">true</_DotnetupSkipPublishOnBuild>
+    <!-- Skip the implicit AOT Publish-on-Build when cross-compiling on Linux without a cross-toolchain.
+         On Linux, the AOT linker invokes the host's clang/ld.bfd, which can't link for a different
+         architecture without a SysRoot + lld toolchain (e.g. ld.bfd: unrecognised emulation mode:
+         aarch64linux). The main SDK CI's TestBuild cross-RID legs build the whole repo with
+         /p:RuntimeIdentifier set to a non-host RID but don't supply a cross-toolchain, so we skip
+         the implicit publish there. The dedicated dotnetup pipeline's Linux cross legs pass
+         /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld and so still run publish here. Windows (link.exe)
+         and macOS (clang + ld64) handle cross-arch linking natively, so cross-arch legs there are
+         unaffected and still produce the AOT binary. -->
+    <_DotnetupSkipPublishOnBuild Condition="'$(HostOS)' == 'linux' and '$(TargetArchitecture)' != '$(BuildArchitecture)' and '$(SysRoot)' == ''">true</_DotnetupSkipPublishOnBuild>
   </PropertyGroup>
 
   <Target Name="PublishOnBuild"
