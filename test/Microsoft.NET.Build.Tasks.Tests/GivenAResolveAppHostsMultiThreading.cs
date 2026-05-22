@@ -91,8 +91,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 targetingPackRoot: relativePackRoot,
                 runtimeGraphPath: runtimeGraphPath);
 
+            string currentDirectoryBeforeExecute = Directory.GetCurrentDirectory();
+
             task.Execute().Should().BeTrue();
-            Directory.GetCurrentDirectory().Should().Be(_decoyDir,
+            Directory.GetCurrentDirectory().Should().Be(currentDirectoryBeforeExecute,
                 "ResolveAppHosts must not mutate process current directory");
         }
 
