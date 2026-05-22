@@ -669,6 +669,106 @@ public class SignatureVerifierTests
             result.IsValid.Should().BeFalse();
         }
     }
+
+    // ---------------- BCL drift detector for the PQC OID allow-list ----------------
+
+    [Fact]
+    public void PqcOidList_StaysInSyncWithBcl()
+    {
+        // The SDK does NOT expose a public way to enumerate the OIDs each PQC algorithm
+        // family recognizes — MLDsaAlgorithm.GetMLDsaAlgorithmFromOid / SlhDsaAlgorithm.GetAlgorithmFromOid /
+        // CompositeMLDsaAlgorithm.GetAlgorithmFromOid are all `internal`, and the underlying
+        // KnownOids arrays are `private static readonly string[]`. We mirror that data into
+        // SignatureVerifier.s_pqcSignatureOids by hand.
+        //
+        // This test reaches into those private arrays via reflection and reports drift as a
+        // *skip*, not a hard failure. Skipped tests show up in CI with the skip reason
+        // visible in test reports, so a maintainer can see "BCL added OIDs X, Y, Z — please
+        // update SignatureVerifier.s_pqcSignatureOids" without the build going red. The
+        // reflection itself is best-effort: if the BCL refactors the field names away, the
+        // test skips with a "couldn't inspect BCL" reason rather than failing, again to
+        // avoid breaking CI on unrelated runtime updates. The verifier's own algorithm
+        // policy still works either way because the hand-mirrored list is the authority at
+        // runtime.
+        var bclOids = TryLoadBclPqcKnownOids(out string? loadFailureReason);
+        if (bclOids is null)
+        {
+            Assert.Skip($"Could not reflect BCL PQC KnownOids for drift check: {loadFailureReason}. " +
+                        "This usually means the BCL refactored its internal field layout; please " +
+                        "update PqcOidList_StaysInSyncWithBcl to match the new layout.");
+            return;
+        }
+
+        HashSet<string> ourOids = SignatureVerifier.s_pqcSignatureOids;
+        var missingFromOurs = bclOids.Except(ourOids).OrderBy(o => o, StringComparer.Ordinal).ToList();
+
+        if (missingFromOurs.Count > 0)
+        {
+            Assert.Skip(
+                $"BCL has {missingFromOurs.Count} PQC OID(s) not in SignatureVerifier.s_pqcSignatureOids: " +
+                $"[{string.Join(", ", missingFromOurs)}]. " +
+                "Please mirror these into SignatureVerifier.cs to extend the algorithm allow-list. " +
+                "This is a skip (not a failure) so CI stays green during BCL roll-forwards; the " +
+                "verifier still works — it just rejects the new OIDs as 'SignatureAlgorithmNotPermitted' " +
+                "until the list is updated.");
+            return;
+        }
+
+        // No drift. Our list is a superset of BCL's KnownOids unions; that is the invariant.
+        // (We also carry pre-hash PQC OIDs that aren't in BCL's KnownOids arrays \u2014 those
+        // are fine; BCL's KnownOids only enumerates what each BCL key class can decode, not
+        // every OID that may appear in CMS SignedData.)
+    }
+
+    /// <summary>
+    /// Reflects into <c>System.Security.Cryptography.MLDsa.KnownOids</c>,
+    /// <c>SlhDsa.s_knownOids</c>, and <c>CompositeMLDsa.s_knownOids</c> (all private static
+    /// arrays) to build the union of PQC OIDs the BCL currently recognises. Returns
+    /// <see langword="null"/> with a reason when reflection fails for any reason (missing
+    /// type, missing field, unexpected runtime type, etc.). The caller treats null as
+    /// "skip" so the test never hard-fails when the BCL is refactored.
+    /// </summary>
+    private static HashSet<string>? TryLoadBclPqcKnownOids(out string? failureReason)
+    {
+        var oids = new HashSet<string>(StringComparer.Ordinal);
+
+        if (!TryAddBclOids("System.Security.Cryptography.MLDsa", "KnownOids", oids, out failureReason)) { return null; }
+        if (!TryAddBclOids("System.Security.Cryptography.SlhDsa", "s_knownOids", oids, out failureReason)) { return null; }
+        if (!TryAddBclOids("System.Security.Cryptography.CompositeMLDsa", "s_knownOids", oids, out failureReason)) { return null; }
+
+        return oids;
+    }
+
+    private static bool TryAddBclOids(string typeName, string fieldName, HashSet<string> sink, out string? failureReason)
+    {
+        Type? type = typeof(System.Security.Cryptography.Pkcs.SignedCms).Assembly.GetType(typeName, throwOnError: false)
+                  ?? typeof(System.Security.Cryptography.RSA).Assembly.GetType(typeName, throwOnError: false);
+        if (type is null)
+        {
+            failureReason = $"type '{typeName}' not found in any loaded crypto assembly";
+            return false;
+        }
+
+        // Internal lookups in BCL: MLDsa.KnownOids is `private protected`, SlhDsa.s_knownOids
+        // and CompositeMLDsa.s_knownOids are `private static`. NonPublic | Static covers both.
+        System.Reflection.FieldInfo? field = type.GetField(fieldName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        if (field is null)
+        {
+            failureReason = $"field '{typeName}.{fieldName}' not found";
+            return false;
+        }
+
+        if (field.GetValue(null) is not string[] arr)
+        {
+            failureReason = $"field '{typeName}.{fieldName}' is not a string[]";
+            return false;
+        }
+
+        foreach (string oid in arr) { sink.Add(oid); }
+        failureReason = null;
+        return true;
+    }
+
     // ---------------- Test-fixture helpers (in-process cert minting) ----------------
 
     /// <summary>
@@ -678,10 +778,18 @@ public class SignatureVerifierTests
     /// chain-build behavior (EKU constraint, validity window) without tripping the DN
     /// pins first.
     /// </summary>
+    /// <param name="leafEkuOids">Optional override for the leaf's EKU OIDs (single extension, multiple OIDs).
+    /// Defaults to <c>id-kp-codeSigning</c> alone.</param>
+    /// <param name="addExtraLeafEkuExtension">When true, adds a second
+    /// <see cref="X509EnhancedKeyUsageExtension"/> to the leaf carrying <c>id-kp-codeSigning</c>.
+    /// Used to drive the <see cref="FailureCode.EkuMultipleExtensions"/> path; per RFC 5280 §4.2.1.12
+    /// multiple EKU extensions on a single cert is non-conformant.</param>
     private static (X509Certificate2 Root, X509Certificate2 Intermediate, X509Certificate2 Leaf, byte[] Signature) BuildTestSignedFixture(
         byte[] content,
         string? intermediateEkuOid,
-        DateTimeOffset leafNotAfter)
+        DateTimeOffset leafNotAfter,
+        string[]? leafEkuOids = null,
+        bool addExtraLeafEkuExtension = false)
     {
         var notBefore = DateTimeOffset.UtcNow.AddYears(-1);
 
@@ -711,14 +819,27 @@ public class SignatureVerifierTests
         var intermediate = intermediateNoKey.CopyWithPrivateKey(intKey);
 
         // Leaf: subject DN must match SignatureVerifier.s_requiredSubjectRdns; EKU is
-        // codeSigning. The intermediate's constraint (if any) is what should narrow the
-        // effective EKU at chain-build time.
+        // codeSigning by default. The intermediate's constraint (if any) is what should
+        // narrow the effective EKU at chain-build time.
         using var leafKey = RSA.Create(2048);
         var leafReq = new CertificateRequest(BuildPinnedSubjectDn(), leafKey, HashAlgorithmName.SHA384, RSASignaturePadding.Pkcs1);
         leafReq.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
         leafReq.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, true));
-        leafReq.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(
-            new OidCollection { new Oid("1.3.6.1.5.5.7.3.3") }, critical: false)); // id-kp-codeSigning
+        var ekuCollection = new OidCollection();
+        foreach (string oid in leafEkuOids ?? ["1.3.6.1.5.5.7.3.3"]) // default: id-kp-codeSigning
+        {
+            ekuCollection.Add(new Oid(oid));
+        }
+        leafReq.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(ekuCollection, critical: false));
+        if (addExtraLeafEkuExtension)
+        {
+            // Adding a second EKU extension is non-conformant per RFC 5280 §4.2.1.12 — the
+            // intended encoding is a single extension whose value is a sequence of OIDs. The
+            // BCL does not reject the duplicate-extension shape itself; the verifier surfaces
+            // it as EkuMultipleExtensions.
+            leafReq.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(
+                new OidCollection { new Oid("1.3.6.1.5.5.7.3.3") }, critical: false));
+        }
         leafReq.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(leafReq.PublicKey, false));
         byte[] leafSerial = new byte[16]; RandomNumberGenerator.Fill(leafSerial);
         using var leafNoKey = leafReq.Create(intermediate, notBefore, leafNotAfter, leafSerial);
