@@ -16,7 +16,7 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 /// behavior reference. The verifier is content-agnostic — the JSON expiration check (§9)
 /// is opt-in via <see cref="SignatureVerificationOptions.RequireJsonExpirationField"/>.
 /// </summary>
-internal static class SignatureVerifier
+internal static partial class SignatureVerifier
 {
     // Required signer subject DN (RDN set; OID-based, order-insensitive). Spec §5.1.
     // internal: tests mint cert chains with this exact DN to drive chain-build behavior
@@ -188,29 +188,8 @@ internal static class SignatureVerifier
         .. s_pqcPureKeyOids,
     ];
 
-    // SHA-2, SHA-3, SHAKE, and PQC digest-algorithm OIDs (NIST CSOR 2.16.840.1.101.3.4.2;
-    // SHA-2 registered in RFC 5754 §2, SHA-3 / SHAKE in RFC 8702 §2).
-    // https://datatracker.ietf.org/doc/html/rfc5754#section-2
-    // https://datatracker.ietf.org/doc/html/rfc8702#section-2
-    // SHA-1 / MD5 deliberately omitted.
-    //
-    // The pure-PQC OIDs in s_pqcSignatureOids are ALSO valid as the SignerInfo.DigestAlgorithm
-    // when the signature scheme is pure ML-DSA / SLH-DSA / Composite ML-DSA, because those
-    // schemes do internal hashing and CMS encodes the algorithm-identifier in both fields
-    // (see comment on s_pqcSignatureOids above). They are unioned into this allow-list via the
-    // collection-expression spread below.
-    private static readonly HashSet<string> s_allowedDigestOids =
-    [
-        "2.16.840.1.101.3.4.2.1",  // id-sha256
-        "2.16.840.1.101.3.4.2.2",  // id-sha384
-        "2.16.840.1.101.3.4.2.3",  // id-sha512
-        "2.16.840.1.101.3.4.2.8",  // id-sha3-256
-        "2.16.840.1.101.3.4.2.9",  // id-sha3-384
-        "2.16.840.1.101.3.4.2.10", // id-sha3-512
-        "2.16.840.1.101.3.4.2.11", // id-shake128 (RFC 8702; used by ECDSA-with-SHAKE per RFC 8692 and by pure ML-DSA / SLH-DSA-SHAKE variants)
-        "2.16.840.1.101.3.4.2.12", // id-shake256 (RFC 8702)
-        .. s_pqcSignatureOids,
-    ];
+    // The allow-list of digest OIDs (s_allowedDigestOids) lives in
+    // SignatureVerifier.DigestOids.cs (partial-class split).
 
     // Per-URL timeout the chain engine applies when fetching CRL / OCSP / AIA artifacts during
     // revocation checking. 30s mirrors NuGet's CertificateChainUtility default
