@@ -13,183 +13,66 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 /// <summary>
 /// CMS detached-signature verifier for .NET release artifacts (manifest JSON or archives).
 /// See <c>documentation/general/dotnetup/signature-verification.md</c> for the descriptive
-/// behavior reference. The verifier is content-agnostic — the JSON expiration check (§9)
-/// is opt-in via <see cref="SignatureVerificationOptions.RequireJsonExpirationField"/>.
+/// behavior reference. Content-agnostic; the JSON expiration check (§9) is opt-in via
+/// <see cref="SignatureVerificationOptions.RequireJsonExpirationField"/>.
 /// </summary>
+/// <remarks>
+/// Constants/tables are split across partial files for navigability:
+/// <list type="bullet">
+///   <item><c>SignatureVerifier.DistinguishedNames.cs</c> — pinned signer / TSA-issuer DNs.</item>
+///   <item><c>SignatureVerifier.Ekus.cs</c> — EKU OIDs and the code-signing permitted set.</item>
+///   <item><c>SignatureVerifier.PqcOids.cs</c> — ML-DSA / SLH-DSA / Composite ML-DSA OID tables.</item>
+///   <item><c>SignatureVerifier.DigestOids.cs</c> — SHA-2 / SHA-3 / SHAKE digest OID allow-list.</item>
+/// </list>
+/// </remarks>
 internal static partial class SignatureVerifier
 {
-    // Required signer subject DN (RDN set; OID-based, order-insensitive). Spec §5.1.
-    // internal: tests mint cert chains with this exact DN to drive chain-build behavior
-    // (EKU constraint, validity window) without tripping the DN pin first.
-    internal static readonly (string Oid, string Value)[] s_requiredSubjectRdns =
-    [
-        ("2.5.4.3",  "Microsoft Corporation"), // CN
-        ("2.5.4.11", ".NET Release"),          // OU
-        ("2.5.4.10", "Microsoft Corporation"), // O
-        ("2.5.4.7",  "Redmond"),               // L
-        ("2.5.4.8",  "Washington"),            // S
-        ("2.5.4.6",  "US"),                    // C
-    ];
-
-    // Required signer issuer DN (DigiCert code-signing intermediate). Spec §5.2.
-    // internal: see s_requiredSubjectRdns.
-    internal static readonly (string Oid, string Value)[] s_requiredIssuerRdns =
-    [
-        ("2.5.4.3",  "DigiCert Trusted G4 Code Signing RSA4096 SHA384 2021 CA1"),
-        ("2.5.4.10", "DigiCert, Inc."),
-        ("2.5.4.6",  "US"),
-    ];
-
-    // Required TSA-cert immediate-issuer DN (DigiCert timestamping intermediate). Spec §7.
-    // Defense-in-depth: tightens the TSA chain beyond "any cert chaining to a root in
-    // timestampctl.pem" by also pinning the intermediate that issued the TSA leaf, mirroring
-    // the code-signing intermediate pin in §5.2. The CN intentionally differs from
-    // s_requiredIssuerRdns above (timestamping vs. code-signing intermediates are distinct
-    // certs in the DigiCert hierarchy) — the visual similarity is not duplication.
-    private static readonly (string Oid, string Value)[] s_requiredTimestampIssuerRdns =
-    [
-        ("2.5.4.3",  "DigiCert Trusted G4 TimeStamping RSA4096 SHA256 2025 CA1"),
-        ("2.5.4.10", "DigiCert, Inc."),
-        ("2.5.4.6",  "US"),
-    ];
-
-    private const string EkuCodeSigning = "1.3.6.1.5.5.7.3.3";   // id-kp-codeSigning (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
-    private const string EkuTimeStamping = "1.3.6.1.5.5.7.3.8";  // id-kp-timeStamping (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
-    private const string EkuAnyExtended = "2.5.29.37.0";         // anyExtendedKeyUsage (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
-    private const string EkuServerAuth = "1.3.6.1.5.5.7.3.1";    // id-kp-serverAuth (RFC 5280 §4.2.1.12)
-
-    // CA/Browser Forum Code Signing BR §7.1.2.3(f) explicitly permits these EKUs alongside
-    // id-kp-codeSigning on a code-signing leaf. Listing them here lets a CAB-Forum-conformant
-    // .NET Release cert carry them in addition to id-kp-codeSigning without being rejected as
-    // "non-exclusive". Note: this profile applies ONLY to the primary code-signing cert; the
-    // TSA cert keeps strict EKU exclusivity per RFC 3161 §2.3 (see EvaluateTimestampEku).
-    private const string EkuLifetimeSigning = "1.3.6.1.4.1.311.10.3.13";  // Microsoft Authenticode Lifetime Signing
-    private const string EkuEmailProtection = "1.3.6.1.5.5.7.3.4";        // id-kp-emailProtection (RFC 5280 §4.2.1.12)
-    private const string EkuDocumentSigning = "1.3.6.1.4.1.311.3.10.3.12"; // Microsoft Document Signing
-
-    private static readonly HashSet<string> s_codeSigningPermittedEkus =
-    [
-        EkuCodeSigning,
-        EkuLifetimeSigning,
-        EkuEmailProtection,
-        EkuDocumentSigning,
-    ];
-
     private const string OidIdData = "1.2.840.113549.1.7.1";               // id-data (RFC 5652 §4) https://datatracker.ietf.org/doc/html/rfc5652#section-4
     private const string OidTimestampToken = "1.2.840.113549.1.9.16.2.14"; // id-aa-signatureTimeStampToken (RFC 3161 Appendix A https://datatracker.ietf.org/doc/html/rfc3161#appendix-A; SET OF TimeStampToken per RFC 3161 §2.4.2 https://datatracker.ietf.org/doc/html/rfc3161#section-2.4.2)
 
     private const string OidRsa = "1.2.840.113549.1.1.1"; // rsaEncryption (RFC 8017 Appendix C) https://datatracker.ietf.org/doc/html/rfc8017#appendix-C
     private const string OidEcdsa = "1.2.840.10045.2.1";  // id-ecPublicKey (RFC 5480 §2.1.1) https://datatracker.ietf.org/doc/html/rfc5480#section-2.1.1
 
-    // Post-quantum signature algorithm OIDs supported by .NET 11's MLDsa / SlhDsa / CompositeMLDsa BCL types.
-    //
-    // The list is split in two:
-    //   * s_pqcPureKeyOids   — pure-mode OIDs that may legitimately appear in BOTH a
-    //     certificate's SubjectPublicKeyInfo.AlgorithmIdentifier AND in CMS
-    //     SignerInfo.DigestAlgorithm (per draft-ietf-lamps-cms-ml-dsa, the pure
-    //     signature scheme does its own internal hashing so the alg-id repeats).
-    //   * s_pqcPreHashOids   — pre-hash variants (HashML-DSA per FIPS 204 §5.4,
-    //     HashSLH-DSA per FIPS 205 §10.2). The IETF PKIX profile drafts restrict
-    //     these to per-signature use in SignerInfo.signatureAlgorithm and forbid
-    //     them in a certificate's SubjectPublicKeyInfo:
-    //       * draft-ietf-lamps-dilithium-certificates §1 / §8.3 ("Only [pure ML-DSA]
-    //         is specified in this document.")
-    //       * draft-ietf-lamps-x509-slhdsa (same restriction for SLH-DSA)
-    //     so they are signature/digest-only and MUST NOT appear in SPKI.
-    //
-    // s_pqcSignatureOids below is the union of the two and is kept as the drift-detection
-    // target for the BCL's KnownOids arrays (see PqcOidList_StaysInSyncWithBcl).
-    //
-    // Source of truth for the OID list:
-    // https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Security/Cryptography/Oids.cs
-    private static readonly HashSet<string> s_pqcPureKeyOids =
-    [
-        // === FIPS 204 ML-DSA (pure mode) — NIST CSOR 2.16.840.1.101.3.4.3.17–19 ===
-        "2.16.840.1.101.3.4.3.17", // ML-DSA-44
-        "2.16.840.1.101.3.4.3.18", // ML-DSA-65
-        "2.16.840.1.101.3.4.3.19", // ML-DSA-87
-
-        // === FIPS 205 SLH-DSA (pure mode) — .20–.31 ===
-        "2.16.840.1.101.3.4.3.20", // SLH-DSA-SHA2-128s
-        "2.16.840.1.101.3.4.3.21", // SLH-DSA-SHA2-128f
-        "2.16.840.1.101.3.4.3.22", // SLH-DSA-SHA2-192s
-        "2.16.840.1.101.3.4.3.23", // SLH-DSA-SHA2-192f
-        "2.16.840.1.101.3.4.3.24", // SLH-DSA-SHA2-256s
-        "2.16.840.1.101.3.4.3.25", // SLH-DSA-SHA2-256f
-        "2.16.840.1.101.3.4.3.26", // SLH-DSA-SHAKE-128s
-        "2.16.840.1.101.3.4.3.27", // SLH-DSA-SHAKE-128f
-        "2.16.840.1.101.3.4.3.28", // SLH-DSA-SHAKE-192s
-        "2.16.840.1.101.3.4.3.29", // SLH-DSA-SHAKE-192f
-        "2.16.840.1.101.3.4.3.30", // SLH-DSA-SHAKE-256s
-        "2.16.840.1.101.3.4.3.31", // SLH-DSA-SHAKE-256f
-
-        // === Composite ML-DSA (draft-ietf-lamps-pq-composite-sigs, 1.3.6.1.5.5.7.6.37–54) ===
-        // Hybrid algorithms combining ML-DSA with a traditional algorithm so a relying
-        // party that has only verified ONE of the two component algorithms still gets some
-        // security; the intended deployment vehicle during the PQC transition.
-        "1.3.6.1.5.5.7.6.37", // MLDSA44-RSA2048-PSS-SHA256
-        "1.3.6.1.5.5.7.6.38", // MLDSA44-RSA2048-PKCS15-SHA256
-        "1.3.6.1.5.5.7.6.39", // MLDSA44-Ed25519-SHA512
-        "1.3.6.1.5.5.7.6.40", // MLDSA44-ECDSA-P256-SHA256
-        "1.3.6.1.5.5.7.6.41", // MLDSA65-RSA3072-PSS-SHA512
-        "1.3.6.1.5.5.7.6.42", // MLDSA65-RSA3072-PKCS15-SHA512
-        "1.3.6.1.5.5.7.6.43", // MLDSA65-RSA4096-PSS-SHA512
-        "1.3.6.1.5.5.7.6.44", // MLDSA65-RSA4096-PKCS15-SHA512
-        "1.3.6.1.5.5.7.6.45", // MLDSA65-ECDSA-P256-SHA512
-        "1.3.6.1.5.5.7.6.46", // MLDSA65-ECDSA-P384-SHA512
-        "1.3.6.1.5.5.7.6.47", // MLDSA65-ECDSA-brainpoolP256r1-SHA512
-        "1.3.6.1.5.5.7.6.48", // MLDSA65-Ed25519-SHA512
-        "1.3.6.1.5.5.7.6.49", // MLDSA87-ECDSA-P384-SHA512
-        "1.3.6.1.5.5.7.6.50", // MLDSA87-ECDSA-brainpoolP384r1-SHA512
-        "1.3.6.1.5.5.7.6.51", // MLDSA87-Ed448-SHAKE256
-        "1.3.6.1.5.5.7.6.52", // MLDSA87-RSA3072-PSS-SHA512
-        "1.3.6.1.5.5.7.6.53", // MLDSA87-RSA4096-PSS-SHA512
-        "1.3.6.1.5.5.7.6.54", // MLDSA87-ECDSA-P521-SHA512
-    ];
-
-    private static readonly HashSet<string> s_pqcPreHashOids =
-    [
-        // === Pre-hash ML-DSA (.32–.34) ===
-        "2.16.840.1.101.3.4.3.32", // HashML-DSA-44-SHA512
-        "2.16.840.1.101.3.4.3.33", // HashML-DSA-65-SHA512
-        "2.16.840.1.101.3.4.3.34", // HashML-DSA-87-SHA512
-
-        // === Pre-hash SLH-DSA (.35–.46) ===
-        "2.16.840.1.101.3.4.3.35", // HashSLH-DSA-SHA2-128s-SHA256
-        "2.16.840.1.101.3.4.3.36", // HashSLH-DSA-SHA2-128f-SHA256
-        "2.16.840.1.101.3.4.3.37", // HashSLH-DSA-SHA2-192s-SHA512
-        "2.16.840.1.101.3.4.3.38", // HashSLH-DSA-SHA2-192f-SHA512
-        "2.16.840.1.101.3.4.3.39", // HashSLH-DSA-SHA2-256s-SHA512
-        "2.16.840.1.101.3.4.3.40", // HashSLH-DSA-SHA2-256f-SHA512
-        "2.16.840.1.101.3.4.3.41", // HashSLH-DSA-SHAKE-128s-SHAKE128
-        "2.16.840.1.101.3.4.3.42", // HashSLH-DSA-SHAKE-128f-SHAKE128
-        "2.16.840.1.101.3.4.3.43", // HashSLH-DSA-SHAKE-192s-SHAKE256
-        "2.16.840.1.101.3.4.3.44", // HashSLH-DSA-SHAKE-192f-SHAKE256
-        "2.16.840.1.101.3.4.3.45", // HashSLH-DSA-SHAKE-256s-SHAKE256
-        "2.16.840.1.101.3.4.3.46", // HashSLH-DSA-SHAKE-256f-SHAKE256
-    ];
-
-    // Union of pure + pre-hash. Exposed (internal) only as the drift-detection target
-    // against the BCL's MLDsa.KnownOids / SlhDsa.s_knownOids / CompositeMLDsa.s_knownOids
-    // arrays (see PqcOidList_StaysInSyncWithBcl in the test project).
-    internal static readonly HashSet<string> s_pqcSignatureOids =
-    [
-        .. s_pqcPureKeyOids,
-        .. s_pqcPreHashOids,
-    ];
-
     // Allowed signer-certificate public-key algorithm OIDs (SubjectPublicKeyInfo.AlgorithmIdentifier).
     // Classical (RSA, ECDSA) plus every PURE-mode PQC OID. Pre-hash variants are intentionally
-    // excluded — see the s_pqcPureKeyOids / s_pqcPreHashOids comment above.
-    private static readonly HashSet<string> s_allowedPublicKeyOids =
-    [
-        OidRsa,
-        OidEcdsa,
-        .. s_pqcPureKeyOids,
-    ];
+    // excluded — see the s_pqcPureKeyOids / s_pqcPreHashOids comment in SignatureVerifier.PqcOids.cs.
+    //
+    // Allowed digest OIDs (SignerInfo.DigestAlgorithm) — SHA-2 / SHA-3 / SHAKE plus every pure-PQC
+    // OID. The pure-PQC OIDs in s_pqcSignatureOids are ALSO valid as the SignerInfo.DigestAlgorithm
+    // when the signature scheme is pure ML-DSA / SLH-DSA / Composite ML-DSA, because those
+    // schemes do internal hashing and CMS encodes the algorithm-identifier in both fields (see
+    // the s_pqcSignatureOids comment in SignatureVerifier.PqcOids.cs).
+    //
+    // Both sets are populated by the static constructor below — the union is built there rather
+    // than in a field initializer because the PQC tables live in another partial file and the
+    // C# language does not guarantee static-field-initializer ordering across partial files.
+    // Static constructors are guaranteed to run after every field initializer in the type.
+    private static readonly HashSet<string> s_allowedPublicKeyOids;
+    private static readonly HashSet<string> s_allowedDigestOids;
 
-    // The allow-list of digest OIDs (s_allowedDigestOids) lives in
-    // SignatureVerifier.DigestOids.cs (partial-class split).
+    // CA1810 (no explicit static ctor) is suppressed: an explicit static constructor is
+    // required here because the derived sets depend on s_pqcSignatureOids / s_pqcPureKeyOids,
+    // which are declared in another partial file (SignatureVerifier.PqcOids.cs). The C#
+    // language does not specify the relative order of field initializers across partial
+    // declarations, but a static constructor is guaranteed to run AFTER every field
+    // initializer in the type — making this the only well-defined place to build the unions.
+#pragma warning disable CA1810
+    static SignatureVerifier()
+#pragma warning restore CA1810
+    {
+        s_allowedPublicKeyOids = new HashSet<string>(s_pqcPureKeyOids) { OidRsa, OidEcdsa };
+        s_allowedDigestOids = new HashSet<string>(s_pqcSignatureOids)
+        {
+            OidIdSha256,
+            OidIdSha384,
+            OidIdSha512,
+            OidIdSha3_256,
+            OidIdSha3_384,
+            OidIdSha3_512,
+            OidIdShake128,
+            OidIdShake256,
+        };
+    }
 
     // Per-URL timeout the chain engine applies when fetching CRL / OCSP / AIA artifacts during
     // revocation checking. 30s mirrors NuGet's CertificateChainUtility default
@@ -499,11 +382,7 @@ internal static partial class SignatureVerifier
         // 319 102-1) and generalizes naturally to future nested ATSv3 layers where the
         // greatest-genTime TST coincides with the outermost.
         DateTime nowUtc = (nowOverride ?? DateTimeOffset.UtcNow).UtcDateTime;
-        TsaToken latest = tokens[0];
-        for (int i = 1; i < tokens.Count; i++)
-        {
-            if (tokens[i].Time > latest.Time) latest = tokens[i];
-        }
+        TsaToken latest = tokens.MaxBy(static t => t.Time)!;
 
         foreach (TsaToken token in tokens)
         {
