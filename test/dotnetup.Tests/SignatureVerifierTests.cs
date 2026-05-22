@@ -166,13 +166,12 @@ public class SignatureVerifierTests
         // Cryptographic integrity — pinned bytes really do verify against the pinned sig.
         codes.Should().NotContain(FailureCode.SigCryptoInvalid);
         codes.Should().NotContain(FailureCode.SigDecodeFailed);
-        codes.Should().NotContain(FailureCode.SigNotCms);
         codes.Should().NotContain(FailureCode.SigMultipleSigners);
         codes.Should().NotContain(FailureCode.SignerCertMissing);
 
         // Algorithm policy.
         codes.Should().NotContain(FailureCode.WeakDigest);
-        codes.Should().NotContain(FailureCode.WeakSignatureAlgorithm);
+        codes.Should().NotContain(FailureCode.SignatureAlgorithmNotPermitted);
 
         // Signer cert policy (the whole point of the pinning).
         codes.Should().NotContain(FailureCode.SubjectMismatch);
@@ -316,7 +315,7 @@ public class SignatureVerifierTests
     {
         // Same NuGet fixture confirms the algorithm + EKU checks DON'T over-fire on a
         // legitimate Microsoft NuGet signer: SHA-256 digest is allowed (not WeakDigest),
-        // RSA public key is allowed (not WeakSignatureAlgorithm), and the EKU is exactly
+        // RSA public key is allowed (not SignatureAlgorithmNotPermitted), and the EKU is exactly
         // id-kp-codeSigning (not EkuMissing or EkuNotExclusiveCodeSign).
         // CollectAll mode is required: SigCryptoInvalid (the sig was computed over a NuGet
         // package, not our JSON) would otherwise short-circuit before EvaluateAlgorithmPolicy
@@ -330,7 +329,7 @@ public class SignatureVerifierTests
 
         var codes = result.Failures.Select(f => f.Code).ToHashSet();
         codes.Should().NotContain(FailureCode.WeakDigest);
-        codes.Should().NotContain(FailureCode.WeakSignatureAlgorithm);
+        codes.Should().NotContain(FailureCode.SignatureAlgorithmNotPermitted);
         codes.Should().NotContain(FailureCode.EkuMissing);
         codes.Should().NotContain(FailureCode.EkuNotExclusiveCodeSign);
         codes.Should().NotContain(FailureCode.SigMultipleSigners);
@@ -412,7 +411,7 @@ public class SignatureVerifierTests
 
         // SHA-256 is allowed; if WeakDigest fired here we accidentally restricted the policy.
         codes.Should().NotContain(FailureCode.WeakDigest);
-        codes.Should().NotContain(FailureCode.WeakSignatureAlgorithm);
+        codes.Should().NotContain(FailureCode.SignatureAlgorithmNotPermitted);
 
         // Crypto + DN + EKU + timestamp-shape (other than the binding bug) all pass.
         codes.Should().NotContain(FailureCode.SigCryptoInvalid);

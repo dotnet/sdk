@@ -87,7 +87,7 @@ status — surfacing `TrustedRootsEmpty` makes the misconfiguration obvious.
 - The signer certificate MUST be embedded in the CMS `certificates` bag
   and reachable from the signer identifier.
 
-Failures: `SigDecodeFailed`, `SigNotCms`, `SigMultipleSigners`, `SignerCertMissing`.
+Failures: `SigDecodeFailed`, `SigMultipleSigners`, `SignerCertMissing`.
 
 ## 3. Cryptographic integrity
 
@@ -100,12 +100,38 @@ Failure: `SigCryptoInvalid`.
 
 ## 4. Algorithm policy
 
-- Digest algorithm MUST be one of: SHA-2 (256, 384, 512) or SHA-3 (256, 384, 512). SHA-1
-  and MD5 are rejected.
-- Signer public-key algorithm MUST be RSA (`1.2.840.113549.1.1.1`) or
-  ECDSA (`1.2.840.10045.2.1`). DSA and other algorithms are rejected.
+The verifier accepts the following classical and post-quantum algorithm families.
+Within each family, exact OIDs are listed in `SignatureVerifier.cs`.
 
-Failures: `WeakDigest`, `WeakSignatureAlgorithm`.
+**Digest algorithm** (CMS `SignerInfo.digestAlgorithm`):
+
+- SHA-2: SHA-256, SHA-384, SHA-512.
+- SHA-3: SHA3-256, SHA3-384, SHA3-512.
+- SHAKE: SHAKE-128, SHAKE-256 (required for ECDSA-with-SHAKE per RFC 8692 and
+  for SHAKE-flavoured SLH-DSA variants).
+- Pure-PQC algorithm OIDs reused as digest identifiers (see below).
+- SHA-1 / MD5 are rejected.
+
+**Signature algorithm** (signer certificate's `SubjectPublicKeyInfo.algorithm`):
+
+- Classical: RSA (`1.2.840.113549.1.1.1`), ECDSA (`1.2.840.10045.2.1`).
+- Post-quantum (per FIPS 204 / FIPS 205 and `draft-ietf-lamps-cms-ml-dsa` /
+  `draft-ietf-lamps-pq-composite-sigs`, supported by .NET 11's
+  `System.Security.Cryptography.MLDsa` / `SlhDsa` / `CompositeMLDsa`):
+  - **ML-DSA** — ML-DSA-44, ML-DSA-65, ML-DSA-87 (and their pre-hash variants).
+  - **SLH-DSA** — all twelve FIPS-205 variants (SHA2 / SHAKE × 128/192/256 × s/f),
+    pre-hash variants included.
+  - **Composite ML-DSA** — the 18 hybrid algorithms registered under OID arc
+    `1.3.6.1.5.5.7.6.37`–`54` (ML-DSA paired with RSA-PSS / RSA-PKCS#15 / ECDSA / EdDSA).
+- DSA and any other public-key algorithm are rejected.
+
+For pure-PQC signatures, the algorithm OID is repurposed as the `digestAlgorithm`
+identifier per `draft-ietf-lamps-cms-ml-dsa` (the signature scheme does its own
+internal hashing). The verifier therefore accepts the PQC OIDs in *both* the
+digest and public-key allow-lists; `SignedCms.CheckSignature` performs the actual
+cryptographic verification.
+
+Failures: `WeakDigest`, `SignatureAlgorithmNotPermitted`.
 
 ## 5. Signer certificate policy
 
@@ -128,10 +154,14 @@ Failure: `SubjectMismatch`.
 
 ### 5.2 Issuer
 
-The signer certificate's **immediate issuer** Distinguished Name MUST
-consist of exactly the following RDNs (same comparison rules as §5.1).
-This pins the signer to a specific DigiCert code-signing intermediate as
-a defense-in-depth check on top of §6's chain build:
+Pinning the signer's immediate issuer by DN is **not** the cryptographic trust anchor for
+the primary signature — that is the chain build in §6 against the pinned roots in
+`codesignctl.pem`. The DN pin is a *defense-in-depth* check that the cert was issued by
+the specific DigiCert code-signing intermediate the .NET Release signer is configured to
+use.
+
+The signer certificate's **immediate issuer** Distinguished Name MUST consist of exactly
+the following RDNs (same comparison rules as §5.1):
 
 | OID        | Short | Value                                                       |
 | ---------- | ----- | ----------------------------------------------------------- |

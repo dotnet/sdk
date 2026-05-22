@@ -14,7 +14,6 @@ internal enum FailureCode
     TrustedRootsEmpty,
 
     // CMS shape
-    SigNotCms,
     SigDecodeFailed,
     SigMultipleSigners,
     SignerCertMissing,
@@ -22,13 +21,7 @@ internal enum FailureCode
     // Cryptography
     SigCryptoInvalid,
     WeakDigest,
-    WeakSignatureAlgorithm,
-
-    // Signed attributes
-    ContentTypeAttributeInvalid,
-    MessageDigestMismatch,
-    SigningTimeMissing,
-    SigningTimeMismatch,
+    SignatureAlgorithmNotPermitted,
 
     // Certificate policy
     SubjectMismatch,
