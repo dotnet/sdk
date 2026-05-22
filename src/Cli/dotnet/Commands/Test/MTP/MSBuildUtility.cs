@@ -80,11 +80,11 @@ internal static class MSBuildUtility
     {
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
         // so that device-provided RuntimeIdentifiers are included in the build.
-        var devicesByTfm = SolutionAndProjectUtility.SelectDevicesBeforeBuild(projectFilePath, buildOptions);
+        var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(projectFilePath, buildOptions);
 
-        if (devicesByTfm is not null)
+        if (deviceSelection is not null)
         {
-            return BuildPerTfmWithDevices(projectFilePath, buildOptions, devicesByTfm);
+            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection);
         }
 
         int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
@@ -113,14 +113,13 @@ internal static class MSBuildUtility
     private static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) BuildPerTfmWithDevices(
         string projectFilePath,
         BuildOptions buildOptions,
-        Dictionary<string, (string? Device, string? RuntimeIdentifier)> devicesByTfm,
+        SolutionAndProjectUtility.DeviceSelectionResult deviceSelection,
         string? configuration = null,
         string? platform = null)
     {
-        var allModules = new List<TestModule>();
-        bool testTfmsInParallel = true;
+        var allGroups = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
 
-        foreach (var (tfm, (device, rid)) in devicesByTfm)
+        foreach (var (tfm, (device, rid)) in deviceSelection.DevicesByTfm)
         {
             var perTfmArgs = buildOptions.MSBuildArgs;
             if (!string.IsNullOrEmpty(tfm))
@@ -162,13 +161,7 @@ internal static class MSBuildUtility
 
             FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. perTfmBuildOptions.MSBuildArgs], dotnetTestVerb);
 
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
-                perTfmBuildOptions.MSBuildArgs,
-                CommonOptions.CreatePropertyOption(),
-                CommonOptions.CreateRestorePropertyOption(),
-                CommonOptions.CreateMSBuildTargetOption(),
-                CommonOptions.CreateVerbosityOption(),
-                CommonOptions.CreateNoLogoOption());
+            var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(perTfmBuildOptions.MSBuildArgs);
 
             using var collection = new ProjectCollection(
                 globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs),
@@ -179,46 +172,31 @@ internal static class MSBuildUtility
                 projectFilePath, collection, evaluationContext, perTfmBuildOptions, configuration, platform);
             logger?.ReallyShutdown();
 
-            // Read TestTfmsInParallel from the first TFM evaluation
-            if (allModules.Count == 0)
+            allGroups.AddRange(modules);
+        }
+
+        // When TestTfmsInParallel is false, merge all modules into one sequential group
+        if (!deviceSelection.TestTfmsInParallel && allGroups.Count > 1)
+        {
+            var allModules = new List<TestModule>();
+            foreach (var group in allGroups)
             {
-                var projectInstance = SolutionAndProjectUtility.EvaluateProject(collection, evaluationContext, projectFilePath, tfm, configuration, platform);
-                if (bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.TestTfmsInParallel), out bool parsed) ||
-                    bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.BuildInParallel), out parsed))
+                if (group.Modules is not null)
                 {
-                    testTfmsInParallel = parsed;
+                    allModules.AddRange(group.Modules);
+                }
+                else if (group.Module is not null)
+                {
+                    allModules.Add(group.Module);
                 }
             }
 
-            collection.UnloadAllProjects();
-
-            foreach (var moduleGroup in modules)
-            {
-                if (moduleGroup.Modules is not null)
-                {
-                    allModules.AddRange(moduleGroup.Modules);
-                }
-                else if (moduleGroup.Module is not null)
-                {
-                    allModules.Add(moduleGroup.Module);
-                }
-            }
-        }
-
-        // Respect TestTfmsInParallel: group all modules into one sequential group if disabled
-        List<ParallelizableTestModuleGroupWithSequentialInnerModules> result;
-        if (testTfmsInParallel)
-        {
-            result = allModules.Select(m => new ParallelizableTestModuleGroupWithSequentialInnerModules(m)).ToList();
-        }
-        else
-        {
-            result = allModules.Count > 0
+            return (allModules.Count > 0
                 ? [new ParallelizableTestModuleGroupWithSequentialInnerModules(allModules)]
-                : [];
+                : [], 0);
         }
 
-        return (result, 0);
+        return (allGroups, 0);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult)
@@ -393,11 +371,11 @@ internal static class MSBuildUtility
         // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
         foreach (var project in projects)
         {
-            var devicesByTfm = SolutionAndProjectUtility.SelectDevicesBeforeBuild(project.ProjectFilePath, buildOptions, projectCollection, evaluationContext);
+            var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(project.ProjectFilePath, buildOptions, projectCollection, evaluationContext);
 
-            if (devicesByTfm is not null)
+            if (deviceSelection is not null)
             {
-                var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, devicesByTfm, project.Configuration, project.Platform);
+                var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, deviceSelection, project.Configuration, project.Platform);
                 if (exitCode != 0)
                 {
                     return (allProjects, exitCode);

@@ -142,13 +142,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// </summary>
     private static BuildOptions HandleDeviceWithTargetFrameworkSelection(BuildOptions buildOptions)
     {
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
-            buildOptions.MSBuildArgs,
-            CommonOptions.CreatePropertyOption(),
-            CommonOptions.CreateRestorePropertyOption(),
-            CommonOptions.CreateMSBuildTargetOption(),
-            CommonOptions.CreateVerbosityOption(),
-            CommonOptions.CreateNoLogoOption());
+        var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
