@@ -1,6 +1,6 @@
 # Trying Daily Builds Safely
 
-> **Note:** Daily channel support (`daily`, `10.0-daily`, etc.) is being added in [PR #54312](https://github.com/dotnet/sdk/pull/54312). Installing specific pre-release versions by their full version string is already supported. The examples below reflect the intended experience once daily channels are fully available.
+> **Note:** Daily channel support (`daily`, `10.0-daily`, etc.) is being added in [PR #54312](https://github.com/dotnet/sdk/pull/54312). Installing public monthly preview versions by their full version string is already supported. The examples below reflect the intended experience once daily channels are fully available.
 
 Daily builds are the latest CI-produced .NET builds — they haven't gone through the full release process but let you test upcoming features, verify bug fixes, or validate your code against the bleeding edge. `dotnetup` makes it easy to install daily builds alongside your stable installations without affecting your day-to-day workflow.
 
@@ -16,16 +16,12 @@ dotnetup sdk install 10.0-daily
 # Install a daily build for a specific feature band
 dotnetup sdk install 10.0.1xx-daily
 
-# Install a specific pre-release version from the daily feed
+# Install a specific non-public preview version from the daily feed
 dotnetup sdk install 10.0.100-preview.7.25351.1
 
 # Run a command using the dotnetup-managed SDK
 dotnetup dotnet build
 dotnetup dotnet test
-
-# Shorthand for the above
-dotnetup do build
-dotnetup do test
 ```
 
 ## Daily Channels
@@ -70,7 +66,7 @@ When you provide a fully specified pre-release version that isn't in the officia
 
 ## Running Commands with `dotnetup dotnet`
 
-The `dotnetup dotnet` command (shorthand: `dotnetup do`) forwards any arguments to the `dotnet` CLI from your dotnetup-managed install. This is the easiest way to use daily builds without modifying your system PATH:
+The `dotnetup dotnet` command forwards any arguments to the `dotnet` CLI from your dotnetup-managed install. This is the easiest way to use daily builds without modifying your system PATH:
 
 ```
 $ dotnetup dotnet --version

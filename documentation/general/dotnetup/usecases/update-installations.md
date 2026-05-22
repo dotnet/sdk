@@ -1,6 +1,6 @@
 # Updating SDK and Runtime Installations
 
-`dotnetup` tracks your installations by channel, so updating is straightforward — just run `dotnetup update` and every tracked channel resolves to its latest matching version.
+`dotnetup` tracks your installations by channel (and by workspace if you have `global.json` files), so updating is straightforward — just run `dotnetup update` and every tracked channel resolves to its latest matching version.
 
 ## Quick Reference
 
@@ -71,7 +71,7 @@ Installed .NET SDK 10.0.103 to C:\Users\you\.dotnet
 Updated C:\src\myproject\global.json: 10.0.100 → 10.0.103
 ```
 
-This is useful for keeping your project's `global.json` pinned to a recent version while still using a rolling channel for installation tracking.
+This is useful for keeping your project's `global.json` pinned to a consistent minimum version while still using a rolling channel for installation tracking.
 
 ## Updating Runtimes
 

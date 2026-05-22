@@ -21,6 +21,8 @@ Downloading .NET SDK 10.0.102...  ███████████████�
 Installed .NET SDK 10.0.102 to C:\Users\you\.dotnet
 ```
 
+These SDKs are installed into the 'dotnetup install root' and are available for use in your projects. `dotnetup` tracks which versions and channels are required by your projects and ensures that when you install or update new versions that none of your existing projects needs are broken.
+
 ## Channel Resolution from global.json
 
 The combination of `sdk.version` and `sdk.rollForward` determines the channel that dotnetup tracks:
