@@ -295,29 +295,29 @@ Failures: `TimestampMissing`, `TimestampMalformed`,
 `TimestampIssuerMismatch`, `TimestampChainFailed`,
 `TimestampRevocationUnavailable`.
 
-## 8. Signed attributes (PKCS#9, optional)
+## 8. Signed attributes (PKCS#9, intentionally not checked)
 
-PKCS#7/CMS allows a v1 `SignerInfo` with no signed attributes — in which
-case the signature value is computed directly over the encapsulated
-content and is fully validated by §3 (`CheckSignature`). The verifier
-treats PKCS#9 signed attributes as optional:
+PKCS#7/CMS allows a v1 `SignerInfo` with no signed attributes — in which case the
+signature value is computed directly over the encapsulated content and is fully
+validated by §3 (`CheckSignature`). Production .NET release signatures use exactly
+this form: zero `SignedAttributes`, with the RFC 3161 TST in `UnsignedAttributes`.
 
-- If `SignedAttributes` is empty, the verifier accepts the signature on a
-  pure PKCS#7 basis. No `ContentTypeAttributeInvalid`,
-  `MessageDigestMismatch`, or `SigningTimeMissing` failure is emitted.
-- If any signed attribute is present, RFC 5652 requires the signer to
-  also include `content-type` and `message-digest`. The verifier enforces:
+The verifier therefore does not inspect PKCS#9 signed attributes at all:
 
-  | OID                         | Attribute        | Constraint                                                                                          |
-  | --------------------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
-  | `1.2.840.113549.1.9.3`      | `content-type`   | Value MUST be `id-data` (`1.2.840.113549.1.7.1`).                                                   |
-  | `1.2.840.113549.1.9.4`      | `message-digest` | MUST be present; value correctness is covered by `CheckSignature`.                                  |
-  | `1.2.840.113549.1.9.5`      | `signing-time`   | OPTIONAL. If present, MUST be parseable and within ± 5 minutes of the TSA timestamp from §7.        |
+- Cryptographic integrity is covered by `SignedCms.CheckSignature` (§3), which itself
+  enforces the RFC 5652 §5.4 / §11 rules for `content-type` / `message-digest` when
+  signed attributes are present.
+- The `signing-time` attribute (`1.2.840.113549.1.9.5`) is **not** consulted, even when
+  present. RFC 3161 timestamps prove "no later than" and may legitimately be added
+  after the signer's claimed signing-time (per RFC 5126 §6.1.1 renewal); enforcing
+  `signing-time ≤ TSA-time` would treat a self-claim as authoritative against an
+  independently witnessed cryptographic timestamp, and would also create a perverse
+  incentive (omit `signing-time` to escape a check that only applies if you include
+  it). The authoritative signing time used everywhere else in this spec
+  (chain `VerificationTime` in §6, JSON expiration in §9) is `token.TokenInfo.Timestamp`
+  from §7, never `signing-time`.
 
-Failures: `ContentTypeAttributeInvalid`, `MessageDigestMismatch`,
-`SigningTimeMissing` (only emitted when a malformed `signing-time` value
-is present — the name is historical; absence is not a failure),
-`SigningTimeMismatch`.
+No failures are emitted from this section.
 
 ## 9. JSON content policy (manifest only)
 

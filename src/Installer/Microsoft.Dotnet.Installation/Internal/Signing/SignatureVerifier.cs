@@ -58,9 +58,6 @@ internal static class SignatureVerifier
     private const string EkuTimeStamping = "1.3.6.1.5.5.7.3.8";  // id-kp-timeStamping (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
     private const string EkuAnyExtended = "2.5.29.37.0";         // anyExtendedKeyUsage (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
 
-    private const string OidSigningTime = "1.2.840.113549.1.9.5";          // id-signingTime (RFC 5652 §11.3) https://datatracker.ietf.org/doc/html/rfc5652#section-11.3
-    private const string OidContentTypeAttr = "1.2.840.113549.1.9.3";      // id-contentType (RFC 5652 §11.1) https://datatracker.ietf.org/doc/html/rfc5652#section-11.1
-    private const string OidMessageDigestAttr = "1.2.840.113549.1.9.4";    // id-messageDigest (RFC 5652 §11.2) https://datatracker.ietf.org/doc/html/rfc5652#section-11.2
     private const string OidIdData = "1.2.840.113549.1.7.1";               // id-data (RFC 5652 §4) https://datatracker.ietf.org/doc/html/rfc5652#section-4
     private const string OidTimestampToken = "1.2.840.113549.1.9.16.2.14"; // id-aa-signatureTimeStampToken (RFC 3161 Appendix A https://datatracker.ietf.org/doc/html/rfc3161#appendix-A / RFC 5126 §6.1.1 https://datatracker.ietf.org/doc/html/rfc5126#section-6.1.1)
 
@@ -151,6 +148,7 @@ internal static class SignatureVerifier
 
     // SHA-2, SHA-3, SHAKE, and PQC digest-algorithm OIDs (NIST CSOR 2.16.840.1.101.3.4.2;
     // SHA-2 registered in RFC 5754 §2, SHA-3 / SHAKE in RFC 8702 §2).
+    // https://datatracker.ietf.org/doc/html/rfc5754#section-2
     // https://datatracker.ietf.org/doc/html/rfc8702#section-2
     // SHA-1 / MD5 deliberately omitted.
     //
@@ -213,7 +211,6 @@ internal static class SignatureVerifier
         SignedCms? cms = null;
         SignerInfo? signer = null;
         X509Certificate2? signerCert = null;
-        DateTime? claimedSigningTimeUtc = null;
         DateTimeOffset? tsaTimestampUtc = null;
         SignedCms? tsaCms = null;
         X509Certificate2? tsaCert = null;
@@ -228,7 +225,6 @@ internal static class SignatureVerifier
             () => DecodeCms(content, signature, result, out cms, out signer, out signerCert),
             () => EvaluateAlgorithmPolicy(signer, signerCert, result),
             () => EvaluateSignerCertificatePolicy(signerCert, result),
-            () => claimedSigningTimeUtc = TryEvaluateSignedAttributes(signer, result),
             () => (tsaTimestampUtc, tsaCms, tsaCert) = TryEvaluateTimestamp(signer, claimedSigningTimeUtc, result),
             () => EvaluateTimestampChain(tsaCert, tsaCms, tsaTimestampUtc, signer, options, result),
             () => EvaluatePrimaryChain(signerCert, cms, tsaTimestampUtc, options, nowOverride, result),
@@ -394,22 +390,6 @@ internal static class SignatureVerifier
         }
 
         EvaluateEku(signerCert, EkuCodeSigning, primary: true, result);
-    }
-
-    /// <summary>
-    /// PKCS#9 signed-attribute checks (spec §8). Returns the claimed signing time when present,
-    /// for later TSA-drift comparison.
-    /// </summary>
-    private static DateTime? TryEvaluateSignedAttributes(SignerInfo? signer, VerificationResult result)
-    {
-        if (signer is null || signer.SignedAttributes.Count == 0)
-        {
-            return null;
-        }
-
-        EvaluateContentTypeAttribute(signer, result);
-        EvaluateMessageDigestAttribute(signer, result);
-        return TryReadSigningTimeAttribute(signer, result);
     }
 
     private static (DateTimeOffset? Timestamp, SignedCms? TsaCms, X509Certificate2? TsaCert) TryEvaluateTimestamp(
