@@ -322,6 +322,12 @@ internal static class SolutionAndProjectUtility
 
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
+        // If Device is already set via -p:Device=..., skip device selection
+        if (globalProperties.TryGetValue("Device", out var deviceProp) && !string.IsNullOrWhiteSpace(deviceProp))
+        {
+            return null;
+        }
+
         using var collection = new ProjectCollection(globalProperties);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         var projectInstance = ProjectInstance.FromFile(projectFilePath, new ProjectOptions

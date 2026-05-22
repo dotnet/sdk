@@ -339,36 +339,43 @@ internal static class MSBuildUtility
         BuildOptions buildOptions)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
+        var nonDeviceProjects = new List<(string ProjectFilePath, string? Configuration, string? Platform)>();
 
+        // Phase 1: Handle device projects sequentially. Per-TFM builds use in-process MSBuild
+        // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
+        foreach (var project in projects)
+        {
+            var devicesByTfm = SolutionAndProjectUtility.SelectDevicesBeforeBuild(project.ProjectFilePath, buildOptions);
+
+            if (devicesByTfm is not null)
+            {
+                var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, devicesByTfm);
+                if (exitCode == 0)
+                {
+                    foreach (var module in modules)
+                    {
+                        allProjects.Add(module);
+                    }
+                }
+            }
+            else
+            {
+                nonDeviceProjects.Add(project);
+            }
+        }
+
+        // Phase 2: Handle non-device projects in parallel (existing behavior).
         Parallel.ForEach(
-            projects,
+            nonDeviceProjects,
             // We don't use --max-parallel-test-modules here.
             // If user wants to limit the test applications run in parallel, we don't want to punish them and force the evaluation to also be limited.
             new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
             (project) =>
             {
-                // Device selection for this project (same path used by GetProjectsFromProject).
-                // For solutions, the solution build already ran, so the per-TFM rebuild is incremental.
-                var devicesByTfm = SolutionAndProjectUtility.SelectDevicesBeforeBuild(project.ProjectFilePath, buildOptions);
-
-                if (devicesByTfm is not null)
+                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, project.Configuration, project.Platform);
+                foreach (var projectMetadata in projectsMetadata)
                 {
-                    var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, devicesByTfm);
-                    if (exitCode == 0)
-                    {
-                        foreach (var module in modules)
-                        {
-                            allProjects.Add(module);
-                        }
-                    }
-                }
-                else
-                {
-                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, project.Configuration, project.Platform);
-                    foreach (var projectMetadata in projectsMetadata)
-                    {
-                        allProjects.Add(projectMetadata);
-                    }
+                    allProjects.Add(projectMetadata);
                 }
             });
 
