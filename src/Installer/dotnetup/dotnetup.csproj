@@ -60,12 +60,21 @@
   <PropertyGroup>
     <_PublishWasInvokedDirectly Condition="'$(_IsPublishing)' == 'true'">true</_PublishWasInvokedDirectly>
     <_IsPublishing>true</_IsPublishing>
+
+    <!-- Skip the implicit AOT Publish-on-Build when cross-compiling without a cross-toolchain.
+         The AOT linker invokes the host's clang/ld to produce a native binary for $(RuntimeIdentifier);
+         when host arch/OS differ from the target and $(SysRoot) isn't set, the host linker can't link
+         for the target (e.g. ld.bfd: unrecognised emulation mode: aarch64linux). This trips the main
+         SDK CI's TestBuild cross-RID legs that build the whole repo with /p:RuntimeIdentifier set to
+         a non-host RID. The dedicated dotnetup pipeline either targets the host RID or sets SysRoot
+         and so still runs AOT publish here. -->
+    <_DotnetupSkipPublishOnBuild Condition="('$(TargetArchitecture)' != '$(BuildArchitecture)' or '$(TargetOS)' != '$(HostOS)') and '$(SysRoot)' == ''">true</_DotnetupSkipPublishOnBuild>
   </PropertyGroup>
 
   <Target Name="PublishOnBuild"
           AfterTargets="Build"
           DependsOnTargets="Publish"
-          Condition="'$(_PublishWasInvokedDirectly)' != 'true'" />
+          Condition="'$(_PublishWasInvokedDirectly)' != 'true' and '$(_DotnetupSkipPublishOnBuild)' != 'true'" />
 
   <!--
     Lets eng/Publishing.props query the dotnetup SemVer (e.g. 0.1.3-preview.<buildid>) to
