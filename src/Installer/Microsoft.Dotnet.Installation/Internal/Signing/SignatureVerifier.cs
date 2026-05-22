@@ -56,6 +56,24 @@ internal static class SignatureVerifier
     private const string EkuCodeSigning = "1.3.6.1.5.5.7.3.3";   // id-kp-codeSigning (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
     private const string EkuTimeStamping = "1.3.6.1.5.5.7.3.8";  // id-kp-timeStamping (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
     private const string EkuAnyExtended = "2.5.29.37.0";         // anyExtendedKeyUsage (RFC 5280 §4.2.1.12) https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12
+    private const string EkuServerAuth = "1.3.6.1.5.5.7.3.1";    // id-kp-serverAuth (RFC 5280 §4.2.1.12)
+
+    // CA/Browser Forum Code Signing BR §7.1.2.3(f) explicitly permits these EKUs alongside
+    // id-kp-codeSigning on a code-signing leaf. Listing them here lets a CAB-Forum-conformant
+    // .NET Release cert carry them in addition to id-kp-codeSigning without being rejected as
+    // "non-exclusive". Note: this profile applies ONLY to the primary code-signing cert; the
+    // TSA cert keeps strict EKU exclusivity per RFC 3161 §2.3 (see EvaluateTimestampEku).
+    private const string EkuLifetimeSigning = "1.3.6.1.4.1.311.10.3.13";  // Microsoft Authenticode Lifetime Signing
+    private const string EkuEmailProtection = "1.3.6.1.5.5.7.3.4";        // id-kp-emailProtection (RFC 5280 §4.2.1.12)
+    private const string EkuDocumentSigning = "1.3.6.1.4.1.311.3.10.3.12"; // Microsoft Document Signing
+
+    private static readonly HashSet<string> s_codeSigningPermittedEkus =
+    [
+        EkuCodeSigning,
+        EkuLifetimeSigning,
+        EkuEmailProtection,
+        EkuDocumentSigning,
+    ];
 
     private const string OidIdData = "1.2.840.113549.1.7.1";               // id-data (RFC 5652 §4) https://datatracker.ietf.org/doc/html/rfc5652#section-4
     private const string OidTimestampToken = "1.2.840.113549.1.9.16.2.14"; // id-aa-signatureTimeStampToken (RFC 3161 Appendix A https://datatracker.ietf.org/doc/html/rfc3161#appendix-A / RFC 5126 §6.1.1 https://datatracker.ietf.org/doc/html/rfc5126#section-6.1.1)
@@ -574,110 +592,141 @@ internal static class SignatureVerifier
         return true;
     }
 
+    /// <summary>
+    /// Evaluates the Extended Key Usage extension on the primary (code-signing) signer
+    /// certificate. Policy follows CA/Browser Forum Code Signing BR §7.1.2.3(f):
+    /// <list type="bullet">
+    /// <item>Exactly one EKU extension MUST be present (<see cref="FailureCode.EkuMultipleExtensions"/>).</item>
+    /// <item><c>id-kp-codeSigning</c> MUST be present (<see cref="FailureCode.EkuMissing"/>).</item>
+    /// <item><c>anyExtendedKeyUsage</c> and <c>id-kp-serverAuth</c> MUST NOT be present
+    /// (<see cref="FailureCode.EkuNotExclusiveCodeSign"/>).</item>
+    /// <item>Any OID outside the CAB-Forum-permitted set { codeSigning, Lifetime Signing,
+    /// emailProtection, Document Signing } is rejected (<see cref="FailureCode.EkuNotExclusiveCodeSign"/>).</item>
+    /// </list>
+    /// The TSA cert uses a stricter "id-kp-timeStamping only" policy per RFC 3161 §2.3;
+    /// see <see cref="EvaluateTimestampEku"/>.
+    /// </summary>
     private static void EvaluateEku(X509Certificate2 cert, string requiredOid, bool primary, VerificationResult result)
     {
-        X509EnhancedKeyUsageExtension? eku = null;
+            if (ext is X509EnhancedKeyUsageExtension e)
+        if (!TryGetSingleEkuExtension(cert, primary, result, out X509EnhancedKeyUsageExtension? eku))
+        {
+            return;
+        }
+
+        List<string> oids = ReadEkuOids(eku);
+
+        if (!oids.Contains(requiredOid))
+        {
+            result.Add(FailureCode.EkuMissing,
+                $"Certificate '{cert.Subject}' EKU does not contain required OID {requiredOid}. Found: [{string.Join(", ", oids)}].");
+        }
+
+        if (oids.Contains(EkuAnyExtended) || oids.Contains(EkuServerAuth))
+        {
+            result.Add(FailureCode.EkuNotExclusiveCodeSign,
+                $"Certificate '{cert.Subject}' EKU contains a disallowed OID (anyExtendedKeyUsage or id-kp-serverAuth). Found: [{string.Join(", ", oids)}].");
+            return;
+        }
+
+        // Per CAB-Forum BR §7.1.2.3(f), permitted extras for a code-signing leaf are limited
+        // to the set above. Anything else — even an otherwise-innocuous PKIX OID — is
+        // rejected so a misconfigured cert does not silently slip through.
+        foreach (string oid in oids)
+        {
+            if (!s_codeSigningPermittedEkus.Contains(oid))
+            {
+                result.Add(FailureCode.EkuNotExclusiveCodeSign,
+                    $"Certificate '{cert.Subject}' EKU contains disallowed OID '{oid}'. Permitted per CA/Browser Forum BR §7.1.2.3(f): [{string.Join(", ", s_codeSigningPermittedEkus)}].");
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Evaluates the EKU on the TSA certificate. Per RFC 3161 §2.3 the TSA cert
+    /// "MUST contain only one instance of the extended key usage field extension … with
+    /// KeyPurposeID having value: id-kp-timeStamping." CA/Browser Forum BR §7.1.2.3(f)
+    /// reinforces this: the "MAY be present" extras list applies only to code-signing
+    /// leaves; the TSA profile only specifies <c>id-kp-timeStamping</c> (with <c>anyEKU</c>
+    /// and <c>id-kp-serverAuth</c> explicitly forbidden). Strict exclusivity is therefore
+    /// the right policy for the TSA cert — intentionally stricter than the primary
+    /// signer's CAB-Forum-aligned policy in <see cref="EvaluateEku"/>.
+    /// </summary>
+    private static void EvaluateTimestampEku(X509Certificate2 cert, VerificationResult result)
+    {
+        if (!TryGetSingleEkuExtension(cert, primary: false, result, out X509EnhancedKeyUsageExtension? eku))
+        {
+            return;
+        }
+
+        List<string> oids = ReadEkuOids(eku);
+        if (oids.Count != 1 || oids[0] != EkuTimeStamping)
+        {
+            result.Add(FailureCode.TimestampEkuInvalid,
+                $"TSA certificate '{cert.Subject}' EKU must contain exactly {EkuTimeStamping} (id-kp-timeStamping) and nothing else (RFC 3161 §2.3). Found: [{string.Join(", ", oids)}].");
+        }
+    }
+
+    /// <summary>
+    /// Locates the single EKU extension on <paramref name="cert"/>, recording an appropriate
+    /// failure if there are zero or two-plus EKU extensions. RFC 5280 §4.2.1.12 forbids
+    /// multiple EKU extensions on a single certificate (the intended encoding is a single
+    /// extension whose value is a sequence of KeyPurposeID OIDs), but the BCL APIs do not
+    /// outright reject the duplicate-extension shape — so the verifier surfaces it as a
+    /// dedicated failure code instead of silently picking one. Returns <see langword="false"/>
+    /// when no usable extension was found.
+    /// </summary>
+    private static bool TryGetSingleEkuExtension(X509Certificate2 cert, bool primary, VerificationResult result, [NotNullWhen(true)] out X509EnhancedKeyUsageExtension? eku)
+    {
+        eku = null;
+        X509EnhancedKeyUsageExtension? found = null;
+        int count = 0;
         foreach (X509Extension ext in cert.Extensions)
         {
             if (ext is X509EnhancedKeyUsageExtension e)
             {
-                eku = e;
-                break;
+                found = e;
+                count++;
             }
         }
 
-        if (eku is null)
+        if (count == 0)
         {
             result.Add(
                 primary ? FailureCode.EkuMissing : FailureCode.TimestampEkuInvalid,
-                $"Certificate {cert.Subject} has no Extended Key Usage extension.");
-            return;
+                $"Certificate '{cert.Subject}' has no Extended Key Usage extension.");
+            return false;
         }
 
-        var oids = new List<string>(eku.EnhancedKeyUsages.Count);
-        foreach (Oid o in eku.EnhancedKeyUsages)
-        {
-            if (o.Value is not null)
-            {
-                oids.Add(o.Value);
-            }
-        }
-
-        if (oids.Count != 1 || oids[0] != requiredOid || oids.Contains(EkuAnyExtended))
+        if (count > 1)
         {
             result.Add(
-                primary ? FailureCode.EkuNotExclusiveCodeSign : FailureCode.TimestampEkuInvalid,
-                $"Certificate EKU must contain exactly {requiredOid} and nothing else. Found: [{string.Join(", ", oids)}].");
+                primary ? FailureCode.EkuMultipleExtensions : FailureCode.TimestampEkuInvalid,
+                $"Certificate '{cert.Subject}' has {count} Extended Key Usage extensions; RFC 5280 §4.2.1.12 requires exactly one (multiple KeyPurposeID values are encoded as a sequence within a single extension).");
+            return false;
         }
+
+        eku = found; // count == 1 — `found` was assigned exactly once above.
+        return true;
     }
 
-    private static bool TryGetSignedAttribute(SignerInfo signer, string oid, [NotNullWhen(true)] out AsnEncodedData? data)
+    /// <summary>
+    ///
+    /// Every <c>get</c> of <see cref="X509EnhancedKeyUsageExtension.EnhancedKeyUsages"/>
+    /// allocates a fresh <see cref="OidCollection"/> and copies each <see cref="Oid"/> into it
+    /// (see the BCL implementation in <c>X509EnhancedKeyUsageExtension.cs</c>). Callers like
+    /// <see cref="EvaluateEku"/> inspect the EKU 3–4 times; reading the property each time
+    /// would multiply that allocation. We pay it once here.
+    /// </summary>
+    private static List<string> ReadEkuOids(X509EnhancedKeyUsageExtension eku)
     {
-        foreach (CryptographicAttributeObject attr in signer.SignedAttributes)
-        {
-            if (attr.Oid.Value == oid && attr.Values.Count > 0)
-            {
-                data = attr.Values[0];
-                return true;
-            }
-        }
-        data = null;
-        return false;
-    }
-
-    private static bool TryGetUnsignedAttribute(SignerInfo signer, string oid, [NotNullWhen(true)] out AsnEncodedData? data)
-    {
-        foreach (CryptographicAttributeObject attr in signer.UnsignedAttributes)
-        {
-            if (attr.Oid.Value == oid && attr.Values.Count > 0)
-            {
-                data = attr.Values[0];
-                return true;
-            }
-        }
-        data = null;
-        return false;
-    }
-
-    private static void EvaluateContentTypeAttribute(SignerInfo signer, VerificationResult result)
-    {
-        if (!TryGetSignedAttribute(signer, OidContentTypeAttr, out AsnEncodedData? ctData))
-        {
-            result.Add(FailureCode.ContentTypeAttributeInvalid, "Missing signed content-type attribute.");
-            return;
-        }
-        try
-        {
-            string ctOid = AsnDecoder.ReadObjectIdentifier(ctData.RawData, AsnEncodingRules.DER, out _);
-            if (ctOid != OidIdData)
-            {
-                result.Add(FailureCode.ContentTypeAttributeInvalid, $"Signed content-type is {ctOid}; expected id-data.");
-            }
-        }
-        catch (AsnContentException ex)
-        {
-            result.Add(FailureCode.ContentTypeAttributeInvalid, $"Signed content-type attribute malformed: {ex.Message}");
-        }
-    }
-
-    private static void EvaluateMessageDigestAttribute(SignerInfo signer, VerificationResult result)
-    {
-        if (!TryGetSignedAttribute(signer, OidMessageDigestAttr, out _))
-        {
-            result.Add(FailureCode.MessageDigestMismatch, "Missing signed message-digest attribute.");
-        }
-    }
-
-    private static DateTime? TryReadSigningTimeAttribute(SignerInfo signer, VerificationResult result)
-    {
-        if (!TryGetSignedAttribute(signer, OidSigningTime, out AsnEncodedData? stData))
-        {
-            // signingTime is optional under RFC 5652; absence is not a failure.
             return null;
-        }
-        try
+        // Cache the property read — every getter call re-allocates the OidCollection (see XML doc).
+        OidCollection usages = eku.EnhancedKeyUsages;
+        var oids = new List<string>(usages.Count);
+        foreach (Oid o in usages)
         {
-            return new Pkcs9SigningTime(stData.RawData).SigningTime.ToUniversalTime();
         }
         catch (CryptographicException ex)
         {

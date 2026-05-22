@@ -173,12 +173,25 @@ Failure: `IssuerMismatch`.
 
 ### 5.3 Extended Key Usage
 
-- The signer certificate MUST carry an EKU extension.
-- The EKU MUST contain **exactly one** OID: `1.3.6.1.5.5.7.3.3`
-  (`id-kp-codeSigning`).
-- The EKU MUST NOT contain `2.5.29.37.0` (`anyExtendedKeyUsage`).
+Follows CA/Browser Forum Code Signing Baseline Requirements
+[§7.1.2.3(f)](https://cabforum.org/working-groups/code-signing/requirements/#7123-code-signing-and-timestamp-certificate):
 
-Failures: `EkuMissing`, `EkuNotExclusiveCodeSign`.
+- The signer certificate MUST carry **exactly one** EKU extension. RFC 5280 §4.2.1.12
+  encodes multiple KeyPurposeID values as a sequence inside a single extension; carrying
+  two EKU extensions is non-conformant.
+- The EKU MUST contain `1.3.6.1.5.5.7.3.3` (`id-kp-codeSigning`).
+- The EKU MUST NOT contain `2.5.29.37.0` (`anyExtendedKeyUsage`) or
+  `1.3.6.1.5.5.7.3.1` (`id-kp-serverAuth`).
+- The EKU MAY also contain any of the CAB-Forum-permitted extras for code-signing
+  certificates:
+  - `1.3.6.1.4.1.311.10.3.13` (Microsoft Authenticode Lifetime Signing)
+  - `1.3.6.1.5.5.7.3.4` (`id-kp-emailProtection`)
+  - `1.3.6.1.4.1.311.3.10.3.12` (Microsoft Document Signing)
+- Any other OID is rejected.
+
+Failures: `EkuMissing`, `EkuNotExclusiveCodeSign`, `EkuMultipleExtensions`.
+
+The TSA cert (§7) follows a stricter `id-kp-timeStamping`-exclusive profile per RFC 3161 §2.3.
 
 ## 6. Certificate chain
 
