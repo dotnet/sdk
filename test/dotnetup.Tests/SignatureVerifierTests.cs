@@ -616,6 +616,59 @@ public class SignatureVerifierTests
         }
     }
 
+    [Fact]
+    public void Verify_LeafEkuIncludesCabForumPermittedExtras_IsAccepted()
+    {
+        // CA/Browser Forum BR §7.1.2.3(f) permits id-kp-codeSigning leaves to ALSO carry
+        // id-kp-emailProtection, Document Signing, and Microsoft Lifetime Signing. The
+        // verifier must accept that combination (no EkuNotExclusiveCodeSign / EkuMissing).
+        // The fixture's overall chain still won't build to a trusted root (no TSA token,
+        // no real CRL), so IsValid is false — this test only asserts the EKU sub-check
+        // doesn't over-fire on a CAB-Forum-compliant EKU set.
+        byte[] content = Encoding.UTF8.GetBytes("{\"signature\":{\"expiration\":\"2099-01-01T00:00:00Z\"}}");
+        var fixture = BuildTestSignedFixture(
+            content,
+            intermediateEkuOid: null,
+            leafNotAfter: DateTimeOffset.UtcNow.AddYears(2),
+            leafEkuOids: ["1.3.6.1.5.5.7.3.3", "1.3.6.1.5.5.7.3.4", "1.3.6.1.4.1.311.3.10.3.12"]); // codeSigning + emailProtection + Document Signing
+        using (fixture.Root) using (fixture.Intermediate) using (fixture.Leaf)
+        {
+            var result = SignatureVerifier.Verify(
+                content,
+                fixture.Signature,
+                BuildOptionsTrusting(fixture.Root),
+                mode: VerificationMode.CollectAll);
+
+            var codes = result.Failures.Select(f => f.Code).ToHashSet();
+            codes.Should().NotContain(FailureCode.EkuMissing);
+            codes.Should().NotContain(FailureCode.EkuNotExclusiveCodeSign,
+                "CAB-Forum BR §7.1.2.3(f) explicitly permits id-kp-emailProtection and Document Signing alongside id-kp-codeSigning on a code-signing leaf");
+            codes.Should().NotContain(FailureCode.EkuMultipleExtensions);
+        }
+    }
+    [Fact]
+    public void Verify_LeafEkuContainsServerAuth_FlagsEkuNotExclusiveCodeSign()
+    {
+        // CAB-Forum BR §7.1.2.3(f) explicitly forbids id-kp-serverAuth on a code-signing
+        // leaf. Confirm it's rejected even when id-kp-codeSigning is also present.
+        byte[] content = Encoding.UTF8.GetBytes("{\"signature\":{\"expiration\":\"2099-01-01T00:00:00Z\"}}");
+        var fixture = BuildTestSignedFixture(
+            content,
+            intermediateEkuOid: null,
+            leafNotAfter: DateTimeOffset.UtcNow.AddYears(2),
+            leafEkuOids: ["1.3.6.1.5.5.7.3.3", "1.3.6.1.5.5.7.3.1"]); // codeSigning + serverAuth
+        using (fixture.Root) using (fixture.Intermediate) using (fixture.Leaf)
+        {
+            var result = SignatureVerifier.Verify(
+                content,
+                fixture.Signature,
+                BuildOptionsTrusting(fixture.Root),
+                mode: VerificationMode.CollectAll);
+
+            result.Failures.Select(f => f.Code).Should().Contain(FailureCode.EkuNotExclusiveCodeSign);
+            result.IsValid.Should().BeFalse();
+        }
+    }
     // ---------------- Test-fixture helpers (in-process cert minting) ----------------
 
     /// <summary>

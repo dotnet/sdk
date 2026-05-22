@@ -28,6 +28,7 @@ internal enum FailureCode
     IssuerMismatch,
     EkuMissing,
     EkuNotExclusiveCodeSign,
+    EkuMultipleExtensions,
 
     // Chain
     ChainBuildFailed,
