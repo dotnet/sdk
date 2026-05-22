@@ -30,6 +30,9 @@ parameters:
   runtimeSourceProperties: ''
   officialBuildProperties: ''
   downloadManifestMsiPackages: false
+  # Lets a build be scoped to a specific project or solution, for example by setting
+  # this to `/p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf`
+  projectsArgument: ''
   ### ARCADE ###
   preSteps: []
 
@@ -97,6 +100,7 @@ jobs:
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
+          ${{ parameters.projectsArgument }}
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
@@ -121,6 +125,7 @@ jobs:
           /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
           /p:TargetRid=${{ parameters.runtimeIdentifier }} \
+          ${{ parameters.projectsArgument }} \
           ${{ parameters.osProperties }} \
           ${{ parameters.runtimeSourceProperties }} \
           ${{ parameters.officialBuildProperties }} \

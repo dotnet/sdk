@@ -11,4 +11,26 @@
     <DotnetupVersionPrefix>0.1.3</DotnetupVersionPrefix>
     <DotnetupPreReleaseVersionLabel>preview</DotnetupPreReleaseVersionLabel>
   </PropertyGroup>
+
+  <!-- Shared properties for the dotnetup family of projects (dotnetup, dotnetup.Library,
+       Microsoft.Dotnet.Installation). Individual projects can still override these.
+       TargetFramework is intentionally NOT set here — some tooling gets confused when
+       TargetFramework isn't set directly in the project file. -->
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- Versioning -->
+    <VersionPrefix>$(DotnetupVersionPrefix)</VersionPrefix>
+    <PreReleaseVersionLabel>$(DotnetupPreReleaseVersionLabel)</PreReleaseVersionLabel>
+
+    <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build.
+         EnforceCodeStyleInBuild=false  prevents IDE* code-style analyzers from running during build.
+         CodeAnalysisTreatWarningsAsErrors=false  keeps CA* analyzer warnings as warnings instead of errors.
+         WarningsNotAsErrors demotes Meziantou MA0051 (method too long) so it stays a warning under TreatWarningsAsErrors. -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);MA0051</WarningsNotAsErrors>
+  </PropertyGroup>
 </Project>
