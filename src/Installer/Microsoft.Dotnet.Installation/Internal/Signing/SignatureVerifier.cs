@@ -35,9 +35,8 @@ internal static partial class SignatureVerifier
 
     private static readonly HashSet<string> s_allowedPublicKeyOids;
     private static readonly HashSet<string> s_allowedDigestOids;
-#pragma warning disable CA1810
+
     static SignatureVerifier()
-#pragma warning restore CA1810
     {
         s_allowedPublicKeyOids = new HashSet<string>(s_pqcPureKeyOids) { OidRsa, OidEcdsa };
         s_allowedDigestOids = new HashSet<string>(s_pqcSignatureOids)
@@ -73,10 +72,6 @@ internal static partial class SignatureVerifier
         DateTimeOffset? nowOverride = null,
         VerificationMode mode = VerificationMode.ShortCircuit)
     {
-        ArgumentNullException.ThrowIfNull(content);
-        ArgumentNullException.ThrowIfNull(signature);
-        ArgumentNullException.ThrowIfNull(options);
-
         var result = new VerificationResult(shortCircuit: mode == VerificationMode.ShortCircuit);
 
         SignedCms? cms = null;
@@ -85,10 +80,6 @@ internal static partial class SignatureVerifier
         DateTimeOffset? tsaTimestampUtc = null;
         IReadOnlyList<TsaToken> tsaTokens = Array.Empty<TsaToken>();
 
-        // Pipeline of verification steps. Steps run in order; in ShortCircuit mode the loop
-        // bails as soon as any step records a failure. Centralizing the gate here keeps each
-        // step focused on its own check and avoids repeating the short-circuit guard at every
-        // call site.
         var steps = new Action[]
         {
             () => EvaluateTrustedRootOptions(options, result),
@@ -112,9 +103,6 @@ internal static partial class SignatureVerifier
         finally
         {
             // Dispose the X509Certificate2 handles we surfaced from the CMS structures.
-            // The chain engine's copies (X509ChainElement.Certificate) are disposed inside
-            // EvaluateChain; these are the *original* handles obtained from
-            // SignerInfo.Certificate / Rfc3161TimestampToken.VerifySignatureForSignerInfo.
             // Releasing them eagerly avoids finalizer-queue pressure on long-lived hosts.
             signerCert?.Dispose();
             foreach (TsaToken token in tsaTokens)
@@ -203,11 +191,8 @@ internal static partial class SignatureVerifier
         {
             // verifySignatureOnly:true checks message-digest + signature-value only.
             // We deliberately do NOT let CheckSignature build the chain here: passing false
-            // would build it against the OS root store with default ChainPolicy — no
-            // CustomTrustStore (so our pinned codesignctl.pem / timestampctl.pem roots are
-            // ignored), no ApplicationPolicy EKU pin, no TSA-anchored VerificationTime, no
-            // EntireChain revocation, no UntrustedRoot retry. EvaluatePrimaryChain and
-            // EvaluateTimestampChain build both chains explicitly with the spec policy.
+            // would build it against the OS root store with default ChainPolicy.
+            // EvaluateTimestampChain builds both chains explicitly with the spec policy.
             cms.CheckSignature(verifySignatureOnly: true);
         }
         catch (CryptographicException ex)
@@ -246,11 +231,8 @@ internal static partial class SignatureVerifier
     /// <see cref="VerificationResult.AddSkip"/> rather than a fresh failure: the missing
     /// signer / signer-cert is already surfaced upstream by <see cref="DecodeCms"/> as one of
     /// <see cref="FailureCode.SigDecodeFailed"/>, <see cref="FailureCode.SigMultipleSigners"/>,
-    /// or <see cref="FailureCode.SignerCertMissing"/>. Adding another failure here would
-    /// just be a duplicate of the same root cause; the skip is a diagnostic breadcrumb in
-    /// collect-all output that says "this check ran but had no input." The same pattern is
-    /// used in <see cref="EvaluateSignerCertificatePolicy"/>, <see cref="EvaluateTimestamp"/>,
-    /// and <see cref="EvaluatePrimaryChain"/>.
+    /// or <see cref="FailureCode.SignerCertMissing"/>.
+    /// The same pattern is used in <see cref="EvaluateSignerCertificatePolicy"/>, <see cref="EvaluateTimestamp"/>, and <see cref="EvaluatePrimaryChain"/>.
     /// </remarks>
     private static void EvaluateAlgorithmPolicy(SignerInfo? signer, X509Certificate2? signerCert, VerificationResult result)
     {
@@ -315,18 +297,7 @@ internal static partial class SignatureVerifier
     /// issuer-DN pins, and the TST with the greatest <c>genTime</c> must additionally
     /// build at the current clock. Failing any single TSA invalidates the signature.
     /// </summary>
-    /// <remarks>
-    /// Standard PKI long-term-validation pattern (RFC 3161 page 15; same intent as the
-    /// CAdES-A `archive-time-stamp` renewal pattern in RFC 5126 §6.1).
-    /// RFC 3161 timestamping is required; reaching the empty-input branch means
-    /// <see cref="EvaluateTimestamp"/> already recorded one of
-    /// <see cref="FailureCode.TimestampMissing"/>,
-    /// <see cref="FailureCode.TimestampMalformed"/>, or
-    /// <see cref="FailureCode.TimestampBindingInvalid"/>, so <c>result.IsValid</c> is already
-    /// false. In short-circuit mode (the production default) this branch is unreachable; in
-    /// collect-all mode the skip is a diagnostic breadcrumb only. Same pattern as
-    /// <see cref="EvaluateAlgorithmPolicy"/>.
-    /// </remarks>
+
     private static void EvaluateTimestampChains(
         IReadOnlyList<TsaToken> tokens,
         SignerInfo? signer,
@@ -348,8 +319,7 @@ internal static partial class SignatureVerifier
         // SignerInfo.signature value (not nested ATSv3 archive-time-stamps). The TST with the
         // greatest genTime is the signer's most recent attestation; that one is also re-validated
         // against the current clock inside the loop below as a freshness anchor (see comment
-        // there for the threat model). Defense-in-depth in the CAdES long-term-validation spirit
-        // (RFC 5126 §6.1 `archive-time-stamp` renewal; ETSI EN 319 102-1).
+        // there for the threat model).
         DateTime nowUtc = (nowOverride ?? DateTimeOffset.UtcNow).UtcDateTime;
         TsaToken latest = tokens.MaxBy(static t => t.Time)!;
 
@@ -362,11 +332,6 @@ internal static partial class SignatureVerifier
                 result.Add(FailureCode.TimestampIssuerMismatch, tsaIssuerDetail);
             }
 
-            // Anchor the TSA chain to the TSA's own genTime. This decouples release lifetime
-            // from DigiCert's TSA cert rotation schedule — a release timestamped by a
-            // now-expired TSA leaf still verifies *as a historical attestation*, because the
-            // chain is evaluated as it stood at the moment of timestamping. Freshness is
-            // enforced separately below for the greatest-genTime TST.
             BuildTimestampChain(token, options, token.Time.UtcDateTime, result);
 
             if (ReferenceEquals(token, latest))
@@ -375,10 +340,6 @@ internal static partial class SignatureVerifier
                 // build at the current clock. Without this an attacker could replay an old
                 // captured signature whose TSA cert has since been revoked or expired (the
                 // historical-genTime build can't see CRL/OCSP entries dated after that genTime).
-                // In normal manifest operation this is a no-op — DigiCert TSA cert lifetimes
-                // (years) vastly exceed the release re-sign cadence plus §9 expiresOn windows.
-                // The check matters for (a) the planned archive `.p7s` path with no §9 backstop
-                // and (b) post-genTime TSA-cert revocations.
                 BuildTimestampChain(token, options, nowUtc, result);
             }
         }
@@ -402,12 +363,7 @@ internal static partial class SignatureVerifier
     }
 
     /// <summary>
-    /// Builds the primary signer chain at the TSA-attested time when available. The
-    /// fallback branch (no TSA timestamp) is reachable only in CollectAll mode after an
-    /// upstream <see cref="FailureCode.TimestampMissing"/> / <see cref="FailureCode.TimestampMalformed"/>
-    /// / <see cref="FailureCode.TimestampBindingInvalid"/> has already invalidated the
-    /// result; the diagnostic skip names the substituted clock so the caller can read
-    /// downstream chain-build output in context.
+    /// Builds the primary signer chain at the TSA-attested time when available.
     /// </summary>
     private static void EvaluatePrimaryChain(
         X509Certificate2? signerCert,
@@ -465,8 +421,6 @@ internal static partial class SignatureVerifier
 
         EvaluateJsonExpiration(content, tsaTimestampUtc.Value, nowOverride ?? DateTimeOffset.UtcNow, result);
     }
-
-    // ---------------- Helpers ----------------
 
     private static bool DistinguishedNameMatches(
         X500DistinguishedName dn,
@@ -574,12 +528,7 @@ internal static partial class SignatureVerifier
     /// <summary>
     /// Evaluates the EKU on the TSA certificate. Per RFC 3161 §2.3 the TSA cert
     /// "MUST contain only one instance of the extended key usage field extension … with
-    /// KeyPurposeID having value: id-kp-timeStamping." CA/Browser Forum BR §7.1.2.3(f)
-    /// reinforces this: the "MAY be present" extras list applies only to code-signing
-    /// leaves; the TSA profile only specifies <c>id-kp-timeStamping</c> (with <c>anyEKU</c>
-    /// and <c>id-kp-serverAuth</c> explicitly forbidden). Strict exclusivity is therefore
-    /// the right policy for the TSA cert — intentionally stricter than the primary
-    /// signer's CAB-Forum-aligned policy in <see cref="EvaluateEku"/>.
+    /// KeyPurposeID having value: id-kp-timeStamping."
     /// </summary>
     private static void EvaluateTimestampEku(X509Certificate2 cert, VerificationResult result)
     {
@@ -598,12 +547,7 @@ internal static partial class SignatureVerifier
 
     /// <summary>
     /// Locates the single EKU extension on <paramref name="cert"/>, recording an appropriate
-    /// failure if there are zero or two-plus EKU extensions. RFC 5280 §4.2.1.12 forbids
-    /// multiple EKU extensions on a single certificate (the intended encoding is a single
-    /// extension whose value is a sequence of KeyPurposeID OIDs), but the BCL APIs do not
-    /// outright reject the duplicate-extension shape — so the verifier surfaces it as a
-    /// dedicated failure code instead of silently picking one. Returns <see langword="false"/>
-    /// when no usable extension was found.
+    /// failure if there are zero or two-plus EKU extensions.
     /// </summary>
     private static bool TryGetSingleEkuExtension(X509Certificate2 cert, bool primary, VerificationResult result, [NotNullWhen(true)] out X509EnhancedKeyUsageExtension? eku)
     {
@@ -641,12 +585,7 @@ internal static partial class SignatureVerifier
 
     /// <summary>
     /// Materializes the EKU's KeyPurposeId OIDs into a plain <see cref="List{T}"/> of strings.
-    ///
-    /// Every <c>get</c> of <see cref="X509EnhancedKeyUsageExtension.EnhancedKeyUsages"/>
-    /// allocates a fresh <see cref="OidCollection"/> and copies each <see cref="Oid"/> into it
-    /// (see the BCL implementation in <c>X509EnhancedKeyUsageExtension.cs</c>). Callers like
-    /// <see cref="EvaluateEku"/> inspect the EKU 3–4 times; reading the property each time
-    /// would multiply that allocation. We pay it once here.
+    /// Prevents reallocating a fresh <see cref="OidCollection"/> which is what .EnhancedKeyUsages does.
     /// </summary>
     private static List<string> ReadEkuOids(X509EnhancedKeyUsageExtension eku)
     {
@@ -685,20 +624,6 @@ internal static partial class SignatureVerifier
         }
 
         // Collect every id-aa-signatureTimeStampToken unsigned-attribute value. RFC 3161
-        // §2.4.2 defines the attribute as a SET OF TimeStampToken, so the attribute may
-        // legitimately appear with multiple tokens (each a separate TSA witness — for
-        // example, renewal tokens added later as the original TSA cert ages towards
-        // expiry, in the CAdES long-term-validation spirit of RFC 5126 §6.1
-        // `archive-time-stamp`). The verifier ACCEPTS multiple tokens and validates ALL of
-        // them: every token must decode, every token must cryptographically bind to the
-        // primary signer's EncryptedDigest, every TSA chain must build (see
-        // EvaluateTimestampChains). The earliest token's `genTime` is used as the
-        // authoritative signing time for the primary chain's VerificationTime (§6) and the
-        // JSON expiration check (§9). Earliest is the most conservative anchor: the signer
-        // cert had to be valid at that point, and later renewal TSTs only EXTEND trust into
-        // the future, never relax it. Because every TST is validated end-to-end, an attacker
-        // cannot smuggle anything past the verifier by adding extra tokens — each one is
-        // another mandatory check.
         var rawTokens = CollectTimestampTokenBytes(primarySigner);
         if (rawTokens.Count == 0)
         {
@@ -808,10 +733,6 @@ internal static partial class SignatureVerifier
         }
         catch (CryptographicException ex)
         {
-            // X509Chain.Build can throw on serious BCL/OS issues (corrupt intermediate,
-            // OOM during CRL parse, etc.). Map to the role-appropriate generic failure
-            // code rather than propagating; the chain itself still owns no elements to
-            // dispose in this path, so no finally block is required.
             var (role, _, _, genericCode) = GetChainCodes(kind);
             result.Add(genericCode, $"{role} chain build threw {ex.GetType().Name}: {ex.Message}");
             return;
@@ -823,10 +744,6 @@ internal static partial class SignatureVerifier
         }
         finally
         {
-            // Dispose each chain element's certificate eagerly. X509Certificate2 implements
-            // IDisposable; without explicit Dispose() the underlying handle is released only
-            // by the finalizer, which adds finalization-queue pressure on hot paths. Mirrors
-            // NuGet's X509ChainHolder.Dispose.
             foreach (X509ChainElement element in chain.ChainElements)
             {
                 element.Certificate.Dispose();
@@ -837,8 +754,8 @@ internal static partial class SignatureVerifier
     /// <summary>
     /// Sets up <see cref="X509ChainPolicy"/>: <see cref="X509ChainTrustMode.CustomRootTrust"/>
     /// against ONLY the explicitly-supplied <paramref name="customRoots"/> (the pinned PEMs
-    /// in <c>codesignctl.pem</c> / <c>timestampctl.pem</c>) — the OS root store is intentionally
-    /// NOT merged in. Entire-chain revocation, EKU enforcement at chain-build time
+    /// in <c>codesignctl.pem</c> / <c>timestampctl.pem</c>)
+    /// ntire-chain revocation, EKU enforcement at chain-build time
     /// (defense-in-depth on top of the leaf-only EKU bag check), and a strict
     /// <see cref="X509VerificationFlags.NoFlag"/> (release manifests are FRESH artifacts so we
     /// surface NotTimeValid as a failure rather than ignoring it).
@@ -881,12 +798,6 @@ internal static partial class SignatureVerifier
 
         chain.ChainPolicy.ExtraStore.AddRange(extraStore);
         chain.ChainPolicy.CustomTrustStore.AddRange(customRoots);
-        // OS root store is NOT merged in. The bundled codesignctl.pem / timestampctl.pem
-        // already contain the DigiCert root anchors that the .NET Release signer chains to;
-        // augmenting them with the OS-root union would (a) silently widen trust beyond what
-        // the pinned CTLs declare, and (b) re-introduce a snapshot-vs-live consistency
-        // problem if the system store is rotated during a long-lived process. Spec
-        // signature-verification.md §6 / §11 documents this as intentional.
     }
 
     /// <summary>

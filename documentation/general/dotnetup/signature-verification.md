@@ -2,12 +2,11 @@
 
 This document describes the detached CMS / PKCS#7 signatures (`.p7s`)
 that dotnetup accepts when verifying .NET release artifacts (manifest
-JSON files and release archives such as `.zip` / `.tar.gz`). It lists
-the checks the verifier performs, in order, and the `FailureCode` each
-one emits on rejection. Descriptive prose explains what the in-tree
+JSON files and release archives such as `.zip` / `.tar.gz`).
+
+Descriptive prose explains what the in-tree
 verifier does and why; the **MUST** clauses are normative — a signature
-that fails any of them is not a valid .NET release signature and
-dotnetup will reject it.
+that fails any of them is not a valid .NET release signature.
 
 The verifier is implemented by the internal `SignatureVerifier` class in
 the `Microsoft.Dotnet.Installation` library. It is cross-platform (Windows,
@@ -21,10 +20,9 @@ named for dotnetup, the acceptance rules below apply to any tool that
 consumes a `.p7s` covering a .NET release artifact — for example the
 install scripts (`dotnet-install.sh` / `dotnet-install.ps1`) or other
 in-house installers. Such consumers may layer additional concerns on
-top (e.g. offline-revocation support for air-gapped scenarios), but the
-normative bar below is the floor.
+top (e.g. offline-revocation support for air-gapped scenarios).
 
-> **TODO:** Manifest verification covers archives transitively: the
+> Manifest verification covers archives transitively: the
 > signed manifest pins each archive's SHA-512, and the archive download
 > path validates that hash before extraction, so re-verifying every
 > `.zip` / `.tar.gz` against its own `.p7s` would be redundant and slow
@@ -57,15 +55,10 @@ Callers pass:
 
 The `Microsoft.Dotnet.Installation` library bundles `codesignctl.pem` and
 `timestampctl.pem` (sourced from `src/Layout/redist/trustedroots/`) and
-loads them as the default trust anchors via `DefaultSignatureOptions`. The
-PEMs are Certificate Trust Lists — concatenations of PEM-encoded X.509
-certificates.
+loads them as the default trust anchors via `DefaultSignatureOptions`. These are automatically synced via SDK codeflow from `main`.
 
 When either trusted-root collection is empty, the verifier emits
-`TrustedRootsEmpty`. Because the chain build's `CustomTrustStore` is exactly the supplied
-roots (no OS-store union; see §6), an empty trusted-root collection would otherwise leave
-the chain engine with no anchors at all and every chain build would fail with a generic
-status — surfacing `TrustedRootsEmpty` makes the misconfiguration obvious.
+`TrustedRootsEmpty`.
 
 ## 2. Container format
 
@@ -91,7 +84,10 @@ Failure: `SigCryptoInvalid`.
 
 ## 4. Algorithm policy
 
-The verifier accepts the following classical and post-quantum algorithm families.
+The verifier accepts the following classical and post-quantum algorithm families based upon what the dotnet runtime supports: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Security/Cryptography/Oids.cs
+
+There is a test hook which will warn if the runtime supports new algorithms we do not yet support - but since we are only trying to validate a specific signature where the algorithm will not change without notice, this could be considered overkill.
+
 Within each family, exact OIDs are listed in `SignatureVerifier.cs`.
 
 **Digest algorithm** (CMS `SignerInfo.digestAlgorithm`):
@@ -128,47 +124,6 @@ SPKI identifies the *key type*, not a particular signing operation —
 the signing-time choice (e.g. pure vs. pre-hash, RSA-PSS vs.
 RSA-PKCS#1 v1.5) is carried separately in
 `SignerInfo.signatureAlgorithm` on each individual signature.
-
-This distinction matters here because the post-quantum schemes define
-both a "pure" mode (the algorithm hashes the message itself internally)
-and a "pre-hash" mode (HashML-DSA, HashSLH-DSA — the caller hashes the
-message first and feeds the digest in). The two modes share the same
-underlying key but use different OIDs. The PKIX profile drafts for
-those schemes restrict the SPKI `AlgorithmIdentifier` to the
-**pure-mode** OIDs and explicitly disallow the pre-hash variants in a
-certificate's public-key position (the pre-hash choice is a
-per-signature decision, not a property of the key). See:
-
-- [FIPS 204 — ML-DSA](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)
-  defines the algorithm itself; pure ML-DSA is §5; HashML-DSA pre-hash
-  variant is §5.4.
-- [`draft-ietf-lamps-dilithium-certificates`](https://datatracker.ietf.org/doc/draft-ietf-lamps-dilithium-certificates/)
-  ("ML-DSA in Certificates"): "[FIPS204] defines two variants of ML-DSA:
-  a pure and a pre-hash variant. **Only the former is specified in this
-  document.**" The rationale (operational ambiguity for verifiers,
-  weakened collision resistance) is in §8.3.
-- [FIPS 205 — SLH-DSA](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf)
-  and [`draft-ietf-lamps-x509-slhdsa`](https://datatracker.ietf.org/doc/draft-ietf-lamps-x509-slhdsa/)
-  apply the same restriction to SLH-DSA.
-- [`draft-ietf-lamps-pq-composite-sigs`](https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-sigs/)
-  registers the 18 Composite ML-DSA OIDs under `1.3.6.1.5.5.7.6.37`–`54`.
-
-Accordingly the verifier accepts only pure-mode OIDs in the SPKI
-position:
-
-- Classical: RSA (`1.2.840.113549.1.1.1`), ECDSA (`1.2.840.10045.2.1`).
-- Post-quantum (supported by .NET 11's
-  `System.Security.Cryptography.MLDsa` / `SlhDsa` / `CompositeMLDsa`):
-  - **ML-DSA** — ML-DSA-44, ML-DSA-65, ML-DSA-87
-    (`2.16.840.1.101.3.4.3.17`–`19`).
-  - **SLH-DSA** — all twelve FIPS-205 variants
-    (SHA2 / SHAKE × 128/192/256 × s/f, `2.16.840.1.101.3.4.3.20`–`31`).
-  - **Composite ML-DSA** — the 18 hybrid algorithms under
-    `1.3.6.1.5.5.7.6.37`–`54` (ML-DSA paired with RSA-PSS / RSA-PKCS#15 /
-    ECDSA / EdDSA).
-- DSA, pre-hash PQC OIDs in the SPKI position
-  (`2.16.840.1.101.3.4.3.32`–`46`), and any other public-key algorithm
-  are rejected.
 
 For pure-PQC signatures the algorithm OID is repurposed as the CMS
 `digestAlgorithm` identifier — per
@@ -249,15 +204,12 @@ The verifier builds an `X509Chain` for the signer certificate with:
 
 - `TrustMode = CustomRootTrust`.
 - `CustomTrustStore` = **exactly** `options.TrustedCodeSigningRoots` (the pinned PEMs in
-  `codesignctl.pem`). The OS root store is intentionally NOT merged in: the bundled CTL
-  already contains the DigiCert root anchors the .NET Release signer chains to, and
-  augmenting them with the system store would silently widen trust beyond what the pinned
-  CTL declares and reintroduce a snapshot-vs-live consistency problem on long-lived
-  processes if the system store is rotated. See §11 (non-goals).
+  `codesignctl.pem`). The OS root store is intentionally NOT merged in. See §11 (non-goals).
 - `ExtraStore` = the CMS certificate bag from §2. Intermediate
   certificates for both the primary signature and the timestamp signature
   (§7) MUST be embedded in their respective CMS certificate bags; the
   verifier does not follow AIA URLs.
+
 - `RevocationMode` is configurable via `options.RevocationMode`:
   - `Online` (default, recommended): CRL/OCSP MUST succeed; fail closed
     when unreachable.
@@ -278,13 +230,6 @@ The verifier builds an `X509Chain` for the signer certificate with:
   even if the signature was valid at issuance. NuGet's package
   verification path ignores `NotTimeValid` because packages are immutable
   historical artifacts; release artifacts are not.
-
-On chain build failure the verifier surfaces the chain status mapping below; it
-does **not** retry. (NuGet's `RetriableX509ChainBuildPolicy` retries on Windows
-`UntrustedRoot` because the OS root store can transiently report that under load,
-but that path only matters when the OS store is in scope. We use a pinned
-`CustomRootTrust` and the OS store is intentionally NOT consulted, so the transient
-doesn't apply here.)
 
 After chain evaluation the verifier disposes every
 `X509ChainElement.Certificate` to avoid finalizer pressure on the OS
@@ -374,13 +319,6 @@ to:
     a multi-TST set is evaluated independently at its own `genTime`
     (RFC 3161 §2.4.2 permits a SET OF `TimeStampToken` in the
     `id-aa-signatureTimeStampToken` unsigned attribute).
-  - **Freshness anchor.** In addition to the historical build above, the TST with the
-    greatest `genTime` MUST also build cleanly at the current UTC clock. Rationale,
-    threat model, and design-choice citations are in the *"Freshness anchors — what
-    we check and why"* callout below.
-  - Failure mapping: a revoked TSA cert → `TimestampChainFailed`;
-    revocation status unreachable → `TimestampRevocationUnavailable`;
-    any other chain failure → `TimestampChainFailed`.
 
 The "authoritative signing time" used everywhere else (cert validity
 window, JSON policy) is `token.TokenInfo.Timestamp` (UTC). The PKCS#9
@@ -398,37 +336,6 @@ window, JSON policy) is `token.TokenInfo.Timestamp` (UTC). The PKCS#9
 > archives themselves are integrity-bound by the manifest's SHA-512 pins rather than
 > by direct CMS signatures today.)
 
-> **Freshness anchors — what we check and why.**
-> Anchoring each TSA chain at its own `genTime` (RFC 3161 page 15) is the right call for
-> certificate-validity, but on its own it does **not** prevent an attacker from replaying
-> an arbitrarily old captured signature: every TST will still verify against the historical
-> cert state it was issued under, forever. Two independent freshness anchors guard
-> against that:
->
-> 1. **§9 JSON `expiresOn`**, evaluated against current UTC. This is the primary policy
->    backstop for manifests — `expiresOn` is monotonically advanced on every monthly
->    re-sign, so a stale-replayed manifest is rejected here long before any TSA-cert
->    window matters.
-> 2. **Greatest-`genTime` TST chain at current UTC**, evaluated by
->    `EvaluateTimestampChains`. The most-recent TST's TSA cert must still be valid
->    *now* — i.e. someone with TSA cooperation has re-timestamped within that cert's
->    lifetime. In normal manifest operation this is a no-op (today's manifests carry a
->    single TST whose TSA cert lifetime vastly exceeds the monthly re-sign + §9
->    `expiresOn` window) and the greatest-`genTime` selection only matters if multiple
->    sibling TSTs ever appear. For manifests it is defense-in-depth on top of §9; for
->    the planned archive `.p7s` verification path in §1's TODO list (no `expiresOn`
->    exists for archives) it will become the sole freshness anchor. This is a design
->    choice rather than a literal RFC clause — it tracks the CAdES long-term-validation
->    *spirit* (RFC 5126 §6.1 `archive-time-stamp` renewal; procedurally elaborated in
->    ETSI EN 319 102-1) applied to RFC 3161 §2.4.2 sibling TSTs, and generalizes
->    naturally to future nested `ATSv3` archive-time-stamps where the greatest-`genTime`
->    TST coincides with the outermost layer.
->
-> The PKIX historical-build layer attests "this signature was cryptographically valid
-> at signing time"; the greatest-`genTime` chain-at-now build attests "the signing
-> infrastructure is still trusted right now"; §9 attests "this signature is still
-> policy-fresh now". All three are required and independent.
->
 > One known gap remains: **TSA-cert revocation strictly between `genTime` and the next
 > TST renewal** (e.g. key compromise published only after a TST was issued, and the
 > manifest has not yet been re-timestamped). Chain-builds anchored at historical
@@ -447,27 +354,10 @@ Failures: `TimestampMissing`, `TimestampMalformed`,
 
 ## 8. Signed attributes (PKCS#9, intentionally not checked)
 
-PKCS#7/CMS allows a v1 `SignerInfo` with no signed attributes — in which case the
-signature value is computed directly over the encapsulated content and is fully
-validated by §3 (`CheckSignature`). Production .NET release signatures use exactly
+Production .NET release signatures use exactly
 this form: zero `SignedAttributes`, with the RFC 3161 TST in `UnsignedAttributes`.
 
-The verifier therefore does not inspect PKCS#9 signed attributes at all:
-
-- Cryptographic integrity is covered by `SignedCms.CheckSignature` (§3), which itself
-  enforces the RFC 5652 §5.4 / §11 rules for `content-type` / `message-digest` when
-  signed attributes are present.
-- The `signing-time` attribute (`1.2.840.113549.1.9.5`) is **not** consulted, even when
-  present. RFC 3161 timestamps prove "no later than" and may legitimately be added
-  after the signer's claimed signing-time (renewal TSTs per RFC 3161 §2.4.2 / RFC 5126
-  §6.1 `archive-time-stamp`); enforcing `signing-time ≤ TSA-time` would treat a
-  self-claim as authoritative against an independently witnessed cryptographic
-  timestamp, and would also create a perverse incentive (omit `signing-time` to escape
-  a check that only applies if you include it). The authoritative signing time used
-  everywhere else in this spec (chain `VerificationTime` in §6, JSON expiration in §9)
-  is `token.TokenInfo.Timestamp` from §7, never `signing-time`.
-
-No failures are emitted from this section.
+The verifier therefore does not inspect PKCS#9 signed attributes at all.
 
 ## 9. JSON content policy (manifest only)
 
@@ -506,10 +396,7 @@ Two execution modes are supported via `VerificationMode`:
 When a check cannot meaningfully run because a precondition failed (e.g.
 CMS would not decode), the verifier emits a `CheckSkipped` entry naming
 the missing precondition. `CheckSkipped` entries are appended to the same
-`Failures` list as real failures and count against `IsValid`: a skip only
-ever appears when an upstream failure has already invalidated the result,
-so it is a diagnostic breadcrumb naming which downstream checks could not
-be evaluated as a consequence — never a standalone pass.
+`Failures` list as real failures and count against `IsValid`.
 
 ## 11. Non-goals
 
@@ -519,10 +406,4 @@ The verifier deliberately does not handle:
 - Counter-signatures other than RFC 3161 `signatureTimeStampToken` (which may itself
   appear multiple times for TSA renewal per RFC 3161 §2.4.2 — see §7).
 - Certificate revocation discovery via AIA fetch of intermediates.
-- Air-gapped / offline verification (see §1 / §6 TODOs).
-- Non-PKCS#7/CMS container formats (PGP, XMLDSig, JWS, etc.).
-- Augmenting `CustomTrustStore` with the OS root store. The pinned PEMs
-  in `codesignctl.pem` / `timestampctl.pem` already include the trust
-  anchors the .NET Release signer chains to; layering the OS-store union
-  on top would silently widen accepted trust beyond what the pinned CTLs
-  declare. See §6.
+- Air-gapped / offline verification (see §1 / §6).
