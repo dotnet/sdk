@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Formats.Asn1;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
@@ -169,14 +168,6 @@ internal static class SignatureVerifier
         "2.16.840.1.101.3.4.2.12", // id-shake256 (RFC 8702)
         .. s_pqcSignatureOids,
     ];
-
-    // Maximum permitted clock skew between the signer's claimed signingTime attribute and the
-    // TSA-attested timestamp (spec §8). 5 minutes matches the Kerberos default clock-skew
-    // window (RFC 4430 §5.2 / MIT krb5 `clockskew`) and NuGet's signing time tolerance
-    // (NuGet.Packaging.Signing.SigningSpecifications.MaxAllowedTimestampError). Large enough
-    // to absorb signer/TSA NTP drift; small enough that a backdated signingTime is rejected.
-    private const int SigningTimeToleranceMinutes = 5;
-    private static readonly TimeSpan s_signingTimeTolerance = TimeSpan.FromMinutes(SigningTimeToleranceMinutes);
 
     // Per-URL timeout the chain engine applies when fetching CRL / OCSP / AIA artifacts during
     // revocation checking. 30s mirrors NuGet's CertificateChainUtility default
