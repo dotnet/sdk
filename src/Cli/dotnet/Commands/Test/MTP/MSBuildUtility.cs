@@ -113,9 +113,12 @@ internal static class MSBuildUtility
     private static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) BuildPerTfmWithDevices(
         string projectFilePath,
         BuildOptions buildOptions,
-        Dictionary<string, (string? Device, string? RuntimeIdentifier)> devicesByTfm)
+        Dictionary<string, (string? Device, string? RuntimeIdentifier)> devicesByTfm,
+        string? configuration = null,
+        string? platform = null)
     {
-        var allModules = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
+        var allModules = new List<TestModule>();
+        bool testTfmsInParallel = true;
 
         foreach (var (tfm, (device, rid)) in devicesByTfm)
         {
@@ -163,14 +166,49 @@ internal static class MSBuildUtility
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
             var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
             IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> modules = SolutionAndProjectUtility.GetProjectProperties(
-                projectFilePath, collection, evaluationContext, perTfmBuildOptions, configuration: null, platform: null);
+                projectFilePath, collection, evaluationContext, perTfmBuildOptions, configuration, platform);
             logger?.ReallyShutdown();
+
+            // Read TestTfmsInParallel from the first TFM evaluation
+            if (allModules.Count == 0)
+            {
+                var projectInstance = SolutionAndProjectUtility.EvaluateProject(collection, evaluationContext, projectFilePath, tfm, configuration, platform);
+                if (bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.TestTfmsInParallel), out bool parsed) ||
+                    bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.BuildInParallel), out parsed))
+                {
+                    testTfmsInParallel = parsed;
+                }
+            }
+
             collection.UnloadAllProjects();
 
-            allModules.AddRange(modules);
+            foreach (var moduleGroup in modules)
+            {
+                if (moduleGroup.Modules is not null)
+                {
+                    allModules.AddRange(moduleGroup.Modules);
+                }
+                else if (moduleGroup.Module is not null)
+                {
+                    allModules.Add(moduleGroup.Module);
+                }
+            }
         }
 
-        return (allModules, 0);
+        // Respect TestTfmsInParallel: group all modules into one sequential group if disabled
+        List<ParallelizableTestModuleGroupWithSequentialInnerModules> result;
+        if (testTfmsInParallel)
+        {
+            result = allModules.Select(m => new ParallelizableTestModuleGroupWithSequentialInnerModules(m)).ToList();
+        }
+        else
+        {
+            result = allModules.Count > 0
+                ? [new ParallelizableTestModuleGroupWithSequentialInnerModules(allModules)]
+                : [];
+        }
+
+        return (result, 0);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult)
@@ -349,7 +387,7 @@ internal static class MSBuildUtility
 
             if (devicesByTfm is not null)
             {
-                var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, devicesByTfm);
+                var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, devicesByTfm, project.Configuration, project.Platform);
                 if (exitCode != 0)
                 {
                     return (allProjects, exitCode);

@@ -154,7 +154,7 @@ internal static class SolutionAndProjectUtility
 
     private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 
-    private static ProjectInstance EvaluateProject(
+    internal static ProjectInstance EvaluateProject(
         ProjectCollection collection,
         EvaluationContext evaluationContext,
         string projectFilePath,
@@ -451,7 +451,7 @@ internal static class SolutionAndProjectUtility
         {
             if (!selector.TrySelectDevice(
                 listDevices: false,
-                noRestore: buildOptions.HasNoRestore,
+                noRestore: buildOptions.HasNoRestore || buildOptions.HasNoBuild,
                 out var selectedDevice,
                 out var runtimeIdentifier,
                 out _))
