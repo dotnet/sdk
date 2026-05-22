@@ -291,18 +291,19 @@ namespace Microsoft.NET.Build.Tasks
 
                 TaskItem appHostItem = new(itemName);
 
-                AbsolutePath? resolvedPackDirectory = null;
-
+                string appHostPackPath = null;
+                string appHostPackPathAbsolute = null;
                 if (!string.IsNullOrEmpty(TargetingPackRoot))
                 {
-                    resolvedPackDirectory = TaskEnvironment.GetAbsolutePath(Path.Combine(TargetingPackRoot, hostPackName, appHostPackVersion));
+                    appHostPackPath = Path.Combine(TargetingPackRoot, hostPackName, appHostPackVersion);
+                    appHostPackPathAbsolute = TaskEnvironment.GetAbsolutePath(appHostPackPath).Value;
                 }
 
-                if (resolvedPackDirectory != null && Directory.Exists(resolvedPackDirectory.Value))
+                if (appHostPackPathAbsolute != null && Directory.Exists(appHostPackPathAbsolute))
                 {
-                    //  Use AppHost from packs folder. Use OriginalValue to preserve relativity in output metadata.
-                    appHostItem.SetMetadata(MetadataKeys.PackageDirectory, resolvedPackDirectory.Value.OriginalValue);
-                    appHostItem.SetMetadata(MetadataKeys.Path, Path.Combine(resolvedPackDirectory.Value.OriginalValue, hostRelativePathInPackage));
+                    //  Use AppHost from packs folder
+                    appHostItem.SetMetadata(MetadataKeys.PackageDirectory, appHostPackPath);
+                    appHostItem.SetMetadata(MetadataKeys.Path, Path.Combine(appHostPackPath, hostRelativePathInPackage));
                 }
                 else if (EnableAppHostPackDownload)
                 {

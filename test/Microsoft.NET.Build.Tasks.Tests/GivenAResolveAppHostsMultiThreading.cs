@@ -68,14 +68,67 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 runtimeGraphPath: runtimeGraphPath);
 
             task.Execute().Should().BeTrue();
-            Directory.GetCurrentDirectory().Should().Be(_decoyDir,
-                "ResolveAppHosts must not mutate process current directory");
 
             string expectedPackDir = Path.Combine(relativePackRoot, PackName, PackVersion);
             AssertRelativePackMetadata(task.AppHost, expectedPackDir, "apphost.exe");
             AssertRelativePackMetadata(task.SingleFileHost, expectedPackDir, "singlefilehost.exe");
             AssertRelativePackMetadata(task.ComHost, expectedPackDir, "comhost.dll");
             AssertRelativePackMetadata(task.IjwHost, expectedPackDir, "ijwhost.dll");
+        }
+
+        [Fact]
+        public void Execute_DoesNotMutateProcessCurrentDirectory()
+        {
+            string relativePackRoot = "packs";
+            string nativePath = Path.Combine(_testDir, relativePackRoot, PackName, PackVersion, "runtimes", "win-x64", "native");
+            CreateHostFiles(nativePath);
+
+            string runtimeGraphPath = Path.Combine(_testDir, "runtime.json");
+            File.WriteAllText(runtimeGraphPath, RuntimeGraphJson);
+
+            var task = CreateTask(
+                taskEnv: TaskEnvironmentHelper.CreateForTest(_testDir),
+                targetingPackRoot: relativePackRoot,
+                runtimeGraphPath: runtimeGraphPath);
+
+            task.Execute().Should().BeTrue();
+            Directory.GetCurrentDirectory().Should().Be(_decoyDir,
+                "ResolveAppHosts must not mutate process current directory");
+        }
+
+        [Fact]
+        public void RelativeTargetingPackRoot_ResolvedAgainstProjectDirectory_NotCwd()
+        {
+            string relativePackRoot = "packs";
+
+            // Place host files under the DECOY (process CWD), NOT under the project directory.
+            // If ResolveAppHosts incorrectly resolves the relative pack root against CWD, Directory.Exists
+            // would succeed and pack metadata would be set. With correct ProjectDirectory-based resolution,
+            // the directory is not found and pack metadata must be absent.
+            string decoyNativePath = Path.Combine(_decoyDir, relativePackRoot, PackName, PackVersion, "runtimes", "win-x64", "native");
+            CreateHostFiles(decoyNativePath);
+
+            string runtimeGraphPath = Path.Combine(_testDir, "runtime.json");
+            File.WriteAllText(runtimeGraphPath, RuntimeGraphJson);
+
+            var task = CreateTask(
+                taskEnv: TaskEnvironmentHelper.CreateForTest(_testDir),
+                targetingPackRoot: relativePackRoot,
+                runtimeGraphPath: runtimeGraphPath);
+
+            task.Execute().Should().BeTrue();
+
+            AssertPackMetadataMissing(task.AppHost);
+            AssertPackMetadataMissing(task.SingleFileHost);
+            AssertPackMetadataMissing(task.ComHost);
+            AssertPackMetadataMissing(task.IjwHost);
+        }
+
+        private static void AssertPackMetadataMissing(ITaskItem[] hostItems)
+        {
+            hostItems.Should().NotBeNull().And.HaveCount(1);
+            hostItems[0].GetMetadata(MetadataKeys.PackageDirectory).Should().BeEmpty();
+            hostItems[0].GetMetadata(MetadataKeys.Path).Should().BeEmpty();
         }
 
         private static void AssertRelativePackMetadata(ITaskItem[] hostItems, string expectedPackDir, string hostFileName)
