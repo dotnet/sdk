@@ -57,7 +57,6 @@ Callers pass:
 | `TrustedTimestampRoots`        | `X509Certificate2Collection` of roots trusted for RFC 3161 TSAs.                                                        |
 | `RevocationMode`               | `Online` (default), `Offline`, or `NoCheck`. See §6.                                                                   |
 | `RequireJsonExpirationField`   | `bool` (default `true`). Gates §9. Archive callers should set `false`.                                                 |
-| `MaxAcceptableSigningAge`      | **Reserved.** Time-bounded trust window for non-`Online` revocation modes. Declared but not enforced.                  |
 
 The `Microsoft.Dotnet.Installation` library bundles `codesignctl.pem` and
 `timestampctl.pem` (sourced from `src/Layout/redist/trustedroots/`) and
@@ -70,11 +69,6 @@ When either trusted-root collection is empty, the verifier emits
 roots (no OS-store union; see §6), an empty trusted-root collection would otherwise leave
 the chain engine with no anchors at all and every chain build would fail with a generic
 status — surfacing `TrustedRootsEmpty` makes the misconfiguration obvious.
-
-> **TODO:** `MaxAcceptableSigningAge` is reserved for an air-gap follow-up.
-> The field is declared on `SignatureVerificationOptions` but the verifier
-> does not consult it. Implement enforcement before relying on
-> `RevocationMode.Offline` or `NoCheck` in production.
 
 ## 2. Container format
 
@@ -114,22 +108,82 @@ Within each family, exact OIDs are listed in `SignatureVerifier.cs`.
 
 **Signature algorithm** (signer certificate's `SubjectPublicKeyInfo.algorithm`):
 
-- Classical: RSA (`1.2.840.113549.1.1.1`), ECDSA (`1.2.840.10045.2.1`).
-- Post-quantum (per FIPS 204 / FIPS 205 and `draft-ietf-lamps-cms-ml-dsa` /
-  `draft-ietf-lamps-pq-composite-sigs`, supported by .NET 11's
-  `System.Security.Cryptography.MLDsa` / `SlhDsa` / `CompositeMLDsa`):
-  - **ML-DSA** — ML-DSA-44, ML-DSA-65, ML-DSA-87 (and their pre-hash variants).
-  - **SLH-DSA** — all twelve FIPS-205 variants (SHA2 / SHAKE × 128/192/256 × s/f),
-    pre-hash variants included.
-  - **Composite ML-DSA** — the 18 hybrid algorithms registered under OID arc
-    `1.3.6.1.5.5.7.6.37`–`54` (ML-DSA paired with RSA-PSS / RSA-PKCS#15 / ECDSA / EdDSA).
-- DSA and any other public-key algorithm are rejected.
+`SubjectPublicKeyInfo` (SPKI) is the X.509 ASN.1 structure ([RFC 5280
+§4.1](https://datatracker.ietf.org/doc/html/rfc5280#section-4.1)) that
+carries a certificate's public key:
 
-For pure-PQC signatures, the algorithm OID is repurposed as the `digestAlgorithm`
-identifier per `draft-ietf-lamps-cms-ml-dsa` (the signature scheme does its own
-internal hashing). The verifier therefore accepts the PQC OIDs in *both* the
-digest and public-key allow-lists; `SignedCms.CheckSignature` performs the actual
-cryptographic verification.
+```asn1
+SubjectPublicKeyInfo  ::=  SEQUENCE  {
+    algorithm         AlgorithmIdentifier,
+    subjectPublicKey  BIT STRING  }
+
+AlgorithmIdentifier   ::=  SEQUENCE  {
+    algorithm   OBJECT IDENTIFIER,
+    parameters  ANY DEFINED BY algorithm OPTIONAL  }
+```
+
+Concretely, every X.509 certificate has exactly one SPKI field; for an
+RSA certificate the OID is `rsaEncryption` (`1.2.840.113549.1.1.1`) and
+the bit string is the DER-encoded RSA public key; for an ML-DSA-65
+certificate the OID is `id-ml-dsa-65` (`2.16.840.1.101.3.4.3.18`) and
+the bit string is the raw ML-DSA encoded public key. The OID inside
+SPKI identifies the *key type*, not a particular signing operation —
+the signing-time choice (e.g. pure vs. pre-hash, RSA-PSS vs.
+RSA-PKCS#1 v1.5) is carried separately in
+`SignerInfo.signatureAlgorithm` on each individual signature.
+
+This distinction matters here because the post-quantum schemes define
+both a "pure" mode (the algorithm hashes the message itself internally)
+and a "pre-hash" mode (HashML-DSA, HashSLH-DSA — the caller hashes the
+message first and feeds the digest in). The two modes share the same
+underlying key but use different OIDs. The PKIX profile drafts for
+those schemes restrict the SPKI `AlgorithmIdentifier` to the
+**pure-mode** OIDs and explicitly disallow the pre-hash variants in a
+certificate's public-key position (the pre-hash choice is a
+per-signature decision, not a property of the key). See:
+
+- [FIPS 204 — ML-DSA](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)
+  defines the algorithm itself; pure ML-DSA is §5; HashML-DSA pre-hash
+  variant is §5.4.
+- [`draft-ietf-lamps-dilithium-certificates`](https://datatracker.ietf.org/doc/draft-ietf-lamps-dilithium-certificates/)
+  ("ML-DSA in Certificates"): "[FIPS204] defines two variants of ML-DSA:
+  a pure and a pre-hash variant. **Only the former is specified in this
+  document.**" The rationale (operational ambiguity for verifiers,
+  weakened collision resistance) is in §8.3.
+- [FIPS 205 — SLH-DSA](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.205.pdf)
+  and [`draft-ietf-lamps-x509-slhdsa`](https://datatracker.ietf.org/doc/draft-ietf-lamps-x509-slhdsa/)
+  apply the same restriction to SLH-DSA.
+- [`draft-ietf-lamps-pq-composite-sigs`](https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-sigs/)
+  registers the 18 Composite ML-DSA OIDs under `1.3.6.1.5.5.7.6.37`–`54`.
+
+Accordingly the verifier accepts only pure-mode OIDs in the SPKI
+position:
+
+- Classical: RSA (`1.2.840.113549.1.1.1`), ECDSA (`1.2.840.10045.2.1`).
+- Post-quantum (supported by .NET 11's
+  `System.Security.Cryptography.MLDsa` / `SlhDsa` / `CompositeMLDsa`):
+  - **ML-DSA** — ML-DSA-44, ML-DSA-65, ML-DSA-87
+    (`2.16.840.1.101.3.4.3.17`–`19`).
+  - **SLH-DSA** — all twelve FIPS-205 variants
+    (SHA2 / SHAKE × 128/192/256 × s/f, `2.16.840.1.101.3.4.3.20`–`31`).
+  - **Composite ML-DSA** — the 18 hybrid algorithms under
+    `1.3.6.1.5.5.7.6.37`–`54` (ML-DSA paired with RSA-PSS / RSA-PKCS#15 /
+    ECDSA / EdDSA).
+- DSA, pre-hash PQC OIDs in the SPKI position
+  (`2.16.840.1.101.3.4.3.32`–`46`), and any other public-key algorithm
+  are rejected.
+
+For pure-PQC signatures the algorithm OID is repurposed as the CMS
+`digestAlgorithm` identifier — per
+[`draft-ietf-lamps-cms-ml-dsa`](https://datatracker.ietf.org/doc/draft-ietf-lamps-cms-ml-dsa/)
+the signature scheme does its own internal hashing, so CMS uses the same
+OID in both positions and a separate digest is unnecessary. The verifier
+therefore accepts pure-mode PQC OIDs in *both* the digest and
+public-key allow-lists, and the pre-hash PQC OIDs in the digest
+allow-list only (since per the SPKI restriction above they have no
+place on a certificate's public-key field).
+`SignedCms.CheckSignature` performs the actual cryptographic
+verification.
 
 Failures: `WeakDigest`, `SignatureAlgorithmNotPermitted`.
 
@@ -212,8 +266,8 @@ The verifier builds an `X509Chain` for the signer certificate with:
   - `Online` (default, recommended): CRL/OCSP MUST succeed; fail closed
     when unreachable.
   - `Offline`: use locally cached CRLs only.
-  - `NoCheck`: skip revocation entirely. Should be paired with
-    `MaxAcceptableSigningAge` (see §1 TODO).
+  - `NoCheck`: skip revocation entirely. Air-gap / offline scenarios only;
+    the caller is responsible for bounding trust some other way.
 - `RevocationFlag = EntireChain`, `UrlRetrievalTimeout = 30s`.
 - `ApplicationPolicy` MUST contain `1.3.6.1.5.5.7.3.3`
   (`id-kp-codeSigning`) so the chain engine rejects mis-purposed
@@ -229,13 +283,12 @@ The verifier builds an `X509Chain` for the signer certificate with:
   verification path ignores `NotTimeValid` because packages are immutable
   historical artifacts; release artifacts are not.
 
-On Windows, when chain build fails and any chain-status flag includes
-`UntrustedRoot`, the verifier retries up to 3 times with a 1 s sleep
-between attempts. This mirrors NuGet's
-[`RetriableX509ChainBuildPolicy`](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/Signing/ChainBuilding/RetriableX509ChainBuildPolicy.cs)
-and defends against a documented Windows transient where the OS root
-store briefly reports `UntrustedRoot` under load. Non-Windows builds skip
-the retry, matching NuGet's `X509ChainBuildPolicyFactory`.
+On chain build failure the verifier surfaces the chain status mapping below; it
+does **not** retry. (NuGet's `RetriableX509ChainBuildPolicy` retries on Windows
+`UntrustedRoot` because the OS root store can transiently report that under load,
+but that path only matters when the OS store is in scope. We use a pinned
+`CustomRootTrust` and the OS store is intentionally NOT consulted, so the transient
+doesn't apply here.)
 
 After chain evaluation the verifier disposes every
 `X509ChainElement.Certificate` to avoid finalizer pressure on the OS
@@ -302,8 +355,9 @@ to:
 
 - The TSA certificate chain MUST build under the same rules as §6,
   except:
-  - `CustomTrustStore` is the union of `options.TrustedTimestampRoots` +
-    OS roots.
+  - `CustomTrustStore` is exactly `options.TrustedTimestampRoots` (the pinned PEMs in
+    `timestampctl.pem`). The OS root store is **not** merged in — same rationale as
+    §6 and the non-goal in §11.
   - `ExtraStore` is the TSA token's own CMS certificate bag.
   - `ApplicationPolicy` MUST contain `1.3.6.1.5.5.7.3.8`
     (`id-kp-timeStamping`) instead of `id-kp-codeSigning`.
@@ -388,7 +442,7 @@ The verifier returns a `VerificationResult` aggregating
 `VerificationFailure { FailureCode Code, string Reason }` entries.
 `VerificationResult.IsValid` is `true` only when no entries (failures or
 skips) were recorded. Skips are stored in the same list as failures and
-count against `IsValid` — see the §10 paragraph below for rationale.
+count against `IsValid` — see the paragraph below for rationale.
 
 Two execution modes are supported via `VerificationMode`:
 

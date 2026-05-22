@@ -863,8 +863,7 @@ public class SignatureVerifierTests
     /// <summary>
     /// Trust the test root for both code-signing and timestamp anchors (EvaluateTrustedRootOptions
     /// records TrustedRootsEmpty if either collection is empty). Disables revocation because
-    /// the test certs have no CRL/OCSP endpoints; no timestamp is present so MaxAcceptableSigningAge
-    /// is irrelevant for these tests.
+    /// the test certs have no CRL/OCSP endpoints.
     /// </summary>
     private static SignatureVerificationOptions BuildOptionsTrusting(X509Certificate2 testRoot)
     {

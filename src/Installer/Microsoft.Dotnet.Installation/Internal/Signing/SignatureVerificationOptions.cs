@@ -26,27 +26,6 @@ internal sealed class SignatureVerificationOptions
     public RevocationCheckMode RevocationMode { get; init; } = RevocationCheckMode.Online;
 
     /// <summary>
-    /// Reserved for an air-gap follow-up; not enforced in v1.
-    ///
-    /// <para>
-    /// When implemented, this is NOT a "grace period after which fresh signatures stop being
-    /// re-checked" — it is the inverse: a hard ceiling on how old a TSA-attested signing time
-    /// is allowed to be when <see cref="RevocationMode"/> is not
-    /// <see cref="RevocationCheckMode.Online"/>. The verifier will reject any TSA timestamp
-    /// older than <c>UtcNow - MaxAcceptableSigningAge</c>, regardless of how recently the
-    /// caller re-ran verification. The intent is to bound trust on offline / air-gapped
-    /// installs where revocation cannot be checked at consumption time: an old enough
-    /// manifest, even if its TSA chain still parses, is presumed stale.
-    /// </para>
-    ///
-    /// <para>
-    /// Ignored when <see cref="RevocationMode"/> is <see cref="RevocationCheckMode.Online"/>
-    /// (CRL/OCSP is the authoritative freshness signal in that mode).
-    /// </para>
-    /// </summary>
-    public TimeSpan? MaxAcceptableSigningAge { get; init; }
-
-    /// <summary>
     /// When <see langword="true"/> (default), JSON files MUST contain a <c>signature.expiration</c>
     /// field (or top-level <c>expiration</c>) and the value must be in the future. See the dotnetup
     /// signature-verification doc §9.
@@ -71,7 +50,7 @@ internal enum RevocationCheckMode
     /// <summary>Use locally cached CRLs only (<see cref="System.Security.Cryptography.X509Certificates.X509RevocationMode.Offline"/>).</summary>
     Offline,
 
-    /// <summary>Skip revocation entirely. Should be paired with <see cref="SignatureVerificationOptions.MaxAcceptableSigningAge"/>.</summary>
+    /// <summary>Skip revocation entirely. Air-gap / offline scenarios only; the caller is responsible for bounding trust some other way.</summary>
     NoCheck,
 }
 

@@ -82,24 +82,32 @@ internal static class SignatureVerifier
     private const string OidEcdsa = "1.2.840.10045.2.1";  // id-ecPublicKey (RFC 5480 §2.1.1) https://datatracker.ietf.org/doc/html/rfc5480#section-2.1.1
 
     // Post-quantum signature algorithm OIDs supported by .NET 11's MLDsa / SlhDsa / CompositeMLDsa BCL types.
-    // Each OID below may appear in CMS SignedData as BOTH:
-    // The signer cert's SubjectPublicKeyInfo.AlgorithmIdentifier
-    // The SignerInfo.DigestAlgorithm
-    // ... per draft-ietf-lamps-cms-ml-dsa, draft-ietf-lamps-pq-composite-sigs.
     //
-    // Source of truth for the OID list
+    // The list is split in two:
+    //   * s_pqcPureKeyOids   — pure-mode OIDs that may legitimately appear in BOTH a
+    //     certificate's SubjectPublicKeyInfo.AlgorithmIdentifier AND in CMS
+    //     SignerInfo.DigestAlgorithm (per draft-ietf-lamps-cms-ml-dsa, the pure
+    //     signature scheme does its own internal hashing so the alg-id repeats).
+    //   * s_pqcPreHashOids   — pre-hash variants (HashML-DSA per FIPS 204 §5.4,
+    //     HashSLH-DSA per FIPS 205 §10.2). The IETF PKIX profile drafts restrict
+    //     these to per-signature use in SignerInfo.signatureAlgorithm and forbid
+    //     them in a certificate's SubjectPublicKeyInfo:
+    //       * draft-ietf-lamps-dilithium-certificates §1 / §8.3 ("Only [pure ML-DSA]
+    //         is specified in this document.")
+    //       * draft-ietf-lamps-x509-slhdsa (same restriction for SLH-DSA)
+    //     so they are signature/digest-only and MUST NOT appear in SPKI.
+    //
+    // s_pqcSignatureOids below is the union of the two and is kept as the drift-detection
+    // target for the BCL's KnownOids arrays (see PqcOidList_StaysInSyncWithBcl).
+    //
+    // Source of truth for the OID list:
     // https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Security/Cryptography/Oids.cs
-    internal static readonly HashSet<string> s_pqcSignatureOids =
+    private static readonly HashSet<string> s_pqcPureKeyOids =
     [
         // === FIPS 204 ML-DSA (pure mode) — NIST CSOR 2.16.840.1.101.3.4.3.17–19 ===
         "2.16.840.1.101.3.4.3.17", // ML-DSA-44
         "2.16.840.1.101.3.4.3.18", // ML-DSA-65
         "2.16.840.1.101.3.4.3.19", // ML-DSA-87
-
-        // === Pre-hash ML-DSA (.32–.34) ===
-        "2.16.840.1.101.3.4.3.32", // HashML-DSA-44-SHA512
-        "2.16.840.1.101.3.4.3.33", // HashML-DSA-65-SHA512
-        "2.16.840.1.101.3.4.3.34", // HashML-DSA-87-SHA512
 
         // === FIPS 205 SLH-DSA (pure mode) — .20–.31 ===
         "2.16.840.1.101.3.4.3.20", // SLH-DSA-SHA2-128s
@@ -114,20 +122,6 @@ internal static class SignatureVerifier
         "2.16.840.1.101.3.4.3.29", // SLH-DSA-SHAKE-192f
         "2.16.840.1.101.3.4.3.30", // SLH-DSA-SHAKE-256s
         "2.16.840.1.101.3.4.3.31", // SLH-DSA-SHAKE-256f
-
-        // === Pre-hash SLH-DSA (.35–.46) ===
-        "2.16.840.1.101.3.4.3.35", // HashSLH-DSA-SHA2-128s-SHA256
-        "2.16.840.1.101.3.4.3.36", // HashSLH-DSA-SHA2-128f-SHA256
-        "2.16.840.1.101.3.4.3.37", // HashSLH-DSA-SHA2-192s-SHA512
-        "2.16.840.1.101.3.4.3.38", // HashSLH-DSA-SHA2-192f-SHA512
-        "2.16.840.1.101.3.4.3.39", // HashSLH-DSA-SHA2-256s-SHA512
-        "2.16.840.1.101.3.4.3.40", // HashSLH-DSA-SHA2-256f-SHA512
-        "2.16.840.1.101.3.4.3.41", // HashSLH-DSA-SHAKE-128s-SHAKE128
-        "2.16.840.1.101.3.4.3.42", // HashSLH-DSA-SHAKE-128f-SHAKE128
-        "2.16.840.1.101.3.4.3.43", // HashSLH-DSA-SHAKE-192s-SHAKE256
-        "2.16.840.1.101.3.4.3.44", // HashSLH-DSA-SHAKE-192f-SHAKE256
-        "2.16.840.1.101.3.4.3.45", // HashSLH-DSA-SHAKE-256s-SHAKE256
-        "2.16.840.1.101.3.4.3.46", // HashSLH-DSA-SHAKE-256f-SHAKE256
 
         // === Composite ML-DSA (draft-ietf-lamps-pq-composite-sigs, 1.3.6.1.5.5.7.6.37–54) ===
         // Hybrid algorithms combining ML-DSA with a traditional algorithm so a relying
@@ -153,14 +147,45 @@ internal static class SignatureVerifier
         "1.3.6.1.5.5.7.6.54", // MLDSA87-ECDSA-P521-SHA512
     ];
 
+    private static readonly HashSet<string> s_pqcPreHashOids =
+    [
+        // === Pre-hash ML-DSA (.32–.34) ===
+        "2.16.840.1.101.3.4.3.32", // HashML-DSA-44-SHA512
+        "2.16.840.1.101.3.4.3.33", // HashML-DSA-65-SHA512
+        "2.16.840.1.101.3.4.3.34", // HashML-DSA-87-SHA512
+
+        // === Pre-hash SLH-DSA (.35–.46) ===
+        "2.16.840.1.101.3.4.3.35", // HashSLH-DSA-SHA2-128s-SHA256
+        "2.16.840.1.101.3.4.3.36", // HashSLH-DSA-SHA2-128f-SHA256
+        "2.16.840.1.101.3.4.3.37", // HashSLH-DSA-SHA2-192s-SHA512
+        "2.16.840.1.101.3.4.3.38", // HashSLH-DSA-SHA2-192f-SHA512
+        "2.16.840.1.101.3.4.3.39", // HashSLH-DSA-SHA2-256s-SHA512
+        "2.16.840.1.101.3.4.3.40", // HashSLH-DSA-SHA2-256f-SHA512
+        "2.16.840.1.101.3.4.3.41", // HashSLH-DSA-SHAKE-128s-SHAKE128
+        "2.16.840.1.101.3.4.3.42", // HashSLH-DSA-SHAKE-128f-SHAKE128
+        "2.16.840.1.101.3.4.3.43", // HashSLH-DSA-SHAKE-192s-SHAKE256
+        "2.16.840.1.101.3.4.3.44", // HashSLH-DSA-SHAKE-192f-SHAKE256
+        "2.16.840.1.101.3.4.3.45", // HashSLH-DSA-SHAKE-256s-SHAKE256
+        "2.16.840.1.101.3.4.3.46", // HashSLH-DSA-SHAKE-256f-SHAKE256
+    ];
+
+    // Union of pure + pre-hash. Exposed (internal) only as the drift-detection target
+    // against the BCL's MLDsa.KnownOids / SlhDsa.s_knownOids / CompositeMLDsa.s_knownOids
+    // arrays (see PqcOidList_StaysInSyncWithBcl in the test project).
+    internal static readonly HashSet<string> s_pqcSignatureOids =
+    [
+        .. s_pqcPureKeyOids,
+        .. s_pqcPreHashOids,
+    ];
+
     // Allowed signer-certificate public-key algorithm OIDs (SubjectPublicKeyInfo.AlgorithmIdentifier).
-    // Classical (RSA, ECDSA) plus every PQC OID in s_pqcSignatureOids. DSA and other algorithms
-    // are rejected. HashSet<string> uses ordinal equality by default, matching the OID strings.
+    // Classical (RSA, ECDSA) plus every PURE-mode PQC OID. Pre-hash variants are intentionally
+    // excluded — see the s_pqcPureKeyOids / s_pqcPreHashOids comment above.
     private static readonly HashSet<string> s_allowedPublicKeyOids =
     [
         OidRsa,
         OidEcdsa,
-        .. s_pqcSignatureOids,
+        .. s_pqcPureKeyOids,
     ];
 
     // SHA-2, SHA-3, SHAKE, and PQC digest-algorithm OIDs (NIST CSOR 2.16.840.1.101.3.4.2;
@@ -233,16 +258,32 @@ internal static class SignatureVerifier
             () => DecodeCms(content, signature, result, out cms, out signer, out signerCert),
             () => EvaluateAlgorithmPolicy(signer, signerCert, result),
             () => EvaluateSignerCertificatePolicy(signerCert, result),
-            () => (tsaTimestampUtc, tsaTokens) = TryEvaluateTimestamp(signer, result),
+            () => EvaluateTimestamp(signer, result, out tsaTimestampUtc, out tsaTokens),
             () => EvaluateTimestampChains(tsaTokens, signer, options, nowOverride, result),
             () => EvaluatePrimaryChain(signerCert, cms, tsaTimestampUtc, options, nowOverride, result),
             () => MaybeEvaluateJsonExpiration(content, tsaTimestampUtc, options, nowOverride, result),
         };
 
-        foreach (var step in steps)
+        try
         {
-            if (result.ShouldStop) { break; }
-            step();
+            foreach (var step in steps)
+            {
+                if (result.ShouldStop) { break; }
+                step();
+            }
+        }
+        finally
+        {
+            // Dispose the X509Certificate2 handles we surfaced from the CMS structures.
+            // The chain engine's copies (X509ChainElement.Certificate) are disposed inside
+            // EvaluateChain; these are the *original* handles obtained from
+            // SignerInfo.Certificate / Rfc3161TimestampToken.VerifySignatureForSignerInfo.
+            // Releasing them eagerly avoids finalizer-queue pressure on long-lived hosts.
+            signerCert?.Dispose();
+            foreach (TsaToken token in tsaTokens)
+            {
+                token.Cert.Dispose();
+            }
         }
 
         return result;
@@ -295,10 +336,15 @@ internal static class SignatureVerifier
             return;
         }
 
+        if (!EvaluateEncapContentType(cms, result))
+        {
+            return;
+        }
+
         // SignedCms.SignerInfos allocates a fresh collection on every read — cache it once.
-        // SignedCms.Decode + CheckSignature already enforce the CMS SignedData / id-data
-        // shape (encapsulated content-type OID etc.), so this check is the only structural
-        // assertion the verifier layers on top.
+        // SignedCms.Decode + CheckSignature already enforce the CMS SignedData shape,
+        // so this and the eContentType check above are the only structural assertions
+        // the verifier layers on top.
         SignerInfoCollection signerInfos = cms.SignerInfos;
         if (signerInfos.Count != 1)
         {
@@ -334,17 +380,40 @@ internal static class SignatureVerifier
     }
 
     /// <summary>
+    /// Spec §2: <c>encapContentInfo.eContentType</c> MUST be <c>id-data</c>.
+    /// <see cref="SignedCms.CheckSignature(bool)"/> does NOT cross-validate the decoded
+    /// eContentType against the <see cref="ContentInfo"/> we supplied for the detached
+    /// decode — it just uses what we passed in. So a producer that ships a CMS with
+    /// <c>eContentType=1.2.3.4</c> would slip past unless we check explicitly here.
+    /// Returns <see langword="true"/> when the eContentType matches; otherwise records
+    /// <see cref="FailureCode.SigDecodeFailed"/> and returns <see langword="false"/>.
+    /// </summary>
+    private static bool EvaluateEncapContentType(SignedCms cms, VerificationResult result)
+    {
+        string? actualContentType = cms.ContentInfo.ContentType.Value;
+        if (string.Equals(actualContentType, OidIdData, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        result.Add(FailureCode.SigDecodeFailed,
+            $"CMS encapContentInfo.eContentType is '{actualContentType ?? "<null>"}'; expected id-data ({OidIdData}).");
+        return false;
+    }
+
+    /// <summary>
     /// Enforces the digest + public-key algorithm allow-list from spec §4.
     /// </summary>
     /// <remarks>
     /// When <paramref name="signer"/> or <paramref name="signerCert"/> is null we record an
     /// <see cref="VerificationResult.AddSkip"/> rather than a fresh failure: the missing
-    /// signer / signer-cert is already surfaced upstream by <see cref="DecodeCms"/> as
-    /// <see cref="FailureCode.SignerCertMissing"/> (or its predecessors). Adding another
-    /// failure here would just be a duplicate of the same root cause; the skip is a
-    /// diagnostic breadcrumb in collect-all output that says "this check ran but had no
-    /// input." The same pattern is used in <see cref="EvaluateSignerCertificatePolicy"/>,
-    /// <see cref="TryEvaluateTimestamp"/>, and <see cref="EvaluatePrimaryChain"/>.
+    /// signer / signer-cert is already surfaced upstream by <see cref="DecodeCms"/> as one of
+    /// <see cref="FailureCode.SigDecodeFailed"/>, <see cref="FailureCode.SigMultipleSigners"/>,
+    /// or <see cref="FailureCode.SignerCertMissing"/>. Adding another failure here would
+    /// just be a duplicate of the same root cause; the skip is a diagnostic breadcrumb in
+    /// collect-all output that says "this check ran but had no input." The same pattern is
+    /// used in <see cref="EvaluateSignerCertificatePolicy"/>, <see cref="EvaluateTimestamp"/>,
+    /// and <see cref="EvaluatePrimaryChain"/>.
     /// </remarks>
     private static void EvaluateAlgorithmPolicy(SignerInfo? signer, X509Certificate2? signerCert, VerificationResult result)
     {
@@ -400,19 +469,6 @@ internal static class SignatureVerifier
         }
 
         EvaluateEku(signerCert, EkuCodeSigning, primary: true, result);
-    }
-
-    private static (DateTimeOffset? AuthoritativeTime, IReadOnlyList<TsaToken> Tokens) TryEvaluateTimestamp(
-        SignerInfo? signer,
-        VerificationResult result)
-    {
-        if (signer is null)
-        {
-            result.AddSkip("Timestamp not evaluated: no SignerInfo available.");
-            return (null, Array.Empty<TsaToken>());
-        }
-
-        return EvaluateTimestamp(signer, result);
     }
 
     /// <summary>
@@ -477,8 +533,12 @@ internal static class SignatureVerifier
     }
 
     /// <summary>
-    /// Builds the primary signer chain at the TSA-attested time when available; otherwise
-    /// falls back to "now" and records a skip explaining the fallback.
+    /// Builds the primary signer chain at the TSA-attested time when available. The
+    /// fallback branch (no TSA timestamp) is reachable only in CollectAll mode after an
+    /// upstream <see cref="FailureCode.TimestampMissing"/> / <see cref="FailureCode.TimestampMalformed"/>
+    /// / <see cref="FailureCode.TimestampBindingInvalid"/> has already invalidated the
+    /// result; the diagnostic skip names the substituted clock so the caller can read
+    /// downstream chain-build output in context.
     /// </summary>
     private static void EvaluatePrimaryChain(
         X509Certificate2? signerCert,
@@ -741,10 +801,21 @@ internal static class SignatureVerifier
     /// </summary>
     private sealed record TsaToken(SignedCms Cms, X509Certificate2 Cert, DateTimeOffset Time);
 
-    private static (DateTimeOffset? AuthoritativeTime, IReadOnlyList<TsaToken> Tokens) EvaluateTimestamp(
-        SignerInfo primarySigner,
-        VerificationResult result)
+    private static void EvaluateTimestamp(
+        SignerInfo? primarySigner,
+        VerificationResult result,
+        out DateTimeOffset? authoritativeTime,
+        out IReadOnlyList<TsaToken> tokens)
     {
+        authoritativeTime = null;
+        tokens = Array.Empty<TsaToken>();
+
+        if (primarySigner is null)
+        {
+            result.AddSkip("Timestamp not evaluated: no SignerInfo available.");
+            return;
+        }
+
         // Collect every id-aa-signatureTimeStampToken unsigned-attribute value. RFC 5126
         // §6.1.1 explicitly permits the attribute to appear multiple times (each a separate
         // TSA witness — for example, renewal tokens added later as the original TSA cert
@@ -762,35 +833,36 @@ internal static class SignatureVerifier
         if (rawTokens.Count == 0)
         {
             result.Add(FailureCode.TimestampMissing, "Missing RFC 3161 timestamp token (signatureTimeStampToken unsigned attribute).");
-            return (null, Array.Empty<TsaToken>());
+            return;
         }
 
-        var tokens = new List<TsaToken>(rawTokens.Count);
+        var decoded = new List<TsaToken>(rawTokens.Count);
         for (int i = 0; i < rawTokens.Count; i++)
         {
             string positionLabel = rawTokens.Count == 1 ? "" : $" #{i + 1} of {rawTokens.Count}";
             if (TryDecodeAndBindToken(rawTokens[i], primarySigner, positionLabel, result) is { } token)
             {
-                tokens.Add(token);
+                decoded.Add(token);
             }
         }
 
-        if (tokens.Count == 0)
+        if (decoded.Count == 0)
         {
             // Every TST failed to decode or bind. Per-token failures were recorded above.
-            return (null, Array.Empty<TsaToken>());
+            return;
         }
 
-        DateTimeOffset earliest = tokens[0].Time;
-        for (int i = 1; i < tokens.Count; i++)
+        DateTimeOffset earliest = decoded[0].Time;
+        for (int i = 1; i < decoded.Count; i++)
         {
-            if (tokens[i].Time < earliest)
+            if (decoded[i].Time < earliest)
             {
-                earliest = tokens[i].Time;
+                earliest = decoded[i].Time;
             }
         }
 
-        return (earliest, tokens);
+        authoritativeTime = earliest;
+        tokens = decoded;
     }
 
     private static List<byte[]> CollectTimestampTokenBytes(SignerInfo primarySigner)
@@ -859,7 +931,22 @@ internal static class SignatureVerifier
         using var chain = new X509Chain();
         ConfigureChainPolicy(chain, extraStore, customRoots, verificationTime, applicationPolicyEku, revocationMode);
 
-        bool ok = chain.Build(leaf);
+        bool ok;
+        try
+        {
+            ok = chain.Build(leaf);
+        }
+        catch (CryptographicException ex)
+        {
+            // X509Chain.Build can throw on serious BCL/OS issues (corrupt intermediate,
+            // OOM during CRL parse, etc.). Map to the role-appropriate generic failure
+            // code rather than propagating; the chain itself still owns no elements to
+            // dispose in this path, so no finally block is required.
+            var (role, _, _, genericCode) = GetChainCodes(kind);
+            result.Add(genericCode, $"{role} chain build threw {ex.GetType().Name}: {ex.Message}");
+            return;
+        }
+
         try
         {
             InterpretChainStatus(chain, ok, kind, result);
