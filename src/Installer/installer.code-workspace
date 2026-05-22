@@ -209,7 +209,7 @@
                 "command": "dotnet",
                 "args": [
                     "publish",
-                    "dotnetup.Library/dotnetup.Library.csproj",
+                    "dotnetup/dotnetup.csproj",
                     "--self-contained",
                     "/property:GenerateFullPaths=true",
                     "/consoleloggerparameters:NoSummary"
