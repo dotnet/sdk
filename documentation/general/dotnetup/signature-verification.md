@@ -2,20 +2,18 @@
 
 This document describes the detached CMS / PKCS#7 signatures (`.p7s`)
 that dotnetup accepts when verifying .NET release artifacts (manifest
-JSON files and release archives such as `.zip` / `.tar.gz`). It states
+JSON files and release archives such as `.zip` / `.tar.gz`). It lists
 the checks the verifier performs, in order, and the `FailureCode` each
-one emits on rejection. The intent is descriptive — it explains what the
-in-tree verifier does and why — but the checks themselves are normative
-for any signature dotnetup will accept: a signature that fails any
-**MUST** below is rejected.
+one emits on rejection. Descriptive prose explains what the in-tree
+verifier does and why; the **MUST** clauses are normative — a signature
+that fails any of them is not a valid .NET release signature and
+dotnetup will reject it.
 
 The verifier is implemented by the internal `SignatureVerifier` class in
 the `Microsoft.Dotnet.Installation` library. It is cross-platform (Windows,
 Linux, macOS) and uses only the BCL (`System.Security.Cryptography.Pkcs`,
 `System.Security.Cryptography.X509Certificates`, `System.Text.Json`).
-
-The only content-specific check
-(§9, JSON expiration) is opt-in via
+The only content-specific check (§9, JSON expiration) is opt-in via
 `SignatureVerificationOptions.RequireJsonExpirationField`.
 
 Although the verifier lives in `Microsoft.Dotnet.Installation` and is
@@ -23,9 +21,8 @@ named for dotnetup, the acceptance rules below apply to any tool that
 consumes a `.p7s` covering a .NET release artifact — for example the
 install scripts (`dotnet-install.sh` / `dotnet-install.ps1`) or other
 in-house installers. Such consumers may layer additional concerns on
-top (e.g. offline-revocation support for air-gapped scenarios), but a
-signature that fails any **MUST** below is not a valid .NET release
-signature and should be rejected regardless of the consumer.
+top (e.g. offline-revocation support for air-gapped scenarios), but the
+normative bar below is the floor.
 
 > **TODO:** Manifest verification covers archives transitively: the
 > signed manifest pins each archive's SHA-512, and the archive download
@@ -208,11 +205,10 @@ Failure: `SubjectMismatch`.
 
 ### 5.2 Issuer
 
-Pinning the signer's immediate issuer by DN is **not** the cryptographic trust anchor for
-the primary signature — that is the chain build in §6 against the pinned roots in
-`codesignctl.pem`. The DN pin is a *defense-in-depth* check that the cert was issued by
-the specific DigiCert code-signing intermediate the .NET Release signer is configured to
-use.
+The DN pin below is **not** the cryptographic trust anchor for the primary signature —
+that is the §6 chain build against the pinned roots in `codesignctl.pem`. It is a
+defense-in-depth check that the cert was issued by the specific DigiCert code-signing
+intermediate the .NET Release signer is configured to use.
 
 The signer certificate's **immediate issuer** Distinguished Name MUST consist of exactly
 the following RDNs (same comparison rules as §5.1):
@@ -320,10 +316,10 @@ to:
   signature.
 - The **earliest** `token.TokenInfo.Timestamp` across all valid tokens is used as the
   authoritative signing time for the primary chain's `VerificationTime` (§6) and the
-  JSON expiration check (§9). Earliest is the most conservative choice: the signer
-  cert had to be valid at that point, and later renewal tokens only *extend* trust
-  into the future, never relax it. Because every token is fully validated, accepting
-  additional tokens cannot weaken the signature — each one is another mandatory check.
+  JSON expiration check (§9). Earliest is the most conservative anchor: the signer
+  cert had to be valid at that point, and later renewal tokens only extend trust
+  into the future. Because every token is fully validated, additional tokens cannot
+  weaken the signature — each is another mandatory check.
 - Each TSA certificate MUST carry EKU exactly `1.3.6.1.5.5.7.3.8`
   (`id-kp-timeStamping`), exclusive of any other OID, per RFC 3161 §2.3
   ("the certificate MUST contain only one instance of the extended key
@@ -368,13 +364,12 @@ to:
     "now". This is what lets a release stay verifiable after its TSA leaf
     cert's `notAfter` passes — the TSA cert only needed to be valid at
     the moment it stamped the signature, not at every future
-    verification. It is not circular: §7's decode step has already called
-    `Rfc3161TimestampToken.VerifySignatureForSignerInfo`, which
-    cryptographically proves the TSA cert signed the `TSTInfo` that
-    contains this `genTime`. With that signature verified, `genTime` is
-    authoritative content — not unverified self-assertion — so using it
-    as the chain's `VerificationTime` is the standard PKI long-term-
-    validation pattern (RFC 3161 page 15; same intent as the CAdES-A
+    verification. It is not circular: §7's decode step already called
+    `Rfc3161TimestampToken.VerifySignatureForSignerInfo`, cryptographically
+    proving the TSA cert signed the `TSTInfo` that carries this `genTime`,
+    so `genTime` is authoritative content rather than unverified
+    self-assertion. This is the standard PKI long-term-validation
+    pattern (RFC 3161 page 15; same intent as the CAdES-A
     `archive-time-stamp` renewal pattern in RFC 5126 §6.1). Each TST in
     a multi-TST set is evaluated independently at its own `genTime`
     (RFC 3161 §2.4.2 permits a SET OF `TimeStampToken` in the
@@ -464,15 +459,13 @@ The verifier therefore does not inspect PKCS#9 signed attributes at all:
   signed attributes are present.
 - The `signing-time` attribute (`1.2.840.113549.1.9.5`) is **not** consulted, even when
   present. RFC 3161 timestamps prove "no later than" and may legitimately be added
-  after the signer's claimed signing-time (renewal TSTs in the CAdES long-term-
-  validation spirit — RFC 5126 §6.1 `archive-time-stamp` and RFC 3161 §2.4.2
-  sibling TSTs); enforcing
-  `signing-time ≤ TSA-time` would treat a self-claim as authoritative against an
-  independently witnessed cryptographic timestamp, and would also create a perverse
-  incentive (omit `signing-time` to escape a check that only applies if you include
-  it). The authoritative signing time used everywhere else in this spec
-  (chain `VerificationTime` in §6, JSON expiration in §9) is `token.TokenInfo.Timestamp`
-  from §7, never `signing-time`.
+  after the signer's claimed signing-time (renewal TSTs per RFC 3161 §2.4.2 / RFC 5126
+  §6.1 `archive-time-stamp`); enforcing `signing-time ≤ TSA-time` would treat a
+  self-claim as authoritative against an independently witnessed cryptographic
+  timestamp, and would also create a perverse incentive (omit `signing-time` to escape
+  a check that only applies if you include it). The authoritative signing time used
+  everywhere else in this spec (chain `VerificationTime` in §6, JSON expiration in §9)
+  is `token.TokenInfo.Timestamp` from §7, never `signing-time`.
 
 No failures are emitted from this section.
 
@@ -512,15 +505,11 @@ Two execution modes are supported via `VerificationMode`:
 
 When a check cannot meaningfully run because a precondition failed (e.g.
 CMS would not decode), the verifier emits a `CheckSkipped` entry naming
-the missing precondition. Skipped entries are appended to the same
-`Failures` list as real failures and do contribute to `IsValid`: a
-`CheckSkipped` only ever appears when an upstream failure already removed
-its input, so the upstream failure has already invalidated the result —
-the skip is the diagnostic breadcrumb explaining which downstream checks
-could not be evaluated as a consequence. Treating skips as
-non-invalidating would let a result with a `CheckSkipped` (and no other
-entries) report `IsValid == true`, which is never correct: the only path
-to a `CheckSkipped` is through a prior failure.
+the missing precondition. `CheckSkipped` entries are appended to the same
+`Failures` list as real failures and count against `IsValid`: a skip only
+ever appears when an upstream failure has already invalidated the result,
+so it is a diagnostic breadcrumb naming which downstream checks could not
+be evaluated as a consequence — never a standalone pass.
 
 ## 11. Non-goals
 

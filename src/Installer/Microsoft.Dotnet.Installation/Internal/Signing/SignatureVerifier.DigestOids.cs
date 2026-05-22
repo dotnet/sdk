@@ -13,9 +13,9 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 // https://datatracker.ietf.org/doc/html/rfc8702#section-2
 internal static partial class SignatureVerifier
 {
-    private const string OidIdSha256   = "2.16.840.1.101.3.4.2.1";  // id-sha256  (RFC 5754 §2)
-    private const string OidIdSha384   = "2.16.840.1.101.3.4.2.2";  // id-sha384  (RFC 5754 §2)
-    private const string OidIdSha512   = "2.16.840.1.101.3.4.2.3";  // id-sha512  (RFC 5754 §2)
+    private const string OidIdSha256 = "2.16.840.1.101.3.4.2.1";  // id-sha256  (RFC 5754 §2)
+    private const string OidIdSha384 = "2.16.840.1.101.3.4.2.2";  // id-sha384  (RFC 5754 §2)
+    private const string OidIdSha512 = "2.16.840.1.101.3.4.2.3";  // id-sha512  (RFC 5754 §2)
     private const string OidIdSha3_256 = "2.16.840.1.101.3.4.2.8";  // id-sha3-256 (RFC 8702 §2)
     private const string OidIdSha3_384 = "2.16.840.1.101.3.4.2.9";  // id-sha3-384 (RFC 8702 §2)
     private const string OidIdSha3_512 = "2.16.840.1.101.3.4.2.10"; // id-sha3-512 (RFC 8702 §2)

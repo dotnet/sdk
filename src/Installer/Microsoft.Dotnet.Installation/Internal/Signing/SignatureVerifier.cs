@@ -368,19 +368,13 @@ internal static partial class SignatureVerifier
             return;
         }
 
-        // Freshness anchor. RFC 3161 §2.4.2 allows a SET OF TimeStampToken in
-        // `id-aa-signatureTimeStampToken`; when more than one is present they are
-        // sibling attestations over the same primary SignerInfo.signature value (not
-        // nested ATSv3 archive-time-stamps). The TST with the greatest genTime is the
-        // signer's most recent attestation — its chain must additionally build at the
-        // relying party's current clock. Without this anchor an attacker could replay
-        // an arbitrarily-old captured signature whose TSA cert has since been revoked
-        // or expired (the historical genTime build can't see CRL/OCSP entries dated
-        // after that genTime). This is a defense-in-depth design choice rather than a
-        // literal RFC clause; it tracks the CAdES long-term-validation spirit (RFC 5126
-        // §6.1 `archive-time-stamp` renewal; procedurally elaborated in ETSI EN
-        // 319 102-1) and generalizes naturally to future nested ATSv3 layers where the
-        // greatest-genTime TST coincides with the outermost.
+        // Per RFC 3161 §2.4.2, `id-aa-signatureTimeStampToken` carries a SET OF TimeStampToken;
+        // when more than one is present they are sibling attestations over the same primary
+        // SignerInfo.signature value (not nested ATSv3 archive-time-stamps). The TST with the
+        // greatest genTime is the signer's most recent attestation; that one is also re-validated
+        // against the current clock inside the loop below as a freshness anchor (see comment
+        // there for the threat model). Defense-in-depth in the CAdES long-term-validation spirit
+        // (RFC 5126 §6.1 `archive-time-stamp` renewal; ETSI EN 319 102-1).
         DateTime nowUtc = (nowOverride ?? DateTimeOffset.UtcNow).UtcDateTime;
         TsaToken latest = tokens.MaxBy(static t => t.Time)!;
 
@@ -402,14 +396,14 @@ internal static partial class SignatureVerifier
 
             if (ReferenceEquals(token, latest))
             {
-                // Freshness anchor: the most-recent (greatest-genTime) TST's chain must
-                // additionally build at the current clock. In normal manifest operation
-                // this is a no-op — DigiCert TSA cert lifetimes (years) vastly exceed the
-                // release re-sign cadence (currently monthly) plus §9 expiresOn windows,
-                // so the latest TST is always well within its TSA leaf's notAfter. The
-                // check matters for (a) the planned archive `.p7s` verification path where
-                // no §9 expiresOn backstop exists, and (b) defense-in-depth against
-                // post-genTime TSA-cert revocations that the historical build cannot see.
+                // Freshness anchor: the most-recent (greatest-genTime) TST's chain must also
+                // build at the current clock. Without this an attacker could replay an old
+                // captured signature whose TSA cert has since been revoked or expired (the
+                // historical-genTime build can't see CRL/OCSP entries dated after that genTime).
+                // In normal manifest operation this is a no-op — DigiCert TSA cert lifetimes
+                // (years) vastly exceed the release re-sign cadence plus §9 expiresOn windows.
+                // The check matters for (a) the planned archive `.p7s` path with no §9 backstop
+                // and (b) post-genTime TSA-cert revocations.
                 BuildTimestampChain(token, options, nowUtc, result);
             }
         }
@@ -681,7 +675,6 @@ internal static partial class SignatureVerifier
     /// </summary>
     private static List<string> ReadEkuOids(X509EnhancedKeyUsageExtension eku)
     {
-        // Cache the property read — every getter call re-allocates the OidCollection (see XML doc).
         OidCollection usages = eku.EnhancedKeyUsages;
         var oids = new List<string>(usages.Count);
         foreach (Oid o in usages)
