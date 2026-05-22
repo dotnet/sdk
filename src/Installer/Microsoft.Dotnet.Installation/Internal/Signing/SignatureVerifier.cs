@@ -33,29 +33,8 @@ internal static partial class SignatureVerifier
     private const string OidRsa = "1.2.840.113549.1.1.1"; // rsaEncryption (RFC 8017 Appendix C) https://datatracker.ietf.org/doc/html/rfc8017#appendix-C
     private const string OidEcdsa = "1.2.840.10045.2.1";  // id-ecPublicKey (RFC 5480 §2.1.1) https://datatracker.ietf.org/doc/html/rfc5480#section-2.1.1
 
-    // Allowed signer-certificate public-key algorithm OIDs (SubjectPublicKeyInfo.AlgorithmIdentifier).
-    // Classical (RSA, ECDSA) plus every PURE-mode PQC OID. Pre-hash variants are intentionally
-    // excluded — see the s_pqcPureKeyOids / s_pqcPreHashOids comment in SignatureVerifier.PqcOids.cs.
-    //
-    // Allowed digest OIDs (SignerInfo.DigestAlgorithm) — SHA-2 / SHA-3 / SHAKE plus every pure-PQC
-    // OID. The pure-PQC OIDs in s_pqcSignatureOids are ALSO valid as the SignerInfo.DigestAlgorithm
-    // when the signature scheme is pure ML-DSA / SLH-DSA / Composite ML-DSA, because those
-    // schemes do internal hashing and CMS encodes the algorithm-identifier in both fields (see
-    // the s_pqcSignatureOids comment in SignatureVerifier.PqcOids.cs).
-    //
-    // Both sets are populated by the static constructor below — the union is built there rather
-    // than in a field initializer because the PQC tables live in another partial file and the
-    // C# language does not guarantee static-field-initializer ordering across partial files.
-    // Static constructors are guaranteed to run after every field initializer in the type.
     private static readonly HashSet<string> s_allowedPublicKeyOids;
     private static readonly HashSet<string> s_allowedDigestOids;
-
-    // CA1810 (no explicit static ctor) is suppressed: an explicit static constructor is
-    // required here because the derived sets depend on s_pqcSignatureOids / s_pqcPureKeyOids,
-    // which are declared in another partial file (SignatureVerifier.PqcOids.cs). The C#
-    // language does not specify the relative order of field initializers across partial
-    // declarations, but a static constructor is guaranteed to run AFTER every field
-    // initializer in the type — making this the only well-defined place to build the unions.
 #pragma warning disable CA1810
     static SignatureVerifier()
 #pragma warning restore CA1810
@@ -74,10 +53,6 @@ internal static partial class SignatureVerifier
         };
     }
 
-    // Per-URL timeout the chain engine applies when fetching CRL / OCSP / AIA artifacts during
-    // revocation checking. 30s mirrors NuGet's CertificateChainUtility default
-    // (NuGet.Packaging.Signing.SigningSpecifications.RevocationUrlRetrievalTimeoutInSeconds)
-    // and is generous enough for slow networks while bounding hangs when a CDP is unreachable.
     private const int RevocationRetrievalTimeoutSeconds = 30;
     private static readonly TimeSpan s_revocationRetrievalTimeout = TimeSpan.FromSeconds(RevocationRetrievalTimeoutSeconds);
 
