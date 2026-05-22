@@ -76,7 +76,7 @@ internal static class SignatureVerifier
     ];
 
     private const string OidIdData = "1.2.840.113549.1.7.1";               // id-data (RFC 5652 §4) https://datatracker.ietf.org/doc/html/rfc5652#section-4
-    private const string OidTimestampToken = "1.2.840.113549.1.9.16.2.14"; // id-aa-signatureTimeStampToken (RFC 3161 Appendix A https://datatracker.ietf.org/doc/html/rfc3161#appendix-A / RFC 5126 §6.1.1 https://datatracker.ietf.org/doc/html/rfc5126#section-6.1.1)
+    private const string OidTimestampToken = "1.2.840.113549.1.9.16.2.14"; // id-aa-signatureTimeStampToken (RFC 3161 Appendix A https://datatracker.ietf.org/doc/html/rfc3161#appendix-A; SET OF TimeStampToken per RFC 3161 §2.4.2 https://datatracker.ietf.org/doc/html/rfc3161#section-2.4.2)
 
     private const string OidRsa = "1.2.840.113549.1.1.1"; // rsaEncryption (RFC 8017 Appendix C) https://datatracker.ietf.org/doc/html/rfc8017#appendix-C
     private const string OidEcdsa = "1.2.840.10045.2.1";  // id-ecPublicKey (RFC 5480 §2.1.1) https://datatracker.ietf.org/doc/html/rfc5480#section-2.1.1
@@ -473,12 +473,14 @@ internal static class SignatureVerifier
 
     /// <summary>
     /// Builds and validates the X.509 chain for every TSA cert collected by
-    /// <see cref="EvaluateTimestamp"/>. signature-verification.md §7: when multiple RFC 3161
-    /// timestamp tokens are present (per RFC 5126 §6.1.1), every TSA chain must build, every
-    /// TSA leaf must satisfy the EKU + issuer-DN pins. Failing any single TSA invalidates the
-    /// signature.
+    /// <see cref="EvaluateTimestamp"/>. signature-verification.md §7: every TSA chain
+    /// must build at its own <c>genTime</c>, every TSA leaf must satisfy the EKU +
+    /// issuer-DN pins, and the TST with the greatest <c>genTime</c> must additionally
+    /// build at the current clock. Failing any single TSA invalidates the signature.
     /// </summary>
     /// <remarks>
+    /// Standard PKI long-term-validation pattern (RFC 3161 page 15; same intent as the
+    /// CAdES-A `archive-time-stamp` renewal pattern in RFC 5126 §6.1).
     /// RFC 3161 timestamping is required; reaching the empty-input branch means
     /// <see cref="EvaluateTimestamp"/> already recorded one of
     /// <see cref="FailureCode.TimestampMissing"/>,
@@ -504,6 +506,26 @@ internal static class SignatureVerifier
             return;
         }
 
+        // Freshness anchor. RFC 3161 §2.4.2 allows a SET OF TimeStampToken in
+        // `id-aa-signatureTimeStampToken`; when more than one is present they are
+        // sibling attestations over the same primary SignerInfo.signature value (not
+        // nested ATSv3 archive-time-stamps). The TST with the greatest genTime is the
+        // signer's most recent attestation — its chain must additionally build at the
+        // relying party's current clock. Without this anchor an attacker could replay
+        // an arbitrarily-old captured signature whose TSA cert has since been revoked
+        // or expired (the historical genTime build can't see CRL/OCSP entries dated
+        // after that genTime). This is a defense-in-depth design choice rather than a
+        // literal RFC clause; it tracks the CAdES long-term-validation spirit (RFC 5126
+        // §6.1 `archive-time-stamp` renewal; procedurally elaborated in ETSI EN
+        // 319 102-1) and generalizes naturally to future nested ATSv3 layers where the
+        // greatest-genTime TST coincides with the outermost.
+        DateTime nowUtc = (nowOverride ?? DateTimeOffset.UtcNow).UtcDateTime;
+        TsaToken latest = tokens[0];
+        for (int i = 1; i < tokens.Count; i++)
+        {
+            if (tokens[i].Time > latest.Time) latest = tokens[i];
+        }
+
         foreach (TsaToken token in tokens)
         {
             EvaluateTimestampEku(token.Cert, result);
@@ -513,23 +535,43 @@ internal static class SignatureVerifier
                 result.Add(FailureCode.TimestampIssuerMismatch, tsaIssuerDetail);
             }
 
-            EvaluateChain(
-                token.Cert,
-                extraStore: token.Cms.Certificates,
-                customRoots: options.TrustedTimestampRoots,
-                // The TSA chain's VerificationTime is NOT anchored to the TSA-attested timestamp —
-                // that would be chicken-and-egg: the TSA cert validity is what attests to *when*
-                // the timestamp was issued. When a caller supplied a <paramref name="nowOverride"/>
-                // (tests), use it so the chain build is deterministic; otherwise leave null and
-                // let the chain engine use real-time UtcNow. Mirrors NuGet's
-                // CertificateChainUtility.SetCertBuildChainPolicy which skips VerificationTime
-                // when CertificateType == Timestamp.
-                verificationTime: nowOverride?.UtcDateTime,
-                applicationPolicyEku: EkuTimeStamping,
-                revocationMode: options.RevocationMode,
-                kind: ChainKind.TimestampAuthority,
-                result);
+            // Anchor the TSA chain to the TSA's own genTime. This decouples release lifetime
+            // from DigiCert's TSA cert rotation schedule — a release timestamped by a
+            // now-expired TSA leaf still verifies *as a historical attestation*, because the
+            // chain is evaluated as it stood at the moment of timestamping. Freshness is
+            // enforced separately below for the greatest-genTime TST.
+            BuildTimestampChain(token, options, token.Time.UtcDateTime, result);
+
+            if (ReferenceEquals(token, latest))
+            {
+                // Freshness anchor: the most-recent (greatest-genTime) TST's chain must
+                // additionally build at the current clock. In normal manifest operation
+                // this is a no-op — DigiCert TSA cert lifetimes (years) vastly exceed the
+                // release re-sign cadence (currently monthly) plus §9 expiresOn windows,
+                // so the latest TST is always well within its TSA leaf's notAfter. The
+                // check matters for (a) the planned archive `.p7s` verification path where
+                // no §9 expiresOn backstop exists, and (b) defense-in-depth against
+                // post-genTime TSA-cert revocations that the historical build cannot see.
+                BuildTimestampChain(token, options, nowUtc, result);
+            }
         }
+    }
+
+    private static void BuildTimestampChain(
+        TsaToken token,
+        SignatureVerificationOptions options,
+        DateTime verificationTime,
+        VerificationResult result)
+    {
+        EvaluateChain(
+            token.Cert,
+            extraStore: token.Cms.Certificates,
+            customRoots: options.TrustedTimestampRoots,
+            verificationTime: verificationTime,
+            applicationPolicyEku: EkuTimeStamping,
+            revocationMode: options.RevocationMode,
+            kind: ChainKind.TimestampAuthority,
+            result);
     }
 
     /// <summary>
@@ -816,10 +858,12 @@ internal static class SignatureVerifier
             return;
         }
 
-        // Collect every id-aa-signatureTimeStampToken unsigned-attribute value. RFC 5126
-        // §6.1.1 explicitly permits the attribute to appear multiple times (each a separate
-        // TSA witness — for example, renewal tokens added later as the original TSA cert
-        // ages towards expiry). The verifier ACCEPTS multiple tokens and validates ALL of
+        // Collect every id-aa-signatureTimeStampToken unsigned-attribute value. RFC 3161
+        // §2.4.2 defines the attribute as a SET OF TimeStampToken, so the attribute may
+        // legitimately appear with multiple tokens (each a separate TSA witness — for
+        // example, renewal tokens added later as the original TSA cert ages towards
+        // expiry, in the CAdES long-term-validation spirit of RFC 5126 §6.1
+        // `archive-time-stamp`). The verifier ACCEPTS multiple tokens and validates ALL of
         // them: every token must decode, every token must cryptographically bind to the
         // primary signer's EncryptedDigest, every TSA chain must build (see
         // EvaluateTimestampChains). The earliest token's `genTime` is used as the

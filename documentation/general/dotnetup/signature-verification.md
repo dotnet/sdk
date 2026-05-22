@@ -307,10 +307,12 @@ to:
 ## 7. RFC 3161 timestamp
 
 - The signer's `UnsignedAttributes` MUST contain **at least one**
-  `1.2.840.113549.1.9.16.2.14` (`id-aa-signatureTimeStampToken`). RFC 5126 §6.1.1
-  explicitly permits the attribute to appear multiple times — each instance is a
-  separate TSA witness over the same `SignerInfo.signatureValue` (typically used for
-  renewal as an original TSA cert ages towards expiry).
+  `1.2.840.113549.1.9.16.2.14` (`id-aa-signatureTimeStampToken`). RFC 3161 §2.4.2
+  defines the attribute as a SET OF `TimeStampToken`, so the attribute MAY appear with
+  multiple tokens — each instance is a separate TSA witness over the same
+  `SignerInfo.signatureValue` (typically used for renewal as an original TSA cert ages
+  towards expiry, in the same long-term-validation spirit as CAdES-A
+  `archive-time-stamp` renewal per RFC 5126 §6.1).
 - When multiple tokens are present the verifier validates **all** of them: every token
   MUST decode via `Rfc3161TimestampToken.TryDecode`, every token's
   `Rfc3161TimestampToken.VerifySignatureForSignerInfo` MUST succeed, and every TSA
@@ -361,13 +363,26 @@ to:
   - `ExtraStore` is the TSA token's own CMS certificate bag.
   - `ApplicationPolicy` MUST contain `1.3.6.1.5.5.7.3.8`
     (`id-kp-timeStamping`) instead of `id-kp-codeSigning`.
-  - `VerificationTime` MUST be left at the chain engine's default
-    (current UTC). The TSA certificate's validity period is what attests
-    to *when* the timestamp was issued; anchoring the TSA chain's
-    verification time to the timestamp it produces is chicken-and-egg.
-    Mirrors NuGet's
-    [`CertificateChainUtility.SetCertBuildChainPolicy`](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/Signing/Utility/CertificateChainUtility.cs),
-    which skips `VerificationTime` when `CertificateType == Timestamp`.
+  - `VerificationTime` for each TST's *historical* chain build MUST be
+    the TST's own `genTime` (`token.TokenInfo.Timestamp`), not wall-clock
+    "now". This is what lets a release stay verifiable after its TSA leaf
+    cert's `notAfter` passes — the TSA cert only needed to be valid at
+    the moment it stamped the signature, not at every future
+    verification. It is not circular: §7's decode step has already called
+    `Rfc3161TimestampToken.VerifySignatureForSignerInfo`, which
+    cryptographically proves the TSA cert signed the `TSTInfo` that
+    contains this `genTime`. With that signature verified, `genTime` is
+    authoritative content — not unverified self-assertion — so using it
+    as the chain's `VerificationTime` is the standard PKI long-term-
+    validation pattern (RFC 3161 page 15; same intent as the CAdES-A
+    `archive-time-stamp` renewal pattern in RFC 5126 §6.1). Each TST in
+    a multi-TST set is evaluated independently at its own `genTime`
+    (RFC 3161 §2.4.2 permits a SET OF `TimeStampToken` in the
+    `id-aa-signatureTimeStampToken` unsigned attribute).
+  - **Freshness anchor.** In addition to the historical build above, the TST with the
+    greatest `genTime` MUST also build cleanly at the current UTC clock. Rationale,
+    threat model, and design-choice citations are in the *"Freshness anchors — what
+    we check and why"* callout below.
   - Failure mapping: a revoked TSA cert → `TimestampChainFailed`;
     revocation status unreachable → `TimestampRevocationUnavailable`;
     any other chain failure → `TimestampChainFailed`.
@@ -377,17 +392,58 @@ window, JSON policy) is `token.TokenInfo.Timestamp` (UTC). The PKCS#9
 `signing-time` signed attribute is intentionally not consulted (see §8).
 
 > **TSA-cert lifetime vs. release cadence.** The .NET release pipeline re-signs the
-> primary release manifests on every release cycle (currently monthly), and the bundled
-> `timestampctl.pem` plus DigiCert's TSA-cert rotation cadence is comfortably longer than
-> that window plus normal client cache lifetimes. The standard code-signing concern about
-> TSA-cert expiration — where artifacts are immutable and new TSTs must be layered over
-> old ones as the original TSA cert ages — does not apply: a manifest whose TSA leaf has
-> expired is by definition stale and the next monthly release supersedes it. Older
-> manifests being invalidated by TSA expiry is intended behavior here and aligns with
-> Liquid `Microsoft.Security.SystemsADM.10053`. (This concerns *manifests* only — the
+> primary release manifests on every release cycle (currently monthly), and DigiCert's
+> TSA-cert rotation cadence is comfortably longer than that window plus normal client
+> cache lifetimes — so under steady-state network access a client almost never sees a
+> manifest whose TSA leaf has expired. Because each TSA chain is evaluated at the
+> TST's own `genTime` (see the rule bullets above), a manifest whose TSA leaf is now
+> past `notAfter` still verifies cleanly as long as the leaf was valid when it issued
+> the timestamp; offline clients, stale caches, and image-baked manifests stay
+> verifiable across TSA-cert rotation. (This section concerns *manifests* only — the
 > archives themselves are integrity-bound by the manifest's SHA-512 pins rather than
-> by direct CMS signatures; archive `.p7s` verification is out of scope today and
-> appears in §1's TODO list.)
+> by direct CMS signatures today.)
+
+> **Freshness anchors — what we check and why.**
+> Anchoring each TSA chain at its own `genTime` (RFC 3161 page 15) is the right call for
+> certificate-validity, but on its own it does **not** prevent an attacker from replaying
+> an arbitrarily old captured signature: every TST will still verify against the historical
+> cert state it was issued under, forever. Two independent freshness anchors guard
+> against that:
+>
+> 1. **§9 JSON `expiresOn`**, evaluated against current UTC. This is the primary policy
+>    backstop for manifests — `expiresOn` is monotonically advanced on every monthly
+>    re-sign, so a stale-replayed manifest is rejected here long before any TSA-cert
+>    window matters.
+> 2. **Greatest-`genTime` TST chain at current UTC**, evaluated by
+>    `EvaluateTimestampChains`. The most-recent TST's TSA cert must still be valid
+>    *now* — i.e. someone with TSA cooperation has re-timestamped within that cert's
+>    lifetime. In normal manifest operation this is a no-op (today's manifests carry a
+>    single TST whose TSA cert lifetime vastly exceeds the monthly re-sign + §9
+>    `expiresOn` window) and the greatest-`genTime` selection only matters if multiple
+>    sibling TSTs ever appear. For manifests it is defense-in-depth on top of §9; for
+>    the planned archive `.p7s` verification path in §1's TODO list (no `expiresOn`
+>    exists for archives) it will become the sole freshness anchor. This is a design
+>    choice rather than a literal RFC clause — it tracks the CAdES long-term-validation
+>    *spirit* (RFC 5126 §6.1 `archive-time-stamp` renewal; procedurally elaborated in
+>    ETSI EN 319 102-1) applied to RFC 3161 §2.4.2 sibling TSTs, and generalizes
+>    naturally to future nested `ATSv3` archive-time-stamps where the greatest-`genTime`
+>    TST coincides with the outermost layer.
+>
+> The PKIX historical-build layer attests "this signature was cryptographically valid
+> at signing time"; the greatest-`genTime` chain-at-now build attests "the signing
+> infrastructure is still trusted right now"; §9 attests "this signature is still
+> policy-fresh now". All three are required and independent.
+>
+> One known gap remains: **TSA-cert revocation strictly between `genTime` and the next
+> TST renewal** (e.g. key compromise published only after a TST was issued, and the
+> manifest has not yet been re-timestamped). Chain-builds anchored at historical
+> `genTime` cannot see CRL / OCSP entries dated later than `genTime`. The standard
+> mitigation is archival revocation evidence pinned into the signature (RFC 5126 ATSv3
+> / `RevocationValues`); we do not yet collect or evaluate it. Acceptable in current
+> scope because (a) §9 bounds the post-`genTime` window to roughly one release cycle,
+> (b) the greatest-`genTime` chain-at-now check forces the *current* TSA cert to be
+> unrevoked, and (c) DigiCert revocation of an actively-used `.NET Release` TSA leaf
+> would itself trigger a re-sign + new manifest within that window.
 
 Failures: `TimestampMissing`, `TimestampMalformed`,
 `TimestampBindingInvalid`, `TimestampEkuInvalid`,
@@ -408,7 +464,9 @@ The verifier therefore does not inspect PKCS#9 signed attributes at all:
   signed attributes are present.
 - The `signing-time` attribute (`1.2.840.113549.1.9.5`) is **not** consulted, even when
   present. RFC 3161 timestamps prove "no later than" and may legitimately be added
-  after the signer's claimed signing-time (per RFC 5126 §6.1.1 renewal); enforcing
+  after the signer's claimed signing-time (renewal TSTs in the CAdES long-term-
+  validation spirit — RFC 5126 §6.1 `archive-time-stamp` and RFC 3161 §2.4.2
+  sibling TSTs); enforcing
   `signing-time ≤ TSA-time` would treat a self-claim as authoritative against an
   independently witnessed cryptographic timestamp, and would also create a perverse
   incentive (omit `signing-time` to escape a check that only applies if you include
@@ -470,7 +528,7 @@ The verifier deliberately does not handle:
 
 - Multiple signers or nested/parallel signatures.
 - Counter-signatures other than RFC 3161 `signatureTimeStampToken` (which may itself
-  appear multiple times for TSA renewal per RFC 5126 §6.1.1 — see §7).
+  appear multiple times for TSA renewal per RFC 3161 §2.4.2 — see §7).
 - Certificate revocation discovery via AIA fetch of intermediates.
 - Air-gapped / offline verification (see §1 / §6 TODOs).
 - Non-PKCS#7/CMS container formats (PGP, XMLDSig, JWS, etc.).
