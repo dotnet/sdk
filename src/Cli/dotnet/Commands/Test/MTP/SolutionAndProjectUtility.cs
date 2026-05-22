@@ -324,6 +324,10 @@ internal static class SolutionAndProjectUtility
 
         // Create a RunCommandSelector for this project/TFM to handle device selection.
         // Build/restore was already done by dotnet test, so we use noRestore: true.
+        // Lock is required because TrySelectDevice calls projectInstance.Build() which uses
+        // BuildManager.DefaultBuildManager (a process-wide singleton that cannot run concurrent builds).
+        // The lock also serializes interactive Spectre.Console prompts when a solution has multiple
+        // MAUI projects evaluated in parallel.
         var tfm = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var msbuildArgsToAppend = buildOptions.MSBuildArgs;
         if (!string.IsNullOrEmpty(tfm))
@@ -345,16 +349,21 @@ internal static class SolutionAndProjectUtility
             msbuildArgs,
             ImmutableDictionary<string, string>.Empty);
 
-        if (!selector.TrySelectDevice(
-            listDevices: false,
-            noRestore: true,
-            out var selectedDevice,
-            out var runtimeIdentifier,
-            out _))
+        string? selectedDevice;
+        string? runtimeIdentifier;
+        lock (s_buildLock)
         {
-            // Device selection failed - error already written to stderr by TrySelectDevice
-            throw new GracefulException(
-                string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+            if (!selector.TrySelectDevice(
+                listDevices: false,
+                noRestore: true,
+                out selectedDevice,
+                out runtimeIdentifier,
+                out _))
+            {
+                // Device selection failed - error already written to stderr by TrySelectDevice
+                throw new GracefulException(
+                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+            }
         }
 
         if (selectedDevice is not null)
