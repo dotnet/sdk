@@ -92,9 +92,13 @@ internal class ReleaseManifest
     // Lazy<T>'s default mode is ExecutionAndPublication, so the orchestrator's parallel
     // PrepareConcurrent calls cannot double-instantiate the loader.
     //
-    // We don't dispose the loader: ReleaseManifest is reached via the static Default singleton,
-    // so its lifetime is the process. The temp directory it owns is sub-megabyte; OS temp
-    // cleanup picks it up on next reboot.
+    // We don't dispose the loader explicitly: ReleaseManifest is reached via the static
+    // Default singleton, so its lifetime is the process. The loader registers an
+    // AppDomain.ProcessExit handler to remove its temp directory on normal shutdown, and
+    // each verified JSON is deleted from disk in finally as soon as the deployment library
+    // finishes parsing it (see SignedReleaseManifestLoader.GetVerified*). Windows does not
+    // auto-purge %LOCALAPPDATA%\Temp, so without the ProcessExit hook the directory would
+    // accumulate across runs.
     private readonly Lazy<SignedReleaseManifestLoader> _loader;
 
     public ReleaseManifest()

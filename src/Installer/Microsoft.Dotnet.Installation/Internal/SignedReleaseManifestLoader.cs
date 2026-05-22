@@ -35,6 +35,8 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
     private readonly SignatureVerificationOptions _options;
     private readonly Uri _indexUrl;
     private readonly string _tempDir;
+    private readonly EventHandler _processExitHandler;
+    private int _disposed;
 
     public SignedReleaseManifestLoader(HttpClient httpClient, SignatureVerificationOptions options, Uri indexUrl)
     {
@@ -45,7 +47,18 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         // Directory.CreateTempSubdirectory uses mkdtemp(3) on POSIX which atomically creates
         // the directory with mode 0700; on Windows %LOCALAPPDATA%\Temp is per-user-ACL'd.
         _tempDir = Directory.CreateTempSubdirectory("dotnetup-sigverify-").FullName;
+
+        // Windows does not auto-purge %LOCALAPPDATA%\Temp, and the production singleton (see
+        // ReleaseManifest._loader) is never disposed. Hook ProcessExit so the directory is
+        // removed on normal shutdown. Best-effort: a crashed or kill -9'd process still
+        // leaves the directory behind. Per-call temp files are deleted eagerly in
+        // GetVerifiedReleasesIndex / GetVerifiedReleases, so a leaked directory is typically
+        // empty (or holds at most one file from an in-flight verify).
+        _processExitHandler = OnProcessExit;
+        AppDomain.CurrentDomain.ProcessExit += _processExitHandler;
     }
+
+    private void OnProcessExit(object? sender, EventArgs e) => CleanupTempDir();
 
     /// <summary>
     /// Downloads <c>releases-index.json</c> from the configured index URL, verifies its
@@ -55,7 +68,17 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
     public ProductCollection GetVerifiedReleasesIndex()
     {
         string tempPath = DownloadAndVerify(_indexUrl);
-        return ProductCollection.GetFromFileAsync(tempPath, downloadLatest: false).GetAwaiter().GetResult();
+        try
+        {
+            return ProductCollection.GetFromFileAsync(tempPath, downloadLatest: false).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            // The deployment library reads the file synchronously and returns a fully-parsed
+            // ProductCollection; the file is not needed after this point. Delete eagerly so a
+            // process kill (no Dispose) doesn't leak the verified JSON.
+            TryDeleteFile(tempPath);
+        }
     }
 
     /// <summary>
@@ -80,7 +103,31 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
 
         Uri channelUrl = GetReleaseUriForConfiguredHost(product.ReleasesJson);
         string tempPath = DownloadAndVerify(channelUrl);
-        return product.GetReleasesAsync(tempPath, downloadLatest: false).GetAwaiter().GetResult();
+        try
+        {
+            return product.GetReleasesAsync(tempPath, downloadLatest: false).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            // See note in GetVerifiedReleasesIndex: the deployment library returns a fully-
+            // parsed collection synchronously, so the verified JSON is no longer needed.
+            TryDeleteFile(tempPath);
+        }
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // Best-effort: orphaned files in _tempDir are picked up by Dispose / ProcessExit.
+        }
     }
 
     /// <summary>
@@ -238,6 +285,20 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
 
     public void Dispose()
     {
+        // Interlocked to keep Dispose + ProcessExit from racing — a test that disposes the
+        // loader and then the process exits would otherwise call CleanupTempDir twice (the
+        // second call is harmless but unhooking the handler twice would throw on some hosts).
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        AppDomain.CurrentDomain.ProcessExit -= _processExitHandler;
+        CleanupTempDir();
+    }
+
+    private void CleanupTempDir()
+    {
         try
         {
             if (Directory.Exists(_tempDir))
@@ -247,7 +308,8 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         }
         catch
         {
-            // Cleanup is best-effort; orphaned files are picked up by OS temp cleanup.
+            // Cleanup is best-effort; orphaned files are picked up on next reboot (POSIX)
+            // or on the next manual %TEMP% purge (Windows).
         }
     }
 }
