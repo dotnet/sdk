@@ -7,9 +7,12 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 
 /// <summary>
 /// Configuration for CMS detached-signature verification of release manifest JSON files.
-/// Callers must supply trusted root certificate collections; this library does not bundle
-/// them itself (dnup wires in the SDK's <c>codesignctl.pem</c>/<c>timestampctl.pem</c> via
-/// <see cref="DefaultSignatureOptions"/> + <see cref="TrustedRootsLoader"/>).
+/// Callers must supply trusted root certificate collections. The default set used by dnup
+/// is provided by <see cref="DefaultSignatureOptions"/>, which loads the
+/// <c>codesignctl.pem</c> / <c>timestampctl.pem</c> roots bundled as
+/// <c>&lt;EmbeddedResource&gt;</c>s inside this library (see <see cref="TrustedRootsLoader"/>
+/// and <c>Microsoft.Dotnet.Installation.csproj</c>). Callers may supply their own collections
+/// instead.
 /// </summary>
 internal sealed class SignatureVerificationOptions
 {
