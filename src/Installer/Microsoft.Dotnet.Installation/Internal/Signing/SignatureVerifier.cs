@@ -608,7 +608,6 @@ internal static class SignatureVerifier
     /// </summary>
     private static void EvaluateEku(X509Certificate2 cert, string requiredOid, bool primary, VerificationResult result)
     {
-            if (ext is X509EnhancedKeyUsageExtension e)
         if (!TryGetSingleEkuExtension(cert, primary, result, out X509EnhancedKeyUsageExtension? eku))
         {
             return;
@@ -707,11 +706,12 @@ internal static class SignatureVerifier
             return false;
         }
 
-        eku = found; // count == 1 — `found` was assigned exactly once above.
+        eku = found!; // count == 1 — `found` was assigned exactly once above.
         return true;
     }
 
     /// <summary>
+    /// Materializes the EKU's KeyPurposeId OIDs into a plain <see cref="List{T}"/> of strings.
     ///
     /// Every <c>get</c> of <see cref="X509EnhancedKeyUsageExtension.EnhancedKeyUsages"/>
     /// allocates a fresh <see cref="OidCollection"/> and copies each <see cref="Oid"/> into it
@@ -721,18 +721,17 @@ internal static class SignatureVerifier
     /// </summary>
     private static List<string> ReadEkuOids(X509EnhancedKeyUsageExtension eku)
     {
-            return null;
         // Cache the property read — every getter call re-allocates the OidCollection (see XML doc).
         OidCollection usages = eku.EnhancedKeyUsages;
         var oids = new List<string>(usages.Count);
         foreach (Oid o in usages)
         {
+            if (o.Value is not null)
+            {
+                oids.Add(o.Value);
+            }
         }
-        catch (CryptographicException ex)
-        {
-            result.Add(FailureCode.SigningTimeMissing, $"Signing-time attribute malformed: {ex.Message}");
-            return null;
-        }
+        return oids;
     }
 
     /// <summary>
