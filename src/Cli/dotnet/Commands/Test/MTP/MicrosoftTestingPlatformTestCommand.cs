@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -171,11 +170,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
             // Evaluate the project to get TargetFrameworks
             using var collection = new ProjectCollection(globalProperties);
-            var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
             var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
             {
                 GlobalProperties = globalProperties,
-                EvaluationContext = evaluationContext,
                 ProjectCollection = collection,
             });
 
@@ -203,18 +200,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 {
                     buildOptions = buildOptions with
                     {
-                        MSBuildArgs = buildOptions.MSBuildArgs.Append($"-p:{ProjectProperties.TargetFramework}={selectedFramework}")
+                        MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:{ProjectProperties.TargetFramework}={selectedFramework}"]
                     };
                 }
             }
-
-            collection.UnloadAllProjects();
         }
 
         // Add Device to MSBuild args so the build and evaluation see it
         return buildOptions with
         {
-            MSBuildArgs = buildOptions.MSBuildArgs.Append($"-p:Device={buildOptions.Device}")
+            MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:Device={buildOptions.Device}"]
         };
     }
 }
