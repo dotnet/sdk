@@ -139,7 +139,6 @@ internal static class MSBuildUtility
             {
                 MSBuildArgs = perTfmArgs,
                 Device = device,
-                DeviceSelectionDone = true,
             };
 
             int exitCode = BuildOrRestoreProjectOrSolution(projectFilePath, perTfmBuildOptions);
@@ -348,10 +347,28 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
             (project) =>
             {
-                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, project.Configuration, project.Platform);
-                foreach (var projectMetadata in projectsMetadata)
+                // Device selection for this project (same path used by GetProjectsFromProject).
+                // For solutions, the solution build already ran, so the per-TFM rebuild is incremental.
+                var devicesByTfm = SolutionAndProjectUtility.SelectDevicesBeforeBuild(project.ProjectFilePath, buildOptions);
+
+                if (devicesByTfm is not null)
                 {
-                    allProjects.Add(projectMetadata);
+                    var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, devicesByTfm);
+                    if (exitCode == 0)
+                    {
+                        foreach (var module in modules)
+                        {
+                            allProjects.Add(module);
+                        }
+                    }
+                }
+                else
+                {
+                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, project.Configuration, project.Platform);
+                    foreach (var projectMetadata in projectsMetadata)
+                    {
+                        allProjects.Add(projectMetadata);
+                    }
                 }
             });
 

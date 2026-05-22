@@ -238,8 +238,6 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            TrySelectDeviceForProject(projectInstance, projectFilePath, buildOptions);
-
             if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
@@ -268,8 +266,6 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    TrySelectDeviceForProject(projectInstance, projectFilePath, buildOptions);
-
                     if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
                     {
                         projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
@@ -283,8 +279,6 @@ internal static class SolutionAndProjectUtility
                 {
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
-
-                    TrySelectDeviceForProject(projectInstance, projectFilePath, buildOptions);
 
                     if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
                     {
@@ -418,81 +412,6 @@ internal static class SolutionAndProjectUtility
             }
 
             return (selectedDevice, runtimeIdentifier);
-        }
-    }
-
-    /// <summary>
-    /// Selects a device for the given project instance if the project supports device selection
-    /// (has a ComputeAvailableDevices target) and no device was pre-specified via --device.
-    /// When --device is specified, the device is already set as an MSBuild property via the build args.
-    /// For the project path, device selection is done pre-build via SelectDevicesBeforeBuild;
-    /// this method is the fallback for the solution path where pre-build selection isn't done.
-    /// </summary>
-    private static void TrySelectDeviceForProject(ProjectInstance projectInstance, string projectFilePath, BuildOptions buildOptions)
-    {
-        // If --device was specified or device selection was already done pre-build
-        if (!string.IsNullOrWhiteSpace(buildOptions.Device) || buildOptions.DeviceSelectionDone)
-        {
-            return;
-        }
-
-        // Check if this project supports device selection
-        if (!projectInstance.Targets.ContainsKey(Constants.ComputeAvailableDevices))
-        {
-            return;
-        }
-
-        // Create a RunCommandSelector for this project/TFM to handle device selection.
-        // Build/restore was already done by dotnet test, so we use noRestore: true.
-        // Lock is required because TrySelectDevice calls projectInstance.Build() which uses
-        // BuildManager.DefaultBuildManager (a process-wide singleton that cannot run concurrent builds).
-        // The lock also serializes interactive Spectre.Console prompts when a solution has multiple
-        // MAUI projects evaluated in parallel.
-        var tfm = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
-        var msbuildArgsToAppend = buildOptions.MSBuildArgs;
-        if (!string.IsNullOrEmpty(tfm))
-        {
-            msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.TargetFramework}={tfm}");
-        }
-
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
-            msbuildArgsToAppend,
-            CommonOptions.CreatePropertyOption(),
-            CommonOptions.CreateRestorePropertyOption(),
-            CommonOptions.CreateMSBuildTargetOption(),
-            CommonOptions.CreateVerbosityOption(),
-            CommonOptions.CreateNoLogoOption());
-
-        using var selector = new RunCommandSelector(
-            projectFilePath,
-            !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment(),
-            msbuildArgs,
-            ImmutableDictionary<string, string>.Empty);
-
-        string? selectedDevice;
-        string? runtimeIdentifier;
-        lock (s_buildLock)
-        {
-            if (!selector.TrySelectDevice(
-                listDevices: false,
-                noRestore: true,
-                out selectedDevice,
-                out runtimeIdentifier,
-                out _))
-            {
-                // Device selection failed - error already written to stderr by TrySelectDevice
-                throw new GracefulException(
-                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
-            }
-        }
-
-        if (selectedDevice is not null)
-        {
-            projectInstance.SetProperty("Device", selectedDevice);
-            if (!string.IsNullOrEmpty(runtimeIdentifier))
-            {
-                projectInstance.SetProperty("RuntimeIdentifier", runtimeIdentifier);
-            }
         }
     }
 
