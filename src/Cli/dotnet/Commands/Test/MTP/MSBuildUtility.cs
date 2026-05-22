@@ -138,6 +138,16 @@ internal static class MSBuildUtility
                 perTfmArgs = perTfmArgs.Append($"-p:RuntimeIdentifier={rid}");
             }
 
+            if (!string.IsNullOrEmpty(configuration))
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:Configuration={configuration}");
+            }
+
+            if (!string.IsNullOrEmpty(platform))
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:Platform={platform}");
+            }
+
             var perTfmBuildOptions = buildOptions with
             {
                 MSBuildArgs = perTfmArgs,
