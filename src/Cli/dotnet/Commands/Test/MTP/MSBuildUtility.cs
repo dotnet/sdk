@@ -78,6 +78,15 @@ internal static class MSBuildUtility
 
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
     {
+        // Pre-build device selection: evaluate the project to select devices BEFORE building,
+        // so that device-provided RuntimeIdentifiers are included in the build.
+        var devicesByTfm = SolutionAndProjectUtility.SelectDevicesBeforeBuild(projectFilePath, buildOptions);
+
+        if (devicesByTfm is not null)
+        {
+            return BuildPerTfmWithDevices(projectFilePath, buildOptions, devicesByTfm);
+        }
+
         int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
 
         if (buildExitCode != 0)
@@ -95,6 +104,74 @@ internal static class MSBuildUtility
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
         return (projects, buildExitCode);
+    }
+
+    /// <summary>
+    /// Builds each TFM separately with its selected device/RuntimeIdentifier injected, then
+    /// evaluates each to get test modules. This ensures device-provided RIDs are part of the build.
+    /// </summary>
+    private static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) BuildPerTfmWithDevices(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        Dictionary<string, (string? Device, string? RuntimeIdentifier)> devicesByTfm)
+    {
+        var allModules = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
+
+        foreach (var (tfm, (device, rid)) in devicesByTfm)
+        {
+            var perTfmArgs = buildOptions.MSBuildArgs;
+            if (!string.IsNullOrEmpty(tfm))
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:{ProjectProperties.TargetFramework}={tfm}");
+            }
+
+            if (device is not null)
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:Device={device}");
+            }
+
+            if (!string.IsNullOrEmpty(rid))
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:RuntimeIdentifier={rid}");
+            }
+
+            var perTfmBuildOptions = buildOptions with
+            {
+                MSBuildArgs = perTfmArgs,
+                Device = device,
+                DeviceSelectionDone = true,
+            };
+
+            int exitCode = BuildOrRestoreProjectOrSolution(projectFilePath, perTfmBuildOptions);
+            if (exitCode != 0)
+            {
+                return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), exitCode);
+            }
+
+            FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. perTfmBuildOptions.MSBuildArgs], dotnetTestVerb);
+
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+                perTfmBuildOptions.MSBuildArgs,
+                CommonOptions.CreatePropertyOption(),
+                CommonOptions.CreateRestorePropertyOption(),
+                CommonOptions.CreateMSBuildTargetOption(),
+                CommonOptions.CreateVerbosityOption(),
+                CommonOptions.CreateNoLogoOption());
+
+            using var collection = new ProjectCollection(
+                globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs),
+                logger is null ? null : [logger],
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+            var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+            IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> modules = SolutionAndProjectUtility.GetProjectProperties(
+                projectFilePath, collection, evaluationContext, perTfmBuildOptions, configuration: null, platform: null);
+            logger?.ReallyShutdown();
+            collection.UnloadAllProjects();
+
+            allModules.AddRange(modules);
+        }
+
+        return (allModules, 0);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult)

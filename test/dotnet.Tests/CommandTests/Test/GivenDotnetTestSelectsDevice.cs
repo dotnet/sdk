@@ -101,4 +101,20 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         // Should pass without any device prompting
         result.Should().Pass();
     }
+
+    [Fact]
+    public void ItAutoSelectsSingleDevicePerTfm()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        // Run without -f to test all TFMs. SingleDevice=true means one device per TFM
+        // is auto-selected. Device selection happens BEFORE the build so that any
+        // device-provided RuntimeIdentifier is included in the build output.
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("-p:SingleDevice=true");
+
+        result.Should().Pass();
+    }
 }

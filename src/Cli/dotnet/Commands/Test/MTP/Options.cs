@@ -16,4 +16,5 @@ internal record BuildOptions(
     bool NoLaunchProfileArguments,
     List<string> TestApplicationArguments,
     IEnumerable<string> MSBuildArgs,
-    string? Device);
+    string? Device,
+    bool DeviceSelectionDone = false);

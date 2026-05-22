@@ -304,14 +304,134 @@ internal static class SolutionAndProjectUtility
     }
 
     /// <summary>
+    /// Performs device selection for each TFM BEFORE the build, so that device-provided
+    /// RuntimeIdentifiers are included in the build. Returns a dictionary mapping each TFM
+    /// to its selected device and RuntimeIdentifier, or null if no device selection is needed.
+    /// </summary>
+    internal static Dictionary<string, (string? Device, string? RuntimeIdentifier)>? SelectDevicesBeforeBuild(
+        string projectFilePath,
+        BuildOptions buildOptions)
+    {
+        // --device is already handled by HandleDeviceWithTargetFrameworkSelection
+        if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+        {
+            return null;
+        }
+
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            buildOptions.MSBuildArgs,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateMSBuildTargetOption(),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption());
+
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
+
+        using var collection = new ProjectCollection(globalProperties);
+        var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+        var projectInstance = ProjectInstance.FromFile(projectFilePath, new ProjectOptions
+        {
+            GlobalProperties = globalProperties,
+            EvaluationContext = evaluationContext,
+            ProjectCollection = collection,
+        });
+
+        // If the project doesn't support device selection, skip entirely
+        if (!projectInstance.Targets.ContainsKey(Constants.ComputeAvailableDevices))
+        {
+            collection.UnloadAllProjects();
+            return null;
+        }
+
+        var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
+        var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+
+        bool isInteractive = !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+
+        IEnumerable<string> frameworks;
+        if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
+        {
+            // Single TFM (either explicit or via -f/--framework)
+            frameworks = [targetFramework ?? string.Empty];
+        }
+        else
+        {
+            frameworks = targetFrameworks
+                .Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries)
+                .Select(f => f.Trim())
+                .Where(f => !string.IsNullOrEmpty(f));
+        }
+
+        var result = new Dictionary<string, (string? Device, string? RuntimeIdentifier)>();
+        foreach (var framework in frameworks)
+        {
+            var (device, rid) = SelectDeviceForTfm(projectFilePath, buildOptions, framework, isInteractive);
+            result[framework] = (device, rid);
+        }
+
+        collection.UnloadAllProjects();
+        return result.Values.Any(v => v.Device is not null) ? result : null;
+    }
+
+    /// <summary>
+    /// Selects a device for a specific TFM using RunCommandSelector.
+    /// Returns (null, null) if no device support or no devices available for this TFM.
+    /// </summary>
+    private static (string? device, string? runtimeIdentifier) SelectDeviceForTfm(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        string? tfm,
+        bool isInteractive)
+    {
+        var msbuildArgsToAppend = buildOptions.MSBuildArgs;
+        if (!string.IsNullOrEmpty(tfm))
+        {
+            msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.TargetFramework}={tfm}");
+        }
+
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            msbuildArgsToAppend,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateMSBuildTargetOption(),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption());
+
+        using var selector = new RunCommandSelector(
+            projectFilePath,
+            isInteractive,
+            msbuildArgs,
+            ImmutableDictionary<string, string>.Empty);
+
+        lock (s_buildLock)
+        {
+            if (!selector.TrySelectDevice(
+                listDevices: false,
+                noRestore: buildOptions.HasNoRestore,
+                out var selectedDevice,
+                out var runtimeIdentifier,
+                out _))
+            {
+                throw new GracefulException(
+                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+            }
+
+            return (selectedDevice, runtimeIdentifier);
+        }
+    }
+
+    /// <summary>
     /// Selects a device for the given project instance if the project supports device selection
     /// (has a ComputeAvailableDevices target) and no device was pre-specified via --device.
     /// When --device is specified, the device is already set as an MSBuild property via the build args.
+    /// For the project path, device selection is done pre-build via SelectDevicesBeforeBuild;
+    /// this method is the fallback for the solution path where pre-build selection isn't done.
     /// </summary>
     private static void TrySelectDeviceForProject(ProjectInstance projectInstance, string projectFilePath, BuildOptions buildOptions)
     {
-        // If --device was specified, the device is already in MSBuild args from HandleDeviceWithTargetFrameworkSelection
-        if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+        // If --device was specified or device selection was already done pre-build
+        if (!string.IsNullOrWhiteSpace(buildOptions.Device) || buildOptions.DeviceSelectionDone)
         {
             return;
         }
