@@ -342,9 +342,13 @@ public sealed class VirtualProjectBuilder
                     continue;
                 }
 
-                if (directive is CSharpDirective.Named named && !deduplicator.CheckDirective(named, reportError))
+                if (directive is CSharpDirective.Named named)
                 {
-                    continue;
+                    deduplicator.CheckDirective(named, reportError, out bool shouldKeep);
+                    if (!shouldKeep)
+                    {
+                        continue;
+                    }
                 }
 
                 deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
@@ -414,10 +418,14 @@ public sealed class VirtualProjectBuilder
 
             foreach (var directive in directives)
             {
-                if (directive is CSharpDirective.Sdk sdk && !deduplicator.CheckDirective(sdk, reportError))
+                if (directive is CSharpDirective.Sdk sdk)
                 {
-                    changed = true;
-                    continue;
+                    deduplicator.CheckDirective(sdk, reportError, out bool shouldKeep);
+                    if (!shouldKeep)
+                    {
+                        changed = true;
+                        continue;
+                    }
                 }
 
                 builder.Add(directive);

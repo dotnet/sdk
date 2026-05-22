@@ -159,7 +159,7 @@ internal static class FileLevelDirectiveHelpers
                 {
                     if (checkDuplicates)
                     {
-                        deduplicator.CheckDirective(directive, errorReporter);
+                        deduplicator.CheckDirective(directive, errorReporter, shouldKeep: out _);
                     }
 
                     builder?.Add(directive);
@@ -887,12 +887,13 @@ internal struct DirectiveDeduplicator
     /// <summary>
     /// Checks <paramref name="directive"/> for duplication and reports an error if a different unevaluated value was already seen.
     /// </summary>
-    /// <returns><see langword="false"/> if a duplicate directive was already seen and this directive should be skipped.</returns>
-    public bool CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError)
+    /// <param name="shouldKeep"><see langword="false"/> if a duplicate directive was already seen and this directive should be skipped.</param>
+    public void CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError, out bool shouldKeep)
     {
         if (directive is CSharpDirective.Project or CSharpDirective.Ref or CSharpDirective.IncludeOrExclude)
         {
-            return true;
+            shouldKeep = true;
+            return;
         }
 
         _seen ??= new(NamedDirectiveComparer.Instance);
@@ -901,21 +902,23 @@ internal struct DirectiveDeduplicator
         {
             if (HasSameValue(existingDirective, directive))
             {
-                return false;
+                shouldKeep = false;
+                return;
             }
 
             var typeAndName = $"#:{existingDirective.KindToString()} {existingDirective.Name}";
             reportError(directive.Info.SourceFile.Text, directive.Info.SourceFile.Path, directive.Info.Span,
                 string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
 
-            return false;
+            shouldKeep = false;
+            return;
         }
         else
         {
             _seen.Add(directive, directive);
         }
 
-        return true;
+        shouldKeep = true;
     }
 
     private static bool HasSameValue(CSharpDirective.Named existingDirective, CSharpDirective.Named directive)
