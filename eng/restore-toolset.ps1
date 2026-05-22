@@ -189,13 +189,34 @@ function CreateVSShortcut() {
 
 function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
-    $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
 
-    # Let dotnetup handle checking if versions are already installed
-    & $dotnetupExe runtime install @versions --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
+    # TEMPORARY (https://github.com/dotnet/sdk/issues/XXXXX): the 6.0 and 7.0 release manifests
+    # are currently unsigned (a release-time pipeline issue stripped their CMS signatures), so
+    # dotnetup — which requires a verified signature — rejects them. Fall back to the legacy
+    # dotnet-install.ps1 script for those channels only; revert once the manifests are re-signed.
+    $legacyVersions = $versions | Where-Object { $_ -in @('6.0', '7.0') }
+    $dotnetupVersions = $versions | Where-Object { $_ -notin @('6.0', '7.0') }
 
-    if ($lastExitCode -ne 0) {
-        throw "Failed to install shared frameworks ($($versions -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
+    if ($dotnetupVersions) {
+        $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
+
+        # Let dotnetup handle checking if versions are already installed
+        & $dotnetupExe runtime install @dotnetupVersions --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
+
+        if ($lastExitCode -ne 0) {
+            throw "Failed to install shared frameworks ($($dotnetupVersions -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
+        }
+    }
+
+    if ($legacyVersions) {
+        $installScript = GetDotNetInstallScript $dotnetRoot
+        foreach ($channel in $legacyVersions) {
+            Write-Host "Installing runtime channel '$channel' via dotnet-install.ps1 (dotnetup signature verification fallback)."
+            & $installScript -Channel $channel -Runtime 'dotnet' -InstallDir $dotnetRoot -SkipNonVersionedFiles
+            if ($lastExitCode -ne 0) {
+                throw "Failed to install shared framework '$channel' to '$dotnetRoot' using dotnet-install.ps1 (exit code '$lastExitCode')."
+            }
+        }
     }
 }
 

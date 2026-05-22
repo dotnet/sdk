@@ -143,15 +143,47 @@ function InstallDotNetSharedFrameworks {
     return
   fi
 
-  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  local dotnetup_exe="$script_dir/dotnetup/dotnetup"
+  # TEMPORARY (https://github.com/dotnet/sdk/issues/XXXXX): the 6.0 and 7.0 release manifests
+  # are currently unsigned (a release-time pipeline issue stripped their CMS signatures), so
+  # dotnetup -- which requires a verified signature -- rejects them. Fall back to the legacy
+  # dotnet-install.sh script for those channels only; revert once the manifests are re-signed.
+  local dotnetup_versions=()
+  local legacy_versions=()
+  for version in "${versions_to_install[@]}"; do
+    case "$version" in
+      6.0*|7.0*) legacy_versions+=("$version") ;;
+      *)         dotnetup_versions+=("$version") ;;
+    esac
+  done
 
-  "$dotnetup_exe" runtime install "${versions_to_install[@]}" --install-path "$dotnet_root" --no-progress --set-default-install false --untracked --interactive false
-  local lastexitcode=$?
+  if [[ ${#dotnetup_versions[@]} -gt 0 ]]; then
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local dotnetup_exe="$script_dir/dotnetup/dotnetup"
 
-  if [[ $lastexitcode != 0 ]]; then
-    echo "Failed to install shared frameworks (${versions_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
-    ExitWithExitCode $lastexitcode
+    "$dotnetup_exe" runtime install "${dotnetup_versions[@]}" --install-path "$dotnet_root" --no-progress --set-default-install false --untracked --interactive false
+    local lastexitcode=$?
+
+    if [[ $lastexitcode != 0 ]]; then
+      echo "Failed to install shared frameworks (${dotnetup_versions[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
+      ExitWithExitCode $lastexitcode
+    fi
+  fi
+
+  if [[ ${#legacy_versions[@]} -gt 0 ]]; then
+    GetDotNetInstallScript "$dotnet_root"
+    local install_script=$_GetDotNetInstallScript
+
+    for version in "${legacy_versions[@]}"; do
+      # Map an explicit "X.Y.0" placeholder back to its "X.Y" channel for the install script.
+      local channel="${version%.0}"
+      echo "Installing runtime channel '$channel' via dotnet-install.sh (dotnetup signature verification fallback)."
+      bash "$install_script" --channel "$channel" --runtime dotnet --install-dir "$dotnet_root" --skip-non-versioned-files
+      local lastexitcode=$?
+      if [[ $lastexitcode != 0 ]]; then
+        echo "Failed to install shared framework '$channel' to '$dotnet_root' using dotnet-install.sh (exit code '$lastexitcode')."
+        ExitWithExitCode $lastexitcode
+      fi
+    done
   fi
 }
 
