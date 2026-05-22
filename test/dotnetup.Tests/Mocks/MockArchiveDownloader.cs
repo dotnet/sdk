@@ -72,9 +72,4 @@ internal class MockArchiveDownloader : IArchiveDownloader
         // Report progress completion
         progress?.Report(new DownloadProgress(100, 100));
     }
-
-    public void Dispose()
-    {
-        // Nothing to dispose
-    }
 }

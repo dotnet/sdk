@@ -13,7 +13,6 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly ReleaseVersion _resolvedVersion;
     private readonly IProgressTarget? _progressTarget;
     private readonly IArchiveDownloader _archiveDownloader;
-    private readonly bool _shouldDisposeDownloader;
     private readonly bool _ownsProgressReporter = true;
     private readonly int _versionDisplayWidth;
     private MuxerHandler? MuxerHandler { get; set; }
@@ -72,12 +71,10 @@ internal class DotnetArchiveExtractor : IDisposable
         if (archiveDownloader != null)
         {
             _archiveDownloader = archiveDownloader;
-            _shouldDisposeDownloader = false;
         }
         else
         {
             _archiveDownloader = new DotnetArchiveDownloader(releaseManifest, cacheDirectory: cacheDirectory);
-            _shouldDisposeDownloader = true;
         }
     }
 
@@ -506,18 +503,6 @@ internal class DotnetArchiveExtractor : IDisposable
             if (_ownsProgressReporter)
             {
                 _progressReporter?.Dispose();
-            }
-        }
-        catch
-        {
-        }
-
-        try
-        {
-            // Dispose the archive downloader if we created it
-            if (_shouldDisposeDownloader)
-            {
-                _archiveDownloader.Dispose();
             }
         }
         catch

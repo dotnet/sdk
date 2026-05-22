@@ -16,7 +16,6 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     private const int RetryDelayMilliseconds = 1000;
 
     private readonly HttpClient _httpClient;
-    private readonly bool _shouldDisposeHttpClient;
     private readonly ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
 
@@ -29,16 +28,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
         _downloadCache = new DownloadCache(cacheDirectory);
-        if (httpClient == null)
-        {
-            _httpClient = DefaultHttpClient.Instance;
-            _shouldDisposeHttpClient = false;
-        }
-        else
-        {
-            _httpClient = httpClient;
-            _shouldDisposeHttpClient = false;
-        }
+        // The HttpClient is either the shared process-wide singleton or supplied by the caller; we never own it.
+        _httpClient = httpClient ?? DefaultHttpClient.Instance;
     }
 
     /// <summary>
@@ -497,13 +488,5 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         throw new DotnetInstallException(
                        DotnetInstallErrorCode.HashMismatch,
                        $"File hash mismatch. Expected: {expectedHash}, Actual: {actualHash}");
-    }
-
-    public void Dispose()
-    {
-        if (_shouldDisposeHttpClient)
-        {
-            _httpClient?.Dispose();
-        }
     }
 }
