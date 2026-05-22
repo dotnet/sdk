@@ -190,12 +190,13 @@ function CreateVSShortcut() {
 function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
 
-    # TEMPORARY (https://github.com/dotnet/sdk/issues/XXXXX): the 6.0 and 7.0 release manifests
-    # are currently unsigned (a release-time pipeline issue stripped their CMS signatures), so
-    # dotnetup — which requires a verified signature — rejects them. Fall back to the legacy
-    # dotnet-install.ps1 script for those channels only; revert once the manifests are re-signed.
-    $legacyVersions = $versions | Where-Object { $_ -in @('6.0', '7.0') }
-    $dotnetupVersions = $versions | Where-Object { $_ -notin @('6.0', '7.0') }
+    # TEMPORARY (https://github.com/dotnet/sdk/issues/XXXXX): the 6.0, 7.0, and 8.0 release
+    # manifests are currently unsigned (a release-time pipeline issue stripped their CMS
+    # signatures), so dotnetup — which requires a verified signature — rejects them. Fall
+    # back to the legacy dotnet-install.ps1 script for those channels only; revert once the
+    # manifests are re-signed.
+    $legacyVersions = $versions | Where-Object { $_ -in @('6.0', '7.0', '8.0') }
+    $dotnetupVersions = $versions | Where-Object { $_ -notin @('6.0', '7.0', '8.0') }
 
     if ($dotnetupVersions) {
         $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
