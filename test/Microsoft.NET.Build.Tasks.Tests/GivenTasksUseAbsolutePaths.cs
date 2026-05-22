@@ -284,33 +284,17 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #region ResolveOverlappingItemGroupConflicts
 
-    [Theory]
-    [InlineData(false)] // relative HintPaths must be resolved from the project directory via TaskEnvironment
-    [InlineData(true)]  // absolute HintPaths must be passed through unchanged (absolutization is a no-op)
-    public void ResolveOverlappingItemGroupConflicts_PreservesHintPaths(bool useAbsolutePaths)
+    [Fact]
+    public void ResolveOverlappingItemGroupConflicts_WithRelativeHintPaths_ShouldResolveFromProjectDirectory()
     {
-        const string winnerRelative = "libs/winner.dll";
-        const string loserRelative = "libs/loser.dll";
+        const string winnerPath = "libs/winner.dll";
+        const string loserPath = "libs/loser.dll";
 
-        var winnerAbsolute = _env.CreateProjectFile(winnerRelative, string.Empty);
-        var loserAbsolute = _env.CreateProjectFile(loserRelative, string.Empty);
+        _env.CreateProjectFile(winnerPath, string.Empty);
+        _env.CreateProjectFile(loserPath, string.Empty);
 
-        var winnerPath = useAbsolutePaths ? winnerAbsolute : winnerRelative;
-        var loserPath = useAbsolutePaths ? loserAbsolute : loserRelative;
-
-        if (useAbsolutePaths)
-        {
-            Path.IsPathRooted(winnerPath).Should().BeTrue();
-            Path.IsPathRooted(loserPath).Should().BeTrue();
-        }
-        else
-        {
-            // Precondition guard: the relative paths must NOT resolve from CWD,
-            // otherwise the task could accidentally pass via CWD-based resolution
-            // even if TaskEnvironment-based absolutization were broken.
-            File.Exists(winnerPath).Should().BeFalse("file should NOT exist relative to CWD");
-            File.Exists(loserPath).Should().BeFalse("file should NOT exist relative to CWD");
-        }
+        File.Exists(winnerPath).Should().BeFalse("file should NOT exist relative to CWD");
+        File.Exists(loserPath).Should().BeFalse("file should NOT exist relative to CWD");
 
         var winner = CreateCopyLocalConflictItem(winnerPath, "2.0.0.0");
         var loser = CreateCopyLocalConflictItem(loserPath, "1.0.0.0");
@@ -325,11 +309,40 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
         var result = task.Execute();
 
-        result.Should().BeTrue();
+        result.Should().BeTrue("task should resolve relative HintPath metadata via TaskEnvironment");
         task.RemovedItemGroup1.Should().BeEmpty();
         task.RemovedItemGroup2.Should().ContainSingle().Which.Should().BeSameAs(loser);
         task.RemovedItemGroup2[0]!.ItemSpec.Should().Be(loserPath, "outputs should preserve original item specs");
         task.RemovedItemGroup2[0]!.GetMetadata("HintPath").Should().Be(loserPath, "outputs should preserve original metadata");
+    }
+
+    [Fact]
+    public void AbsoluteHintPaths_AreLeftUnchanged()
+    {
+        var winnerPath = _env.CreateProjectFile("libs/winner.dll", string.Empty);
+        var loserPath = _env.CreateProjectFile("libs/loser.dll", string.Empty);
+
+        Path.IsPathRooted(winnerPath).Should().BeTrue();
+        Path.IsPathRooted(loserPath).Should().BeTrue();
+
+        var winner = CreateCopyLocalConflictItem(winnerPath, "2.0.0.0");
+        var loser = CreateCopyLocalConflictItem(loserPath, "1.0.0.0");
+
+        var task = new ResolveOverlappingItemGroupConflicts
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            ItemGroup1 = new ITaskItem[] { winner },
+            ItemGroup2 = new ITaskItem[] { loser }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue("absolutization should be a no-op when HintPaths are already rooted");
+        task.RemovedItemGroup1.Should().BeEmpty();
+        task.RemovedItemGroup2.Should().ContainSingle().Which.Should().BeSameAs(loser);
+        task.RemovedItemGroup2[0]!.ItemSpec.Should().Be(loserPath, "outputs should preserve original (absolute) item specs");
+        task.RemovedItemGroup2[0]!.GetMetadata("HintPath").Should().Be(loserPath, "outputs should preserve original (absolute) metadata");
     }
 
     [Fact]
