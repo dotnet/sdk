@@ -240,18 +240,37 @@ to:
 
 ## 7. RFC 3161 timestamp
 
-- The signer's `UnsignedAttributes` MUST contain
-  `1.2.840.113549.1.9.16.2.14` (`id-aa-signatureTimeStampToken`).
-- The token MUST decode via `Rfc3161TimestampToken.TryDecode`.
-- `Rfc3161TimestampToken.VerifySignatureForSignerInfo` MUST succeed and
-  return a TSA certificate; this cryptographically binds the token to
-  the primary signature's `EncryptedDigest`.
-- The TSA certificate MUST carry EKU exactly `1.3.6.1.5.5.7.3.8`
-  (`id-kp-timeStamping`), exclusive of any other OID.
-- The TSA certificate's **immediate issuer** Distinguished Name MUST
+- The signer's `UnsignedAttributes` MUST contain **at least one**
+  `1.2.840.113549.1.9.16.2.14` (`id-aa-signatureTimeStampToken`). RFC 5126 §6.1.1
+  explicitly permits the attribute to appear multiple times — each instance is a
+  separate TSA witness over the same `SignerInfo.signatureValue` (typically used for
+  renewal as an original TSA cert ages towards expiry).
+- When multiple tokens are present the verifier validates **all** of them: every token
+  MUST decode via `Rfc3161TimestampToken.TryDecode`, every token's
+  `Rfc3161TimestampToken.VerifySignatureForSignerInfo` MUST succeed, and every TSA
+  chain MUST build under the rules below. Failing any single token invalidates the
+  signature.
+- The **earliest** `token.TokenInfo.Timestamp` across all valid tokens is used as the
+  authoritative signing time for the primary chain's `VerificationTime` (§6) and the
+  JSON expiration check (§9). Earliest is the most conservative choice: the signer
+  cert had to be valid at that point, and later renewal tokens only *extend* trust
+  into the future, never relax it. Because every token is fully validated, accepting
+  additional tokens cannot weaken the signature — each one is another mandatory check.
+- Each TSA certificate MUST carry EKU exactly `1.3.6.1.5.5.7.3.8`
+  (`id-kp-timeStamping`), exclusive of any other OID, per RFC 3161 §2.3
+  ("the certificate MUST contain only one instance of the extended key
+  usage field extension … with KeyPurposeID having value:
+  id-kp-timeStamping"). The CAB-Forum BR §7.1.2.3(f) "MAY be present"
+  permitted-extras list applies only to code-signing certificates, not to
+  timestamp certificates — so the TSA EKU policy is intentionally
+  stricter than the primary signer's CAB-Forum-aligned policy in §5.3.
+- Each TSA certificate's **immediate issuer** Distinguished Name MUST
   consist of exactly the following RDNs (same comparison rules as §5.1).
   This pins the TSA leaf to a specific DigiCert timestamping
-  intermediate as a defense-in-depth check on top of the chain build:
+  intermediate as a defense-in-depth check **on top of** §6's chain
+  build (which is the cryptographic trust anchor; the DN pin protects
+  against a CA misconfiguration that lets a different DigiCert-rooted
+  timestamping leaf chain successfully):
 
   | OID        | Short | Value                                                           |
   | ---------- | ----- | --------------------------------------------------------------- |
@@ -287,8 +306,21 @@ to:
     any other chain failure → `TimestampChainFailed`.
 
 The "authoritative signing time" used everywhere else (cert validity
-window, JSON policy) is `token.TokenInfo.Timestamp` (UTC), not the
-signer's claimed signing-time attribute.
+window, JSON policy) is `token.TokenInfo.Timestamp` (UTC). The PKCS#9
+`signing-time` signed attribute is intentionally not consulted (see §8).
+
+> **TSA-cert lifetime vs. release cadence.** The .NET release pipeline re-signs the
+> primary release manifests on every release cycle (currently monthly), and the bundled
+> `timestampctl.pem` plus DigiCert's TSA-cert rotation cadence is comfortably longer than
+> that window plus normal client cache lifetimes. The standard code-signing concern about
+> TSA-cert expiration — where artifacts are immutable and new TSTs must be layered over
+> old ones as the original TSA cert ages — does not apply: a manifest whose TSA leaf has
+> expired is by definition stale and the next monthly release supersedes it. Older
+> manifests being invalidated by TSA expiry is intended behavior here and aligns with
+> Liquid `Microsoft.Security.SystemsADM.10053`. (This concerns *manifests* only — the
+> archives themselves are integrity-bound by the manifest's SHA-512 pins rather than
+> by direct CMS signatures; archive `.p7s` verification is out of scope today and
+> appears in §1's TODO list.)
 
 Failures: `TimestampMissing`, `TimestampMalformed`,
 `TimestampBindingInvalid`, `TimestampEkuInvalid`,
@@ -331,8 +363,7 @@ additionally enforces:
   ISO-8601 UTC `DateTimeOffset`. The verifier checks for a top-level
   `expiration` property first and falls back to `signature.expiration`
   (v2 manifest format).
-- `signingTime < expiration` (TSA-authoritative signing time, not the
-  attribute-claimed one).
+- `signingTime < expiration` (TSA-authoritative signing time per §7).
 - `UtcNow < expiration`.
 
 Failures: `JsonParseFailed`, `ExpirationMissing`, `ExpirationMalformed`,
@@ -371,8 +402,13 @@ to a `CheckSkipped` is through a prior failure.
 The verifier deliberately does not handle:
 
 - Multiple signers or nested/parallel signatures.
-- Counter-signatures other than the single RFC 3161
-  `signatureTimeStampToken`.
+- Counter-signatures other than RFC 3161 `signatureTimeStampToken` (which may itself
+  appear multiple times for TSA renewal per RFC 5126 §6.1.1 — see §7).
 - Certificate revocation discovery via AIA fetch of intermediates.
 - Air-gapped / offline verification (see §1 / §6 TODOs).
 - Non-PKCS#7/CMS container formats (PGP, XMLDSig, JWS, etc.).
+- Augmenting `CustomTrustStore` with the OS root store. The pinned PEMs
+  in `codesignctl.pem` / `timestampctl.pem` already include the trust
+  anchors the .NET Release signer chains to; layering the OS-store union
+  on top would silently widen accepted trust beyond what the pinned CTLs
+  declare. See §6.

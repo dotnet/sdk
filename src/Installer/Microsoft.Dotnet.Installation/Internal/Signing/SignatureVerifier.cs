@@ -212,8 +212,7 @@ internal static class SignatureVerifier
         SignerInfo? signer = null;
         X509Certificate2? signerCert = null;
         DateTimeOffset? tsaTimestampUtc = null;
-        SignedCms? tsaCms = null;
-        X509Certificate2? tsaCert = null;
+        IReadOnlyList<TsaToken> tsaTokens = Array.Empty<TsaToken>();
 
         // Pipeline of verification steps. Steps run in order; in ShortCircuit mode the loop
         // bails as soon as any step records a failure. Centralizing the gate here keeps each
@@ -225,8 +224,8 @@ internal static class SignatureVerifier
             () => DecodeCms(content, signature, result, out cms, out signer, out signerCert),
             () => EvaluateAlgorithmPolicy(signer, signerCert, result),
             () => EvaluateSignerCertificatePolicy(signerCert, result),
-            () => (tsaTimestampUtc, tsaCms, tsaCert) = TryEvaluateTimestamp(signer, claimedSigningTimeUtc, result),
-            () => EvaluateTimestampChain(tsaCert, tsaCms, tsaTimestampUtc, signer, options, result),
+            () => (tsaTimestampUtc, tsaTokens) = TryEvaluateTimestamp(signer, result),
+            () => EvaluateTimestampChains(tsaTokens, signer, options, nowOverride, result),
             () => EvaluatePrimaryChain(signerCert, cms, tsaTimestampUtc, options, nowOverride, result),
             () => MaybeEvaluateJsonExpiration(content, tsaTimestampUtc, options, nowOverride, result),
         };
@@ -358,6 +357,8 @@ internal static class SignatureVerifier
             string keyOid = signerCert.PublicKey.Oid.Value ?? string.Empty;
             if (!s_allowedPublicKeyOids.Contains(keyOid))
             {
+                result.Add(FailureCode.SignatureAlgorithmNotPermitted,
+                    $"Signer public-key algorithm OID '{keyOid}' is not permitted. Allowed: RSA, ECDSA, ML-DSA, SLH-DSA, Composite ML-DSA.");
             }
         }
         else
@@ -392,73 +393,78 @@ internal static class SignatureVerifier
         EvaluateEku(signerCert, EkuCodeSigning, primary: true, result);
     }
 
-    private static (DateTimeOffset? Timestamp, SignedCms? TsaCms, X509Certificate2? TsaCert) TryEvaluateTimestamp(
+    private static (DateTimeOffset? AuthoritativeTime, IReadOnlyList<TsaToken> Tokens) TryEvaluateTimestamp(
         SignerInfo? signer,
-        DateTime? claimedSigningTimeUtc,
         VerificationResult result)
     {
         if (signer is null)
         {
             result.AddSkip("Timestamp not evaluated: no SignerInfo available.");
-            return (null, null, null);
+            return (null, Array.Empty<TsaToken>());
         }
 
-        return EvaluateTimestamp(signer, claimedSigningTimeUtc, result);
+        return EvaluateTimestamp(signer, result);
     }
 
     /// <summary>
-    /// Builds the TSA chain when a timestamp was extracted; otherwise records a diagnostic
-    /// skip pointing at the upstream failure that already made the result invalid.
+    /// Builds and validates the X.509 chain for every TSA cert collected by
+    /// <see cref="EvaluateTimestamp"/>. signature-verification.md §7: when multiple RFC 3161
+    /// timestamp tokens are present (per RFC 5126 §6.1.1), every TSA chain must build, every
+    /// TSA leaf must satisfy the EKU + issuer-DN pins. Failing any single TSA invalidates the
+    /// signature.
     /// </summary>
     /// <remarks>
-    /// RFC 3161 timestamping is required (spec §7); it is NOT a spec-permitted optional
-    /// check. Reaching the null-input branch here means <see cref="EvaluateTimestamp"/>
-    /// already added one of <see cref="FailureCode.TimestampMissing"/>,
+    /// RFC 3161 timestamping is required; reaching the empty-input branch means
+    /// <see cref="EvaluateTimestamp"/> already recorded one of
+    /// <see cref="FailureCode.TimestampMissing"/>,
     /// <see cref="FailureCode.TimestampMalformed"/>, or
-    /// <see cref="FailureCode.TimestampBindingInvalid"/>, so <c>result.IsValid</c> is
-    /// already false. In short-circuit mode (the production default) this branch is
-    /// unreachable — the pipeline bails before re-entering. In collect-all mode the skip is
-    /// a diagnostic breadcrumb only; it does not soften policy. Same pattern as
+    /// <see cref="FailureCode.TimestampBindingInvalid"/>, so <c>result.IsValid</c> is already
+    /// false. In short-circuit mode (the production default) this branch is unreachable; in
+    /// collect-all mode the skip is a diagnostic breadcrumb only. Same pattern as
     /// <see cref="EvaluateAlgorithmPolicy"/>.
     /// </remarks>
-    private static void EvaluateTimestampChain(
-        X509Certificate2? tsaCert,
-        SignedCms? tsaCms,
-        DateTimeOffset? tsaTimestampUtc,
+    private static void EvaluateTimestampChains(
+        IReadOnlyList<TsaToken> tokens,
         SignerInfo? signer,
         SignatureVerificationOptions options,
+        DateTimeOffset? nowOverride,
         VerificationResult result)
     {
-        if (tsaCert is null || tsaCms is null || tsaTimestampUtc is null)
+        if (tokens.Count == 0)
         {
             if (signer is not null)
             {
-                result.AddSkip("Timestamp chain not evaluated: the TSA token was missing, malformed, or did not bind to the primary signer (see upstream Timestamp* failure for the specific cause).");
+                result.AddSkip("Timestamp chain(s) not evaluated: no valid TSA token was extracted (see upstream Timestamp* failure for the specific cause).");
             }
             return;
         }
 
-        EvaluateEku(tsaCert, EkuTimeStamping, primary: false, result);
-
-        if (!DistinguishedNameMatches(tsaCert.IssuerName, s_requiredTimestampIssuerRdns, "TSA Issuer", out string tsaIssuerDetail))
+        foreach (TsaToken token in tokens)
         {
-            result.Add(FailureCode.TimestampIssuerMismatch, tsaIssuerDetail);
-        }
+            EvaluateTimestampEku(token.Cert, result);
 
-        EvaluateChain(
-            tsaCert,
-            extraStore: tsaCms.Certificates,
-            customRoots: options.TrustedTimestampRoots,
-            // The TSA chain is built without a fixed VerificationTime so the chain engine
-            // uses "now" — the TSA cert validity is what attests to *when* the timestamp
-            // was issued, so anchoring its own validity check to its own output is
-            // chicken-and-egg. Mirrors NuGet's CertificateChainUtility.SetCertBuildChainPolicy
-            // which skips VerificationTime when CertificateType == Timestamp.
-            verificationTime: null,
-            applicationPolicyEku: EkuTimeStamping,
-            revocationMode: options.RevocationMode,
-            kind: ChainKind.TimestampAuthority,
-            result);
+            if (!DistinguishedNameMatches(token.Cert.IssuerName, s_requiredTimestampIssuerRdns, "TSA Issuer", out string tsaIssuerDetail))
+            {
+                result.Add(FailureCode.TimestampIssuerMismatch, tsaIssuerDetail);
+            }
+
+            EvaluateChain(
+                token.Cert,
+                extraStore: token.Cms.Certificates,
+                customRoots: options.TrustedTimestampRoots,
+                // The TSA chain's VerificationTime is NOT anchored to the TSA-attested timestamp —
+                // that would be chicken-and-egg: the TSA cert validity is what attests to *when*
+                // the timestamp was issued. When a caller supplied a <paramref name="nowOverride"/>
+                // (tests), use it so the chain build is deterministic; otherwise leave null and
+                // let the chain engine use real-time UtcNow. Mirrors NuGet's
+                // CertificateChainUtility.SetCertBuildChainPolicy which skips VerificationTime
+                // when CertificateType == Timestamp.
+                verificationTime: nowOverride?.UtcDateTime,
+                applicationPolicyEku: EkuTimeStamping,
+                revocationMode: options.RevocationMode,
+                kind: ChainKind.TimestampAuthority,
+                result);
+        }
     }
 
     /// <summary>
@@ -689,43 +695,97 @@ internal static class SignatureVerifier
         }
     }
 
-    private static (DateTimeOffset? Timestamp, SignedCms? TsaCms, X509Certificate2? TsaCert) EvaluateTimestamp(
+    /// <summary>
+    /// A single RFC 3161 timestamp token that has been decoded and cryptographically
+    /// bound to the primary signer. Carries the timestamp instant, the TSA leaf cert,
+    /// and the TSA's own SignedCms (for chain-building extraStore).
+    /// </summary>
+    private sealed record TsaToken(SignedCms Cms, X509Certificate2 Cert, DateTimeOffset Time);
+
+    private static (DateTimeOffset? AuthoritativeTime, IReadOnlyList<TsaToken> Tokens) EvaluateTimestamp(
         SignerInfo primarySigner,
-        DateTime? claimedSigningTimeUtc,
         VerificationResult result)
     {
-        if (!TryGetUnsignedAttribute(primarySigner, OidTimestampToken, out AsnEncodedData? tsData))
+        // Collect every id-aa-signatureTimeStampToken unsigned-attribute value. RFC 5126
+        // §6.1.1 explicitly permits the attribute to appear multiple times (each a separate
+        // TSA witness — for example, renewal tokens added later as the original TSA cert
+        // ages towards expiry). The verifier ACCEPTS multiple tokens and validates ALL of
+        // them: every token must decode, every token must cryptographically bind to the
+        // primary signer's EncryptedDigest, every TSA chain must build (see
+        // EvaluateTimestampChains). The earliest token's `genTime` is used as the
+        // authoritative signing time for the primary chain's VerificationTime (§6) and the
+        // JSON expiration check (§9). Earliest is the most conservative anchor: the signer
+        // cert had to be valid at that point, and later renewal TSTs only EXTEND trust into
+        // the future, never relax it. Because every TST is validated end-to-end, an attacker
+        // cannot smuggle anything past the verifier by adding extra tokens — each one is
+        // another mandatory check.
+        var rawTokens = CollectTimestampTokenBytes(primarySigner);
+        if (rawTokens.Count == 0)
         {
             result.Add(FailureCode.TimestampMissing, "Missing RFC 3161 timestamp token (signatureTimeStampToken unsigned attribute).");
-            return (null, null, null);
+            return (null, Array.Empty<TsaToken>());
         }
 
-        if (!Rfc3161TimestampToken.TryDecode(tsData.RawData, out Rfc3161TimestampToken? token, out _) || token is null)
+        var tokens = new List<TsaToken>(rawTokens.Count);
+        for (int i = 0; i < rawTokens.Count; i++)
         {
-            result.Add(FailureCode.TimestampMalformed, "Could not decode RFC 3161 timestamp token.");
-            return (null, null, null);
+            string positionLabel = rawTokens.Count == 1 ? "" : $" #{i + 1} of {rawTokens.Count}";
+            if (TryDecodeAndBindToken(rawTokens[i], primarySigner, positionLabel, result) is { } token)
+            {
+                tokens.Add(token);
+            }
+        }
+
+        if (tokens.Count == 0)
+        {
+            // Every TST failed to decode or bind. Per-token failures were recorded above.
+            return (null, Array.Empty<TsaToken>());
+        }
+
+        DateTimeOffset earliest = tokens[0].Time;
+        for (int i = 1; i < tokens.Count; i++)
+        {
+            if (tokens[i].Time < earliest)
+            {
+                earliest = tokens[i].Time;
+            }
+        }
+
+        return (earliest, tokens);
+    }
+
+    private static List<byte[]> CollectTimestampTokenBytes(SignerInfo primarySigner)
+    {
+        var rawTokens = new List<byte[]>();
+        foreach (CryptographicAttributeObject attr in primarySigner.UnsignedAttributes)
+        {
+            if (attr.Oid.Value != OidTimestampToken)
+            {
+                continue;
+            }
+            foreach (AsnEncodedData v in attr.Values)
+            {
+                rawTokens.Add(v.RawData);
+            }
+        }
+        return rawTokens;
+    }
+
+    private static TsaToken? TryDecodeAndBindToken(byte[] raw, SignerInfo primarySigner, string positionLabel, VerificationResult result)
+    {
+        if (!Rfc3161TimestampToken.TryDecode(raw, out Rfc3161TimestampToken? token, out _) || token is null)
+        {
+            result.Add(FailureCode.TimestampMalformed, $"Could not decode RFC 3161 timestamp token{positionLabel}.");
+            return null;
         }
 
         if (!token.VerifySignatureForSignerInfo(primarySigner, out X509Certificate2? tsaCert) || tsaCert is null)
         {
-            result.Add(FailureCode.TimestampBindingInvalid, "Timestamp does not cover the primary signature (VerifySignatureForSignerInfo failed).");
-            tsaCert = null;
+            result.Add(FailureCode.TimestampBindingInvalid, $"RFC 3161 timestamp token{positionLabel} does not cover the primary signature (VerifySignatureForSignerInfo failed).");
+            return null;
         }
 
-        SignedCms tsaCms = token.AsSignedCms();
-        DateTimeOffset tsaTime = token.TokenInfo.Timestamp;
-
-        if (claimedSigningTimeUtc is { } claimed)
-        {
-            TimeSpan drift = (tsaTime - new DateTimeOffset(claimed, TimeSpan.Zero)).Duration();
-            if (drift > s_signingTimeTolerance)
-            {
-                result.Add(FailureCode.SigningTimeMismatch,
-                    $"Claimed signing-time {claimed:O} drifts {drift} from TSA timestamp {tsaTime:O} (max {s_signingTimeTolerance}).");
-            }
-        }
-
-        return (tsaTime, tsaCms, tsaCert);
+        return new TsaToken(token.AsSignedCms(), tsaCert, token.TokenInfo.Timestamp);
     }
 
     /// <summary>
