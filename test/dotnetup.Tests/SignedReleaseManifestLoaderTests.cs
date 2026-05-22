@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.Dotnet.Installation.Internal.Signing;
@@ -203,8 +204,8 @@ public class SignedReleaseManifestLoaderTests
     // Note on case (a) — JSON GET failure: the loader does NOT wrap the JSON GET in a try/catch
     // (only the .p7s GET). HttpRequestException bubbles out of the loader and is mapped to
     // DotnetInstallException(ManifestFetchFailed) one layer up in
-    // ReleaseManifest.TryFindReleaseFile. Asserting HttpRequestException here documents the
-    // loader-level contract; the wrapper is covered by a separate test below.
+    // ReleaseManifest.TryFindReleaseFile. The loader-level contract is asserted here; the
+    // wrapping by TryFindReleaseFile is covered by ReleaseManifest_WrapsLoaderHttpFailure_AsManifestFetchFailed below.
 
     private const string TestIndexUrl = "https://example.test/release-metadata/releases-index.json";
     private const string TestSigUrl = "https://example.test/release-metadata/releases-directory.json.20260505084330.p7s";
@@ -299,10 +300,10 @@ public class SignedReleaseManifestLoaderTests
     [Fact]
     public void ReleaseManifest_WrapsLoaderHttpFailure_AsManifestFetchFailed()
     {
-        // The loader leaves the JSON-GET HttpRequestException unwrapped; the typed mapping
-        // to DotnetInstallException happens inside ReleaseManifest.TryFindReleaseFile. This
-        // test pins that contract by calling the public ReleaseManifest path with a loader
-        // whose HTTP stack is stubbed to return 500 on the JSON URL.
+        // The loader leaves the JSON-GET HttpRequestException unwrapped (covered by
+        // GetVerifiedReleasesIndex_JsonHttp500_ThrowsHttpRequestException above). The typed
+        // mapping to DotnetInstallException(ManifestFetchFailed) happens one layer up in
+        // ReleaseManifest.TryFindReleaseFile. This test pins that wrapping contract.
         var handler = new StubHandler
         {
             { TestIndexUrl, _ => new HttpResponseMessage(HttpStatusCode.InternalServerError) },
@@ -310,11 +311,16 @@ public class SignedReleaseManifestLoaderTests
         using var loader = CreateLoaderWithHandler(handler);
         var manifest = new ReleaseManifest(loader);
 
-        Action act = () => manifest.GetReleasesIndex();
+        var request = new DotnetInstallRequest(
+            new DotnetInstallRoot(Path.GetTempPath(), InstallerUtilities.GetDefaultInstallArchitecture()),
+            new UpdateChannel("10.0"),
+            InstallComponent.SDK,
+            new InstallRequestOptions());
 
-        // GetReleasesIndex propagates HttpRequestException raw — it's the TryFindReleaseFile
-        // path that wraps. Verify both behaviors.
-        act.Should().Throw<HttpRequestException>();
+        Action act = () => manifest.TryFindReleaseFile(request, new ReleaseVersion("10.0.100"));
+
+        act.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ManifestFetchFailed);
     }
 
     private static HttpResponseMessage OkBytes(byte[] bytes) =>
