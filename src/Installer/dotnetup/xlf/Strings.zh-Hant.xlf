@@ -203,8 +203,8 @@
         <note />
       </trans-unit>
       <trans-unit id="RootCommandDescription">
-        <source>.NET installation manager for user level installs.</source>
-        <target state="new">.NET installation manager for user level installs.</target>
+        <source>.NET toolchain manager for user level installs.</source>
+        <target state="new">.NET toolchain manager for user level installs.</target>
         <note />
       </trans-unit>
       <trans-unit id="TelemetryNotice">
