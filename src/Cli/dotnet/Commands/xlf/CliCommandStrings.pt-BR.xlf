@@ -3224,7 +3224,7 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
         <source>Tool '{0}' (version '{1}') is already installed.</source>
-        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
+        <target state="translated">A ferramenta '{0}' (versão '{1}') já está instalada.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">

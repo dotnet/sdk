@@ -3224,7 +3224,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
         <source>Tool '{0}' (version '{1}') is already installed.</source>
-        <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
+        <target state="translated">已安装工具“{0}”(版本“{1}”).</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
