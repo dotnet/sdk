@@ -330,17 +330,61 @@ internal static class SolutionAndProjectUtility
 
         using var collection = new ProjectCollection(globalProperties);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+
+        return SelectDevicesBeforeBuildCore(projectFilePath, buildOptions, collection, evaluationContext);
+    }
+
+    /// <summary>
+    /// Overload that accepts a pre-existing ProjectCollection/EvaluationContext to avoid
+    /// redundant project evaluation in the solution path.
+    /// </summary>
+    internal static Dictionary<string, (string? Device, string? RuntimeIdentifier)>? SelectDevicesBeforeBuild(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        ProjectCollection projectCollection,
+        EvaluationContext evaluationContext)
+    {
+        // --device is already handled by HandleDeviceWithTargetFrameworkSelection
+        if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+        {
+            return null;
+        }
+
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            buildOptions.MSBuildArgs,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateMSBuildTargetOption(),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption());
+
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
+
+        // If Device is already set via -p:Device=..., skip device selection
+        if (globalProperties.TryGetValue("Device", out var deviceProp) && !string.IsNullOrWhiteSpace(deviceProp))
+        {
+            return null;
+        }
+
+        return SelectDevicesBeforeBuildCore(projectFilePath, buildOptions, projectCollection, evaluationContext);
+    }
+
+    private static Dictionary<string, (string? Device, string? RuntimeIdentifier)>? SelectDevicesBeforeBuildCore(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        ProjectCollection projectCollection,
+        EvaluationContext evaluationContext)
+    {
         var projectInstance = ProjectInstance.FromFile(projectFilePath, new ProjectOptions
         {
-            GlobalProperties = globalProperties,
+            GlobalProperties = projectCollection.GlobalProperties,
             EvaluationContext = evaluationContext,
-            ProjectCollection = collection,
+            ProjectCollection = projectCollection,
         });
 
         // If the project doesn't support device selection, skip entirely
         if (!projectInstance.Targets.ContainsKey(Constants.ComputeAvailableDevices))
         {
-            collection.UnloadAllProjects();
             return null;
         }
 
@@ -370,7 +414,6 @@ internal static class SolutionAndProjectUtility
             result[framework] = (device, rid);
         }
 
-        collection.UnloadAllProjects();
         return result.Values.Any(v => v.Device is not null) ? result : null;
     }
 

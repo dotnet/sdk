@@ -69,11 +69,11 @@ internal static class MSBuildUtility
 
         using var collection = new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions);
+        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions);
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
 
-        return (projects, buildExitCode);
+        return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
     }
 
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
@@ -332,7 +332,7 @@ internal static class MSBuildUtility
         return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
     }
 
-    private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(
+    private static (ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsProperties(
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,
         IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
@@ -345,17 +345,19 @@ internal static class MSBuildUtility
         // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
         foreach (var project in projects)
         {
-            var devicesByTfm = SolutionAndProjectUtility.SelectDevicesBeforeBuild(project.ProjectFilePath, buildOptions);
+            var devicesByTfm = SolutionAndProjectUtility.SelectDevicesBeforeBuild(project.ProjectFilePath, buildOptions, projectCollection, evaluationContext);
 
             if (devicesByTfm is not null)
             {
                 var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, devicesByTfm);
-                if (exitCode == 0)
+                if (exitCode != 0)
                 {
-                    foreach (var module in modules)
-                    {
-                        allProjects.Add(module);
-                    }
+                    return (allProjects, exitCode);
+                }
+
+                foreach (var module in modules)
+                {
+                    allProjects.Add(module);
                 }
             }
             else
@@ -379,6 +381,6 @@ internal static class MSBuildUtility
                 }
             });
 
-        return allProjects;
+        return (allProjects, 0);
     }
 }
