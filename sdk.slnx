@@ -105,6 +105,7 @@
   </Folder>
   <Folder Name="/src/Installer/">
     <Project Path="src/Installer/dotnetup/dotnetup.csproj" />
+    <Project Path="src/Installer/dotnetup.Library/dotnetup.Library.csproj" />
     <Project Path="src/Installer/Microsoft.Dotnet.Installation/Microsoft.Dotnet.Installation.csproj" />
   </Folder>
   <Folder Name="/src/Layout/">

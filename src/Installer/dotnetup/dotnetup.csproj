@@ -1,85 +1,89 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    NativeAOT entry-point Exe for dotnetup. We want to compile dotnetup into a NativeAOT
+    executable, but also reference it from tests.  So the code for dotnetup lives in the
+    dotnetup.Library project, which is what tests reference.  This project is published
+    as a NativeAOT executable and simply has an entry point that forwards to the one in
+    the library.
+    
+    We set _IsPublishing=true and have a PublishOnBuild target so that the AOT publish
+    runs as part of the normal build.
+
+  -->
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
     <PublishAot>true</PublishAot>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ControlFlowGuard>Guard</ControlFlowGuard>
-
-
-    <!-- Strong naming not needed on .NET Core -->
-    <NoWarn>$(NoWarn);CS8002;CS1591</NoWarn>
-
-    <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build.
-         EnforceCodeStyleInBuild=false  prevents IDE* code-style analyzers from running during build.
-         CodeAnalysisTreatWarningsAsErrors=false  keeps CA* analyzer warnings as warnings instead of errors.
-         WarningsNotAsErrors demotes Meziantou MA0051 (method too long) so it stays a warning under TreatWarningsAsErrors. -->
-    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);MA0051</WarningsNotAsErrors>
-
-    <!-- dotnetup versioning -->
-    <VersionPrefix>$(DotnetupVersionPrefix)</VersionPrefix>
-    <PreReleaseVersionLabel>$(DotnetupPreReleaseVersionLabel)</PreReleaseVersionLabel>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <RootNamespace>Microsoft.DotNet.Tools.Bootstrapper</RootNamespace>
+
+    <!-- Default RuntimeIdentifier to TargetRid (which we set in pipelines or
+         Directory.Build.props) instead of letting SDK targets default it to the host
+         RID, which may be different. -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(TargetRid)' != ''">$(TargetRid)</RuntimeIdentifier>
+
+    <!-- This entry-point Exe is shipped as a standalone binary, not a NuGet package. -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::ValueOrDefault('$(RuntimeIdentifier)', '').StartsWith('osx'))">
+    <!-- Suppress macOS NativeAOT debug-info generation to avoid .pcm module-cache errors.
+         The runtime's static archives (libSystem.Native.a, etc.) embed clang module-debug
+         references to .pcm files in /var/folders/... that only exist on the runtime's build
+         machine. When the linker runs with -g, ld traverses those refs and errors out; the
+         post-link dsymutil invocation does the same. Both surface as MSBuild EXEC errors
+         that Arcade promotes to build failures, e.g.:
+
+           EXEC : error : .../ModuleCache/.../Foundation-...pcm: No such file or directory
+           note: Linking a static library that was built with -gmodules, but the module
+           cache was not found.
+
+         We don't ship a .dSYM bundle for dotnetup, so dropping native debug info on Mac
+         (and the strip/dsymutil post-link pipeline) is harmless. Other RIDs keep their
+         default debug-symbol behavior. -->
+    <NativeDebugSymbols>false</NativeDebugSymbols>
+    <StripSymbols>false</StripSymbols>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="dotnetup.Tests" />
+    <ProjectReference Include="..\dotnetup.Library\dotnetup.Library.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\TelemetryDiskLogger.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\DevDeviceIDGetter.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\DockerContainerDetectorForTelemetry.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\IDockerContainerDetector.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\EnvironmentDetectionRule.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.CoreUtils\EnvironmentVariableParser.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Definitions\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ILLMEnvironmentDetector.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\LLMEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Env.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\EnvironmentProvider.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Extensions\CollectionsExtensions.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\IEnvironmentProvider.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\AutomaticEncodingRestorer.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\UILanguageOverride.cs" LinkBase="Shared" />
-  </ItemGroup>
+    <!-- We want to always create a NativeAOT executable when this project is built or published.
+    
+        So we set _IsPublishing=true and add a target to run Publish after Build.  But in order to 
+        avoid a target cycle error when publish is invoked directly, we first check whether
+        _IsPublishing was already set, and if so let the normal publish flow run instead. -->
+  <PropertyGroup>
+    <_PublishWasInvokedDirectly Condition="'$(_IsPublishing)' == 'true'">true</_PublishWasInvokedDirectly>
+    <_IsPublishing>true</_IsPublishing>
 
-  <ItemGroup>
-    <PackageReference Include="Meziantou.Analyzer" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
-    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-    <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="Spectre.Console" />
-    <!-- Telemetry packages (AOT compatible) — mirrors SDK's dotnet.csproj -->
-    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="OpenTelemetry" />
-    <PackageReference Include="OpenTelemetry.Exporter.Console" />
-    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-  </ItemGroup>
+    <!-- Skip the implicit AOT Publish-on-Build when cross-compiling on Linux without a cross-toolchain.
+         On Linux, the AOT linker invokes the host's clang/ld.bfd, which can't link for a different
+         architecture without a SysRoot + lld toolchain (e.g. ld.bfd: unrecognised emulation mode:
+         aarch64linux). The main SDK CI's TestBuild cross-RID legs build the whole repo with
+         /p:RuntimeIdentifier set to a non-host RID but don't supply a cross-toolchain, so we skip
+         the implicit publish there. The dedicated dotnetup pipeline's Linux cross legs pass
+         /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld and so still run publish here. Windows (link.exe)
+         and macOS (clang + ld64) handle cross-arch linking natively, so cross-arch legs there are
+         unaffected and still produce the AOT binary. -->
+    <_DotnetupSkipPublishOnBuild Condition="'$(HostOS)' == 'linux' and '$(TargetArchitecture)' != '$(BuildArchitecture)' and '$(SysRoot)' == ''">true</_DotnetupSkipPublishOnBuild>
+  </PropertyGroup>
 
-  <ItemGroup>
-    <Using Include="Microsoft.Dotnet.Installation" />
-  </ItemGroup>
+  <Target Name="PublishOnBuild"
+          AfterTargets="Build"
+          DependsOnTargets="Publish"
+          Condition="'$(_PublishWasInvokedDirectly)' != 'true' and '$(_DotnetupSkipPublishOnBuild)' != 'true'" />
 
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Tools.Bootstrapper" />
-  </ItemGroup>
+  <!--
+    Lets eng/Publishing.props query the dotnetup SemVer (e.g. 0.1.3-preview.<buildid>) to
+    use as the blob-path prefix when registering the NativeAOT binary as a Blob artifact
+    for Arcade publishing. Mirrors the ReturnProductVersion pattern on
+    src/Layout/redist/redist.csproj.
+  -->
+  <Target Name="ReturnDotnetupVersion" Returns="$(Version)" />
 
 </Project>

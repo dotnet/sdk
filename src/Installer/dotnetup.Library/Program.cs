@@ -1,0 +1,142 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Spectre.Console;
+
+namespace Microsoft.DotNet.Tools.Bootstrapper;
+
+internal class DotnetupProgram
+{
+    public static int Main(string[] args)
+    {
+        // Handle --debug flag using the standard .NET SDK pattern
+        // This is DEBUG-only and removes the --debug flag from args
+        DotnetupDebugHelper.HandleDebugSwitch(ref args);
+
+        // Start root activity for the entire process. Disposed explicitly in
+        // the finally block below (no `using` here) so the completion event is
+        // emitted before DisposeTelemetry flushes/shuts down the providers.
+        var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+
+        // Capture current console encoding so it can be restored on exit.
+        // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.
+        using AutomaticEncodingRestorer encodingRestorer = new();
+        ConfigureConsoleEncoding();
+
+        // Disable Spectre.Console line wrapping when output is redirected (piped),
+        // since wrapping is not useful for non-interactive consumers.
+        if (Console.IsOutputRedirected)
+        {
+            AnsiConsole.Profile.Width = int.MaxValue;
+        }
+
+        // Set up callback to notify user when waiting for another dotnetup process.
+        // Write to stderr so piped stdout (e.g., print-env-script) is not corrupted.
+        ScopedMutex.OnWaitingForMutex = () =>
+        {
+            Console.Error.WriteLine("Another dotnetup process is running. Waiting for it to finish...");
+        };
+
+        // Show first-run telemetry notice if needed
+        FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
+
+        int processExitCode = 1;
+
+        try
+        {
+            processExitCode = InvokeParser(args);
+
+            return processExitCode;
+        }
+        catch (Exception ex)
+        {
+            DotnetupTelemetry.Instance.RecordException(rootOp, ex);
+
+            // Log the error and return non-zero exit code
+            Console.Error.WriteLine($"Error: {ex.Message}");
+#if DEBUG
+            Console.Error.WriteLine(ex.StackTrace);
+#endif
+            return 1;
+        }
+        finally
+        {
+            TagRootForExitCode(rootOp, processExitCode);
+            rootOp.Dispose(); // emit root event before flush
+            DisposeTelemetry();
+        }
+    }
+
+    /// <summary>
+    /// Stamps the final exit code, status, and (if applicable) a synthetic
+    /// <c>error.type=ParseError</c> tag on the root op. The synthetic tag
+    /// covers the case where the parser returned a non-zero exit code
+    /// without throwing (e.g., System.CommandLine validation failure that
+    /// printed usage and returned non-zero) — without this, the failure
+    /// would have no <c>error.*</c> tags anywhere and would disappear from
+    /// the dashboard's root-error queries.
+    /// </summary>
+    private static void TagRootForExitCode(TrackedOperation rootOp, int processExitCode)
+    {
+        if (processExitCode != 0 && rootOp.Activity?.GetTagItem("error.type") is null)
+        {
+            rootOp.Tag("error.type", "ParseError");
+            rootOp.Tag("error.category", "user");
+        }
+
+        rootOp.Tag(TelemetryTagNames.ExitCode, processExitCode);
+        rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+    }
+
+    private static int InvokeParser(string[] args)
+    {
+        return Parser.Invoke(args);
+    }
+
+    private static void DisposeTelemetry()
+    {
+        // CI runs are one-and-done — there's no follow-up dotnetup
+        // invocation to drain the AzMonitor exporter's offline store — so
+        // give the batch export processors a longer ceiling to drain
+        // synchronously before the process exits. ForceFlush returns as
+        // soon as the queues are empty, so the larger budget never adds
+        // latency on happy-path runs; it only matters when the queue is
+        // backed up against a slow network. Interactive (non-CI) runs keep
+        // the smaller budget so user-perceived exit time is unaffected.
+        var flushTimeoutMs = DotnetupTelemetry.Instance.IsOneAndDoneEnvironment ? 30_000 : 10;
+
+        try
+        {
+            DotnetupTelemetry.Instance.WriteLogIfNecessary();
+            DotnetupTelemetry.Instance.Flush(flushTimeoutMs);
+            DotnetupTelemetry.Instance.Dispose();
+        }
+        catch
+        {
+            // Telemetry should never delay or crash the process exit.
+        }
+    }
+
+    /// <summary>
+    /// Sets the console output encoding to UTF-8 so Unicode glyphs render correctly.
+    /// Uses UILanguageOverride.OperatingSystemSupportsUtf8() from the .NET SDK CLI.
+    /// </summary>
+    private static void ConfigureConsoleEncoding()
+    {
+        if (Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1"
+            && UILanguageOverride.OperatingSystemSupportsUtf8())
+        {
+            // Use UTF-8 without BOM to prevent corrupting piped output.
+            // Encoding.UTF8 has encoderShouldEmitUTF8Identifier=true, which causes the
+            // runtime to write a 3-byte BOM (0xEF 0xBB 0xBF) to stdout when the encoding
+            // is first applied. This corrupts scripts generated by print-env-script when
+            // output is redirected to a file (e.g., `dotnetup print-env-script > env.sh`).
+            Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        }
+    }
+}

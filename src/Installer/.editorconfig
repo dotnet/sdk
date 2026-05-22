@@ -676,7 +676,7 @@ dotnet_diagnostic.CA2007.severity = silent
 dotnet_diagnostic.ASPIREEVENTING001.severity = none
 
 # Meziantou.Analyzer rules scoped to dotnetup projects only
-[{dotnetup/**.cs,Microsoft.Dotnet.Installation/**.cs,dotnetup.Tests/**.cs}]
+[{dotnetup.Library/**.cs,Microsoft.Dotnet.Installation/**.cs,dotnetup.Tests/**.cs}]
 
 # MA0051: Method is too long (max 60 lines; enforced as build error via TreatWarningsAsErrors)
 dotnet_diagnostic.MA0051.severity = warning

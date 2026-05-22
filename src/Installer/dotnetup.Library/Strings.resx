@@ -154,7 +154,7 @@
     <value>Total</value>
   </data>
   <data name="RootCommandDescription" xml:space="preserve">
-    <value>.NET installation manager for user level installs.</value>
+    <value>.NET toolchain manager for user level installs.</value>
   </data>
   <data name="DotnetCommandDescription" xml:space="preserve">
     <value>Run a command using the dotnetup-managed dotnet installation.</value>
