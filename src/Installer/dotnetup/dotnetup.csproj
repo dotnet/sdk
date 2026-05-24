@@ -79,6 +79,26 @@
           Condition="'$(_PublishWasInvokedDirectly)' != 'true' and '$(_DotnetupSkipPublishOnBuild)' != 'true'" />
 
   <!--
+    Make a RID-suffixed copy of the published binary next to the original. The download
+    surfaces (aka.ms shortlinks, ci.dot.net blobs) ship dotnetup-<rid>[.exe] so each
+    RID's standalone binary has a unique filename in the same blob container, but at
+    runtime dotnetup is invoked by the simple name (dotnetup[.exe]). Scripts that
+    download the RID-suffixed file are expected to rename it back to dotnetup.
+  -->
+  <PropertyGroup>
+    <_DotnetupNativeBinaryExt Condition="'$(RuntimeIdentifier)' != '' and $(RuntimeIdentifier.StartsWith('win'))">.exe</_DotnetupNativeBinaryExt>
+  </PropertyGroup>
+  <Target Name="CreateRidSuffixedDotnetupCopy"
+          AfterTargets="Publish"
+          Condition="'$(RuntimeIdentifier)' != ''"
+          Inputs="$(PublishDir)$(TargetName)$(_DotnetupNativeBinaryExt)"
+          Outputs="$(PublishDir)dotnetup-$(RuntimeIdentifier)$(_DotnetupNativeBinaryExt)">
+    <Copy SourceFiles="$(PublishDir)$(TargetName)$(_DotnetupNativeBinaryExt)"
+          DestinationFiles="$(PublishDir)dotnetup-$(RuntimeIdentifier)$(_DotnetupNativeBinaryExt)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <!--
     Lets eng/Publishing.props query the dotnetup SemVer (e.g. 0.1.3-preview.<buildid>) to
     use as the blob-path prefix when registering the NativeAOT binary as a Blob artifact
     for Arcade publishing. Mirrors the ReturnProductVersion pattern on

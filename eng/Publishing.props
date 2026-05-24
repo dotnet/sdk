@@ -75,19 +75,18 @@
   <!--
     Set RelativeBlobPath on the dotnetup AOT binary and on its .sha512 sidecar.
     Arcade's GenerateChecksumsFromArtifacts strips RelativeBlobPath from the parent
-    metadata, so we have to set it explicitly here.
-
-    Without this override, Arcade's AddRelativeBlobPathToBlobArtifacts would assign the
-    Sdk/<version>/ default prefix to both files.
+    metadata, so we have to set it explicitly here. Without this override, Arcade's
+    AddRelativeBlobPathToBlobArtifacts would assign the default Sdk/<version>/ prefix
+    to both files.
   -->
   <Target Name="SetDotnetupBlobPaths"
           DependsOnTargets="GetDotnetupVersion"
           AfterTargets="GenerateChecksumsFromArtifacts"
           BeforeTargets="AddRelativeBlobPathToBlobArtifacts;PublishToAzureDevOpsArtifacts">
     <ItemGroup>
-      <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup$(_DotnetupNativeExt)'"
+      <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup-$(TargetRid)$(_DotnetupNativeExt)'"
                 RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
-      <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup$(_DotnetupNativeExt).sha512'"
+      <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup-$(TargetRid)$(_DotnetupNativeExt).sha512'"
                 RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt).sha512" />
     </ItemGroup>
   </Target>
