@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
@@ -65,6 +66,28 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             
             propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.CreatePropertyOption to support /p Property=Value syntax");
             propertyOption.Aliases.Should().Contain("/p", "CreatePropertyOption should include /p alias for MSBuild compatibility");
+        }
+
+        [Fact]
+        public void VSTestCommandIncludesNoDependenciesOption()
+        {
+            var command = new TestCommandDefinition.VSTest();
+            var parseResult = command.Parse(["--no-dependencies"]);
+            var forwarded = parseResult.OptionValuesToBeForwarded(command);
+
+            forwarded.Should().Contain("-property:BuildProjectReferences=false",
+                "--no-dependencies should be forwarded to MSBuild as BuildProjectReferences=false to skip building project-to-project references.");
+        }
+
+        [Fact]
+        public void MTPCommandIncludesNoDependenciesOption()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--no-dependencies"]);
+            var forwarded = parseResult.OptionValuesToBeForwarded(command);
+
+            forwarded.Should().Contain("--property:BuildProjectReferences=false",
+                "--no-dependencies should be forwarded to MSBuild as BuildProjectReferences=false to skip building project-to-project references.");
         }
 
         [Fact]
