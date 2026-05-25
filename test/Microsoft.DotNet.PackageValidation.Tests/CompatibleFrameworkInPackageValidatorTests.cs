@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,14 +9,13 @@ using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiCompatibility.Runner;
 using Microsoft.DotNet.ApiCompatibility.Tests;
 using Microsoft.DotNet.ApiSymbolExtensions;
-using Microsoft.DotNet.PackageValidation;
 using Microsoft.DotNet.PackageValidation.Validators;
 
-namespace Microsoft.DotNet.ApiCompat.IntegrationTests
+namespace Microsoft.DotNet.PackageValidation.Tests
 {
-    public class CompatibleFrameworkInPackageValidatorIntegrationTests : SdkTest
+    public class CompatibleFrameworkInPackageValidatorTests : SdkTest
     {
-        public CompatibleFrameworkInPackageValidatorIntegrationTests(ITestOutputHelper log) : base(log)
+        public CompatibleFrameworkInPackageValidatorTests(ITestOutputHelper log) : base(log)
         {
         }
 
@@ -32,7 +31,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             return (log, validator);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [Fact]
         public void CompatibleFrameworksInPackage()
         {
             string name = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
@@ -69,7 +68,7 @@ namespace PackageValidationTests
             Assert.Contains($"CP0002 Member 'void PackageValidationTests.First.test(string)' exists on lib/netstandard2.0/{assemblyName} but not on lib/{ToolsetInfo.CurrentTargetFramework}/{assemblyName}", log.errors);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [Fact]
         public void MultipleCompatibleFrameworksInPackage()
         {
             string name = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
