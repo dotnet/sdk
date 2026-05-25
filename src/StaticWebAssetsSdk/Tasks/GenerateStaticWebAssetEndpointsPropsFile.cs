@@ -48,7 +48,7 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
         foreach (var element in orderedAssets)
         {
             var asset = assets[element.AssetFile];
-            var path = asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance);
+            var path = asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance, TokenResolveMode.Pack);
             var fullPathExpression = $"""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{StaticWebAsset.Normalize(PackagePathPrefix)}\{StaticWebAsset.Normalize(path).Replace("/", "\\")}'))""";
 
             itemGroup.Add(new XElement(nameof(StaticWebAssetEndpoint),

@@ -120,7 +120,7 @@ namespace Microsoft.NET.Build.Tests
             string filenameNotToSkip = "es/Humanizer.resources.dll";
             string assetType = "resources";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                .WithProjectChanges(project => AddSkipTarget(project, filenameToSkip));
 
             var buildCommand = new BuildCommand(testAsset);
@@ -160,7 +160,7 @@ namespace Microsoft.NET.Build.Tests
 
         private void TestSkippingFile(TestProject testProject, string filenameToSkip, string assetType)
         {
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: filenameToSkip + assetType)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: filenameToSkip + assetType)
                 .WithProjectChanges(project => AddSkipTarget(project, filenameToSkip));
 
             var buildCommand = new BuildCommand(testAsset);

@@ -61,7 +61,7 @@ public class PublishNoRestoreTests : SdkTest
             testProject.AdditionalProperties["RuntimeIdentifiers"] = string.Join(';', runtimeIdentifiers);
         }
 
-        var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name, specifyRuntimeIdentifier.ToString());
+        var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, testProject.Name, specifyRuntimeIdentifier.ToString());
         new RestoreCommand(testProjectInstance).Execute().Should().Pass();
         var publishCommand = new PublishCommand(testProjectInstance)
         {

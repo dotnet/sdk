@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "konfigurační soubor template.json",
+  "description": "Šablona pro konfigurační soubor template.json pro šablonu .NET Úplný popis konfigurace najdete v https://aka.ms/template-json-reference.",
+  "symbols/CreateTemplateConfigFolder/description": "True, pokud se má soubor template.json vytvořit ve složce .template.config.",
+  "symbols/CreateTemplateConfigFolder/displayName": "Vytvořit složku .template.config",
+  "symbols/TemplateName/description": "Název šablony.",
+  "symbols/TemplateName/displayName": "Název šablony",
+  "symbols/TemplateShortName/description": "Krátký název šablony.",
+  "symbols/TemplateShortName/displayName": "Krátký název šablony",
+  "symbols/TemplateIdentity/description": "Identita šablony (musí být jedinečná)",
+  "symbols/TemplateIdentity/displayName": "Identita šablony",
+  "postActions/instructions/description": "Vyžadují se ruční akce",
+  "postActions/instructions/manualInstructions/default/text": "Otevřete soubor template.json v editoru a dokončete konfiguraci."
+}

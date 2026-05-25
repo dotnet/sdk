@@ -16,7 +16,7 @@ namespace Microsoft.NET.Pack.Tests
         [Fact]
         public void It_packs_successfully()
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", "PackHelloWorld")
                 .WithSource();
 
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Pack.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(project =>
                 {
                     project.Root.Add(XElement.Parse(@"<Target Name=""InvokeBuild"" DependsOnTargets=""Build"" BeforeTargets=""Pack"" />"));
@@ -80,7 +80,7 @@ namespace Microsoft.NET.Pack.Tests
         [InlineData(false)]
         public void It_packs_with_release_if_PackRelease_property_set(bool optedOut)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                .CopyTestAsset("HelloWorld", identifier: optedOut.ToString())
                .WithSource();
 
@@ -103,7 +103,7 @@ namespace Microsoft.NET.Pack.Tests
         [InlineData("false")]
         public void It_packs_with_release_if_PackRelease_property_set_in_csproj(string valueOfPackRelease)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                .CopyTestAsset("HelloWorld")
                .WithSource()
                .WithProjectChanges(project =>
@@ -129,7 +129,7 @@ namespace Microsoft.NET.Pack.Tests
         [Theory]
         public void It_packs_successfully_with_Multitargeting_where_net_8_and_net_7_project_defines_PackRelease_or_not(string packReleaseValue)
         {
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: packReleaseValue)
                 .WithSource()
                 .WithTargetFrameworks("net8.0;net7.0")
@@ -160,7 +160,7 @@ namespace Microsoft.NET.Pack.Tests
         public void A_PackRelease_property_does_not_affect_other_commands_besides_pack()
         {
             var tfm = "net8.0";
-            var helloWorldAsset = _testAssetsManager
+            var helloWorldAsset = TestAssetsManager
                .CopyTestAsset("HelloWorld")
                .WithSource()
                .WithTargetFramework(tfm);

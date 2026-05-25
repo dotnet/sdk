@@ -91,7 +91,7 @@ public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
 
         // no file change within timeout:
         var fileChanged = App.AssertOutputLineStartsWith("dotnet watch ⌚ File changed:");
-        var finished = await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), fileChanged);
+        var finished = await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken), fileChanged);
         Assert.NotSame(fileChanged, finished);
     }
 

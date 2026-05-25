@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
@@ -37,7 +38,11 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
-            var dependencyPackageReferences = new List<TestPackageReference>();
+            // ConcurrentBag because Parallel.ForEach calls Add from multiple threads.
+            // Also fixes a pre-existing bug: the original List was never populated inside
+            // the parallel loop, so dependencyPackageReferences was always empty and the
+            // test passed vacuously without verifying any NuGet reference compatibility.
+            var dependencyPackageReferences = new ConcurrentBag<TestPackageReference>();
 
             // Process all dependencies in parallel
             Parallel.ForEach(
@@ -56,13 +61,11 @@ namespace Microsoft.NET.Build.Tests
                         "1.0.0",
                         ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets));
 
-                    // Create package if it doesn't exist
-                    if (!dependencyPackageReference.NuGetPackageExists() &&
-                        (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows)
                     {
                         if (!dependencyPackageReference.NuGetPackageExists())
                         {
-                            var dependencyTestAsset = _testAssetsManager.CreateTestProject(
+                            var dependencyTestAsset = TestAssetsManager.CreateTestProject(
                                 dependencyProject,
                                 identifier: referencerTarget + testDescription + rawDependencyTargets);
 
@@ -77,6 +80,7 @@ namespace Microsoft.NET.Build.Tests
                                 .Execute().Should().Pass();
                         }
 
+                        dependencyPackageReferences.Add(dependencyPackageReference);
                     }
                 });
 
@@ -100,7 +104,7 @@ namespace Microsoft.NET.Build.Tests
             }
 
             //  Create the referencing app and run the compat test
-            var referencerTestAsset = _testAssetsManager.CreateTestProject(referencerProject, ConstantStringValues.TestDirectoriesNamePrefix, referencerDirectoryNamePostfix);
+            var referencerTestAsset = TestAssetsManager.CreateTestProject(referencerProject, ConstantStringValues.TestDirectoriesNamePrefix, referencerDirectoryNamePostfix);
             var referencerRestoreCommand = referencerTestAsset.GetRestoreCommand(Log, relativePath: referencerProject.Name);
 
             List<string> referencerRestoreSources = new();
@@ -239,7 +243,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(testPackageReference);
 
-            var testProjectTestAsset = _testAssetsManager.CreateTestProject(
+            var testProjectTestAsset = TestAssetsManager.CreateTestProject(
                 testProject,
                 string.Empty,
                 $"{testProjectName}_{calleeTargetFrameworks}");
@@ -265,7 +269,7 @@ namespace Microsoft.NET.Build.Tests
             if (!packageReference.NuGetPackageExists())
             {
                 var testAsset =
-                    _testAssetsManager.CreateTestProject(
+                    TestAssetsManager.CreateTestProject(
                         project,
                         callingMethod,
                         identifier);

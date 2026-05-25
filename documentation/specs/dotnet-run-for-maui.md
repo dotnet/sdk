@@ -56,24 +56,21 @@ to make extensible for .NET MAUI (and future) scenarios.
 ```xml
 <ItemGroup>
   <!-- Android examples -->
-  <Devices Include="emulator-5554"  Description="Pixel 7 - API 35" Type="Emulator" Status="Offline" RuntimeIdentifier="android-x64" />
-  <Devices Include="emulator-5555"  Description="Pixel 7 - API 36" Type="Emulator" Status="Online"  RuntimeIdentifier="android-x64" />
-  <Devices Include="0A041FDD400327" Description="Pixel 7 Pro"      Type="Device"   Status="Online"  RuntimeIdentifier="android-arm64" />
+  <Devices Include="emulator-5554"  Description="Pixel 7 - API 35" Type="Emulator" Status="Offline" />
+  <Devices Include="emulator-5555"  Description="Pixel 7 - API 36" Type="Emulator" Status="Online" />
+  <Devices Include="0A041FDD400327" Description="Pixel 7 Pro"      Type="Device"   Status="Online" />
   <!-- iOS examples -->
-  <Devices Include="94E71AE5-8040-4DB2-8A9C-6CD24EF4E7DE" Description="iPhone 11 - iOS 18.6" Type="Simulator" Status="Shutdown"    RuntimeIdentifier="iossimulator-arm64" />
-  <Devices Include="FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7" Description="iPhone 14 - iOS 26.0" Type="Simulator" Status="Booted"      RuntimeIdentifier="iossimulator-arm64" />
-  <Devices Include="23261B78-1E31-469C-A46E-1776D386EFD8" Description="My iPhone 13"         Type="Device"    Status="Unavailable" RuntimeIdentifier="ios-arm64" />
-  <Devices Include="AF40CC64-2CDB-5F16-9651-86BCDF380881" Description="My iPhone 15"         Type="Device"    Status="Paired"      RuntimeIdentifier="ios-arm64" />
+  <Devices Include="94E71AE5-8040-4DB2-8A9C-6CD24EF4E7DE" Description="iPhone 11 - iOS 18.6" Type="Simulator" Status="Shutdown" />
+  <Devices Include="FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7" Description="iPhone 14 - iOS 26.0" Type="Simulator" Status="Booted" />
+  <Devices Include="23261B78-1E31-469C-A46E-1776D386EFD8" Description="My iPhone 13"         Type="Device"    Status="Unavailable" />
+  <Devices Include="AF40CC64-2CDB-5F16-9651-86BCDF380881" Description="My iPhone 15"         Type="Device"    Status="Paired" />
 </ItemGroup>
 ```
 
-_NOTE: each workload can decide which metadata values for `%(Type)`,
-`%(Status)`, and `%(RuntimeIdentifier)` are useful, filtering offline
-devices, etc. The output above would be analogous to running `adb
-devices`, `xcrun simctl list devices`, or `xcrun devicectl list
-devices`. The `%(RuntimeIdentifier)` metadata is optional but
-recommended, as it allows the build system to pass the appropriate RID
-to subsequent build, deploy, and run steps._
+_NOTE: each workload can decide which metadata values for `%(Type)`
+and `%(Status)` are useful, filtering offline devices, etc. The output
+above would be analogous to running `adb devices`, `xcrun simctl list
+devices`, or `xcrun devicectl list devices`._
 
 * Continuing on...
 
@@ -84,8 +81,7 @@ to subsequent build, deploy, and run steps._
     `--device` switch. Listing the options returned by the
     `ComputeAvailableDevices` MSBuild target.
 
-* `build`: unchanged, but is passed `-p:Device` and optionally `-p:RuntimeIdentifier`
-  if the selected device provided a `%(RuntimeIdentifier)` metadata value.
+* `build`: unchanged, but is passed `-p:Device`.
   Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
 * `deploy`
@@ -94,22 +90,19 @@ to subsequent build, deploy, and run steps._
     iOS or Android workload, etc.
 
   * Call the MSBuild target, passing in the identifier for the selected
-    `-p:Device` global MSBuild property, and optionally `-p:RuntimeIdentifier`
-    if the selected device provided a `%(RuntimeIdentifier)` metadata value.
+    `-p:Device` global MSBuild property.
 
   * Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
   * This step needs to run, even with `--no-build`, as you may have
     selected a different device.
 
-* `ComputeRunArguments`: unchanged, but is passed `-p:Device` and
-  optionally `-p:RuntimeIdentifier` if the selected device provided a
-  `%(RuntimeIdentifier)` metadata value. Environment variables from
-  `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
+* `ComputeRunArguments`: unchanged, but is passed `-p:Device`.
+  Environment variables from `-e` are passed as `@(RuntimeEnvironmentVariable)` items.
 
 * `run`: unchanged. `ComputeRunArguments` should have set a valid
   `$(RunCommand)` and `$(RunArguments)` using the value supplied by
-  `-p:Device` and optionally `-p:RuntimeIdentifier`.
+  `-p:Device`.
 
 ## New `dotnet run` Command-line Switches
 

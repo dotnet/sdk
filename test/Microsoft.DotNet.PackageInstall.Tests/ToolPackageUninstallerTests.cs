@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             [CallerMemberName] string testName = "",
             string identifier = null)
         {
-            var root = new DirectoryPath(_testAssetsManager.CreateTestDirectory(testName, identifier).Path);
+            var root = new DirectoryPath(TestAssetsManager.CreateTestDirectory(testName, identifier).Path);
             var reporter = new BufferedReporter();
 
             IFileSystem fileSystem;

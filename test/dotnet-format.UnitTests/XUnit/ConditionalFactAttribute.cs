@@ -1,4 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.XUnit
 {
@@ -10,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.XUnit
         /// skipped vs. conditionally skipped which is the entire point of this attribute.
         /// </summary>
         [Obsolete("ConditionalFact should use Reason or AlwaysSkip", error: true)]
-        public new string Skip
+        public new string? Skip
         {
             get => base.Skip;
             set => base.Skip = value;
@@ -20,7 +23,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.XUnit
         /// Used to unconditionally Skip a test. For the rare occasion when a conditional test needs to be
         /// unconditionally skipped (typically short term for a bug to be fixed).
         /// </summary>
-        public string AlwaysSkip
+        public string? AlwaysSkip
         {
             get => base.Skip;
             set => base.Skip = value;
@@ -28,7 +31,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.XUnit
 
         public string? Reason { get; set; }
 
-        public ConditionalFactAttribute(params Type[] skipConditions)
+        public ConditionalFactAttribute(Type[] skipConditions, [CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
             foreach (var skipCondition in skipConditions)
             {
@@ -50,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.XUnit
         /// skipped vs. conditionally skipped which is the entire point of this attribute.
         /// </summary>
         [Obsolete("ConditionalTheory should use Reason or AlwaysSkip")]
-        public new string Skip
+        public new string? Skip
         {
             get => base.Skip;
             set => base.Skip = value;
@@ -60,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.XUnit
         /// Used to unconditionally Skip a test. For the rare occasion when a conditional test needs to be
         /// unconditionally skipped (typically short term for a bug to be fixed).
         /// </summary>
-        public string AlwaysSkip
+        public string? AlwaysSkip
         {
             get => base.Skip;
             set => base.Skip = value;
@@ -68,7 +72,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.XUnit
 
         public string? Reason { get; set; }
 
-        public ConditionalTheoryAttribute(params Type[] skipConditions)
+        public ConditionalTheoryAttribute(Type[] skipConditions, [CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = 0)
+            : base(sourceFilePath, sourceLineNumber)
         {
             foreach (var skipCondition in skipConditions)
             {
