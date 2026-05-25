@@ -11,8 +11,19 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
     [InlineData("PublishAot", "True")]
     [InlineData("PublishTrimmed", "True")]
     [InlineData("StartupHookSupport", "False")]
+    [InlineData("Optimize", "True")]
+    [InlineData("MetadataUpdaterSupport", "False")]
     public async Task ChangeFileInAotProject(string propertyName, string propertyValue)
     {
+        var tfvParsed = Version.Parse(ToolsetInfo.CurrentTargetFrameworkVersion);
+        var isNet11OrNewer = tfvParsed.Major >= 11;
+
+        // Optimize check only applies to < .NET 11; MetadataUpdaterSupport only to >= .NET 11.
+        if (propertyName == "Optimize" && isNet11OrNewer)
+            return;
+        if (propertyName == "MetadataUpdaterSupport" && !isNet11OrNewer)
+            return;
+
         var projectDisplay = $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})";
 
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: $"{propertyName};{propertyValue}")
@@ -28,7 +39,14 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
 
         App.Start(testAsset, ["--non-interactive"]);
 
-        var message = MessageDescriptor.ProjectDoesNotSupportHotReload_Property.GetMessage((propertyName, propertyValue, PropertyNames.StartupHookSupport, "True"));
+        // The warning message suggests which property to set to fix the issue.
+        var (suggestedProperty, suggestedValue) = propertyName switch
+        {
+            "Optimize" => (PropertyNames.Optimize, "False"),
+            "MetadataUpdaterSupport" => (PropertyNames.MetadataUpdaterSupport, "True"),
+            _ => (PropertyNames.StartupHookSupport, "True"),
+        };
+        var message = MessageDescriptor.ProjectDoesNotSupportHotReload_Property.GetMessage((propertyName, propertyValue, suggestedProperty, suggestedValue));
         await App.WaitForOutputLineContaining($"[{projectDisplay}] {message}");
         await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
         App.Process.ClearOutput();

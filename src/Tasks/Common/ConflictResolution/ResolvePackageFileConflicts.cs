@@ -248,17 +248,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
         private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[]? items, ConflictItemType itemType)
         {
-            return (items != null) ? items.Select(i => new ConflictItem(i, itemType, ResolvePath)) : Enumerable.Empty<ConflictItem>();
-        }
-
-        private string ResolvePath(string path)
-        {
-            if (Path.IsPathRooted(path))
-            {
-                return path;
-            }
-
-            return (string)TaskEnvironment.GetAbsolutePath(path);
+            return (items != null) ? items.Select(i => new ConflictItem(i, itemType, TaskEnvironment)) : Enumerable.Empty<ConflictItem>();
         }
 
         private void HandleCompileConflict(ConflictItem winner, ConflictItem loser)

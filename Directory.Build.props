@@ -81,6 +81,8 @@
     <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants),CI_BUILD</DefineConstants>
     <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants),MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
     <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants),DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
+    <!-- The Azure Monitor OTel Exporter is not yet onboarded to source build, so we need to conditionally compile the code that references it. -->
+    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(DefineConstants),MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR</DefineConstants>
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>

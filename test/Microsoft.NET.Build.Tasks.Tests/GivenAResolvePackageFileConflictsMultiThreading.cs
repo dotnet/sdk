@@ -9,13 +9,7 @@ using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests;
 
-[CollectionDefinition(CwdSensitiveCollection.Name, DisableParallelization = true)]
-public sealed class CwdSensitiveCollection
-{
-    public const string Name = "CwdSensitive";
-}
-
-[Collection(CwdSensitiveCollection.Name)]
+[Collection(nameof(CwdSensitiveCollection))]
 public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
 {
     private readonly string _originalCwd = Directory.GetCurrentDirectory();

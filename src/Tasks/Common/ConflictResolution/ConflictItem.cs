@@ -37,13 +37,21 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     // Wraps an ITask item and adds lazy evaluated properties used by Conflict resolution.
     internal class ConflictItem : IConflictItem
     {
-        private readonly Func<string, string>? _pathResolver;
+        // Null when constructed from a caller that has not been migrated to a multi-threadable task
+        // (e.g. ResolvePackageFileConflicts), or via the Platform-item constructor which does no file
+        // access. When non-null, SourcePath is absolutized through it before any file I/O.
+        private readonly TaskEnvironment? _taskEnvironment;
 
-        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType, Func<string, string>? pathResolver = null)
+        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType, TaskEnvironment? taskEnvironment)
         {
             OriginalItem = originalItem;
             ItemType = itemType;
-            _pathResolver = pathResolver;
+            _taskEnvironment = taskEnvironment;
+        }
+
+        public ConflictItem(ITaskItem originalItem, ConflictItemType itemType)
+            : this(originalItem, itemType, taskEnvironment: null)
+        {
         }
 
         public ConflictItem(string fileName, string packageId, Version? assemblyVersion, Version? fileVersion)
@@ -75,7 +83,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(ResolvedSourcePath ?? string.Empty);
+                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePathForFileAccess ?? string.Empty);
                     }
 
                     // assemblyVersion may be null but don't try to recalculate it
@@ -93,8 +101,6 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
         public ConflictItemType ItemType { get; }
 
-        private string? ResolvedSourcePath => _pathResolver != null && SourcePath != null ? _pathResolver(SourcePath) : SourcePath;
-
         private bool? _exists;
         public bool Exists
         {
@@ -102,7 +108,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 if (_exists == null)
                 {
-                    _exists = ItemType == ConflictItemType.Platform || File.Exists(ResolvedSourcePath);
+                    _exists = ItemType == ConflictItemType.Platform || File.Exists(SourcePathForFileAccess);
                 }
 
                 return _exists.Value;
@@ -141,7 +147,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _fileVersion = FileUtilities.GetFileVersion(ResolvedSourcePath);
+                        _fileVersion = FileUtilities.GetFileVersion(SourcePathForFileAccess);
                     }
 
                     // fileVersion may be null but don't try to recalculate it
@@ -218,6 +224,25 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 return _sourcePath.Length == 0 ? null : _sourcePath;
             }
             private set { _sourcePath = value; }
+        }
+
+        private string? _sourcePathForFileAccess;
+        private bool _hasSourcePathForFileAccess;
+        private string? SourcePathForFileAccess
+        {
+            get
+            {
+                if (!_hasSourcePathForFileAccess)
+                {
+                    var sourcePath = SourcePath;
+                    _sourcePathForFileAccess = !string.IsNullOrEmpty(sourcePath) && _taskEnvironment != null
+                        ? _taskEnvironment.GetAbsolutePath(sourcePath)
+                        : sourcePath;
+                    _hasSourcePathForFileAccess = true;
+                }
+
+                return _sourcePathForFileAccess;
+            }
         }
 
         private string? _displayName;
