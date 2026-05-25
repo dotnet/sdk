@@ -731,7 +731,16 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
         int exitCode, string? outputData, string? errorData)
     {
-        TestProgressState assemblyRun = _assemblies[executionId];
+        // The test host can hand-shake (so the caller knows we have a handshake info) but exit before
+        // ever calling TestSessionStarted, which is what registers the assembly in _assemblies. In that
+        // case we must not throw a KeyNotFoundException — surface a handshake failure instead so the
+        // user gets actionable output instead of a stack trace buried in the run.
+        if (!_assemblies.TryGetValue(executionId, out TestProgressState? assemblyRun))
+        {
+            HandshakeFailure(assemblyPath: string.Empty, targetFramework: null, exitCode, outputData ?? string.Empty, errorData ?? string.Empty);
+            return;
+        }
+
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
