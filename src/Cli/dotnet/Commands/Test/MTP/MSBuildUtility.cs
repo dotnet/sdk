@@ -103,10 +103,29 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
+        // MSBuild terminal-logger switches (e.g. `-tl:off`, `--terminalLogger`, `/tlp:default=off`) are MSBuild-only
+        // and must not be forwarded to the child test host process, which would reject them as unknown options.
+        // See https://github.com/dotnet/sdk/issues/52114 and https://github.com/dotnet/sdk/issues/52229.
+        var terminalLoggerArgs = new List<string>();
+        var nonTerminalLoggerArgs = new List<string>(otherArgs.Count);
+        foreach (var arg in otherArgs)
+        {
+            if (LoggerUtility.IsTerminalLoggerArgument(arg))
+            {
+                terminalLoggerArgs.Add(arg);
+            }
+            else
+            {
+                nonTerminalLoggerArgs.Add(arg);
+            }
+        }
+        otherArgs = nonTerminalLoggerArgs;
+
         var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
-            .Concat(binLogArgs);
+            .Concat(binLogArgs)
+            .Concat(terminalLoggerArgs);
 
         string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
         if (resultsDirectory is not null)

@@ -85,6 +85,65 @@ internal static class LoggerUtility
             || arg.StartsWith("--binaryLogger:", comp) || arg.Equals("--binaryLogger", comp)
             || arg.StartsWith("-bl:", comp) || arg.Equals("-bl", comp);
     }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if <paramref name="arg"/> is an MSBuild
+    /// terminal-logger switch (e.g. <c>-tl</c>, <c>--terminalLogger:off</c>,
+    /// <c>/tlp:default=off</c>, <c>-ll</c>, <c>--livelogger:on</c>).
+    /// </summary>
+    /// <remarks>
+    /// These arguments are intended for the MSBuild build invocation only and must
+    /// not be forwarded to a child test host process, which would reject them with
+    /// "Unknown option '--tl'".
+    /// </remarks>
+    internal static bool IsTerminalLoggerArgument(string arg)
+        => MatchesAnyNamedSwitch(arg, s_terminalLoggerSwitchNames);
+
+    private static readonly string[] s_terminalLoggerSwitchNames =
+    [
+        "tl",
+        "terminalLogger",
+        "ll",
+        "livelogger",
+        "tlp",
+        "terminalLoggerParameters",
+    ];
+
+    private static bool MatchesAnyNamedSwitch(string arg, string[] names)
+    {
+        if (string.IsNullOrEmpty(arg))
+        {
+            return false;
+        }
+
+        const StringComparison comp = StringComparison.OrdinalIgnoreCase;
+        ReadOnlySpan<string> prefixes = ["-", "--", "/"];
+        foreach (var prefix in prefixes)
+        {
+            if (!arg.StartsWith(prefix, comp))
+            {
+                continue;
+            }
+
+            foreach (var name in names)
+            {
+                if (arg.Length == prefix.Length + name.Length
+                    && arg.AsSpan(prefix.Length).Equals(name.AsSpan(), comp))
+                {
+                    return true;
+                }
+
+                if (arg.Length > prefix.Length + name.Length
+                    && arg.AsSpan(prefix.Length, name.Length).Equals(name.AsSpan(), comp)
+                    && (arg[prefix.Length + name.Length] == ':' || arg[prefix.Length + name.Length] == '='))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 /// <summary>
