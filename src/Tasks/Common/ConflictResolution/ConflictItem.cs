@@ -93,9 +93,6 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
         public ConflictItemType ItemType { get; }
 
-        /// <summary>
-        /// Returns the absolute source path for file I/O operations, applying the path resolver if available.
-        /// </summary>
         private string? ResolvedSourcePath => _pathResolver != null && SourcePath != null ? _pathResolver(SourcePath) : SourcePath;
 
         private bool? _exists;

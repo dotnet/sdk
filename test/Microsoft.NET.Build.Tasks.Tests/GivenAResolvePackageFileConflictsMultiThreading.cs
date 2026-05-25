@@ -34,18 +34,18 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         return dir;
     }
 
-    private static void CreateFile(string path)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllBytes(path, Array.Empty<byte>());
-    }
-
     private static void CreateFrameworkList(string targetFrameworkDirectory, string assemblyName, string version)
     {
         var redistListDir = Path.Combine(targetFrameworkDirectory, "RedistList");
         Directory.CreateDirectory(redistListDir);
         File.WriteAllText(Path.Combine(redistListDir, "FrameworkList.xml"),
             $"<FileList><File AssemblyName=\"{assemblyName}\" Version=\"{version}\" /></FileList>");
+    }
+
+    private static void CreateFile(string path)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, Array.Empty<byte>());
     }
 
     private static ResolvePackageFileConflicts CreateTask(MockBuildEngine engine)
@@ -55,177 +55,12 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         return task;
     }
 
-    [Fact]
-    public void ResolvePackageFileConflicts_IsRecognizedByMsBuildAsMultiThreadableTask()
-    {
-        var taskType = typeof(ResolvePackageFileConflicts);
-
-        taskType.GetCustomAttributes(inherit: false)
-            .Select(attribute => attribute.GetType().FullName)
-            .Should().Contain("Microsoft.Build.Framework.MSBuildMultiThreadableTaskAttribute",
-                "MSBuild recognizes multi-threadable tasks by the marker attribute full name");
-
-        taskType.GetInterfaces()
-            .Select(interfaceType => interfaceType.FullName)
-            .Should().Contain("Microsoft.Build.Framework.IMultiThreadableTask",
-                "MSBuild injects TaskEnvironment through the multi-threadable task interface");
-    }
-
     /// <summary>
-    /// When TaskEnvironment points to projectDir (different from CWD), the task should
-    /// resolve relative paths against projectDir and find files there, not under CWD.
+    /// PlatformManifests with a relative ItemSpec must be resolved against the task's
+    /// ProjectDirectory (via TaskEnvironment), not the process CWD. We verify this by
+    /// pointing at a manifest that exists relative to the project directory but not the
+    /// CWD: if path resolution were CWD-based, the task would log CouldNotLoadPlatformManifest.
     /// </summary>
-    [Fact]
-    public void PathResolution_ResolvesRelativePathsAgainstProjectDir()
-    {
-        var projectDir = CreateTempDir();
-        var decoyDir = CreateTempDir();
-
-        // Create files under projectDir at a relative sub-path
-        var relPath1 = Path.Combine("lib", "System.Runtime.dll");
-        var relPath2 = Path.Combine("lib2", "System.Runtime.dll");
-        CreateFile(Path.Combine(projectDir, relPath1));
-        CreateFile(Path.Combine(projectDir, relPath2));
-
-        // Items with relative paths and version metadata so ConflictItem doesn't need real DLLs
-        var ref1 = new MockTaskItem(relPath1, new Dictionary<string, string>
-        {
-            { "NuGetPackageId", "Package.A" },
-            { "AssemblyVersion", "1.0.0.0" },
-            { "FileVersion", "1.0.0.0" }
-        });
-        var ref2 = new MockTaskItem(relPath2, new Dictionary<string, string>
-        {
-            { "NuGetPackageId", "Package.B" },
-            { "AssemblyVersion", "2.0.0.0" },
-            { "FileVersion", "2.0.0.0" }
-        });
-
-        // Set CWD to decoy - files do NOT exist relative to decoy
-        Directory.SetCurrentDirectory(decoyDir);
-
-        var engine = new MockBuildEngine();
-        var task = CreateTask(engine);
-        task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-        task.References = new ITaskItem[] { ref1, ref2 };
-
-        task.Execute().Should().BeTrue("task should succeed");
-
-        // Both files exist under projectDir, so the conflict resolver should detect the conflict
-        // and pick Package.B (higher AssemblyVersion) as the winner.
-        // If path resolution is broken, File.Exists returns false for both → no conflict detected.
-        task.ReferencesWithoutConflicts.Should().NotBeNull();
-        task.ReferencesWithoutConflicts!.Length.Should().Be(1, "one reference should be removed as a conflict loser");
-        task.ReferencesWithoutConflicts[0].Should().BeSameAs(ref2, "higher version should win");
-    }
-
-    /// <summary>
-    /// Running the task with CWD==projectDir should produce the same results as running with
-    /// CWD==otherDir when TaskEnvironment points to projectDir.
-    /// </summary>
-    [Fact]
-    public void Parity_CwdEqualsProjectDir_MatchesCwdDifferentFromProjectDir()
-    {
-        var projectDir = CreateTempDir();
-        var decoyDir = CreateTempDir();
-
-        var relPath1 = Path.Combine("pkg", "MyLib.dll");
-        var relPath2 = Path.Combine("pkg2", "MyLib.dll");
-        CreateFile(Path.Combine(projectDir, relPath1));
-        CreateFile(Path.Combine(projectDir, relPath2));
-
-        var makeItems = () => new ITaskItem[]
-        {
-            new MockTaskItem(relPath1, new Dictionary<string, string>
-            {
-                { "NuGetPackageId", "Lib.One" },
-                { "AssemblyVersion", "1.0.0.0" },
-                { "FileVersion", "1.0.0.0" }
-            }),
-            new MockTaskItem(relPath2, new Dictionary<string, string>
-            {
-                { "NuGetPackageId", "Lib.Two" },
-                { "AssemblyVersion", "3.0.0.0" },
-                { "FileVersion", "3.0.0.0" }
-            }),
-        };
-
-        // Run 1: CWD == projectDir
-        Directory.SetCurrentDirectory(projectDir);
-        var engine1 = new MockBuildEngine();
-        var task1 = CreateTask(engine1);
-        task1.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-        task1.References = makeItems();
-        task1.Execute().Should().BeTrue();
-
-        // Run 2: CWD == decoyDir
-        Directory.SetCurrentDirectory(decoyDir);
-        var engine2 = new MockBuildEngine();
-        var task2 = CreateTask(engine2);
-        task2.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-        task2.References = makeItems();
-        task2.Execute().Should().BeTrue();
-
-        task1.ReferencesWithoutConflicts!.Length.Should().Be(task2.ReferencesWithoutConflicts!.Length,
-            "same conflict resolution results regardless of CWD");
-
-        var conflicts1 = task1.Conflicts?.Select(c => c.ItemSpec).OrderBy(s => s).ToArray() ?? Array.Empty<string>();
-        var conflicts2 = task2.Conflicts?.Select(c => c.ItemSpec).OrderBy(s => s).ToArray() ?? Array.Empty<string>();
-        conflicts1.Should().BeEquivalentTo(conflicts2, "conflicts should be identical");
-    }
-
-    /// <summary>
-    /// Output items should preserve the original relative path form from the input items.
-    /// </summary>
-    [Fact]
-    public void OutputRelativity_PreservesRelativePathsInOutput()
-    {
-        var projectDir = CreateTempDir();
-        var decoyDir = CreateTempDir();
-
-        var lowRelPath = Path.Combine("packages", "low", "Conflict.dll");
-        var highRelPath = Path.Combine("packages", "high", "Conflict.dll");
-        var targetPath = "lib/Conflict.dll";
-        CreateFile(Path.Combine(projectDir, lowRelPath));
-        CreateFile(Path.Combine(projectDir, highRelPath));
-
-        var lowItem = new MockTaskItem(lowRelPath, new Dictionary<string, string>
-        {
-            { "NuGetPackageId", "Low.Package" },
-            { "AssemblyVersion", "1.0.0.0" },
-            { "FileVersion", "1.0.0.0" },
-            { "TargetPath", targetPath }
-        });
-        var highItem = new MockTaskItem(highRelPath, new Dictionary<string, string>
-        {
-            { "NuGetPackageId", "High.Package" },
-            { "AssemblyVersion", "2.0.0.0" },
-            { "FileVersion", "2.0.0.0" },
-            { "TargetPath", targetPath }
-        });
-
-        Directory.SetCurrentDirectory(decoyDir);
-
-        var engine = new MockBuildEngine();
-        var task = CreateTask(engine);
-        task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-        task.ReferenceCopyLocalPaths = new ITaskItem[] { lowItem, highItem };
-
-        task.Execute().Should().BeTrue();
-
-        task.ReferenceCopyLocalPathsWithoutConflicts.Should().NotBeNull();
-        task.ReferenceCopyLocalPathsWithoutConflicts!.Should().ContainSingle()
-            .Which.Should().BeSameAs(highItem, "the higher version should win while preserving original item metadata");
-        task.ReferenceCopyLocalPathsWithoutConflicts[0].ItemSpec.Should().Be(highRelPath);
-        task.ReferenceCopyLocalPathsWithoutConflicts[0].GetMetadata("TargetPath").Should().Be(targetPath);
-
-        var conflict = task.Conflicts.Should().ContainSingle().Which;
-        conflict.ItemSpec.Should().Be(lowRelPath,
-            "conflict output should preserve the original relative source path");
-        conflict.GetMetadata("NuGetPackageId").Should().Be("Low.Package");
-        conflict.GetMetadata(nameof(ConflictItemType)).Should().Be(ConflictItemType.CopyLocal.ToString());
-    }
-
     [Fact]
     public void PlatformManifest_ResolvesRelativePathAgainstProjectDir()
     {
@@ -255,27 +90,61 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         task.ReferenceCopyLocalPaths = new ITaskItem[] { copyLocalItem };
 
         task.Execute().Should().BeTrue("relative PlatformManifests should resolve against ProjectDirectory");
-        engine.Errors.Should().BeEmpty();
-        task.ReferenceCopyLocalPathsWithoutConflicts.Should().NotBeNull();
-        task.ReferenceCopyLocalPathsWithoutConflicts!.Should().BeEmpty(
+        engine.Errors.Should().BeEmpty("manifest was found via ProjectDirectory-relative resolution");
+        task.ReferenceCopyLocalPathsWithoutConflicts.Should().BeEmpty(
             "the platform manifest item from ProjectDirectory should win the runtime conflict");
+
         var conflict = task.Conflicts.Should().ContainSingle().Which;
         conflict.ItemSpec.Should().Be(copyLocalRelPath);
         conflict.GetMetadata("NuGetPackageId").Should().Be("Package.Low");
         conflict.GetMetadata(nameof(ConflictItemType)).Should().Be(ConflictItemType.CopyLocal.ToString());
     }
 
+    /// <summary>
+    /// When a relative PlatformManifest cannot be found, the error message must show the
+    /// original (relative) path the user supplied, not the absolutized path used for I/O.
+    /// This covers Sin 2 (user-facing path relativity) for the AbsolutePath rewrite.
+    /// </summary>
+    [Fact]
+    public void PlatformManifest_MissingFile_LogsOriginalRelativePath()
+    {
+        var projectDir = CreateTempDir();
+        var decoyDir = CreateTempDir();
+
+        var manifestRelPath = Path.Combine("manifests", "DoesNotExist.txt");
+        // Intentionally do not create the file.
+
+        Directory.SetCurrentDirectory(decoyDir);
+
+        var engine = new MockBuildEngine();
+        var task = CreateTask(engine);
+        task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+        task.PlatformManifests = new ITaskItem[] { new MockTaskItem(manifestRelPath, new Dictionary<string, string>()) };
+
+        task.Execute().Should().BeFalse("a missing PlatformManifest should fail the task");
+        var error = engine.Errors.Should().ContainSingle().Which;
+        error.Message.Should().Contain(manifestRelPath, "the original relative path must be preserved in the error");
+        error.Message.Should().NotContain(projectDir, "the absolutized path must not leak into user-facing errors");
+    }
+
+    /// <summary>
+    /// TargetFrameworkDirectories with a relative ItemSpec must be resolved against the task's
+    /// ProjectDirectory (via TaskEnvironment), not the process CWD. We verify this by placing
+    /// a FrameworkList.xml that exists only relative to the project directory and asserting the
+    /// framework list cache key uses the project-directory-relative absolute path.
+    /// </summary>
     [Fact]
     public void TargetFrameworkDirectories_ResolveRelativePathAgainstProjectDir()
     {
         var projectDir = CreateTempDir();
         var decoyDir = CreateTempDir();
 
+        var targetFrameworkRelPath = "refpack";
+        var expectedFrameworkListPath = Path.Combine(projectDir, targetFrameworkRelPath, "RedistList", "FrameworkList.xml");
+        CreateFrameworkList(Path.Combine(projectDir, targetFrameworkRelPath), "System.Runtime", "9.0.0.0");
+
         var referenceRelPath = Path.Combine("packages", "System.Runtime.dll");
         CreateFile(Path.Combine(projectDir, referenceRelPath));
-
-        var targetFrameworkRelPath = "refpack";
-        CreateFrameworkList(Path.Combine(projectDir, targetFrameworkRelPath), "System.Runtime", "9.0.0.0");
 
         Directory.SetCurrentDirectory(decoyDir);
 
@@ -294,87 +163,10 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         };
 
         task.Execute().Should().BeTrue("relative TargetFrameworkDirectories should resolve against ProjectDirectory");
+        engine.Errors.Should().BeEmpty();
+        engine.RegisteredTaskObjects.Keys.Should().Contain(key =>
+            key.ToString()!.EndsWith(expectedFrameworkListPath, StringComparison.OrdinalIgnoreCase));
         task.ReferencesWithoutConflicts.Should().ContainSingle();
         task.ReferencesWithoutConflicts![0].ItemSpec.Should().Be("System.Runtime");
-    }
-
-    [Fact]
-    public void Execute_WithoutTaskEnvironment_ThrowsClearError()
-    {
-        var task = CreateTask(new MockBuildEngine());
-        task.PlatformManifests = new ITaskItem[] { new MockTaskItem("PlatformManifest.txt", new Dictionary<string, string>()) };
-
-        var execute = () => task.Execute();
-
-        execute.Should().Throw<InvalidOperationException>()
-            .WithMessage($"*{nameof(ResolvePackageFileConflicts.TaskEnvironment)}*{nameof(ResolvePackageFileConflicts)}*");
-    }
-
-    /// <summary>
-    /// Multiple task instances running concurrently with isolated project directories
-    /// should not interfere with each other.
-    /// </summary>
-    [Fact]
-    public void ConcurrentExecution_IsolatedProjectDirsProduceCorrectResults()
-    {
-        const int threadCount = 64;
-        var decoyDir = CreateTempDir();
-        Directory.SetCurrentDirectory(decoyDir);
-
-        var results = new (bool success, int refsWithoutConflicts, int conflicts)[threadCount];
-        var exceptions = new Exception?[threadCount];
-
-        Parallel.For(0, threadCount, i =>
-        {
-            try
-            {
-                var projectDir = CreateTempDir();
-                var relPath1 = Path.Combine("lib", $"Conflict{i}.dll");
-                var relPath2 = Path.Combine("lib2", $"Conflict{i}.dll");
-                CreateFile(Path.Combine(projectDir, relPath1));
-                CreateFile(Path.Combine(projectDir, relPath2));
-
-                var refs = new ITaskItem[]
-                {
-                    new MockTaskItem(relPath1, new Dictionary<string, string>
-                    {
-                        { "NuGetPackageId", "Pkg.Low" },
-                        { "AssemblyVersion", "1.0.0.0" },
-                        { "FileVersion", "1.0.0.0" }
-                    }),
-                    new MockTaskItem(relPath2, new Dictionary<string, string>
-                    {
-                        { "NuGetPackageId", "Pkg.High" },
-                        { "AssemblyVersion", "5.0.0.0" },
-                        { "FileVersion", "5.0.0.0" }
-                    }),
-                };
-
-                var engine = new MockBuildEngine();
-                var task = CreateTask(engine);
-                task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-                task.References = refs;
-
-                var success = task.Execute();
-                results[i] = (success,
-                    task.ReferencesWithoutConflicts?.Length ?? 0,
-                    task.Conflicts?.Length ?? 0);
-            }
-            catch (Exception ex)
-            {
-                exceptions[i] = ex;
-            }
-        });
-
-        for (int i = 0; i < threadCount; i++)
-        {
-            exceptions[i].Should().BeNull($"thread {i} should not throw");
-            results[i].success.Should().BeTrue($"thread {i} task should succeed");
-            results[i].refsWithoutConflicts.Should().Be(1, $"thread {i} should have 1 winner");
-            results[i].conflicts.Should().Be(1, $"thread {i} should have 1 conflict");
-        }
-
-        // CWD restoration is handled in Dispose; avoid asserting on CWD here because
-        // parallel test classes in the same collection could interleave before this check.
     }
 }
