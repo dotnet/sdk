@@ -327,7 +327,7 @@ extends:
           parameters:
             publishUsingPipelines: true
             publishAssetsImmediately: true
-            isAssetlessBuild: true
+            isAssetlessBuild: false
             repositoryAlias: self
             pool:
               name: $(DncEngInternalBuildPool)
