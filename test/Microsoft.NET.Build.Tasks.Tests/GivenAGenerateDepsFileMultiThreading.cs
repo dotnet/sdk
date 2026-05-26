@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -50,15 +51,14 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void AssetsAndRuntimeGraphPathsAreResolvedThroughTaskEnvironment()
         {
             string projectDir = CreateTestProjectDirectory();
-            string decoyCwd = CreateTestProjectDirectory("RuntimeGraphDecoy");
-            string decoyRuntimeGraphPath = Path.Combine(decoyCwd, "runtime.json");
-            File.Delete(decoyRuntimeGraphPath);
+            // Decoy CWD is intentionally empty (no runtime.json) so that resolving
+            // RuntimeGraphPath against the process CWD would fail; only resolution
+            // through TaskEnvironment.ProjectDirectory can succeed.
+            string decoyCwd = CreateEmptyDecoyDirectory();
             string relativeAssetsPath = Path.Combine("obj", "project.assets.json");
             CreateAssetsFile(projectDir, relativeAssetsPath);
 
             Directory.SetCurrentDirectory(decoyCwd);
-            File.Exists(decoyRuntimeGraphPath).Should().BeFalse(
-                "the process CWD must not contain a runtime graph that could satisfy RuntimeGraphPath");
 
             var task = CreateMinimalTask("TestApp.csproj", "selfcontained.deps.json", projectDir);
             task.AssetsFilePath = relativeAssetsPath;
@@ -75,6 +75,73 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "the relative runtime graph should be read from the task environment project directory");
             File.Exists(Path.Combine(decoyCwd, "selfcontained.deps.json")).Should().BeFalse(
                 "deps file should not be written under the process CWD");
+        }
+
+        [Fact]
+        public void SatelliteAssemblyTargetPathFlowsVerbatimToDepsJsonResources()
+        {
+            // Encodes the contract that AssemblySatelliteAssemblies metadata is passed through
+            // to deps.json verbatim. The task reads only Culture and TargetPath; TargetPath is
+            // relative by design (deps.json format requirement) and must NOT be absolutized
+            // against TaskEnvironment.ProjectDirectory or the process CWD.
+            string projectDir = CreateTestProjectDirectory();
+            string decoyCwd = CreateEmptyDecoyDirectory();
+            string relativeDepsPath = Path.Combine("bin", "Debug", "net8.0", "TestApp.deps.json");
+            string satelliteRelativeTargetPath = Path.Combine("de", "TestApp.resources.dll");
+
+            Directory.SetCurrentDirectory(decoyCwd);
+
+            var task = CreateMinimalTask("TestApp.csproj", relativeDepsPath, projectDir);
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+            task.AssemblySatelliteAssemblies = new ITaskItem[]
+            {
+                // ItemSpec is intentionally not a real on-disk path: the task only reads
+                // metadata from satellite items, never opens the underlying file.
+                new MockTaskItem(
+                    itemSpec: @"de\TestApp.resources.dll",
+                    metadata: new Dictionary<string, string>
+                    {
+                        { "Culture", "de" },
+                        { "TargetPath", satelliteRelativeTargetPath },
+                    }),
+            };
+
+            bool result = task.Execute();
+
+            result.Should().BeTrue("task should succeed: {0}", GetLoggedErrors(task));
+            string depsPath = Path.Combine(projectDir, relativeDepsPath);
+            File.Exists(depsPath).Should().BeTrue("deps file should be produced");
+
+            JObject depsJson = JObject.Parse(File.ReadAllText(depsPath));
+            JObject targets = (JObject)depsJson["targets"];
+            targets.Should().NotBeNull("deps.json must have a targets section");
+            JObject targetFramework = (JObject)targets.Properties().First().Value;
+            JObject mainLibrary = (JObject)targetFramework["TestApp/1.0.0.0"];
+            mainLibrary.Should().NotBeNull("the main project library should be present in deps.json");
+
+            JObject resources = (JObject)mainLibrary["resources"];
+            resources.Should().NotBeNull("the satellite assembly should produce a resources section");
+
+            // The deps.json writer normalizes path separators to '/'; the path itself is
+            // otherwise the TargetPath metadata byte-for-byte. Critically it is NOT:
+            //   - prefixed with TaskEnvironment.ProjectDirectory,
+            //   - prefixed with the process CWD,
+            //   - resolved or absolutized in any way.
+            string expectedRelativePath = satelliteRelativeTargetPath.Replace('\\', '/');
+            resources.Properties().Should().ContainSingle(
+                "exactly one satellite was supplied")
+                .Which.Name.Should().Be(expectedRelativePath,
+                    "TargetPath metadata flows verbatim into deps.json (slashes normalized only)");
+            resources[expectedRelativePath]["locale"].Value<string>().Should().Be("de",
+                "Culture metadata is preserved as the locale");
+        }
+
+        private string CreateEmptyDecoyDirectory([CallerMemberName] string testName = null)
+        {
+            string decoyDir = Path.Combine(Path.GetTempPath(), $"GenerateDepsFileTest_{testName}_decoy_{Guid.NewGuid():N}");
+            Directory.CreateDirectory(decoyDir);
+            _tempDirs.Add(decoyDir);
+            return decoyDir;
         }
 
         private string CreateTestProjectDirectory([CallerMemberName] string testName = null)
