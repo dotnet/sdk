@@ -143,17 +143,16 @@ function InstallDotNetSharedFrameworks {
     return
   fi
 
-  # TEMPORARY (https://github.com/dotnet/sdk/issues/XXXXX): the 6.0, 7.0, and 8.0 release
-  # manifests are currently unsigned (a release-time pipeline issue stripped their CMS
-  # signatures), so dotnetup -- which requires a verified signature -- rejects them. Fall
-  # back to the legacy dotnet-install.sh script for those channels only; revert once the
-  # manifests are re-signed.
+  # TEMPORARY (https://github.com/dotnet/sdk/issues/XXXXX): the 6.0 and 7.0 release manifests
+  # are currently unsigned (a release-time pipeline issue stripped their CMS signatures), so
+  # dotnetup -- which requires a verified signature -- rejects them. Fall back to the legacy
+  # dotnet-install.sh script for those channels only; revert once the manifests are re-signed.
   local dotnetup_versions=()
   local legacy_versions=()
   for version in "${versions_to_install[@]}"; do
     case "$version" in
-      6.0*|7.0*|8.0*) legacy_versions+=("$version") ;;
-      *)              dotnetup_versions+=("$version") ;;
+      6.0*|7.0*) legacy_versions+=("$version") ;;
+      *)         dotnetup_versions+=("$version") ;;
     esac
   done
 
