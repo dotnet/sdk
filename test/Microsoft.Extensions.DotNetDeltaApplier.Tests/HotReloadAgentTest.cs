@@ -10,6 +10,24 @@ namespace Microsoft.DotNet.Watch.UnitTests
     public class HotReloadAgentTest
     {
         [Fact]
+        public void ClearHotReloadEnvironmentVariables_DoesNotThrow_WhenStartupHooksNotSet()
+        {
+            // Ensure DOTNET_STARTUP_HOOKS is not set
+            var original = Environment.GetEnvironmentVariable("DOTNET_STARTUP_HOOKS");
+            try
+            {
+                Environment.SetEnvironmentVariable("DOTNET_STARTUP_HOOKS", null);
+
+                // Should not throw NullReferenceException
+                HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DOTNET_STARTUP_HOOKS", original);
+            }
+        }
+
+        [Fact]
         public void ClearHotReloadEnvironmentVariables_ClearsStartupHook()
         {
             Assert.Equal("",

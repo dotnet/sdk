@@ -3,6 +3,9 @@
 
 namespace Microsoft.DotNet.Cli.Utils;
 
+using System.Diagnostics.CodeAnalysis;
+
+
 public interface IEnvironmentProvider
 {
     IEnumerable<string> ExecutableExtensions { get; }
@@ -18,6 +21,10 @@ public interface IEnvironmentProvider
     int? GetEnvironmentVariableAsNullableInt(string name);
 
     string? GetEnvironmentVariable(string name);
+
+    bool TryGetEnvironmentVariable(string name, [NotNullWhen(true)] out string? value);
+    bool TryGetEnvironmentVariableAsBool(string name, [NotNullWhen(true)] out bool value);
+    bool TryGetEnvironmentVariableAsInt(string name, [NotNullWhen(true)] out int value);
 
     string? GetEnvironmentVariable(string variable, EnvironmentVariableTarget target);
 

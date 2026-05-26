@@ -208,7 +208,7 @@ namespace Microsoft.NET.Build.Tests
 
                         target.Add(new XElement(ns + "FindUnderPath",
                             new XAttribute("Files", "@(_ConflictPackageFiles)"),
-                            new XAttribute("Path", TestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath()),
+                            new XAttribute("Path", SdkTestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath()),
                             new XElement(ns + "Output",
                                 new XAttribute("TaskParameter", "InPath"),
                                 new XAttribute("ItemName", "_ConflictsInSupportLibs"))

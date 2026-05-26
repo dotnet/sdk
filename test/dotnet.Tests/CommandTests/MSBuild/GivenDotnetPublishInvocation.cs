@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             this.output = output;
         }
 
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo"];
         private static readonly string[] ExpectedProperties = ["--property:_IsPublishing=true"];
         private static readonly string NuGetDisabledProperty = "--property:NuGetInteractive=false";
 

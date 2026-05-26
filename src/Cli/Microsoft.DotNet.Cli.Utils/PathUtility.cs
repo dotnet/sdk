@@ -30,35 +30,9 @@ public static class PathUtility
             throw new ArgumentNullException(nameof(candidate));
         }
         dir = Path.GetFullPath(dir);
-        dir = EnsureTrailingSlash(dir);
+        dir = PathUtilities.EnsureTrailingSlash(dir);
         candidate = Path.GetFullPath(candidate);
         return candidate.StartsWith(dir, StringComparison.OrdinalIgnoreCase);
-    }
-
-    public static string EnsureTrailingSlash(string path)
-    {
-        return EnsureTrailingCharacter(path, Path.DirectorySeparatorChar);
-    }
-
-    public static string EnsureTrailingForwardSlash(string path)
-    {
-        return EnsureTrailingCharacter(path, '/');
-    }
-
-    private static string EnsureTrailingCharacter(string path, char trailingCharacter)
-    {
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
-
-        // if the path is empty, we want to return the original string instead of a single trailing character.
-        if (path.Length == 0 || path[path.Length - 1] == trailingCharacter)
-        {
-            return path;
-        }
-
-        return path + trailingCharacter;
     }
 
     public static string EnsureNoTrailingDirectorySeparator(string path)
@@ -135,7 +109,7 @@ public static class PathUtility
     /// </summary>
     public static string GetRelativePath(DirectoryInfo directory, FileSystemInfo childItem)
     {
-        var path1 = EnsureTrailingSlash(directory.FullName);
+        var path1 = PathUtilities.EnsureTrailingSlash(directory.FullName);
 
         var path2 = childItem.FullName;
 

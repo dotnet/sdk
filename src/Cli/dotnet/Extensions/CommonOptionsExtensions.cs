@@ -6,6 +6,9 @@
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Commands;
+using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Extensions;
 
@@ -94,5 +97,13 @@ internal static class CommonOptionsExtensions
                 break;
         }
         return logLevel;
+    }
+
+    public static RestoreActionConfig ToRestoreActionConfig(this NuGetRestoreOptions options, ParseResult parseResult)
+    {
+        return new RestoreActionConfig(DisableParallel: parseResult.GetValue(options.DisableParallelOption),
+            NoCache: parseResult.GetValue(options.NoCacheOption) || parseResult.GetValue(options.NoHttpCacheOption),
+            IgnoreFailedSources: parseResult.GetValue(options.IgnoreFailedSourcesOption),
+            Interactive: parseResult.GetValue(options.InteractiveOption));
     }
 }

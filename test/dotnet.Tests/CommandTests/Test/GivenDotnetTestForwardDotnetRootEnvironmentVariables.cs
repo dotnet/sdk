@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             command.EnvironmentToRemove.Add("DOTNET_ROOT(x86)");
             var result = command.Execute(ConsoleLoggerOutputDetailed);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 1")
