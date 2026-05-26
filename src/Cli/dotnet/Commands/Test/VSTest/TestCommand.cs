@@ -522,9 +522,11 @@ public class TerminalLoggerDetector
 
     internal static Switch? TryFind(IReadOnlyList<string> unmatchedTokens, params string[] names)
     {
-        // Order matters: check "--" before "-" so that "--tl:off" is matched as the long form
-        // rather than as a malformed short form, and use exact name matching (not StartsWith)
-        // so that e.g. "-tlp:default=true" is not incorrectly returned when searching for "tl".
+        // Two orderings matter here:
+        //   * Use exact name matching (not StartsWith) so that e.g. "-tlp:default=true" is not
+        //     incorrectly returned when searching for "tl".
+        //   * Check "--" before "-" so that if both "-tl" and "--tl" variants appear in the
+        //     same token list, the long form wins.
         foreach (string prefix in new[] { "--", "-", "/" })
         {
             foreach (var name in names)
