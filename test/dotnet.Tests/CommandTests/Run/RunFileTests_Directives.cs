@@ -1691,7 +1691,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     [InlineData("exclude")]
     public void IncludeDirective_IdenticalDuplicateDirectives(string directiveKind)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         var utilPath = Path.Join(testInstance.Path, "Util.cs");
@@ -1743,7 +1743,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     [Fact]
     public void IncludeDirective_IdenticalDuplicateIncludeDirectivesAreAllowed()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         var utilPath = Path.Join(testInstance.Path, "Util.cs");
@@ -1837,7 +1837,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
     [Fact]
     public void IncludeDirective_IncludeAndExcludeSamePathAreAllowed()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
 

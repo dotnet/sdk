@@ -2769,7 +2769,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void Directives_IdenticalDuplicate()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
@@ -2810,7 +2810,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void Directives_Duplicate_UsesUnevaluatedValues()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
@@ -2837,7 +2837,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void Directives_Duplicate_EvaluatedProjectDirectivesAreAllowed()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Lib.csproj"), """
             <Project Sdk="Microsoft.NET.Sdk" />
             """);
