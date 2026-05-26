@@ -27,9 +27,15 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
         MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
             projects,
             _fileOrDirectory,
-            interactive);
+            interactive,
+            Definition.GetAllowedAppKinds(_parseResult));
 
         var frameworkString = _parseResult.GetValue(Definition.FrameworkOption);
+
+        if (msbuildProj.IsFileBasedApp && !string.IsNullOrEmpty(frameworkString))
+        {
+            throw new GracefulException(CliCommandStrings.InvalidOptionForFileBasedApp, Definition.FrameworkOption.Name);
+        }
 
         var arguments = _parseResult.GetValue(Definition.ProjectPathArgument).ToList().AsReadOnly();
         PathUtility.EnsureAllPathsExist(arguments,
@@ -85,7 +91,7 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
 
         if (numberOfAddedReferences != 0)
         {
-            msbuildProj.ProjectRootElement.Save();
+            msbuildProj.Save();
         }
 
         return 0;

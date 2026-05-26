@@ -2,17 +2,37 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
-internal sealed class ReferenceRemoveCommandDefinition() : ReferenceRemoveCommandDefinitionBase(Name)
+internal sealed class ReferenceRemoveCommandDefinition : ReferenceRemoveCommandDefinitionBase
 {
     public new const string Name = "remove";
+
+    public readonly Option<string?> FileOption = ReferenceCommandDefinition.CreateFileOption();
+
+    public ReferenceRemoveCommandDefinition()
+        : base(Name)
+    {
+        Options.Add(FileOption);
+    }
 
     public ReferenceCommandDefinition Parent => (ReferenceCommandDefinition)Parents.Single();
 
     public override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.ProjectOption);
+    {
+        if (parseResult.HasOption(FileOption))
+        {
+            return parseResult.GetValue(FileOption);
+        }
+
+        return parseResult.GetValue(Parent.ProjectOption);
+    }
+
+    public override AppKinds GetAllowedAppKinds(ParseResult parseResult)
+        => parseResult.HasOption(FileOption) ? AppKinds.FileBased : AppKinds.ProjectBased;
 }
 
 internal abstract class ReferenceRemoveCommandDefinitionBase : Command
@@ -40,4 +60,6 @@ internal abstract class ReferenceRemoveCommandDefinitionBase : Command
     }
 
     public abstract string? GetFileOrDirectory(ParseResult parseResult);
+
+    public abstract AppKinds GetAllowedAppKinds(ParseResult parseResult);
 }

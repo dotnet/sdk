@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 
@@ -20,6 +21,9 @@ internal sealed class ListReferenceCommandDefinition : ListReferenceCommandDefin
 
     internal override string? GetFileOrDirectory(ParseResult parseResult)
         => parseResult.GetValue(Parent.SlnOrProjectOrFileArgument);
+
+    internal override AppKinds GetAllowedAppKinds(ParseResult parseResult)
+        => AppKinds.Any;
 }
 
 internal abstract class ListReferenceCommandDefinitionBase : Command
@@ -30,4 +34,6 @@ internal abstract class ListReferenceCommandDefinitionBase : Command
     }
 
     internal abstract string? GetFileOrDirectory(ParseResult parseResult);
+
+    internal abstract AppKinds GetAllowedAppKinds(ParseResult parseResult);
 }

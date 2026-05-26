@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 
@@ -12,7 +13,7 @@ internal sealed class AddReferenceCommandDefinition : ReferenceAddCommandDefinit
 {
     public new const string Name = "reference";
 
-    public readonly Option<string> ProjectOption = ReferenceCommandDefinition.CreateProjectOption();
+    public readonly Option<string?> ProjectOption = ReferenceCommandDefinition.CreateProjectOption();
 
     public AddReferenceCommandDefinition()
         : base(Name)
@@ -24,6 +25,9 @@ internal sealed class AddReferenceCommandDefinition : ReferenceAddCommandDefinit
         => parseResult.HasOption(ProjectOption)
         ? parseResult.GetValue(ProjectOption)
         : parseResult.GetValue(Parent.ProjectOrFileArgument);
+
+    public override AppKinds GetAllowedAppKinds(ParseResult parseResult)
+        => parseResult.HasOption(ProjectOption) ? AppKinds.ProjectBased : AppKinds.Any;
 
     public AddCommandDefinition Parent => (AddCommandDefinition)Parents.Single();
 }

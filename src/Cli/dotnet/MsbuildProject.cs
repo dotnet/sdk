@@ -9,6 +9,9 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Reference;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -29,17 +32,34 @@ internal class MsbuildProject
     private IEnumerable<string> cachedRuntimeIdentifiers;
     private IEnumerable<string> cachedConfigurations;
     private readonly bool _interactive = false;
+    private readonly string _entryPointFilePath;
 
-    private MsbuildProject(ProjectCollection projects, ProjectRootElement project, bool interactive)
+    private MsbuildProject(ProjectCollection projects, ProjectRootElement project, bool interactive, string entryPointFilePath = null)
     {
         _projects = projects;
         ProjectRootElement = project;
         ProjectDirectory = PathUtilities.EnsureTrailingSlash(ProjectRootElement.DirectoryPath);
         _interactive = interactive;
+        _entryPointFilePath = entryPointFilePath;
     }
 
+    public bool IsFileBasedApp => _entryPointFilePath is not null;
+
     public static MsbuildProject FromFileOrDirectory(ProjectCollection projects, string fileOrDirectory, bool interactive)
+        => FromFileOrDirectory(projects, fileOrDirectory, interactive, AppKinds.ProjectBased);
+
+    public static MsbuildProject FromFileOrDirectory(ProjectCollection projects, string fileOrDirectory, bool interactive, AppKinds allowedAppKinds)
     {
+        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
+        {
+            return FromFileBasedApp(projects, fileOrDirectory, interactive);
+        }
+
+        if (!allowedAppKinds.HasFlag(AppKinds.ProjectBased))
+        {
+            throw new GracefulException(CliCommandStrings.InvalidFilePath, fileOrDirectory);
+        }
+
         if (File.Exists(fileOrDirectory))
         {
             return FromFile(projects, fileOrDirectory, interactive);
@@ -64,6 +84,33 @@ internal class MsbuildProject
         }
 
         return new MsbuildProject(projects, project, interactive);
+    }
+
+    private static MsbuildProject FromFileBasedApp(ProjectCollection projects, string entryPointFilePath, bool interactive)
+    {
+        string entryPointFullPath = Path.GetFullPath(entryPointFilePath);
+        var builder = new VirtualProjectBuilder(entryPointFullPath, VirtualProjectBuildingCommand.TargetFramework);
+
+        builder.CreateProjectInstance(
+            projects,
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            project: out _,
+            out var projectRootElement,
+            evaluatedDirectives: out _);
+
+        return new MsbuildProject(projects, projectRootElement, interactive, entryPointFullPath);
+    }
+
+    public void Save()
+    {
+        if (IsFileBasedApp)
+        {
+            VirtualProjectReferenceReflector.ReflectChangesToDirectives(ProjectRootElement, _entryPointFilePath);
+        }
+        else
+        {
+            ProjectRootElement.Save();
+        }
     }
 
     public static MsbuildProject FromDirectory(ProjectCollection projects, string projectDirectory, bool interactive)
@@ -127,7 +174,11 @@ internal class MsbuildProject
 
     public IEnumerable<ProjectItemElement> GetProjectToProjectReferences()
     {
-        return ProjectRootElement.GetAllItemsWithElementType(ProjectItemElementType);
+        var projectReferences = ProjectRootElement.GetAllItemsWithElementType(ProjectItemElementType);
+
+        return IsFileBasedApp
+            ? projectReferences.Where(static p => !VirtualProjectReferenceReflector.IsFileBasedAppReference(p.Include))
+            : projectReferences;
     }
 
     public IEnumerable<string> GetRuntimeIdentifiers()

@@ -28,7 +28,13 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
 
     public override int Execute()
     {
-        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false, Definition.GetAllowedAppKinds(_parseResult));
+
+        if (msbuildProj.IsFileBasedApp && !string.IsNullOrEmpty(_parseResult.GetValue(Definition.FrameworkOption)))
+        {
+            throw new GracefulException(CliCommandStrings.InvalidOptionForFileBasedApp, Definition.FrameworkOption.Name);
+        }
+
         var references = _arguments.Select(p =>
         {
             var fullPath = Path.GetFullPath(p);
@@ -49,7 +55,7 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
 
         if (numberOfRemovedReferences != 0)
         {
-            msbuildProj.ProjectRootElement.Save();
+            msbuildProj.Save();
         }
 
         return 0;

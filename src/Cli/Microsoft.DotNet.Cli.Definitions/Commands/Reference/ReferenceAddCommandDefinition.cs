@@ -4,17 +4,36 @@
 using System.CommandLine;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
-internal sealed class ReferenceAddCommandDefinition() : ReferenceAddCommandDefinitionBase(Name)
+internal sealed class ReferenceAddCommandDefinition : ReferenceAddCommandDefinitionBase
 {
     public new const string Name = "add";
+
+    public readonly Option<string?> FileOption = ReferenceCommandDefinition.CreateFileOption();
+
+    public ReferenceAddCommandDefinition()
+        : base(Name)
+    {
+        Options.Add(FileOption);
+    }
 
     public ReferenceCommandDefinition Parent => (ReferenceCommandDefinition)Parents.Single();
 
     public override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.ProjectOption);
+    {
+        if (parseResult.HasOption(FileOption))
+        {
+            return parseResult.GetValue(FileOption);
+        }
+
+        return parseResult.GetValue(Parent.ProjectOption);
+    }
+
+    public override AppKinds GetAllowedAppKinds(ParseResult parseResult)
+        => parseResult.HasOption(FileOption) ? AppKinds.FileBased : AppKinds.ProjectBased;
 }
 
 internal abstract class ReferenceAddCommandDefinitionBase : Command
@@ -49,4 +68,6 @@ internal abstract class ReferenceAddCommandDefinitionBase : Command
     }
 
     public abstract string? GetFileOrDirectory(ParseResult parseResult);
+
+    public abstract AppKinds GetAllowedAppKinds(ParseResult parseResult);
 }

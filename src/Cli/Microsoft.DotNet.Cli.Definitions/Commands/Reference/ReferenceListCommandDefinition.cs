@@ -2,17 +2,36 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
 
-internal sealed class ReferenceListCommandDefinition()
-    : ListReferenceCommandDefinitionBase(Name)
+internal sealed class ReferenceListCommandDefinition : ListReferenceCommandDefinitionBase
 {
     public new const string Name = "list";
+
+    public readonly Option<string?> FileOption = ReferenceCommandDefinition.CreateFileOption();
+
+    public ReferenceListCommandDefinition()
+        : base(Name)
+    {
+        Options.Add(FileOption);
+    }
 
     public ReferenceCommandDefinition Parent => (ReferenceCommandDefinition)Parents.Single();
 
     internal override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.ProjectOption);
+    {
+        if (parseResult.HasOption(FileOption))
+        {
+            return parseResult.GetValue(FileOption);
+        }
+
+        return parseResult.GetValue(Parent.ProjectOption);
+    }
+
+    internal override AppKinds GetAllowedAppKinds(ParseResult parseResult)
+        => parseResult.HasOption(FileOption) ? AppKinds.FileBased : AppKinds.ProjectBased;
 }

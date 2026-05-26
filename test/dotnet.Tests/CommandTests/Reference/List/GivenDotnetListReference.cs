@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Xml;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Utils;
 using Msbuild.Tests.Utilities;
 
@@ -160,6 +161,36 @@ Commands:
         }
 
         [Fact]
+        public void WhenNoProjectReferencesArePresentInTheProjectItPrintsError_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                Console.WriteLine();
+                """);
+
+            var cmd = new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.NoReferencesFound, CliStrings.P2P, appFile));
+        }
+
+        [Fact]
+        public void ItRejectsProjectPathPassedToFileOption_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+
+            new DotnetCommand(Log, "reference", "list", "--file", projectFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, projectFile));
+        }
+
+        [Fact]
         public void ItPrintsSingleReference()
         {
             string OutputText = CliStrings.ProjectReferenceOneOrMore;
@@ -178,6 +209,30 @@ Commands:
                 .Execute();
             cmd.Should().Pass();
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
+        }
+
+        [Fact]
+        public void ItPrintsSingleReference_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                #:project Lib/Lib.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+Lib/Lib.csproj";
+
+            new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
         }
 
         [Fact]
@@ -209,6 +264,33 @@ Commands:
         }
 
         [Fact]
+        public void ItPrintsMultipleReferences_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                #:project Lib/Lib.csproj
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+Lib/Lib.csproj
+Other/Other.csproj";
+
+            new DotnetCommand(Log, "reference", "list", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
+        }
+
+        [Fact]
         public void ItPrintsReferenceWithMSBuildPropertyInPath()
         {
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
@@ -228,12 +310,52 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
+        [Fact]
+        public void ItPrintsReferenceWithMSBuildPropertyInPath_FileBasedApp()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var appFile = Path.Join(testDir, "Program.cs");
+            File.WriteAllText(appFile, """
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testDir, "Lib");
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+{testDir}\Lib\Lib.csproj";
+
+            var cmd = new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testDir)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
+        }
+
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {
             return new TestSetup(
                 _testAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod: callingMethod, identifier: identifier, testAssetSubdirectory: TestSetup.TestGroup)
                     .WithSource()
                     .Path);
+        }
+
+        private static string CreateMinimalProject(string directory, string projectName)
+        {
+            var projectDirectory = Path.Join(directory, projectName);
+            Directory.CreateDirectory(projectDirectory);
+            var projectFile = Path.Join(projectDirectory, projectName + ".csproj");
+            File.WriteAllText(projectFile, $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    </PropertyGroup>
+                </Project>
+                """);
+            return projectFile;
         }
 
         private ProjDir NewLib(string basePath, string testProjectName = "temp")
