@@ -12,8 +12,8 @@ internal static partial class SignatureVerifier
     // Pure-ECDSA, DSA, Ed25519, Ed448 — see §4 of signature-verification.md. Composite
     // ML-DSA variants whose second component is ECDSA / EdDSA remain accepted via
     // s_pqcPureKeyOids: those are PQ hybrid schemes, not stand-alone classical sigs.
-    internal static readonly HashSet<string> s_explicitlyUnsupportedSignatureKeyOids = new(StringComparer.Ordinal)
-    {
+    internal static readonly HashSet<string> s_explicitlyUnsupportedSignatureKeyOids =
+    [
         "1.2.840.10045.2.1",  // id-ecPublicKey / pure ECDSA (RFC 5480 §2.1.1)
         "1.2.840.10040.4.1",  // id-dsa (RFC 3279 §2.3.2)
         "1.3.101.112",        // id-Ed25519 (RFC 8410)
@@ -21,12 +21,12 @@ internal static partial class SignatureVerifier
         // Pre-hash PQC variants are tracked separately in s_pqcPreHashOids
         // (SignatureVerifier.PqcOids.cs) — they have their own SPKI-vs-signature
         // distinction and the spec calls them out individually.
-    };
+    ];
 
     // Collision-broken hash functions plus families the BCL recognises but the .NET Release
     // pipeline does not use. Rejected per §4 of signature-verification.md.
-    internal static readonly HashSet<string> s_explicitlyUnsupportedDigestOids = new(StringComparer.Ordinal)
-    {
+    internal static readonly HashSet<string> s_explicitlyUnsupportedDigestOids =
+    [
         // --- Collision-broken (must reject) ---
         "1.3.14.3.2.26",       // id-sha1 (RFC 3279 §2.1)
         "1.2.840.113549.2.5",  // md5     (RFC 1321 / RFC 3279 §2.1)
@@ -47,5 +47,5 @@ internal static partial class SignatureVerifier
         // the .NET Release pipeline does not do.
         "2.16.840.1.101.3.4.2.11",  // id-shake128
         "2.16.840.1.101.3.4.2.12",  // id-shake256
-    };
+    ];
 }

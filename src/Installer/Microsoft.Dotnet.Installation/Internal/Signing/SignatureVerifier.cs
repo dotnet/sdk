@@ -42,13 +42,14 @@ internal static partial class SignatureVerifier
     static SignatureVerifier()
 #pragma warning restore CA1810
     {
-        s_allowedPublicKeyOids = new HashSet<string>(s_pqcPureKeyOids) { OidRsa };
-        s_allowedDigestOids = new HashSet<string>(s_pqcSignatureOids)
-        {
+        s_allowedPublicKeyOids = [.. s_pqcPureKeyOids, OidRsa];
+        s_allowedDigestOids =
+        [
+            .. s_pqcSignatureOids,
             OidIdSha256,
             OidIdSha384,
             OidIdSha512,
-        };
+        ];
     }
 
     private const int RevocationRetrievalTimeoutSeconds = 30;
