@@ -21,6 +21,7 @@ internal enum FailureCode
     // Cryptography
     SigCryptoInvalid,
     WeakDigest,
+    WeakSignatureKey,
     SignatureAlgorithmNotPermitted,
 
     // Certificate policy

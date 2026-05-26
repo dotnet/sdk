@@ -23,6 +23,7 @@ namespace Microsoft.Dotnet.Installation.Internal.Signing;
 ///   <item><c>SignatureVerifier.Ekus.cs</c> — EKU OIDs and the code-signing permitted set.</item>
 ///   <item><c>SignatureVerifier.PqcOids.cs</c> — ML-DSA / SLH-DSA / Composite ML-DSA OID tables.</item>
 ///   <item><c>SignatureVerifier.DigestOids.cs</c> — SHA-2 / SHA-3 / SHAKE digest OID allow-list.</item>
+///   <item><c>SignatureVerifier.UnsupportedOids.cs</c> — explicitly-rejected key + digest OIDs.</item>
 /// </list>
 /// </remarks>
 internal static partial class SignatureVerifier
@@ -31,14 +32,17 @@ internal static partial class SignatureVerifier
     private const string OidTimestampToken = "1.2.840.113549.1.9.16.2.14"; // id-aa-signatureTimeStampToken (RFC 3161 Appendix A https://datatracker.ietf.org/doc/html/rfc3161#appendix-A; SET OF TimeStampToken per RFC 3161 §2.4.2 https://datatracker.ietf.org/doc/html/rfc3161#section-2.4.2)
 
     private const string OidRsa = "1.2.840.113549.1.1.1"; // rsaEncryption (RFC 8017 Appendix C) https://datatracker.ietf.org/doc/html/rfc8017#appendix-C
-    private const string OidEcdsa = "1.2.840.10045.2.1";  // id-ecPublicKey (RFC 5480 §2.1.1) https://datatracker.ietf.org/doc/html/rfc5480#section-2.1.1
+
+    private const int MinRsaKeySizeBits = 4096;
 
     private static readonly HashSet<string> s_allowedPublicKeyOids;
     private static readonly HashSet<string> s_allowedDigestOids;
 
+#pragma warning disable CA1810 // CA1810: explicit static ctor needed for cross-partial init order. IDE0079: IDE incorrectly reports the CA1810 suppression as unnecessary.
     static SignatureVerifier()
+#pragma warning restore CA1810
     {
-        s_allowedPublicKeyOids = new HashSet<string>(s_pqcPureKeyOids) { OidRsa, OidEcdsa };
+        s_allowedPublicKeyOids = new HashSet<string>(s_pqcPureKeyOids) { OidRsa };
         s_allowedDigestOids = new HashSet<string>(s_pqcSignatureOids)
         {
             OidIdSha256,
@@ -255,7 +259,21 @@ internal static partial class SignatureVerifier
             if (!s_allowedPublicKeyOids.Contains(keyOid))
             {
                 result.Add(FailureCode.SignatureAlgorithmNotPermitted,
-                    $"Signer public-key algorithm OID '{keyOid}' is not permitted. Allowed: RSA, ECDSA, ML-DSA, SLH-DSA, Composite ML-DSA.");
+                    $"Signer public-key algorithm OID '{keyOid}' is not permitted. Allowed: RSA (≥4096-bit), ML-DSA, SLH-DSA, Composite ML-DSA.");
+            }
+            else if (keyOid == OidRsa)
+            {
+                using RSA? rsa = signerCert.GetRSAPublicKey();
+                if (rsa is null)
+                {
+                    result.Add(FailureCode.Unexpected,
+                        "Signer certificate advertises RSA but the public key could not be loaded for inspection.");
+                }
+                else if (rsa.KeySize < MinRsaKeySizeBits)
+                {
+                    result.Add(FailureCode.WeakSignatureKey,
+                        $"Signer RSA key size {rsa.KeySize} bits is below the required minimum of {MinRsaKeySizeBits} bits.");
+                }
             }
         }
         else

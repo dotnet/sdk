@@ -94,8 +94,7 @@ Within each family, exact OIDs are listed in `SignatureVerifier.cs`.
 
 - SHA-2: SHA-256, SHA-384, SHA-512.
 - SHA-3: SHA3-256, SHA3-384, SHA3-512.
-- SHAKE: SHAKE-128, SHAKE-256 (required for ECDSA-with-SHAKE per RFC 8692 and
-  for SHAKE-flavoured SLH-DSA variants).
+- SHAKE: SHAKE-128, SHAKE-256 (required for SHAKE-flavoured SLH-DSA variants).
 - Pure-PQC algorithm OIDs reused as digest identifiers (see below).
 - SHA-1 / MD5 are rejected.
 
@@ -125,6 +124,15 @@ the signing-time choice (e.g. pure vs. pre-hash, RSA-PSS vs.
 RSA-PKCS#1 v1.5) is carried separately in
 `SignerInfo.signatureAlgorithm` on each individual signature.
 
+The verifier accepts only the following SPKI algorithm OIDs:
+
+- **RSA** (`1.2.840.113549.1.1.1`) — with the additional constraint that the
+  RSA public key's modulus MUST be **at least 4096 bits**. Smaller RSA keys
+  (RSA-2048, RSA-3072) are rejected as `WeakSignatureKey`.
+
+- **Post-quantum** pure-mode OIDs only (ML-DSA, SLH-DSA, Composite ML-DSA).
+  Pre-hash PQC variants such as pure ECDSA are rejected. Windows does not fully support ECC/ECDSA. https://learn.microsoft.com/en-us/security/trusted-root/program-requirements#b-signature-requirements
+
 For pure-PQC signatures the algorithm OID is repurposed as the CMS
 `digestAlgorithm` identifier — per
 [`draft-ietf-lamps-cms-ml-dsa`](https://datatracker.ietf.org/doc/draft-ietf-lamps-cms-ml-dsa/)
@@ -137,7 +145,7 @@ place on a certificate's public-key field).
 `SignedCms.CheckSignature` performs the actual cryptographic
 verification.
 
-Failures: `WeakDigest`, `SignatureAlgorithmNotPermitted`.
+Failures: `WeakDigest`, `WeakSignatureKey`, `SignatureAlgorithmNotPermitted`.
 
 ## 5. Signer certificate policy
 

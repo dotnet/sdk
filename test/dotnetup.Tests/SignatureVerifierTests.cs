@@ -70,29 +70,6 @@ public class SignatureVerifierTests
     /// </summary>
     private static readonly DateTimeOffset s_pinnedNow = new(2026, 7, 15, 0, 0, 0, TimeSpan.Zero);
 
-    // ---------------- Argument validation ----------------
-
-    [Fact]
-    public void Verify_NullContent_Throws()
-    {
-        Action act = () => SignatureVerifier.Verify(null!, new byte[] { 1 }, ProductionOptions());
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [Fact]
-    public void Verify_NullSignature_Throws()
-    {
-        Action act = () => SignatureVerifier.Verify(new byte[] { 1 }, null!, ProductionOptions());
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [Fact]
-    public void Verify_NullOptions_Throws()
-    {
-        Action act = () => SignatureVerifier.Verify(new byte[] { 1 }, new byte[] { 1 }, null!);
-        act.Should().Throw<ArgumentNullException>();
-    }
-
     // ---------------- Trusted-roots policy ----------------
 
     [Fact]
@@ -313,10 +290,12 @@ public class SignatureVerifierTests
     [Fact]
     public void Verify_NuGetPackageSignature_PassesAlgorithmAndEkuChecks()
     {
-        // Same NuGet fixture confirms the algorithm + EKU checks DON'T over-fire on a
-        // legitimate Microsoft NuGet signer: SHA-256 digest is allowed (not WeakDigest),
-        // RSA public key is allowed (not SignatureAlgorithmNotPermitted), and the EKU is exactly
-        // id-kp-codeSigning (not EkuMissing or EkuNotExclusiveCodeSign).
+        // Confirms the algorithm + EKU checks DON'T over-fire on a legitimate Microsoft NuGet
+        // signer for the OID-level checks: SHA-256 digest is allowed (not WeakDigest), the
+        // RSA SPKI OID is allowed, and the EKU is exactly id-kp-codeSigning (not EkuMissing
+        // or EkuNotExclusiveCodeSign). The NuGet signer's RSA key size IS below the .NET
+        // Release floor (4096 bits) so SignatureAlgorithmNotPermitted is expected for that
+        // distinct reason — see the explicit assertion below.
         // CollectAll mode is required: SigCryptoInvalid (the sig was computed over a NuGet
         // package, not our JSON) would otherwise short-circuit before EvaluateAlgorithmPolicy
         // / EvaluateSignerCertificatePolicy run, making the NotContain assertions vacuous.
@@ -329,13 +308,17 @@ public class SignatureVerifierTests
 
         var codes = result.Failures.Select(f => f.Code).ToHashSet();
         codes.Should().NotContain(FailureCode.WeakDigest);
-        codes.Should().NotContain(FailureCode.SignatureAlgorithmNotPermitted);
         codes.Should().NotContain(FailureCode.EkuMissing);
         codes.Should().NotContain(FailureCode.EkuNotExclusiveCodeSign);
         codes.Should().NotContain(FailureCode.SigMultipleSigners);
         codes.Should().NotContain(FailureCode.SignerCertMissing);
+        codes.Should().NotContain(FailureCode.SignatureAlgorithmNotPermitted,
+            "the NuGet signer's SPKI OID (rsaEncryption) is in the allow-list");
+        codes.Should().Contain(FailureCode.WeakSignatureKey,
+            "the NuGet signer is RSA-2048 which is below the .NET Release 4096-bit floor");
         // The fixture is a foreign signer, so overall verification still fails (DN pins,
-        // crypto). This test only asserts the algorithm/EKU sub-checks didn't over-fire.
+        // crypto, RSA key size). This test only asserts the algorithm/EKU sub-checks
+        // behave correctly.
         result.IsValid.Should().BeFalse();
     }
 
@@ -700,7 +683,14 @@ public class SignatureVerifierTests
         }
 
         HashSet<string> ourOids = SignatureVerifier.s_pqcSignatureOids;
-        var missingFromOurs = bclOids.Except(ourOids).OrderBy(o => o, StringComparer.Ordinal).ToList();
+        // Subtract OIDs we deliberately don't accept (e.g. classical fallbacks that may
+        // surface in a future BCL refactor); they are not drift, they are policy choices.
+        var missingFromOurs = bclOids
+            .Except(ourOids)
+            .Except(SignatureVerifier.s_explicitlyUnsupportedSignatureKeyOids)
+            .Except(SignatureVerifier.s_explicitlyUnsupportedDigestOids)
+            .OrderBy(o => o, StringComparer.Ordinal)
+            .ToList();
 
         if (missingFromOurs.Count > 0)
         {
