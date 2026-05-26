@@ -731,7 +731,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
         int exitCode, string? outputData, string? errorData)
     {
-        // The test host can hand-shake (so the caller knows we have a handshake info) but exit before
+        // The test host can handshake (so the caller knows we have a handshake info) but exit before
         // ever calling TestSessionStarted, which is what registers the assembly in _assemblies. In that
         // case we must not throw a KeyNotFoundException — surface a handshake failure instead so the
         // user gets actionable output instead of a stack trace buried in the run.
