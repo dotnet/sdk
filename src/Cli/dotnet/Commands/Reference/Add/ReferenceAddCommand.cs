@@ -5,7 +5,9 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Commands.Run;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
@@ -13,16 +15,16 @@ namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefinitionBase>
 {
     private readonly string _fileOrDirectory;
+    private readonly AppKinds _allowedAppKinds;
 
     public ReferenceAddCommand(ParseResult parseResult)
         : base(parseResult)
     {
-        if (Definition.GetConflictingPathOptions(parseResult) is ({ } fileOptionName, { } projectOptionName))
-        {
-            throw new GracefulException(CliCommandStrings.CannotCombineOptions, fileOptionName, projectOptionName);
-        }
-
-        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult) ?? Directory.GetCurrentDirectory();
+        (_fileOrDirectory, _allowedAppKinds) = PackageCommandParser.ProcessPathOptions(
+            Definition.GetFileOption(),
+            Definition.GetProjectOption(),
+            Definition.GetProjectOrFileArgument(),
+            parseResult);
     }
 
     public override int Execute()
@@ -33,7 +35,7 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
             projects,
             _fileOrDirectory,
             interactive,
-            Definition.GetAllowedAppKinds(_parseResult));
+            _allowedAppKinds);
 
         var frameworkString = _parseResult.GetValue(Definition.FrameworkOption);
 

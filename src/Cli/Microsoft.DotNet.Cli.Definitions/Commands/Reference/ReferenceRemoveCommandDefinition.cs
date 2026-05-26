@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
@@ -21,23 +19,11 @@ internal sealed class ReferenceRemoveCommandDefinition : ReferenceRemoveCommandD
 
     public ReferenceCommandDefinition Parent => (ReferenceCommandDefinition)Parents.Single();
 
-    public override string? GetFileOrDirectory(ParseResult parseResult)
-    {
-        if (parseResult.HasOption(FileOption))
-        {
-            return parseResult.GetValue(FileOption);
-        }
+    public override Option<string?>? GetFileOption() => FileOption;
 
-        return parseResult.GetValue(Parent.ProjectOption);
-    }
+    public override Option<string?>? GetProjectOption() => Parent.ProjectOption;
 
-    public override AppKinds GetAllowedAppKinds(ParseResult parseResult)
-        => parseResult.HasOption(FileOption) ? AppKinds.FileBased : AppKinds.ProjectBased;
-
-    public override (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult)
-        => parseResult.HasOption(FileOption) && parseResult.HasOption(Parent.ProjectOption)
-            ? (FileOption.Name, Parent.ProjectOption.Name)
-            : (null, null);
+    public override Argument<string>? GetProjectOrFileArgument() => null;
 }
 
 internal abstract class ReferenceRemoveCommandDefinitionBase : Command
@@ -64,9 +50,9 @@ internal abstract class ReferenceRemoveCommandDefinitionBase : Command
         Options.Add(FrameworkOption);
     }
 
-    public abstract string? GetFileOrDirectory(ParseResult parseResult);
+    public abstract Option<string?>? GetFileOption();
 
-    public abstract AppKinds GetAllowedAppKinds(ParseResult parseResult);
+    public abstract Option<string?>? GetProjectOption();
 
-    public abstract (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult);
+    public abstract Argument<string>? GetProjectOrFileArgument();
 }

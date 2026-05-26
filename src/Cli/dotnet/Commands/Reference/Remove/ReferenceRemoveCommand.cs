@@ -5,7 +5,9 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
@@ -13,16 +15,16 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
 {
     private readonly string _fileOrDirectory;
     private readonly IReadOnlyCollection<string> _arguments;
+    private readonly AppKinds _allowedAppKinds;
 
     public ReferenceRemoveCommand(ParseResult parseResult)
         : base(parseResult)
     {
-        if (Definition.GetConflictingPathOptions(parseResult) is ({ } fileOptionName, { } projectOptionName))
-        {
-            throw new GracefulException(CliCommandStrings.CannotCombineOptions, fileOptionName, projectOptionName);
-        }
-
-        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult) ?? Directory.GetCurrentDirectory();
+        (_fileOrDirectory, _allowedAppKinds) = PackageCommandParser.ProcessPathOptions(
+            Definition.GetFileOption(),
+            Definition.GetProjectOption(),
+            Definition.GetProjectOrFileArgument(),
+            parseResult);
         _arguments = parseResult.GetValue(Definition.ProjectPathArgument).ToList().AsReadOnly();
 
         if (_arguments.Count == 0)
@@ -33,7 +35,7 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
 
     public override int Execute()
     {
-        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false, Definition.GetAllowedAppKinds(_parseResult));
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false, _allowedAppKinds);
 
         if (msbuildProj.IsFileBasedApp && !string.IsNullOrEmpty(_parseResult.GetValue(Definition.FrameworkOption)))
         {

@@ -7,30 +7,32 @@ using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
+using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
 
 internal class ReferenceListCommand : CommandBase<ListReferenceCommandDefinitionBase>
 {
     private readonly string _fileOrDirectory;
+    private readonly AppKinds _allowedAppKinds;
 
     public ReferenceListCommand(ParseResult parseResult)
         : base(parseResult)
     {
         ShowHelpOrErrorIfAppropriate(parseResult);
 
-        if (Definition.GetConflictingPathOptions(parseResult) is ({ } fileOptionName, { } projectOptionName))
-        {
-            throw new GracefulException(CliCommandStrings.CannotCombineOptions, fileOptionName, projectOptionName);
-        }
-
-        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult) ?? Directory.GetCurrentDirectory();
+        (_fileOrDirectory, _allowedAppKinds) = PackageCommandParser.ProcessPathOptions(
+            Definition.GetFileOption(),
+            Definition.GetProjectOption(),
+            Definition.GetProjectOrFileArgument(),
+            parseResult);
     }
 
     public override int Execute()
     {
-        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false, Definition.GetAllowedAppKinds(_parseResult));
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false, _allowedAppKinds);
         var p2ps = msbuildProj.GetProjectToProjectReferences();
         if (!p2ps.Any())
         {

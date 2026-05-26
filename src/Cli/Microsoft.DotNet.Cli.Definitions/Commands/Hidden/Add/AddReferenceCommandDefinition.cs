@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
-using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 
@@ -23,32 +21,11 @@ internal sealed class AddReferenceCommandDefinition : ReferenceAddCommandDefinit
         Options.Add(FileOption);
     }
 
-    public override string? GetFileOrDirectory(ParseResult parseResult)
-    {
-        if (parseResult.HasOption(FileOption))
-        {
-            return parseResult.GetValue(FileOption);
-        }
+    public override Option<string?>? GetFileOption() => FileOption;
 
-        if (parseResult.HasOption(ProjectOption))
-        {
-            return parseResult.GetValue(ProjectOption);
-        }
+    public override Option<string?>? GetProjectOption() => ProjectOption;
 
-        return parseResult.GetValue(Parent.ProjectOrFileArgument);
-    }
-
-    public override AppKinds GetAllowedAppKinds(ParseResult parseResult)
-        => parseResult.HasOption(FileOption)
-            ? AppKinds.FileBased
-            : parseResult.HasOption(ProjectOption)
-                ? AppKinds.ProjectBased
-                : AppKinds.Any;
-
-    public override (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult)
-        => parseResult.HasOption(FileOption) && parseResult.HasOption(ProjectOption)
-            ? (FileOption.Name, ProjectOption.Name)
-            : (null, null);
+    public override Argument<string>? GetProjectOrFileArgument() => Parent.ProjectOrFileArgument;
 
     public AddCommandDefinition Parent => (AddCommandDefinition)Parents.Single();
 }

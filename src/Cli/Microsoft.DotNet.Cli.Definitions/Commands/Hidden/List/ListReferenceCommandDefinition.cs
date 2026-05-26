@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 
@@ -19,14 +18,11 @@ internal sealed class ListReferenceCommandDefinition : ListReferenceCommandDefin
 
     public ListCommandDefinition Parent => (ListCommandDefinition)Parents.Single();
 
-    internal override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.SlnOrProjectOrFileArgument);
+    internal override Option<string?>? GetFileOption() => null;
 
-    internal override AppKinds GetAllowedAppKinds(ParseResult parseResult)
-        => AppKinds.Any;
+    internal override Option<string?>? GetProjectOption() => null;
 
-    internal override (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult)
-        => (null, null);
+    internal override Argument<string>? GetProjectOrFileArgument() => Parent.SlnOrProjectOrFileArgument;
 }
 
 internal abstract class ListReferenceCommandDefinitionBase : Command
@@ -36,9 +32,9 @@ internal abstract class ListReferenceCommandDefinitionBase : Command
     {
     }
 
-    internal abstract string? GetFileOrDirectory(ParseResult parseResult);
+    internal abstract Option<string?>? GetFileOption();
 
-    internal abstract AppKinds GetAllowedAppKinds(ParseResult parseResult);
+    internal abstract Option<string?>? GetProjectOption();
 
-    internal abstract (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult);
+    internal abstract Argument<string>? GetProjectOrFileArgument();
 }

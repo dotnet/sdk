@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference.Remove;
-using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
 
@@ -13,12 +12,9 @@ internal sealed class RemoveReferenceCommandDefinition() : ReferenceRemoveComman
 
     public RemoveCommandDefinition Parent => (RemoveCommandDefinition)Parents.Single();
 
-    public override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.ProjectOrFileArgument);
+    public override Option<string?>? GetFileOption() => null;
 
-    public override AppKinds GetAllowedAppKinds(ParseResult parseResult)
-        => AppKinds.Any;
+    public override Option<string?>? GetProjectOption() => null;
 
-    public override (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult)
-        => (null, null);
+    public override Argument<string>? GetProjectOrFileArgument() => Parent.ProjectOrFileArgument;
 }
