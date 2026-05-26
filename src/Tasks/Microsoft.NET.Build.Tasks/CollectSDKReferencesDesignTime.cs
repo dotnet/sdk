@@ -15,6 +15,7 @@ namespace Microsoft.NET.Build.Tasks
     /// TFM support is added to Dependencies logic. 
     /// Tracking issue https://github.com/dotnet/roslyn-project-system/issues/587
     /// </summary>
+    [MSBuildMultiThreadableTask]
     public class CollectSDKReferencesDesignTime : TaskBase
     {
         [Required]

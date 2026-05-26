@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [FullMSBuildOnlyTheory()]
+        [FullMSBuildOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public void COMReferenceBuildsAndRuns(bool embedInteropTypes)
@@ -48,7 +48,7 @@ namespace Microsoft.NET.Build.Tests
                     new XElement("Isolated", "false"),
                     new XElement("EmbedInteropTypes", embedInteropTypes)));
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: embedInteropTypes.ToString())
                 .WithProjectChanges(doc => doc.Root.Add(reference));
 
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Build.Tests
                     new XElement("Isolated", "false"),
                     new XElement("EmbedInteropTypes", "false")));
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject)
                 .WithProjectChanges(doc => doc.Root.Add(new[] { reference1, reference2 }));
 

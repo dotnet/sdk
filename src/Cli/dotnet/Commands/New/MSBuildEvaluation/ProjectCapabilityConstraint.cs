@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
@@ -69,10 +70,10 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
             }
 
             _logger.LogDebug("Configuration: '{0}'", args);
-            JToken? token;
+            JsonNode? token;
             try
             {
-                token = JToken.Parse(args!);
+                token = JsonNode.Parse(args!);
             }
             catch (Exception e)
             {
@@ -82,9 +83,9 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
 
             string configuredCapabiltiesExpression;
 
-            if (token.Type == JTokenType.String)
+            if (token is JsonValue v && v.GetValueKind() == JsonValueKind.String)
             {
-                string? configuredCapability = token.Value<string>();
+                string? configuredCapability = token.GetValue<string>();
                 if (string.IsNullOrWhiteSpace(configuredCapability))
                 {
                     _logger.LogDebug("Invalid configuration: '{0}', reason: arguments should not contain empty values.", args);

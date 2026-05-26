@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
             //  Add versionless PackageReference
             testProject.PackageReferences.Add(new TestPackageReference(aspnetPackageName, null));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tests
             //  Add versionless PackageReference
             testProject.PackageReferences.Add(new TestPackageReference(aspnetPackageName, null));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -97,7 +97,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference(aspnetPackageName, explicitVersion));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: aspnetPackageName);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -126,7 +126,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.NETCore.App", "2.1.0"));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.App", "2.1.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand
@@ -166,7 +166,7 @@ namespace Microsoft.NET.Build.Tests
             //  Add PackageReference
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.All", packageVersion));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{useWebSdk}_{packageVersion}");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{useWebSdk}_{packageVersion}");
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand.Execute()
@@ -201,7 +201,7 @@ namespace Microsoft.NET.Build.Tests
             //  Add PackageReference
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.App", packageVersion));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{useWebSdk}_{packageVersion}");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{useWebSdk}_{packageVersion}");
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand.Execute()

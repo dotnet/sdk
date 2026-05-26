@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -38,7 +39,7 @@ public class CultureInfoTestClass0
                     Sources = { source },
                     AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{property}") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -730,7 +731,7 @@ namespace NS
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(13, 13, "C.M1(string)", "C.M()", "C.M1(string, CultureInfo)"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbTest = new VerifyVB.Test
             {
@@ -768,7 +769,7 @@ End Namespace",
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(13, 13, "C.M1(String)", "C.M()", "C.M1(String, CultureInfo)"));
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string invocation, string containingMethod, string preferredOverload) =>

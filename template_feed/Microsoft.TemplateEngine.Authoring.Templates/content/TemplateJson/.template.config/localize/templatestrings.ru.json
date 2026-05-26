@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Файл конфигурации template.json",
+  "description": "Шаблон для файла конфигурации template.json для шаблона .NET. Полное описание конфигурации см. на странице https://aka.ms/template-json-reference.",
+  "symbols/CreateTemplateConfigFolder/description": "Принимает значение true, если template.json необходимо создать в папке .template.config.",
+  "symbols/CreateTemplateConfigFolder/displayName": "Создать папку .template.config",
+  "symbols/TemplateName/description": "Имя шаблона.",
+  "symbols/TemplateName/displayName": "Имя шаблона",
+  "symbols/TemplateShortName/description": "Короткое имя шаблона.",
+  "symbols/TemplateShortName/displayName": "Короткое имя шаблона",
+  "symbols/TemplateIdentity/description": "Удостоверение шаблона (должно быть уникальным).",
+  "symbols/TemplateIdentity/displayName": "Удостоверение шаблона",
+  "postActions/instructions/description": "Необходимо выполнить действия вручную",
+  "postActions/instructions/manualInstructions/default/text": "Откройте template.json в редакторе и заполните конфигурацию."
+}

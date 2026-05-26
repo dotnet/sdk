@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.WebAssembly;
@@ -45,9 +46,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm-minimal.wasm")).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm-minimal.wasm")).Should().NotExist();
         }
 
         [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
@@ -74,17 +75,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm.gz")).Should().Exist();
-
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().NotExist();
         }
 
         [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
@@ -126,17 +119,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm.gz")).Should().Exist();
-
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().NotExist();
         }
 
         [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
@@ -164,17 +149,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm.gz")).Should().Exist();
-
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().NotExist();
         }
 
         [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
@@ -296,7 +273,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
             bootJsonData.resources.runtime.Should().BeNull();
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.timezones.blat")).Should().NotExist();
         }
 
@@ -330,7 +308,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             bootJsonData.resources.icu.Should().BeNull();
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
             foreach (var shardFilename in icuShardFilenames)
             {
@@ -411,8 +390,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
             }
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", customIcuFilename)).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", customIcuFilename)).Should().NotExist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
             foreach (var shardFilename in icuShardFilenames)
             {
@@ -497,8 +477,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
             }
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
             foreach (var shardFilename in icuShardFilenames)
             {
                 new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
@@ -562,7 +543,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "_bin", "blazorwasm.wasm")).Should().NotExist();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
         public void Build_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange
@@ -608,10 +589,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 outputPath,
                 intermediateOutputPath);
 
-            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "Microsoft.CodeAnalysis.CSharp.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "fr", "Microsoft.CodeAnalysis.CSharp.resources.wasm")).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "blazorwasm.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "Microsoft.CodeAnalysis.CSharp.wasm")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "fr", "Microsoft.CodeAnalysis.CSharp.resources.wasm")).Should().NotExist();
 
             var bootJsonPath = new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", WasmBootConfigFileName));
             bootJsonPath.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.wasm\"");
@@ -693,8 +675,26 @@ public class TestReference
 
             // Assert
             var outputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
             var fileInWwwroot = new FileInfo(Path.Combine(outputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm"));
-            fileInWwwroot.Should().Exist();
+            fileInWwwroot.Should().NotExist();
+        }
+
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        public void Restore_WithRuntime_Works()
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorHosted");
+
+            var nugetRestorePath = Path.Combine(testInstance.TestRoot, ".nuget");
+
+            new DotnetRestoreCommand(Log, "-bl:msbuild-restore.binlog", "-r", "linux-x64")
+                .WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"))
+                .WithEnvironmentVariable("NUGET_PACKAGES", nugetRestorePath)
+                .Execute()
+                .Should().Pass();
+
+            new DirectoryInfo(Path.Combine(nugetRestorePath, "microsoft.netcore.app.runtime.mono.linux-x64"))
+                .Should().NotExist();
         }
 
         [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
@@ -756,8 +756,9 @@ public class TestReference
 
             // Assert
             var outputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
             var fileInWwwroot = new FileInfo(Path.Combine(outputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm"));
-            fileInWwwroot.Should().Exist();
+            fileInWwwroot.Should().NotExist();
         }
 
         [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
@@ -790,10 +791,10 @@ public class TestReference
                 b.runtimeOptions.Should().Contain("--jiterpreter-jit-call-enabled");
             });
 
-        private void BuildWasmMinimalAndValidateBootConfig((string name, string value)[] properties, Action<BootJsonData> validateBootConfig)
+        private void BuildWasmMinimalAndValidateBootConfig((string name, string value)[] properties, Action<BootJsonData> validateBootConfig, [CallerMemberName] string callerName = null)
         {
             var testAppName = "BlazorWasmMinimal";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: string.Join("-", properties.Select(p => p.name + p.value ?? "null")));
+            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: callerName + string.Join("-", properties.Select(p => p.name + p.value ?? "null")));
 
             foreach (var property in properties)
             {

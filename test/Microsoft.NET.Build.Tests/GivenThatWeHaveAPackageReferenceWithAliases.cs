@@ -38,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ConflictingClassLibUsage;
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var packagesPaths = packageReferences.Select(e => Path.GetDirectoryName(e.NupkgPath));
             List<string> sources = new();
@@ -85,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ClassLibAandBUsage;
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             List<string> sources = new() { Path.GetDirectoryName(packageReferenceA.NupkgPath), Path.GetDirectoryName(packageReferenceB.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
@@ -122,7 +122,7 @@ namespace Microsoft.NET.Build.Tests
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ClassLibAandBUsage;
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             List<string> sources = new() { Path.GetDirectoryName(packageReferenceA.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
@@ -147,7 +147,7 @@ namespace Microsoft.NET.Build.Tests
         private TestPackageReference GetPackageReference(string targetFramework, string packageName, string projectFileContent, [CallerMemberName] string callingMethod = "", string identifier = null)
         {
             var project = GetProject(targetFramework, packageName, projectFileContent);
-            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(project, callingMethod: callingMethod, identifier: identifier));
+            var packCommand = new PackCommand(TestAssetsManager.CreateTestProject(project, callingMethod: callingMethod, identifier: identifier));
 
             packCommand
                 .Execute()

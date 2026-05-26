@@ -53,14 +53,14 @@ Options:
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {
             return new TestSetup(
-                _testAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod: callingMethod + nameof(GivenDotnetRemoveReference), identifier: identifier + callingMethod, testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
+                TestAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod: callingMethod + nameof(GivenDotnetRemoveReference), identifier: identifier + callingMethod, testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
                     .WithSource()
                     .Path);
         }
 
         private ProjDir NewDir([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")
         {
-            return new ProjDir(_testAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: identifier).Path);
+            return new ProjDir(TestAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: identifier).Path);
         }
 
         private ProjDir NewLib(string dir = null, [System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")

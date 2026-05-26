@@ -7,13 +7,13 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler(BuildOptions buildOptions)
+internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
 {
     private readonly BuildOptions _buildOptions = buildOptions;
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
 
-    public bool RunMSBuild()
+    public bool Initialize()
     {
         PathOptions pathOptions = _buildOptions.PathOptions;
 
@@ -66,12 +66,14 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions)
         return true;
     }
 
-    public void EnqueueTestApplications(TestApplicationActionQueue queue)
+    public int RunTestApplications(TestApplicationActionQueue actionQueue)
     {
         foreach (var testApp in _testApplications)
         {
-            queue.Enqueue(testApp);
+            actionQueue.Enqueue(testApp);
         }
+
+        return actionQueue.CompleteEnqueueAndWait();
     }
 
     private static void LogProjectProperties(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)

@@ -273,6 +273,7 @@ public class ApplyCompressionNegotiation : Task
         {
             AssetFile = compressedAsset.Identity,
             Route = relatedEndpointCandidate.Route,
+            Order = relatedEndpointCandidate.Order,
             Selectors = [
                 ..relatedEndpointCandidate.Selectors,
                 encodingSelector

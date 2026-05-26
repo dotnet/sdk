@@ -11,7 +11,6 @@
     <Compile Include="$(SdkSrcRoot)Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\EnvironmentProvider.cs" LinkBase="Common\NativeWrapper" />
     <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\Constants.cs" LinkBase="Common\NativeWrapper" />
-    <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\FileInterop.cs" LinkBase="Common\NativeWrapper" />
   </ItemGroup>
 
   <ItemGroup>

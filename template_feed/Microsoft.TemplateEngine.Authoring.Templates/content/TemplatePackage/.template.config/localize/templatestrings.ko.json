@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "템플릿 패키지",
+  "description": ".NET 템플릿을 포함하는 템플릿 패키지에 대한 프로젝트입니다.",
+  "postActions/instructions/description": "수동 작업 필요",
+  "postActions/instructions/manualInstructions/default/text": "편집기에서 *.csproj를 열고 패키지 메타데이터 구성을 완료합니다. 템플릿을 'content' 폴더에 복사합니다. README.md를 입력합니다."
+}
