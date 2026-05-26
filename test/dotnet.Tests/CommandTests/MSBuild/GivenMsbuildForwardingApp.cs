@@ -3,10 +3,15 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
+using Moq;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
+    [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenMsbuildForwardingApp : SdkTest
     {
         public GivenMsbuildForwardingApp(ITestOutputHelper log) : base(log)
@@ -82,6 +87,38 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             {
                 (sessionId == null || Guid.TryParse(sessionId, out _))
                     .Should().BeTrue("DOTNET_CLI_TELEMETRY_SESSIONID should be null or current session id");
+            }
+        }
+
+        [Fact]
+        public void ItUsesSeededTelemetrySessionId()
+        {
+            const string sessionId = "gha-12345-1";
+            var msbuildPath = "<msbuildpath>";
+            var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+
+            TelemetryClient.DisabledForTests = true;
+            TelemetryClient.DisabledForTests = false;
+
+            try
+            {
+                environmentProvider
+                    .Setup(p => p.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, It.IsAny<bool>()))
+                    .Returns(false);
+                environmentProvider
+                    .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID))
+                    .Returns(sessionId);
+
+                _ = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
+
+                var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath)
+                    .GetProcessStartInfo();
+
+                startInfo.Environment["DOTNET_CLI_TELEMETRY_SESSIONID"].Should().Be(sessionId);
+            }
+            finally
+            {
+                TelemetryClient.DisabledForTests = true;
             }
         }
 

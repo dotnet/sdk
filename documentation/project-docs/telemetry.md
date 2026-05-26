@@ -33,6 +33,48 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - Values: `false`, `0`, or `no` to allow messages
   - Default: `false` (messages are displayed)
   - Note: This flag does not affect telemetry collection itself
+- **`DOTNET_CLI_TELEMETRY_SESSIONID`**: Seeds the initial telemetry session ID
+  - When set, the CLI uses this value instead of generating a new GUID for the first `TelemetryClient` created in the process
+  - This is useful for correlating multiple `dotnet` invocations that belong to the same CI workflow, job, or higher-level user session
+  - If not set, the CLI generates a new GUID per process as before
+
+### CI correlation examples
+
+Set `DOTNET_CLI_TELEMETRY_SESSIONID` once near your SDK acquisition step so every later `dotnet` invocation in that workflow shares the same session seed.
+
+#### GitHub Actions (`actions/setup-dotnet`)
+
+```yaml
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet build
+      - run: dotnet test
+```
+
+#### Azure DevOps (`UseDotNet@2`)
+
+```yaml
+variables:
+  DOTNET_CLI_TELEMETRY_SESSIONID: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: sdk
+    version: 10.0.x
+
+- script: dotnet build
+- script: dotnet test
+```
 
 ### Telemetry Configuration
 
@@ -71,7 +113,7 @@ Every telemetry event automatically includes these common properties:
 | **Product Type** | Type of .NET product | Product identifier |
 | **Libc Release** | Libc release information | Libc release version |
 | **Libc Version** | Libc version information | Libc version number |
-| **SessionId** | Unique session identifier | GUID |
+| **SessionId** | Unique session identifier | GUID or CI-specific correlation identifier |
 
 ## Telemetry Events
 

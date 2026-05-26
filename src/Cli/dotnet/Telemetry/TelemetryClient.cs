@@ -131,7 +131,11 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProvider ??= s_tracerProviderBuilder.Build();
         }
 
-        CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
+        var initialSessionId = !string.IsNullOrEmpty(sessionId)
+            ? sessionId
+            : environmentProvider.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
+
+        CurrentSessionId ??= !string.IsNullOrEmpty(initialSessionId) ? initialSessionId : Guid.NewGuid().ToString();
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
     }
 
