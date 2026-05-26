@@ -5,8 +5,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
-    public class ResolveOverlappingItemGroupConflicts : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolveOverlappingItemGroupConflicts : TaskBase, IMultiThreadableTask
     {
+        /// <inheritdoc/>
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         [Required]
         public ITaskItem[]? ItemGroup1 { get; set; }
 
@@ -47,7 +51,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
         private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[]? items, ConflictItemType itemType)
         {
-            return (items != null) ? items.Select(i => new ConflictItem(i, itemType)) : Enumerable.Empty<ConflictItem>();
+            return (items != null) ? items.Select(i => new ConflictItem(i, itemType, TaskEnvironment)) : Enumerable.Empty<ConflictItem>();
         }
     }
 }
