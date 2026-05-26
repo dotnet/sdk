@@ -17,10 +17,10 @@ internal static class HumanReadableDurationFormatter
         }
 
         // Duration abbreviations (d/h/m/s/ms) are intentionally NOT localized:
-        // they are based on SI unit symbols and are kept identical across cultures
-        // to match MSBuild Terminal Logger's behavior and the typical convention
-        // for CLI tools (kubectl, cargo, etc.). This keeps timing output easy to
-        // parse and consistent regardless of the active culture.
+        // they use common time unit abbreviations and are kept identical across
+        // cultures to match MSBuild Terminal Logger's behavior and the typical
+        // convention for CLI tools (kubectl, cargo, etc.). This keeps timing
+        // output easy to parse and consistent regardless of the active culture.
         if (duration.Days > 0)
         {
             terminal.Append($"{duration.Days}d");
