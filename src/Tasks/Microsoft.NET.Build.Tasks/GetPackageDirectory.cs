@@ -11,8 +11,11 @@ namespace Microsoft.NET.Build.Tasks
 {
     //  Locates the root NuGet package directory for each of the input items that has PackageName and PackageVersion,
     //  but not PackageDirectory metadata specified
-    public class GetPackageDirectory : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GetPackageDirectory : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         public ITaskItem[] Items { get; set; } = Array.Empty<ITaskItem>();
 
         public string[] PackageFolders { get; set; } = Array.Empty<string>();
@@ -32,10 +35,22 @@ namespace Microsoft.NET.Build.Tasks
 
             if (!string.IsNullOrEmpty(AssetsFileWithAdditionalPackageFolders))
             {
+                AbsolutePath assetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFileWithAdditionalPackageFolders);
                 var lockFileCache = new LockFileCache(this);
-                var lockFile = lockFileCache.GetLockFile(AssetsFileWithAdditionalPackageFolders);
+                var lockFile = lockFileCache.GetLockFile(assetsFilePath);
                 PackageFolders = PackageFolders.Concat(lockFile.PackageFolders.Select(p => p.Path)).ToArray();
             }
+
+            // Capture the caller's original folder shapes so that absolutization stays internal to
+            // this task and never leaks into the [Output] items' PackageDirectory metadata.
+            string[] originalPackageFolders = PackageFolders;
+
+            // NuGetPackageResolver probes the file system for each folder, so paths must be
+            // absolutized relative to the project rather than the process working directory.
+            // Null/empty entries are passed through so NuGet's resolver handles them as it did pre-migration.
+            PackageFolders = originalPackageFolders
+                .Select(p => string.IsNullOrEmpty(p) ? p : (string)TaskEnvironment.GetAbsolutePath(p))
+                .ToArray();
 
             var packageResolver = NuGetPackageResolver.CreateResolver(PackageFolders);
 
@@ -55,12 +70,25 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 var parsedPackageVersion = NuGetVersion.Parse(packageVersion);
-                string packageDirectory = packageResolver.GetPackageDirectory(packageName, parsedPackageVersion);
+                string packageDirectory = packageResolver.GetPackageDirectory(packageName, parsedPackageVersion, out string packageRoot);
 
                 if (packageDirectory == null)
                 {
                     updatedItems[index++] = item;
                     continue;
+                }
+
+                // If the resolver matched against a folder we absolutized, rewrite the result to use
+                // the caller's original (possibly relative) prefix so PackageDirectory metadata is
+                // byte-identical to the pre-migration behavior.
+                if (packageRoot != null)
+                {
+                    int folderIndex = Array.IndexOf(PackageFolders, packageRoot);
+                    if (folderIndex >= 0
+                        && !string.Equals(originalPackageFolders[folderIndex], packageRoot, StringComparison.Ordinal))
+                    {
+                        packageDirectory = originalPackageFolders[folderIndex] + packageDirectory.Substring(packageRoot.Length);
+                    }
                 }
 
                 var newItem = new TaskItem(item);
