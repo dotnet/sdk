@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void DotnetExeIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
-            new MSBuildForwardingApp(new string[0], msbuildPath)
+            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet.exe");
         }
 
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void DotnetIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
-            new MSBuildForwardingApp(new string[0], msbuildPath)
+            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet");
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void ItSetsEnvironmentalVariables(string envVarName)
         {
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath).GetProcessStartInfo();
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath).GetProcessStartInfo();
             startInfo.Environment.ContainsKey(envVarName).Should().BeTrue();
         }
 
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "MSBuildExtensionsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(new string[0], msbuildPath)
+            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                                 .GetProcessStartInfo()
                                 .Environment[envVar])
                 .Should()
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "MSBuildSDKsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(new string[0], msbuildPath)
+            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                                 .GetProcessStartInfo()
                                 .Environment[envVar])
                 .Should()
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "DOTNET_CLI_TELEMETRY_SESSIONID";
-            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath)
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo();
 
             string sessionId = startInfo.Environment[envVar];
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
                 _ = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
 
-                var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath)
+                var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                     .GetProcessStartInfo();
 
                 startInfo.Environment["DOTNET_CLI_TELEMETRY_SESSIONID"].Should().Be(sessionId);
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void ItDoesNotSetCurrentWorkingDirectory()
         {
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath)
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo().WorkingDirectory.Should().Be("");
         }
     }
