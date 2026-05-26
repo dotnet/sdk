@@ -10,6 +10,8 @@ namespace Microsoft.DotNet.Cli.Commands.Reference;
 
 internal static class VirtualProjectReferenceReflector
 {
+    internal const string DirectiveIncludeMetadataName = "FileBasedAppDirectiveInclude";
+
     internal static bool IsFileBasedAppReference(string projectReferenceInclude)
     {
         var projectReferenceFullPath = Path.GetFullPath(projectReferenceInclude);
@@ -62,7 +64,10 @@ internal static class VirtualProjectReferenceReflector
                 if (string.Equals(item.ItemType, "ProjectReference", StringComparison.OrdinalIgnoreCase) &&
                     !IsFileBasedAppReference(item.Include))
                 {
-                    yield return NormalizeProjectReferencePath(item.Include);
+                    var directiveInclude = item.Metadata.FirstOrDefault(
+                        m => string.Equals(m.Name, DirectiveIncludeMetadataName, StringComparison.OrdinalIgnoreCase))?.Value;
+
+                    yield return NormalizeProjectReferencePath(directiveInclude ?? item.Include);
                 }
             }
         }

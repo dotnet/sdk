@@ -269,7 +269,7 @@ Commands:
                 .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, @"Lib\Lib.csproj"));
 
             File.ReadAllText(appFile).Should().Be("""
-                #:project Lib/Lib.csproj
+                #:project Lib
 
                 Console.WriteLine();
                 """);
@@ -916,7 +916,7 @@ Commands:
             result.Should().Pass();
             result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj"));
             result.StdErr.Should().BeEmpty();
-            File.ReadAllText(appFile).Should().Contain("#:project ValidRef/ValidRef.csproj");
+            File.ReadAllText(appFile).Should().Contain("#:project ValidRef");
         }
 
         [Fact]

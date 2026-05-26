@@ -87,7 +87,10 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
 
         int numberOfAddedReferences = msbuildProj.AddProjectToProjectReferences(
             frameworkString,
-            relativePathReferences);
+            msbuildProj.IsFileBasedApp
+                ? relativePathReferences.Zip(arguments, (reference, argument) =>
+                    (Include: reference, DirectiveInclude: GetDirectiveInclude(argument, msbuildProj.ProjectDirectory)))
+                : relativePathReferences.Select(static reference => (Include: reference, DirectiveInclude: (string)null)));
 
         if (numberOfAddedReferences != 0)
         {
@@ -95,6 +98,11 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
         }
 
         return 0;
+    }
+
+    private static string GetDirectiveInclude(string argument, string projectDirectory)
+    {
+        return Path.GetRelativePath(projectDirectory, Path.GetFullPath(argument)).Replace('\\', '/');
     }
 
     private static string GetProjectNotCompatibleWithFrameworksDisplayString(MsbuildProject project, IEnumerable<string> frameworksDisplayStrings)

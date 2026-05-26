@@ -135,14 +135,18 @@ internal class MsbuildProject
         => ProjectLocator.TryGetProjectFileFromDirectory(projectDirectory, out projectFilePath, out _);
 
     public int AddProjectToProjectReferences(string framework, IEnumerable<string> refs)
+        => AddProjectToProjectReferences(framework, refs.Select(static r => (Include: r, DirectiveInclude: (string)null)));
+
+    public int AddProjectToProjectReferences(string framework, IEnumerable<(string Include, string DirectiveInclude)> refs)
     {
         int numberOfAddedReferences = 0;
 
         ProjectItemGroupElement itemGroup = ProjectRootElement.FindUniformOrCreateItemGroupWithCondition(
             ProjectItemElementType,
             framework);
-        foreach (var @ref in refs.Select((r) => PathUtility.GetPathWithBackSlashes(r)))
+        foreach (var reference in refs)
         {
+            var @ref = PathUtility.GetPathWithBackSlashes(reference.Include);
             if (ProjectRootElement.HasExistingItemWithCondition(framework, @ref))
             {
                 Reporter.Output.WriteLine(string.Format(
@@ -152,7 +156,13 @@ internal class MsbuildProject
             }
 
             numberOfAddedReferences++;
-            itemGroup.AppendChild(ProjectRootElement.CreateItemElement(ProjectItemElementType, @ref));
+            var item = ProjectRootElement.CreateItemElement(ProjectItemElementType, @ref);
+            itemGroup.AppendChild(item);
+
+            if (reference.DirectiveInclude is not null)
+            {
+                item.AddMetadata(VirtualProjectReferenceReflector.DirectiveIncludeMetadataName, reference.DirectiveInclude);
+            }
 
             Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, @ref));
         }
