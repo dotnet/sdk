@@ -18,6 +18,10 @@ namespace Microsoft.DotNet.ProjectTools;
 
 public sealed class VirtualProjectBuilder
 {
+    internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
+
+    internal const string FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective";
+
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
@@ -479,7 +483,8 @@ public sealed class VirtualProjectBuilder
         string? entryPointFilePath = null,
         string? artifactsPath = null,
         bool includeRuntimeConfigInformation = true,
-        string? userSecretsId = null)
+        string? userSecretsId = null,
+        ImmutableArray<ExplicitProjectItem> explicitProjectItems = default)
     {
         Debug.Assert(userSecretsId == null || !isVirtualProject);
 
@@ -490,7 +495,7 @@ public sealed class VirtualProjectBuilder
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
         var refDirectives = directives.OfType<CSharpDirective.Ref>();
-        var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>();
+        var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>().ToArray();
 
         const string defaultSdkName = "Microsoft.NET.Sdk";
         string firstSdkName;
@@ -673,10 +678,10 @@ public sealed class VirtualProjectBuilder
         if (!isVirtualProject)
         {
             // In the real project, files are included by the conversion copying them to the output directory,
-            // hence we don't need to transfer the #:include/#:exclude directives over.
-            processedDirectives += includeOrExcludeDirectives.Count();
+            // hence we don't need to transfer the #:include/#:exclude directives over by default.
+            processedDirectives += includeOrExcludeDirectives.Length;
         }
-        else if (includeOrExcludeDirectives.Any())
+        else if (includeOrExcludeDirectives.Length > 0)
         {
             writer.WriteLine("""
                   <ItemGroup>
@@ -696,8 +701,36 @@ public sealed class VirtualProjectBuilder
                     continue;
                 }
 
+                if (includeOrExclude.Kind == CSharpDirective.IncludeOrExcludeKind.Include)
+                {
+                    writer.WriteLine($"""
+                        <{itemType} Include="{EscapeValue(includeOrExclude.Name)}" {FromIncludeDirectiveMetadataName}="true" />
+                    """);
+                }
+                else
+                {
+                    writer.WriteLine($"""
+                        <{itemType} Remove="{EscapeValue(includeOrExclude.Name)}" />
+                    """);
+                }
+            }
+
+            writer.WriteLine("""
+                  </ItemGroup>
+
+                """);
+        }
+
+        if (!explicitProjectItems.IsDefaultOrEmpty)
+        {
+            writer.WriteLine("""
+                  <ItemGroup>
+                """);
+
+            foreach (var (itemType, include) in explicitProjectItems)
+            {
                 writer.WriteLine($"""
-                        <{itemType} {includeOrExclude.KindToMSBuildString()}="{EscapeValue(includeOrExclude.Name)}" />
+                        <{itemType} Include="{EscapeValue(include)}" />
                     """);
             }
 
