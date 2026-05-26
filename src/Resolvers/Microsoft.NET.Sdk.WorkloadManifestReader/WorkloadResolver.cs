@@ -26,6 +26,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private Func<string, bool>? _directoryExistOverride;
 
         public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir)
+            => Create(manifestProvider, dotnetRootPath, sdkVersion, userProfileDir, Environment.GetEnvironmentVariable);
+
+        /// <summary>
+        /// Same as <see cref="Create(IWorkloadManifestProvider, string, string, string?)"/> but reads environment
+        /// variables via the supplied delegate. Use this from MSBuild tasks to route reads through TaskEnvironment
+        /// so concurrent tasks observe their own per-task environment snapshot.
+        /// </summary>
+        public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir, Func<string, string?> getEnvironmentVariable)
         {
             string runtimeIdentifierChainPath = Path.Combine(dotnetRootPath, "sdk", sdkVersion, "NETCoreSdkRuntimeIdentifierChain.txt");
             string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ?
@@ -42,7 +50,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 workloadRootPaths = [ new(dotnetRootPath, true) ];
             }
 
-            var packRootEnvironmentVariable = Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
+            var packRootEnvironmentVariable = getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
             if (!string.IsNullOrEmpty(packRootEnvironmentVariable))
             {
                 workloadRootPaths = packRootEnvironmentVariable.Split(Path.PathSeparator).Select(path => new WorkloadRootPath(path, false)).Concat(workloadRootPaths).ToArray();
