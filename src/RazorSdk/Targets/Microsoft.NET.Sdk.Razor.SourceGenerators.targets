@@ -40,6 +40,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="TargetPath" />
       <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="CssScope" />
       <CompilerVisibleProperty Include="RazorLangVersion" />
+      <CompilerVisibleProperty Include="RazorWarningLevel" />
       <CompilerVisibleProperty Include="RootNamespace" />
       <CompilerVisibleProperty Include="SupportLocalizedComponentNames" />
       <CompilerVisibleProperty Include="GenerateRazorMetadataSourceChecksumAttributes" />
