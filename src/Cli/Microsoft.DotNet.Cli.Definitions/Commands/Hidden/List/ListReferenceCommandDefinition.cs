@@ -24,6 +24,9 @@ internal sealed class ListReferenceCommandDefinition : ListReferenceCommandDefin
 
     internal override AppKinds GetAllowedAppKinds(ParseResult parseResult)
         => AppKinds.Any;
+
+    internal override (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult)
+        => (null, null);
 }
 
 internal abstract class ListReferenceCommandDefinitionBase : Command
@@ -36,4 +39,6 @@ internal abstract class ListReferenceCommandDefinitionBase : Command
     internal abstract string? GetFileOrDirectory(ParseResult parseResult);
 
     internal abstract AppKinds GetAllowedAppKinds(ParseResult parseResult);
+
+    internal abstract (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult);
 }

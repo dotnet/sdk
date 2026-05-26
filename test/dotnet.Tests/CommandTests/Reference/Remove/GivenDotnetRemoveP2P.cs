@@ -173,6 +173,22 @@ Options:
                 .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, projectFile));
         }
 
+        [Fact]
+        public void ItRejectsProjectAndFileOptions_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                Console.WriteLine();
+                """);
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+
+            new DotnetCommand(Log, "reference", "remove", "Lib/Lib.csproj", "--project", projectFile, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--file", "--project"));
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("unknownCommandName")]

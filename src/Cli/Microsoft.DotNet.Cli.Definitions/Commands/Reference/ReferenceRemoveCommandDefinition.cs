@@ -33,6 +33,11 @@ internal sealed class ReferenceRemoveCommandDefinition : ReferenceRemoveCommandD
 
     public override AppKinds GetAllowedAppKinds(ParseResult parseResult)
         => parseResult.HasOption(FileOption) ? AppKinds.FileBased : AppKinds.ProjectBased;
+
+    public override (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult)
+        => parseResult.HasOption(FileOption) && parseResult.HasOption(Parent.ProjectOption)
+            ? (FileOption.Name, Parent.ProjectOption.Name)
+            : (null, null);
 }
 
 internal abstract class ReferenceRemoveCommandDefinitionBase : Command
@@ -62,4 +67,6 @@ internal abstract class ReferenceRemoveCommandDefinitionBase : Command
     public abstract string? GetFileOrDirectory(ParseResult parseResult);
 
     public abstract AppKinds GetAllowedAppKinds(ParseResult parseResult);
+
+    public abstract (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult);
 }

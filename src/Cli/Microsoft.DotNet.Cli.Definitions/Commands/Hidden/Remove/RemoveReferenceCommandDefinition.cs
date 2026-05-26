@@ -18,4 +18,7 @@ internal sealed class RemoveReferenceCommandDefinition() : ReferenceRemoveComman
 
     public override AppKinds GetAllowedAppKinds(ParseResult parseResult)
         => AppKinds.Any;
+
+    public override (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult)
+        => (null, null);
 }

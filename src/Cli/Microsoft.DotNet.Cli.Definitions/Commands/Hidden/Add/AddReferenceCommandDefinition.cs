@@ -45,5 +45,10 @@ internal sealed class AddReferenceCommandDefinition : ReferenceAddCommandDefinit
                 ? AppKinds.ProjectBased
                 : AppKinds.Any;
 
+    public override (string? FileOptionName, string? ProjectOptionName) GetConflictingPathOptions(ParseResult parseResult)
+        => parseResult.HasOption(FileOption) && parseResult.HasOption(ProjectOption)
+            ? (FileOption.Name, ProjectOption.Name)
+            : (null, null);
+
     public AddCommandDefinition Parent => (AddCommandDefinition)Parents.Single();
 }

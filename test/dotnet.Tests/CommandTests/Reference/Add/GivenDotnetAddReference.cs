@@ -347,6 +347,36 @@ Commands:
         }
 
         [Fact]
+        public void ItRejectsProjectAndFileOptions_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path);
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            new DotnetCommand(Log, "reference", "add", "Lib", "--project", projectFile, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--file", "--project"));
+        }
+
+        [Fact]
+        public void ItRejectsProjectAndFileOptions_LegacyForm_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path);
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            new DotnetCommand(Log, "add", "reference", "Lib", "--project", projectFile, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--file", "--project"));
+        }
+
+        [Fact]
         public void WhenRefWithoutCondIsPresentItAddsDifferentRefWithoutCond()
         {
             var setup = Setup();

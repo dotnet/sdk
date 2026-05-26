@@ -191,6 +191,23 @@ Commands:
         }
 
         [Fact]
+        public void ItRejectsProjectAndFileOptions_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                Console.WriteLine();
+                """);
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+
+            new DotnetCommand(Log, "reference", "list", "--project", projectFile, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--file", "--project"));
+        }
+
+        [Fact]
         public void ItPrintsSingleReference()
         {
             string OutputText = CliStrings.ProjectReferenceOneOrMore;

@@ -17,6 +17,11 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
     public ReferenceRemoveCommand(ParseResult parseResult)
         : base(parseResult)
     {
+        if (Definition.GetConflictingPathOptions(parseResult) is ({ } fileOptionName, { } projectOptionName))
+        {
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, fileOptionName, projectOptionName);
+        }
+
         _fileOrDirectory = Definition.GetFileOrDirectory(parseResult) ?? Directory.GetCurrentDirectory();
         _arguments = parseResult.GetValue(Definition.ProjectPathArgument).ToList().AsReadOnly();
 

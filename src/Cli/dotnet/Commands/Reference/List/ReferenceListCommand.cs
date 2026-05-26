@@ -20,6 +20,11 @@ internal class ReferenceListCommand : CommandBase<ListReferenceCommandDefinition
     {
         ShowHelpOrErrorIfAppropriate(parseResult);
 
+        if (Definition.GetConflictingPathOptions(parseResult) is ({ } fileOptionName, { } projectOptionName))
+        {
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, fileOptionName, projectOptionName);
+        }
+
         _fileOrDirectory = Definition.GetFileOrDirectory(parseResult) ?? Directory.GetCurrentDirectory();
     }
 
