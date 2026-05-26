@@ -38,43 +38,6 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - This is useful for correlating multiple `dotnet` invocations that belong to the same CI workflow, job, or higher-level user session
   - If not set, the CLI generates a new GUID per process as before
 
-### CI correlation examples
-
-Set `DOTNET_CLI_TELEMETRY_SESSIONID` once near your SDK acquisition step so every later `dotnet` invocation in that workflow shares the same session seed.
-
-#### GitHub Actions (`actions/setup-dotnet`)
-
-```yaml
-env:
-  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-      - run: dotnet build
-      - run: dotnet test
-```
-
-#### Azure DevOps (`UseDotNet@2`)
-
-```yaml
-variables:
-  DOTNET_CLI_TELEMETRY_SESSIONID: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
-
-steps:
-- task: UseDotNet@2
-  inputs:
-    packageType: sdk
-    version: 10.0.x
-
-- script: dotnet build
-- script: dotnet test
-```
 
 ### Telemetry Configuration
 
