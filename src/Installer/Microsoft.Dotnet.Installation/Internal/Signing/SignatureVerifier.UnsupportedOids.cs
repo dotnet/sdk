@@ -23,12 +23,29 @@ internal static partial class SignatureVerifier
         // distinction and the spec calls them out individually.
     };
 
-    // Collision-broken hash functions; rejected per §4 of signature-verification.md.
+    // Collision-broken hash functions plus families the BCL recognises but the .NET Release
+    // pipeline does not use. Rejected per §4 of signature-verification.md.
     internal static readonly HashSet<string> s_explicitlyUnsupportedDigestOids = new(StringComparer.Ordinal)
     {
+        // --- Collision-broken (must reject) ---
         "1.3.14.3.2.26",       // id-sha1 (RFC 3279 §2.1)
         "1.2.840.113549.2.5",  // md5     (RFC 1321 / RFC 3279 §2.1)
         "1.2.840.113549.2.2",  // md2     (RFC 1319)
         "1.3.14.3.2.18",       // id-sha  (legacy SHA-0) — never standardised
+
+        // Unused by .NET Release (drop to shrink attack surface) ---
+        // SHA-3 family (NIST CSOR; RFC 8702 §2). The .NET Release pipeline uses SHA-2.
+        "2.16.840.1.101.3.4.2.8",   // id-sha3-256
+        "2.16.840.1.101.3.4.2.9",   // id-sha3-384
+        "2.16.840.1.101.3.4.2.10",  // id-sha3-512
+
+        // SHAKE-128 / SHAKE-256 (FIPS 202 XOFs; RFC 8702). Not PQ algorithms themselves —
+        // PQ schemes that use SHAKE internally carry their own combined OIDs (pure-mode
+        // SLH-DSA-SHAKE-* in s_pqcPureKeyOids, pre-hash HashSLH-DSA-SHAKE-* in
+        // s_pqcPreHashOids). Standalone id-shake128 / id-shake256 as a CMS digestAlgorithm
+        // would only matter for a non-PQ signer electing to use SHAKE classically, which
+        // the .NET Release pipeline does not do.
+        "2.16.840.1.101.3.4.2.11",  // id-shake128
+        "2.16.840.1.101.3.4.2.12",  // id-shake256
     };
 }

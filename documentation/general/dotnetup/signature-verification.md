@@ -92,11 +92,10 @@ Within each family, exact OIDs are listed in `SignatureVerifier.cs`.
 
 **Digest algorithm** (CMS `SignerInfo.digestAlgorithm`):
 
-- SHA-2: SHA-256, SHA-384, SHA-512.
-- SHA-3: SHA3-256, SHA3-384, SHA3-512.
-- SHAKE: SHAKE-128, SHAKE-256 (required for SHAKE-flavoured SLH-DSA variants).
+- SHA-2: SHA-256 (legacy v2 manifests), SHA-384 (current v3 production digest), SHA-512
+  (reserved as a future rotation target).
 - Pure-PQC algorithm OIDs reused as digest identifiers (see below).
-- SHA-1 / MD5 are rejected.
+- All other digest OIDs — including SHA-1 / MD5 / MD2 / SHA-0 (collision-broken) and the SHA-3 family (SHA3-256/384/512) plus standalone SHAKE-128 / SHAKE-256 (recognized but unused by the .NET Release pipeline) are rejected. This may change if or when the release signatures support those schemes; however, that is unplanned at this time. PQ schemes that use SHAKE internally carry their own combined OIDs and are unaffected.
 
 **Signature algorithm** (signer certificate's `SubjectPublicKeyInfo.algorithm`):
 

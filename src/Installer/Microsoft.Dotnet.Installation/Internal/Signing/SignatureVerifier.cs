@@ -48,11 +48,6 @@ internal static partial class SignatureVerifier
             OidIdSha256,
             OidIdSha384,
             OidIdSha512,
-            OidIdSha3_256,
-            OidIdSha3_384,
-            OidIdSha3_512,
-            OidIdShake128,
-            OidIdShake256,
         };
     }
 
