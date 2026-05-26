@@ -10,7 +10,11 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-internal class DotnetupProgram
+/// <summary>
+/// Entry point class for dotnetup. Invoked by the NativeAOT shim in
+/// src/Installer/dotnetup/Program.cs.
+/// </summary>
+public class DotnetupProgram
 {
     public static int Main(string[] args)
     {
