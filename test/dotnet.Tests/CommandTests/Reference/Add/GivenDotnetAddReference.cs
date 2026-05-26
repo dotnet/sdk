@@ -276,6 +276,26 @@ Commands:
         }
 
         [Fact]
+        public void ItAddsRefWithoutCondAndPrintsStatus_LegacyForm_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path);
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            new DotnetCommand(Log, "add", "reference", "Lib", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, @"Lib\Lib.csproj"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project Lib
+
+                Console.WriteLine();
+                """);
+        }
+
+        [Fact]
         public void ItAddsRefWithCondAndPrintsStatus()
         {
             var setup = Setup();

@@ -14,20 +14,36 @@ internal sealed class AddReferenceCommandDefinition : ReferenceAddCommandDefinit
     public new const string Name = "reference";
 
     public readonly Option<string?> ProjectOption = ReferenceCommandDefinition.CreateProjectOption();
+    public readonly Option<string?> FileOption = ReferenceCommandDefinition.CreateFileOption();
 
     public AddReferenceCommandDefinition()
         : base(Name)
     {
         Options.Add(ProjectOption);
+        Options.Add(FileOption);
     }
 
     public override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.HasOption(ProjectOption)
-        ? parseResult.GetValue(ProjectOption)
-        : parseResult.GetValue(Parent.ProjectOrFileArgument);
+    {
+        if (parseResult.HasOption(FileOption))
+        {
+            return parseResult.GetValue(FileOption);
+        }
+
+        if (parseResult.HasOption(ProjectOption))
+        {
+            return parseResult.GetValue(ProjectOption);
+        }
+
+        return parseResult.GetValue(Parent.ProjectOrFileArgument);
+    }
 
     public override AppKinds GetAllowedAppKinds(ParseResult parseResult)
-        => parseResult.HasOption(ProjectOption) ? AppKinds.ProjectBased : AppKinds.Any;
+        => parseResult.HasOption(FileOption)
+            ? AppKinds.FileBased
+            : parseResult.HasOption(ProjectOption)
+                ? AppKinds.ProjectBased
+                : AppKinds.Any;
 
     public AddCommandDefinition Parent => (AddCommandDefinition)Parents.Single();
 }
