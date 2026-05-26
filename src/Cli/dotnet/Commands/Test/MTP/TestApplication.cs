@@ -146,17 +146,17 @@ internal sealed class TestApplication(
                 processStartInfo.Environment[entry.Key] = entry.Value;
             }
 
-            // Env variables specified on command line override those specified in launch profile:
-            foreach (var (name, value) in TestOptions.EnvironmentVariables)
-            {
-                processStartInfo.Environment[name] = value;
-            }
-
             if (!_buildOptions.NoLaunchProfileArguments &&
                 !string.IsNullOrEmpty(Module.LaunchSettings.CommandLineArgs))
             {
                 processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
             }
+        }
+
+        // Env variables specified on command line override those specified in launch profile:
+        foreach (var (name, value) in TestOptions.EnvironmentVariables)
+        {
+            processStartInfo.Environment[name] = value;
         }
 
         if (Module.DotnetRootArchVariableName is not null)
