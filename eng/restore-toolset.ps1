@@ -120,17 +120,26 @@ function CreateVSShortcut() {
 
 function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
+
+    # Skip if every requested framework is already on disk.
+    $versionsToInstall = @($versions | Where-Object {
+        -not (Test-Path -PathType Container `
+              (Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$_"))
+    })
+    if ($versionsToInstall.Count -eq 0) {
+        return
+    }
+
     $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
     $dotnetupExe = Join-Path $dotnetupDir "dotnetup.exe"
 
     # Acquire the latest dotnetup daily build using the in-repo install script.
     & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
 
-    # Let dotnetup handle checking if versions are already installed
-    & $dotnetupExe runtime install @versions --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
+    & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
 
     if ($lastExitCode -ne 0) {
-        throw "Failed to install shared frameworks ($($versions -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
+        throw "Failed to install shared frameworks ($($versionsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
     }
 }
 
