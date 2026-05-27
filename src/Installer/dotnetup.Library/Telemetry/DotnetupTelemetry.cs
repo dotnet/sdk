@@ -500,9 +500,17 @@ public sealed class DotnetupTelemetry : IDisposable
         var elapsedMs = (DateTime.UtcNow - activity.StartTimeUtc).TotalMilliseconds;
         var state = BuildCompletionState(eventName, activity, elapsedMs);
         var formattedMessage = $"dotnetup/{eventName}";
+
+        //  EventId.Id is int (32 bits) and ActivitySpanId is 64 bits.
+        //  Thus, the lower 32 bits of the 64-bit SpanId are used for the EventId.Id.
+        Span<byte> spanIdBytes = stackalloc byte[8];
+        activity.SpanId.CopyTo(spanIdBytes);
+        var eventIdInt = BitConverter.ToInt32(spanIdBytes);
+
         _logger.Log(
             LogLevel.Information,
-            new EventId(0, formattedMessage),
+            // each event must have a unique id otherwise the new 'router' lens service added by devdiv data on 5/15/2026 will try to dedupe it and 'drop' the data
+            new EventId(eventIdInt, formattedMessage),
             state,
             exception: null,
             formatter: (_, _) => formattedMessage);
