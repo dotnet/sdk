@@ -1,26 +1,24 @@
 #!/usr/bin/env bash
 # get-dotnetup.sh
 #
-# Downloads the latest dotnetup binary from the dotnetup CI pipeline and installs it locally.
+# Downloads the latest dotnetup daily build and installs it locally.
 #
-# Uses the Azure CLI (az) with the azure-devops extension for all Azure DevOps interactions.
-# You must be logged in with 'az login' and have access to the dnceng/internal project.
+# Downloads dotnetup from the public aka.ms shortlinks (e.g.
+# https://aka.ms/dotnet/dotnetup/daily/dotnetup-linux-x64), verifies the
+# SHA-512 checksum, and installs the binary to a local directory.
 #
 # Usage:
 #   ./get-dotnetup.sh
 #   ./get-dotnetup.sh --install-dir /opt/dotnetup
 #   ./get-dotnetup.sh --runtime-id linux-musl-x64
-#   ./get-dotnetup.sh --branch release/dnup
+#   ./get-dotnetup.sh --quality daily
 
 set -euo pipefail
 
 # --- Defaults ---
 INSTALL_DIR="$HOME/.dotnetup"
-BRANCH="release/dnup"
+QUALITY="daily"
 RUNTIME_ID=""
-AZDO_ORG="https://dev.azure.com/dnceng"
-AZDO_PROJECT="internal"
-PIPELINE_ID=1544
 
 # --- Colors (disabled if not a terminal) ---
 if [ -t 1 ]; then
@@ -44,30 +42,24 @@ gray()  { printf "${GRAY}%s${NC}\n" "$*"; }
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --install-dir)  INSTALL_DIR="$2"; shift 2 ;;
-        --branch)       BRANCH="$2"; shift 2 ;;
+        --quality)      QUALITY="$2"; shift 2 ;;
         --runtime-id)   RUNTIME_ID="$2"; shift 2 ;;
         --help|-h)
             cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Downloads the latest dotnetup binary from CI and installs it locally.
-Requires the Azure CLI (az) with the azure-devops extension for authentication
-and artifact download. Log in with 'az login' first.
+Downloads the latest dotnetup daily build from aka.ms and installs it locally.
 
 Options:
   --install-dir DIR     Installation directory (default: ~/.dotnetup)
-  --branch BRANCH       Branch to get the latest build from (default: release/dnup)
+  --quality QUALITY     Build quality (default: daily)
   --runtime-id RID      Override OS/architecture detection (e.g. linux-musl-x64, osx-arm64)
   --help, -h            Show this help message
 
-Prerequisites:
-  Azure CLI (az)        https://aka.ms/install-az-cli
-  azure-devops ext      az extension add --name azure-devops
-
 Examples:
-  az login
   ./get-dotnetup.sh
   ./get-dotnetup.sh --runtime-id linux-musl-x64
+  ./get-dotnetup.sh --install-dir /opt/dotnetup
 EOF
             exit 0
             ;;
@@ -79,83 +71,28 @@ EOF
     esac
 done
 
+BASE_URL="https://aka.ms/dotnet/dotnetup/${QUALITY}"
+
 # --- Check prerequisites ---
-if ! command -v az &>/dev/null; then
-    err "Azure CLI (az) is required but was not found on PATH."
-    err "Install it from: https://aka.ms/install-az-cli"
-    err ""
-    err "After installing, log in with:"
-    err "  az login"
+if command -v curl &>/dev/null; then
+    DOWNLOADER="curl"
+elif command -v wget &>/dev/null; then
+    DOWNLOADER="wget"
+else
+    err "Neither 'curl' nor 'wget' was found on PATH. One of them is required to download dotnetup."
     exit 1
 fi
 
-# Detect Windows az.cmd/az.bat/az.exe being invoked from WSL via inherited PATH.
-# The Windows Azure CLI emits CRLF line endings and Windows-style paths, which
-# corrupts captured output (e.g. trailing \r on RUN_ID) and breaks artifact
-# downloads (paths with backslash separators). Reject early with a clear error.
-AZ_PATH="$(command -v az)"
-case "$AZ_PATH" in
-    *.cmd|*.bat|*.exe)
-        err "Detected Windows Azure CLI at: $AZ_PATH"
-        err ""
-        err "This script must be run with the native Linux Azure CLI."
-        err "On WSL, install it inside your distribution with:"
-        err "  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash"
-        err ""
-        err "Then log in with:"
-        err "  az login"
-        exit 1
-        ;;
-esac
-
-if ! az extension show --name azure-devops &>/dev/null; then
-    err "The 'azure-devops' Azure CLI extension is required but is not installed."
-    err "Install it with:"
-    err "  az extension add --name azure-devops"
-    exit 1
-fi
-
-# --- Detect runtime ID ---
-detect_rid() {
-    if [ -n "$RUNTIME_ID" ]; then
-        echo "$RUNTIME_ID"
-        return
+download() {
+    local url="$1" out="$2"
+    if [ "$DOWNLOADER" = "curl" ]; then
+        curl --fail --silent --show-error --location --retry 3 --output "$out" "$url"
+    else
+        wget --quiet --tries=3 --output-document="$out" "$url"
     fi
-
-    local os arch
-
-    # Detect OS
-    case "$(uname -s)" in
-        Linux)
-            # Detect musl vs glibc
-            if is_musl; then
-                os="linux-musl"
-            else
-                os="linux"
-            fi
-            ;;
-        Darwin)
-            os="osx"
-            ;;
-        *)
-            err "Unsupported OS: $(uname -s). Use --runtime-id to specify a RID manually."
-            exit 1
-            ;;
-    esac
-
-    # Detect architecture
-    case "$(uname -m)" in
-        x86_64|amd64)   arch="x64" ;;
-        aarch64|arm64)   arch="arm64" ;;
-        *)
-            err "Unsupported architecture: $(uname -m). Use --runtime-id to specify a RID manually."
-            exit 1
-            ;;
-    esac
-
-    echo "${os}-${arch}"
 }
 
+# --- Detect runtime ID ---
 is_musl() {
     # Layer 1: Check if getconf reports glibc
     if getconf GNU_LIBC_VERSION &>/dev/null; then
@@ -176,44 +113,53 @@ is_musl() {
     return 1
 }
 
+detect_rid() {
+    if [ -n "$RUNTIME_ID" ]; then
+        echo "$RUNTIME_ID"
+        return
+    fi
+
+    local os arch
+
+    # Detect OS
+    case "$(uname -s)" in
+        Linux)
+            if is_musl; then
+                os="linux-musl"
+            else
+                os="linux"
+            fi
+            ;;
+        Darwin)
+            os="osx"
+            ;;
+        *)
+            err "Unsupported OS: $(uname -s). Use --runtime-id to specify a RID manually."
+            exit 1
+            ;;
+    esac
+
+    # Detect architecture
+    case "$(uname -m)" in
+        x86_64|amd64)    arch="x64" ;;
+        aarch64|arm64)   arch="arm64" ;;
+        *)
+            err "Unsupported architecture: $(uname -m). Use --runtime-id to specify a RID manually."
+            exit 1
+            ;;
+    esac
+
+    echo "${os}-${arch}"
+}
+
 # --- Main ---
 
 RID=$(detect_rid)
 info "Detected runtime: $RID"
 
-# Get latest successful build for the specified branch
-info "Querying for latest successful build on $BRANCH..."
-
-RUN_ID=$(az pipelines runs list \
-    --pipeline-ids "$PIPELINE_ID" \
-    --branch "$BRANCH" \
-    --status completed \
-    --query-order FinishTimeDesc \
-    --top 10 \
-    --org "$AZDO_ORG" \
-    --project "$AZDO_PROJECT" \
-    --query "[?result=='succeeded' || result=='partiallySucceeded'] | [0].id" \
-    --output tsv) || {
-    err "Failed to query pipeline runs. Ensure you are logged in and have access to dnceng/internal:"
-    err ""
-    err "  az login"
-    err "  az extension add --name azure-devops   # if not already installed"
-    err ""
-    err "Error: $RUN_ID"
-    exit 1
-}
-
-if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "None" ]; then
-    err "No successful builds found for pipeline $PIPELINE_ID on branch $BRANCH."
-    exit 1
-fi
-
-ok "Found build $RUN_ID"
-gray "  ${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId=${RUN_ID}"
-
-# Download the artifact
-ARTIFACT_NAME="dotnetup-standalone-${RID}"
-info "Downloading artifact '$ARTIFACT_NAME'..."
+FILE_NAME="dotnetup-${RID}"
+DOWNLOAD_URL="${BASE_URL}/${FILE_NAME}"
+CHECKSUM_URL="${DOWNLOAD_URL}.sha512"
 
 TEMP_DIR=$(mktemp -d)
 
@@ -222,36 +168,47 @@ cleanup() {
 }
 trap cleanup EXIT
 
-az pipelines runs artifact download \
-    --artifact-name "$ARTIFACT_NAME" \
-    --path "$TEMP_DIR" \
-    --run-id "$RUN_ID" \
-    --org "$AZDO_ORG" \
-    --project "$AZDO_PROJECT" 2>&1 || {
-    err "Failed to download artifact '$ARTIFACT_NAME' for run $RUN_ID."
-    err "Available RIDs: win-x64, win-arm64, linux-x64, linux-arm64, linux-musl-x64, linux-musl-arm64, osx-x64, osx-arm64"
-    err "Use --runtime-id to specify the correct RID."
-    exit 1
-}
+TEMP_BINARY="${TEMP_DIR}/${FILE_NAME}"
 
-# Find the binary in the downloaded contents
-BINARY_PATH=$(find "$TEMP_DIR" -name "dotnetup" -type f | head -1)
-if [ -z "$BINARY_PATH" ]; then
-    err "Could not find 'dotnetup' binary in the downloaded artifact."
-    err "Contents:"
-    find "$TEMP_DIR" -type f | sed 's/^/  /' >&2
+info "Downloading ${DOWNLOAD_URL}"
+if ! download "$DOWNLOAD_URL" "$TEMP_BINARY"; then
+    err "Failed to download dotnetup from $DOWNLOAD_URL"
+    err "Available RIDs: win-x64, win-arm64, linux-x64, linux-arm64, linux-musl-x64, linux-musl-arm64, osx-x64, osx-arm64"
+    err "Use --runtime-id to specify the correct RID, or --quality to select a different build quality."
     exit 1
 fi
 
-# Install just the binary
+info "Verifying SHA-512 checksum..."
+TEMP_CHECKSUM="${TEMP_DIR}/${FILE_NAME}.sha512"
+if ! download "$CHECKSUM_URL" "$TEMP_CHECKSUM"; then
+    err "Failed to download checksum from $CHECKSUM_URL"
+    exit 1
+fi
+
+EXPECTED=$(awk '{print tolower($1)}' "$TEMP_CHECKSUM")
+if command -v sha512sum &>/dev/null; then
+    ACTUAL=$(sha512sum "$TEMP_BINARY" | awk '{print tolower($1)}')
+elif command -v shasum &>/dev/null; then
+    ACTUAL=$(shasum -a 512 "$TEMP_BINARY" | awk '{print tolower($1)}')
+else
+    err "Neither 'sha512sum' nor 'shasum' was found on PATH."
+    exit 1
+fi
+
+if [ "$EXPECTED" != "$ACTUAL" ]; then
+    err "Checksum mismatch."
+    err "  Expected: $EXPECTED"
+    err "  Actual:   $ACTUAL"
+    exit 1
+fi
+ok "Checksum verified."
+
+# Install the binary (renamed to plain 'dotnetup')
 info "Installing to $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
-cp "$BINARY_PATH" "$INSTALL_DIR/dotnetup"
-
-# Ensure the binary is executable
+cp "$TEMP_BINARY" "$INSTALL_DIR/dotnetup"
 chmod +x "$INSTALL_DIR/dotnetup"
 
-# Verify
 if [ ! -x "$INSTALL_DIR/dotnetup" ]; then
     err "Installation failed: '$INSTALL_DIR/dotnetup' not found or not executable after copy."
     exit 1
