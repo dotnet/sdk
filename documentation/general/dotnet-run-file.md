@@ -274,7 +274,8 @@ Later with deduplication, separate "self-contained" utilities could reference ov
 even if they end up in the same compilation.
 For example, properties could be concatenated via `;`, more specific package versions could override less specific ones.
 
-During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the converted `.csproj` file.
+During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the converted `.csproj` file when needed.
+Files included with `#:include` are copied into the converted project directory; if an included file is not picked up by the converted project's defaults, the corresponding project item is also written explicitly into an `<ItemGroup>` in the converted project.
 For project-based programs, `#:` directives are an error (reported by Roslyn when it's told it is in "project-based" mode).
 `#!` directives are also removed during grow up, although we could consider to have an option to preserve them
 (since they might still be valid after grow up, depending on which program they are actually specifying to "interpret" the file, i.e., it might not be `dotnet run` at all).

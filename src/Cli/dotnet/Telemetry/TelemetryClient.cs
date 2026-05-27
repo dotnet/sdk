@@ -36,8 +36,25 @@ public class TelemetryClient : ITelemetryClient
 #endif
     private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
     private static readonly bool s_disableTraceExport = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
-    private static readonly bool s_enableOtlpExporter = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER);
+    // The OTLP exporter is enabled when:
+    //   1. The SDK-specific DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER env var is true, or
+    //   2. Any of the standard OpenTelemetry OTLP exporter env vars are set (per
+    //      https://opentelemetry.io/docs/specs/otel/protocol/exporter/), signaling that
+    //      the user has configured an OTLP endpoint/protocol/headers and intends to export.
+    // When enabled, AddOtlpExporter() is called without an inline configuration callback,
+    // which lets the OpenTelemetry SDK's OtlpExporterOptions read the standard env vars
+    // itself to determine endpoint, protocol, headers, timeout, etc.
+    private static readonly bool s_enableOtlpExporter =
+        Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER)
+        || (!Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.OTEL_SDK_DISABLED) && IsOtlpExporterConfiguredByStandardEnvVars());
     private static readonly int s_flushTimeoutMs = 200;
+
+    /// <summary>
+    /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
+    /// are set, signaling that the user has configured the OTLP exporter and expects it to be used.
+    /// See https://opentelemetry.io/docs/specs/otel/protocol/exporter/.
+    /// </summary>
+    private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 
     public static string? CurrentSessionId { get; private set; } = null;
     public static bool DisabledForTests
