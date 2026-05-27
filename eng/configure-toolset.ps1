@@ -20,6 +20,7 @@ function InstallBootstrapSdkWithDotnetup() {
     foreach ($root in @($env:DOTNET_INSTALL_DIR, $dotnetRoot)) {
         if (-not [string]::IsNullOrEmpty($root) -and (Test-Path ([IO.Path]::Combine($root, 'sdk', $dotnetSdkVersion)))) {
             Write-Host "Bootstrap SDK '$dotnetSdkVersion' already present at '$root'; skipping dotnetup install." -ForegroundColor DarkGray
+            Set-Content -Path (Join-Path $root '.version') -Value $dotnetSdkVersion -NoNewline
             return
         }
     }
@@ -54,6 +55,10 @@ function InstallBootstrapSdkWithDotnetup() {
         Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install .NET SDK '$dotnetSdkVersion' to '$dotnetRoot' using dotnetup (exit code '$LASTEXITCODE')."
         ExitWithExitCode $LASTEXITCODE
     }
+
+    # Record the installed SDK so CleanOutStage0ToolsetsAndRuntimes does not
+    # later treat this install as stale and wipe it (forcing a build rerun).
+    Set-Content -Path (Join-Path $dotnetRoot '.version') -Value $dotnetSdkVersion -NoNewline
 }
 
 InstallBootstrapSdkWithDotnetup

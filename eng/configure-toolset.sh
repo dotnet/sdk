@@ -21,6 +21,7 @@ function InstallBootstrapSdkWithDotnetup {
   for root in "${DOTNET_INSTALL_DIR:-}" "$dotnet_root"; do
     if [[ -n "$root" && -d "$root/sdk/$dotnet_sdk_version" ]]; then
       echo "Bootstrap SDK '$dotnet_sdk_version' already present at '$root'; skipping dotnetup install."
+      printf '%s' "$dotnet_sdk_version" > "$root/.version"
       return
     fi
   done
@@ -55,6 +56,10 @@ function InstallBootstrapSdkWithDotnetup {
     Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install .NET SDK '$dotnet_sdk_version' to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
     ExitWithExitCode $lastexitcode
   fi
+
+  # Record the installed SDK so CleanOutStage0ToolsetsAndRuntimes does not
+  # later treat this install as stale and wipe it (forcing a build rerun).
+  printf '%s' "$dotnet_sdk_version" > "$dotnet_root/.version"
 }
 
 InstallBootstrapSdkWithDotnetup
