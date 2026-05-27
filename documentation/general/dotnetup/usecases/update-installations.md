@@ -1,6 +1,6 @@
 # Updating SDK and Runtime Installations
 
-`dotnetup` tracks your installations by channel (and by workspace if you have `global.json` files), so updating is straightforward — just run `dotnetup update` and every tracked channel resolves to its latest matching version.
+`dotnetup` tracks your installations by channel (and by workspace if you have `global.json` files), so updating is straightforward. Run `dotnetup update` and every tracked channel resolves to its latest matching version.
 
 ## Quick Reference
 
@@ -72,6 +72,8 @@ Updated C:\src\myproject\global.json: 10.0.100 → 10.0.103
 ```
 
 This is useful for keeping your project's `global.json` pinned to a consistent minimum version while still using a rolling channel for installation tracking.
+
+When updating SDKs that are managed via `global.json`, `dotnetup` will adhere to any roll-forward policies defined in the `global.json` file. If you want to 'bump' the version in `global.json` to the latest available, you can use the `--update-global-json` flag and `dotnetup` will take care of that for you as part of the update.
 
 ## Updating Runtimes
 

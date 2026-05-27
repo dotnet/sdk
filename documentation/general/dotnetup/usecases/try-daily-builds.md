@@ -40,7 +40,7 @@ Daily builds are expressed as channels — the same mental model you already use
 $ dotnetup sdk install daily
 ⚠ Daily builds are not code-signed. Only the SHA-512 hash is verified.
 Downloading .NET SDK 11.0.100-preview.1.25310.1...  ████████████████████████ 100%
-Installed .NET SDK 11.0.100-preview.1.25310.1 to C:\Users\you\.dotnet
+Installed .NET SDK 11.0.100-preview.1.25310.1 to <dotnetup install root>\.dotnet
 ```
 
 ### Installing a daily runtime
@@ -49,7 +49,7 @@ Installed .NET SDK 11.0.100-preview.1.25310.1 to C:\Users\you\.dotnet
 $ dotnetup runtime install 10.0-daily
 ⚠ Daily builds are not code-signed. Only the SHA-512 hash is verified.
 Downloading .NET Runtime 10.0.0-preview.7.25351.1...  ████████████████████████ 100%
-Installed .NET Runtime 10.0.0-preview.7.25351.1 to C:\Users\you\.dotnet
+Installed .NET Runtime 10.0.0-preview.7.25351.1 to <dotnetup install root>\.dotnet
 ```
 
 ### Installing a specific pre-release version
@@ -59,7 +59,7 @@ If you know the exact version (e.g. from a GitHub issue or a colleague), you can
 ```
 $ dotnetup sdk install 10.0.100-preview.7.25351.1
 Downloading .NET SDK 10.0.100-preview.7.25351.1...  ████████████████████████ 100%
-Installed .NET SDK 10.0.100-preview.7.25351.1 to C:\Users\you\.dotnet
+Installed .NET SDK 10.0.100-preview.7.25351.1 to <dotnetup install root>\.dotnet
 ```
 
 When you provide a fully specified pre-release version that isn't in the official release manifest, dotnetup automatically falls back to the daily build feed.
@@ -89,7 +89,7 @@ $ dotnetup do run -- --my-app-arg
 
 When you run `dotnetup dotnet <args>`:
 
-1. dotnetup resolves the managed install directory (e.g. `~/.dotnet`)
+1. dotnetup resolves the managed install directory where it stores .NET SDK installations
 2. It sets `DOTNET_ROOT` to that directory
 3. It prepends the install directory to `PATH`
 4. It launches `dotnet <args>` as a child process

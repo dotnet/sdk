@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - **Windows**, **macOS**, or **Linux**
-- A terminal (PowerShell, bash, or zsh)
+- A terminal (like bash, or zsh - Powershell (Core) support coming soon!)
 - No administrator / root access required for Isolation or Terminal Mode. Replacement Mode on Windows requires administrator privileges.
 
 ## Download dotnetup
@@ -13,11 +13,11 @@
 The easiest way to download `dotnetup` is to use the installation script:
 
 ```bash
-curl -fsSL https://aka.ms/dotnetup-install | bash
+curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash
 ```
 
 ```pwsh
-iwr https://aka.ms/dotnetup-install | iex
+iwr https://aka.ms/dotnetup/get-dotnetup.ps1 | iex
 ```
 
 These scripts will download the latest version of `dotnetup` and install it in your user directory, then update your $PATH so that `dotnetup` is available in your terminal.
@@ -28,10 +28,10 @@ When you run `dotnetup` for the first time (or run `dotnetup init` explicitly), 
 
 ```
 $ dotnetup
-╭───────────────────────────────────────────╮
-│ dotnetup v0.1.3-dev                       │
-│ .NET installation manager for developers. │
-╰───────────────────────────────────────────╯
+╭─────────────────────────────────────────────────╮
+│ dotnetup v0.1.3-dev                             │
+│ .NET toolchain manager for user level installs. │
+╰─────────────────────────────────────────────────╯
 
 Welcome to dotnetup!
 
@@ -59,6 +59,7 @@ Channels determine which version of .NET to install and how it gets updated. Pic
 | `10.0`      | The latest SDK for .NET 10.0 | Updates within the 10.0 major.minor |
 | `10.0.1xx`  | The latest SDK in the 10.0.1xx feature band | Updates within the feature band |
 | `10.0.100`  | Exactly SDK 10.0.100 | Never updates (pinned) |
+| `11.0.100-preview.6.26277.104` (or any other nightly build number)     | A specific version number of a daily VMR builds | Never updates |
 | `none`      | Skips the initial install | You can install later with `dotnetup sdk install` |
 
 In general, there are two kinds of channels: **version-based** and **feature-based**.
@@ -90,11 +91,11 @@ How would you like to use dotnetup?
 | **Terminal Mode** | Updates your shell profile (`.bashrc`, `.zshrc`, or PowerShell `$PROFILE`) so `dotnet` resolves to the dotnetup-managed install | Most developers (suggested) |
 | **Replacement Mode** | Modifies system PATH and DOTNET_ROOT (Windows only, requires admin) | Users who want dotnetup to be the default everywhere |
 
-In general, we think most developers will want to use **Terminal Mode** on non-Windows systems and **Replacement Mode** on Windows systems. This ensures that the `dotnetup`-managed .NET installations are used by default in most contexts.
+In general, we think most developers will want to use **Terminal Mode**. This ensures that the `dotnetup`-managed .NET installations are used by default in most contexts.  Visual Studio users *may* want to use **Replacement Mode** to ensure that the .NET SDK is used by default even in Visual Studio, but this will require both administrator permissions and monthly maintenance as Visual Studio re-installs .NET SDK bundles.
 
 ### Step 3: Migrate Existing Installs (Optional)
 
-If you chose Terminal Mode or Replacement Mode and have existing system-level .NET installations, dotnetup will offer to track matching versions:
+If you chose Terminal Mode or Replacement Mode and have existing system-level .NET installations that are installed to the default locations, dotnetup will offer to track matching versions:
 
 ```
 You have existing system-managed .NET installs in C:\Program Files\dotnet.
@@ -110,7 +111,7 @@ Accepting this migration downloads the same versions into the dotnetup-managed d
 
 ```
 Downloading .NET SDK 10.0.100...  ████████████████████████ 100%
-Installed .NET SDK 10.0.100 to C:\Users\you\.dotnet
+Installed .NET SDK 10.0.100 to <dotnet install root>\.dotnet
 
 Your shell profile has been updated. Restart your terminal or source your profile
 to use 'dotnet' directly.
