@@ -400,8 +400,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
     <ItemGroup>
       <_GeneratedXbfFiles Update="@(_GeneratedXbfFiles)"
-        Condition="'%(Link)' == '' and !$([MSBuild]::ValueOrDefault('%(FullPath)', '').StartsWith($([MSBuild]::EnsureTrailingSlash($(MSBuildProjectDirectory)))))">
-        <Link>$([MSBuild]::MakeRelative($(_NormalizedIntermediateOutputPath), %(FullPath)))</Link>
+        Condition="'%(_GeneratedXbfFiles.Link)' == '' and !$([MSBuild]::ValueOrDefault('%(_GeneratedXbfFiles.FullPath)', '').StartsWith($([MSBuild]::EnsureTrailingSlash($(MSBuildProjectDirectory)))))">
+        <Link>$([MSBuild]::MakeRelative($(_NormalizedIntermediateOutputPath), %(_GeneratedXbfFiles.FullPath)))</Link>
       </_GeneratedXbfFiles>
     </ItemGroup>
   </Target>
