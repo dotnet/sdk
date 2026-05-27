@@ -83,15 +83,15 @@ jobs:
                     'Add the `' + process.env.KEEP_OPEN_LABEL + '` label to prevent auto-closure.' });
               } else if (monthCount === 0 && hasStale) {
                 // Still zero hits and already stale: check if it's time to close.
-                // Find when the stale label was applied by looking at issue timeline events.
-                const events = await github.paginate(
-                  github.rest.issues.listEvents,
-                  { ...context.repo, issue_number: issue.number, per_page: 100 });
-                const staleLabelEvent = events
+                // Fetch recent events to find when the stale label was applied.
+                // A single page suffices since this workflow applied the label recently.
+                const events = await github.rest.issues.listEvents({
+                  ...context.repo, issue_number: issue.number, per_page: 100 });
+                const staleLabelEvent = events.data
                   .filter(e => e.event === 'labeled' && e.label?.name === process.env.STALE_LABEL)
                   .pop(); // most recent application
                 if (!staleLabelEvent) {
-                  console.log(`  #${issue.number}: stale label present but no label event found, skipping`);
+                  console.log(`  #${issue.number}: stale label event not found in last 100 events, skipping`);
                   continue;
                 }
                 const labeledAt = new Date(staleLabelEvent.created_at);
