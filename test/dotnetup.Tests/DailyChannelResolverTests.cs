@@ -48,6 +48,26 @@ public class DailyChannelResolverTests
     }
 
     [Fact]
+    public void Resolve_StableRedirectTarget_ReturnsNull()
+    {
+        // If aka.ms is ever misconfigured to redirect a daily link to a stable
+        // release archive, the resolver should treat that as "no daily build
+        // available" rather than returning a stable version that UpdateChannel.Matches
+        // would refuse to satisfy.
+        using var handler = new RedirectHandler(new Dictionary<string, string>
+        {
+            ["https://aka.ms/dotnet/10.0/daily/dotnet-sdk-"]
+                = "https://ci.dot.net/public/Sdk/10.0.100/dotnet-sdk-10.0.100-win-x64.zip",
+        });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10.0-daily"), InstallArchitecture.x64);
+
+        version.Should().BeNull();
+    }
+
+    [Fact]
     public void Resolve_ScopedDaily_ExtractsVersionFromRedirectTarget()
     {
         using var handler = new RedirectHandler(new Dictionary<string, string>
