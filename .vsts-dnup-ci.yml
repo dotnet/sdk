@@ -45,7 +45,7 @@ variables:
 - name: _publishArgument
   value: -publish
 - name: _signArgument
-  value: -sign /p:SignCoreSdk=true
+  value: -sign
 - name: _TeamName
   value: DotNet-Cli
 # MicroBuildSigningPlugin@4 on non-Windows agents requires a pipeline variable
