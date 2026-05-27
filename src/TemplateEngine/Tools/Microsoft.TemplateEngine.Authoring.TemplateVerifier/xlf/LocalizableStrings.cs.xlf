@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="cs" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="VerificationEngine_Error_InstallUnexpectedFail">
+        <source>Template installation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">Očekávalo se, že instalace šablony bude úspěšné, ale měla ukončovací kód{0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_ScrubberExtension">
+        <source>File extension passed to scrubber should not start with dot.</source>
+        <target state="translated">Přípona souboru předaná scrubberu by neměla začínat tečkou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_StdOutFolderExists">
+        <source>The folder [{0}] should not exist in the template output - cannot verify stdout/stderr in such case.</source>
+        <target state="translated">Složka [{0}] by neměla ve výstupu šablony existovat – v takovém případě nelze ověřit stdout/stderr.</target>
+        <note>{0} is a folder path</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_TemplateNameMandatory">
+        <source>Template name is mandatory, but was not supplied.</source>
+        <target state="translated">Název šablony je povinný, ale nebyl uveden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_Unexpected">
+        <source>Unexpected error encountered.</source>
+        <target state="translated">Došlo k neočekávané chybě.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedFail">
+        <source>Template instantiation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">Očekávalo se, že vytvoření instance šablony bude úspěšné, ale mělo ukončovací kód{0}.</target>
+        <note>{0} is an exit code number</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedPass">
+        <source>Template instantiation expected to fail but it passed.</source>
+        <target state="translated">Očekávalo se, že vytvoření instance šablony selže, ale bylo úspěšné..</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedStdErr">
+        <source>Template instantiation expected not to have any stderr output, but stderr output was encountered:{0}{1}</source>
+        <target state="translated">Očekávalo se, že instance šablony nebude mít žádný výstup stderr, ale byl zjištěn výstup stderr:{0}{1}</target>
+        <note>{0} is newline, {1} is the standard error content</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_WorkDirExists">
+        <source>The working directory already exists and is not empty.</source>
+        <target state="translated">Pracovní adresář již existuje a není prázdný.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

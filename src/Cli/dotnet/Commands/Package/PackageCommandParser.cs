@@ -17,16 +17,8 @@ namespace Microsoft.DotNet.Cli.Commands.Package;
 
 internal sealed class PackageCommandParser
 {
-    private static readonly PackageCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(PackageCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static PackageCommandDefinition CreateCommand()
-    {
-        var command = new PackageCommandDefinition();
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         command.RemoveCommand.SetAction(parseResult => new PackageRemoveCommand(parseResult).Execute());
@@ -45,8 +37,6 @@ internal sealed class PackageCommandParser
             // Only return 1 or 0
             return exitCode == 0 ? 0 : 1;
         });
-
-        return command;
     }
 
     internal static void ConfigureAddCommand(PackageAddCommandDefinitionBase def)

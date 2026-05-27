@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../CliCommandStrings.resx">
     <body>
@@ -90,6 +90,11 @@
       <trans-unit id="BuildAppFullName">
         <source>.NET Builder</source>
         <target state="translated">.NET Oluşturucusu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestNoTestProjectsFound">
+        <source>No test projects were found.</source>
+        <target state="new">No test projects were found.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
@@ -569,8 +574,8 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">MSBuild ile proje özelliklerini al işlemi {0} çıkış koduyla çıkarak düzgün şekilde çalışmadı.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">MSBuild ile proje özelliklerini al işlemi {0} çıkış koduyla çıkarak düzgün şekilde çalışmadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -691,11 +696,6 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
       <trans-unit id="CmdPackage">
         <source>PACKAGE_NAME</source>
         <target state="translated">PACKAGE_NAME</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="translated">Eklenecek paket başvurusu. Bu sadece 'Newtonsoft.Json' gibi paket tanımlayıcısı biçiminde olabilir, veya 'Newtonsoft.Json@13.0.3' gibi '@' ile ayrılmış bir paket tanımlayıcısı ve sürümü şeklinde olabilir</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackageDirectory">
@@ -1031,16 +1031,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">Konsol zaten işlem grubu oluşturma modunda bulunuyor.</target>
         <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">'{0}' özelliğinin değeri boole değerine dönüştürülemedi.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">'{0}' özelliğinin değeri dizeye dönüştürülemedi.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">Proje bulunamadı. {0} içinde proje olduğundan emin olun veya {1} kullanarak yolu projeye geçirin.</target>
@@ -1302,16 +1292,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">{0} hatayla başarısız oldu</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedWithErrorsAndWarnings">
-        <source>failed with {0} error(s) and {1} warning(s)</source>
-        <target state="translated">{0} hata ve {1} uyarıyla başarısız oldu</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedWithWarnings">
-        <source>failed with {0} warning(s)</source>
-        <target state="translated">{0} uyarıyla başarısız oldu</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ForTest">
         <source>For test</source>
         <target state="translated">Test için</target>
@@ -1566,11 +1546,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Standart girişten dosyayı okumak için ‘-’ kullanırken '{0}' seçeneği belirtilemez.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidSemVerVersionString">
-        <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="translated">'{0}' bir anlamsal sürüm olarak ayrıştırılamadı.</target>
-        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
@@ -2381,6 +2356,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">Proje bağlamı</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Dönüştürmeden sonra tüm kaynak dosyalar silinsin mi?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Dosya tabanlı bir programı proje tabanlı bir programa dönüştür.</target>
@@ -2391,10 +2371,30 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">Çıkış dizinini belirtin (varsayılan için Enter tuşuna basın: '{0}', dizin mevcut olmamalıdır):</target>
         <note>{0} is the default value</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">Hayır - tüm kaynak dosyaları sakla</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Evet - tüm kaynak dosyaları sil</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">Kaynak dosya silindi: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">Dosya sistemini gerçekten değiştirmeden değişiklikleri belirler</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDuplicateRefFolderName">
+        <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
+        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
@@ -2416,15 +2416,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">Deneme çalıştırması: şu dosya oluşturuluyor: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
-      <trans-unit id="ProjectConvertWouldDeleteFile">
-        <source>Dry run: would delete file: {0}</source>
-        <target state="translated">Deneme çalıştırması: şu dosya siliniyor: {0}</target>
-        <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldMoveFile">
-        <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="translated">Deneme çalıştırması: '{0}' dosyası '{1}' konumuna taşınıyor.</target>
-        <note>{0} and {1} are file full paths.</note>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Deneme çalıştırması: kaynak dosyayı silecektir: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
@@ -2760,6 +2755,16 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">'{0}' geçerli bir proje dosyası değil.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandWarningCsFileArgumentPassedToProject">
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <note>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandWarningFileArgumentPassedToProject">
+        <source>Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <note>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</note>
+      </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
         <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
         <target state="translated">Uyarı: ‘{1}’ öncelikli olduğu için ‘{0}’ ayarları kullanılmaz.</target>
@@ -2987,6 +2992,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
         <source>The --solution-folder and --in-root options cannot be used together; use only one of the options.</source>
         <target state="translated">--solution-folder ve --in-root seçenekleri birlikte kullanılamaz; seçeneklerden yalnızca birini kullanın.</target>
@@ -3173,8 +3183,8 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">'{0}' aracı zaten yüklü.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="translated">'{0}' aracı (sürüm '{1}') zaten yüklü.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3284,16 +3294,6 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
         <source>NuGet configuration file '{0}' does not exist.</source>
         <target state="translated">NuGet yapılandırma dosyası '{0}' yok.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">Yüklenecek aracın NuGet Paket Kimliği.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
@@ -3528,16 +3528,6 @@ karşılık gelen paket kimliklerini bulmak için
         <target state="translated">Genel veya yerel bir aracı güncelleştirin.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to update.</source>
-        <target state="translated">Güncelleştirilecek aracın NuGet Paket Kimliği.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
         <source>Tool '{0}' has multiple versions installed and cannot be updated.</source>
         <target state="translated">'{0}' aracının birden fazla sürümü yüklü ve güncelleştirilemiyor.</target>
@@ -3628,16 +3618,6 @@ karşılık gelen paket kimliklerini bulmak için
         <target state="translated">Komut satırından iş yüklerini {0} ile güncelleştirmek için belirtildi, ancak global.json dosyası {1} kullanmak için {2} olarak ayarlandı.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">'{0}' aracı, ön sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">'{0}' aracı, kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">İstenen sürümü ({0}) mevcut sürümünden ({1}) düşük.</target>
@@ -3708,21 +3688,6 @@ karşılık gelen paket kimliklerini bulmak için
         <target state="translated">Paket bağımsız değişkeni zaten bir sürüm içeriyorsa --version belirtilemez.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">'{0}' özelliği belirtilmişse bir nesne olmalıdır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Ayrıntı düzeyi</target>
@@ -3767,6 +3732,16 @@ karşılık gelen paket kimliklerini bulmak için
         <source>Run Microsoft Test Engine (VSTest) commands.</source>
         <target state="translated">Microsoft Test Engine (VSTest) komutlarını çalıştırır.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</target>
+        <note>{0} is the .cs file path argument.</note>
+      </trans-unit>
+      <trans-unit id="WarningFileArgumentPassedToMSBuild">
+        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</target>
+        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>
@@ -4039,6 +4014,11 @@ Bir değeri görüntülemek için, bir değer sağlamadan ilgili komut satırı 
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Görüntülenecek bir iş yükü sürümü veya bir veya daha fazla iş yükü ve bunların '@' karakteriyle birleştirilen sürümleri.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">İş yükü kümesi {0} sürümü, paket yönetimi tarafından kaldırılmış olabilecek eksik bildirimlere sahip. Bunu düzeltmek için "dotnet workload repair" komutunu çalıştırın.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>

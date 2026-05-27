@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="fr" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="VerificationEngine_Error_InstallUnexpectedFail">
+        <source>Template installation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">L’installation du modèle devait réussir, mais le code de sortie était '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_ScrubberExtension">
+        <source>File extension passed to scrubber should not start with dot.</source>
+        <target state="translated">L’extension de fichier passée au programme de nettoyage ne doit pas commencer par un point.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_StdOutFolderExists">
+        <source>The folder [{0}] should not exist in the template output - cannot verify stdout/stderr in such case.</source>
+        <target state="translated">Le dossier [{0}] ne doit pas exister dans la sortie du modèle. Impossible de vérifier stdout/stderr dans ce cas.</target>
+        <note>{0} is a folder path</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_TemplateNameMandatory">
+        <source>Template name is mandatory, but was not supplied.</source>
+        <target state="translated">Le nom du modèle est obligatoire, mais il n’a pas été fourni.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_Unexpected">
+        <source>Unexpected error encountered.</source>
+        <target state="translated">Une erreur inattendue s'est produite.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedFail">
+        <source>Template instantiation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">L’instanciation du modèle devait réussir, mais le code de sortie était '{0}'.</target>
+        <note>{0} is an exit code number</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedPass">
+        <source>Template instantiation expected to fail but it passed.</source>
+        <target state="translated">L’instanciation du modèle était censée échouer, mais elle a réussi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedStdErr">
+        <source>Template instantiation expected not to have any stderr output, but stderr output was encountered:{0}{1}</source>
+        <target state="translated">L’instanciation du modèle était censée ne pas avoir de sortie stderr, mais la sortie stderr a été rencontrée :{0}{1}</target>
+        <note>{0} is newline, {1} is the standard error content</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_WorkDirExists">
+        <source>The working directory already exists and is not empty.</source>
+        <target state="translated">Le répertoire de travail existe déjà et n’est pas vide.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

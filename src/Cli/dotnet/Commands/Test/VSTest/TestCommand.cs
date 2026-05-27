@@ -179,7 +179,7 @@ public class TestCommand(
 
     public static TestCommand FromArgs(string[] args, string? testSessionCorrelationId = null, string? msbuildPath = null)
     {
-        var parseResult = Parser.Parse(["dotnet", "test", ..args]);
+        var parseResult = Parser.Parse(["dotnet", "test", .. args]);
 
         // settings parameters are after -- (including --), these should not be considered by the parser
         string[] settings = [.. args.SkipWhile(a => a != "--")];
@@ -266,7 +266,8 @@ public class TestCommand(
 
 
         Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
-        foreach (var (rootVariableName, rootValue) in variables) {
+        foreach (var (rootVariableName, rootValue) in variables)
+        {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
         }
@@ -519,30 +520,48 @@ public class TerminalLoggerDetector
         }
     }
 
-    private static Switch? TryFind(IReadOnlyList<string> unmatchedTokens, params string[] names)
+    internal static Switch? TryFind(IReadOnlyList<string> unmatchedTokens, params string[] names)
     {
-        foreach (string prefix in new string[] { "-", "--", "/" })
+        // Two orderings matter here:
+        //   * Use exact name matching (not StartsWith) so that e.g. "-tlp:default=true" is not
+        //     incorrectly returned when searching for "tl".
+        //   * Check "--" before "-" so that if both "-tl" and "--tl" variants appear in the
+        //     same token list, the long form wins.
+        foreach (string prefix in new[] { "--", "-", "/" })
         {
             foreach (var name in names)
             {
-                var found = unmatchedTokens.FirstOrDefault(t => t.StartsWith(prefix + name, StringComparison.OrdinalIgnoreCase));
-                if (found != null)
+                foreach (var token in unmatchedTokens)
                 {
-                    var param = found.Substring(prefix.Length);
-                    if (!param.Contains(":"))
+                    if (TryMatchExact(token, prefix, name, out string? value))
                     {
-                        return new Switch(param, null);
-                    }
-                    else
-                    {
-                        var parts = param.Split(":", 2);
-                        return new Switch(parts[0], parts[1]);
+                        return new Switch(name, value);
                     }
                 }
             }
         }
 
         return null;
+
+        static bool TryMatchExact(string token, string prefix, string name, out string? value)
+        {
+            value = null;
+            if (!token.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var rest = token.AsSpan(prefix.Length);
+            int colonIndex = rest.IndexOf(':');
+            var tokenName = colonIndex < 0 ? rest : rest[..colonIndex];
+            if (!tokenName.Equals(name.AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            value = colonIndex < 0 ? null : rest[(colonIndex + 1)..].ToString();
+            return true;
+        }
     }
 
     internal static class NativeMethods
@@ -690,7 +709,7 @@ public class TerminalLoggerDetector
             => !string.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
     }
 
-    private record class Switch(string Name, string? Value);
+    internal record class Switch(string Name, string? Value);
 }
 
 public enum TerminalLoggerMode

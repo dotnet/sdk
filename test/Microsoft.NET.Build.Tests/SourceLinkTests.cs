@@ -290,7 +290,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
         public void Cpp()
         {
             var testAsset = TestAssetsManager

@@ -158,10 +158,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                result.StdOut
+                result.StdErr
                     .Should().Contain("Using launch settings from")
-                    .And.Contain(runJson ? "TestProjectWithLaunchSettings.run.json..." : $"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
-                    .And.Contain("Test run summary: Passed!")
+                    .And.Contain(runJson ? "TestProjectWithLaunchSettings.run.json..." : $"Properties{Path.DirectorySeparatorChar}launchSettings.json...");
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Passed!")
                     .And.Contain("MY_VARIABLE_FROM_LAUNCH_SETTINGS=TestValue1")
                     .And.Contain("skipped Test1")
                     .And.Contain("total: 2")
@@ -217,10 +219,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute(
                     "-c", TestingConstants.Debug);
 
-            result.StdOut.Should()
+            result.StdErr.Should()
                 .Contain("Using launch settings from")
-                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
-                .And.Contain("FAILED to find argument from launchSettings.json");
+                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...");
+
+            result.StdOut.Should()
+                .Contain("FAILED to find argument from launchSettings.json");
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -237,10 +241,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         "-c", configuration,
                                         "--no-launch-profile-arguments", "true");
 
-            result.StdOut.Should()
+            result.StdErr.Should()
                 .Contain("Using launch settings from")
-                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
-                .And.Contain("FAILED to find argument from launchSettings.json");
+                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...");
+
+            result.StdOut.Should()
+                .Contain("FAILED to find argument from launchSettings.json");
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -575,10 +581,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                result.StdOut
+                result.StdErr
                     .Should().Contain("Using launch settings from")
-                    .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
-                    .And.Contain("Test run summary: Failed!")
+                    .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...");
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Failed!")
                     .And.Contain("total: 1")
                     .And.Contain("succeeded: 0")
                     .And.Contain("failed: 1")
@@ -587,6 +595,24 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void DotnetTest_MTPChildProcessHangTestProject_ShouldNotHang(string configuration)
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("MTPChildProcessHangTest", Guid.NewGuid().ToString())
+                .WithSource();
+
+            var result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                // We need to disable output and error redirection so that the test infra doesn't
+                // hang because of a hanging child process that keeps out/err open.
+                .WithDisableOutputAndErrorRedirection()
+                .Execute("-c", configuration);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
     }
 }

@@ -796,6 +796,161 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
+        public void TestNotNullGenericConstraintGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public abstract class Base
+                    {
+                        public abstract void OverrideMethod<T>() where T : notnull;
+                    }
+
+                    public class Derived : Base
+                    {
+                        public override void OverrideMethod<T>() { }
+                    }
+
+                    public class Container<T> where T : notnull, System.IDisposable, new()
+                    {
+                        public void Method<TKey, TValue>(System.Collections.Generic.Dictionary<TKey, TValue> dict)
+                            where TKey : notnull
+                        {
+                        }
+                    }
+
+                    public delegate void Handler<T>(T value) where T : notnull;
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public abstract partial class Base
+                    {
+                        public abstract void OverrideMethod<T>() where T : notnull;
+                    }
+
+                    public partial class Container<T> where T : notnull, System.IDisposable, new()
+                    {
+                        public void Method<TKey, TValue>(System.Collections.Generic.Dictionary<TKey, TValue> dict) where TKey : notnull { }
+                    }
+
+                    public partial class Derived : Base
+                    {
+                        public override void OverrideMethod<T>() { }
+                    }
+
+                    public delegate void Handler<T>(T value) where T : notnull;
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestNotNullConstraintClauseOrdering()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class OrderedContainer<T, U> where T : notnull where U : new()
+                    {
+                        public void OrderedMethod<TMethod, UMethod>() where TMethod : notnull where UMethod : new()
+                        {
+                        }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class OrderedContainer<T, U> where T : notnull where U : new()
+                    {
+                        public void OrderedMethod<TMethod, UMethod>() where TMethod : notnull where UMethod : new() { }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestExplicitInterfaceImplementationNotNullConstraint()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public interface IGeneric
+                    {
+                        void Method<T>(T value) where T : notnull;
+                    }
+
+                    public class ExplicitGeneric : IGeneric
+                    {
+                        void IGeneric.Method<T>(T value)
+                        {
+                        }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class ExplicitGeneric : IGeneric
+                    {
+                        void IGeneric.Method<T>(T value) { }
+                    }
+
+                    public partial interface IGeneric
+                    {
+                        void Method<T>(T value)
+                            where T : notnull;
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestAllowsRefStructGenericConstraintGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class Potato
+                    {
+                        public T Carrot<T>(T t) where T : allows ref struct
+                        {
+                            return t;
+                        }
+
+                        public T CarrotNotNull<T>(T t) where T : notnull, allows ref struct
+                        {
+                            return t;
+                        }
+                    }
+
+                    public class RefContainer<T> where T : allows ref struct
+                    {
+                    }
+
+                    public delegate void RefHandler<T>(T value) where T : allows ref struct;
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Potato
+                    {
+                        public T Carrot<T>(T t) where T : allows ref struct { throw null; }
+                        public T CarrotNotNull<T>(T t) where T : notnull, allows ref struct { throw null; }
+                    }
+
+                    public partial class RefContainer<T> where T : allows ref struct
+                    {
+                    }
+
+                    public delegate void RefHandler<T>(T value) where T : allows ref struct;
+                }
+                """);
+        }
+
+        [Fact]
         public void TestPublicMembersGeneration()
         {
             RunTest(original: """
@@ -1502,7 +1657,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
             expected: """
                 namespace Foo
                 {
-                    public partial struct Bar<T>
+                    public partial struct Bar<T> where T : notnull
                     {
                         private System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<T>> _field;
                         private object _dummy;
@@ -1529,7 +1684,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
             expected: """
                 namespace Foo
                 {
-                    public readonly partial struct Bar<T>
+                    public readonly partial struct Bar<T> where T : notnull
                     {
                         private readonly System.Collections.Generic.List<Bar<T>> _Baz_k__BackingField;
                         private readonly object _dummy;

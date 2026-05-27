@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 using Xunit.Sdk;
 
@@ -15,6 +16,88 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
         public GivenDotnetRunIsInterrupted(ITestOutputHelper log) : base(log)
         {
+        }
+
+        [WindowsOnlyFact]
+        public void ItTerminatesWinExeAppWithCloseMainWindow()
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WinExeApp")
+                .WithSource();
+
+            var command = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(asset.Path);
+
+            // Launch dotnet run in a new process group so that GenerateConsoleCtrlEvent
+            // targets only the child group and does not propagate to the test host.
+            command.CreateNewProcessGroup = true;
+
+            bool signaled = false;
+            bool sawClosingGracefully = false;
+            Process child = null;
+            Process testProcess = null;
+            command.ProcessStartedHandler = p => { testProcess = p; };
+
+            command.CommandOutputHandler = line =>
+            {
+                if (line.StartsWith("\x1b]"))
+                {
+                    line = line.StripTerminalLoggerProgressIndicators();
+                }
+
+                if (line.Contains("Closing gracefully:", StringComparison.Ordinal))
+                {
+                    sawClosingGracefully = true;
+                }
+
+                if (signaled)
+                {
+                    return;
+                }
+
+                if (int.TryParse(line, out int pid))
+                {
+                    try
+                    {
+                        child = Process.GetProcessById(pid);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error while getting child process Id: {e}");
+                        Assert.Fail($"Failed to get to child process Id: {line}");
+                    }
+                }
+                else if (line == "Started" && child != null)
+                {
+                    // Window is now visible, send Ctrl+C to dotnet run process
+                    // dotnet run should detect it's a WinExe app and call CloseMainWindow() on the child
+                    Log.WriteLine($"Sending Ctrl+C to dotnet run process {testProcess.Id}");
+                    bool sent = GenerateConsoleCtrlEvent(0, (uint)testProcess.Id);
+                    Log.WriteLine($"GenerateConsoleCtrlEvent returned: {sent}");
+                    signaled = true;
+                }
+                else
+                {
+                    Log.WriteLine($"Got line {line} but was unable to interpret it as a process id - skipping");
+                }
+            };
+
+            var result = command.Execute();
+            signaled.Should().BeTrue("Ctrl+C should have been sent to dotnet run");
+            sawClosingGracefully.Should().BeTrue("WinExe app should report graceful close output");
+
+            // The app should exit with code 0 when closed gracefully via CloseMainWindow
+            result.ExitCode.Should().Be(0, "WinExe app should exit gracefully when dotnet run receives Ctrl+C and calls CloseMainWindow");
+
+            Assert.NotNull(child);
+            if (!child.WaitForExit(WaitTimeout))
+            {
+                child.Kill();
+                throw new XunitException("child process failed to terminate.");
+            }
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
         }
 
         // This test is Unix only for the same reason that CoreFX does not test Console.CancelKeyPress on Windows

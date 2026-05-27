@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../CliCommandStrings.resx">
     <body>
@@ -90,6 +90,11 @@
       <trans-unit id="BuildAppFullName">
         <source>.NET Builder</source>
         <target state="translated">.NET Builder</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestNoTestProjectsFound">
+        <source>No test projects were found.</source>
+        <target state="new">No test projects were found.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
@@ -569,8 +574,8 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
-        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="translated">Získání vlastností projektů pomocí nástroje MSBuild nebylo správně spuštěno s ukončovacím kódem: {0}.</target>
+        <source>Build failed with exit code: {0}.</source>
+        <target state="needs-review-translation">Získání vlastností projektů pomocí nástroje MSBuild nebylo správně spuštěno s ukončovacím kódem: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -691,11 +696,6 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
       <trans-unit id="CmdPackage">
         <source>PACKAGE_NAME</source>
         <target state="translated">PACKAGE_NAME</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="translated">Odkaz na balíček, který se má přidat Může mít podobu buď pouze identifikátoru balíčku, například Newtonsoft.Json, nebo identifikátoru balíčku a verze, které jsou odděleny znakem @, například Newtonsoft.Json@13.0.3.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackageDirectory">
@@ -1031,16 +1031,6 @@ Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Konzole je již v režimu dávkování.</target>
         <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">Hodnotu vlastnosti {0} nejde převést na logickou hodnotu.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">Hodnotu vlastnosti {0} nejde převést na řetězec.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">Projekt se nepovedlo najít. Ověřte, že projekt existuje v {0}, nebo pomocí parametru {1} předejte cestu k projektu.</target>
@@ -1302,16 +1292,6 @@ Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">selhalo s {0} chybou/chybami.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedWithErrorsAndWarnings">
-        <source>failed with {0} error(s) and {1} warning(s)</source>
-        <target state="translated">selhalo s chybami (celkem {0}) a upozorněními (celkem {1})</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedWithWarnings">
-        <source>failed with {0} warning(s)</source>
-        <target state="translated">selhalo s {0} upozorněním(i).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ForTest">
         <source>For test</source>
         <target state="translated">Pro testování</target>
@@ -1566,11 +1546,6 @@ Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Nelze zadat parametr {0}, pokud se k načtení souboru ze standardního vstupního zařízení používá také parametr -.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidSemVerVersionString">
-        <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="translated">Nepovedlo se analyzovat {0} jako sémantickou verzi.</target>
-        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
@@ -2381,6 +2356,11 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Kontext projektu</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Chcete po převodu odstranit všechny zdrojové soubory?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Umožňuje převést program na bázi souboru na program na bázi projektu.</target>
@@ -2391,10 +2371,30 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Zadejte výstupní adresář (stisknutím klávesy Enter použijete výchozí hodnotu: {0}, adresář nesmí existovat):</target>
         <note>{0} is the default value</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">Ne – zachovat všechny zdrojové soubory</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Ano – odstranit všechny zdrojové soubory</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">Odstraněný zdrojový soubor: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">Určuje změny, aniž by ve skutečnosti měnil systém souborů.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDuplicateRefFolderName">
+        <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
+        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
@@ -2416,15 +2416,10 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Zkušební spuštění: vytvoří soubor: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
-      <trans-unit id="ProjectConvertWouldDeleteFile">
-        <source>Dry run: would delete file: {0}</source>
-        <target state="translated">Zkušební spuštění: odstraní soubor: {0}</target>
-        <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldMoveFile">
-        <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="translated">Zkušební spuštění: přesune soubor {0} do {1}.</target>
-        <note>{0} and {1} are file full paths.</note>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Zkušební spuštění: odstraní zdrojový soubor: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
@@ -2760,6 +2755,16 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">{0} není platný soubor projektu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandWarningCsFileArgumentPassedToProject">
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <note>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandWarningFileArgumentPassedToProject">
+        <source>Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <note>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</note>
+      </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
         <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
         <target state="translated">Upozornění: Nastavení z {0} nejsou použita, protože {1} má přednost.</target>
@@ -2987,6 +2992,11 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFilterDoesNotSupportFolderOptions">
+        <source>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</source>
+        <target state="new">Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionFolderAndInRootMutuallyExclusive">
         <source>The --solution-folder and --in-root options cannot be used together; use only one of the options.</source>
         <target state="translated">Parametry --solution-folder a --in-root nejdou použít společně; použijte jenom jeden z nich.</target>
@@ -3173,8 +3183,8 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">Nástroj {0} je už nainstalovaný.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="translated">Nástroj {0} (verze {1}) je už nainstalovaný.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3284,16 +3294,6 @@ Nástroj {1} (verze {2}) byl úspěšně nainstalován.</target>
       <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
         <source>NuGet configuration file '{0}' does not exist.</source>
         <target state="translated">Konfigurační soubor NuGet {0} neexistuje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">ID balíčku NuGet nástroje, který se má nainstalovat</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
@@ -3528,16 +3528,6 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">Aktualizace globálního nebo místního nástroje.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to update.</source>
-        <target state="translated">ID balíčku NuGet nástroje, který se má aktualizovat</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
         <source>Tool '{0}' has multiple versions installed and cannot be updated.</source>
         <target state="translated">Nástroj {0} má několik nainstalovaných verzí a nelze ho aktualizovat.</target>
@@ -3628,16 +3618,6 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">Určeno pro aktualizaci úloh pomocí {0} z příkazového řádku, ale soubor global.json v {1} je zadán pro použití {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">Nástroj {0} se přeinstaloval na předběžnou verzi (verze {1}).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">Nástroj {0} se přeinstaloval na stabilní verzi (verze {1}).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">Požadovaná verze {0} je nižší než stávající verze {1}.</target>
@@ -3708,21 +3688,6 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">Nejde zadat --version, pokud argument balíčku již obsahuje verzi.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">Vlastnost {0} musí být objektem, pokud je zadána.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Podrobnosti</target>
@@ -3767,6 +3732,16 @@ příkazu „dotnet tool list“.</target>
         <source>Run Microsoft Test Engine (VSTest) commands.</source>
         <target state="translated">Spustí příkazy VSTest (Microsoft Test Engine).</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</target>
+        <note>{0} is the .cs file path argument.</note>
+      </trans-unit>
+      <trans-unit id="WarningFileArgumentPassedToMSBuild">
+        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</target>
+        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>
@@ -4039,6 +4014,11 @@ Pokud chcete zobrazit hodnotu, zadejte odpovídající volbu příkazového řá
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Verze úlohy, která se má zobrazit, nebo jedna nebo více úloh a jejich verze spojené znakem @.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetHasMissingManifests">
+        <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
+        <target state="translated">Ve verzi sady úloh {0} chybí manifesty, které pravděpodobně odstranila správa balíčků. Pokud chcete tento problém vyřešit, spusťte příkaz dotnet workload repair.</target>
+        <note>{0} is the workload set version. {Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>

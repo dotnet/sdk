@@ -951,7 +951,7 @@ public class {|#0:C|} : IDictionary
 ") },
                     ExpectedDiagnostics = { GetCA1010MultipleCSharpResultAt(0, "C", "ICollection", "ICollection<T>", "IReadOnlyCollection<T>") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1053,7 +1053,7 @@ End Class"
 ") },
                     ExpectedDiagnostics = { GetCA1010MultipleBasicResultAt(0, "C", "ICollection", "ICollection(Of T)", "IReadOnlyCollection(Of T)") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1490, "https://github.com/dotnet/roslyn-analyzers/issues/1490")]
@@ -1110,7 +1110,7 @@ public class {|#0:C|} : IDictionary
 ") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(0, "C", "IDictionary", "IDictionary<TKey, TValue>") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1212,7 +1212,7 @@ End Class"
 ") },
                     ExpectedDiagnostics = { GetCA1010BasicResultAt(0, "C", "IDictionary", "IDictionary(Of TKey, TValue)") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1238,7 +1238,7 @@ public class {|#0:TestClass|} : CollectionBase { }"
 ") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(0, "TestClass", "IList", "IDictionary<TKey, TValue>") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1261,7 +1261,7 @@ End Class
 ") },
                     ExpectedDiagnostics = { GetCA1010BasicResultAt(0, "TestClass", "IList", "IDictionary(Of TKey, TValue)") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

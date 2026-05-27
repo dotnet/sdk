@@ -13,25 +13,25 @@ namespace Microsoft.DotNet.Cli.List.Reference.Tests
   List all project-to-project references of the project.
 
 Usage:
-  dotnet list [<PROJECT>] reference [options]
+  dotnet list [<PROJECT | SOLUTION | FILE>] reference [options]
 
 Arguments:
-  <PROJECT>    The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | SOLUTION | FILE>  The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
-  -?, -h, --help    Show command line help.";
+  -?, -h, --help  Show command line help.";
 
         private Func<string, string> ListCommandHelpText = (defaultVal) => $@"Description:
   List references or packages of a .NET project.
 
 Usage:
-  dotnet list [<PROJECT | SOLUTION>] [command] [options]
+  dotnet list [<PROJECT | SOLUTION | FILE>] [command] [options]
 
 Arguments:
-  <PROJECT | SOLUTION>    The project or solution file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | SOLUTION | FILE>  The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
-  -?, -h, --help    Show command line help.
+  -?, -h, --help  Show command line help.
 
 Commands:
   package      List all package references of the project or solution.

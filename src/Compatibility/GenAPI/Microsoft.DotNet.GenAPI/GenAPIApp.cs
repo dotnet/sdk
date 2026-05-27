@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !NET
-using System.Text.RegularExpressions;
-#endif
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
@@ -18,36 +15,27 @@ namespace Microsoft.DotNet.GenAPI
     public static class GenAPIApp
     {
         /// <summary>
-        /// Initialize and run Roslyn-based GenAPI tool specifying the assemblies to load.
+        /// Initialize and run Roslyn-based GenAPI tool using <see cref="GenAPIOptions"/>.
         /// </summary>
-        public static void Run(ILog log,
-            string[] assembliesPaths,
-            string[]? assemblyReferencesPaths,
-            string? outputPath,
-            string? headerFile,
-            string? exceptionMessage,
-            string[]? excludeApiFiles,
-            string[]? excludeAttributesFiles,
-            bool respectInternals,
-            bool includeAssemblyAttributes)
+        public static void Run(ILog log, GenAPIOptions options)
         {
             (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblySymbolLoader.CreateFromFiles(
                 log,
-                assembliesPaths,
-                assemblyReferencesPaths,
+                options.AssembliesPaths,
+                options.AssemblyReferencesPaths,
                 assembliesToExclude: [],
-                respectInternals: respectInternals);
+                respectInternals: options.RespectInternals);
 
             Run(log,
                 loader,
                 assemblySymbols,
-                outputPath,
-                headerFile,
-                exceptionMessage,
-                excludeApiFiles,
-                excludeAttributesFiles,
-                respectInternals,
-                includeAssemblyAttributes);
+                options.OutputPath,
+                options.HeaderFile,
+                options.ExceptionMessage,
+                options.ExcludeApiFiles,
+                options.ExcludeAttributesFiles,
+                options.RespectInternals,
+                options.IncludeAssemblyAttributes);
         }
 
         /// <summary>

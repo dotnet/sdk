@@ -4,8 +4,8 @@
 using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
-using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.TemplateEngine.Cli.Help;
+using Microsoft.DotNet.Cli.Help;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -33,7 +33,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : ICustomHelp
 
             Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name!), nonBuiltInOptions.Select(option => option.Name!));
 
-            _output!.WritePlatformAndExtensionOptions(context, builtInOptions!, nonBuiltInOptions!, moduleToMissingOptions);
+            WritePlatformAndExtensionOptions(context, builtInOptions!, nonBuiltInOptions!, moduleToMissingOptions);
         };
     }
 
@@ -200,5 +200,78 @@ internal partial class MicrosoftTestingPlatformTestCommand : ICustomHelp
         }
 
         return modulesWithMissingOptions;
+    }
+
+    private static void WritePlatformAndExtensionOptions(
+        HelpContext context,
+        IEnumerable<CommandLineOptionMessage> builtInOptions,
+        IEnumerable<CommandLineOptionMessage> nonBuiltInOptions,
+        Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
+    {
+        if (builtInOptions.Any())
+        {
+            WriteOtherOptionsSection(context, CliCommandStrings.HelpPlatformOptions, builtInOptions);
+            context.Output.WriteLine();
+        }
+
+        if (nonBuiltInOptions.Any())
+        {
+            WriteOtherOptionsSection(context, CliCommandStrings.HelpExtensionOptions, nonBuiltInOptions);
+            context.Output.WriteLine();
+        }
+
+        WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
+    }
+
+    private static void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOptionMessage> options)
+    {
+        List<TwoColumnHelpRow> optionRows = [];
+
+        foreach (var option in options)
+        {
+            if (option.IsHidden != true)
+            {
+                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description ?? string.Empty));
+            }
+        }
+
+        if (optionRows.Count > 0)
+        {
+            Utils.Reporter.Output.WriteLine(title);
+            context.HelpBuilder.WriteColumns(optionRows, context);
+        }
+    }
+
+    private static void WriteModulesToMissingOptionsToConsole(Dictionary<bool, List<(string[], string[])>> modulesWithMissingOptions)
+    {
+        foreach (KeyValuePair<bool, List<(string[], string[])>> groupedModules in modulesWithMissingOptions)
+        {
+            Utils.Reporter.Output.WriteLine();
+            Utils.Reporter.Output.WriteLine((groupedModules.Key ? CliCommandStrings.HelpUnavailableOptions : CliCommandStrings.HelpUnavailableExtensionOptions).Yellow());
+
+            foreach ((string[] modules, string[] missingOptions) in groupedModules.Value)
+            {
+                if (modules.Length == 0)
+                {
+                    continue;
+                }
+
+                string moduleList = string.Join("\n", modules);
+                StringBuilder line = new();
+                for (int i = 0; i < missingOptions.Length; i++)
+                {
+                    if (i == missingOptions.Length - 1)
+                        line.Append($"--{missingOptions[i]}");
+                    else
+                        line.Append($"--{missingOptions[i]}\n");
+                }
+
+                string format = modules.Length == 1
+                    ? (missingOptions.Length == 1 ? CliCommandStrings.HelpModuleIsMissingTheOptionBelow : CliCommandStrings.HelpModuleIsMissingTheOptionsBelow)
+                    : (missingOptions.Length == 1 ? CliCommandStrings.HelpModulesAreMissingTheOptionBelow : CliCommandStrings.HelpModulesAreMissingTheOptionsBelow);
+                var missing = string.Format(format, moduleList);
+                Utils.Reporter.Output.WriteLine($"{missing}\n{line}\n");
+            }
+        }
     }
 }

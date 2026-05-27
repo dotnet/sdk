@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- properties placeholder -->
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- items placeholder -->
+  </ItemGroup>
+</Project>

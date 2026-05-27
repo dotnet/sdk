@@ -422,7 +422,7 @@ class C
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { diagnosticResult },
                 LanguageVersion = LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private Task VerifyNoDiagnosticForPatternAsync(string pattern)
@@ -446,7 +446,7 @@ class C
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 

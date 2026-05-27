@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CreateSuccessful">
+        <source>The template "{0}" was created successfully.</source>
+        <target state="translated">已成功创建模板“{0}”。</target>
+        <note>{0} holds template name</note>
+      </trans-unit>
+      <trans-unit id="Error_ConfigDoesntExist">
+        <source>Template config: {0} doesn't exist. When using 'WithInstantiationThroughTemplateCreatorApi' the 'TemplatePath' parameter must specify path to the template.json or to the root of template (containing {1}).</source>
+        <target state="translated">模板配置: {0} 不存在。使用 "WithInstantiationThroughTemplateCreatorApi" 时，"TemplatePath" 参数必须指定 template.json 或模板根目录的路径(包含 {1})。</target>
+        <note>Do not translate 'TemplatePath' and 'WithInstantiationThroughTemplateCreatorApi'
+
+{0} and {1} contain paths</note>
+      </trans-unit>
+      <trans-unit id="Error_ConfigRetrieval">
+        <source>Template configuration file could not be retrieved from configured mount point.</source>
+        <target state="translated">无法从配置的装入点检索模板配置文件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_DotnetPath">
+        <source>'DotnetExecutablePath' parameter must not be specified when using 'WithInstantiationThroughTemplateCreatorApi'.</source>
+        <target state="translated">使用 "WithInstantiationThroughTemplateCreatorApi" 时，不能指定 "DotnetExecutablePath" 参数。</target>
+        <note>Do not translate 'DotnetExecutablePath' and 'WithInstantiationThroughTemplateCreatorApi'</note>
+      </trans-unit>
+      <trans-unit id="Error_InstallFail">
+        <source>Failed to install template: {0}, details: {1}.</source>
+        <target state="translated">未能安装模板: {0}，详细信息: {1}。</target>
+        <note>{0} is tamplate name, {1} is error message</note>
+      </trans-unit>
+      <trans-unit id="Error_NoPackages">
+        <source>No packages fetched after installation.</source>
+        <target state="translated">安装后未提取任何包。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_TemplateArgsDisalowed">
+        <source>'TemplateSpecificArgs' parameter must not be specified when using WithInstantiationThroughTemplateCreatorApi. Parameters should be passed via the argument of 'WithInstantiationThroughTemplateCreatorApi'.</source>
+        <target state="translated">使用 WithInstantiationThroughTemplateCreatorApi 时，不能指定 "TemplateSpecificArgs" 参数。应通过 "WithInstantiationThroughTemplateCreatorApi" 的自变量传递参数。</target>
+        <note>Do not translate 'TemplateSpecificArgs' and 'WithInstantiationThroughTemplateCreatorApi'</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

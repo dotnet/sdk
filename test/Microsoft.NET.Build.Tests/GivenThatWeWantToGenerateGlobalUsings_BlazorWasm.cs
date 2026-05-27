@@ -9,7 +9,7 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToGenerateGlobalUsings_BlazorWasm(ITestOutputHelper log) : base(log) { }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5", Skip = "https://github.com/dotnet/sdk/issues/53791")]
         public void It_generates_blazorwasm_usings_and_builds_successfully()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;

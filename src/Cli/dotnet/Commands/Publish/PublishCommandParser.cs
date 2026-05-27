@@ -8,18 +8,11 @@ namespace Microsoft.DotNet.Cli.Commands.Publish;
 
 internal static class PublishCommandParser
 {
-    private static readonly PublishCommandDefinition Command = CreateCommand();
-
-    public static Command GetCommand()
+    public static void ConfigureCommand(PublishCommandDefinition command)
     {
-        return Command;
-    }
-
-    private static PublishCommandDefinition CreateCommand()
-    {
-        var command = new PublishCommandDefinition();
         command.SetAction(PublishCommand.Run);
-        command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RunTimesFromProjectFile);
-        return command;
+        command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
+        command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
+        command.TargetPlatformOptions.RuntimeOption.AddCompletions(CliCompletion.RuntimesFromProjectFile);
     }
 }

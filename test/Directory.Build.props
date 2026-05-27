@@ -16,29 +16,13 @@
          (ie HelloWorldWithSubDirs) -->
     <NoWarn>$(NoWarn);NU5125;NU5123</NoWarn>
 
-    <GenerateProgramFile>false</GenerateProgramFile>
+    <!-- XUnit.V3 migration is incremental. Enabling MTP will come in a later phase (https://github.com/dotnet/sdk/issues/52914).  -->
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
 
     <DebugType>embedded</DebugType>
 
     <!-- Don't generate separate symbol packages for the test packages -->
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AwesomeAssertions" />
-  </ItemGroup>
-
-  <!-- Global usings -->
-  <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
-  <ItemGroup>
-    <Using Include="FluentAssertions" />
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
-    <Using Include="Xunit" />
-    <Using Include="Xunit.Abstractions" />
-  </ItemGroup>
 
 </Project>

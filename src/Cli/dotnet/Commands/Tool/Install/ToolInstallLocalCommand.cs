@@ -68,6 +68,7 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         _toolLocalPackageInstaller = new ToolInstallLocalInstaller(
             configFilePath: parseResult.GetValue(Definition.ConfigOption),
             sources: parseResult.GetValue(Definition.AddSourceOption),
+            sourceFeedOverrides: parseResult.GetValue(Definition.SourceOption),
             verbosity: parseResult.GetValue(Definition.VerbosityOption),
             toolPackageDownloader,
             runtimeJsonPathForTests,

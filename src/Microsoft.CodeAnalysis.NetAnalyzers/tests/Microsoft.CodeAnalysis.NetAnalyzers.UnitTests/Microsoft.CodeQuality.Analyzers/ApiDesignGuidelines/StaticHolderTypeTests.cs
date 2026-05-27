@@ -841,7 +841,7 @@ public record C
     public static void M() { }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -442,10 +442,10 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         }
         'testhost;nuget;trust;author' {
             $staticCompletions = @(
-                [CompletionResult]::new('--allow-untrusted-root', '--allow-untrusted-root', [CompletionResultType]::ParameterName, "--allow-untrusted-root")
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "--configfile")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
+                [CompletionResult]::new('--allow-untrusted-root', '--allow-untrusted-root', [CompletionResultType]::ParameterName, "--allow-untrusted-root")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -454,11 +454,11 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         }
         'testhost;nuget;trust;repository' {
             $staticCompletions = @(
-                [CompletionResult]::new('--allow-untrusted-root', '--allow-untrusted-root', [CompletionResultType]::ParameterName, "--allow-untrusted-root")
-                [CompletionResult]::new('--owners', '--owners', [CompletionResultType]::ParameterName, "--owners")
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "--configfile")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
+                [CompletionResult]::new('--allow-untrusted-root', '--allow-untrusted-root', [CompletionResultType]::ParameterName, "--allow-untrusted-root")
+                [CompletionResult]::new('--owners', '--owners', [CompletionResultType]::ParameterName, "--owners")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -467,11 +467,11 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         }
         'testhost;nuget;trust;source' {
             $staticCompletions = @(
-                [CompletionResult]::new('--owners', '--owners', [CompletionResultType]::ParameterName, "--owners")
-                [CompletionResult]::new('--source-url', '--source-url', [CompletionResultType]::ParameterName, "--source-url")
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "--configfile")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
+                [CompletionResult]::new('--owners', '--owners', [CompletionResultType]::ParameterName, "--owners")
+                [CompletionResult]::new('--source-url', '--source-url', [CompletionResultType]::ParameterName, "--source-url")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -480,11 +480,11 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         }
         'testhost;nuget;trust;certificate' {
             $staticCompletions = @(
-                [CompletionResult]::new('--allow-untrusted-root', '--allow-untrusted-root', [CompletionResultType]::ParameterName, "--allow-untrusted-root")
-                [CompletionResult]::new('--algorithm', '--algorithm', [CompletionResultType]::ParameterName, "--algorithm")
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "--configfile")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
+                [CompletionResult]::new('--allow-untrusted-root', '--allow-untrusted-root', [CompletionResultType]::ParameterName, "--allow-untrusted-root")
+                [CompletionResult]::new('--algorithm', '--algorithm', [CompletionResultType]::ParameterName, "--algorithm")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -871,8 +871,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--os', '--os', [CompletionResultType]::ParameterName, "The target operating system.")
                 [CompletionResult]::new('--disable-build-servers', '--disable-build-servers', [CompletionResultType]::ParameterName, "Force the command to ignore any persistent build servers.")
                 [CompletionResult]::new('--artifacts-path', '--artifacts-path', [CompletionResultType]::ParameterName, "The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.")
-                [CompletionResult]::new('--environment', '--environment', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;seperated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
-                [CompletionResult]::new('--environment', '-e', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;seperated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
+                [CompletionResult]::new('--environment', '--environment', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;separated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
+                [CompletionResult]::new('--environment', '-e', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;separated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -968,8 +968,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--settings', '-s', [CompletionResultType]::ParameterName, "The settings file to use when running tests.")
                 [CompletionResult]::new('--list-tests', '--list-tests', [CompletionResultType]::ParameterName, "List the discovered tests instead of running the tests.")
                 [CompletionResult]::new('--list-tests', '-t', [CompletionResultType]::ParameterName, "List the discovered tests instead of running the tests.")
-                [CompletionResult]::new('--environment', '--environment', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;seperated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
-                [CompletionResult]::new('--environment', '-e', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;seperated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
+                [CompletionResult]::new('--environment', '--environment', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;separated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
+                [CompletionResult]::new('--environment', '-e', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;separated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
                 [CompletionResult]::new('--filter', '--filter', [CompletionResultType]::ParameterName, "Run tests that match the given expression.                                         Examples:                                         Run tests with priority set to 1: --filter `"Priority = 1`"                                         Run a test with the specified full name: --filter `"FullyQualifiedName=Namespace.ClassName.MethodName`"                                         Run tests that contain the specified name: --filter `"FullyQualifiedName~Namespace.Class`"                                         See https://aka.ms/vstest-filtering for more information on filtering support.                                         ")
                 [CompletionResult]::new('--test-adapter-path', '--test-adapter-path', [CompletionResultType]::ParameterName, "The path to the custom adapters to use for the test run.")
                 [CompletionResult]::new('--logger', '--logger', [CompletionResultType]::ParameterName, "The logger to use for test results.                                         Examples:                                         Log in trx format using a unique file name: --logger trx                                         Log in trx format using the specified file name: --logger `"trx;LogFileName=<TestResults.trx>`"                                         See https://aka.ms/vstest-report for more information on logger arguments.")
@@ -980,6 +980,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--diag', '--diag', [CompletionResultType]::ParameterName, "Enable verbose logging to the specified file.")
                 [CompletionResult]::new('--diag', '-d', [CompletionResultType]::ParameterName, "Enable verbose logging to the specified file.")
                 [CompletionResult]::new('--no-build', '--no-build', [CompletionResultType]::ParameterName, "Do not build the project before testing. Implies --no-restore.")
+                [CompletionResult]::new('--no-dependencies', '--no-dependencies', [CompletionResultType]::ParameterName, "Do not build project-to-project references and only build the specified project.")
                 [CompletionResult]::new('--results-directory', '--results-directory', [CompletionResultType]::ParameterName, "The directory where the test results will be placed. The specified directory will be created if it does not exist.")
                 [CompletionResult]::new('--collect', '--collect', [CompletionResultType]::ParameterName, "The friendly name of the data collector to use for the test run.                                         More info here: https://aka.ms/vstest-collect")
                 [CompletionResult]::new('--blame', '--blame', [CompletionResultType]::ParameterName, "Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.  When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.  Based on the additional settings, hang dump or crash dump can also be collected.  Example:   Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.   (Crash dumps require additional setup, see below.)   dotnet test --blame-hang --blame-crash Example:   Timeout the test run when a test takes more than 20 minutes and collect hang dump.   dotnet test --blame-hang-timeout 20min ")

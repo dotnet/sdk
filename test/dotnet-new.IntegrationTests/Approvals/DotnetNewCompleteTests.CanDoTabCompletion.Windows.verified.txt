@@ -1,6 +1,8 @@
 ﻿apicontroller
 blazor
+blazor-wasm-servicedefaults
 blazorwasm
+blazorwebworker
 buildprops
 buildtargets
 classlib
@@ -10,6 +12,7 @@ gitattributes
 gitignore
 globaljson
 grpc
+mcpserver
 mstest
 mstest-class
 mstest-playwright
@@ -25,6 +28,7 @@ proto
 razorclasslib
 razorcomponent
 sln
+slnf
 tool-manifest
 view
 viewimports
