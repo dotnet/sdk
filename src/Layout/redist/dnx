@@ -4,7 +4,7 @@
 # The .NET Foundation licenses this file to you under the MIT license.
 
 DOTNET="$(dirname "$0")/dotnet"
-SDK_VERSION=$("$DOTNET" --list-sdks | tail -1 | cut -d' ' -f1)
+SDK_VERSION=$(DOTNET_MULTILEVEL_LOOKUP=0 "$DOTNET" --list-sdks | tail -1 | cut -d' ' -f1)
 SDK_PATH="$(dirname "$0")/sdk/$SDK_VERSION/dotnet.dll"
 
-"$DOTNET" exec "$SDK_PATH" tool exec "$@"
+DOTNET_MULTILEVEL_LOOKUP=0 "$DOTNET" exec "$SDK_PATH" tool exec "$@"
