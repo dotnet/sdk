@@ -108,40 +108,41 @@ public sealed class CSharpAssemblyDocumentGenerator
 
     private IEnumerable<SyntaxNode> Visit(INamespaceSymbol namespaceSymbol)
     {
-        IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers().Where(_options.SymbolFilter.Include);
-        if (!typeMembers.Any())
-        {
-            yield break;
-        }
-
-        List<SyntaxNode> typeDeclarations = [];
-        foreach (INamedTypeSymbol typeMember in typeMembers.Order())
-        {
-            SyntaxNode typeDeclaration = _syntaxGenerator
-                .DeclarationExt(typeMember, _options.SymbolFilter)
-                .AddMemberAttributes(_syntaxGenerator, typeMember, _options.AttributeSymbolFilter);
-
-            typeDeclaration = Visit(typeDeclaration, typeMember);
-            typeDeclarations.Add(typeDeclaration);
-        }
+        IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers()
+            .Where(_options.SymbolFilter.Include)
+            .Order();
 
         if (namespaceSymbol.IsGlobalNamespace)
         {
-            foreach (SyntaxNode typeDeclaration in typeDeclarations)
+            foreach (INamedTypeSymbol typeMember in typeMembers)
             {
-                yield return typeDeclaration;
+                yield return CreateTypeDeclaration(typeMember);
             }
 
             yield break;
         }
 
         SyntaxNode namespaceNode = _syntaxGenerator.NamespaceDeclaration(namespaceSymbol.ToDisplayString());
-        foreach (SyntaxNode typeDeclaration in typeDeclarations)
+        bool hasTypeMembers = false;
+        foreach (INamedTypeSymbol typeMember in typeMembers)
         {
-            namespaceNode = _syntaxGenerator.AddMembers(namespaceNode, typeDeclaration);
+            namespaceNode = _syntaxGenerator.AddMembers(namespaceNode, CreateTypeDeclaration(typeMember));
+            hasTypeMembers = true;
         }
 
-        yield return namespaceNode;
+        if (hasTypeMembers)
+        {
+            yield return namespaceNode;
+        }
+    }
+
+    private SyntaxNode CreateTypeDeclaration(INamedTypeSymbol typeMember)
+    {
+        SyntaxNode typeDeclaration = _syntaxGenerator
+            .DeclarationExt(typeMember, _options.SymbolFilter)
+            .AddMemberAttributes(_syntaxGenerator, typeMember, _options.AttributeSymbolFilter);
+
+        return Visit(typeDeclaration, typeMember);
     }
 
     // Name hiding through inheritance occurs when classes or structs redeclare names that were inherited from base classes. This type of name hiding takes one of the following forms:
