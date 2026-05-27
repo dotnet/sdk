@@ -43,10 +43,24 @@ namespace Microsoft.DotNet.Configurer
             var home = _getEnvironmentVariable(DotnetHomeVariableName);
             if (string.IsNullOrEmpty(home))
             {
-                home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                // Route the user-profile lookup through the injected env-var delegate so that
+                // MSBuild tasks running with an isolated TaskEnvironment do not read ambient
+                // process state. Mirror what Environment.GetFolderPath(SpecialFolder.UserProfile)
+                // does internally: USERPROFILE on Windows, HOME on Unix.
+                var userProfileVariableName = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+                    ? "USERPROFILE"
+                    : "HOME";
+                home = _getEnvironmentVariable(userProfileVariableName);
                 if (string.IsNullOrEmpty(home))
                 {
-                    return null;
+                    // Fall back to the framework helper to preserve existing behavior for callers
+                    // that aren't running under an isolated TaskEnvironment (e.g. HOMEDRIVE+HOMEPATH
+                    // on Windows when USERPROFILE is not set).
+                    home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                    if (string.IsNullOrEmpty(home))
+                    {
+                        return null;
+                    }
                 }
             }
 

@@ -1154,17 +1154,7 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var packFolder in GetPackFolders())
             {
                 string packPath = Path.Combine(packFolder, packName, packVersion);
-                AbsolutePath absolutePackPath;
-                try
-                {
-                    absolutePackPath = TaskEnvironment.GetAbsolutePath(packPath);
-                }
-                catch (Exception ex) when (ex is ArgumentException or PathTooLongException or NotSupportedException or System.Security.SecurityException)
-                {
-                    // Match the pre-migration behavior of Directory.Exists(packPath), which silently
-                    // returns false for any invalid/inaccessible path. Treat such folders as "not found".
-                    continue;
-                }
+                AbsolutePath absolutePackPath = TaskEnvironment.GetAbsolutePath(packPath);
 
                 if (Directory.Exists(absolutePackPath))
                 {
@@ -1204,9 +1194,6 @@ namespace Microsoft.NET.Build.Tasks
         {
             return new(() =>
         {
-                // Pre-migration, SdkDirectoryWorkloadManifestProvider's constructor was the first thing
-                // to validate NetCoreRoot. Keep that contract by validating up front, so we don't end up
-                // throwing from GetAbsolutePath with a different exception shape.
                 if (string.IsNullOrWhiteSpace(NetCoreRoot))
                 {
                     throw new ArgumentException(
@@ -1223,7 +1210,7 @@ namespace Microsoft.NET.Build.Tasks
                 string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(TaskEnvironment.ProjectDirectory);
 
                 var manifestProvider = new SdkDirectoryWorkloadManifestProvider(netCoreRoot, NETCoreSdkVersion, TaskEnvironment.GetEnvironmentVariable, userProfileDir, globalJsonPath);
-                return WorkloadResolver.Create(manifestProvider, netCoreRoot, NETCoreSdkVersion, userProfileDir);
+                return WorkloadResolver.Create(manifestProvider, netCoreRoot, NETCoreSdkVersion, userProfileDir, TaskEnvironment.GetEnvironmentVariable);
         });
         }
 
