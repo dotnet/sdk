@@ -121,20 +121,13 @@ namespace Microsoft.NET.Build.Tasks
             item =>
             {
                 string targetingPackPath = item.GetMetadata(MetadataKeys.Path);
-                string resolvedTargetingPackPath = targetingPackPath;
-                string originalTargetingPackPath = targetingPackPath;
-
-                if (!string.IsNullOrEmpty(targetingPackPath))
-                {
-                    AbsolutePath absolutePath = TaskEnvironment.GetAbsolutePath(targetingPackPath);
-                    resolvedTargetingPackPath = absolutePath.Value;
-                    originalTargetingPackPath = absolutePath.OriginalValue;
-                }
+                AbsolutePath path = string.IsNullOrEmpty(targetingPackPath)
+                    ? default
+                    : TaskEnvironment.GetAbsolutePath(targetingPackPath);
 
                 return new TargetingPack(
                     item.ItemSpec,
-                    resolvedTargetingPackPath,
-                    originalTargetingPackPath,
+                    path,
                     item.GetMetadata("TargetingPackFormat"),
                     item.GetMetadata("TargetFramework"),
                     item.GetMetadata("Profile"),
@@ -145,7 +138,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private static object GetCacheLock(string cacheKey) => s_cacheLocks.GetOrAdd(cacheKey, static _ => new object());
 
-        private static ResolvedAssetsCacheEntry Resolve(StronglyTypedInputs inputs, IBuildEngine4 buildEngine, bool allowCacheLookup)
+        private ResolvedAssetsCacheEntry Resolve(StronglyTypedInputs inputs, IBuildEngine4 buildEngine, bool allowCacheLookup)
         {
             List<TaskItem> referencesToAdd = new();
             List<TaskItem> analyzersToAdd = new();
@@ -164,10 +157,9 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var frameworkReference in frameworkReferences)
             {
                 bool foundTargetingPack = resolvedTargetingPacks.TryGetValue(frameworkReference.Name, out TargetingPack targetingPack);
-                    string targetingPackRoot = targetingPack?.Path;
-                    string targetingPackOriginalRoot = targetingPack?.OriginalPath;
+                AbsolutePath targetingPackRoot = targetingPack?.Path ?? default;
 
-                if (string.IsNullOrEmpty(targetingPackRoot) || !Directory.Exists(targetingPackRoot))
+                if (string.IsNullOrEmpty(targetingPackRoot.Value) || !Directory.Exists(targetingPackRoot))
                 {
                     if (inputs.GenerateErrorForMissingTargetingPacks)
                     {
@@ -213,7 +205,7 @@ namespace Microsoft.NET.Build.Tasks
 
                     if (targetingPackFormat.Equals("NETStandardLegacy", StringComparison.OrdinalIgnoreCase))
                     {
-                        AddNetStandardTargetingPackAssets(targetingPack, targetingPackRoot, targetingPackOriginalRoot, referencesToAdd);
+                        AddNetStandardTargetingPackAssets(targetingPack, targetingPackRoot, referencesToAdd);
                     }
                     else
                     {
@@ -223,36 +215,33 @@ namespace Microsoft.NET.Build.Tasks
                             targetingPackTargetFramework = "netcoreapp3.0";
                         }
 
-                        string targetingPackDataPath = Path.Combine(targetingPackRoot, "data");
-                        string targetingPackOriginalDataPath = Path.Combine(targetingPackOriginalRoot, "data");
-
-                        string targetingPackDllFolder = Path.Combine(targetingPackRoot, "ref", targetingPackTargetFramework);
-                        string targetingPackOriginalDllFolder = Path.Combine(targetingPackOriginalRoot, "ref", targetingPackTargetFramework);
+                        AbsolutePath targetingPackDllFolder = TaskEnvironment.GetAbsolutePath(
+                            Path.Combine(targetingPackRoot.OriginalValue, "ref", targetingPackTargetFramework));
 
                         //  Fall back to netcoreapp5.0 folder if looking for net5.0 and it's not found
                         if (!Directory.Exists(targetingPackDllFolder) &&
                             targetingPackTargetFramework.Equals("net5.0", StringComparison.OrdinalIgnoreCase))
                         {
                             targetingPackTargetFramework = "netcoreapp5.0";
-                            targetingPackDllFolder = Path.Combine(targetingPackRoot, "ref", targetingPackTargetFramework);
-                            targetingPackOriginalDllFolder = Path.Combine(targetingPackOriginalRoot, "ref", targetingPackTargetFramework);
+                            targetingPackDllFolder = TaskEnvironment.GetAbsolutePath(
+                                Path.Combine(targetingPackRoot.OriginalValue, "ref", targetingPackTargetFramework));
                         }
 
-                        string platformManifestPath = Path.Combine(targetingPackDataPath, "PlatformManifest.txt");
-                        string platformManifestOriginalPath = Path.Combine(targetingPackOriginalDataPath, "PlatformManifest.txt");
+                        string targetingPackOriginalDataPath = Path.Combine(targetingPackRoot.OriginalValue, "data");
 
-                        string packageOverridesPath = Path.Combine(targetingPackDataPath, "PackageOverrides.txt");
+                        AbsolutePath platformManifestPath = TaskEnvironment.GetAbsolutePath(
+                            Path.Combine(targetingPackOriginalDataPath, "PlatformManifest.txt"));
 
-                        string frameworkListPath = Path.Combine(targetingPackDataPath, "FrameworkList.xml");
-                        string frameworkListOriginalPath = Path.Combine(targetingPackOriginalDataPath, "FrameworkList.xml");
+                        AbsolutePath packageOverridesPath = TaskEnvironment.GetAbsolutePath(
+                            Path.Combine(targetingPackOriginalDataPath, "PackageOverrides.txt"));
+
+                        AbsolutePath frameworkListPath = TaskEnvironment.GetAbsolutePath(
+                            Path.Combine(targetingPackOriginalDataPath, "FrameworkList.xml"));
 
                         FrameworkListDefinition definition = new(
-                            frameworkListPath,
-                            frameworkListOriginalPath,
-                            targetingPackRoot,
-                            targetingPackOriginalRoot,
-                            targetingPackDllFolder,
-                            targetingPackOriginalDllFolder,
+                            frameworkListPath: frameworkListPath,
+                            targetingPackRoot: targetingPackRoot,
+                            targetingPackDllFolder: targetingPackDllFolder,
                             targetingPack.Name,
                             targetingPack.Profile,
                             targetingPack.NuGetPackageId,
@@ -263,7 +252,7 @@ namespace Microsoft.NET.Build.Tasks
 
                         if (File.Exists(platformManifestPath))
                         {
-                            platformManifests.Add(new TaskItem(platformManifestOriginalPath));
+                            platformManifests.Add(new TaskItem(platformManifestPath.OriginalValue));
                         }
 
                         if (File.Exists(packageOverridesPath))
@@ -313,22 +302,22 @@ namespace Microsoft.NET.Build.Tasks
             return deduplicatedItems;
         }
 
-        private static TaskItem CreatePackageOverride(string runtimeFrameworkName, string packageOverridesPath)
+        private static TaskItem CreatePackageOverride(string runtimeFrameworkName, AbsolutePath packageOverridesPath)
         {
             TaskItem packageOverride = new(runtimeFrameworkName);
             packageOverride.SetMetadata("OverriddenPackages", File.ReadAllText(packageOverridesPath));
             return packageOverride;
         }
 
-        private static void AddNetStandardTargetingPackAssets(TargetingPack targetingPack, string targetingPackRoot, string targetingPackOriginalRoot, List<TaskItem> referencesToAdd)
+        private void AddNetStandardTargetingPackAssets(TargetingPack targetingPack, AbsolutePath targetingPackRoot, List<TaskItem> referencesToAdd)
         {
             string targetingPackTargetFramework = targetingPack.TargetFramework;
-            string targetingPackAssetPath = Path.Combine(targetingPackRoot, "build", targetingPackTargetFramework, "ref");
-            string targetingPackOriginalAssetPath = Path.Combine(targetingPackOriginalRoot, "build", targetingPackTargetFramework, "ref");
+            AbsolutePath targetingPackAssetPath = TaskEnvironment.GetAbsolutePath(
+                Path.Combine(targetingPackRoot.OriginalValue, "build", targetingPackTargetFramework, "ref"));
 
             foreach (var dll in Directory.GetFiles(targetingPackAssetPath, "*.dll"))
             {
-                string itemSpec = Path.Combine(targetingPackOriginalAssetPath, Path.GetFileName(dll));
+                string itemSpec = Path.Combine(targetingPackAssetPath.OriginalValue, Path.GetFileName(dll));
 
                 var reference = CreateItem(
                     itemSpec,
@@ -428,8 +417,8 @@ namespace Microsoft.NET.Build.Tasks
                 string assemblyName = fileElement.Attribute("AssemblyName").Value;
 
                 string dllPath = usePathElementsInFrameworkListAsFallBack || isAnalyzer ?
-                    Path.Combine(definition.TargetingPackOriginalRoot, fileElement.Attribute("Path").Value) :
-                    GetDllPathViaAssemblyName(definition.TargetingPackOriginalDllFolder, assemblyName);
+                    Path.Combine(definition.TargetingPackRoot.OriginalValue, fileElement.Attribute("Path").Value) :
+                    GetDllPathViaAssemblyName(definition.TargetingPackDllFolder.OriginalValue, assemblyName);
 
                 var item = CreateItem(dllPath, definition.FrameworkReferenceName, definition.NuGetPackageId, definition.NuGetPackageVersion);
 
@@ -473,7 +462,7 @@ namespace Microsoft.NET.Build.Tasks
         /// not resolve the actual dll.
         /// </summary>
         /// <returns>if use we should use "Path" element in frameworkList as a fallback</returns>
-        private static bool TestFirstFileInFrameworkListUsingAssemblyNameConvention(string targetingPackDllFolder,
+        private static bool TestFirstFileInFrameworkListUsingAssemblyNameConvention(AbsolutePath targetingPackDllFolder,
             XDocument frameworkListDoc)
         {
             bool usePathElementsInFrameworkListPathAsFallBack;
@@ -484,18 +473,13 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                string dllPath = GetDllPathViaAssemblyName(targetingPackDllFolder, firstFileElement);
+                string assemblyName = firstFileElement.Attribute("AssemblyName").Value;
+                string dllPath = Path.Combine(targetingPackDllFolder, assemblyName + ".dll");
 
                 usePathElementsInFrameworkListPathAsFallBack = !File.Exists(dllPath);
             }
 
             return usePathElementsInFrameworkListPathAsFallBack;
-        }
-
-        private static string GetDllPathViaAssemblyName(string targetingPackDllFolder, XElement fileElement)
-        {
-            string assemblyName = fileElement.Attribute("AssemblyName").Value;
-            return GetDllPathViaAssemblyName(targetingPackDllFolder, assemblyName);
         }
 
         private static string GetDllPathViaAssemblyName(string targetingPackDllFolder, string assemblyName)
@@ -617,8 +601,7 @@ namespace Microsoft.NET.Build.Tasks
         internal class TargetingPack
         {
             public string Name { get; private set; }
-            public string Path { get; private set; }
-            public string OriginalPath { get; private set; }
+            public AbsolutePath Path { get; private set; }
             public string Format { get; private set; }
             public string TargetFramework { get; private set; }
             public string Profile { get; private set; }
@@ -628,8 +611,7 @@ namespace Microsoft.NET.Build.Tasks
 
             public TargetingPack(
                 string name,
-                string path,
-                string originalPath,
+                AbsolutePath path,
                 string format,
                 string targetFramework,
                 string profile,
@@ -639,7 +621,6 @@ namespace Microsoft.NET.Build.Tasks
             {
                 Name = name;
                 Path = path;
-                OriginalPath = originalPath;
                 Format = format;
                 TargetFramework = targetFramework;
                 Profile = profile;
@@ -650,12 +631,14 @@ namespace Microsoft.NET.Build.Tasks
 
             public string CacheKey()
             {
+                // AbsolutePath carries both the resolved (Value) and user-input (OriginalValue) forms;
+                // both contribute to outputs, so both must be in the key.
                 StringBuilder builder = new();
                 builder.AppendLine(nameof(TargetingPack));
 
                 builder.AppendLine(Name);
-                builder.AppendLine(Path);
-                builder.AppendLine(OriginalPath);
+                builder.AppendLine(Path.Value);
+                builder.AppendLine(Path.OriginalValue);
                 builder.AppendLine(Format);
                 builder.AppendLine(TargetFramework);
                 builder.AppendLine(Profile);
@@ -705,12 +688,9 @@ namespace Microsoft.NET.Build.Tasks
 
         internal readonly struct FrameworkListDefinition
         {
-            public readonly string FrameworkListPath;
-            public readonly string FrameworkListOriginalPath;
-            public readonly string TargetingPackRoot;
-            public readonly string TargetingPackOriginalRoot;
-            public readonly string TargetingPackDllFolder;
-            public readonly string TargetingPackOriginalDllFolder;
+            public readonly AbsolutePath FrameworkListPath;
+            public readonly AbsolutePath TargetingPackRoot;
+            public readonly AbsolutePath TargetingPackDllFolder;
             public readonly string ProjectLanguage;
 
             public readonly string FrameworkReferenceName;
@@ -718,12 +698,9 @@ namespace Microsoft.NET.Build.Tasks
             public readonly string NuGetPackageId;
             public readonly string NuGetPackageVersion;
 
-            public FrameworkListDefinition(string frameworkListPath,
-                                           string frameworkListOriginalPath,
-                                           string targetingPackRoot,
-                                           string targetingPackOriginalRoot,
-                                           string targetingPackDllFolder,
-                                           string targetingPackOriginalDllFolder,
+            public FrameworkListDefinition(AbsolutePath frameworkListPath,
+                                           AbsolutePath targetingPackRoot,
+                                           AbsolutePath targetingPackDllFolder,
                                            string frameworkReferenceName,
                                            string profile,
                                            string nuGetPackageId,
@@ -731,11 +708,8 @@ namespace Microsoft.NET.Build.Tasks
                                            string projectLanguage)
             {
                 FrameworkListPath = frameworkListPath;
-                FrameworkListOriginalPath = frameworkListOriginalPath;
                 TargetingPackRoot = targetingPackRoot;
-                TargetingPackOriginalRoot = targetingPackOriginalRoot;
                 TargetingPackDllFolder = targetingPackDllFolder;
-                TargetingPackOriginalDllFolder = targetingPackOriginalDllFolder;
                 ProjectLanguage = projectLanguage;
 
                 FrameworkReferenceName = frameworkReferenceName;
@@ -750,14 +724,16 @@ namespace Microsoft.NET.Build.Tasks
             public string CacheKey()
             {
                 // IMPORTANT: any input changes that can affect the output should be included in this key.
+                // AbsolutePath carries both the resolved (Value) and user-input (OriginalValue) forms;
+                // both contribute to outputs, so both must be in the key.
                 StringBuilder keyBuilder = new(nameof(FrameworkListDefinition));
                 keyBuilder.AppendLine();
-                keyBuilder.AppendLine(FrameworkListPath);
-                keyBuilder.AppendLine(FrameworkListOriginalPath);
-                keyBuilder.AppendLine(TargetingPackRoot);
-                keyBuilder.AppendLine(TargetingPackOriginalRoot);
-                keyBuilder.AppendLine(TargetingPackDllFolder);
-                keyBuilder.AppendLine(TargetingPackOriginalDllFolder);
+                keyBuilder.AppendLine(FrameworkListPath.Value);
+                keyBuilder.AppendLine(FrameworkListPath.OriginalValue);
+                keyBuilder.AppendLine(TargetingPackRoot.Value);
+                keyBuilder.AppendLine(TargetingPackRoot.OriginalValue);
+                keyBuilder.AppendLine(TargetingPackDllFolder.Value);
+                keyBuilder.AppendLine(TargetingPackDllFolder.OriginalValue);
                 keyBuilder.AppendLine(FrameworkReferenceName);
                 keyBuilder.AppendLine(Profile);
                 keyBuilder.AppendLine(NuGetPackageId);

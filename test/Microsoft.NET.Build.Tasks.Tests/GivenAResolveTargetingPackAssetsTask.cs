@@ -177,6 +177,108 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 </FileList>";
 
         [Fact]
+        public void CachingBehaviorIsControlledByTaskEnvironment()
+        {
+            ResolveTargetingPackAssets taskNoCaching = InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory);
+            taskNoCaching.TaskEnvironment.SetEnvironmentVariable("DOTNETSDK_ALLOW_TARGETING_PACK_CACHING", "0");
+            taskNoCaching.Execute().Should().BeTrue();
+
+            ResolveTargetingPackAssets taskWithCaching = InitializeTask(mockPackageDirectory, new MockBuildEngine());
+            taskWithCaching.TaskEnvironment.SetEnvironmentVariable("DOTNETSDK_ALLOW_TARGETING_PACK_CACHING", "1");
+            taskWithCaching.Execute().Should().BeTrue();
+
+            ((MockBuildEngine)taskNoCaching.BuildEngine).RegisteredTaskObjects.Should().BeEmpty(
+                "caching should be disabled when DOTNETSDK_ALLOW_TARGETING_PACK_CACHING=0 in TaskEnvironment");
+
+            ((MockBuildEngine)taskWithCaching.BuildEngine).RegisteredTaskObjects.Should().NotBeEmpty(
+                "caching should be enabled when DOTNETSDK_ALLOW_TARGETING_PACK_CACHING!=0 in TaskEnvironment");
+        }
+
+        [Fact]
+        public void RelativeTargetingPackPathsResolveAgainstTaskEnvironmentProjectDirectoryAndArePreservedInOutputs()
+        {
+            string projectDir = TestAssetsManager.CreateTestDirectory().Path;
+            string relativePackPath = Path.Combine("packs", $"Microsoft.Windows.SDK.NET.Ref_{Guid.NewGuid():N}");
+            string mockDir = Path.Combine(projectDir, relativePackPath);
+            CreateMockTargetingPackContents(mockDir, _frameworkList);
+
+            Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), relativePackPath)).Should().BeFalse(
+                "this test must fail if task paths are resolved from process current directory");
+
+            var engine = new MockNeverCacheBuildEngine4();
+            var task = InitializeTask(relativePackPath, engine);
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+
+            task.Execute().Should().BeTrue();
+
+            task.ReferencesToAdd.Single(r => r.GetMetadata("AssemblyName") == "Microsoft.Windows.SDK.NET").ItemSpec
+                .Should().Be(Path.Combine(relativePackPath, "lib/Microsoft.Windows.SDK.NET.dll"));
+            task.AnalyzersToAdd.Select(a => a.ItemSpec).Should().BeEquivalentTo(new[]
+            {
+                Path.Combine(relativePackPath, "analyzers/dotnet/anyAnalyzer.dll"),
+                Path.Combine(relativePackPath, "analyzers/dotnet/cs/csAnalyzer.dll"),
+            });
+            task.PlatformManifests.Single().ItemSpec
+                .Should().Be(Path.Combine(relativePackPath, $"data{Path.DirectorySeparatorChar}PlatformManifest.txt"));
+
+            task.ReferencesToAdd.Select(r => r.ItemSpec)
+                .Concat(task.AnalyzersToAdd.Select(a => a.ItemSpec))
+                .Concat(task.PlatformManifests.Select(m => m.ItemSpec))
+                .Should().OnlyContain(path => !Path.IsPathRooted(path));
+        }
+
+        [Fact]
+        public void SharedCacheKeepsIdenticalRelativeTargetingPackPathsIsolatedByProjectDirectory()
+        {
+            string firstProjectDir = TestAssetsManager.CreateTestDirectory(identifier: "first").Path;
+            string secondProjectDir = TestAssetsManager.CreateTestDirectory(identifier: "second").Path;
+            string relativePackPath = Path.Combine("packs", "Microsoft.Windows.SDK.NET.Ref");
+
+            CreateMockTargetingPackContents(
+                Path.Combine(firstProjectDir, relativePackPath),
+                FrameworkListXmlWithManagedAssembly("First.Project"));
+            CreateMockTargetingPackContents(
+                Path.Combine(secondProjectDir, relativePackPath),
+                FrameworkListXmlWithManagedAssembly("Second.Project"));
+
+            var engine = new MockBuildEngine();
+
+            var firstTask = InitializeTask(relativePackPath, engine);
+            firstTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(firstProjectDir);
+            firstTask.Execute().Should().BeTrue();
+
+            var secondTask = InitializeTask(relativePackPath, engine);
+            secondTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(secondProjectDir);
+            secondTask.Execute().Should().BeTrue();
+
+            firstTask.ReferencesToAdd.Single(r => r.GetMetadata("AssemblyName") == "First.Project").ItemSpec
+                .Should().Be(Path.Combine(relativePackPath, "lib/First.Project.dll"));
+            secondTask.ReferencesToAdd.Single(r => r.GetMetadata("AssemblyName") == "Second.Project").ItemSpec
+                .Should().Be(Path.Combine(relativePackPath, "lib/Second.Project.dll"));
+            secondTask.ReferencesToAdd.Select(r => r.GetMetadata("AssemblyName"))
+                .Should().NotContain("First.Project");
+
+            engine.RegisteredTaskObjects.Count.Should().Be(4,
+                "each project directory should have distinct top-level and framework-list cache entries");
+        }
+
+        private static void CreateMockTargetingPackContents(string mockDir, string frameworkListXml)
+        {
+            Directory.CreateDirectory(mockDir);
+
+            string dataDir = Path.Combine(mockDir, "data");
+            Directory.CreateDirectory(dataDir);
+
+            File.WriteAllText(Path.Combine(dataDir, "FrameworkList.xml"), frameworkListXml);
+            File.WriteAllText(Path.Combine(dataDir, "PlatformManifest.txt"), "");
+        }
+
+        private static string FrameworkListXmlWithManagedAssembly(string assemblyName) =>
+$@"<FileList Name=""{assemblyName}"">
+  <File Type=""Managed"" Path=""lib/{assemblyName}.dll"" PublicKeyToken=""null"" AssemblyName=""{assemblyName}"" AssemblyVersion=""1.0.0.0"" FileVersion=""1.0.0.0"" />
+</FileList>";
+
+        [Fact]
         public void It_Hashes_All_Inputs()
         {
             IEnumerable<PropertyInfo> inputProperties;
@@ -271,6 +373,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 args[i] = parameters[i].ParameterType switch
                 {
                     var t when t == typeof(string) => string.Empty,
+                    var t when t == typeof(AbsolutePath) => default(AbsolutePath),
                     _ => throw new NotImplementedException($"{parameters[i].ParameterType} is an unknown type. Update the test code to handle that.")
                 };
             }
@@ -281,11 +384,14 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             seenKeys.Add(defaultObject.CacheKey());
 
+            AbsolutePath newAbsolutePath = new(Path.Combine(Path.GetTempPath(), "newValue"));
+
             for (int i = 0; i < args.Length; i++)
             {
                 args[i] = parameters[i].ParameterType switch
                 {
                     var t when t == typeof(string) => "newValue",
+                    var t when t == typeof(AbsolutePath) => newAbsolutePath,
                     var t when t == typeof(ITaskItem) => new MockTaskItem() { ItemSpec = "NewSpec" },
                     _ => throw new NotImplementedException($"{parameters[i].ParameterType} is an unknown type. Update the test code to handle that.")
                 };
@@ -360,6 +466,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                                 continue;
                             }
 
+                            if (subproperty.PropertyType == typeof(AbsolutePath))
+                            {
+                                subproperty.SetValue(currentValue[0], new AbsolutePath(Path.Combine(Path.GetTempPath(), $"{subproperty.Name}_changed")));
+                                yield return ($"{property.Name}.{subproperty.Name}", input);
+                                continue;
+                            }
+
                             Assert.Fail($"update test to understand fields of type {subproperty.PropertyType} in {nameof(TargetingPack)}");
                         }
                     }
@@ -422,8 +535,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             new TargetingPack(
                 "Microsoft.Windows.SDK.NET.Ref",
-                mockPackageDirectory,
-                mockPackageDirectory,
+                new AbsolutePath(mockPackageDirectory),
                 string.Empty,
                 "net5.0",
                 string.Empty,
