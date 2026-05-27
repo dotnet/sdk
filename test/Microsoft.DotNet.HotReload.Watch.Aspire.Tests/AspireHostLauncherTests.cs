@@ -44,7 +44,7 @@ public class AspireHostLauncherTests
     {
         var launcher = CreateLauncher("myapp.csproj");
 
-        var options = launcher.GetProjectOptions();
+        var options = launcher.GetHostProjectOptions()!;
 
         AssertCommonProperties(options, launcher);
         Assert.False(options.LaunchProfileName.HasValue);
@@ -56,7 +56,7 @@ public class AspireHostLauncherTests
     {
         var launcher = CreateLauncher("Program.cs");
 
-        var options = launcher.GetProjectOptions();
+        var options = launcher.GetHostProjectOptions()!;
 
         AssertCommonProperties(options, launcher);
         Assert.False(options.LaunchProfileName.HasValue);
@@ -68,7 +68,7 @@ public class AspireHostLauncherTests
     {
         var launcher = CreateLauncher("myapp.csproj", launchProfileName: "MyProfile");
 
-        var options = launcher.GetProjectOptions();
+        var options = launcher.GetHostProjectOptions()!;
 
         AssertCommonProperties(options, launcher);
         Assert.True(options.LaunchProfileName.HasValue);
@@ -81,7 +81,7 @@ public class AspireHostLauncherTests
     {
         var launcher = CreateLauncher("myapp.csproj", launchProfileName: Optional<string?>.NoValue);
 
-        var options = launcher.GetProjectOptions();
+        var options = launcher.GetHostProjectOptions()!;
 
         AssertCommonProperties(options, launcher);
         Assert.False(options.LaunchProfileName.HasValue);
@@ -94,7 +94,7 @@ public class AspireHostLauncherTests
         // null value (HasValue=true) means use default launch profile - no --launch-profile or --no-launch-profile flag
         var launcher = CreateLauncher("myapp.csproj", launchProfileName: (string?)null);
 
-        var options = launcher.GetProjectOptions();
+        var options = launcher.GetHostProjectOptions()!;
 
         AssertCommonProperties(options, launcher);
         Assert.True(options.LaunchProfileName.HasValue);
@@ -107,7 +107,7 @@ public class AspireHostLauncherTests
     {
         var launcher = CreateLauncher("myapp.csproj", launchProfileName: "Profile", applicationArguments: ["arg1", "arg2"]);
 
-        var options = launcher.GetProjectOptions();
+        var options = launcher.GetHostProjectOptions()!;
 
         AssertCommonProperties(options, launcher);
         Assert.True(options.LaunchProfileName.HasValue);
@@ -120,7 +120,7 @@ public class AspireHostLauncherTests
     {
         var launcher = CreateLauncher("myapp.csproj", workingDirectory: "/custom/path");
 
-        var options = launcher.GetProjectOptions();
+        var options = launcher.GetHostProjectOptions()!;
 
         AssertCommonProperties(options, launcher);
         Assert.Equal("/custom/path", options.WorkingDirectory);
@@ -131,7 +131,7 @@ public class AspireHostLauncherTests
     {
         var launcher = CreateLauncher("Program.cs", launchProfileName: "Dev", applicationArguments: ["--port", "8080"]);
 
-        var options = launcher.GetProjectOptions();
+        var options = launcher.GetHostProjectOptions()!;
 
         AssertCommonProperties(options, launcher);
         Assert.True(options.LaunchProfileName.HasValue);
@@ -144,7 +144,7 @@ public class AspireHostLauncherTests
     {
         var launcher = CreateLauncher("myapp.csproj", launchProfileName: Optional<string?>.NoValue, applicationArguments: ["--urls", "http://localhost:5000"]);
 
-        var options = launcher.GetProjectOptions();
+        var options = launcher.GetHostProjectOptions();
 
         AssertCommonProperties(options, launcher);
         Assert.False(options.LaunchProfileName.HasValue);

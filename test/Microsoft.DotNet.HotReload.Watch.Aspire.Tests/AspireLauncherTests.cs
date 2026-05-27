@@ -42,6 +42,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
         host.Start(testAsset, ["--entrypoint", projectPath]);
 
         await host.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await host.WaitUntilOutputContains("Started");
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
