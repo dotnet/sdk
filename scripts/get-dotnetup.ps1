@@ -113,9 +113,31 @@ New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 try {
     $tempBinary = Join-Path $tempDir $fileName
 
+    function Invoke-WithRetry {
+        param([scriptblock]$ScriptBlock, [string]$ActionDescription, [int]$MaxAttempts = 3)
+        $attempt = 1
+        while ($true) {
+            try {
+                & $ScriptBlock
+                return
+            }
+            catch {
+                if ($attempt -ge $MaxAttempts) {
+                    throw "${ActionDescription} failed after $MaxAttempts attempts.`nError: $($_.Exception.Message)"
+                }
+                $delay = [Math]::Pow(2, $attempt)
+                Write-Host "${ActionDescription} failed (attempt $attempt of $MaxAttempts): $($_.Exception.Message). Retrying in $delay seconds..." -ForegroundColor Yellow
+                Start-Sleep -Seconds $delay
+                $attempt++
+            }
+        }
+    }
+
     Write-Host "Downloading $downloadUrl" -ForegroundColor Cyan
     try {
-        Invoke-WebRequest -Uri $downloadUrl -OutFile $tempBinary -UseBasicParsing
+        Invoke-WithRetry -ActionDescription "Download from $downloadUrl" -ScriptBlock {
+            Invoke-WebRequest -Uri $downloadUrl -OutFile $tempBinary -UseBasicParsing
+        }
     }
     catch {
         throw @"
@@ -129,11 +151,8 @@ Error: $($_.Exception.Message)
 
     Write-Host "Verifying SHA-512 checksum..." -ForegroundColor Cyan
     $tempChecksum = Join-Path $tempDir "$fileName.sha512"
-    try {
+    Invoke-WithRetry -ActionDescription "Download checksum from $checksumUrl" -ScriptBlock {
         Invoke-WebRequest -Uri $checksumUrl -OutFile $tempChecksum -UseBasicParsing
-    }
-    catch {
-        throw "Failed to download checksum from $checksumUrl.`nError: $($_.Exception.Message)"
     }
 
     $expected = ((Get-Content $tempChecksum -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
