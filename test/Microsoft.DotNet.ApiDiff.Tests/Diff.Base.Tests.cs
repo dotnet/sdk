@@ -73,7 +73,7 @@ public abstract class DiffBaseTests
             {
                 Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
                 string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
-                if (!DiffTestHelpers.NormalizeWhitespaceOnlyLines(fullExpectedCode).Equals(DiffTestHelpers.NormalizeWhitespaceOnlyLines(actualCode)))
+                if (!fullExpectedCode.Equals(actualCode))
                 {
                     Assert.Fail($"Expected:\n[{ReplacedNewLines(fullExpectedCode)}]\nActual:\n[{ReplacedNewLines(actualCode)}]");
                 }

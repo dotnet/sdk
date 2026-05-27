@@ -204,16 +204,10 @@ public class DiffDiskTests
       {{
 +         public void MyMethod();
       }}
-
-
-    public class MyClass2
-
-
-    {{
+      public class MyClass2
+      {{
 +         public void MyMethod();
-
-
-    }}
+      }}
   }}
 ```
 " },
@@ -226,16 +220,10 @@ public class DiffDiskTests
       {{
 +         public void MyMethod();
       }}
-
-
-    public class MyClass4
-
-
-    {{
+      public class MyClass4
+      {{
 +         public void MyMethod();
-
-
-    }}
+      }}
   }}
 ```
 " }
@@ -361,19 +349,13 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
 +         public void MyMethod();
       }}
   }}
-
-
-namespace MyNamespace.MySubNamespace
-
-
-{{
+  namespace MyNamespace.MySubNamespace
+  {{
       public class MySubClass
       {{
 +         public void MySubMethod();
       }}
-
-
-}}
+  }}
 ```
 ";
 
@@ -556,7 +538,7 @@ namespace MyNamespace.MySubNamespace
             Assert.True(File.Exists(myAssemblyMarkdownFilePath), $"{myAssemblyMarkdownFilePath} assembly markdown file does not exist.");
 
             string actualCode = File.ReadAllText(myAssemblyMarkdownFilePath);
-            Assert.Equal(DiffTestHelpers.NormalizeWhitespaceOnlyLines(expectedMarkdown), DiffTestHelpers.NormalizeWhitespaceOnlyLines(actualCode));
+            Assert.Equal(expectedMarkdown, actualCode);
         }
     }
 
