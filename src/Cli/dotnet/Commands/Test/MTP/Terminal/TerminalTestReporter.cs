@@ -731,10 +731,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
         int exitCode, string? outputData, string? errorData)
     {
-        // The test host can handshake (so the caller knows we have a handshake info) but exit before
-        // ever calling TestSessionStarted, which is what registers the assembly in _assemblies. In that
-        // case we must not throw a KeyNotFoundException — surface a handshake failure instead so the
-        // user gets actionable output instead of a stack trace buried in the run.
+        // Defense in depth: AssemblyRunCompleted is normally only invoked for an executionId that
+        // AssemblyRunStarted already registered in _assemblies (via GetOrAddAssemblyRun, gated on the
+        // TestHost handshake by TestApplicationHandler). If a future regression or lifecycle race
+        // (e.g., _assemblies.Clear() running before this completes) hands us an unknown id, surface
+        // a handshake failure instead of throwing a KeyNotFoundException that buries the real exit
+        // cause.
         if (!_assemblies.TryGetValue(executionId, out TestProgressState? assemblyRun))
         {
             HandshakeFailure(assemblyPath: string.Empty, targetFramework: null, exitCode, outputData ?? string.Empty, errorData ?? string.Empty);
