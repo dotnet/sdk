@@ -28,11 +28,18 @@
 param(
     [string]$InstallDir = (Join-Path $HOME ".dotnetup"),
     [string]$Quality = "daily",
-    [string]$RuntimeId
+    [string]$RuntimeId,
+    # Force a re-download even if a recent dotnetup binary is already present.
+    [switch]$Force
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+# Skip the download when a dotnetup binary already exists in the install dir
+# and was written less than this many hours ago. Override with -Force or by
+# setting $env:DOTNETUP_FORCE_REINSTALL=1.
+$FreshnessThresholdHours = 24
 
 $BaseUrl = "https://aka.ms/dotnet/dotnetup/$Quality"
 
@@ -107,6 +114,18 @@ $fileName = if ($rid -like "win-*") { "dotnetup-$rid.exe" } else { "dotnetup-$ri
 $downloadUrl = "$BaseUrl/$fileName"
 $checksumUrl = "$downloadUrl.sha512"
 
+# Skip download if we already have a recent copy on disk.
+$forceReinstall = $Force.IsPresent -or ($env:DOTNETUP_FORCE_REINSTALL -eq '1')
+$existingBinary = Join-Path $InstallDir $binaryName
+if (-not $forceReinstall -and (Test-Path $existingBinary)) {
+    $age = (Get-Date) - (Get-Item $existingBinary).LastWriteTime
+    if ($age.TotalHours -lt $FreshnessThresholdHours) {
+        Write-Host "dotnetup already present at $existingBinary (age $([int]$age.TotalHours)h, threshold ${FreshnessThresholdHours}h). Skipping download." -ForegroundColor Green
+        Write-Host "Pass -Force or set DOTNETUP_FORCE_REINSTALL=1 to force a re-download." -ForegroundColor DarkGray
+        return
+    }
+}
+
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "dotnetup-install-$([System.IO.Path]::GetRandomFileName())"
 New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 
@@ -156,7 +175,22 @@ Error: $($_.Exception.Message)
     }
 
     $expected = ((Get-Content $tempChecksum -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
-    $actual = (Get-FileHash -Path $tempBinary -Algorithm SHA512).Hash.ToLowerInvariant()
+    # Compute SHA-512 directly via .NET to avoid relying on Get-FileHash, which is
+    # not always resolvable in stripped-down PowerShell hosts (e.g., some CI agents).
+    $sha512 = [System.Security.Cryptography.SHA512]::Create()
+    try {
+        $stream = [System.IO.File]::OpenRead($tempBinary)
+        try {
+            $hashBytes = $sha512.ComputeHash($stream)
+        }
+        finally {
+            $stream.Dispose()
+        }
+    }
+    finally {
+        $sha512.Dispose()
+    }
+    $actual = ([System.BitConverter]::ToString($hashBytes) -replace '-', '').ToLowerInvariant()
     if ($expected -ne $actual) {
         throw "Checksum mismatch.`n  Expected: $expected`n  Actual:   $actual"
     }
