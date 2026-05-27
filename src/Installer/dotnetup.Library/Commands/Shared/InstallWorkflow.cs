@@ -256,7 +256,7 @@ internal class InstallWorkflow
             && DotnetupSharedManifest.HasDotnetArtifacts(installRoot.Path))
         {
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.Unknown,
+                DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts,
                 $"The install path '{installRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
                 "To avoid conflicts, use a different install path, remove the existing installation first, " +
                 "or use the --untracked option to install without tracking.");

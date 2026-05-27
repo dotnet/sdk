@@ -260,7 +260,7 @@ internal class InstallerOrchestratorSingleton
                 && DotnetupSharedManifest.HasDotnetArtifacts(installRequest.InstallRoot.Path))
             {
                 throw new DotnetInstallException(
-                    DotnetInstallErrorCode.Unknown,
+                    DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts,
                     $"The install path '{installRequest.InstallRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
                     "To avoid conflicts, use a different install path or remove the existing installation first.",
                     version: versionToInstall.ToString(),

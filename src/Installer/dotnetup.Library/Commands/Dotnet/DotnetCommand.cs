@@ -115,10 +115,10 @@ internal class DotnetCommand : CommandBase
         if (process is null)
         {
             // Process.Start returning null is a system-level failure we should be
-            // able to act on; classify as a product error via the default mapping.
+            // able to act on; classified as a product error via ProcessStartFailed.
             // CommandBase prints the exception Message — don't double-write here.
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.Unknown,
+                DotnetInstallErrorCode.ProcessStartFailed,
                 Strings.DotnetCommandDotnetStartFailed);
         }
 
