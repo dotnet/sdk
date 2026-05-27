@@ -121,10 +121,12 @@ function CreateVSShortcut() {
 function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
 
-    # Skip if every requested framework is already on disk.
+    # Skip if every requested framework is already on disk. Accept either an
+    # exact version or a major.minor channel; treat as present if any matching
+    # patch (e.g. 6.0.36) exists under shared\Microsoft.NETCore.App.
+    $fxRoot = Join-Path $dotnetRoot 'shared\Microsoft.NETCore.App'
     $versionsToInstall = @($versions | Where-Object {
-            -not (Test-Path -PathType Container `
-                (Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$_"))
+            -not (Test-Path -PathType Container (Join-Path $fxRoot "$_*"))
         })
     if ($versionsToInstall.Count -eq 0) {
         return

@@ -28,7 +28,7 @@ function InitializeCustomSDKToolset {
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    InstallDotNetSharedFrameworks "6.0.0" "7.0.0" "8.0.0" "9.0.0" "10.0.0"
+    InstallDotNetSharedFrameworks "6.0" "7.0" "8.0" "9.0" "10.0"
   fi
 
   CreateBuildEnvScript
@@ -40,8 +40,9 @@ function InstallDotNetSharedFrameworks {
   local versions_to_install=()
 
   for version in "$@"; do
-    local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
-    if [[ ! -d "$fx_dir" ]]; then
+    # Accept either an exact version or a major.minor channel; treat the
+    # framework as present if any matching patch (e.g. 6.0.36) exists.
+    if ! compgen -G "$dotnet_root/shared/Microsoft.NETCore.App/$version*" > /dev/null; then
       versions_to_install+=("$version")
     fi
   done
