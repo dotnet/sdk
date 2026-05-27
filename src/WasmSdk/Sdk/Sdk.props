@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- WASM projects defaults to browser-wasm -->
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">browser-wasm</RuntimeIdentifier>
-    <UseMonoRuntime>true</UseMonoRuntime>
+    <UseMonoRuntime Condition="'$(UseMonoRuntime)' == ''">true</UseMonoRuntime>
     <SelfContained>true</SelfContained>
     <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
 

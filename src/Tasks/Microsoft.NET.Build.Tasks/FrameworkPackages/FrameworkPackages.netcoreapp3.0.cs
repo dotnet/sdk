@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace Microsoft.ComponentDetection.Detectors.NuGet;
 
 #nullable disable
@@ -184,7 +187,7 @@ internal partial class FrameworkPackages
             { "System.Diagnostics.EventLog", "4.6.0" },
             { "System.Diagnostics.PerformanceCounter", "4.5.0" },
             { "System.DirectoryServices", "4.6.0" },
-            { "System.Drawing.Common", "4.7.3" },
+            { "System.Drawing.Common", "4.6.2" },
             { "System.IO.Packaging", "4.6.0" },
             { "System.Resources.Extensions", "4.6.0" },
             { "System.Security.Cryptography.Pkcs", "4.6.0" },

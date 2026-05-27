@@ -35,7 +35,10 @@ namespace Microsoft.NET.TestFramework.Assertions
             if (!areSame)
             {
                 var diff = UnidiffRenderer.GenerateUnidiff(oldText: normalizedExpected, newText: normalizedActual, oldFileName: "expected", newFileName: "actual", ignoreWhitespace: true);
-                areSame.Should().Be(true, because: string.IsNullOrEmpty(because) ? $"The input strings are not visually equivalent. Diff is:\n" + diff : because, becauseArgs: [.. becauseArgs, diff]);
+                // diff may contain braces which will be interpreted as format items in the because string,
+                // so we need to escape them.
+                var formatSafeDiff = diff.Replace("{", "{{").Replace("}", "}}");
+                areSame.Should().Be(true, because: string.IsNullOrEmpty(because) ? $"The input strings are not visually equivalent. Diff is:\n" + formatSafeDiff : because, becauseArgs: [.. becauseArgs, formatSafeDiff]);
             }
 
             return new AndConstraint<StringAssertions>(assertions);
@@ -56,7 +59,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             params object[] becauseArgs
         )
         {
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 return BeVisuallyEquivalentTo(assertions, expected, because, becauseArgs);
             }
@@ -72,7 +75,7 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public static AndConstraint<StringAssertions> ContainVisuallySameFragmentIfNotLocalized(this StringAssertions assertions, string expected, string because = "", params object[] becauseArgs)
         {
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 return ContainVisuallySameFragment(assertions, expected, because, becauseArgs);
             }

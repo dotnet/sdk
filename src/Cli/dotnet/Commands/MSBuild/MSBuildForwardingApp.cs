@@ -3,6 +3,8 @@
 
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -10,20 +12,23 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public class MSBuildForwardingApp : CommandBase
 {
-    internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
-
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
+    /// <summary>
+    /// Adds the CLI's telemetry logger to the MSBuild arguments if telemetry is enabled.
+    /// </summary>
     private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
-        if (Telemetry.Telemetry.CurrentSessionId != null)
+        if (TelemetryClient.CurrentSessionId != null)
         {
             try
             {
                 Type loggerType = typeof(MSBuildLogger);
                 Type forwardingLoggerType = typeof(MSBuildForwardingLogger);
 
+#pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
                 msbuildArgs.OtherMSBuildArgs.Add($"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}");
+#pragma warning restore IL3000
                 return msbuildArgs;
             }
             catch (Exception)
@@ -38,23 +43,17 @@ public class MSBuildForwardingApp : CommandBase
     /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
     /// </summary>
     public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
-        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption()),
+        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption()),
         msbuildPath)
     {
     }
 
-    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null, bool includeLogo = false)
+    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null)
     {
+        var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(ConcatTelemetryLogger(msBuildArgs));
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
-            ConcatTelemetryLogger(msBuildArgs),
-            msbuildPath: msbuildPath,
-            includeLogo: includeLogo);
-
-        // Add the performance log location to the environment of the target process.
-        if (PerformanceLogManager.Instance != null && !string.IsNullOrEmpty(PerformanceLogManager.Instance.CurrentLogDirectory))
-        {
-            EnvironmentVariable(PerformanceLogManager.PerfLogDirEnvVar, PerformanceLogManager.Instance.CurrentLogDirectory);
-        }
+            modifiedMSBuildArgs,
+            msbuildPath: msbuildPath);
     }
 
     public IEnumerable<string> MSBuildArguments { get { return _forwardingAppWithoutLogging.GetAllArguments(); } }
@@ -73,7 +72,7 @@ public class MSBuildForwardingApp : CommandBase
 
     private void InitializeRequiredEnvironmentVariables()
     {
-        EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, Telemetry.Telemetry.CurrentSessionId);
+        EnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID, TelemetryClient.CurrentSessionId);
     }
 
     /// <summary>
@@ -93,23 +92,13 @@ public class MSBuildForwardingApp : CommandBase
         if (_forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
         {
             ProcessStartInfo startInfo = GetProcessStartInfo();
-
-            PerformanceLogEventSource.Log.LogMSBuildStart(startInfo.FileName, startInfo.Arguments);
             exitCode = startInfo.Execute();
-            PerformanceLogEventSource.Log.MSBuildStop(exitCode);
         }
         else
         {
             InitializeRequiredEnvironmentVariables();
             string[] arguments = _forwardingAppWithoutLogging.GetAllArguments();
-            if (PerformanceLogEventSource.Log.IsEnabled())
-            {
-                PerformanceLogEventSource.Log.LogMSBuildStart(
-                    _forwardingAppWithoutLogging.MSBuildPath,
-                    ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(arguments));
-            }
             exitCode = _forwardingAppWithoutLogging.ExecuteInProc(arguments);
-            PerformanceLogEventSource.Log.MSBuildStop(exitCode);
         }
 
         return exitCode;

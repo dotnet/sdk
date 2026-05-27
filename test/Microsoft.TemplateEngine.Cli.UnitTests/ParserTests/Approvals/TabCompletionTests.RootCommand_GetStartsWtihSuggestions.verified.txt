@@ -11,7 +11,7 @@
     Kind: Value,
     SortText: console,
     InsertText: console,
-    Documentation: A project for creating a command-line application that can run on .NET on Windows, Linux and macOS
+    Documentation: A project for creating an empty command-line application that can run on .NET on Windows, Linux and macOS
   },
   {
     Label: create,
@@ -40,6 +40,13 @@
     SortText: --project,
     InsertText: --project,
     Detail: The project that should be used for context evaluation.
+  },
+  {
+    Label: --diagnostics,
+    Kind: Keyword,
+    SortText: --diagnostics,
+    InsertText: --diagnostics,
+    Detail: Enables diagnostic output.
   },
   {
     Label: --no-update-check,

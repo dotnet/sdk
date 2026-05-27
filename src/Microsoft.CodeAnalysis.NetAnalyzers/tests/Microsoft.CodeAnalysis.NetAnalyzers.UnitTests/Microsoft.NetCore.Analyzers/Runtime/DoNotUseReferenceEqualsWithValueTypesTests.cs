@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -358,7 +359,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -374,7 +375,7 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -398,7 +399,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 62, "System.IntPtr") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -415,7 +416,7 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "System.IntPtr") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -439,7 +440,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 68, "int") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -456,7 +457,7 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 68, "Integer") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -479,7 +480,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -495,7 +496,7 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -519,7 +520,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -535,7 +536,7 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -560,7 +561,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(12, 62, "T") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -577,7 +578,7 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "T") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -609,7 +610,7 @@ namespace TestNamespace
                     GetCSharpComparerResultAt(14, 17, "TLeft"),
                     GetCSharpComparerResultAt(15, 17, "TRight"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -630,7 +631,7 @@ End Namespace",
                     GetVisualBasicComparerResultAt(8, 62, "TLeft"),
                     GetVisualBasicComparerResultAt(8, 68, "TRight"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -654,7 +655,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 62, "System.IntPtr") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -671,7 +672,7 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "System.IntPtr") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -695,7 +696,7 @@ namespace TestNamespace
     }
 }",
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 68, "int") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -712,7 +713,7 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 71, "Integer") },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -743,7 +744,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -764,7 +765,7 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -791,7 +792,7 @@ namespace TestNamespace
         }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -811,7 +812,7 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private DiagnosticResult GetCSharpMethodResultAt(int line, int column, string typeName)

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace Microsoft.ComponentDetection.Detectors.NuGet;
 
 #nullable disable
@@ -165,7 +168,6 @@ internal partial class FrameworkPackages
             { "System.IO.Pipelines", "4.7.0" },
             { "System.Security.AccessControl", "4.7.0" },
             { "System.Security.Cryptography.Cng", "4.7.0" },
-            { "System.Security.Cryptography.Pkcs", "4.7.0" },
             { "System.Security.Cryptography.Xml", "4.7.0" },
             { "System.Security.Permissions", "4.7.0" },
             { "System.Security.Principal.Windows", "4.7.0" },
@@ -180,7 +182,7 @@ internal partial class FrameworkPackages
             { "System.Configuration.ConfigurationManager", "4.7.0" },
             { "System.Diagnostics.EventLog", "4.7.0" },
             { "System.Diagnostics.PerformanceCounter", "4.7.0" },
-            { "System.DirectoryServices", "8.0.0" },
+            { "System.DirectoryServices", "4.7.0" },
             { "System.IO.Packaging", "4.7.0" },
             { "System.Resources.Extensions", "4.7.0" },
             { "System.Security.Cryptography.Pkcs", "4.7.0" },

@@ -5,7 +5,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.TestHelper;
-using DiagnosticMessage = Xunit.Sdk.DiagnosticMessage;
+using Xunit.Sdk;
+using DiagnosticMessage = Xunit.v3.DiagnosticMessage;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -36,7 +37,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr()
                 .And.NotHaveStdOutContaining("Determining projects to restore...")
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Web\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Web\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+ installed the following templates:")
                 .And.HaveStdOutContaining("web")
                 .And.HaveStdOutContaining("blazorwasm");
         }
@@ -48,9 +49,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             try
             {
                 Directory.CreateDirectory(path);
-                new DotnetCommand(_log, "new", "console", "-o", path, "-n", "myconsole").Execute().Should().Pass();
+                new DotnetNewCommand(_log, "console", "-o", path, "-n", "myconsole").WithVirtualHive().Execute().Should().Pass();
                 new DotnetCommand(_log, "add", "package", "--project", Path.Combine(path, "myconsole.csproj"), "Microsoft.Azure.Functions.Worker.ProjectTemplates", "-v", "4.0.5086", "--package-directory", path).Execute().Should().Pass();
-                new DotnetCommand(_log, "new", "install", Path.Combine(path, "microsoft.azure.functions.worker.projecttemplates/4.0.5086/microsoft.azure.functions.worker.projecttemplates.4.0.5086.nupkg")).Execute().Should().Pass();
+                new DotnetNewCommand(_log, "install", Path.Combine(path, "microsoft.azure.functions.worker.projecttemplates/4.0.5086/microsoft.azure.functions.worker.projecttemplates.4.0.5086.nupkg")).WithVirtualHive().Execute().Should().Pass();
             }
             finally
             {
@@ -85,7 +86,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     .NotHaveStdErr()
                     .And.NotHaveStdOutContaining("Determining projects to restore...")
                     .And.HaveStdOutContaining("The following template packages will be installed:")
-                    .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+ installed the following templates:")
+                    .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+ installed the following templates:")
                     .And.HaveStdOutContaining("console")
                     .And.NotHaveStdOutContaining("web");
             }
@@ -93,7 +94,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Install command are expected to output the requested version literaly as they got it on input,
             //  but otherwise the outputs are expected to be equal
             string? command3Out = command3.StdOut?.Replace(
-                "Microsoft.DotNet.Common.ProjectTemplates.5.0::*",
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0@*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");
 
             Assert.Equal(command1.StdOut, command2.StdOut);
@@ -105,7 +106,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("install")]
         public void CanInstallRemoteNuGetPackageWithVersion(string commandName)
         {
-            new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Web.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -115,8 +116,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr()
                 .And.NotHaveStdOutContaining("Determining projects to restore...")
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutContaining("Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0")
-                .And.HaveStdOutContaining($"Success: Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0 installed the following templates:")
+                .And.HaveStdOutContaining("Microsoft.DotNet.Web.ProjectTemplates.5.0@5.0.0")
+                .And.HaveStdOutContaining($"Success: Microsoft.DotNet.Web.ProjectTemplates.5.0@5.0.0 installed the following templates:")
                 .And.HaveStdOutContaining("web")
                 .And.HaveStdOutContaining("blazorwasm");
         }
@@ -144,7 +145,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     .NotHaveStdErr()
                     .And.NotHaveStdOutContaining("Determining projects to restore...")
                     .And.HaveStdOutContaining("The following template packages will be installed:")
-                    .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::5\\.0([\\d\\.a-z-])+ installed the following templates:")
+                    .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@5\\.0([\\d\\.a-z-])+ installed the following templates:")
                     .And.HaveStdOutContaining("console")
                     .And.NotHaveStdOutContaining("web");
             }
@@ -152,11 +153,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Install command are expected to output the requested version literally as they got it on input,
             //  but otherwise the outputs are expected to be equal
             string? command1Out = command1.StdOut?.Replace(
-                "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.*",
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");
 
             string? command2Out = command2.StdOut?.Replace(
-                "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.*",
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");
 
             Assert.Equal(command1Out, command2Out);
@@ -165,7 +166,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public void CanInstallRemoteNuGetPackageWithPrereleaseVersion()
         {
-            new DotnetNewCommand(_log, "-i", "Microsoft.Azure.WebJobs.ProjectTemplates::4.0.1844-preview1", "--nuget-source", "https://api.nuget.org/v3/index.json")
+            new DotnetNewCommand(_log, "-i", "Microsoft.Azure.WebJobs.ProjectTemplates@4.0.1844-preview1", "--nuget-source", "https://api.nuget.org/v3/index.json")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -174,7 +175,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Microsoft.Azure.WebJobs.ProjectTemplates::4.0.1844-preview1 installed the following templates:")
+                .And.HaveStdOutMatching($"Success: Microsoft.Azure.WebJobs.ProjectTemplates@4.0.1844-preview1 installed the following templates:")
                 .And.HaveStdOutContaining("func");
         }
 
@@ -193,7 +194,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Take\\.Blip\\.Client\\.Templates::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutMatching($"Success: Take\\.Blip\\.Client\\.Templates@([\\d\\.a-z-])+ installed the following templates:")
                 .And.HaveStdOutContaining("blip-console");
 
             new DotnetNewCommand(_log, commandName, "Take.Blip.Client.Templates", "--add-source", "https://api.nuget.org/v3/index.json")
@@ -205,7 +206,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Take\\.Blip\\.Client\\.Templates::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutMatching($"Success: Take\\.Blip\\.Client\\.Templates@([\\d\\.a-z-])+ installed the following templates:")
                 .And.HaveStdOutContaining("blip-console");
         }
 
@@ -223,7 +224,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should().ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Microsoft\\.TemplateEngine\\.TestTemplates::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutMatching($"Success: Microsoft\\.TemplateEngine\\.TestTemplates@([\\d\\.a-z-])+ installed the following templates:")
                 .And.HaveStdOutContaining("TestAssets.TemplateWithTags")
                 .And.HaveStdOutContaining("TestAssets.ConfigurationKitchenSink");
         }
@@ -243,7 +244,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr()
                 .And.NotHaveStdOutContaining("Determining projects to restore...")
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Web\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Web\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+ installed the following templates:")
                 .And.HaveStdOutContaining("web")
                 .And.HaveStdOutContaining("blazorwasm")
                 .And.HaveStdOutMatching("\\[\\d{4}\\-\\d{2}\\-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}\\] " + Regex.Escape("[Debug] [Microsoft.TemplateEngine.Edge.Installers.NuGet.NuGetInstaller] => [Execute]: Microsoft.DotNet.Web.ProjectTemplates.5.0 is not a local NuGet package."))
@@ -323,12 +324,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string home = CreateTemporaryFolder(folderName: "Home");
 
-            new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Web.ProjectTemplates.5.0::16.0.0")
+            new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Web.ProjectTemplates.5.0@16.0.0")
                .WithCustomHive(home)
                .WithWorkingDirectory(CreateTemporaryFolder())
                .Execute()
                .Should().Fail()
-               .And.HaveStdErrContaining("Microsoft.DotNet.Web.ProjectTemplates.5.0::16.0.0 could not be installed, the package does not exist");
+               .And.HaveStdErrContaining("Microsoft.DotNet.Web.ProjectTemplates.5.0@16.0.0 could not be installed, the package does not exist");
         }
 
         [Fact]
@@ -384,7 +385,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string home = CreateTemporaryFolder(folderName: "Home");
 
-            new DotnetNewCommand(_log, installCommandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, installCommandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -407,17 +408,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             Assert.True(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Common.ProjectTemplates.5.0.5.0.0.nupkg")));
 
-            new DotnetNewCommand(_log, installCommandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.1")
+            new DotnetNewCommand(_log, installCommandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.1")
                  .WithCustomHive(home)
                  .WithWorkingDirectory(CreateTemporaryFolder())
                  .Execute()
                  .Should().ExitWith(0)
                  .And.NotHaveStdErr()
                  .And.HaveStdOutContaining("The following template packages will be installed:")
-                 .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.1")
+                 .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.1")
                  .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0 (version 5.0.0) is already installed, it will be replaced with version 5.0.1")
-                 .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0 was successfully uninstalled")
-                 .And.HaveStdOutContaining($"Success: Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.1 installed the following templates:")
+                 .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0 was successfully uninstalled")
+                 .And.HaveStdOutContaining($"Success: Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.1 installed the following templates:")
                  .And.HaveStdOutContaining("console")
                  .And.HaveStdOutContaining("classlib");
 
@@ -457,7 +458,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute()
                 .Should().ExitWith(0)
                 .And.NotHaveStdErr()
-                .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+ installed the following templates:")
                 .And.HaveStdOutContaining("console")
                 .And.HaveStdOutContaining("classlib");
 
@@ -472,17 +473,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                  .And.HaveStdOutContaining("Version:")
                  .And.NotHaveStdOutContaining("Version: 5.0.0");
 
-            new DotnetNewCommand(_log, installCommandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+            new DotnetNewCommand(_log, installCommandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
                 .Should().ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+                .And.HaveStdOutContaining("Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0")
                 .And.HaveStdOutMatching("Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0 \\(version ([\\d\\.a-z-])+\\) is already installed, it will be replaced with version 5\\.0\\.0")
-                .And.HaveStdOutMatching("Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0::([\\d\\.a-z-])+ was successfully uninstalled")
-                .And.HaveStdOutContaining($"Success: Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0 installed the following templates:")
+                .And.HaveStdOutMatching("Microsoft\\.DotNet\\.Common\\.ProjectTemplates\\.5\\.0@([\\d\\.a-z-])+ was successfully uninstalled")
+                .And.HaveStdOutContaining($"Success: Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.0 installed the following templates:")
                 .And.HaveStdOutContaining("console")
                 .And.HaveStdOutContaining("classlib");
 
@@ -553,7 +554,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should().ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Microsoft\\.TemplateEngine\\.TestTemplates::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutMatching($"Success: Microsoft\\.TemplateEngine\\.TestTemplates@([\\d\\.a-z-])+ installed the following templates:")
                 .And.HaveStdOutContaining("TestAssets.TemplateWithTags")
                 .And.HaveStdOutContaining("TestAssets.ConfigurationKitchenSink");
 
@@ -564,7 +565,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should().ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("The following template packages will be installed:")
-                .And.HaveStdOutMatching($"Success: Microsoft\\.TemplateEngine\\.TestTemplates::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutMatching($"Success: Microsoft\\.TemplateEngine\\.TestTemplates@([\\d\\.a-z-])+ installed the following templates:")
                 .And.HaveStdOutContaining("TestAssets.TemplateWithTags")
                 .And.HaveStdOutContaining("TestAssets.ConfigurationKitchenSink");
         }

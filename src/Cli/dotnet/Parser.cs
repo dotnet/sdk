@@ -1,12 +1,57 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+#if CLI_AOT
 using System.CommandLine;
-using System.CommandLine.Completions;
-using System.CommandLine.Invocation;
+using Microsoft.DotNet.Cli.Utils;
+
+namespace Microsoft.DotNet.Cli;
+
+public static class Parser
+{
+    internal static RootCommand RootCommand { get; } = CreateCommand();
+
+    private static RootCommand CreateCommand()
+    {
+        var versionOption = new Option<bool>("--version") { Description = "Display .NET SDK version." };
+        var infoOption = new Option<bool>("--info") { Description = "Display .NET information." };
+
+        var rootCommand = new RootCommand("The .NET CLI")
+        {
+            versionOption,
+            infoOption,
+        };
+
+        rootCommand.SetAction(parseResult =>
+        {
+            if (parseResult.GetValue(versionOption))
+            {
+                CommandLineInfo.PrintVersion();
+                return 0;
+            }
+            if (parseResult.GetValue(infoOption))
+            {
+                CommandLineInfo.PrintInfo();
+                return 0;
+            }
+            parseResult.InvocationConfiguration.Output.WriteLine("Usage: dn [options]");
+            return 0;
+        });
+
+        return rootCommand;
+    }
+
+    public static ParseResult Parse(string[] args) => RootCommand.Parse(args);
+
+    public static int Invoke(ParseResult parseResult) => parseResult.Invoke();
+}
+
+#else
+using System.CommandLine;
+using System.CommandLine.Help;
+using System.CommandLine.StaticCompletions;
 using System.Reflection;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.BuildServer;
 using Microsoft.DotNet.Cli.Commands.Clean;
@@ -27,7 +72,6 @@ using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Pack;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.Commands.Package.Add;
 using Microsoft.DotNet.Cli.Commands.Project;
 using Microsoft.DotNet.Cli.Commands.Publish;
 using Microsoft.DotNet.Cli.Commands.Reference;
@@ -36,98 +80,27 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.Api;
 using Microsoft.DotNet.Cli.Commands.Sdk;
 using Microsoft.DotNet.Cli.Commands.Solution;
-using Microsoft.DotNet.Cli.Commands.Store;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Tool;
+using Microsoft.DotNet.Cli.Commands.Tool.Store;
 using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
-using Microsoft.TemplateEngine.Cli.Help;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
 
 public static class Parser
 {
-    public static readonly Command InstallSuccessCommand = InternalReportInstallSuccessCommandParser.GetCommand();
-
-    // Subcommands
-    public static readonly Command[] Subcommands =
-    [
-        AddCommandParser.GetCommand(),
-        BuildCommandParser.GetCommand(),
-        BuildServerCommandParser.GetCommand(),
-        CleanCommandParser.GetCommand(),
-        DnxCommandParser.GetCommand(),
-        FormatCommandParser.GetCommand(),
-        CompleteCommandParser.GetCommand(),
-        FsiCommandParser.GetCommand(),
-        ListCommandParser.GetCommand(),
-        MSBuildCommandParser.GetCommand(),
-        NewCommandParser.GetCommand(),
-        NuGetCommandParser.GetCommand(),
-        PackCommandParser.GetCommand(),
-        PackageCommandParser.GetCommand(),
-        ParseCommandParser.GetCommand(),
-        ProjectCommandParser.GetCommand(),
-        PublishCommandParser.GetCommand(),
-        ReferenceCommandParser.GetCommand(),
-        RemoveCommandParser.GetCommand(),
-        RestoreCommandParser.GetCommand(),
-        RunCommandParser.GetCommand(),
-        RunApiCommandParser.GetCommand(),
-        SolutionCommandParser.GetCommand(),
-        StoreCommandParser.GetCommand(),
-        TestCommandParser.GetCommand(),
-        ToolCommandParser.GetCommand(),
-        VSTestCommandParser.GetCommand(),
-        HelpCommandParser.GetCommand(),
-        SdkCommandParser.GetCommand(),
-        InstallSuccessCommand,
-        WorkloadCommandParser.GetCommand(),
-        new System.CommandLine.StaticCompletions.CompletionsCommand()
-    ];
-
-    public static readonly Option<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
-
-    public static readonly Option<bool> VersionOption = new("--version")
+    private static DotNetCommandDefinition CreateCommand()
     {
-        Arity = ArgumentArity.Zero
-    };
+        var rootCommand = new DotNetCommandDefinition();
 
-    public static readonly Option<bool> InfoOption = new("--info")
-    {
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly Option<bool> ListSdksOption = new("--list-sdks")
-    {
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly Option<bool> ListRuntimesOption = new("--list-runtimes")
-    {
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly Option<bool> CliSchemaOption = new("--cli-schema")
-    {
-        Description = CliStrings.SDKSchemaCommandDefinition,
-        Arity = ArgumentArity.Zero,
-        Recursive = true,
-        Hidden = true,
-        Action = new PrintCliSchemaAction()
-    };
-
-    // Argument
-    public static readonly Argument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
-
-    private static RootCommand ConfigureCommandLine(RootCommand rootCommand)
-    {
         for (int i = rootCommand.Options.Count - 1; i >= 0; i--)
         {
             Option option = rootCommand.Options[i];
@@ -136,48 +109,78 @@ public static class Parser
             {
                 rootCommand.Options.RemoveAt(i);
             }
-            else if (option is System.CommandLine.Help.HelpOption helpOption)
+            else if (option is HelpOption helpOption)
             {
-                helpOption.Action = new DotnetHelpAction()
-                {
-                    Builder = DotnetHelpBuilder.Instance.Value
-                };
-
+                helpOption.Action = new PrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value);
                 option.Description = CliStrings.ShowHelpDescription;
             }
         }
 
-        // Add subcommands
-        foreach (var subcommand in Subcommands)
-        {
-            rootCommand.Subcommands.Add(subcommand);
-        }
+        // Augment the definition of each subcommand with command-specific actions and completions.
+        AddCommandParser.ConfigureCommand(rootCommand.AddCommand);
+        BuildCommandParser.ConfigureCommand(rootCommand.BuildCommand);
+        BuildServerCommandParser.ConfigureCommand(rootCommand.BuildServerCommand);
+        CleanCommandParser.ConfigureCommand(rootCommand.CleanCommand);
+        DnxCommandParser.ConfigureCommand(rootCommand.DnxCommand);
+        FormatCommandParser.ConfigureCommand(rootCommand.FormatCommand);
+        CompleteCommandParser.ConfigureCommand(rootCommand.CompleteCommand);
+        FsiCommandParser.ConfigureCommand(rootCommand.FsiCommand);
+        ListCommandParser.ConfigureCommand(rootCommand.ListCommand);
+        MSBuildCommandParser.ConfigureCommand(rootCommand.MSBuildCommand);
 
-        // Add options
-        rootCommand.Options.Add(DiagOption);
-        rootCommand.Options.Add(VersionOption);
-        rootCommand.Options.Add(InfoOption);
-        rootCommand.Options.Add(ListSdksOption);
-        rootCommand.Options.Add(ListRuntimesOption);
-        rootCommand.Options.Add(CliSchemaOption);
+        // Currently `new` command implementation replaces the definition entirely:
+        rootCommand.Subcommands[rootCommand.Subcommands.IndexOf(rootCommand.NewCommand)] = NewCommandParser.ConfigureCommand(rootCommand.NewCommand);
 
-        // Add argument
-        rootCommand.Arguments.Add(DotnetSubCommand);
+        // TODO: https://github.com/dotnet/sdk/issues/52661
+        // https://github.com/NuGet/NuGet.Client/blob/bf048eb714eb6b1912ba868edca4c7cfec454841/src/NuGet.Core/NuGet.CommandLine.XPlat/Commands/Why/WhyCommand.cs
+        // Add `why` subcommand to the definition instead.
+        var nugetCommand = rootCommand.NuGetCommand;
+        NuGet.CommandLine.XPlat.Commands.Why.WhyCommand.GetWhyCommand(nugetCommand, NuGetVirtualProjectBuilder.Instance);
 
-        // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
-        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.InteractiveOption(acceptArgument: true));
+        NuGetCommandParser.ConfigureCommand(nugetCommand);
+
+        PackCommandParser.ConfigureCommand(rootCommand.PackCommand);
+        PackageCommandParser.ConfigureCommand(rootCommand.PackageCommand);
+        ParseCommandParser.ConfigureCommand(rootCommand.ParseCommand);
+        ProjectCommandParser.ConfigureCommand(rootCommand.ProjectCommand);
+        PublishCommandParser.ConfigureCommand(rootCommand.PublishCommand);
+        ReferenceCommandParser.ConfigureCommand(rootCommand.ReferenceCommand);
+        RemoveCommandParser.ConfigureCommand(rootCommand.RemoveCommand);
+        RestoreCommandParser.ConfigureCommand(rootCommand.RestoreCommand);
+        RunCommandParser.ConfigureCommand(rootCommand.RunCommand);
+        RunApiCommandParser.ConfigureCommand(rootCommand.RunApiCommand);
+        SolutionCommandParser.ConfigureCommand(rootCommand.SolutionCommand);
+        StoreCommandParser.ConfigureCommand(rootCommand.StoreCommand);
+        TestCommandParser.ConfigureCommand(rootCommand.TestCommand);
+        ToolCommandParser.ConfigureCommand(rootCommand.ToolCommand);
+        VSTestCommandParser.ConfigureCommand(rootCommand.VSTestCommand);
+        HelpCommandParser.ConfigureCommand(rootCommand.HelpCommand);
+        SdkCommandParser.ConfigureCommand(rootCommand.SdkCommand);
+        InternalReportInstallSuccessCommandParser.ConfigureCommand(rootCommand.InternalReportInstallSuccessCommand);
+        WorkloadCommandParser.ConfigureCommand(rootCommand.WorkloadCommand);
+        CompletionsCommandParser.ConfigureCommand(rootCommand.CompletionsCommand);
+
+        rootCommand.DiagOption.Action = new HandleDiagnosticAction(rootCommand.DiagOption);
+        rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
+        rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);
+        rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction(rootCommand.CliSchemaOption);
+
+        // TODO: https://github.com/dotnet/sdk/issues/52661
+        // https://github.com/NuGet/NuGet.Client/blob/bf048eb714eb6b1912ba868edca4c7cfec454841/src/NuGet.Core/NuGet.CommandLine.XPlat/NuGetCommands.cs
+        // Add `package` subcommands to the definition instead.
+        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.CreateInteractiveOption(acceptArgument: true), NuGetVirtualProjectBuilder.Instance);
 
         rootCommand.SetAction(parseResult =>
         {
-            if (parseResult.GetValue(DiagOption) && parseResult.Tokens.Count == 1)
+            if (parseResult.GetValue(rootCommand.DiagOption) && parseResult.Tokens.Count == 1)
             {
-                // when user does not specify any args except of diagnostics ("dotnet -d"), we do nothing
-                // as Program.ProcessArgs already enabled the diagnostic output
+                // When user does not specify any args except of diagnostics ("dotnet -d"),
+                // we do nothing as HandleDiagnosticAction already enabled the diagnostic output.
                 return 0;
             }
             else
             {
-                // when user does not specify any args (just "dotnet"), a usage needs to be printed
+                // When user does not specify any args (just "dotnet"), a usage needs to be printed.
                 parseResult.InvocationConfiguration.Output.WriteLine(CliUsage.HelpText);
                 return 0;
             }
@@ -186,14 +189,14 @@ public static class Parser
         return rootCommand;
     }
 
-    public static Command GetBuiltInCommand(string commandName) =>
-        Subcommands.FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
+    public static Command? GetBuiltInCommand(string commandName) =>
+        RootCommand.Subcommands.FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Implements token-per-line response file handling for the CLI. We use this instead of the built-in S.CL handling
     /// to ensure backwards-compatibility with MSBuild.
     /// </summary>
-    public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string> replacementTokens, out string errorMessage)
+    public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string>? replacementTokens, out string? errorMessage)
     {
         var filePath = Path.GetFullPath(tokenToReplace);
         if (File.Exists(filePath))
@@ -238,10 +241,7 @@ public static class Parser
     /// and <see cref="InvocationConfiguration"/> to ensure that the command line parser
     /// and invoker are configured correctly.
     /// </remarks>
-    public static RootCommand RootCommand { get; } = ConfigureCommandLine(new()
-    {
-        Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
-    });
+    internal static DotNetCommandDefinition RootCommand { get; } = CreateCommand();
 
     /// <summary>
     /// You probably want to use <see cref="Parse(string[])"/> instead of this method.
@@ -256,8 +256,7 @@ public static class Parser
     public static int Invoke(string[] args) => Invoke(Parse(args));
     public static Task<int> InvokeAsync(string[] args, CancellationToken cancellationToken = default) => InvokeAsync(Parse(args), cancellationToken);
 
-
-    internal static int ExceptionHandler(Exception exception, ParseResult parseResult)
+    internal static int ExceptionHandler(Exception? exception, ParseResult parseResult)
     {
         if (exception is TargetInvocationException)
         {
@@ -277,13 +276,13 @@ public static class Parser
                 exception.Message.Red().Bold());
             parseResult.ShowHelp();
         }
-        else if (exception.GetType().Name.Equals("WorkloadManifestCompositionException"))
+        else if (exception is not null && exception.GetType().Name.Equals("WorkloadManifestCompositionException"))
         {
             Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
                 exception.ToString().Red().Bold() :
                 exception.Message.Red().Bold());
         }
-        else
+        else if (exception is not null)
         {
             Reporter.Error.Write("Unhandled exception: ".Red().Bold());
             Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
@@ -355,30 +354,30 @@ public static class Parser
                 option.EnsureHelpName();
             }
 
-            if (command.Equals(NuGetCommandParser.GetCommand()) || command.Parents.Any(parent => parent == NuGetCommandParser.GetCommand()))
+            if (IsInNuGetCommandTree(command))
             {
                 NuGetCommand.Run(context.ParseResult);
             }
-            else if (command.Name.Equals(MSBuildCommandParser.GetCommand().Name))
+            else if (command is MSBuildCommandDefinition)
             {
                 new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute();
                 context.Output.WriteLine();
                 additionalOption(context);
             }
-            else if (command.Name.Equals(VSTestCommandParser.GetCommand().Name))
+            else if (command is VSTestCommandDefinition)
             {
                 new VSTestForwardingApp(helpArgs).Execute();
             }
-            else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
+            else if (command is FormatCommandDefinition format)
             {
-                var arguments = context.ParseResult.GetValue(FormatCommandParser.Arguments);
+                var arguments = context.ParseResult.GetValue(format.Arguments) ?? [];
                 new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
-            else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
+            else if (command is FsiCommandDefinition)
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
-            else if (command is TemplateEngine.Cli.Commands.ICustomHelp helpCommand)
+            else if (command is ICustomHelp helpCommand)
             {
                 var blocks = helpCommand.CustomHelpLayout();
                 foreach (var block in blocks)
@@ -386,56 +385,57 @@ public static class Parser
                     block(context);
                 }
             }
-            else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
-            {
-                new FormatForwardingApp(helpArgs).Execute();
-            }
-            else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
-            {
-                new FsiForwardingApp(helpArgs).Execute();
-            }
             else
             {
-                if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
-                {
-                    Command listCommand = command.Parents.Single() as Command;
+                // TODO: avoid modifying the commands:
+                // https://github.com/dotnet/sdk/issues/52136
 
-                    for (int i = 0; i < listCommand.Arguments.Count; i++)
+                if (command.Name.Equals(ListReferenceCommandDefinition.Name))
+                {
+                    Command? listCommand = command.Parents.Single() as Command;
+                    if (listCommand is not null)
                     {
-                        if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
+                        for (int i = 0; i < listCommand.Arguments.Count; i++)
                         {
-                            // Name is immutable now, so we create a new Argument with the right name..
-                            listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                            if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
+                            {
+                                // Name is immutable now, so we create a new Argument with the right name..
+                                listCommand.Arguments[i] = ListCommandDefinition.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                            }
                         }
                     }
                 }
-                else if (command.Name.Equals(AddPackageCommandParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
+                else if (command.Name.Equals(AddPackageCommandDefinition.Name) || command.Name.Equals(AddCommandDefinition.Name))
                 {
                     // Don't show package completions in help
-                    PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
+                    foreach (var argument in command.Arguments)
+                    {
+                        argument.CompletionSources.Clear();
+                    }
                 }
-                else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
+                else if (command is WorkloadSearchCommandDefinition workloadSearchCommand)
                 {
                     // Set shorter description for displaying parent command help.
-                    WorkloadSearchVersionsCommandParser.GetCommand().Description = CliStrings.ShortWorkloadSearchVersionDescription;
+                    workloadSearchCommand.VersionCommand.Description = CliStrings.ShortWorkloadSearchVersionDescription;
                 }
 
                 base.Write(context);
             }
         }
-    }
 
-    private class PrintCliSchemaAction : SynchronousCommandLineAction
-    {
-        public PrintCliSchemaAction()
+        private static bool IsInNuGetCommandTree(Command command)
         {
-            Terminating = true;
-        }
-
-        public override int Invoke(ParseResult parseResult)
-        {
-            CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.InvocationConfiguration.Output, Program.TelemetryClient);
-            return 0;
+            Command? current = command;
+            while (current is not null)
+            {
+                if (current is NuGetCommandDefinition)
+                {
+                    return true;
+                }
+                current = current.Parents.FirstOrDefault(p => p is Command) as Command;
+            }
+            return false;
         }
     }
 }
+#endif

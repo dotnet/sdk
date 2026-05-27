@@ -13,6 +13,7 @@ public class IPCTests
     [Fact]
     public async Task SingleConnectionNamedPipeServer_MultipleConnection_Fails()
     {
+        var cancellationToken = TestContext.Current.CancellationToken;
         string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
         List<NamedPipeServer> openedPipes = [];
@@ -30,10 +31,10 @@ public class IPCTests
                             pipeName,
                             (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
                             maxNumberOfServerInstances: 1,
-                            CancellationToken.None,
+                            cancellationToken,
                             skipUnknownMessages: false);
 
-                        await singleConnectionNamedPipeServer.WaitConnectionAsync(CancellationToken.None);
+                        await singleConnectionNamedPipeServer.WaitConnectionAsync(cancellationToken);
                         openedPipes.Add(singleConnectionNamedPipeServer);
                     }
                 }
@@ -42,11 +43,11 @@ public class IPCTests
                     exceptions.Add(ex);
                     waitException.Set();
                 }
-            });
+            }, cancellationToken);
 
         var namedPipeClient1 = new NamedPipeClient(pipeName);
-        await namedPipeClient1.ConnectAsync(CancellationToken.None);
-        waitException.Wait();
+        await namedPipeClient1.ConnectAsync(cancellationToken);
+        waitException.Wait(cancellationToken);
 
         var openedPipe = Assert.Single(openedPipes);
         var exception = Assert.Single(exceptions);
@@ -67,6 +68,7 @@ public class IPCTests
     [Fact]
     public async Task SingleConnectionNamedPipeServer_RequestReplySerialization_Succeeded()
     {
+        var cancellationToken = TestContext.Current.CancellationToken;
         Queue<BaseMessage> receivedMessages = new();
         string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         NamedPipeClient namedPipeClient = new(pipeName);
@@ -83,7 +85,7 @@ public class IPCTests
                 {
                     try
                     {
-                        await namedPipeClient.ConnectAsync(CancellationToken.None);
+                        await namedPipeClient.ConnectAsync(cancellationToken);
                         manualResetEventSlim.Set();
                         break;
                     }
@@ -95,7 +97,7 @@ public class IPCTests
                     {
                     }
                 }
-            }, CancellationToken.None);
+            }, cancellationToken);
         NamedPipeServer singleConnectionNamedPipeServer = new(
             pipeName,
             (_, request) =>
@@ -104,21 +106,21 @@ public class IPCTests
                 return Task.FromResult<IResponse>(VoidResponse.CachedInstance);
             },
             NamedPipeServerStream.MaxAllowedServerInstances,
-            CancellationToken.None,
+            cancellationToken,
             skipUnknownMessages: false);
         singleConnectionNamedPipeServer.RegisterSerializer(new VoidResponseSerializer(), typeof(VoidResponse));
         singleConnectionNamedPipeServer.RegisterSerializer(new TextMessageSerializer(), typeof(TextMessage));
         singleConnectionNamedPipeServer.RegisterSerializer(new IntMessageSerializer(), typeof(IntMessage));
         singleConnectionNamedPipeServer.RegisterSerializer(new LongMessageSerializer(), typeof(LongMessage));
-        await singleConnectionNamedPipeServer.WaitConnectionAsync(CancellationToken.None);
-        manualResetEventSlim.Wait();
+        await singleConnectionNamedPipeServer.WaitConnectionAsync(cancellationToken);
+        manualResetEventSlim.Wait(cancellationToken);
 
         await clientConnected;
 
-        await namedPipeClient.RequestReplyAsync<IntMessage, VoidResponse>(new IntMessage(10), CancellationToken.None);
+        await namedPipeClient.RequestReplyAsync<IntMessage, VoidResponse>(new IntMessage(10), cancellationToken);
         Assert.Equal(new IntMessage(10), receivedMessages.Dequeue());
 
-        await namedPipeClient.RequestReplyAsync<LongMessage, VoidResponse>(new LongMessage(11), CancellationToken.None);
+        await namedPipeClient.RequestReplyAsync<LongMessage, VoidResponse>(new LongMessage(11), cancellationToken);
         Assert.Equal(new LongMessage(11), receivedMessages.Dequeue());
 
         for (int i = 0; i < 100; i++)
@@ -145,7 +147,7 @@ public class IPCTests
         async Task AssertWithLengthAsync(int length)
         {
             string currentString = RandomString(length);
-            await namedPipeClient.RequestReplyAsync<TextMessage, VoidResponse>(new TextMessage(currentString), CancellationToken.None);
+            await namedPipeClient.RequestReplyAsync<TextMessage, VoidResponse>(new TextMessage(currentString), cancellationToken);
             Assert.Single(receivedMessages);
             Assert.Equal(new TextMessage(currentString), receivedMessages.Dequeue());
         }
@@ -154,6 +156,7 @@ public class IPCTests
     [Fact]
     public async Task ConnectionNamedPipeServer_MultipleConnection_Succeeds()
     {
+        var cancellationToken = TestContext.Current.CancellationToken;
         string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
         List<NamedPipeServer> pipes = [];
@@ -163,7 +166,7 @@ public class IPCTests
                 pipeName,
                 (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
                 maxNumberOfServerInstances: 3,
-                CancellationToken.None,
+                cancellationToken,
                 skipUnknownMessages: false));
         }
 
@@ -172,7 +175,7 @@ public class IPCTests
                 pipeName,
                 (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
                 maxNumberOfServerInstances: 3,
-                CancellationToken.None,
+                cancellationToken,
                 skipUnknownMessages: false));
         Assert.Contains("All pipe instances are busy.", exception.Message);
 
@@ -183,9 +186,9 @@ public class IPCTests
             waitConnectionTask.Add(Task.Run(
                 async () =>
                 {
-                    await namedPipeServer.WaitConnectionAsync(CancellationToken.None);
+                    await namedPipeServer.WaitConnectionAsync(cancellationToken);
                     Interlocked.Increment(ref connectionCompleted);
-                }, CancellationToken.None));
+                }, cancellationToken));
         }
 
         List<NamedPipeClient> connectedClients = [];
@@ -193,7 +196,7 @@ public class IPCTests
         {
             var namedPipeClient = new NamedPipeClient(pipeName);
             connectedClients.Add(namedPipeClient);
-            await namedPipeClient.ConnectAsync(CancellationToken.None);
+            await namedPipeClient.ConnectAsync(cancellationToken);
         }
 
         await Task.WhenAll([.. waitConnectionTask]);

@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -33,7 +34,7 @@ internal sealed class FileBasedAppSourceEditor
         {
             if (field.IsDefault)
             {
-                field = VirtualProjectBuildingCommand.FindDirectives(SourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
+                field = FileLevelDirectiveHelpers.FindDirectives(SourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -79,14 +80,15 @@ internal sealed class FileBasedAppSourceEditor
     public void Add(CSharpDirective directive)
     {
         var change = DetermineAddChange(directive);
-        SourceFile = SourceFile.WithText(SourceFile.Text.WithChanges([change]));
+        SourceFile = SourceFile with { Text = SourceFile.Text.WithChanges([change]) };
     }
 
     private TextChange DetermineAddChange(CSharpDirective directive)
     {
         // Find one that has the same kind and name.
         // If found, we will replace it with the new directive.
-        if (directive is CSharpDirective.Named named &&
+        var named = directive as CSharpDirective.Named;
+        if (named != null &&
             Directives.OfType<CSharpDirective.Named>().FirstOrDefault(d => NamedDirectiveComparer.Instance.Equals(d, named)) is { } toReplace)
         {
             return new TextChange(toReplace.Info.Span, newText: directive.ToString() + NewLine);
@@ -99,6 +101,14 @@ internal sealed class FileBasedAppSourceEditor
         {
             if (existingDirective.GetType() == directive.GetType())
             {
+                // Add named directives in sorted order.
+                if (named != null &&
+                    existingDirective is CSharpDirective.Named existingNamed &&
+                    string.CompareOrdinal(existingNamed.Name, named.Name) > 0)
+                {
+                    break;
+                }
+
                 addAfter = existingDirective;
             }
             else if (addAfter != null)
@@ -116,11 +126,11 @@ internal sealed class FileBasedAppSourceEditor
         // Otherwise, we will add the directive to the top of the file.
         int start = 0;
 
-        var tokenizer = VirtualProjectBuildingCommand.CreateTokenizer(SourceFile.Text);
+        var tokenizer = FileLevelDirectiveHelpers.CreateTokenizer(SourceFile.Text);
         var result = tokenizer.ParseNextToken();
         var leadingTrivia = result.Token.LeadingTrivia;
 
-        // If there is a comment at the top of the file, we add the directive after it
+        // If there is a comment or #! at the top of the file, we add the directive after it
         // (the comment might be a license which should always stay at the top).
         int insertAfterIndex = -1;
         int trailingNewLines = 0;
@@ -159,6 +169,11 @@ internal sealed class FileBasedAppSourceEditor
                         trailingNewLines = 1;
                         insertAfterIndex = i;
                     }
+                    break;
+
+                case SyntaxKind.ShebangDirectiveTrivia:
+                    trailingNewLines = 1; // shebang trivia has one newline embedded in its structure
+                    insertAfterIndex = i;
                     break;
 
                 case SyntaxKind.EndOfLineTrivia:
@@ -215,27 +230,37 @@ internal sealed class FileBasedAppSourceEditor
     {
         var span = directive.Info.Span;
         var start = span.Start;
-        var length = span.Length + DetermineTrailingLengthToRemove(directive);
-        SourceFile = SourceFile.WithText(SourceFile.Text.Replace(start: start, length: length, newText: string.Empty));
+        var length = span.Length;
+
+        DetermineWhiteSpaceToRemove(directive, out int leadingLength, out int trailingLength);
+        start -= leadingLength;
+        length += trailingLength;
+
+        SourceFile = SourceFile with { Text = SourceFile.Text.Replace(start: start, length: length, newText: string.Empty) };
     }
 
-    private static int DetermineTrailingLengthToRemove(CSharpDirective directive)
+    private static void DetermineWhiteSpaceToRemove(CSharpDirective directive, out int leadingLength, out int trailingLength)
     {
-        // If there are blank lines both before and after the directive, remove the trailing white space.
-        if (directive.Info.LeadingWhiteSpace.LineBreaks > 0 && directive.Info.TrailingWhiteSpace.LineBreaks > 0)
+        // If there are blank lines both before and after the directive, remove the trailing blank lines.
+        if (directive.Info.LeadingWhiteSpace.BlankLineLength > 0 && directive.Info.TrailingWhiteSpace.BlankLineLength > 0)
         {
-            return directive.Info.TrailingWhiteSpace.TotalLength;
+            leadingLength = 0;
+            trailingLength = directive.Info.TrailingWhiteSpace.BlankLineLength;
+            return;
         }
 
         // If the directive (including leading white space) starts at the beginning of the file,
-        // remove both the leading and trailing white space.
-        var startBeforeWhiteSpace = directive.Info.Span.Start - directive.Info.LeadingWhiteSpace.TotalLength;
+        // remove both the leading and trailing blank lines.
+        var startBeforeWhiteSpace = directive.Info.Span.Start - directive.Info.LeadingWhiteSpace.BlankLineLength;
         if (startBeforeWhiteSpace == 0)
         {
-            return directive.Info.LeadingWhiteSpace.TotalLength + directive.Info.TrailingWhiteSpace.TotalLength;
+            leadingLength = directive.Info.LeadingWhiteSpace.BlankLineLength;
+            trailingLength = directive.Info.TrailingWhiteSpace.BlankLineLength;
+            return;
         }
 
         Debug.Assert(startBeforeWhiteSpace > 0);
-        return 0;
+        leadingLength = 0;
+        trailingLength = 0;
     }
 }

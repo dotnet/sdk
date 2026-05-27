@@ -555,7 +555,7 @@ public class EndToEndTests : IDisposable
 
         if (addPackageReference)
         {
-            File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+            File.Copy(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
             (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
@@ -725,7 +725,7 @@ public class EndToEndTests : IDisposable
             .Should().Pass();
         ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
 
-        File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+        File.Copy(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
         (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
@@ -1385,7 +1385,7 @@ public class EndToEndTests : IDisposable
     [DockerSupportsArchInlineData("linux/386", "linux-x86", "/app", Skip = "There's no apphost for linux-x86 so we can't execute self-contained, and there's no .NET runtime base image for linux-x86 so we can't execute framework-dependent.")]
     [DockerSupportsArchInlineData("windows/amd64", "win-x64", "C:\\app")]
     [DockerSupportsArchInlineData("linux/amd64", "linux-x64", "/app")]
-    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49300")]
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanPackageForAllSupportedContainerRIDs));

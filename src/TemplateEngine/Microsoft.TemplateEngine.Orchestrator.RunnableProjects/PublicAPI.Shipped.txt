@@ -1,0 +1,124 @@
+﻿#nullable enable
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IDeferredMacro
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro.Type.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components
+static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type! Type, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
+abstract Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseSymbol.Type.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IDeferredMacro.CreateConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig! rawConfig) -> Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig.Type.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig.VariableName.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseReplaceSymbol
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseReplaceSymbol.FileRename.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseReplaceSymbol.ReplacementContexts.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ReplacementContext!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseReplaceSymbol.Replaces.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseSymbol
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseSymbol.Name.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseValueSymbol
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseValueSymbol.DataType.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseValueSymbol.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseValueSymbol.Forms.get -> Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.SymbolValueFormsModel!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseValueSymbol.IsRequired.get -> bool
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BindSymbol
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BindSymbol.Binding.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BindSymbol.DefaultValue.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ComputedSymbol
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ComputedSymbol.Evaluator.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ComputedSymbol.Value.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ConditionedConfigurationElement
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ConditionedConfigurationElement.Condition.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ConditionedConfigurationElement.ConditionedConfigurationElement() -> void
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ConditionedConfigurationElement.ConditionResult.get -> bool
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel.FlagPrefix.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel.Glob.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel.Operations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomOperationModel!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomOperationModel
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomOperationModel.Configuration.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomOperationModel.Type.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.DerivedSymbol
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.DerivedSymbol.ValueSource.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.DerivedSymbol.ValueTransform.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource.CopyOnly.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource.Exclude.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource.Include.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource.Modifiers.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.SourceModifier!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource.Rename.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource.Source.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource.Target.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.GeneratedSymbol
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.GeneratedSymbol.DataType.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.GeneratedSymbol.Generator.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.GeneratedSymbol.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ManualInstructionModel
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ManualInstructionModel.Id.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ManualInstructionModel.Text.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.AllowMultipleValues.get -> bool
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.DefaultIfOptionWithoutValue.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.Description.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.DisplayName.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.EnableQuotelessLiterals.get -> bool
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.IsEnabledCondition.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.IsRequiredCondition.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.Precedence.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel.ActionId.get -> System.Guid
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel.Args.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel.ContinueOnError.get -> bool
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel.Description.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel.Id.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel.ManualInstructionInfo.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ManualInstructionModel!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PrimaryOutputModel
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PrimaryOutputModel.Path.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ReplacementContext
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ReplacementContext.OnlyIfAfter.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ReplacementContext.OnlyIfBefore.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.SourceModifier
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.SourceModifier.CopyOnly.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.SourceModifier.Exclude.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.SourceModifier.Include.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.SourceModifier.Rename.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.SymbolValueFormsModel
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.SymbolValueFormsModel.GlobalForms.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Author.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.BaselineInfo.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IBaselineInfo!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Classifications.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintInfo!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.DefaultName.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Description.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Forms.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.GeneratorVersions.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.GlobalCustomOperations.get -> Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.GroupIdentity.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Guids.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Name.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PlaceholderFilename.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PostActionModels.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Precedence.get -> int
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PrimaryOutputs.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PrimaryOutputModel!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PreferNameDirectory.get -> bool
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.SourceName.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Sources.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.SpecialCustomOperations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Symbols.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseSymbol!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Tags.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.ThirdPartyNotices.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator.RunnableProjectGenerator() -> void
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm.Identifier.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm.Name.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm.Process(string! value, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm!>! otherForms) -> string!
+override Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BindSymbol.Type.get -> string!
+override Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ComputedSymbol.Type.get -> string!
+override Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.DerivedSymbol.Type.get -> string!
+override Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.GeneratedSymbol.Type.get -> string!
+override Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ParameterSymbol.Type.get -> string!
+static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.FromStream(System.IO.Stream! content, Microsoft.Extensions.Logging.ILogger? logger = null, string? filename = null) -> Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel!
+static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.FromString(string! content, Microsoft.Extensions.Logging.ILogger? logger = null, string? filename = null) -> Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel!

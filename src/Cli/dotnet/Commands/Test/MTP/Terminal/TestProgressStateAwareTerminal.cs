@@ -1,12 +1,12 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// Terminal that updates the progress in place when progress reporting is enabled.
 /// </summary>
-internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal, bool showProgress, bool writeProgressImmediatelyAfterOutput, int updateEvery) : IDisposable
+internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal, bool showProgress) : IDisposable
 {
     /// <summary>
     /// A cancellation token to signal the rendering thread that it should exit.
@@ -20,8 +20,6 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     private readonly ITerminal _terminal = terminal;
     private readonly bool _showProgress = showProgress;
-    private readonly bool _writeProgressImmediatelyAfterOutput = writeProgressImmediatelyAfterOutput;
-    private readonly int _updateEvery = updateEvery;
     private TestProgressState?[] _progressItems = [];
 
     /// <summary>
@@ -37,7 +35,11 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
     {
         try
         {
-            while (!_cts.Token.WaitHandle.WaitOne(_updateEvery))
+            // When writing to ANSI, we update the progress in place and it should look responsive so we
+            // update every half second, because we only show seconds on the screen, so it is good enough.
+            // When writing to non-ANSI, we never show progress as the output can get long and messy.
+            const int AnsiUpdateCadenceInMs = 500;
+            while (!_cts.Token.WaitHandle.WaitOne(AnsiUpdateCadenceInMs))
             {
                 lock (_lock)
                 {
@@ -118,10 +120,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
                     _terminal.StartUpdate();
                     _terminal.EraseProgress();
                     write(_terminal);
-                    if (_writeProgressImmediatelyAfterOutput)
-                    {
-                        _terminal.RenderProgress(_progressItems);
-                    }
+                    _terminal.RenderProgress(_progressItems);
                 }
                 finally
                 {

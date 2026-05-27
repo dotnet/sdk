@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Clean.Tests
         public void ItCleansAProjectBuiltWithRuntimeIdentifier()
         {
             var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
 
             new DotnetBuildCommand(Log, testInstance.Path)

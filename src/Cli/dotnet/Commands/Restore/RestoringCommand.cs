@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.SdkVulnerability;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
@@ -37,10 +38,11 @@ public class RestoringCommand : MSBuildForwardingApp
         string? msbuildPath = null,
         string? userProfileDir = null,
         bool? advertiseWorkloadUpdates = null)
-        : base(GetCommandArguments(msbuildArgs, noRestore),  msbuildPath)
+        : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath)
     {
         userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
         Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
+        SdkVulnerabilityNotifier.BackgroundUpdateCacheIfNeeded();
         SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
         AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.OtherMSBuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
@@ -76,11 +78,7 @@ public class RestoringCommand : MSBuildForwardingApp
         // we're running two separate build operations
         if (HasPropertyToExcludeFromRestore(msbuildArgs))
         {
-            if (!msbuildArgs.OtherMSBuildArgs.Contains("-nologo"))
-            {
-                msbuildArgs.OtherMSBuildArgs.Add("-nologo");
-            }
-            return msbuildArgs;
+            return msbuildArgs.CloneWithNoLogo(true);
         }
 
         // otherwise we're going to run an inline restore. In this case, we need to make sure that the restore properties
@@ -122,13 +120,13 @@ public class RestoringCommand : MSBuildForwardingApp
         ReadOnlyDictionary<string, string> restoreProperties =
             msbuildArgs.GlobalProperties?
             .Where(kvp => !IsPropertyExcludedFromRestore(kvp.Key))?
-            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase) is { } filteredList ? new(filteredList): ReadOnlyDictionary<string, string>.Empty;
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase) is { } filteredList ? new(filteredList) : ReadOnlyDictionary<string, string>.Empty;
         var restoreMSBuildArgs =
             MSBuildArgs.FromProperties(RestoreOptimizationProperties)
                        .CloneWithAdditionalTargets("Restore")
                        .CloneWithExplicitArgs([.. newArgumentsToAdd, .. existingArgumentsToForward])
                        .CloneWithAdditionalProperties(restoreProperties);
-        if (msbuildArgs.Verbosity is {} verbosity)
+        if (msbuildArgs.Verbosity is { } verbosity)
         {
             restoreMSBuildArgs = restoreMSBuildArgs.CloneWithVerbosity(verbosity);
         }
@@ -175,7 +173,7 @@ public class RestoringCommand : MSBuildForwardingApp
 
     private static readonly List<string> FlagsThatTriggerSilentSeparateRestore = [.. ComputeFlags(FlagsThatTriggerSilentRestore)];
 
-    private static readonly List<string> PropertiesToExcludeFromSeparateRestore = [ .. PropertiesToExcludeFromRestore ];
+    private static readonly List<string> PropertiesToExcludeFromSeparateRestore = [.. PropertiesToExcludeFromRestore];
 
     /// <summary>
     /// We investigate the arguments we're about to send to a separate restore call and filter out
@@ -187,26 +185,21 @@ public class RestoringCommand : MSBuildForwardingApp
         // Separate restore should be silent in terminal logger - regardless of actual scenario
         HashSet<string> newArgumentsToAdd = ["-tlp:verbosity=quiet"];
         List<string> existingArgumentsToForward = [];
-        bool hasSetNologo = false;
+        bool hasSetNologo = msbuildArgs.NoLogo;
+        if (hasSetNologo)
+        {
+            newArgumentsToAdd.Add("--nologo");
+        }
 
         foreach (var argument in msbuildArgs.OtherMSBuildArgs ?? [])
         {
             if (!IsExcludedFromSeparateRestore(argument))
             {
-                if (argument.Equals("-nologo", StringComparison.OrdinalIgnoreCase))
-                {
-                    hasSetNologo = true;
-                }
                 existingArgumentsToForward.Add(argument);
             }
 
             if (TriggersSilentSeparateRestore(argument))
             {
-                if (!hasSetNologo)
-                {
-                    newArgumentsToAdd.Add("-nologo");
-                    hasSetNologo = true;
-                }
                 newArgumentsToAdd.Add("--verbosity:quiet");
             }
         }

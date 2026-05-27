@@ -8,11 +8,12 @@ namespace Microsoft.NET.TestFramework
 {
     public class ToolsetInfo
     {
-        public const string CurrentTargetFramework = "net10.0";
-        public const string CurrentTargetFrameworkVersion = "10.0";
+        public const string CurrentTargetFramework = "net11.0";
+        /// <remarks>Keep in sync with <see cref="Product.TargetFrameworkVersion"/>.</remarks>
+        public const string CurrentTargetFrameworkVersion = "11.0";
         public const string CurrentTargetFrameworkMoniker = ".NETCoreApp,Version=v" + CurrentTargetFrameworkVersion;
-        public const string NextTargetFramework = "net11.0";
-        public const string NextTargetFrameworkVersion = "11.0";
+        public const string NextTargetFramework = "net12.0";
+        public const string NextTargetFrameworkVersion = "12.0";
 
         public const string LatestWinRuntimeIdentifier = "win";
         public const string LatestLinuxRuntimeIdentifier = "linux";
@@ -30,7 +31,7 @@ namespace Microsoft.NET.TestFramework
                 if (_sdkVersion == null)
                 {
                     //  Initialize SdkVersion lazily, as we call `dotnet --version` to get it, so we need to wait
-                    //  for the TestContext to finish being initialize
+                    //  for the SdkTestContext to finish being initialize
                     InitSdkVersion();
                 }
                 return _sdkVersion ?? throw new InvalidOperationException("SdkVersion should never be null."); ;
@@ -45,7 +46,7 @@ namespace Microsoft.NET.TestFramework
                 if (_msbuildVersion == null)
                 {
                     //  Initialize MSBuildVersion lazily, as we call `dotnet msbuild -version` to get it, so we need to wait
-                    //  for the TestContext to finish being initialize
+                    //  for the SdkTestContext to finish being initialize
                     InitMSBuildVersion();
                 }
                 return _msbuildVersion;
@@ -84,16 +85,17 @@ namespace Microsoft.NET.TestFramework
         private void InitSdkVersion()
         {
             //  If using full framework MSBuild, then running a command tries to get the SdkVersion in order to set the
-            //  DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR environment variable.  So turn that off when getting the SDK version
-            //  in order to avoid stack overflow
-            string? oldFullFrameworkMSBuildPath = FullFrameworkMSBuildPath;
+            //  DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR environment variable.  So suppress that on this thread while we get
+            //  the SDK version, to avoid stack overflow. A thread-local flag is used here rather than mutating
+            //  FullFrameworkMSBuildPath on the shared singleton, so that other test threads running concurrently
+            //  don't observe a transient null and silently fall back to Core MSBuild.
+            _suppressFullFrameworkMSBuildPath = true;
             try
             {
-                FullFrameworkMSBuildPath = null;
                 var logger = new StringTestLogger();
                 var command = new DotnetCommand(logger, "--version")
                 {
-                    WorkingDirectory = TestContext.Current.TestExecutionDirectory
+                    WorkingDirectory = SdkTestContext.Current.TestExecutionDirectory
                 };
 
                 var result = command.Execute();
@@ -107,16 +109,30 @@ namespace Microsoft.NET.TestFramework
             }
             finally
             {
-                FullFrameworkMSBuildPath = oldFullFrameworkMSBuildPath;
+                _suppressFullFrameworkMSBuildPath = false;
             }
         }
+
+        // Thread-local suppression so that the DotnetCommand spawned from InitSdkVersion doesn't recurse
+        // back into AddTestEnvironmentVariables → SdkVersion → InitSdkVersion. Tests on other threads
+        // continue to see the real FullFrameworkMSBuildPath value.
+        [ThreadStatic]
+        private static bool _suppressFullFrameworkMSBuildPath;
+
+        /// <summary>
+        /// Effective FullFrameworkMSBuildPath taking into account the thread-local suppression used by
+        /// <see cref="InitSdkVersion"/>. Use this in code paths that decide between desktop MSBuild and
+        /// Core MSBuild so the decision isn't perturbed by InitSdkVersion's recursion-breaking guard.
+        /// </summary>
+        private string? EffectiveFullFrameworkMSBuildPath =>
+            _suppressFullFrameworkMSBuildPath ? null : FullFrameworkMSBuildPath;
 
         private void InitMSBuildVersion()
         {
             var logger = new StringTestLogger();
             var command = new MSBuildVersionCommand(logger)
             {
-                WorkingDirectory = TestContext.Current.TestExecutionDirectory
+                WorkingDirectory = SdkTestContext.Current.TestExecutionDirectory
             };
 
             var result = command.Execute();
@@ -154,9 +170,9 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        public void AddTestEnvironmentVariables(IDictionary<string, string> environment)
+        public void AddTestEnvironmentVariables(IDictionary<string, string?> environment)
         {
-            if (ShouldUseFullFrameworkMSBuild)
+            if (!string.IsNullOrEmpty(EffectiveFullFrameworkMSBuildPath))
             {
                 string sdksPath = Path.Combine(DotNetRoot, "sdk", SdkVersion, "Sdks");
 
@@ -225,13 +241,11 @@ namespace Microsoft.NET.TestFramework
             SdkCommandSpec ret = new();
 
             //  Run tests on full framework MSBuild if environment variable is set pointing to it
-            if (ShouldUseFullFrameworkMSBuild)
+            string? fullFrameworkMSBuildPath = EffectiveFullFrameworkMSBuildPath;
+            if (!string.IsNullOrEmpty(fullFrameworkMSBuildPath))
             {
-                ret.FileName = FullFrameworkMSBuildPath;
+                ret.FileName = fullFrameworkMSBuildPath;
                 ret.Arguments = args.ToList();
-                // Don't propagate DOTNET_HOST_PATH to the msbuild process, to match behavior
-                // when running desktop msbuild outside of the test harness.
-                ret.Environment["DOTNET_HOST_PATH"] = string.Empty;
             }
             else
             {
@@ -242,7 +256,7 @@ namespace Microsoft.NET.TestFramework
                 ret.Arguments = newArgs;
             }
 
-            TestContext.Current.AddTestEnvironmentVariables(ret.Environment);
+            SdkTestContext.Current.AddTestEnvironmentVariables(ret.Environment);
 
             return ret;
         }
@@ -250,22 +264,14 @@ namespace Microsoft.NET.TestFramework
         private static string GetDotnetHostPath(string? dotnetRoot)
             => Path.Combine(dotnetRoot ?? string.Empty, "dotnet" + Constants.ExeSuffix);
 
-        public static ToolsetInfo Create(string? repoRoot, string? repoArtifactsDir, string configuration, TestCommandLine commandLine)
+        public static ToolsetInfo Create(string? repoRoot, string? repoArtifactsDir, string configuration)
         {
-            repoRoot = commandLine.SDKRepoPath ?? repoRoot;
-            configuration = commandLine.SDKRepoConfiguration ?? configuration;
-
             string? dotnetInstallDirFromEnvironment = Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR");
 
             string? dotnetRoot;
             string hostNotFoundReason;
 
-            if (!string.IsNullOrEmpty(commandLine.DotnetHostPath))
-            {
-                dotnetRoot = Path.GetDirectoryName(commandLine.DotnetHostPath);
-                hostNotFoundReason = "Command line argument -dotnetPath is incorrect.";
-            }
-            else if (repoRoot != null && repoArtifactsDir is not null)
+            if (repoRoot != null && repoArtifactsDir is not null)
             {
                 dotnetRoot = Path.Combine(repoArtifactsDir, "bin", "redist", configuration, "dotnet");
                 hostNotFoundReason = "Is 'redist.csproj' built?";
@@ -299,11 +305,13 @@ namespace Microsoft.NET.TestFramework
                 RepoRoot = repoRoot,
             };
 
-            if (!string.IsNullOrEmpty(commandLine.FullFrameworkMSBuildPath))
+            //  Run tests on full framework MSBuild if environment variable is set pointing to it
+            string? msbuildPath = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILD_PATH");
+            if (!string.IsNullOrEmpty(msbuildPath))
             {
-                ret.FullFrameworkMSBuildPath = commandLine.FullFrameworkMSBuildPath;
+                ret.FullFrameworkMSBuildPath = msbuildPath;
             }
-            else if (commandLine.UseFullFrameworkMSBuild)
+            else if (string.Equals(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_USE_FULL_MSBUILD"), "true", StringComparison.OrdinalIgnoreCase))
             {
                 if (TryResolveCommand("MSBuild", out string? pathToMSBuild))
                 {
@@ -311,7 +319,7 @@ namespace Microsoft.NET.TestFramework
                 }
                 else
                 {
-                    throw new InvalidOperationException("Could not resolve path to MSBuild");
+                    throw new InvalidOperationException("DOTNET_SDK_TEST_USE_FULL_MSBUILD is set but could not resolve path to MSBuild on PATH");
                 }
             }
 
@@ -335,17 +343,13 @@ namespace Microsoft.NET.TestFramework
                     // Find path to MSBuildSdkResolver for full framework
                     ret.SdkResolverPath = Path.Combine(repoArtifactsDir, "bin", "Microsoft.DotNet.MSBuildSdkResolver", configuration, "net472", "SdkResolvers");
                 }
-                else if (!string.IsNullOrWhiteSpace(commandLine.MsbuildAdditionalSdkResolverFolder))
-                {
-                    ret.SdkResolverPath = Path.Combine(commandLine.MsbuildAdditionalSdkResolverFolder, configuration, "net472", "SdkResolvers");
-                }
                 else if (Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER") != null)
                 {
                     ret.SdkResolverPath = Path.Combine(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER")!, configuration, "net472", "SdkResolvers");
                 }
                 else
                 {
-                    throw new InvalidOperationException("Microsoft.DotNet.MSBuildSdkResolver path is not provided, set msbuildAdditionalSdkResolverFolder on test commandline or set repoRoot");
+                    throw new InvalidOperationException("Microsoft.DotNet.MSBuildSdkResolver path is not provided, set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER environment variable or set repoRoot");
                 }
             }
 

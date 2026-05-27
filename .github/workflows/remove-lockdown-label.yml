@@ -2,7 +2,11 @@ name: Remove Lockdown Label from PRs
 
 on:
   pull_request_target:
-    types: [closed]
+    branches:
+      - 'release/8.*'
+      - 'release/9.*'
+      - 'release/10.*'
+      - 'main'
 
 permissions:
     actions: write
@@ -10,7 +14,8 @@ permissions:
 
 jobs:
     remove-labels:
-        if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'Branding')
+        # Only run on the main repository, not forks
+        if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'Branding') && github.repository == 'dotnet/sdk'
         runs-on: ubuntu-latest
         steps:
         -   name: PR's only change is <VersionFeature> in eng/Versions.props

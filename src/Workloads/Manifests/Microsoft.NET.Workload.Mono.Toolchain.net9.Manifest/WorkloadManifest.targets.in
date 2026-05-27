@@ -72,7 +72,6 @@
 
   <PropertyGroup Condition="'$(TargetsNet9)' == 'true' and '$(_MonoWorkloadTargetsMobile)' == 'true'">
     <_MonoWorkloadRuntimePackPackageVersion>$(_RuntimePackInWorkloadVersion9)</_MonoWorkloadRuntimePackPackageVersion>
-    <_KnownWebAssemblySdkPackVersion>$(_RuntimePackInWorkloadVersion9)</_KnownWebAssemblySdkPackVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetsNet9)' == 'true' and '$(_MonoWorkloadTargetsMobile)' == 'true'">
@@ -87,9 +86,6 @@
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <TargetingPackVersion Condition="'%(KnownFrameworkReference.TargetFramework)' == 'net9.0'">$(_MonoWorkloadRuntimePackPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
-    <KnownWebAssemblySdkPack Update="@(KnownWebAssemblySdkPack)">
-      <WebAssemblySdkPackVersion Condition="'%(KnownWebAssemblySdkPack.TargetFramework)' == 'net9.0'">$(_KnownWebAssemblySdkPackVersion)</WebAssemblySdkPackVersion>
-    </KnownWebAssemblySdkPack>
   </ItemGroup>
 
 

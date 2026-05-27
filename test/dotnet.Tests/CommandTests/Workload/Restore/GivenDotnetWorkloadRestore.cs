@@ -15,14 +15,14 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
-        if(IsRunningInContainer())
+        if (IsRunningInContainer())
         {
             // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
             return;
         }
 
         var projectPath =
-            _testAssetsManager
+            TestAssetsManager
                 .CopyTestAsset(DcProjAssetName)
                 .WithSource()
                 .Path;
@@ -38,14 +38,14 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild()
     {
-        if(IsRunningInContainer())
+        if (IsRunningInContainer())
         {
             // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
             return;
         }
 
         var projectPath =
-            _testAssetsManager
+            TestAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
                 .WithSource()
                 .Path;
@@ -56,6 +56,31 @@ public class GivenDotnetWorkloadRestore : SdkTest
         .Should()
         // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
         .Pass();
+    }
+
+    [Fact]
+    public void VersionOptionShouldNotConflictWithSkipManifestUpdate()
+    {
+        if (IsRunningInContainer())
+        {
+            // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
+            return;
+        }
+
+        var projectPath =
+            TestAssetsManager
+                .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
+                .WithSource()
+                .Path;
+
+        var result = new DotnetWorkloadCommand(Log, "restore", "--version", "9.0.100")
+        .WithWorkingDirectory(projectPath)
+        .Execute();
+
+        // Should not fail with "Cannot use the --skip-manifest-update and --sdk-version options together"
+        // The command may fail for other reasons (e.g., version not found), but it should not fail with the skip-manifest-update error
+        result.StdErr.Should().NotContain("Cannot use the");
+        result.StdErr.Should().NotContain("--skip-manifest-update");
     }
 
     private bool IsRunningInContainer()

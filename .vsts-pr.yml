@@ -1,6 +1,10 @@
 # Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=101
 
-trigger: none
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
 
 pr:
   branches:
@@ -9,6 +13,16 @@ pr:
     - release/*
     - internal/release/*
   paths:
+    include:
+    - eng
+    - build
+    - src
+    - template_feed
+    - test
+    - '*.yml'
+    - '*.props'
+    - '*.targets'
+    - global.json
     exclude:
     - documentation/*
     - README.md
@@ -42,14 +56,14 @@ stages:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
-      helixTargetQueue: windows.amd64.vs2022.pre.open
+      helixTargetQueue: windows.amd64.vs2026.pre.scout.open
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        demands: ImageOverride -equals build.azurelinux.3.amd64.open
         os: linux
       helixTargetQueue: ubuntu.2204.amd64.open
 
@@ -69,7 +83,7 @@ stages:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
-        helixTargetQueue: osx.13.arm64.open
+        helixTargetQueue: osx.15.arm64.open
         macOSJobParameterSets:
         - categoryName: TestBuild
           targetArchitecture: arm64

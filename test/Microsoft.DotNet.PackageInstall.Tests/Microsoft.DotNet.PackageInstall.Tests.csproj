@@ -7,10 +7,9 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
   </PropertyGroup>
 
   <ItemGroup>
@@ -169,7 +168,7 @@
                             CreateNupkgWithPreviewFromSource">
     <ItemGroup>
       <TestAssetFiles Include="$(BaseOutputPath)\TestAsset\**\*.*" />
-      <TestAssetLocalNugetFeed Include="$(BaseOutputPath)\$(Configuration)\TestAssetLocalNugetFeed\**\*.*" />
+      <TestAssetLocalNugetFeed Include="$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\TestAssetLocalNugetFeed\**\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(TestAssetFiles)" DestinationFiles="@(TestAssetFiles->'$(PublishDir)\TestAsset\%(RecursiveDir)%(Filename)%(Extension)')" />

@@ -27,14 +27,18 @@ public class ComputeStaticWebAssetsTargetPaths : Task
         {
             Log.LogMessage(MessageImportance.Low, "Using path prefix '{0}'", PathPrefix);
             AssetsWithTargetPath = new ITaskItem[Assets.Length];
+            var separator = UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar;
+
+            var resolveMode = AdjustPathsForPack ? TokenResolveMode.Pack : TokenResolveMode.Serve;
 
             for (var i = 0; i < Assets.Length; i++)
             {
                 var staticWebAsset = StaticWebAsset.FromTaskItem(Assets[i]);
                 var result = staticWebAsset.ToTaskItem();
+
                 var targetPath = staticWebAsset.ComputeTargetPath(
                     PathPrefix,
-                    UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar, StaticWebAssetTokenResolver.Instance);
+                    separator, StaticWebAssetTokenResolver.Instance, resolveMode);
 
                 if (AdjustPathsForPack && string.IsNullOrEmpty(Path.GetExtension(targetPath)))
                 {
@@ -53,4 +57,5 @@ public class ComputeStaticWebAssetsTargetPaths : Task
 
         return !Log.HasLoggedErrors;
     }
+
 }

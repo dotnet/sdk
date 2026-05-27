@@ -21,9 +21,24 @@ public static class Env
     public static bool GetEnvironmentVariableAsBool(string name, bool defaultValue = false) =>
         s_environment.GetEnvironmentVariableAsBool(name, defaultValue);
 
+    public static bool TryGetEnvironmentVariableAsBool(string name, [NotNullWhen(true)] out bool value) =>
+        s_environment.TryGetEnvironmentVariableAsBool(name, out value);
+
     public static int? GetEnvironmentVariableAsNullableInt(string name) =>
         s_environment.GetEnvironmentVariableAsNullableInt(name);
 
     public static string? GetEnvironmentVariable(string name) =>
         s_environment.GetEnvironmentVariable(name);
+
+    public static bool AnyEnvironmentVariablesSet(IEnumerable<string> variableNames)
+    {
+        foreach (var name in variableNames)
+        {
+            if (GetEnvironmentVariable(name) != null)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

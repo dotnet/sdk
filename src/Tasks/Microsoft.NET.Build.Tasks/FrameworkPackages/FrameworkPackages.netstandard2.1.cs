@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace Microsoft.ComponentDetection.Detectors.NuGet;
 
 #nullable disable
@@ -15,9 +18,7 @@ internal partial class FrameworkPackages
         {
             { "System.Buffers", "4.6.1" },
             { "System.Collections.Concurrent", "4.3.0" },
-            { "System.Collections.Immutable", "1.4.0" },
             { "System.ComponentModel", "4.3.0" },
-            { "System.ComponentModel.Composition", "4.5.0" },
             { "System.ComponentModel.EventBasedAsync", "4.3.0" },
             { "System.Diagnostics.Contracts", "4.3.0" },
             { "System.Dynamic.Runtime", "4.3.0" },
@@ -27,20 +28,13 @@ internal partial class FrameworkPackages
             { "System.Net.WebHeaderCollection", "4.3.0" },
             { "System.Numerics.Vectors", "4.6.1" },
             { "System.ObjectModel", "4.3.0" },
-            { "System.Private.DataContractSerialization", "4.3.0" },
             { "System.Reflection.DispatchProxy", "4.5.1" },
             { "System.Reflection.Emit", "4.7.0" },
             { "System.Reflection.Emit.ILGeneration", "4.7.0" },
             { "System.Reflection.Emit.Lightweight", "4.7.0" },
-            { "System.Reflection.TypeExtensions", "4.3.0" },
-            { "System.Runtime.Loader", "4.3.0" },
             { "System.Runtime.Numerics", "4.3.0" },
             { "System.Runtime.Serialization.Json", "4.3.0" },
-            { "System.Security.AccessControl", "4.4.0" },
-            // this package was listed in the package overrides.txt for netstandard2.1, but it is not actually in the targeting pack
-            // { "System.Security.Cryptography.Xml", "4.4.0" },
             { "System.Security.Principal", "4.3.0" },
-            { "System.Security.Principal.Windows", "4.4.0" },
             { "System.Threading", "4.3.0" },
             { "System.Threading.Tasks.Extensions", "4.6.3" },
             { "System.Threading.Tasks.Parallel", "4.3.0" },

@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
 
-        private static readonly string PackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "TestPackages", "cgmanifest.json");
+        private static readonly string PackagesJsonPath = Path.Combine(SdkTestContext.Current.TestPackages, "cgmanifest.json");
 
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
         {
@@ -48,6 +48,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private class NullTestOutputHelper : ITestOutputHelper
         {
+            public string Output => string.Empty;
+
+            public void Write(string message) { }
+
+            public void Write(string format, params object[] args) { }
+
             public void WriteLine(string message) { }
 
             public void WriteLine(string format, params object[] args) { }
@@ -127,8 +133,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // After executing dotnet new and before cleaning up
             RecordPackages(outputDirectory);
 
-            Directory.Delete(outputDirectory, true);
-            Directory.Delete(workingDirectory, true);
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
 
         }
 
@@ -164,8 +170,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // After executing dotnet new and before cleaning up
             RecordPackages(outputDirectory);
 
-            Directory.Delete(outputDirectory, true);
-            Directory.Delete(workingDirectory, true);
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
         }
 
         [Theory]
@@ -218,8 +224,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // After executing dotnet new and before cleaning up
             RecordPackages(outputDirectory);
 
-            Directory.Delete(outputDirectory, true);
-            Directory.Delete(workingDirectory, true);
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
         }
 
         private void AddItemToFsproj(string itemName, string outputDirectory, string projectName)
@@ -229,6 +235,25 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             lines.Insert(lines.IndexOf("  <ItemGroup>") + 1, $@"    <Compile Include=""{itemName}.fs""/>");
             File.WriteAllLines(fsproj, lines);
+        }
+
+        /// <summary>
+        /// Retries Directory.Delete to handle transient file locks (e.g. testhost.exe not yet released after dotnet test exits).
+        /// </summary>
+        private static void DeleteDirectoryWithRetry(string path, int maxRetries = 10)
+        {
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    Directory.Delete(path, true);
+                    return;
+                }
+                catch (Exception ex) when ((ex is UnauthorizedAccessException or IOException) && i < maxRetries - 1)
+                {
+                    Thread.Sleep(100 * (i + 1));
+                }
+            }
         }
 
         private void RecordPackages(string projectDirectory)

@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo"];
         private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
         private static readonly string[] DefaultArgs = ["-restore", "-consoleloggerparameters:Summary", NugetInteractiveProperty];
 
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData("run")]
         public void CommandsRunWithOSOption(string command)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: command)
+            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: command)
                 .WithSource();
 
             new DotnetCommand(Log)
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData("run")]
         public void CommandsRunWithArchOption(string command)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: command)
+            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: command)
                 .WithSource();
 
             new DotnetCommand(Log)

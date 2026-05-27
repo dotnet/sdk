@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "net5.0",
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 

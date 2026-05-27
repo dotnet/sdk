@@ -1,13 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(ResolverTargetFramework);net472</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <!-- For product build, the .NET Framework TFM only builds in the second build pass as it depends on assets from other
          verticals that are built in the first build pass. -->
-    <TargetFrameworks Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">$(ResolverTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">$(SdkTargetFramework)</TargetFrameworks>
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
     <RootNamespace>Microsoft.DotNet.DotNetSdkResolver</RootNamespace>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible Condition="'$(TargetFramework)' != 'net472'">true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

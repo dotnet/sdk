@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(NetToolMinimum)</TargetFramework>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
     <DotNetBuildSourceOnly>false</DotNetBuildSourceOnly>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>

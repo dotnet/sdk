@@ -1,12 +1,14 @@
-﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using Microsoft.TemplateEngine.Cli.Help;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+using Microsoft.DotNet.Cli.Help;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -64,36 +66,34 @@ internal sealed partial class TerminalTestReporter : IDisposable
     public TerminalTestReporter(IConsole console, TerminalTestReporterOptions options)
     {
         _options = options;
-        TestProgressStateAwareTerminal terminalWithProgress;
+        bool showProgress = _options.ShowProgress;
 
-        // When not writing to ANSI we write the progress to screen and leave it there so we don't want to write it more often than every few seconds.
-        int nonAnsiUpdateCadenceInMs = 3_000;
-        // When writing to ANSI we update the progress in place and it should look responsive so we update every half second, because we only show seconds on the screen, so it is good enough.
-        int ansiUpdateCadenceInMs = 500;
-        if (!_options.UseAnsi)
+        ITerminal terminal;
+        if (_options.AnsiMode == AnsiMode.SimpleAnsi)
         {
-            terminalWithProgress = new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
+            // We are told externally that we are in CI, use simplified ANSI mode.
+            terminal = new SimpleAnsiTerminal(console);
+            showProgress = false;
         }
         else
         {
-            if (_options.UseCIAnsi)
+            // We are not in CI, or in CI non-compatible with simple ANSI, autodetect terminal capabilities
+            // Autodetect.
+            (bool consoleAcceptsAnsiCodes, bool _, uint? originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
+            _originalConsoleMode = originalConsoleMode;
+
+            bool useAnsi = _options.AnsiMode switch
             {
-                // We are told externally that we are in CI, use simplified ANSI mode.
-                terminalWithProgress = new TestProgressStateAwareTerminal(new SimpleAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: nonAnsiUpdateCadenceInMs);
-            }
-            else
-            {
-                // We are not in CI, or in CI non-compatible with simple ANSI, autodetect terminal capabilities
-                // Autodetect.
-                (bool consoleAcceptsAnsiCodes, bool _, uint? originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
-                _originalConsoleMode = originalConsoleMode;
-                terminalWithProgress = consoleAcceptsAnsiCodes
-                    ? new TestProgressStateAwareTerminal(new AnsiTerminal(console, _options.BaseDirectory), _options.ShowProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: ansiUpdateCadenceInMs)
-                    : new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
-            }
+                AnsiMode.NoAnsi => false,
+                AnsiMode.AnsiIfPossible => consoleAcceptsAnsiCodes,
+                _ => throw new UnreachableException(),
+            };
+
+            showProgress = showProgress && useAnsi;
+            terminal = useAnsi ? new AnsiTerminal(console, _options.BaseDirectory) : new NonAnsiTerminal(console);
         }
 
-        _terminalWithProgress = terminalWithProgress;
+        _terminalWithProgress = new TestProgressStateAwareTerminal(terminal, showProgress);
     }
 
     public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
@@ -139,7 +139,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         return _assemblies.GetOrAdd(executionId, _ =>
         {
             IStopwatch sw = CreateStopwatch();
-            var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw);
+            var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw, _isDiscovery);
             int slotIndex = _terminalWithProgress.AddWorker(assemblyRun);
             assemblyRun.SlotIndex = slotIndex;
 
@@ -280,13 +280,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool colorizePassed = passed > 0 && _buildErrorsCount == 0 && failed == 0 && error == 0;
         bool colorizeSkipped = skipped > 0 && skipped == total && _buildErrorsCount == 0 && failed == 0 && error == 0;
 
-        string errorText = $"{SingleIndentation}error: {error}";
-        string totalText = $"{SingleIndentation}total: {total}";
-        string retriedText = $" (+{retried} retried)";
-        string failedText = $"{SingleIndentation}failed: {failed}";
-        string passedText = $"{SingleIndentation}succeeded: {passed}";
-        string skippedText = $"{SingleIndentation}skipped: {skipped}";
-        string durationText = $"{SingleIndentation}duration: ";
+        string errorText = $"{SingleIndentation}{CliCommandStrings.ErrorColon} {error}";
+        string totalText = $"{SingleIndentation}{CliCommandStrings.TotalColon} {total}";
+        string retriedText = $" (+{retried} {CliCommandStrings.Retried})";
+        string failedText = $"{SingleIndentation}{CliCommandStrings.FailedColon} {failed}";
+        string passedText = $"{SingleIndentation}{CliCommandStrings.SucceededColon} {passed}";
+        string skippedText = $"{SingleIndentation}{CliCommandStrings.SkippedColon} {skipped}";
+        string durationText = $"{SingleIndentation}{CliCommandStrings.DurationColon} ";
 
         if (error > 0)
         {
@@ -397,7 +397,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string displayName,
         string? informativeMessage,
         TestOutcome outcome,
-        TimeSpan duration,
+        TimeSpan? duration,
         FlatException[]? exceptions,
         string? expected,
         string? actual,
@@ -458,7 +458,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string displayName,
         string? informativeMessage,
         TestOutcome outcome,
-        TimeSpan duration,
+        TimeSpan? duration,
         FlatException[]? flatExceptions,
         string? expected,
         string? actual,
@@ -496,9 +496,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
         terminal.Append(' ');
         terminal.Append(displayName);
-        terminal.SetColor(TerminalColor.DarkGray);
-        terminal.Append(' ');
-        AppendLongDuration(terminal, duration);
+
+        if (duration.HasValue)
+        {
+            terminal.Append(' ');
+            AppendLongDuration(terminal, duration.Value);
+        }
 
         if (!string.IsNullOrEmpty(informativeMessage))
         {
@@ -801,7 +804,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {
         terminal.ResetColor();
-        
+
         AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture);
         terminal.Append(' ');
         AppendAssemblyResult(terminal, assemblyRun);
@@ -852,41 +855,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    public void WriteMessage(string text, SystemConsoleColor? color = null, int? padding = null)
-    {
-        if (color != null)
-        {
-            _terminalWithProgress.WriteToTerminal(terminal =>
-            {
-                terminal.SetColor(ToTerminalColor(color.ConsoleColor));
-                if (padding == null)
-                {
-                    terminal.AppendLine(text);
-                }
-                else
-                {
-                    AppendIndentedLine(terminal, text, new string(' ', padding.Value));
-                }
-
-                terminal.ResetColor();
-            });
-        }
-        else
-        {
-            _terminalWithProgress.WriteToTerminal(terminal =>
-            {
-                if (padding == null)
-                {
-                    terminal.AppendLine(text);
-                }
-                else
-                {
-                    AppendIndentedLine(terminal, text, new string(' ', padding.Value));
-                }
-            });
-        }
-    }
-
     internal void TestDiscovered(
         string executionId,
         string? displayName,
@@ -914,15 +882,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         var assemblies = _assemblies.Select(asm => asm.Value).OrderBy(a => a.Assembly).Where(a => a is not null).ToList();
 
         int totalTests = _assemblies.Values.Sum(a => a.TotalTests);
-        bool runFailed = _wasCancelled;
+        bool runFailed = _wasCancelled || totalTests < 1;
 
         foreach (TestProgressState assembly in assemblies)
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTests.Count));
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTestNames.Count));
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid) in assembly.DiscoveredTests)
+            foreach ((string? displayName, string? uid) in assembly.DiscoveredTestNames)
             {
                 if (displayName is not null)
                 {
@@ -996,123 +964,5 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
-    }
-
-    public void WritePlatformAndExtensionOptions(HelpContext context,
-        IEnumerable<CommandLineOptionMessage> builtInOptions,
-        IEnumerable<CommandLineOptionMessage> nonBuiltInOptions,
-        Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
-    {
-        if (_wasCancelled)
-        {
-            return;
-        }
-
-        if (builtInOptions.Any())
-        {
-            WriteOtherOptionsSection(context, CliCommandStrings.HelpPlatformOptions, builtInOptions);
-            context.Output.WriteLine();
-        }
-
-        if (nonBuiltInOptions.Any())
-        {
-            WriteOtherOptionsSection(context, CliCommandStrings.HelpExtensionOptions, nonBuiltInOptions);
-            context.Output.WriteLine();
-        }
-        WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
-    }
-
-    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOptionMessage> options)
-    {
-        List<TwoColumnHelpRow> optionRows = [];
-
-        foreach (var option in options)
-        {
-            if (option.IsHidden != true)
-            {
-                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description ?? string.Empty));
-            }
-        }
-
-        if (optionRows.Count > 0)
-        {
-            WriteHeading(title, null);
-            context.HelpBuilder.WriteColumns(optionRows, context);
-        }
-    }
-
-
-    private void WriteHeading(string? heading, string? description)
-    {
-        if (!string.IsNullOrWhiteSpace(heading))
-        {
-            WriteMessage(heading);
-        }
-
-        if (!string.IsNullOrWhiteSpace(description))
-        {
-            int maxWidth = int.MaxValue - SingleIndentation.Length;
-            foreach (var part in WrapText(description!, maxWidth))
-            {
-                WriteMessage(SingleIndentation);
-                WriteMessage(part);
-            }
-        }
-    }
-
-    private static IEnumerable<string> WrapText(string text, int maxWidth)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            yield break;
-        }
-
-        foreach (var part in text.Split(["\r\n", "\n"], StringSplitOptions.None))
-        {
-            for (int i = 0; i < part.Length; i += maxWidth)
-            {
-                int length = Math.Min(maxWidth, part.Length - i);
-                int lastSpace = part.LastIndexOf(' ', i + length, length);
-                if (lastSpace > i)
-                {
-                    length = lastSpace - i + 1;
-                }
-                yield return part.Substring(i, length).TrimEnd();
-            }
-        }
-    }
-
-    public void WriteModulesToMissingOptionsToConsole(Dictionary<bool, List<(string[], string[])>> modulesWithMissingOptions)
-    {
-        var yellow = new SystemConsoleColor { ConsoleColor = ConsoleColor.Yellow };
-        foreach (KeyValuePair<bool, List<(string[], string[])>> groupedModules in modulesWithMissingOptions)
-        {
-            WriteMessage(string.Empty);
-            WriteMessage(groupedModules.Key ? CliCommandStrings.HelpUnavailableOptions : CliCommandStrings.HelpUnavailableExtensionOptions, yellow);
-
-            foreach ((string[] modules, string[] missingOptions) in groupedModules.Value)
-            {
-                if (modules.Length == 0)
-                {
-                    continue;
-                }
-
-                string moduleList = string.Join("\n", modules);
-                StringBuilder line = new();
-                for (int i = 0; i < missingOptions.Length; i++)
-                {
-                    if (i == missingOptions.Length - 1)
-                        line.Append($"--{missingOptions[i]}");
-                    else
-                        line.Append($"--{missingOptions[i]}\n");
-                }
-
-                string format = modules.Length == 1
-                    ? (missingOptions.Length == 1 ? CliCommandStrings.HelpModuleIsMissingTheOptionBelow : CliCommandStrings.HelpModuleIsMissingTheOptionsBelow)
-                    : (missingOptions.Length == 1 ? CliCommandStrings.HelpModulesAreMissingTheOptionBelow : CliCommandStrings.HelpModulesAreMissingTheOptionsBelow);
-                var missing = string.Format(format, moduleList);
-                WriteMessage($"{missing}\n{line}\n");
-            }
-        }
     }
 }

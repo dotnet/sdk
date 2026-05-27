@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenWorkloadManifestUpdateItCanCalculateUpdates()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var featureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new TestManifestUpdate[] {
@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenAdvertisedManifestsItCalculatesCorrectUpdates()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var currentFeatureBand = "6.0.300";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new TestManifestUpdate[] {
@@ -218,7 +218,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             //  Arrange
             string sdkFeatureBand = "6.0.300";
-            var testDir = _testAssetsManager.CreateTestDirectory(identifier: useOfflineCache.ToString()).Path;
+            var testDir = TestAssetsManager.CreateTestDirectory(identifier: useOfflineCache.ToString()).Path;
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var installedManifestDir6_0_200 = Path.Combine(dotnetRoot, "sdk-manifests", "6.0.200");
             Directory.CreateDirectory(installedManifestDir6_0_200);
@@ -297,7 +297,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             //  Arrange
             string sdkFeatureBand = "6.0.300";
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
             var emptyInstalledManifestsDir = Path.Combine(dotnetRoot, "sdk-manifests", "6.0.200");
@@ -363,7 +363,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             //  Arrange
             string sdkFeatureBand = "6.0.300";
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
             var emptyInstalledManifestsDir = Path.Combine(dotnetRoot, "sdk-manifests", "6.0.300");
@@ -418,7 +418,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenWorkloadManifestRollbackItCanCalculateUpdates()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var currentFeatureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new TestManifestUpdate[] {
@@ -456,7 +456,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenFromRollbackDefinitionItErrorsOnInstalledExtraneousManifestId()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var featureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new (ManifestId, ManifestVersion, ManifestVersion)[] {
@@ -499,7 +499,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenFromRollbackDefinitionItErrorsOnExtraneousManifestIdInRollbackDefinition()
         {
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var featureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
             var expectedManifestUpdates = new (ManifestId, ManifestVersion, ManifestVersion)[] {
@@ -542,7 +542,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public async Task GivenWorkloadManifestUpdateItChoosesHighestManifestVersionInCache()
         {
             var manifestId = "mock-manifest";
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
             var featureBand = "6.0.100";
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
@@ -578,10 +578,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [InlineData("run", false)]
         public void GivenWorkloadsAreOutOfDateUpdatesAreAdvertisedOnRestoringCommands(string commandName, bool shouldShowUpdateNotification)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
+            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
                 .WithSource()
                 .Restore(Log);
-            var sdkFeatureBand = new SdkFeatureBand(TestContext.Current.ToolsetUnderTest.SdkVersion);
+            var sdkFeatureBand = new SdkFeatureBand(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
             // Write fake updates file
             Directory.CreateDirectory(Path.Combine(testInstance.Path, ".dotnet"));
             File.WriteAllText(Path.Combine(testInstance.Path, ".dotnet", $".workloadAdvertisingUpdates{sdkFeatureBand}"), @"[""maui""]");
@@ -616,10 +616,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void WorkloadUpdatesForDifferentBandAreNotAdvertised()
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
+            var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
                 .Restore(Log);
-            var sdkFeatureBand = new SdkFeatureBand(TestContext.Current.ToolsetUnderTest.SdkVersion);
+            var sdkFeatureBand = new SdkFeatureBand(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
             // Write fake updates file
             Directory.CreateDirectory(Path.Combine(testInstance.Path, ".dotnet"));
             File.WriteAllText(Path.Combine(testInstance.Path, ".dotnet", $".workloadAdvertisingUpdates6.0.100"), @"[""maui""]");
@@ -645,7 +645,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public async Task TestSideBySideUpdateChecks()
         {
             // this test checks that different version bands don't interfere with each other's update check timers
-            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
 
             (var updater1, var downloader1, var sentinelPath1, var resolver1) = GetTestUpdater(testDir: testDir, featureBand: "6.0.100");
             (var updater2, var downloader2, var sentinelPath2, var resolver2) = GetTestUpdater(testDir: testDir, featureBand: "6.0.200");
@@ -687,7 +687,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, WorkloadConfigCommand) GetTestUpdater([CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null)
         {
-            var testDir = _testAssetsManager.CreateTestDirectory(testName: testName).Path;
+            var testDir = TestAssetsManager.CreateTestDirectory(testName: testName).Path;
 
             var featureBand = "6.0.100";
 

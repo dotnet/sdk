@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class GivenDotnetCleanInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "--verbosity:normal", "--target:Clean", NugetInteractiveProperty];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "--verbosity:normal", "--target:Clean", NugetInteractiveProperty];
 
 
         private static readonly string WorkingDirectory =
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 expectedAdditionalArgs = expectedAdditionalArgs
-                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("<output>", "<output>" + Path.DirectorySeparatorChar))
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";

@@ -66,15 +66,17 @@ namespace Microsoft.DotNet.GenAPI.Task
             Debug.Assert(Assemblies != null, "Assemblies cannot be null.");
 
             GenAPIApp.Run(new MSBuildLog(Log),
-                          Assemblies,
-                          AssemblyReferences,
-                          OutputPath,
-                          HeaderFile,
-                          ExceptionMessage,
-                          ExcludeApiFiles,
-                          ExcludeAttributesFiles,
-                          RespectInternals,
-                          IncludeAssemblyAttributes);
+                new GenAPIOptions(Assemblies)
+                {
+                    AssemblyReferencesPaths = AssemblyReferences,
+                    OutputPath = OutputPath,
+                    HeaderFile = HeaderFile,
+                    ExceptionMessage = ExceptionMessage,
+                    ExcludeApiFiles = ExcludeApiFiles,
+                    ExcludeAttributesFiles = ExcludeAttributesFiles,
+                    RespectInternals = RespectInternals,
+                    IncludeAssemblyAttributes = IncludeAssemblyAttributes,
+                });
         }
     }
 }

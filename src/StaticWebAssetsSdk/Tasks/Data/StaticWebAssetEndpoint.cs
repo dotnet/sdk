@@ -6,6 +6,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -19,6 +20,8 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     private StaticWebAssetEndpointSelector[] _selectors;
     private string _assetFile;
     private string _route;
+    private string _order;
+    private bool _orderRead;
     private bool _modified;
     private string _selectorsString;
     private bool _selectorsModified;
@@ -40,6 +43,29 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         set
         {
             _route = value;
+            _modified = true;
+        }
+    }
+
+    // Optional order for the endpoint in the routing table.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string Order
+    {
+        get
+        {
+            if (!_orderRead && _order == null && _originalItem != null)
+            {
+                var value = _originalItem.GetMetadata(nameof(Order));
+                _order = string.IsNullOrEmpty(value) ? null : value;
+                _orderRead = true;
+            }
+            return _order;
+        }
+
+        set
+        {
+            _order = value;
+            _orderRead = true;
             _modified = true;
         }
     }
@@ -237,7 +263,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
     public override int GetHashCode()
     {
-#if NET472_OR_GREATER
+#if NETFRAMEWORK
         var hashCode = -604019124;
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Route);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetFile);
@@ -403,7 +429,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
         public int GetHashCode(StaticWebAssetEndpoint obj)
         {
-#if NET472_OR_GREATER
+#if NETFRAMEWORK
             var hashCode = -604019124;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(obj.Route);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(obj.AssetFile);
@@ -421,6 +447,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
     private static readonly string[] _defaultPropertyNames = [
         nameof(AssetFile),
+        nameof(Order),
         nameof(Selectors),
         nameof(ResponseHeaders),
         nameof(EndpointProperties)
@@ -454,6 +481,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         return metadataName switch
         {
             nameof(AssetFile) => AssetFile ?? "",
+            nameof(Order) => Order ?? "",
             nameof(Selectors) => !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors),
             nameof(ResponseHeaders) => !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders),
             nameof(EndpointProperties) => !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties),
@@ -468,6 +496,9 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         {
             case nameof(AssetFile):
                 AssetFile = metadataValue;
+                break;
+            case nameof(Order):
+                Order = metadataValue;
                 break;
             case nameof(Selectors):
                 _selectorsString = metadataValue;
@@ -497,6 +528,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         var result = new Dictionary<string, string>(((ITaskItem)this).MetadataCount)
         {
             { nameof(AssetFile), AssetFile ?? "" },
+            { nameof(Order), Order ?? "" },
             { nameof(Selectors), !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors) },
             { nameof(ResponseHeaders), !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders) },
             { nameof(EndpointProperties), !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties) }
@@ -522,6 +554,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     void ITaskItem.CopyMetadataTo(ITaskItem destinationItem)
     {
         destinationItem.SetMetadata(nameof(AssetFile), AssetFile ?? "");
+        destinationItem.SetMetadata(nameof(Order), Order ?? "");
         destinationItem.SetMetadata(nameof(Selectors), !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors));
         destinationItem.SetMetadata(nameof(ResponseHeaders), !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders));
         destinationItem.SetMetadata(nameof(EndpointProperties), !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties));
@@ -538,4 +571,102 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     IDictionary ITaskItem.CloneCustomMetadata() => ((ITaskItem2)this).CloneCustomMetadataEscaped();
 
     #endregion
+
+    public static bool RouteHasPathPrefix(
+        ReadOnlySpan<char> route,
+        ReadOnlySpan<char> prefix,
+        List<PathTokenizer.Segment> routeSegments,
+        List<PathTokenizer.Segment> prefixSegments)
+    {
+        routeSegments.Clear();
+        prefixSegments.Clear();
+
+        var routeTokenizer = new PathTokenizer(route);
+        var routeSegmentCollection = routeTokenizer.Fill(routeSegments);
+
+        var prefixTokenizer = new PathTokenizer(prefix);
+        var prefixSegmentCollection = prefixTokenizer.Fill(prefixSegments);
+
+        if (prefixSegmentCollection.Count > routeSegmentCollection.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < prefixSegmentCollection.Count; i++)
+        {
+            var prefixSegmentSpan = prefixSegmentCollection[i];
+            var routeSegmentSpan = routeSegmentCollection[i];
+
+            if (!prefixSegmentSpan.Equals(routeSegmentSpan, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Remaps the Route (and label endpoint property) on an endpoint by stripping the old base path
+    /// prefix and prepending the new base path. Used when materializing framework assets to update
+    /// endpoint routes from the library's base path to the consuming project's base path.
+    /// </summary>
+    public static void RemapEndpointRoute(
+        StaticWebAssetEndpoint endpoint,
+        string oldBasePath,
+        string newBasePath,
+        List<PathTokenizer.Segment> routeSegments,
+        List<PathTokenizer.Segment> basePathSegments)
+    {
+        var normalizedOldBase = oldBasePath is null or "/" ? "" : StaticWebAsset.Normalize(oldBasePath);
+
+        if (!string.IsNullOrEmpty(normalizedOldBase) &&
+            RouteHasPathPrefix(endpoint.Route, normalizedOldBase, routeSegments, basePathSegments))
+        {
+            var remaining = endpoint.Route.Length > normalizedOldBase.Length
+                ? endpoint.Route.Substring(normalizedOldBase.Length).TrimStart('/')
+                : "";
+            endpoint.Route = StaticWebAsset.CombineNormalizedPaths("", newBasePath, remaining, '/');
+
+            // Also remap the label endpoint property (used by fingerprinting/HTML asset placeholders).
+            RemapLabelProperty(endpoint, normalizedOldBase, newBasePath, routeSegments, basePathSegments);
+        }
+        else if (string.IsNullOrEmpty(normalizedOldBase))
+        {
+            // Old base path was empty/root — prepend the new base path to the existing route.
+            endpoint.Route = StaticWebAsset.CombineNormalizedPaths("", newBasePath, endpoint.Route, '/');
+
+            for (var j = 0; j < endpoint.EndpointProperties.Length; j++)
+            {
+                ref var property = ref endpoint.EndpointProperties[j];
+                if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase))
+                {
+                    property.Value = StaticWebAsset.CombineNormalizedPaths("", newBasePath, property.Value, '/');
+                    endpoint.MarkProperiesAsModified();
+                }
+            }
+        }
+    }
+
+    private static void RemapLabelProperty(
+        StaticWebAssetEndpoint endpoint,
+        string normalizedOldBase,
+        string newBasePath,
+        List<PathTokenizer.Segment> routeSegments,
+        List<PathTokenizer.Segment> basePathSegments)
+    {
+        for (var j = 0; j < endpoint.EndpointProperties.Length; j++)
+        {
+            ref var property = ref endpoint.EndpointProperties[j];
+            if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase) &&
+                RouteHasPathPrefix(property.Value, normalizedOldBase, routeSegments, basePathSegments))
+            {
+                var labelRemaining = property.Value.Length > normalizedOldBase.Length
+                    ? property.Value.Substring(normalizedOldBase.Length).TrimStart('/')
+                    : "";
+                property.Value = StaticWebAsset.CombineNormalizedPaths("", newBasePath, labelRemaining, '/');
+                endpoint.MarkProperiesAsModified();
+            }
+        }
+    }
 }
