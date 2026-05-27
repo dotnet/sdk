@@ -182,7 +182,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                     });
 
             // We may have multiple versions of the same package. We'll keep the latest one.
-            // This can even happen in the KnownPackages list, as a repo (such as source-build-reference-packages)
+            // This can even happen in the KnownPackages list, as a repo (such as source-build-assets)
             // may have multiple versions of the same package.
             IEnumerable<VersionEntry> packageElementsToWrite = knownPackages
                 .GroupBy(identity => identity.Name)

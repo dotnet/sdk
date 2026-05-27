@@ -91,10 +91,10 @@
   <!-- Wraps the transitive repo references with additional metadata -->
   <Target Name="GetRepositoryReferenceInfo"
           DependsOnTargets="GetTransitiveRepositoryReferences">
-    <!-- SBRP is explicitly excluded since it is output to its own special directory, $(ReferencePackagesDir). -->
+    <!-- source-build-assets (formerly SBRP) is explicitly excluded since it is output to its own special directory, $(ReferencePackagesDir). -->
     <ItemGroup Condition="'@(TransitiveRepositoryReference)' != ''">
       <RepositoryReferenceInfo Include="@(TransitiveRepositoryReference)"
-                               Exclude="source-build-reference-packages">
+                               Exclude="source-build-assets">
         <ShippingSourceName>$(SourceBuiltSourceNamePrefix)%(Identity)</ShippingSourceName>
         <NonShippingSourceName>$(SourceBuiltSourceNamePrefix)transport-%(Identity)</NonShippingSourceName>
         <ShippingPackagesPath>$(ArtifactsShippingPackagesDir)/%(Identity)/</ShippingPackagesPath>
@@ -124,6 +124,7 @@
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.AddSourceToNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.RemoveInternetSourcesFromNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.RemoveBlockedAuditSourcesFromNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateNuGetConfigPackageSourcesMappings" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="UpdateNuGetConfig"
           DependsOnTargets="CopyNuGetConfig;GetRepositoryReferenceInfo"
@@ -175,6 +176,10 @@
       BuildWithOnlineFeeds="$(DotNetBuildWithOnlineFeeds)"
       KeepFeedPrefixes="@(KeepFeedPrefixes)"
       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    
+    <RemoveBlockedAuditSourcesFromNuGetConfig
+      NuGetConfigFile="$(NuGetConfigFile)"
+      Condition="'$(RemoveBlockedAuditSources)' == 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PrebuiltNuGetSourceName)"

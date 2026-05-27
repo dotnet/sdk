@@ -18,13 +18,21 @@ parameters:
 jobs:
 - job: ${{ parameters.buildName }}_${{ parameters.architecture }}
   timeoutInMinutes: 150
-  pool:
-    name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals 1es-ubuntu-2204
   variables:
   - template: ../variables/pipelines.yml
+  templateContext:
+    outputs:
+    - output: pipelineArtifact
+      displayName: 'Publish BuildLogs'
+      condition: succeededOrFailed()
+      targetPath: '$(Build.StagingDirectory)/BuildLogs'
+      artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
   steps:
   - script: |
+      # Pre-install the Azure DevOps extension using the dnceng PyPI feed for dependency resolution under network isolation
+      az extension add --name azure-devops \
+        --pip-extra-index-urls https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-pypi/pypi/simple/
+      
       dotnet_dotnet_build='${{ replace(parameters.dotnetDotnetRunId, ' ', '') }}'
 
       if [[ -z "$dotnet_dotnet_build" ]]; then
@@ -148,12 +156,6 @@ jobs:
       find artifacts/TestResults/ -type f -name "*.diff" -exec cp {} --parents -t ${targetFolder} \;
       find artifacts/TestResults/ -type f -name "Updated*.txt" -exec cp {} --parents -t ${targetFolder} \;
     displayName: Prepare BuildLogs staging directory
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - publish: '$(Build.StagingDirectory)/BuildLogs'
-    artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
-    displayName: Publish BuildLogs
     continueOnError: true
     condition: succeededOrFailed()
 

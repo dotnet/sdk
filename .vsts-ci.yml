@@ -83,6 +83,8 @@ extends:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm-alpine
       ubuntu2204DebPkg:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
+      sourceBuildManagedContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
@@ -105,7 +107,7 @@ extends:
             name: $(DncEngInternalBuildPool)
             image: windows.vs2022.amd64
             os: windows
-          helixTargetQueue: windows.amd64.vs2022.pre
+          helixTargetQueue: windows.amd64.vs2022
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
@@ -173,7 +175,7 @@ extends:
         parameters:
           pool:
             name: $(DncEngInternalBuildPool)
-            image: 1es-ubuntu-2204
+            image: build.azurelinux.3.amd64
             os: linux
           helixTargetQueue: ubuntu.2204.amd64
           oneESCompat:
