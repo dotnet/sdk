@@ -1401,7 +1401,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             expectedOutput: GetExpectedOutput("v1", workDir));
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance,
             expectedLevel: BuildLevel.Csc,
@@ -1459,7 +1459,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             expectedOutput: GetExpectedOutput("v1", workDir));
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance,
             expectedLevel: BuildLevel.Csc,
@@ -1474,7 +1474,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property RunWorkingDirectory={workDir2}
             {code}
             """;
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance,
             expectedLevel: BuildLevel.All,
@@ -1979,7 +1979,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"),
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath,
             $"""
             #!/usr/bin/env dotnet
             #:include *.cs
@@ -2002,7 +2003,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var expectedCount = 4;
         VerifyBinLogEvaluationDataCount(binaryLogPath, expectedCount: expectedCount);
 
-        File.WriteAllText(utilPath, s_util.Replace("String from Util", "v2"));
+        WriteAllTextNewerThanBuildCache(utilPath, s_util.Replace("String from Util", "v2"), programPath);
 
         new DotnetCommand(Log, "run", "Program.cs", "-bl:second.binlog")
             .WithWorkingDirectory(testInstance.Path)
@@ -2493,7 +2494,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass();
 
         // Changing the program has no effect when it is not built.
-        File.WriteAllText(programFile, """Console.WriteLine("Changed");""");
+        WriteAllTextNewerThanBuildCache(programFile, """Console.WriteLine("Changed");""");
         new DotnetCommand(Log, "run", "--no-build", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
@@ -2534,7 +2535,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello from Program");
 
         // Changing the program has no effect when it is not built.
-        File.WriteAllText(programFile, """Console.WriteLine("Changed");""");
+        WriteAllTextNewerThanBuildCache(programFile, """Console.WriteLine("Changed");""");
         new DotnetCommand(Log, "run", "--no-build", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
@@ -4504,12 +4505,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
 
         utilCode = utilCode.Replace("String from Util", "v2");
-        File.WriteAllText(utilPath, utilCode);
+        WriteAllTextNewerThanBuildCache(utilPath, utilCode, programPath);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "Hello, v2");
 
         utilCode = utilCode.Replace("v2", "v3");
-        File.WriteAllText(utilPath, utilCode);
+        WriteAllTextNewerThanBuildCache(utilPath, utilCode, programPath);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "Hello, v3");
 
@@ -4562,12 +4563,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.None, expectedOutput: expectedOutput);
 
         utilCode = utilCode.Replace("String from Util", "v2");
-        File.WriteAllText(utilPath, utilCode);
+        WriteAllTextNewerThanBuildCache(utilPath, utilCode, programPath);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "Hello, v2");
 
         utilCode = utilCode.Replace("v2", "v3");
-        File.WriteAllText(utilPath, utilCode);
+        WriteAllTextNewerThanBuildCache(utilPath, utilCode, programPath);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "Hello, v3");
 
@@ -4658,7 +4659,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput, workDir: appDir);
 
         libCode = libCode.Replace("v1", "v2");
-        File.WriteAllText(libPath, libCode);
+        WriteAllTextNewerThanBuildCache(libPath, libCode, programPath);
 
         expectedOutput = "Program(v1) Util(v1) Lib(v2)";
 
@@ -4967,7 +4968,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: """
             v2
@@ -5478,12 +5479,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void UpToDate()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
             Console.WriteLine("Hello v1");
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "Hello v1");
@@ -5493,7 +5495,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.None, expectedOutput: "Hello v1");
 
         // Change the source file (a rebuild is necessary).
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        WriteAllTextNewerThanBuildCache(programPath, s_program);
 
         Build(testInstance, BuildLevel.Csc);
 
@@ -5506,13 +5508,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Add an implicit build file (a rebuild is necessary).
         string buildPropsFile = Path.Join(testInstance.Path, "Directory.Build.props");
-        File.WriteAllText(buildPropsFile, """
+        WriteAllTextNewerThanBuildCache(buildPropsFile, """
             <Project>
                 <PropertyGroup>
                     <DefineConstants>$(DefineConstants);CUSTOM_DEFINE</DefineConstants>
                 </PropertyGroup>
             </Project>
-            """);
+            """, programPath);
 
         Build(testInstance, BuildLevel.All, expectedOutput: """
             Hello from Program
@@ -5530,11 +5532,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             <Project>
             </Project>
             """);
-        File.WriteAllText(buildPropsFile, """
+        WriteAllTextNewerThanBuildCache(buildPropsFile, """
             <Project>
                 <Import Project="Settings.props" />
             </Project>
-            """);
+            """, programPath);
 
         Build(testInstance, BuildLevel.All);
 
@@ -5640,6 +5642,33 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         foreach (var binlog in binlogs)
         {
             binlog.Delete();
+        }
+    }
+
+    private static void WriteAllTextNewerThanBuildCache(string path, string contents, string? entryPointPath = null)
+    {
+        File.WriteAllText(path, contents);
+        TouchNewerThanBuildCache(path, entryPointPath ?? path);
+    }
+
+    private static void WriteAllTextNewerThanBuildCache(string path, string contents, Encoding encoding, string? entryPointPath = null)
+    {
+        File.WriteAllText(path, contents, encoding);
+        TouchNewerThanBuildCache(path, entryPointPath ?? path);
+    }
+
+    private static void TouchNewerThanBuildCache(string path, string entryPointPath)
+    {
+        string successCacheFile = Path.Join(VirtualProjectBuilder.GetArtifactsPath(entryPointPath), "build-success.cache");
+        if (!File.Exists(successCacheFile))
+        {
+            return;
+        }
+
+        var buildTimeUtc = File.GetLastWriteTimeUtc(successCacheFile);
+        if (File.GetLastWriteTimeUtc(path) <= buildTimeUtc)
+        {
+            File.SetLastWriteTimeUtc(path, buildTimeUtc.AddMilliseconds(1));
         }
     }
 
@@ -5849,7 +5878,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             #:property EnableDefaultEmbeddedResourceItems=true
             {s_programReadingEmbeddedResource}
             """;
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, code);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "Resource not found");
 
@@ -5867,17 +5897,17 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         }
 
         // Update the RESX file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
+        WriteAllTextNewerThanBuildCache(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"), programPath);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "[MyString, UpdatedValue]");
 
         // Update the C# file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
+        WriteAllTextNewerThanBuildCache(programPath, "//v2\n" + code);
 
         Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: "[MyString, UpdatedValue]");
 
         // Update the RESX file again (to verify the CSC only compilation didn't corrupt the list of additional files in the cache).
-        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue2"));
+        WriteAllTextNewerThanBuildCache(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue2"), programPath);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "[MyString, UpdatedValue2]");
     }
@@ -5918,17 +5948,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
             Console.WriteLine("v1");
             """);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1");
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        WriteAllTextNewerThanBuildCache(programPath, """
             Console.WriteLine("v2");
             #if !DEBUG
             Console.WriteLine("Release config");
@@ -5949,7 +5980,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
             string x = null;
             Console.WriteLine("ran" + x);
             """);
@@ -5963,7 +5995,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("warning CS8600")
             .And.HaveStdOutContaining("ran");
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        WriteAllTextNewerThanBuildCache(programPath, """
             Console.Write
             """);
 
@@ -6081,10 +6113,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void CscOnly_NotRestored()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         new DotnetCommand(Log, "run", "Program.cs", "-bl", "--no-restore")
@@ -6102,7 +6135,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("Hello from Program");
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        WriteAllTextNewerThanBuildCache(programPath, """
             Console.WriteLine("v2");
             """);
 
@@ -6183,7 +6216,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.None, expectedOutput: "v1", programFileName: programFileName);
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(originalPath, code, utf8NoBom);
+        WriteAllTextNewerThanBuildCache(originalPath, code, utf8NoBom, programPath);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
     }
@@ -6218,18 +6251,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.None, expectedOutput: "v1 Release");
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2 Release");
 
         code = code.Replace("v2", "v3");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v3 Release");
 
         // Customizing a property forces MSBuild to be used.
         code = code.Replace("Configuration=Release", "Configuration=Debug");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v3 ");
 
@@ -6237,7 +6270,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "v3 ");
 
         code = code.Replace("v3", "v4");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v4 ");
 
@@ -6275,7 +6308,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release", programFileName: programFileName);
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2 Release", programFileName: programFileName);
     }
@@ -6315,7 +6348,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Write invalid code that causes compilation to fail
         code = code + "\n#error my custom error";
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         // Try to build the invalid code
         new DotnetCommand(Log, "run", "-bl", "Program.cs")
@@ -6357,7 +6390,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         code = code.Replace("Hello", "Hi");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, args: ["test", "args"], expectedOutput: """
             echo args:test;args
@@ -6392,7 +6425,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All);
 
         code = code.Replace("Hello", "Hi");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "Hi from Program");
     }
@@ -6426,7 +6459,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "v1", programFileName: programFileName);
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(originalPath, code, utf8NoBom);
+        WriteAllTextNewerThanBuildCache(originalPath, code, utf8NoBom, programPath);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", programFileName: programFileName);
     }
@@ -6456,7 +6489,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             programVersion++;
 
             // #: directive ensures we get CscOnly_AfterMSBuild optimization instead of CscOnly.
-            File.WriteAllText(programPath, $"""
+            WriteAllTextNewerThanBuildCache(programPath, $"""
                 #:property Configuration=Debug
                 Console.WriteLine("v{programVersion} " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
                 """);
@@ -6475,7 +6508,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         Build(testInstance, BuildLevel.All, expectedOutput: $"v{programVersion} Program");
 
-        File.WriteAllText(propsPath, propsContent);
+        WriteAllTextNewerThanBuildCache(propsPath, propsContent, programPath);
 
         if (touch2) WriteProgramContent();
 
@@ -6532,10 +6565,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Hello from Lib v1", programFileName: programFileName);
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         libCode = libCode.Replace("v1", "v2");
-        File.WriteAllText(libPath, libCode);
+        WriteAllTextNewerThanBuildCache(libPath, libCode, programPath);
 
         // Cannot use CSC because we cannot detect updates in the referenced project.
         Build(testInstance, BuildLevel.All, expectedOutput: "v2 Hello from Lib v2", programFileName: programFileName);
@@ -6578,10 +6611,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "Hello v1");
 
         programCode = programCode.Replace("Hello", "Hi");
-        File.WriteAllText(programPath, programCode);
+        WriteAllTextNewerThanBuildCache(programPath, programCode);
 
         libCode = libCode.Replace("v1", "v2");
-        File.WriteAllText(libPath, libCode);
+        WriteAllTextNewerThanBuildCache(libPath, libCode, programPath);
 
         // Cannot use CSC because we cannot detect updates in the referenced file.
         Build(testInstance, BuildLevel.All, expectedOutput: "Hi v2");
@@ -6628,7 +6661,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release");
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, canSkipMSBuild ? BuildLevel.Csc : BuildLevel.All, expectedOutput: "v2 Release");
     }
@@ -6659,14 +6692,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release");
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         // Reusing CSC args from previous run here.
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2 Release");
 
         code = code.Replace("v2", "v3");
         code = code.Replace("#:property Configuration=Release", "");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         // Using built-in CSC args here (cannot reuse auxiliary files like csc.rsp here).
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v3 ");
@@ -6762,12 +6795,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", customizeCommand: CustomizeCommand);
 
         code = code.Replace("v2", "v3");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         // Clear NuGet cache.
         Directory.Delete(packageDir, recursive: true);
@@ -6809,12 +6842,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Assert.True(Directory.Exists(packageDir));
 
         code = code.Replace("v1", "v2");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2", customizeCommand: CustomizeCommand);
 
         code = code.Replace("v2", "v3");
-        File.WriteAllText(programPath, code);
+        WriteAllTextNewerThanBuildCache(programPath, code);
 
         // Clear NuGet cache.
         Directory.Delete(packageDir, recursive: true);
