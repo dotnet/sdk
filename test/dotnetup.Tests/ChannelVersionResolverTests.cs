@@ -95,7 +95,18 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         }
 
         [Theory]
-        [InlineData("latest", true)]
+        [InlineData("10.0.100-preview.1.32640")]
+        [InlineData("11.0.100-preview.3.26170.106")]
+        [InlineData("9.0.103-rc.1.24123.4")]
+        public void GetLatestVersionForChannel_FullyQualifiedPrereleaseVersion_ReturnsExactVersion(string channel)
+        {
+            var resolver = new ChannelVersionResolver();
+            var version = resolver.GetLatestVersionForChannel(new UpdateChannel(channel), InstallComponent.SDK);
+            Assert.NotNull(version);
+            Assert.Equal(channel, version!.ToString());
+        }
+
+        [Theory]
         [InlineData("preview", true)]
         [InlineData("lts", true)]
         [InlineData("LTS", true)]  // Case insensitive
