@@ -169,10 +169,6 @@
     <value>NETSDK1013: The TargetFramework value '{0}' was not recognized. It may be misspelled. If not, then the TargetFrameworkIdentifier and/or TargetFrameworkVersion properties must be specified explicitly.</value>
     <comment>{StrBegins="NETSDK1013: "}</comment>
   </data>
-  <data name="TargetFrameworkEmpty" xml:space="preserve">
-    <value>NETSDK1013: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</value>
-    <comment>{StrBegins="NETSDK1013: "}</comment>
-  </data>
   <data name="ContentItemDoesNotProvideOutputPath" xml:space="preserve">
     <value>NETSDK1014: Content item for '{0}' sets '{1}', but does not provide  '{2}' or '{3}'.</value>
     <comment>{StrBegins="NETSDK1014: "}</comment>
@@ -1026,5 +1022,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1237: Assembly '{0}' was listed in PublishReadyToRunPartialAssemblies but is being compiled into a composite image. Partial compilation is only supported for assemblies compiled separately. The assembly will be compiled fully into the composite image.</value>
     <comment>{StrBegins="NETSDK1237: "}{Locked="{0}"}</comment>
   </data>
-  <!-- The latest message added is ReadyToRunPartialCompileIgnoredInCompositeMode. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="TargetFrameworkEmpty" xml:space="preserve">
+    <value>NETSDK1238: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</value>
+    <comment>{StrBegins="NETSDK1238: "}</comment>
+  </data>
+  <!-- The latest message added is TargetFrameworkEmpty. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
