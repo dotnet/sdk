@@ -63,18 +63,13 @@ public sealed class CSharpAssemblyDocumentGenerator
 
         IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_options.SymbolFilter.Include);
 
-        List<SyntaxNode> namespaceSyntaxNodes = [];
+        List<SyntaxNode> declarationSyntaxNodes = [];
         foreach (INamespaceSymbol namespaceSymbol in namespaceSymbols.Order())
         {
-            SyntaxNode? syntaxNode = Visit(namespaceSymbol);
-
-            if (syntaxNode is not null)
-            {
-                namespaceSyntaxNodes.Add(syntaxNode);
-            }
+            declarationSyntaxNodes.AddRange(Visit(namespaceSymbol));
         }
 
-        SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes);
+        SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(declarationSyntaxNodes);
 
         if (_options.AdditionalAnnotations.Any())
         {
@@ -111,16 +106,15 @@ public sealed class CSharpAssemblyDocumentGenerator
         return document;
     }
 
-    private SyntaxNode? Visit(INamespaceSymbol namespaceSymbol)
+    private IEnumerable<SyntaxNode> Visit(INamespaceSymbol namespaceSymbol)
     {
-        SyntaxNode namespaceNode = _syntaxGenerator.NamespaceDeclaration(namespaceSymbol.ToDisplayString());
-
         IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers().Where(_options.SymbolFilter.Include);
         if (!typeMembers.Any())
         {
-            return null;
+            yield break;
         }
 
+        List<SyntaxNode> typeDeclarations = [];
         foreach (INamedTypeSymbol typeMember in typeMembers.Order())
         {
             SyntaxNode typeDeclaration = _syntaxGenerator
@@ -128,11 +122,26 @@ public sealed class CSharpAssemblyDocumentGenerator
                 .AddMemberAttributes(_syntaxGenerator, typeMember, _options.AttributeSymbolFilter);
 
             typeDeclaration = Visit(typeDeclaration, typeMember);
+            typeDeclarations.Add(typeDeclaration);
+        }
 
+        if (namespaceSymbol.IsGlobalNamespace)
+        {
+            foreach (SyntaxNode typeDeclaration in typeDeclarations)
+            {
+                yield return typeDeclaration;
+            }
+
+            yield break;
+        }
+
+        SyntaxNode namespaceNode = _syntaxGenerator.NamespaceDeclaration(namespaceSymbol.ToDisplayString());
+        foreach (SyntaxNode typeDeclaration in typeDeclarations)
+        {
             namespaceNode = _syntaxGenerator.AddMembers(namespaceNode, typeDeclaration);
         }
 
-        return namespaceNode;
+        yield return namespaceNode;
     }
 
     // Name hiding through inheritance occurs when classes or structs redeclare names that were inherited from base classes. This type of name hiding takes one of the following forms:
