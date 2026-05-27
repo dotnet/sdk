@@ -48,9 +48,11 @@
        This replaces the BuildTestPackages.targets entry that re-packed this project
        with different global properties, which caused a parallel-build race condition.
        Guard with IsCrossTargetingBuild so this runs only once in the outer build of a
-       multi-targeting project, avoiding concurrent copies per inner TFM build. -->
+       multi-targeting project, avoiding concurrent copies per inner TFM build.
+       Skip in VMR/source-build where integration tests don't run and versioning
+       properties may not be available in the outer cross-targeting evaluation. -->
   <Target Name="CopyPackageToTestPackagesDir" AfterTargets="Pack"
-          Condition="'$(TestLayoutDir)' != '' and ('$(IsCrossTargetingBuild)' == 'true' or '$(TargetFrameworks)' == '')">
+          Condition="'$(TestLayoutDir)' != '' and '$(DotNetBuild)' != 'true' and ('$(IsCrossTargetingBuild)' == 'true' or '$(TargetFrameworks)' == '')">
     <PropertyGroup>
       <_TestPackagesDir>$(TestLayoutDir)testpackages/</_TestPackagesDir>
     </PropertyGroup>
