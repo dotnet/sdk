@@ -137,6 +137,45 @@ public class DailyChannelResolverTests
             resolver.Resolve(new UpdateChannel("10.0"), InstallArchitecture.x64));
     }
 
+    [Fact]
+    public void Resolve_HtmlContentResponse_ReturnsNull()
+    {
+        // If aka.ms changes its not-found fallback to a host other than bing.com (so
+        // IsAkaMsShortlinkNotFound's URL pattern misses) but still returns HTML, the
+        // Content-Type check should still treat the response as "no daily build available".
+        // We point the redirect at an allowed host (ci.dot.net) so IsAllowedRedirectTarget
+        // doesn't intercept first, and label the response as text/html.
+        const string prefix = "https://aka.ms/dotnet/10.0/daily/dotnet-sdk-";
+        using var handler = new RedirectHandler(
+            new Dictionary<string, string>
+            {
+                [prefix] = "https://ci.dot.net/public/maintenance.html",
+            },
+            new Dictionary<string, string>
+            {
+                [prefix] = "text/html",
+            });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10.0-daily"), InstallArchitecture.x64);
+
+        version.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("text/html", true)]
+    [InlineData("text/HTML", true)] // case-insensitive
+    [InlineData("application/octet-stream", false)]
+    [InlineData("application/zip", false)]
+    [InlineData("application/x-gzip", false)]
+    [InlineData(null, false)] // missing Content-Type header — let other checks decide
+    [InlineData("", false)]
+    public void IsHtmlContent_RecognizesHtmlMediaType(string? mediaType, bool expected)
+    {
+        DailyChannelResolver.IsHtmlContent(mediaType).Should().Be(expected);
+    }
+
     [Theory]
     [InlineData("https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip", true)]
     [InlineData("https://builds.dotnet.microsoft.com/sdk/10.0.100-preview.4.25216.37/dotnet-sdk.zip", true)]
@@ -194,10 +233,12 @@ public class DailyChannelResolverTests
     private sealed class RedirectHandler : HttpMessageHandler
     {
         private readonly Dictionary<string, string> _redirectMap;
+        private readonly Dictionary<string, string>? _contentTypes;
 
-        public RedirectHandler(Dictionary<string, string> redirectMap)
+        public RedirectHandler(Dictionary<string, string> redirectMap, Dictionary<string, string>? contentTypes = null)
         {
             _redirectMap = redirectMap;
+            _contentTypes = contentTypes;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -208,9 +249,14 @@ public class DailyChannelResolverTests
             {
                 if (url.StartsWith(prefix, StringComparison.Ordinal))
                 {
+                    string contentType = (_contentTypes is not null && _contentTypes.TryGetValue(prefix, out var ct))
+                        ? ct
+                        : "application/octet-stream";
+                    var content = new ByteArrayContent(Array.Empty<byte>());
+                    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
                     var response = new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Content = new StringContent(string.Empty),
+                        Content = content,
                         // Rewrite the URI on the request to simulate the post-redirect state.
                         RequestMessage = new HttpRequestMessage(HttpMethod.Get, target),
                     };

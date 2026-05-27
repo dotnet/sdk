@@ -120,6 +120,7 @@ internal sealed class DailyChannelResolver : IDisposable
         string akaMsUrl = string.Format(System.Globalization.CultureInfo.InvariantCulture, AkaMsTemplate, partialVersion, archivePrefix, rid, extension);
 
         Uri finalUri;
+        string? contentType;
         try
         {
             using var response = _httpClient.GetAsync(akaMsUrl, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
@@ -133,6 +134,7 @@ internal sealed class DailyChannelResolver : IDisposable
                 ?? throw new DotnetInstallException(
                     DotnetInstallErrorCode.NetworkError,
                     $"Could not determine the redirect target for daily channel '{partialVersion}-daily'.");
+            contentType = response.Content.Headers.ContentType?.MediaType;
         }
         catch (HttpRequestException ex)
         {
@@ -142,11 +144,13 @@ internal sealed class DailyChannelResolver : IDisposable
                 ex);
         }
 
-        if (IsAkaMsShortlinkNotFound(finalUri))
+        if (IsAkaMsShortlinkNotFound(finalUri) || IsHtmlContent(contentType))
         {
-            // aka.ms redirects unknown shortlinks to https://www.bing.com/?ref=aka&shorturl=...
-            // Treat that as "no daily build available for this partial version" so callers
-            // (like the bare 'daily' probe of major+1) can fall back to the next candidate.
+            // Two ways aka.ms can tell us "no daily build available":
+            //  * URL pattern: unknown shortlinks redirect to https://www.bing.com/?ref=aka&shorturl=...
+            //  * Content type: the fallback page is text/html rather than a binary archive.
+            // Either signal returns null so callers (like the bare 'daily' probe of
+            // major+1) can fall back to the next candidate.
             return null;
         }
 
@@ -211,6 +215,15 @@ internal sealed class DailyChannelResolver : IDisposable
         var query = uri.Query;
         return query.Contains("ref=aka", StringComparison.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// Treats <c>text/html</c> as "this isn't a daily-build archive". A real
+    /// daily-build redirect terminates on a binary archive (typically served
+    /// as <c>application/octet-stream</c>); HTML responses are the aka.ms
+    /// not-found fallback or any future error page they switch to.
+    /// </summary>
+    public static bool IsHtmlContent(string? mediaType) =>
+        mediaType is not null && mediaType.Equals("text/html", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Extracts the .NET version from a daily-build redirect URL. The path
