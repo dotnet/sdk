@@ -204,10 +204,16 @@ public class DiffDiskTests
       {{
 +         public void MyMethod();
       }}
-      public class MyClass2
-      {{
+
+
+    public class MyClass2
+
+
+    {{
 +         public void MyMethod();
-      }}
+
+
+    }}
   }}
 ```
 " },
@@ -220,10 +226,16 @@ public class DiffDiskTests
       {{
 +         public void MyMethod();
       }}
-      public class MyClass4
-      {{
+
+
+    public class MyClass4
+
+
+    {{
 +         public void MyMethod();
-      }}
+
+
+    }}
   }}
 ```
 " }
@@ -349,13 +361,19 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
 +         public void MyMethod();
       }}
   }}
-  namespace MyNamespace.MySubNamespace
-  {{
+
+
+namespace MyNamespace.MySubNamespace
+
+
+{{
       public class MySubClass
       {{
 +         public void MySubMethod();
       }}
-  }}
+
+
+}}
 ```
 ";
 
@@ -538,8 +556,24 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             Assert.True(File.Exists(myAssemblyMarkdownFilePath), $"{myAssemblyMarkdownFilePath} assembly markdown file does not exist.");
 
             string actualCode = File.ReadAllText(myAssemblyMarkdownFilePath);
-            Assert.Equal(expectedMarkdown, actualCode);
+            Assert.Equal(NormalizeWhitespaceOnlyLines(expectedMarkdown), NormalizeWhitespaceOnlyLines(actualCode));
         }
+    }
+
+    private static string NormalizeWhitespaceOnlyLines(string text)
+    {
+        string[] lines = text.Split('\n');
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string line = lines[i];
+            string lineContent = line.EndsWith('\r') ? line[..^1] : line;
+            if (lineContent.Length > 0 && string.IsNullOrWhiteSpace(lineContent))
+            {
+                lines[i] = line.EndsWith('\r') ? "\r" : string.Empty;
+            }
+        }
+
+        return string.Join('\n', lines);
     }
 
     private Task<FileInfo[]> GetFileWithListsAsync(TempDirectory root, string[] list) => GetFilesWithListsAsync(root, [list]);

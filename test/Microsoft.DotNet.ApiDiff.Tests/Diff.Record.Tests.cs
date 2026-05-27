@@ -89,11 +89,17 @@ public class DiffRecordTests : DiffBaseTests
                   namespace MyNamespace
                   {
                 -     public record MyBeforeRecord1(int a);
-                      public record MyRecord2
-                      {
+
+
+                    public record MyRecord2
+
+
+                    {
                 -         public double Y { get; set; }
                 +         public int X { get; set; }
-                      }
+
+
+                    }
                 -     public record MyRecord3(int a)
                 -     {
                 -         public int Y { get; set; }

@@ -107,11 +107,8 @@ public sealed class CSharpAssemblyDocumentGenerator
         if (_options.ShouldFormat)
         {
             document = await Formatter.FormatAsync(document, DefineFormattingOptions()).ConfigureAwait(false);
-            if (_options.ShouldNormalizeMemberSpacing)
-            {
-                SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
-                document = document.WithSyntaxRoot(root.Rewrite(MemberSpacingCSharpSyntaxRewriter.Singleton));
-            }
+            SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
+            document = document.WithSyntaxRoot(root.Rewrite(MemberSpacingCSharpSyntaxRewriter.Singleton));
         }
 
         return document;

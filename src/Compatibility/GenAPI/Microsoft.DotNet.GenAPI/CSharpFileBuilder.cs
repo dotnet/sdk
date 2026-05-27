@@ -48,7 +48,6 @@ namespace Microsoft.DotNet.GenAPI
             {
                 HideImplicitDefaultConstructors = true,
                 ShouldFormat = true,
-                ShouldNormalizeMemberSpacing = true,
                 ShouldReduce = true,
                 IncludeAssemblyAttributes = includeAssemblyAttributes,
                 MetadataReferences = metadataReferences,

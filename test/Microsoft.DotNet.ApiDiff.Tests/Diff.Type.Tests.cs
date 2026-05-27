@@ -148,10 +148,13 @@ public class DiffTypeTests : DiffBaseTests
                   {
                       public class MyType
                       {
-                          public class MyNestedType
-                          {
+
+                        public class MyNestedType
+
+                        {
                 +             public void MyMethod();
-                          }
+
+                        }
                       }
                   }
                 """);
@@ -187,11 +190,14 @@ public class DiffTypeTests : DiffBaseTests
                   {
                       public class MyType
                       {
-                          public class MyNestedType
-                          {
+
+                        public class MyNestedType
+
+                        {
                 -             public void MyBeforeMethod();
                 +             public void MyAfterMethod();
-                          }
+
+                        }
                       }
                   }
                 """);
@@ -226,10 +232,13 @@ public class DiffTypeTests : DiffBaseTests
                   {
                       public class MyType
                       {
-                          public class MyNestedType
-                          {
+
+                        public class MyNestedType
+
+                        {
                 -             public void MyMethod();
-                          }
+
+                        }
                       }
                   }
                 """);

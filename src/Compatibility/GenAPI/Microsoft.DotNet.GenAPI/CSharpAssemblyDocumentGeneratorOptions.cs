@@ -28,7 +28,6 @@ public sealed class CSharpAssemblyDocumentGeneratorOptions
     public bool HideImplicitDefaultConstructors { get; set; }
     public bool IncludeAssemblyAttributes { get; set; }
     public bool ShouldFormat { get; set; }
-    public bool ShouldNormalizeMemberSpacing { get; set; }
     public bool ShouldReduce { get; set; }
     public IEnumerable<KeyValuePair<string, ReportDiagnostic>>? DiagnosticOptions { get; set; }
     public IEnumerable<MetadataReference>? MetadataReferences { get; set; }
