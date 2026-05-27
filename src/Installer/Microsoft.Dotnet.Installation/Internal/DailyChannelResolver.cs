@@ -102,17 +102,15 @@ internal sealed class DailyChannelResolver : IDisposable
 
     private int GetLatestManifestMajor()
     {
-        var index = _releaseManifest.GetReleasesIndex();
-        int latestMajor = 0;
-        foreach (var product in index)
+        // The manifest is designed so that the first product is always the latest major
+        // (same assumption ChannelVersionResolver.GetLatestVersionForMajorOrMajorMinor relies on).
+        var first = _releaseManifest.GetReleasesIndex().FirstOrDefault();
+        if (first != null && int.TryParse(first.ProductVersion.Split('.')[0], out var major))
         {
-            if (int.TryParse(product.ProductVersion.Split('.')[0], out var major) && major > latestMajor)
-            {
-                latestMajor = major;
-            }
+            return major;
         }
 
-        return latestMajor;
+        return 0;
     }
 
     private ReleaseVersion? TryResolvePartialVersion(string partialVersion, string archivePrefix, string rid, string extension)
