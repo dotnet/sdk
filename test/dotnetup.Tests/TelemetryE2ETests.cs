@@ -42,6 +42,32 @@ public class TelemetryE2ETests
         ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = dataDir,
     };
 
+    /// <summary>
+    /// Like <see cref="GetTelemetryEnvVars(string)"/> but does NOT set
+    /// <c>DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT</c>. This forces the
+    /// production code path that wires up the AzureMonitor log + OTLP
+    /// exporters — the same path that runs in prod against AppInsights and
+    /// the data-x ingest. Used by the regression test that guards against
+    /// AzMon exporter initialization failing silently under NativeAOT (which
+    /// would disable telemetry end-to-end, exactly the kind of regression
+    /// that previously shipped because every other E2E test disabled trace
+    /// export for parser stability).
+    /// </summary>
+    private static Dictionary<string, string> GetTelemetryEnvVarsWithAzMonEnabled(string dataDir) => new()
+    {
+        ["DOTNETUP_TELEMETRY_DEBUG"] = "1",
+        ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "0",
+        // Route the AzMon exporter's offline-retry blob store into the test
+        // temp dir so production user-profile state stays untouched even
+        // when AzMon's HTTP export fails (expected — no network egress in
+        // tests, the fake connection string points at a real endpoint but
+        // the test does not depend on the request succeeding, only on the
+        // exporter pipeline successfully initializing and the console
+        // exporter still flushing a `dotnetup` record).
+        ["DOTNET_CLI_TELEMETRY_STORAGE_PATH"] = dataDir,
+        ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = dataDir,
+    };
+
     [Fact]
     public void InvalidVersion_ProducesUserError_OnRootLogRecord()
     {
@@ -349,6 +375,53 @@ public class TelemetryE2ETests
         {
             Directory.Delete(tempDir, recursive: true);
         }
+    }
+
+    /// <summary>
+    /// Regression guard for the AzureMonitor / NativeAOT silent-init-failure
+    /// class of bug. The production telemetry pipeline wires
+    /// <c>AddAzureMonitorLogExporter</c> + <c>AddOtlpExporter</c> into the
+    /// OTel logger; if those throw at startup under NativeAOT (e.g. because
+    /// reflection-dependent types in the AzMon serializer got trimmed because
+    /// the package's AOT root descriptors didn't apply to the AOT-publishing
+    /// project), the broad <c>catch (Exception)</c> in
+    /// <see cref="Microsoft.DotNet.Tools.Bootstrapper.Telemetry.DotnetupTelemetry"/>
+    /// silently sets <c>Enabled = false</c> and the entire telemetry
+    /// pipeline goes dark — including the console exporter. Every other
+    /// test in this file disables the trace exporters via
+    /// <c>DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT=1</c> to keep parser
+    /// output stable, so the production code path that wires AzMon was
+    /// previously never exercised end-to-end. Result: the May 15 csproj
+    /// split (dotnetup → dotnetup + dotnetup.Library) shipped a binary
+    /// whose AzMon init threw under AOT, and prod telemetry stopped
+    /// flowing while every CI run stayed green.
+    /// </summary>
+    [Fact]
+    public void AzureMonitorExporterWired_StillEmitsConsoleLogRecords()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildSdkArguments("999.999.999", testEnv.InstallPath, testEnv.ManifestPath);
+        var envVars = GetTelemetryEnvVarsWithAzMonEnabled(testEnv.TempRoot);
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            args, captureOutput: true, workingDirectory: testEnv.TempRoot, environmentVariables: envVars);
+
+        exitCode.Should().NotBe(0);
+
+        // If AzMon (or OTLP) exporter initialization threw under AOT, the
+        // entire telemetry try-block in DotnetupTelemetry's ctor would have
+        // bailed out and Enabled would be false — no exporter at all,
+        var logRecords = ParseLogRecords(output);
+        logRecords.Should().NotBeEmpty(
+            "AzMon log exporter must initialize cleanly so that the production telemetry " +
+            "pipeline (which feeds AppInsights `traces` and the data-x dashboard) does not " +
+            "silently fail. If this assertion fails on the AOT-published binary but passes " +
+            "on the managed binary, the AOT publish is missing package AOT root descriptors " +
+            "(see src/Installer/dotnetup/dotnetup.csproj).");
+
+        logRecords.Should().Contain(r => r.DisplayName == "dotnetup",
+            "the root `dotnetup` LogRecord is what data-x ingests; if AzMon init silently " +
+            "failed, this record never reaches AppInsights even though console may show partial output.");
     }
 
     /// <summary>
