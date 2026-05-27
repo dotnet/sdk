@@ -91,7 +91,24 @@ public class TestCommand(
 
             string[] additionalBuildProperties;
 
-            var useTerminalLogger = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(parseResult);
+            // Filter post-`--` settings tokens out of UnmatchedTokens before handing them to
+            // MSBuild's command-line parser - MSBuild's parser treats any non-switch token as a
+            // positional project-file argument and fails (MSB1008) when it sees more than one. The
+            // same filter is applied below in FromParseResult before forwarding to MSBuild.
+            IReadOnlyList<string> unmatchedTokensWithoutSettings = settings.Length > 1
+                ? [.. parseResult.UnmatchedTokens.TakeWhile(x => x != settings[1])]
+                : parseResult.UnmatchedTokens;
+
+            // Pre-set the legacy VSTest stdout workaround env var BEFORE invoking MSBuild's
+            // CommandLineParser below. MSBuild caches MSBUILDENSURESTDOUTFORTASKPROCESSES in a
+            // readonly singleton (Traits.Instance.EscapeHatches.EnsureStdOutForChildNodesIsPrimaryStdout)
+            // on first access; once any MSBuild type is touched in this process, that value is locked.
+            // If we set it later (in SetLegacyVSTestWorkarounds), MSBuild will already have locked it
+            // as "false" and parallel cross-targeting builds will lose stdout from one inner build.
+            // The previous value is captured above and restored in the finally block below.
+            Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, "1");
+
+            var useTerminalLogger = TerminalLoggerDetector.ProcessTerminalLoggerConfiguration(unmatchedTokensWithoutSettings);
 
             if (useTerminalLogger == TerminalLoggerMode.Invalid)
             {
@@ -371,12 +388,12 @@ public class TestCommand(
 
 public class TerminalLoggerDetector
 {
-    public static TerminalLoggerMode ProcessTerminalLoggerConfiguration(ParseResult parseResult)
+    public static TerminalLoggerMode ProcessTerminalLoggerConfiguration(IReadOnlyList<string> unmatchedTokens)
     {
         string? terminalLoggerArg;
-        if (!TryFromCommandLine(parseResult.UnmatchedTokens, out terminalLoggerArg) && !TryFromEnvironmentVariables(out terminalLoggerArg))
+        if (!TryFromCommandLine(unmatchedTokens, out terminalLoggerArg) && !TryFromEnvironmentVariables(out terminalLoggerArg))
         {
-            terminalLoggerArg = FindDefaultValue(parseResult.UnmatchedTokens) ?? "auto";
+            terminalLoggerArg = FindDefaultValue(unmatchedTokens) ?? "auto";
         }
 
         terminalLoggerArg = NormalizeIntoBooleanValues(terminalLoggerArg!);
@@ -434,30 +451,37 @@ public class TerminalLoggerDetector
 
         string? FindDefaultValue(IReadOnlyList<string> unmatchedTokens)
         {
-            // Find default configuration so it is part of telemetry even when default is not used.
-            // Default can be stored in /tlp:default=true|false|on|off|auto
-            Switch? terminalLoggerDefault = TryFind(unmatchedTokens, "tlp", "terminalloggerparameters");
-            if (terminalLoggerDefault == null)
+            // MSBuild's CommandLineParser is strict: it throws when it sees malformed switches, when
+            // it cannot expand a response file (@-prefixed tokens), or when it parses more than one
+            // positional project-file argument. Detection of the terminal logger configuration is
+            // best-effort - on any failure, fall back to the default ("auto") rather than crashing
+            // `dotnet test`.
+            var switches = TryParseSwitches(unmatchedTokens);
+            if (switches is null)
             {
                 return null;
             }
 
-            if (terminalLoggerDefault.Value == null)
+            string[]? tlpValues = switches.Value.TerminalLoggerParameters;
+            if (tlpValues is not { Length: > 0 })
             {
                 return null;
             }
 
-            foreach (string parameter in terminalLoggerDefault.Value.Split(':'))
+            foreach (string tlpValue in tlpValues)
             {
-                if (string.IsNullOrWhiteSpace(parameter))
+                foreach (string parameter in tlpValue.Split(';'))
                 {
-                    continue;
-                }
+                    if (string.IsNullOrWhiteSpace(parameter))
+                    {
+                        continue;
+                    }
 
-                string[] parameterAndValue = parameter.Split('=');
-                if (parameterAndValue[0].Equals("default", StringComparison.InvariantCultureIgnoreCase) && parameterAndValue.Length > 1)
-                {
-                    return parameterAndValue[1];
+                    string[] parameterAndValue = parameter.Split('=');
+                    if (parameterAndValue[0].Equals("default", StringComparison.OrdinalIgnoreCase) && parameterAndValue.Length > 1)
+                    {
+                        return parameterAndValue[1];
+                    }
                 }
             }
 
@@ -466,22 +490,39 @@ public class TerminalLoggerDetector
 
         bool TryFromCommandLine(IReadOnlyList<string> unmatchedTokens, [NotNullWhen(true)] out string? value)
         {
-            Switch? terminalLogger = TryFind(unmatchedTokens, ["tl", "terminalLogger", "ll", "livelogger"]);
-            if (terminalLogger == null)
+            var switches = TryParseSwitches(unmatchedTokens);
+            if (switches is null)
             {
                 value = null;
                 return false;
             }
 
-            if (terminalLogger.Value == null)
+            string[]? tlValues = switches.Value.TerminalLogger;
+            if (tlValues is not { Length: > 0 })
             {
-                // if the switch was set but not to an explicit value, the value is "auto"
-                value = "auto";
-                return true;
+                value = null;
+                return false;
             }
 
-            value = terminalLogger.Value;
+            string lastValue = tlValues[^1];
+            // An empty value (e.g. bare "-tl") means "auto".
+            value = string.IsNullOrEmpty(lastValue) ? "auto" : lastValue;
             return true;
+        }
+
+        static Microsoft.Build.CommandLine.Experimental.CommandLineSwitchesAccessor? TryParseSwitches(IReadOnlyList<string> unmatchedTokens)
+        {
+            try
+            {
+                return new Microsoft.Build.CommandLine.Experimental.CommandLineParser().Parse(unmatchedTokens);
+            }
+            catch (Exception)
+            {
+                // MSBuild's parser throws on inputs we cannot constrain (e.g. multiple positional
+                // project args, malformed switches, missing response files). Detection is best
+                // effort, so swallow the error and let the caller fall back to defaults.
+                return null;
+            }
         }
 
         bool TryFromEnvironmentVariables([NotNullWhen(true)] out string? terminalLoggerArg)
@@ -518,32 +559,6 @@ public class TerminalLoggerDetector
 
             return terminalLoggerArg;
         }
-    }
-
-    private static Switch? TryFind(IReadOnlyList<string> unmatchedTokens, params string[] names)
-    {
-        foreach (string prefix in new string[] { "-", "--", "/" })
-        {
-            foreach (var name in names)
-            {
-                var found = unmatchedTokens.FirstOrDefault(t => t.StartsWith(prefix + name, StringComparison.OrdinalIgnoreCase));
-                if (found != null)
-                {
-                    var param = found.Substring(prefix.Length);
-                    if (!param.Contains(":"))
-                    {
-                        return new Switch(param, null);
-                    }
-                    else
-                    {
-                        var parts = param.Split(":", 2);
-                        return new Switch(parts[0], parts[1]);
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
     internal static class NativeMethods
@@ -691,7 +706,6 @@ public class TerminalLoggerDetector
             => !string.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
     }
 
-    private record class Switch(string Name, string? Value);
 }
 
 public enum TerminalLoggerMode
