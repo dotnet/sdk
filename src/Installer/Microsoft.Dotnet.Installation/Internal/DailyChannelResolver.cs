@@ -25,19 +25,6 @@ internal sealed class DailyChannelResolver : IDisposable
     /// </summary>
     private const string AkaMsTemplate = "https://aka.ms/dotnet/{0}/daily/{1}-{2}{3}";
 
-    /// <summary>
-    /// Hosts that aka.ms is allowed to redirect to. The redirect target tells
-    /// us where the daily build is actually published; if it points anywhere
-    /// else (e.g. through DNS hijacking or a misconfigured redirect), we
-    /// refuse to trust the URL for version extraction.
-    /// </summary>
-    public static readonly IReadOnlyList<string> AllowedRedirectHosts =
-    [
-        "ci.dot.net",
-        "builds.dotnet.microsoft.com",
-        "dotnetbuilds.azureedge.net",
-    ];
-
     private readonly HttpClient _httpClient;
     private readonly ReleaseManifest _releaseManifest;
     private readonly bool _shouldDisposeHttpClient;
@@ -167,7 +154,7 @@ internal sealed class DailyChannelResolver : IDisposable
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.NetworkError,
-                $"Daily channel '{partialVersion}-daily' redirected to disallowed host '{finalUri.Host}' (expected one of: {string.Join(", ", AllowedRedirectHosts)}).");
+                $"Daily channel '{partialVersion}-daily' redirected to disallowed host '{finalUri.Host}' (expected one of: {string.Join(", ", UrlSanitizer.KnownDownloadDomains)}).");
         }
 
         var version = ExtractVersionFromUrl(finalUri);
@@ -193,7 +180,7 @@ internal sealed class DailyChannelResolver : IDisposable
 
     /// <summary>
     /// Returns true when <paramref name="uri"/> uses HTTPS and points at a
-    /// host on <see cref="AllowedRedirectHosts"/>.
+    /// host on <see cref="UrlSanitizer.KnownDownloadDomains"/>.
     /// </summary>
     public static bool IsAllowedRedirectTarget(Uri uri)
     {
@@ -202,7 +189,7 @@ internal sealed class DailyChannelResolver : IDisposable
             return false;
         }
 
-        return AllowedRedirectHosts.Any(host => uri.Host.Equals(host, StringComparison.OrdinalIgnoreCase));
+        return UrlSanitizer.KnownDownloadDomains.Any(host => uri.Host.Equals(host, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

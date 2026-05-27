@@ -102,7 +102,7 @@ internal class ChannelVersionResolver
             return false;
         }
 
-        // Known keywords are always valid (includes bare "daily").
+        // Known keywords are always valid
         if (KnownChannelKeywords.Any(k => string.Equals(k, channel, StringComparison.OrdinalIgnoreCase)))
         {
             return true;
