@@ -123,9 +123,9 @@ function InstallDotNetSharedFrameworks([string[]]$versions) {
 
     # Skip if every requested framework is already on disk.
     $versionsToInstall = @($versions | Where-Object {
-        -not (Test-Path -PathType Container `
-              (Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$_"))
-    })
+            -not (Test-Path -PathType Container `
+                (Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$_"))
+        })
     if ($versionsToInstall.Count -eq 0) {
         return
     }
