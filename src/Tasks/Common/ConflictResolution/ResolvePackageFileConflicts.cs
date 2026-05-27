@@ -73,7 +73,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 compilePlatformItems = TargetFrameworkDirectories.SelectMany(tfd =>
                 {
                     AbsolutePath tfdPath = TaskEnvironment.GetAbsolutePath(tfd.ItemSpec);
-                    return frameworkListReader.GetConflictItems(Path.Combine(tfdPath, "RedistList", "FrameworkList.xml"), log);
+                    AbsolutePath frameworkListPath = TaskEnvironment.GetAbsolutePath(Path.Combine(tfdPath, "RedistList", "FrameworkList.xml"));
+                    return frameworkListReader.GetConflictItems(frameworkListPath, log);
                 }).ToArray();
             }
 
@@ -133,8 +134,12 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             using (var platformConflictScope = new ConflictResolver<ConflictItem>(packageRanks, packageOverrides, log))
             {
                 var platformItems = PlatformManifests?.SelectMany(pm =>
-                    PlatformManifestReader.LoadConflictItems(pm.ItemSpec, TaskEnvironment, log))
-                    ?? Enumerable.Empty<ConflictItem>();
+                {
+                    AbsolutePath? manifestPath = string.IsNullOrEmpty(pm.ItemSpec)
+                        ? null
+                        : TaskEnvironment.GetAbsolutePath(pm.ItemSpec);
+                    return PlatformManifestReader.LoadConflictItems(manifestPath, log);
+                }) ?? Enumerable.Empty<ConflictItem>();
 
                 if (compilePlatformItems != null)
                 {
