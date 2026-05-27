@@ -151,11 +151,9 @@ namespace Microsoft.DotNet.GenAPI
 
         private static SyntaxNode AddMissingSpecialConstraints(this SyntaxNode declaration, IEnumerable<ITypeParameterSymbol> typeParameters)
         {
-            ITypeParameterSymbol[] typeParametersWithMissingConstraints = typeParameters
-                .Where(typeParameter => typeParameter.HasNotNullConstraint || typeParameter.AllowsRefLikeType)
-                .ToArray();
+            ITypeParameterSymbol[] typeParameterArray = typeParameters.ToArray();
 
-            if (typeParametersWithMissingConstraints.Length == 0)
+            if (!typeParameterArray.Any(typeParameter => typeParameter.HasNotNullConstraint || typeParameter.AllowsRefLikeType))
             {
                 return declaration;
             }
@@ -163,27 +161,36 @@ namespace Microsoft.DotNet.GenAPI
             return declaration switch
             {
                 TypeDeclarationSyntax typeDeclaration => typeDeclaration.WithConstraintClauses(
-                    AddMissingSpecialConstraintClauses(typeDeclaration.ConstraintClauses, typeParametersWithMissingConstraints)),
+                    AddMissingSpecialConstraintClauses(typeDeclaration.ConstraintClauses, typeParameterArray)),
                 DelegateDeclarationSyntax delegateDeclaration => delegateDeclaration.WithConstraintClauses(
-                    AddMissingSpecialConstraintClauses(delegateDeclaration.ConstraintClauses, typeParametersWithMissingConstraints)),
+                    AddMissingSpecialConstraintClauses(delegateDeclaration.ConstraintClauses, typeParameterArray)),
                 MethodDeclarationSyntax methodDeclaration => methodDeclaration.WithConstraintClauses(
-                    AddMissingSpecialConstraintClauses(methodDeclaration.ConstraintClauses, typeParametersWithMissingConstraints)),
+                    AddMissingSpecialConstraintClauses(methodDeclaration.ConstraintClauses, typeParameterArray)),
                 _ => declaration
             };
         }
 
         private static SyntaxList<TypeParameterConstraintClauseSyntax> AddMissingSpecialConstraintClauses(
             SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses,
-            IEnumerable<ITypeParameterSymbol> typeParameters)
+            ITypeParameterSymbol[] typeParameters)
         {
-            foreach (ITypeParameterSymbol typeParameter in typeParameters)
+            for (int typeParameterIndex = 0; typeParameterIndex < typeParameters.Length; typeParameterIndex++)
             {
+                ITypeParameterSymbol typeParameter = typeParameters[typeParameterIndex];
+
+                if (!typeParameter.HasNotNullConstraint && !typeParameter.AllowsRefLikeType)
+                {
+                    continue;
+                }
+
                 TypeParameterConstraintClauseSyntax? constraintClause = constraintClauses
                     .FirstOrDefault(clause => clause.Name.Identifier.ValueText == typeParameter.Name);
 
                 if (constraintClause is null)
                 {
-                    constraintClauses = constraintClauses.Add(CreateConstraintClause(typeParameter));
+                    constraintClauses = constraintClauses.Insert(
+                        GetConstraintClauseInsertIndex(constraintClauses, typeParameters, typeParameterIndex),
+                        CreateConstraintClause(typeParameter));
                     continue;
                 }
 
@@ -204,6 +211,26 @@ namespace Microsoft.DotNet.GenAPI
             }
 
             return constraintClauses;
+        }
+
+        private static int GetConstraintClauseInsertIndex(
+            SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses,
+            ITypeParameterSymbol[] typeParameters,
+            int typeParameterIndex)
+        {
+            for (int i = 0; i < constraintClauses.Count; i++)
+            {
+                int constraintTypeParameterIndex = Array.FindIndex(
+                    typeParameters,
+                    typeParameter => typeParameter.Name == constraintClauses[i].Name.Identifier.ValueText);
+
+                if (constraintTypeParameterIndex > typeParameterIndex)
+                {
+                    return i;
+                }
+            }
+
+            return constraintClauses.Count;
         }
 
         private static TypeParameterConstraintClauseSyntax CreateConstraintClause(ITypeParameterSymbol typeParameter)
