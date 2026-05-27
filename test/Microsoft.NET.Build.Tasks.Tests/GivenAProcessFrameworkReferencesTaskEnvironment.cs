@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             """;
 
         [Fact]
-        public void It_resolves_relative_TargetingPackRoot_without_absolutizing_output_metadata()
+        public void Execute_WithRelativeTargetingPackRoot_DoesNotAbsolutizeOutputMetadata()
         {
             var testRoot = CreateTestRoot();
             var runtimeGraphPath = CreateRuntimeGraphFile();
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void It_resolves_relative_workload_pack_root_without_absolutizing_output_metadata()
+        public void Execute_WithRelativeWorkloadPackRoot_DoesNotAbsolutizeOutputMetadata()
         {
             var testRoot = CreateTestRoot();
             var runtimeGraphPath = CreateRuntimeGraphFile();

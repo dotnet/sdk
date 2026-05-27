@@ -165,7 +165,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = new ProcessFrameworkReferences
             {
                 BuildEngine = config.UseCachingEngine ? new MockBuildEngine() : new MockNeverCacheBuildEngine4(),
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
                 EnableTargetingPackDownload = config.EnableTargetingPackDownload,
                 EnableRuntimePackDownload = config.EnableRuntimePackDownload,
                 TargetFrameworkIdentifier = config.TargetFrameworkIdentifier ?? ".NETCoreApp",
