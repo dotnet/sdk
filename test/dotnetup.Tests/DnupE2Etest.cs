@@ -401,6 +401,29 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     }
 
     /// <summary>
+    /// Installs the latest daily-channel runtime end-to-end. Same flow as
+    /// <see cref="SdkInstall_DailyChannel"/> but exercises the Runtime component, which
+    /// is published at a different base version than the SDK (e.g. SDK 10.0.110 vs
+    /// Runtime 10.0.10 sharing -servicing.26276.118). This catches the case where
+    /// DailyChannelResolver resolves the SDK version and then tries to download a
+    /// non-existent runtime archive from the blob feed.
+    /// </summary>
+    [Fact]
+    public void RuntimeInstall_DailyChannel()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        VerifyManifestContains(testEnv, InstallComponent.Runtime, install =>
+        {
+            install.Version.Should().NotBeNullOrEmpty();
+            install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+        });
+    }
+
+    /// <summary>
     /// Looks up the current daily preview SDK version by following the aka.ms redirect
     /// for the SDK archive on the channel with the highest major version in the release
     /// manifest. If that channel doesn't yield a prerelease, probes the next-major

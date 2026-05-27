@@ -60,7 +60,7 @@ internal sealed class DailyChannelResolver : IDisposable
     /// Resolves the latest daily-build version for <paramref name="channel"/>.
     /// Returns <c>null</c> if no daily build is available.
     /// </summary>
-    public ReleaseVersion? Resolve(UpdateChannel channel, InstallArchitecture architecture)
+    public ReleaseVersion? Resolve(UpdateChannel channel, InstallArchitecture architecture, InstallComponent component = InstallComponent.SDK)
     {
         if (!channel.IsDaily)
         {

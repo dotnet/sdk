@@ -21,6 +21,33 @@ public class DailyChannelResolverTests
         "https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip";
 
     [Fact]
+    public void Resolve_RuntimeComponent_ReturnsRuntimeVersionNotSdkVersion()
+    {
+        // Test that we correctly handle differences between SDK and Runtime versions
+        // Daily-channel SDK and runtime builds are published at the same prerelease
+        // tag but DIFFERENT base versions (SDK 10.0.110 vs Runtime 10.0.10, sharing
+        // -servicing.26276.118).
+
+        const string sdkArchiveUrl =
+            "https://ci.dot.net/public/Sdk/10.0.110-servicing.26276.118/dotnet-sdk-10.0.110-win-x64.zip";
+        const string runtimeArchiveUrl =
+            "https://ci.dot.net/public/Runtime/10.0.10-servicing.26276.118/dotnet-runtime-10.0.10-win-x64.zip";
+
+        using var handler = new RedirectHandler(new Dictionary<string, string>
+        {
+            ["https://aka.ms/dotnet/10.0/daily/dotnet-sdk-"] = sdkArchiveUrl,
+            ["https://aka.ms/dotnet/10.0/daily/dotnet-runtime-"] = runtimeArchiveUrl,
+        });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10.0-daily"), InstallArchitecture.x64, InstallComponent.Runtime);
+
+        version.Should().NotBeNull();
+        version!.ToString().Should().Be("10.0.10-servicing.26276.118");
+    }
+
+    [Fact]
     public void Resolve_ScopedDaily_ExtractsVersionFromRedirectTarget()
     {
         using var handler = new RedirectHandler(new Dictionary<string, string>
