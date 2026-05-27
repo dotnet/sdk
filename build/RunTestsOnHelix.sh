@@ -9,10 +9,6 @@ export MicrosoftNETBuildExtensionsTargets=$HELIX_CORRELATION_PAYLOAD/ex/msbuildE
 export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/d
 export PATH=$DOTNET_ROOT:$PATH
 
-# Enable globalization invariant mode so old .NET Core runtimes (1.x/2.x)
-# can run on distros without ICU installed (e.g., Azure Linux 3)
-export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
-
 export TestExecutionDirectory=$(pwd)/testExecutionDirectory
 mkdir $TestExecutionDirectory
 export DOTNET_CLI_HOME=$TestExecutionDirectory/.dotnet
