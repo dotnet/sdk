@@ -33,6 +33,9 @@ function InstallBootstrapSdkWithDotnetup {
   local dotnetup_exe="$dotnetup_dir/dotnetup"
 
   # build.sh runs under `set -e`; guard so we can emit a diagnostic.
+  # In CI, always pull the latest dotnetup so build agents don't reuse a
+  # cached binary that predates fixes (e.g. the channel-parsing fix).
+  if [[ "$ci" == true ]]; then export DOTNETUP_FORCE_REINSTALL=1; fi
   if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
     Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup."
     ExitWithExitCode 1

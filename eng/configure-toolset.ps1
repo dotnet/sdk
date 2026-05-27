@@ -32,6 +32,9 @@ function InstallBootstrapSdkWithDotnetup() {
     # Seed $LASTEXITCODE so strict mode can read it if the called script
     # short-circuits without invoking a native process.
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+    # In CI, always pull the latest dotnetup so build agents don't reuse a
+    # cached binary that predates fixes (e.g. the channel-parsing fix).
+    if ($ci) { $env:DOTNETUP_FORCE_REINSTALL = '1' }
     & (Join-Path $RepoRoot 'scripts\get-dotnetup.ps1') -InstallDir $dotnetupDir
     if ($LASTEXITCODE -ne 0) {
         Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup (exit code '$LASTEXITCODE')."
