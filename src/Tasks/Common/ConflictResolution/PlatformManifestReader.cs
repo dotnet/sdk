@@ -9,8 +9,16 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     static class PlatformManifestReader
     {
         static readonly char[] s_manifestLineSeparator = new[] { '|' };
-        public static IEnumerable<ConflictItem> LoadConflictItems(AbsolutePath manifestPath, Logger log)
+        public static IEnumerable<ConflictItem> LoadConflictItems(string? manifestItemSpec, TaskEnvironment taskEnvironment, Logger log)
         {
+            if (string.IsNullOrEmpty(manifestItemSpec))
+            {
+                log.LogError(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotLoadPlatformManifest, manifestItemSpec));
+                yield break;
+            }
+
+            AbsolutePath manifestPath = taskEnvironment.GetAbsolutePath(manifestItemSpec);
+
             if (!File.Exists(manifestPath))
             {
                 string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.CouldNotLoadPlatformManifest,

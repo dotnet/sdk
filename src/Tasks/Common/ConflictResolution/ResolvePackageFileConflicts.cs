@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -73,9 +72,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
                 compilePlatformItems = TargetFrameworkDirectories.SelectMany(tfd =>
                 {
-                    var tfdPath = string.IsNullOrEmpty(tfd.ItemSpec) || Path.IsPathRooted(tfd.ItemSpec)
-                        ? tfd.ItemSpec
-                        : (string)TaskEnvironment.GetAbsolutePath(tfd.ItemSpec);
+                    AbsolutePath tfdPath = TaskEnvironment.GetAbsolutePath(tfd.ItemSpec);
                     return frameworkListReader.GetConflictItems(Path.Combine(tfdPath, "RedistList", "FrameworkList.xml"), log);
                 }).ToArray();
             }
@@ -136,20 +133,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             using (var platformConflictScope = new ConflictResolver<ConflictItem>(packageRanks, packageOverrides, log))
             {
                 var platformItems = PlatformManifests?.SelectMany(pm =>
-                {
-                    if (string.IsNullOrEmpty(pm.ItemSpec))
-                    {
-                        //  Pre-migration PlatformManifestReader logged this friendly error for File.Exists("").
-                        //  Replicate it here because the public AbsolutePath ctor / GetAbsolutePath throw on empty input.
-                        log.LogError(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotLoadPlatformManifest, pm.ItemSpec));
-                        return Enumerable.Empty<ConflictItem>();
-                    }
-
-                    AbsolutePath manifestPath = Path.IsPathRooted(pm.ItemSpec)
-                        ? new AbsolutePath(pm.ItemSpec)
-                        : TaskEnvironment.GetAbsolutePath(pm.ItemSpec);
-                    return PlatformManifestReader.LoadConflictItems(manifestPath, log);
-                }) ?? Enumerable.Empty<ConflictItem>();
+                    PlatformManifestReader.LoadConflictItems(pm.ItemSpec, TaskEnvironment, log))
+                    ?? Enumerable.Empty<ConflictItem>();
 
                 if (compilePlatformItems != null)
                 {

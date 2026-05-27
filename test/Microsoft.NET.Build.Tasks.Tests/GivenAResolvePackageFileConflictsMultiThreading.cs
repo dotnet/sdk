@@ -21,34 +21,6 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         try { Directory.Delete(_testRoot, true); } catch { }
     }
 
-    private string CreateTempDir()
-    {
-        var dir = Path.Combine(_testRoot, Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(dir);
-        return dir;
-    }
-
-    private static void CreateFrameworkList(string targetFrameworkDirectory, string assemblyName, string version)
-    {
-        var redistListDir = Path.Combine(targetFrameworkDirectory, "RedistList");
-        Directory.CreateDirectory(redistListDir);
-        File.WriteAllText(Path.Combine(redistListDir, "FrameworkList.xml"),
-            $"<FileList><File AssemblyName=\"{assemblyName}\" Version=\"{version}\" /></FileList>");
-    }
-
-    private static void CreateFile(string path)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllBytes(path, Array.Empty<byte>());
-    }
-
-    private static ResolvePackageFileConflicts CreateTask(MockBuildEngine engine)
-    {
-        var task = new ResolvePackageFileConflicts();
-        task.BuildEngine = engine;
-        return task;
-    }
-
     /// <summary>
     /// PlatformManifests with a relative ItemSpec must be resolved against the task's
     /// ProjectDirectory (via TaskEnvironment), not the process CWD. We verify this by
@@ -162,5 +134,33 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
             key.ToString()!.EndsWith(expectedFrameworkListPath, StringComparison.OrdinalIgnoreCase));
         task.ReferencesWithoutConflicts.Should().ContainSingle();
         task.ReferencesWithoutConflicts![0].ItemSpec.Should().Be("System.Runtime");
+    }
+
+    private string CreateTempDir()
+    {
+        var dir = Path.Combine(_testRoot, Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        return dir;
+    }
+
+    private static void CreateFrameworkList(string targetFrameworkDirectory, string assemblyName, string version)
+    {
+        var redistListDir = Path.Combine(targetFrameworkDirectory, "RedistList");
+        Directory.CreateDirectory(redistListDir);
+        File.WriteAllText(Path.Combine(redistListDir, "FrameworkList.xml"),
+            $"<FileList><File AssemblyName=\"{assemblyName}\" Version=\"{version}\" /></FileList>");
+    }
+
+    private static void CreateFile(string path)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, Array.Empty<byte>());
+    }
+
+    private static ResolvePackageFileConflicts CreateTask(MockBuildEngine engine)
+    {
+        var task = new ResolvePackageFileConflicts();
+        task.BuildEngine = engine;
+        return task;
     }
 }
