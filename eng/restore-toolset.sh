@@ -27,104 +27,11 @@ function InitializeCustomSDKToolset {
 
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
-  # dotnetup is only built when test runtimes are needed (it's the install tool).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    # Build dotnetup if not already present (needs SDK to be installed first)
-    EnsureDotnetupBuilt
     InstallDotNetSharedFrameworks "6.0.0" "7.0.0" "8.0.0" "9.0.0" "10.0.0"
   fi
 
   CreateBuildEnvScript
-}
-
-# Gets a file's last-modified time as a Unix timestamp.
-function GetFileTimestamp {
-  local path="$1"
-  if [[ "$(uname)" == "Darwin" ]]; then
-    stat -f "%m" "$path"
-  else
-    stat -c "%Y" "$path"
-  fi
-}
-
-# Builds dotnetup if the executable is missing or stale
-function EnsureDotnetupBuilt {
-  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  local dotnetup_dir="$script_dir/dotnetup"
-  local dotnetup_exe="$dotnetup_dir/dotnetup"
-  local should_build=false
-
-  if [[ ! -f "$dotnetup_exe" ]]; then
-    should_build=true
-  else
-    # eng/dotnetup is an ignored bootstrap artifact, so it can survive branch
-    # switches and fall behind the current checkout. Rebuild it if either:
-    # 1. the current HEAD commit is newer than the bootstrap executable, or
-    # 2. there are local uncommitted changes with newer timestamps.
-    local bootstrap_ts
-    bootstrap_ts=$(GetFileTimestamp "$dotnetup_exe")
-    local latest_repo_change_ts=0
-
-    if command -v git &> /dev/null && git -C "$repo_root" rev-parse --is-inside-work-tree &> /dev/null; then
-      local head_commit_ts
-      head_commit_ts=$(git -C "$repo_root" log -1 --format=%ct HEAD 2>/dev/null || echo 0)
-      if [[ "$head_commit_ts" =~ ^[0-9]+$ ]]; then
-        latest_repo_change_ts=$head_commit_ts
-      fi
-
-      while IFS= read -r relative_path; do
-        [[ -z "$relative_path" ]] && continue
-        local full_path="$repo_root/$relative_path"
-        if [[ -f "$full_path" ]]; then
-          local file_ts
-          file_ts=$(GetFileTimestamp "$full_path")
-          if (( file_ts > latest_repo_change_ts )); then
-            latest_repo_change_ts=$file_ts
-          fi
-        fi
-      done < <(
-        {
-          git -C "$repo_root" diff --name-only --relative HEAD 2>/dev/null
-          git -C "$repo_root" ls-files --others --exclude-standard 2>/dev/null
-        } | sort -u
-      )
-    fi
-
-    if (( latest_repo_change_ts > bootstrap_ts )); then
-      should_build=true
-    fi
-  fi
-
-  if [[ "$should_build" == true ]]; then
-    echo "Building dotnetup..."
-    local dotnetup_project="$repo_root/src/Installer/dotnetup/dotnetup.csproj"
-    mkdir -p "$dotnetup_dir"
-
-    # Determine RID based on OS
-    local rid
-    if [[ "$(uname)" == "Darwin" ]]; then
-      if [[ "$(uname -m)" == "arm64" ]]; then
-        rid="osx-arm64"
-      else
-        rid="osx-x64"
-      fi
-    else
-      if [[ "$(uname -m)" == "aarch64" ]]; then
-        rid="linux-arm64"
-      else
-        rid="linux-x64"
-      fi
-    fi
-
-    "$DOTNET_INSTALL_DIR/dotnet" publish "$dotnetup_project" -c Release -r "$rid" -o "$dotnetup_dir"
-
-    if [[ $? -ne 0 ]]; then
-      echo "Failed to build dotnetup."
-      ExitWithExitCode 1
-    fi
-
-    echo "dotnetup built successfully"
-  fi
 }
 
 # Installs additional shared frameworks for testing purposes (batched, concurrent)
@@ -144,7 +51,17 @@ function InstallDotNetSharedFrameworks {
   fi
 
   local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  local dotnetup_exe="$script_dir/dotnetup/dotnetup"
+  local dotnetup_dir="$script_dir/dotnetup"
+  local dotnetup_exe="$dotnetup_dir/dotnetup"
+
+  # Acquire the latest dotnetup daily build using the in-repo install script.
+  # build.sh runs under `set -e`, so we have to invoke the script in a way that
+  # doesn't trigger errexit; otherwise the script's non-zero exit aborts the
+  # whole build before our diagnostic error message can fire.
+  if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
+    echo "Failed to acquire dotnetup."
+    ExitWithExitCode 1
+  fi
 
   "$dotnetup_exe" runtime install "${versions_to_install[@]}" --install-path "$dotnet_root" --no-progress --set-default-install false --untracked --interactive false
   local lastexitcode=$?

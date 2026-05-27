@@ -31,7 +31,7 @@ public class DotnetBotBannerTests
         string output = RenderPanel(panel, 80);
 
         output.Should().Contain("dotnetup");
-        output.Should().Contain(".NET installation manager for developers.");
+        output.Should().Contain(".NET toolchain manager for developers.");
 
         // Rounded box border characters
         output.Should().Contain("╭");

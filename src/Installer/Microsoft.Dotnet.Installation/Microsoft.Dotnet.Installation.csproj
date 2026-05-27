@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsAotCompatible>true</IsAotCompatible>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
@@ -11,24 +9,23 @@
     <!-- SYSLIB1054: Suppress for DllImport in shared NativeWrapper code we don't own -->
     <NoWarn>$(NoWarn);CS8002;CS1591;SYSLIB1054</NoWarn>
 
-    <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build. -->
-    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);MA0051</WarningsNotAsErrors>
-
+    <!-- Microsoft.Dotnet.Installation is a pure managed, RID-agnostic library. In our pipelines,
+         we only want to publish one copy of it, but we have different legs for each RID to 
+         produce the nativeAOT dotnetup binary.  So we'll set IsPackable to false for all
+         but one of those legs.-->
     <IsPackable>true</IsPackable>
+    <IsPackable Condition="'$(TargetRid)' != '' and '$(TargetRid)' != 'win-x64'">false</IsPackable>
+    
     <IncludeSymbols>true</IncludeSymbols>
     <PackageId>Microsoft.Dotnet.Installation</PackageId>
     <IsShipping>false</IsShipping>
     <Title>.NET Installation Library</Title>
-    <VersionPrefix>$(DotnetupVersionPrefix)</VersionPrefix>
-    <PreReleaseVersionLabel>$(DotnetupPreReleaseVersionLabel)</PreReleaseVersionLabel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="dotnetup" />
+    <InternalsVisibleTo Include="dotnetup.Library" />
     <InternalsVisibleTo Include="dotnetup.Tests" />
   </ItemGroup>
 

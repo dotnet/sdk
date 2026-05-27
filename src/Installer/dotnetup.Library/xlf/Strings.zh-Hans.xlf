@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
-  <file datatype="xml" source-language="en" target-language="ja" original="../Strings.resx">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../Strings.resx">
     <body>
       <trans-unit id="CommandInteractiveOptionDescription">
         <source>Allows the command to stop and wait for user input or action.</source>
@@ -203,8 +203,8 @@
         <note />
       </trans-unit>
       <trans-unit id="RootCommandDescription">
-        <source>.NET installation manager for user level installs.</source>
-        <target state="new">.NET installation manager for user level installs.</target>
+        <source>.NET toolchain manager for user level installs.</source>
+        <target state="new">.NET toolchain manager for user level installs.</target>
         <note />
       </trans-unit>
       <trans-unit id="TelemetryNotice">

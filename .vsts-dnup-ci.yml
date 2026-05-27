@@ -45,7 +45,7 @@ variables:
 - name: _publishArgument
   value: -publish
 - name: _signArgument
-  value: -sign /p:SignCoreSdk=true
+  value: -sign
 - name: _TeamName
   value: DotNet-Cli
 # MicroBuildSigningPlugin@4 on non-Windows agents requires a pipeline variable
@@ -141,7 +141,7 @@ extends:
                 $failed = $false
                 & .\.dotnet\dotnet build src\Installer\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
                 if ($LASTEXITCODE -ne 0) { $failed = $true }
-                & .\.dotnet\dotnet build src\Installer\dotnetup\dotnetup.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
+                & .\.dotnet\dotnet build src\Installer\dotnetup.Library\dotnetup.Library.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
                 if ($LASTEXITCODE -ne 0) { $failed = $true }
                 & .\.dotnet\dotnet build test\dotnetup.Tests\dotnetup.Tests.csproj -warnaserror --no-restore /p:EnforceCodeStyleInBuild=true /p:CodeAnalysisTreatWarningsAsErrors=true
                 if ($LASTEXITCODE -ne 0) { $failed = $true }
@@ -165,6 +165,7 @@ extends:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            populateInternalRuntimeVariables: true
             # WORKAROUND: BinSkim requires the folder exist prior to scanning.
             preSteps:
             - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
@@ -182,166 +183,161 @@ extends:
                 publishRetryConfig: true
                 variables:
                   _SignType: real
-      ### Packaging ###
-      - stage: package
-        displayName: 📦 Package dotnetup
+      ############### BUILD / PACK / SIGN / PUBLISH ###############
+      # Standard Arcade flow.  Set projectsArgument to only build dotnetup, not the whole SDK.
+      - stage: build_dotnetup
+        displayName: 🛠️ Build dotnetup
         dependsOn: []
         jobs:
-        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-library-package.yml@self
+        ############### WINDOWS ###############
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
-            pool:
-              name: $(DncEngInternalBuildPool)
-              image: 1es-windows-2022
-              os: windows
-
-      ############### Executables ###############
-      # Each RID gets its own stage so that the 1ES-injected Guardian/autobaseline
-      # artifact names (which are stage-scoped, not job-scoped) don't collide.
-
-      ### win-x64 ###
-      - stage: executable_win_x64
-        displayName: 🪟 dotnetup win-x64
-        dependsOn: []
-        jobs:
-        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
-          parameters:
-            rid: win-x64
             pool:
               name: $(DncEngInternalBuildPool)
               image: windows.vs2022.amd64
               os: windows
-              emoji: 🪟
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            populateInternalRuntimeVariables: true
             preSteps:
             - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
               displayName: Create artifacts/bin directory
+            timeoutInMinutes: 90
+            windowsJobParameterSets:
+            - categoryName: Dotnetup
+              targetArchitecture: x64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              enableDefaultArtifacts: true
+              runTests: false
+              variables:
+                _SignType: real
+            - categoryName: Dotnetup
+              targetArchitecture: arm64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              enableDefaultArtifacts: true
+              runTests: false
+              variables:
+                _SignType: real
 
-      ### win-arm64 ###
-      - stage: executable_win_arm64
-        displayName: 💪 dotnetup win-arm64
-        dependsOn: []
-        jobs:
-        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+        ############### LINUX ###############
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
-            rid: win-arm64
-            pool:
-              name: $(DncEngInternalBuildPool)
-              image: windows.vs2022.amd64
-              os: windows
-              emoji: 💪
-            oneESCompat:
-              templateFolderName: templates-official
-              publishTaskPrefix: 1ES.
-            preSteps:
-            - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
-              displayName: Create artifacts/bin directory
-
-      ### linux-x64 ###
-      - stage: executable_linux_x64
-        displayName: 🐧 dotnetup linux-x64
-        dependsOn: []
-        jobs:
-        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
-          parameters:
-            rid: linux-x64
-            container: crossBuildLinuxX64
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
               os: linux
-              emoji: 🐧
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            populateInternalRuntimeVariables: true
+            enableMicrobuildForMacAndLinux: true
+            timeoutInMinutes: 90
+            linuxJobParameterSets:
+            # Cross-build containers set ROOTFS_DIR; pass /p:SysRoot and /p:LinkerFlavor=lld
+            # via osProperties so the NativeAOT linker targets the correct sysroot for the RID.
+            - categoryName: Dotnetup
+              container: crossBuildLinuxX64
+              targetArchitecture: x64
+              runtimeIdentifier: linux-x64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
+              enableDefaultArtifacts: true
+              runTests: false
+            - categoryName: Dotnetup
+              container: crossBuildLinuxArm64
+              targetArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
+              enableDefaultArtifacts: true
+              runTests: false
+            - categoryName: Dotnetup
+              container: crossBuildMuslX64
+              targetArchitecture: x64
+              runtimeIdentifier: linux-musl-x64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
+              enableDefaultArtifacts: true
+              enableSbom: false
+              runTests: false
+            - categoryName: Dotnetup
+              container: crossBuildMuslArm64
+              targetArchitecture: arm64
+              runtimeIdentifier: linux-musl-arm64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
+              enableDefaultArtifacts: true
+              enableSbom: false
+              runTests: false
 
-      ### linux-arm64 ###
-      - stage: executable_linux_arm64
-        displayName: 💪 dotnetup linux-arm64
-        dependsOn: []
-        jobs:
-        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+        ############### MACOS ###############
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
-            rid: linux-arm64
-            container: crossBuildLinuxArm64
-            pool:
-              name: $(DncEngInternalBuildPool)
-              image: 1es-ubuntu-2204
-              os: linux
-              emoji: 💪
-            oneESCompat:
-              templateFolderName: templates-official
-              publishTaskPrefix: 1ES.
-
-      ### linux-musl-x64 ###
-      - stage: executable_linux_musl_x64
-        displayName: 🏔️ dotnetup linux-musl-x64
-        dependsOn: []
-        jobs:
-        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
-          parameters:
-            rid: linux-musl-x64
-            container: crossBuildMuslX64
-            pool:
-              name: $(DncEngInternalBuildPool)
-              image: 1es-ubuntu-2204
-              os: linux
-              emoji: 🏔️
-            oneESCompat:
-              templateFolderName: templates-official
-              publishTaskPrefix: 1ES.
-            enableSbom: false
-
-      ### linux-musl-arm64 ###
-      - stage: executable_linux_musl_arm64
-        displayName: 🏔️ dotnetup linux-musl-arm64
-        dependsOn: []
-        jobs:
-        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
-          parameters:
-            rid: linux-musl-arm64
-            container: crossBuildMuslArm64
-            pool:
-              name: $(DncEngInternalBuildPool)
-              image: 1es-ubuntu-2204
-              os: linux
-              emoji: 🏔️
-            oneESCompat:
-              templateFolderName: templates-official
-              publishTaskPrefix: 1ES.
-            enableSbom: false
-
-      ### osx-x64 ###
-      - stage: executable_osx_x64
-        displayName: 🍎 dotnetup osx-x64
-        dependsOn: []
-        jobs:
-        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
-          parameters:
-            rid: osx-x64
             pool:
               name: Azure Pipelines
               image: macOS-latest
               os: macOS
-              emoji: 🍎
             oneESCompat:
               templateFolderName: templates-official
               publishTaskPrefix: 1ES.
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            populateInternalRuntimeVariables: true
+            enableMicrobuildForMacAndLinux: true
+            timeoutInMinutes: 90
+            macOSJobParameterSets:
+            - categoryName: Dotnetup
+              targetArchitecture: x64
+              runtimeIdentifier: osx-x64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              enableDefaultArtifacts: true
+              runTests: false
+            - categoryName: Dotnetup
+              targetArchitecture: arm64
+              runtimeIdentifier: osx-arm64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              enableDefaultArtifacts: true
+              runTests: false
 
-      ### osx-arm64 ###
-      - stage: executable_osx_arm64
-        displayName: 💪 dotnetup osx-arm64
-        dependsOn: []
+      ############### PUBLISH STAGE ###############
+      - stage: publish
+        displayName: 📤 Publish to BAR
+        dependsOn:
+        - build_dotnetup
         jobs:
-        - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-executables.yml@self
+        - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
-            rid: osx-arm64
+            publishUsingPipelines: true
+            publishAssetsImmediately: true
+            isAssetlessBuild: false
+            repositoryAlias: self
             pool:
-              name: Azure Pipelines
-              image: macOS-15-arm64
-              os: macOS
-              emoji: 💪
-            oneESCompat:
-              templateFolderName: templates-official
-              publishTaskPrefix: 1ES.
+              name: $(DncEngInternalBuildPool)
+              image: 1es-windows-2022
+              os: windows
