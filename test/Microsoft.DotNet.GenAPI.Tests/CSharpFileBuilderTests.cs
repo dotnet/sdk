@@ -879,6 +879,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 }
                 """);
         }
+
         [Fact]
         public void TestPublicMembersGeneration()
         {
