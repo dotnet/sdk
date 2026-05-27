@@ -22,82 +22,13 @@ function InitializeCustomSDKToolset {
 
     # The following shared frameworks are only needed for testing.
     # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
-    # dotnetup is only built when test runtimes are needed (it's the install tool).
     if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
-        # Build dotnetup if not already present (needs SDK to be installed first)
-        EnsureDotnetupBuilt
-
         InstallDotNetSharedFrameworks "6.0", "7.0", "8.0", "9.0", "10.0"
     }
 
     CreateBuildEnvScripts
     CreateVSShortcut
     InstallNuget
-}
-
-function EnsureDotnetupBuilt {
-    $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
-    $shouldBuild = !(Test-Path $dotnetupExe)
-
-    if (-not $shouldBuild) {
-        # eng\dotnetup is an ignored bootstrap artifact, so it can survive branch
-        # switches and fall behind the current checkout. Rebuild it if either:
-        # 1. the current HEAD commit is newer than the bootstrap executable, or
-        # 2. there are local uncommitted changes with newer timestamps.
-        $bootstrapWriteTime = (Get-Item $dotnetupExe).LastWriteTimeUtc
-        $latestRepoChangeTime = [DateTime]::MinValue
-
-        if (Get-Command git -ErrorAction SilentlyContinue) {
-            try {
-                $headCommitTimestamp = (& git -C $RepoRoot log -1 --format=%ct HEAD 2>$null).Trim()
-                if ($LASTEXITCODE -eq 0 -and $headCommitTimestamp -match '^\d+$') {
-                    $latestRepoChangeTime = [DateTimeOffset]::FromUnixTimeSeconds([int64]$headCommitTimestamp).UtcDateTime
-                }
-
-                $changedFiles = @()
-                $changedFiles += (& git -C $RepoRoot diff --name-only --relative HEAD 2>$null)
-                $changedFiles += (& git -C $RepoRoot ls-files --others --exclude-standard 2>$null)
-
-                foreach ($relativePath in ($changedFiles | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)) {
-                    $fullPath = Join-Path $RepoRoot $relativePath
-                    if (Test-Path $fullPath -PathType Leaf) {
-                        $writeTime = (Get-Item $fullPath).LastWriteTimeUtc
-                        if ($writeTime -gt $latestRepoChangeTime) {
-                            $latestRepoChangeTime = $writeTime
-                        }
-                    }
-                }
-            }
-            catch {
-                # Best-effort freshness check — if git metadata is unavailable,
-                # fall back to using the existing bootstrap binary.
-            }
-        }
-
-        $shouldBuild = $latestRepoChangeTime -gt $bootstrapWriteTime
-    }
-
-    if ($shouldBuild) {
-        Write-Host "Building dotnetup..."
-        $dotnetupProject = Join-Path $RepoRoot "src\Installer\dotnetup\dotnetup.csproj"
-        $dotnetupOutDir = Join-Path $PSScriptRoot "dotnetup"
-
-        # Determine RID based on architecture
-        $rid = if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
-            "win-arm64"
-        }
-        else {
-            "win-x64"
-        }
-
-        & (Join-Path $env:DOTNET_INSTALL_DIR 'dotnet.exe') publish $dotnetupProject -c Release -r $rid -o $dotnetupOutDir
-
-        if ($lastExitCode -ne 0) {
-            throw "Failed to build dotnetup (exit code '$lastExitCode')."
-        }
-
-        Write-Host "dotnetup built successfully"
-    }
 }
 
 function InstallNuGet {
@@ -189,7 +120,11 @@ function CreateVSShortcut() {
 
 function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
-    $dotnetupExe = Join-Path $PSScriptRoot "dotnetup\dotnetup.exe"
+    $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
+    $dotnetupExe = Join-Path $dotnetupDir "dotnetup.exe"
+
+    # Acquire the latest dotnetup daily build using the in-repo install script.
+    & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
 
     # Let dotnetup handle checking if versions are already installed
     & $dotnetupExe runtime install @versions --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
