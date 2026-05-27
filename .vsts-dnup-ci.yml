@@ -45,7 +45,7 @@ variables:
 - name: _publishArgument
   value: -publish
 - name: _signArgument
-  value: -sign /p:SignCoreSdk=true
+  value: -sign
 - name: _TeamName
   value: DotNet-Cli
 # MicroBuildSigningPlugin@4 on non-Windows agents requires a pipeline variable
@@ -239,6 +239,7 @@ extends:
               publishTaskPrefix: 1ES.
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             populateInternalRuntimeVariables: true
+            enableMicrobuildForMacAndLinux: true
             timeoutInMinutes: 90
             linuxJobParameterSets:
             # Cross-build containers set ROOTFS_DIR; pass /p:SysRoot and /p:LinkerFlavor=lld
@@ -248,6 +249,7 @@ extends:
               targetArchitecture: x64
               runtimeIdentifier: linux-x64
               publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
@@ -258,6 +260,7 @@ extends:
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
@@ -268,6 +271,7 @@ extends:
               targetArchitecture: x64
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
@@ -279,6 +283,7 @@ extends:
               targetArchitecture: arm64
               runtimeIdentifier: linux-musl-arm64
               publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
@@ -298,12 +303,14 @@ extends:
               publishTaskPrefix: 1ES.
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             populateInternalRuntimeVariables: true
+            enableMicrobuildForMacAndLinux: true
             timeoutInMinutes: 90
             macOSJobParameterSets:
             - categoryName: Dotnetup
               targetArchitecture: x64
               runtimeIdentifier: osx-x64
               publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               enableDefaultArtifacts: true
@@ -312,6 +319,7 @@ extends:
               targetArchitecture: arm64
               runtimeIdentifier: osx-arm64
               publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               enableDefaultArtifacts: true
