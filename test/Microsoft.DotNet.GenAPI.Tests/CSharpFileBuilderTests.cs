@@ -119,7 +119,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         public void TestGlobalNamespaceDeclaration()
         {
             RunTest(original: """
-                public class Class1;
+                public class Class1 { }
                 """,
                 expected: """
                 public partial class Class1
