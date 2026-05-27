@@ -846,6 +846,50 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
+        public void TestAllowsRefStructGenericConstraintGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class Potato
+                    {
+                        public T Carrot<T>(T t) where T : allows ref struct
+                        {
+                            return t;
+                        }
+
+                        public T CarrotNotNull<T>(T t) where T : notnull, allows ref struct
+                        {
+                            return t;
+                        }
+                    }
+
+                    public class RefContainer<T> where T : allows ref struct
+                    {
+                    }
+
+                    public delegate void RefHandler<T>(T value) where T : allows ref struct;
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Potato
+                    {
+                        public T Carrot<T>(T t) where T : allows ref struct { throw null; }
+                        public T CarrotNotNull<T>(T t) where T : notnull, allows ref struct { throw null; }
+                    }
+
+                    public partial class RefContainer<T> where T : allows ref struct
+                    {
+                    }
+
+                    public delegate void RefHandler<T>(T value) where T : allows ref struct;
+                }
+                """);
+        }
+
+        [Fact]
         public void TestPublicMembersGeneration()
         {
             RunTest(original: """

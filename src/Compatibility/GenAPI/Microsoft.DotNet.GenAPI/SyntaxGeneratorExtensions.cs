@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.GenAPI
                         return typeDeclaration
                             .WithBaseList(syntaxGenerator.GetBaseTypeList(type, symbolFilter))
                             .WithMembers(new SyntaxList<MemberDeclarationSyntax>())
-                            .AddNotNullConstraints(type.TypeParameters);
+                            .AddMissingSpecialConstraints(type.TypeParameters);
 
                     case TypeKind.Enum:
                         EnumDeclarationSyntax enumDeclaration = (EnumDeclarationSyntax)syntaxGenerator.Declaration(symbol);
@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.GenAPI
 
             try
             {
-                return syntaxGenerator.Declaration(symbol).AddNotNullConstraints(symbol);
+                return syntaxGenerator.Declaration(symbol).AddMissingSpecialConstraints(symbol);
             }
             catch (ArgumentException ex)
             {
@@ -140,22 +140,22 @@ namespace Microsoft.DotNet.GenAPI
                 null;
         }
 
-        private static SyntaxNode AddNotNullConstraints(this SyntaxNode declaration, ISymbol symbol) =>
+        private static SyntaxNode AddMissingSpecialConstraints(this SyntaxNode declaration, ISymbol symbol) =>
             symbol switch
             {
-                INamedTypeSymbol namedType => declaration.AddNotNullConstraints(namedType.TypeParameters),
+                INamedTypeSymbol namedType => declaration.AddMissingSpecialConstraints(namedType.TypeParameters),
                 IMethodSymbol method when !method.IsOverride && method.ExplicitInterfaceImplementations.IsEmpty =>
-                    declaration.AddNotNullConstraints(method.TypeParameters),
+                    declaration.AddMissingSpecialConstraints(method.TypeParameters),
                 _ => declaration
             };
 
-        private static SyntaxNode AddNotNullConstraints(this SyntaxNode declaration, IEnumerable<ITypeParameterSymbol> typeParameters)
+        private static SyntaxNode AddMissingSpecialConstraints(this SyntaxNode declaration, IEnumerable<ITypeParameterSymbol> typeParameters)
         {
-            ITypeParameterSymbol[] notNullTypeParameters = typeParameters
-                .Where(typeParameter => typeParameter.HasNotNullConstraint)
+            ITypeParameterSymbol[] typeParametersWithMissingConstraints = typeParameters
+                .Where(typeParameter => typeParameter.HasNotNullConstraint || typeParameter.AllowsRefLikeType)
                 .ToArray();
 
-            if (notNullTypeParameters.Length == 0)
+            if (typeParametersWithMissingConstraints.Length == 0)
             {
                 return declaration;
             }
@@ -163,16 +163,16 @@ namespace Microsoft.DotNet.GenAPI
             return declaration switch
             {
                 TypeDeclarationSyntax typeDeclaration => typeDeclaration.WithConstraintClauses(
-                    AddNotNullConstraintClauses(typeDeclaration.ConstraintClauses, notNullTypeParameters)),
+                    AddMissingSpecialConstraintClauses(typeDeclaration.ConstraintClauses, typeParametersWithMissingConstraints)),
                 DelegateDeclarationSyntax delegateDeclaration => delegateDeclaration.WithConstraintClauses(
-                    AddNotNullConstraintClauses(delegateDeclaration.ConstraintClauses, notNullTypeParameters)),
+                    AddMissingSpecialConstraintClauses(delegateDeclaration.ConstraintClauses, typeParametersWithMissingConstraints)),
                 MethodDeclarationSyntax methodDeclaration => methodDeclaration.WithConstraintClauses(
-                    AddNotNullConstraintClauses(methodDeclaration.ConstraintClauses, notNullTypeParameters)),
+                    AddMissingSpecialConstraintClauses(methodDeclaration.ConstraintClauses, typeParametersWithMissingConstraints)),
                 _ => declaration
             };
         }
 
-        private static SyntaxList<TypeParameterConstraintClauseSyntax> AddNotNullConstraintClauses(
+        private static SyntaxList<TypeParameterConstraintClauseSyntax> AddMissingSpecialConstraintClauses(
             SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses,
             IEnumerable<ITypeParameterSymbol> typeParameters)
         {
@@ -183,29 +183,62 @@ namespace Microsoft.DotNet.GenAPI
 
                 if (constraintClause is null)
                 {
-                    constraintClauses = constraintClauses.Add(CreateNotNullConstraintClause(typeParameter.Name));
+                    constraintClauses = constraintClauses.Add(CreateConstraintClause(typeParameter));
+                    continue;
                 }
-                else if (!constraintClause.Constraints.Any(IsNotNullConstraint))
+
+                SeparatedSyntaxList<TypeParameterConstraintSyntax> constraints = constraintClause.Constraints;
+
+                if (typeParameter.HasNotNullConstraint && !constraints.Any(IsNotNullConstraint))
                 {
-                    TypeParameterConstraintClauseSyntax updatedConstraintClause = constraintClause.WithConstraints(
-                        constraintClause.Constraints.Insert(0, CreateNotNullConstraint()));
-                    constraintClauses = constraintClauses.Replace(constraintClause, updatedConstraintClause);
+                    constraints = constraints.Insert(0, CreateNotNullConstraint());
                 }
+
+                if (typeParameter.AllowsRefLikeType && !constraints.Any(IsAllowsRefStructConstraint))
+                {
+                    constraints = constraints.Add(CreateAllowsRefStructConstraint());
+                }
+
+                TypeParameterConstraintClauseSyntax updatedConstraintClause = constraintClause.WithConstraints(constraints);
+                constraintClauses = constraintClauses.Replace(constraintClause, updatedConstraintClause);
             }
 
             return constraintClauses;
         }
 
-        private static TypeParameterConstraintClauseSyntax CreateNotNullConstraintClause(string typeParameterName) =>
-            SyntaxFactory.TypeParameterConstraintClause(SyntaxFactory.IdentifierName(typeParameterName))
-                .WithConstraints(SyntaxFactory.SingletonSeparatedList(CreateNotNullConstraint()));
+        private static TypeParameterConstraintClauseSyntax CreateConstraintClause(ITypeParameterSymbol typeParameter)
+        {
+            SeparatedSyntaxList<TypeParameterConstraintSyntax> constraints = default;
+
+            if (typeParameter.HasNotNullConstraint)
+            {
+                constraints = constraints.Add(CreateNotNullConstraint());
+            }
+
+            if (typeParameter.AllowsRefLikeType)
+            {
+                constraints = constraints.Add(CreateAllowsRefStructConstraint());
+            }
+
+            return SyntaxFactory.TypeParameterConstraintClause(SyntaxFactory.IdentifierName(typeParameter.Name))
+                .WithConstraints(constraints);
+        }
 
         private static TypeParameterConstraintSyntax CreateNotNullConstraint() =>
             SyntaxFactory.TypeConstraint(SyntaxFactory.IdentifierName("notnull"));
+
+        private static TypeParameterConstraintSyntax CreateAllowsRefStructConstraint() =>
+            SyntaxFactory.AllowsConstraintClause(
+                SyntaxFactory.SingletonSeparatedList<AllowsConstraintSyntax>(
+                    SyntaxFactory.RefStructConstraint()));
 
         private static bool IsNotNullConstraint(TypeParameterConstraintSyntax constraint) =>
             constraint is TypeConstraintSyntax typeConstraint &&
             typeConstraint.Type is IdentifierNameSyntax identifierName &&
             identifierName.Identifier.ValueText == "notnull";
+
+        private static bool IsAllowsRefStructConstraint(TypeParameterConstraintSyntax constraint) =>
+            constraint is AllowsConstraintClauseSyntax allowsConstraintClause &&
+            allowsConstraintClause.Constraints.Any(static constraint => constraint is RefStructConstraintSyntax);
     }
 }
