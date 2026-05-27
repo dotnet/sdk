@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -22,10 +23,29 @@ namespace Microsoft.NET.Build.Tasks
             return null;
         }
 
+        public static Version? GetFileVersion(AbsolutePath sourcePath)
+        {
+            var fvi = FileVersionInfo.GetVersionInfo(sourcePath);
+
+            if (fvi != null)
+            {
+                return new Version(fvi.FileMajorPart, fvi.FileMinorPart, fvi.FileBuildPart, fvi.FilePrivatePart);
+            }
+
+            return null;
+        }
+
         static readonly HashSet<string?> s_assemblyExtensions = new(new[] { ".dll", ".exe", ".winmd" }, StringComparer.OrdinalIgnoreCase);
         public static Version? TryGetAssemblyVersion(string sourcePath)
         {
             var extension = Path.GetExtension(sourcePath);
+
+            return s_assemblyExtensions.Contains(extension) ? GetAssemblyVersion(sourcePath) : null;
+        }
+
+        public static Version? TryGetAssemblyVersion(AbsolutePath sourcePath)
+        {
+            var extension = Path.GetExtension(sourcePath.Value);
 
             return s_assemblyExtensions.Contains(extension) ? GetAssemblyVersion(sourcePath) : null;
         }

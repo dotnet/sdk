@@ -13,6 +13,7 @@
 #if NETCOREAPP || !EXTENSIONS
 
 using System.Collections.Concurrent;
+using Microsoft.Build.Framework;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 
@@ -46,6 +47,52 @@ namespace Microsoft.NET.Build.Tasks
             return version;
 
             static Version? GetAssemblyVersionFromFile(string sourcePath)
+            {
+                using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
+                {
+                    Version? result = null;
+                    try
+                    {
+                        using (PEReader peReader = new(assemblyStream, PEStreamOptions.LeaveOpen))
+                        {
+                            if (peReader.HasMetadata)
+                            {
+                                MetadataReader reader = peReader.GetMetadataReader();
+                                if (reader.IsAssembly)
+                                {
+                                    result = reader.GetAssemblyDefinition().Version;
+                                }
+                            }
+                        }
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        // not a PE
+                    }
+
+                    return result;
+                }
+            }
+        }
+
+        private static Version? GetAssemblyVersion(AbsolutePath sourcePath)
+        {
+            DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
+
+            string sourcePathValue = sourcePath.Value;
+            if (s_versionCache.TryGetValue(sourcePathValue, out var cacheEntry)
+                && lastWriteTimeUtc == cacheEntry.LastKnownWriteTimeUtc)
+            {
+                return cacheEntry.Version;
+            }
+
+            Version? version = GetAssemblyVersionFromFile(sourcePath);
+
+            s_versionCache[sourcePathValue] = (lastWriteTimeUtc, version);
+
+            return version;
+
+            static Version? GetAssemblyVersionFromFile(AbsolutePath sourcePath)
             {
                 using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
                 {

@@ -142,8 +142,8 @@ namespace Microsoft.NET.Build.Tasks
             LockFileLookup lockFileLookup = null;
             if (AssetsFilePath != null)
             {
-                AbsolutePath absoluteAssetsFilePath = TaskEnvironment.GetAbsolutePath(AssetsFilePath);
-                LockFile lockFile = new LockFileCache(this).GetLockFile(absoluteAssetsFilePath);
+                LockFile lockFile = new LockFileCache(this).GetLockFile(
+                    string.IsNullOrEmpty(AssetsFilePath) ? AssetsFilePath : TaskEnvironment.GetAbsolutePath(AssetsFilePath));
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
                     EffectiveRuntimeIdentifier,
@@ -225,11 +225,11 @@ namespace Microsoft.NET.Build.Tasks
                 RuntimeGraph runtimeGraph = null;
                 if (IsSelfContained)
                 {
-                    AbsolutePath absoluteRuntimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
-                    runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(absoluteRuntimeGraphPath);
+                    runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(
+                        string.IsNullOrEmpty(RuntimeGraphPath) ? RuntimeGraphPath : TaskEnvironment.GetAbsolutePath(RuntimeGraphPath));
                 }
 
-                builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup);
+                builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup, TaskEnvironment.GetAbsolutePath);
             }
             else
             {
@@ -237,10 +237,11 @@ namespace Microsoft.NET.Build.Tasks
                     mainProject,
                     IncludeRuntimeFileVersions,
                     RuntimeFrameworks,
-                    isSelfContained: IsSelfContained,
-                    platformLibraryName: PlatformLibraryName,
-                    runtimeIdentifier: EffectiveRuntimeIdentifier,
-                    targetFramework: TargetFramework);
+                    EffectiveRuntimeIdentifier,
+                    IsSelfContained,
+                    PlatformLibraryName,
+                    TargetFramework,
+                    TaskEnvironment.GetAbsolutePath);
             }
 
             builder = builder
@@ -252,7 +253,7 @@ namespace Microsoft.NET.Build.Tasks
                 .WithReferenceProjectInfos(referenceProjects)
                 .WithRuntimePackAssets(runtimePackAssets)
                 .WithCompilationOptions(compilationOptions)
-                .WithReferenceAssembliesPath(new FrameworkReferenceResolver().GetDefaultReferenceAssembliesPath())
+                .WithReferenceAssembliesPath(new FrameworkReferenceResolver(TaskEnvironment.GetEnvironmentVariable).GetDefaultReferenceAssembliesPath())
                 .WithPackagesThatWereFiltered(GetFilteredPackages());
 
             if (CompileReferences.Length > 0)
@@ -260,9 +261,9 @@ namespace Microsoft.NET.Build.Tasks
                 builder = builder.WithCompileReferences(ReferenceInfo.CreateReferenceInfos(CompileReferences));
             }
 
-            var resolvedNuGetFiles = ResolvedNuGetFiles.Select(f => new ResolvedFile(f, false))
+            var resolvedNuGetFileInfos = ResolvedNuGetFiles.Select(f => new ResolvedFile(f, false))
                                 .Concat(ResolvedRuntimeTargetsFiles.Select(f => new ResolvedFile(f, true)));
-            builder = builder.WithResolvedNuGetFiles(resolvedNuGetFiles);
+            builder = builder.WithResolvedNuGetFiles(resolvedNuGetFileInfos);
 
             var userRuntimeAssemblies = UserRuntimeAssemblies.Select(i =>
             {
@@ -273,7 +274,7 @@ namespace Microsoft.NET.Build.Tasks
             DependencyContext dependencyContext = builder.Build(userRuntimeAssemblies);
 
             var writer = new DependencyContextWriter();
-            using (var fileStream = File.Create(depsFilePath.Value))
+            using (var fileStream = File.Create(depsFilePath))
             {
                 writer.Write(dependencyContext, fileStream);
             }
