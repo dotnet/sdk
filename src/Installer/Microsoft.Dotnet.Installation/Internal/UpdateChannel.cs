@@ -115,9 +115,9 @@ internal class UpdateChannel
         }
 
         // Named channels (lts, latest, preview, daily)
-        if (TryMatchNamedChannel(version, out var namedMatch))
+        if (TryMatchNamedChannel(version, out var versionMatchesChannel))
         {
-            return namedMatch;
+            return versionMatchesChannel;
         }
 
         // Major version match (e.g., "10" matches "10.0.103")
@@ -144,12 +144,24 @@ internal class UpdateChannel
         return MatchesMajorMinorOrFeatureBand(version);
     }
 
-    private bool TryMatchNamedChannel(ReleaseVersion version, out bool result)
+    /// <summary>
+    /// Returns whether this channel is one of the recognized keyword channels
+    /// (<c>lts</c>, <c>latest</c>, <c>preview</c>, <c>daily</c>). When it is,
+    /// <paramref name="versionMatchesChannel"/> is set to whether <paramref name="version"/>
+    /// satisfies that keyword's rules; when it isn't, this returns
+    /// <c>false</c> so the caller can keep trying other match strategies.
+    /// </summary>
+    /// <remarks>
+    /// The double-bool shape follows the standard <c>TryXxx</c> pattern: the
+    /// return value answers "did the keyword path apply?" and
+    /// <paramref name="versionMatchesChannel"/> carries the actual match decision when it did.
+    /// </remarks>
+    private bool TryMatchNamedChannel(ReleaseVersion version, out bool versionMatchesChannel)
     {
         if (Name.Equals("lts", StringComparison.OrdinalIgnoreCase))
         {
             // LTS releases are even major versions and must be stable releases.
-            result = version.Major % 2 == 0 && IsStableRelease(version);
+            versionMatchesChannel = version.Major % 2 == 0 && IsStableRelease(version);
             return true;
         }
 
@@ -158,24 +170,24 @@ internal class UpdateChannel
         // matches so existing preview specs can keep a GA SDK when no preview exists yet.
         if (Name.Equals("latest", StringComparison.OrdinalIgnoreCase))
         {
-            result = IsStableRelease(version);
+            versionMatchesChannel = IsStableRelease(version);
             return true;
         }
 
         if (Name.Equals("preview", StringComparison.OrdinalIgnoreCase))
         {
-            result = true;
+            versionMatchesChannel = true;
             return true;
         }
 
         // Bare "daily" matches any prerelease version; stable releases are not daily builds.
         if (Name.Equals(DailyKeyword, StringComparison.OrdinalIgnoreCase))
         {
-            result = !IsStableRelease(version);
+            versionMatchesChannel = !IsStableRelease(version);
             return true;
         }
 
-        result = false;
+        versionMatchesChannel = false;
         return false;
     }
 
