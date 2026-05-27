@@ -16,6 +16,7 @@ using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI;
 
@@ -106,6 +107,8 @@ public sealed class CSharpAssemblyDocumentGenerator
         if (_options.ShouldFormat)
         {
             document = await Formatter.FormatAsync(document, DefineFormattingOptions()).ConfigureAwait(false);
+            SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
+            document = document.WithSyntaxRoot(root.Rewrite(MemberSpacingCSharpSyntaxRewriter.Singleton));
         }
 
         return document;
