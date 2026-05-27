@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Construction;
+using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
@@ -26,6 +27,7 @@ internal static class VirtualProjectReferenceReflector
         var unmatchedProjectReferences = new List<string>(projectReferences);
         var editor = FileBasedAppSourceEditor.Load(SourceFile.Load(entryPointFilePath));
         var directives = editor.Directives;
+        var projectInstance = new ProjectInstance(projectRootElement);
 
         for (int i = directives.Length - 1; i >= 0; i--)
         {
@@ -34,7 +36,7 @@ internal static class VirtualProjectReferenceReflector
                 continue;
             }
 
-            var directivePath = NormalizeProjectReferencePath(projectDirective.EnsureProjectFilePath(ErrorReporters.IgnoringReporter).Name);
+            var directivePath = GetResolvedProjectDirectivePath(projectDirective, projectInstance);
             int matchingIndex = unmatchedProjectReferences.IndexOf(directivePath);
 
             if (matchingIndex >= 0)
@@ -71,6 +73,15 @@ internal static class VirtualProjectReferenceReflector
                 }
             }
         }
+    }
+
+    private static string GetResolvedProjectDirectivePath(CSharpDirective.Project projectDirective, ProjectInstance projectInstance)
+    {
+        var expandedDirective = projectDirective.WithName(
+            projectInstance.ExpandString(projectDirective.Name),
+            CSharpDirective.Project.NameKind.Expanded);
+
+        return NormalizeProjectReferencePath(expandedDirective.EnsureProjectFilePath(ErrorReporters.IgnoringReporter).Name);
     }
 
     private static string NormalizeProjectReferencePath(string projectReferencePath)

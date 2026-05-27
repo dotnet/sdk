@@ -296,6 +296,58 @@ Commands:
         }
 
         [Fact]
+        public void ItPreservesMSBuildPropertyProjectDirectiveWhenAddingReference_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "add", "Other", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, @"Other\Other.csproj"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+                #:project Other
+
+                Console.WriteLine();
+                """);
+        }
+
+        [Fact]
+        public void ItPreservesDirectoryProjectDirectiveWhenAddingReference_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project Lib
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "add", "Other", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, @"Other\Other.csproj"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project Lib
+                #:project Other
+
+                Console.WriteLine();
+                """);
+        }
+
+        [Fact]
         public void ItAddsRefWithCondAndPrintsStatus()
         {
             var setup = Setup();

@@ -335,6 +335,60 @@ Options:
         }
 
         [Fact]
+        public void ItPreservesMSBuildPropertyProjectDirectiveWhenRemovingReference_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "remove", "Other/Other.csproj", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectReferenceRemoved, "Other/Other.csproj"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+
+                Console.WriteLine();
+                """);
+        }
+
+        [Fact]
+        public void ItRemovesMSBuildPropertyProjectDirectiveWhenRemovingReference_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "remove", "Lib/Lib.csproj", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(
+                    CliStrings.ProjectReferenceRemoved,
+                    Path.GetFullPath(Path.Join(testInstance.Path, "Lib", "Lib.csproj"))));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+        }
+
+        [Fact]
         public void ItRemovesRefWithCondAndPrintsStatus()
         {
             var setup = Setup();
