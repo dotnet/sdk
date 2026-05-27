@@ -140,7 +140,7 @@ function InstallDotNetSharedFrameworks([string[]]$versions) {
     & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
 
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
+    & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --set-default-install false --untracked --interactive false
 
     if ($lastExitCode -ne 0) {
         throw "Failed to install shared frameworks ($($versionsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."

@@ -63,7 +63,7 @@ function InstallDotNetSharedFrameworks {
     ExitWithExitCode 1
   fi
 
-  "$dotnetup_exe" runtime install "${versions_to_install[@]}" --install-path "$dotnet_root" --no-progress --set-default-install false --untracked --interactive false
+  "$dotnetup_exe" runtime install "${versions_to_install[@]}" --install-path "$dotnet_root" --set-default-install false --untracked --interactive false
   local lastexitcode=$?
 
   if [[ $lastexitcode != 0 ]]; then
