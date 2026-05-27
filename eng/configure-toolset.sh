@@ -15,18 +15,46 @@ function InstallBootstrapSdkWithDotnetup {
     return
   fi
 
-  # Skip if the pinned SDK is already present in either an externally provided
+  # Collect all SDK versions to install (primary + any additional).
+  local sdk_versions=("$dotnet_sdk_version")
+  local additional
+  additional=$(python3 -c "
+import json, sys
+with open('$repo_root/global.json') as f:
+    g = json.load(f)
+for v in g.get('tools', {}).get('additionalDotNetVersions', []):
+    if v: print(v)
+" 2>/dev/null || true)
+  if [[ -n "$additional" ]]; then
+    while IFS= read -r ver; do
+      sdk_versions+=("$ver")
+    done <<< "$additional"
+  fi
+
+  # Filter out versions already present in either an externally provided
   # dotnet root or the repo-local one.
   local dotnet_root="$repo_root.dotnet"
-  for root in "${DOTNET_INSTALL_DIR:-}" "$dotnet_root"; do
-    if [[ -n "$root" && -d "$root/sdk/$dotnet_sdk_version" ]]; then
-      echo "Bootstrap SDK '$dotnet_sdk_version' already present at '$root'; skipping dotnetup install."
-      printf '%s' "$dotnet_sdk_version" > "$root/.version"
-      return
+  local versions_to_install=()
+  for ver in "${sdk_versions[@]}"; do
+    local already_installed=false
+    for root in "${DOTNET_INSTALL_DIR:-}" "$dotnet_root"; do
+      if [[ -n "$root" && -d "$root/sdk/$ver" ]]; then
+        echo "Bootstrap SDK '$ver' already present at '$root'; skipping."
+        already_installed=true
+        break
+      fi
+    done
+    if [[ "$already_installed" != true ]]; then
+      versions_to_install+=("$ver")
     fi
   done
 
-  echo "Installing bootstrap SDK '$dotnet_sdk_version' to '$dotnet_root' via dotnetup..."
+  if [[ ${#versions_to_install[@]} -eq 0 ]]; then
+    printf '%s' "$dotnet_sdk_version" > "$dotnet_root/.version"
+    return
+  fi
+
+  echo "Installing SDK(s) '${versions_to_install[*]}' to '$dotnet_root' via dotnetup..."
 
   local script_dir
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,9 +62,6 @@ function InstallBootstrapSdkWithDotnetup {
   local dotnetup_exe="$dotnetup_dir/dotnetup"
 
   # build.sh runs under `set -e`; guard so we can emit a diagnostic.
-  # In CI, always pull the latest dotnetup so build agents don't reuse a
-  # cached binary that predates fixes (e.g. the channel-parsing fix).
-  if [[ "$ci" == true ]]; then export DOTNETUP_FORCE_REINSTALL=1; fi
   if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
     Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup."
     ExitWithExitCode 1
@@ -45,7 +70,7 @@ function InstallBootstrapSdkWithDotnetup {
   # Keep dotnetup's manifest under artifacts instead of the user's home dir.
   export DOTNET_DOTNETUP_DATA_DIR="$artifacts_dir/.dotnetup"
 
-  "$dotnetup_exe" sdk install "$dotnet_sdk_version" \
+  "$dotnetup_exe" sdk install "${versions_to_install[@]}" \
     --install-path "$dotnet_root" \
     --untracked \
     --set-default-install false \
@@ -53,7 +78,7 @@ function InstallBootstrapSdkWithDotnetup {
   local lastexitcode=$?
 
   if [[ $lastexitcode != 0 ]]; then
-    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install .NET SDK '$dotnet_sdk_version' to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install .NET SDK(s) '${versions_to_install[*]}' to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
     ExitWithExitCode $lastexitcode
   fi
 

@@ -19,12 +19,6 @@ set -euo pipefail
 INSTALL_DIR="$HOME/.dotnetup"
 QUALITY="daily"
 RUNTIME_ID=""
-FORCE_REINSTALL=false
-
-# Skip the download when a dotnetup binary already exists in the install dir
-# and was written less than this many hours ago. Override with --force or by
-# setting DOTNETUP_FORCE_REINSTALL=1.
-FRESHNESS_THRESHOLD_HOURS=24
 
 # --- Colors (disabled if not a terminal) ---
 if [ -t 1 ]; then
@@ -50,7 +44,6 @@ while [[ $# -gt 0 ]]; do
         --install-dir)  INSTALL_DIR="$2"; shift 2 ;;
         --quality)      QUALITY="$2"; shift 2 ;;
         --runtime-id)   RUNTIME_ID="$2"; shift 2 ;;
-        --force)        FORCE_REINSTALL=true; shift ;;
         --help|-h)
             cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
@@ -61,7 +54,6 @@ Options:
   --install-dir DIR     Installation directory (default: ~/.dotnetup)
   --quality QUALITY     Build quality (default: daily)
   --runtime-id RID      Override OS/architecture detection (e.g. linux-musl-x64, osx-arm64)
-  --force               Force re-download even if a recent dotnetup binary already exists
   --help, -h            Show this help message
 
 Examples:
@@ -169,24 +161,7 @@ FILE_NAME="dotnetup-${RID}"
 DOWNLOAD_URL="${BASE_URL}/${FILE_NAME}"
 CHECKSUM_URL="${DOWNLOAD_URL}.sha512"
 
-# Skip download if we already have a recent copy on disk.
 INSTALLED_BINARY="${INSTALL_DIR}/dotnetup"
-if [ "$FORCE_REINSTALL" != true ] && [ "${DOTNETUP_FORCE_REINSTALL:-}" != "1" ] && [ -f "$INSTALLED_BINARY" ]; then
-    now=$(date +%s)
-    # stat flags differ between GNU (Linux) and BSD (macOS).
-    if mtime=$(stat -c %Y "$INSTALLED_BINARY" 2>/dev/null); then :
-    elif mtime=$(stat -f %m "$INSTALLED_BINARY" 2>/dev/null); then :
-    else mtime=0
-    fi
-    if [ "$mtime" -gt 0 ]; then
-        age_hours=$(( (now - mtime) / 3600 ))
-        if [ "$age_hours" -lt "$FRESHNESS_THRESHOLD_HOURS" ]; then
-            ok "dotnetup already present at $INSTALLED_BINARY (age ${age_hours}h, threshold ${FRESHNESS_THRESHOLD_HOURS}h). Skipping download."
-            gray "Pass --force or set DOTNETUP_FORCE_REINSTALL=1 to force a re-download."
-            exit 0
-        fi
-    fi
-fi
 
 TEMP_DIR=$(mktemp -d)
 

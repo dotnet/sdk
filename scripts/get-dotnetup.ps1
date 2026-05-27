@@ -28,18 +28,11 @@
 param(
     [string]$InstallDir = (Join-Path $HOME ".dotnetup"),
     [string]$Quality = "daily",
-    [string]$RuntimeId,
-    # Force a re-download even if a recent dotnetup binary is already present.
-    [switch]$Force
+    [string]$RuntimeId
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-# Skip the download when a dotnetup binary already exists in the install dir
-# and was written less than this many hours ago. Override with -Force or by
-# setting $env:DOTNETUP_FORCE_REINSTALL=1.
-$FreshnessThresholdHours = 24
 
 $BaseUrl = "https://aka.ms/dotnet/dotnetup/$Quality"
 
@@ -113,18 +106,6 @@ $binaryName = if ($rid -like "win-*") { "dotnetup.exe" } else { "dotnetup" }
 $fileName = if ($rid -like "win-*") { "dotnetup-$rid.exe" } else { "dotnetup-$rid" }
 $downloadUrl = "$BaseUrl/$fileName"
 $checksumUrl = "$downloadUrl.sha512"
-
-# Skip download if we already have a recent copy on disk.
-$forceReinstall = $Force.IsPresent -or ($env:DOTNETUP_FORCE_REINSTALL -eq '1')
-$existingBinary = Join-Path $InstallDir $binaryName
-if (-not $forceReinstall -and (Test-Path $existingBinary)) {
-    $age = (Get-Date) - (Get-Item $existingBinary).LastWriteTime
-    if ($age.TotalHours -lt $FreshnessThresholdHours) {
-        Write-Host "dotnetup already present at $existingBinary (age $([int]$age.TotalHours)h, threshold ${FreshnessThresholdHours}h). Skipping download." -ForegroundColor Green
-        Write-Host "Pass -Force or set DOTNETUP_FORCE_REINSTALL=1 to force a re-download." -ForegroundColor DarkGray
-        return
-    }
-}
 
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "dotnetup-install-$([System.IO.Path]::GetRandomFileName())"
 New-Item -ItemType Directory -Path $tempDir -Force | Out-Null

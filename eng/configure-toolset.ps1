@@ -14,18 +14,36 @@ function InstallBootstrapSdkWithDotnetup() {
         return
     }
 
-    # Skip if the pinned SDK is already present in either an externally provided
+    # Collect all SDK versions to install (primary + any additional).
+    $sdkVersions = @($dotnetSdkVersion)
+    if ($GlobalJson.tools.PSObject.Properties['additionalDotNetVersions']) {
+        $sdkVersions += @($GlobalJson.tools.additionalDotNetVersions | Where-Object { -not [string]::IsNullOrEmpty($_) })
+    }
+
+    # Filter out versions already present in either an externally provided
     # dotnet root or the repo-local one.
     $dotnetRoot = Join-Path $RepoRoot '.dotnet'
-    foreach ($root in @($env:DOTNET_INSTALL_DIR, $dotnetRoot)) {
-        if (-not [string]::IsNullOrEmpty($root) -and (Test-Path ([IO.Path]::Combine($root, 'sdk', $dotnetSdkVersion)))) {
-            Write-Host "Bootstrap SDK '$dotnetSdkVersion' already present at '$root'; skipping dotnetup install." -ForegroundColor DarkGray
-            Set-Content -Path (Join-Path $root '.version') -Value $dotnetSdkVersion -NoNewline
-            return
+    $versionsToInstall = @()
+    foreach ($ver in $sdkVersions) {
+        $alreadyInstalled = $false
+        foreach ($root in @($env:DOTNET_INSTALL_DIR, $dotnetRoot)) {
+            if (-not [string]::IsNullOrEmpty($root) -and (Test-Path ([IO.Path]::Combine($root, 'sdk', $ver)))) {
+                Write-Host "Bootstrap SDK '$ver' already present at '$root'; skipping." -ForegroundColor DarkGray
+                $alreadyInstalled = $true
+                break
+            }
+        }
+        if (-not $alreadyInstalled) {
+            $versionsToInstall += $ver
         }
     }
 
-    Write-Host "Installing bootstrap SDK '$dotnetSdkVersion' to '$dotnetRoot' via dotnetup..." -ForegroundColor Cyan
+    if ($versionsToInstall.Count -eq 0) {
+        Set-Content -Path (Join-Path $dotnetRoot '.version') -Value $dotnetSdkVersion -NoNewline
+        return
+    }
+
+    Write-Host "Installing SDK(s) '$($versionsToInstall -join ', ')' to '$dotnetRoot' via dotnetup..." -ForegroundColor Cyan
 
     $dotnetupDir = Join-Path $PSScriptRoot 'dotnetup'
     $dotnetupExe = Join-Path $dotnetupDir 'dotnetup.exe'
@@ -33,9 +51,6 @@ function InstallBootstrapSdkWithDotnetup() {
     # Seed $LASTEXITCODE so strict mode can read it if the called script
     # short-circuits without invoking a native process.
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    # In CI, always pull the latest dotnetup so build agents don't reuse a
-    # cached binary that predates fixes (e.g. the channel-parsing fix).
-    if ($ci) { $env:DOTNETUP_FORCE_REINSTALL = '1' }
     & (Join-Path $RepoRoot 'scripts\get-dotnetup.ps1') -InstallDir $dotnetupDir
     if ($LASTEXITCODE -ne 0) {
         Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup (exit code '$LASTEXITCODE')."
@@ -46,13 +61,13 @@ function InstallBootstrapSdkWithDotnetup() {
     $env:DOTNET_DOTNETUP_DATA_DIR = Join-Path $ArtifactsDir '.dotnetup'
 
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    & $dotnetupExe sdk install $dotnetSdkVersion `
+    & $dotnetupExe sdk install @versionsToInstall `
         --install-path $dotnetRoot `
         --untracked `
         --set-default-install false `
         --interactive false
     if ($LASTEXITCODE -ne 0) {
-        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install .NET SDK '$dotnetSdkVersion' to '$dotnetRoot' using dotnetup (exit code '$LASTEXITCODE')."
+        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install .NET SDK(s) '$($versionsToInstall -join ', ')' to '$dotnetRoot' using dotnetup (exit code '$LASTEXITCODE')."
         ExitWithExitCode $LASTEXITCODE
     }
 
