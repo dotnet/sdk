@@ -1775,7 +1775,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
             expected: """
                 namespace Foo
                 {
-                    public partial struct Bar<T>
+                    public partial struct Bar<T> where T : notnull
                     {
                         private System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<T>> _field;
                         private object _dummy;
@@ -1802,7 +1802,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
             expected: """
                 namespace Foo
                 {
-                    public readonly partial struct Bar<T>
+                    public readonly partial struct Bar<T> where T : notnull
                     {
                         private readonly System.Collections.Generic.List<Bar<T>> _Baz_k__BackingField;
                         private readonly object _dummy;
