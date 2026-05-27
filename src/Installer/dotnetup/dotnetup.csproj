@@ -52,6 +52,15 @@
     <ProjectReference Include="..\dotnetup.Library\dotnetup.Library.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+  </ItemGroup>
+
     <!-- We want to always create a NativeAOT executable when this project is built or published.
     
         So we set _IsPublishing=true and add a target to run Publish after Build.  But in order to 
