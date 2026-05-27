@@ -134,8 +134,12 @@ function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetupExe = Join-Path $dotnetupDir "dotnetup.exe"
 
     # Acquire the latest dotnetup daily build using the in-repo install script.
+    # get-dotnetup.ps1 may short-circuit without invoking a native process,
+    # leaving $LASTEXITCODE unset; seed it so strict mode can read it.
+    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
     & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
 
+    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
     & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
 
     if ($lastExitCode -ne 0) {
