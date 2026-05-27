@@ -55,11 +55,12 @@ function InstallDotNetSharedFrameworks {
   local dotnetup_exe="$dotnetup_dir/dotnetup"
 
   # Acquire the latest dotnetup daily build using the in-repo install script.
-  "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"
-  local install_exitcode=$?
-  if [[ $install_exitcode != 0 ]]; then
-    echo "Failed to acquire dotnetup (exit code '$install_exitcode')."
-    ExitWithExitCode $install_exitcode
+  # build.sh runs under `set -e`, so we have to invoke the script in a way that
+  # doesn't trigger errexit; otherwise the script's non-zero exit aborts the
+  # whole build before our diagnostic error message can fire.
+  if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
+    echo "Failed to acquire dotnetup."
+    ExitWithExitCode 1
   fi
 
   "$dotnetup_exe" runtime install "${versions_to_install[@]}" --install-path "$dotnet_root" --no-progress --set-default-install false --untracked --interactive false
