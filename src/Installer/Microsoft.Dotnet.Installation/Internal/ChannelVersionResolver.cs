@@ -271,7 +271,8 @@ internal class ChannelVersionResolver
             _dailyChannelResolver ??= new DailyChannelResolver(_releaseManifest);
             return _dailyChannelResolver.Resolve(
                 channel,
-                architecture ?? InstallerUtilities.GetDefaultInstallArchitecture());
+                architecture ?? InstallerUtilities.GetDefaultInstallArchitecture(),
+                component);
         }
 
         if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))

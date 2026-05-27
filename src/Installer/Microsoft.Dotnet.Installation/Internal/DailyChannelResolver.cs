@@ -17,12 +17,13 @@ internal sealed class DailyChannelResolver : IDisposable
 {
     /// <summary>
     /// aka.ms link template. The <c>{0}</c> placeholder is the channel's partial version
-    /// (e.g. <c>10.0</c> or <c>10.0.1xx</c>); the rest identifies the SDK
-    /// archive for the current OS/architecture. We always use the SDK archive
-    /// for version discovery because VMR-built daily versions share the same
-    /// SDK version across components.
+    /// (e.g. <c>10.0</c> or <c>10.0.1xx</c>); <c>{1}</c> is the component-specific
+    /// archive prefix (e.g. <c>dotnet-sdk</c>, <c>dotnet-runtime</c>); <c>{2}</c> is
+    /// the RID; <c>{3}</c> is the platform archive extension. Component matters
+    /// because daily SDK and runtime builds are published at different base versions
+    /// (e.g. SDK 10.0.110 vs Runtime 10.0.10, sharing the same prerelease tag).
     /// </summary>
-    private const string AkaMsTemplate = "https://aka.ms/dotnet/{0}/daily/dotnet-sdk-{1}{2}";
+    private const string AkaMsTemplate = "https://aka.ms/dotnet/{0}/daily/{1}-{2}{3}";
 
     /// <summary>
     /// Hosts that aka.ms is allowed to redirect to. The redirect target tells
@@ -58,7 +59,10 @@ internal sealed class DailyChannelResolver : IDisposable
 
     /// <summary>
     /// Resolves the latest daily-build version for <paramref name="channel"/>.
-    /// Returns <c>null</c> if no daily build is available.
+    /// Returns <c>null</c> if no daily build is available. The version is
+    /// discovered from the aka.ms shortlink for the requested
+    /// <paramref name="component"/>, since daily SDK and runtime builds share
+    /// the same prerelease tag but differ in base version.
     /// </summary>
     public ReleaseVersion? Resolve(UpdateChannel channel, InstallArchitecture architecture, InstallComponent component = InstallComponent.SDK)
     {
@@ -69,6 +73,7 @@ internal sealed class DailyChannelResolver : IDisposable
 
         string rid = DotnetupUtilities.GetRuntimeIdentifier(architecture);
         string extension = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
+        string archivePrefix = BlobFeedUrlBuilder.GetArchivePrefix(component);
 
         // Bare "daily": probe major+1 first so we pick up a new major as soon
         // as it starts producing daily builds, before its first GA release
@@ -79,18 +84,18 @@ internal sealed class DailyChannelResolver : IDisposable
         {
             int latestMajor = GetLatestManifestMajor();
 
-            ReleaseVersion? candidate = TryResolvePartialVersion($"{latestMajor + 1}.0", rid, extension);
+            ReleaseVersion? candidate = TryResolvePartialVersion($"{latestMajor + 1}.0", archivePrefix, rid, extension);
             if (candidate != null)
             {
                 return candidate;
             }
 
-            return TryResolvePartialVersion($"{latestMajor}.0", rid, extension);
+            return TryResolvePartialVersion($"{latestMajor}.0", archivePrefix, rid, extension);
         }
 
         // "<M>-daily" → use "<M>.0" as the aka.ms partial version (aka.ms paths use major.minor).
         string partialVersion = NormalizePartialVersion(channel.BaseChannel);
-        return TryResolvePartialVersion(partialVersion, rid, extension);
+        return TryResolvePartialVersion(partialVersion, archivePrefix, rid, extension);
     }
 
     /// <summary>
@@ -123,9 +128,9 @@ internal sealed class DailyChannelResolver : IDisposable
         return latestMajor;
     }
 
-    private ReleaseVersion? TryResolvePartialVersion(string partialVersion, string rid, string extension)
+    private ReleaseVersion? TryResolvePartialVersion(string partialVersion, string archivePrefix, string rid, string extension)
     {
-        string akaMsUrl = string.Format(System.Globalization.CultureInfo.InvariantCulture, AkaMsTemplate, partialVersion, rid, extension);
+        string akaMsUrl = string.Format(System.Globalization.CultureInfo.InvariantCulture, AkaMsTemplate, partialVersion, archivePrefix, rid, extension);
 
         Uri finalUri;
         try
