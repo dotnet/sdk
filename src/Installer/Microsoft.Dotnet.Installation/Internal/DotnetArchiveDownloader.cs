@@ -295,17 +295,15 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion)
     {
-        if (string.IsNullOrEmpty(resolvedVersion.Prerelease))
-        {
-            return false;
-        }
-
+        // DailyChannelResolver only returns prerelease versions, so we don't
+        // need to re-check the resolved version's prerelease label here.
         if (installRequest.Channel.IsDaily)
         {
             return true;
         }
 
-        if (!installRequest.Channel.IsFullySpecifiedVersion())
+        if (string.IsNullOrEmpty(resolvedVersion.Prerelease)
+            || !installRequest.Channel.IsFullySpecifiedVersion())
         {
             return false;
         }
