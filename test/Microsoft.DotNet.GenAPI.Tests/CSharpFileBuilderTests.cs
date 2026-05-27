@@ -881,6 +881,39 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
+        public void TestBlankLineGenerationBetweenNestedTypeLikeMembers()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class Container
+                    {
+                        public delegate void ADelegate();
+                        public class BNested
+                        {
+                        }
+                        public delegate void CDelegate();
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Container
+                    {
+                        public delegate void ADelegate();
+
+                        public partial class BNested
+                        {
+                        }
+
+                        public delegate void CDelegate();
+                    }
+                }
+                """);
+        }
+
+        [Fact]
         public void TestPublicMembersGeneration()
         {
             RunTest(original: """

@@ -556,24 +556,8 @@ namespace MyNamespace.MySubNamespace
             Assert.True(File.Exists(myAssemblyMarkdownFilePath), $"{myAssemblyMarkdownFilePath} assembly markdown file does not exist.");
 
             string actualCode = File.ReadAllText(myAssemblyMarkdownFilePath);
-            Assert.Equal(NormalizeWhitespaceOnlyLines(expectedMarkdown), NormalizeWhitespaceOnlyLines(actualCode));
+            Assert.Equal(DiffTestHelpers.NormalizeWhitespaceOnlyLines(expectedMarkdown), DiffTestHelpers.NormalizeWhitespaceOnlyLines(actualCode));
         }
-    }
-
-    private static string NormalizeWhitespaceOnlyLines(string text)
-    {
-        string[] lines = text.Split('\n');
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string line = lines[i];
-            string lineContent = line.EndsWith('\r') ? line[..^1] : line;
-            if (lineContent.Length > 0 && string.IsNullOrWhiteSpace(lineContent))
-            {
-                lines[i] = line.EndsWith('\r') ? "\r" : string.Empty;
-            }
-        }
-
-        return string.Join('\n', lines);
     }
 
     private Task<FileInfo[]> GetFileWithListsAsync(TempDirectory root, string[] list) => GetFilesWithListsAsync(root, [list]);

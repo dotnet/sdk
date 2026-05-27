@@ -89,12 +89,15 @@ public sealed class MemberSpacingCSharpSyntaxRewriter : CSharpSyntaxRewriter
         for (int i = 1; i < members.Count; i++)
         {
             updatedMembers[i - 1] = RemoveTrailingWhitespace(updatedMembers[i - 1]);
-            bool includeBlankLine = updatedMembers[i - 1] is BaseTypeDeclarationSyntax && updatedMembers[i] is BaseTypeDeclarationSyntax;
+            bool includeBlankLine = IsTypeLikeDeclaration(updatedMembers[i - 1]) && IsTypeLikeDeclaration(updatedMembers[i]);
             updatedMembers[i] = updatedMembers[i].WithLeadingTrivia(GetAdjustedLeadingTrivia(updatedMembers[i], includeBlankLine));
         }
 
         return SyntaxFactory.List(updatedMembers);
     }
+
+    private static bool IsTypeLikeDeclaration(MemberDeclarationSyntax member) =>
+        member is BaseTypeDeclarationSyntax or DelegateDeclarationSyntax;
 
     private static MemberDeclarationSyntax RemoveTrailingWhitespace(MemberDeclarationSyntax member)
     {

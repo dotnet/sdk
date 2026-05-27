@@ -73,7 +73,7 @@ public abstract class DiffBaseTests
             {
                 Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
                 string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
-                if (!NormalizeWhitespaceOnlyLines(fullExpectedCode).Equals(NormalizeWhitespaceOnlyLines(actualCode)))
+                if (!DiffTestHelpers.NormalizeWhitespaceOnlyLines(fullExpectedCode).Equals(DiffTestHelpers.NormalizeWhitespaceOnlyLines(actualCode)))
                 {
                     Assert.Fail($"Expected:\n[{ReplacedNewLines(fullExpectedCode)}]\nActual:\n[{ReplacedNewLines(actualCode)}]");
                 }
@@ -82,22 +82,6 @@ public abstract class DiffBaseTests
     }
 
     private static string ReplacedNewLines(string orig) => orig.Replace("\n", "\\n\n").Replace("\r", "\\r");
-
-    private static string NormalizeWhitespaceOnlyLines(string text)
-    {
-        string[] lines = text.Split('\n');
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string line = lines[i];
-            string lineContent = line.EndsWith('\r') ? line[..^1] : line;
-            if (lineContent.Length > 0 && string.IsNullOrWhiteSpace(lineContent))
-            {
-                lines[i] = line.EndsWith('\r') ? "\r" : string.Empty;
-            }
-        }
-
-        return string.Join('\n', lines);
-    }
 
     private static string GetExpected(string expectedCode, string expectedAssemblyName) =>
         $"""
