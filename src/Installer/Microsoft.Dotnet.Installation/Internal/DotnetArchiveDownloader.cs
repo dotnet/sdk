@@ -222,13 +222,17 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// </summary>
     private static string GetExtensionFromUrl(string url)
     {
-        if (url.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+        // Use Uri.LocalPath to strip query strings/fragments before checking the extension.
+        // The .tar.gz check is needed because Path.GetExtension only returns the last
+        // extension (".gz"), not the compound ".tar.gz".
+        var localPath = new Uri(url).LocalPath;
+
+        if (localPath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
         {
             return ".tar.gz";
         }
 
-        var uri = new Uri(url);
-        return Path.GetExtension(uri.LocalPath);
+        return Path.GetExtension(localPath);
     }
 
     private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)

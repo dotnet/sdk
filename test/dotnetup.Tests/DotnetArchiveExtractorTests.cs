@@ -178,7 +178,7 @@ public class DotnetArchiveExtractorTests
         call.Request.Should().Be(request);
         call.Version.Should().Be(version);
         call.DestinationPath.Should().StartWith(extractor.ScratchDownloadDirectory);
-        call.DestinationPath.Should().EndWith(".tar.gz");
+        call.DestinationPath.Should().EndWith(DotnetupTestUtilities.DefaultArchiveFileExtension);
 
         _log.WriteLine($"Download was called with version {call.Version} to {call.DestinationPath}");
     }

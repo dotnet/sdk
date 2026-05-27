@@ -202,7 +202,7 @@ internal class ReleaseManifest
              .Where(f => f.Name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
              .ToList();
 
-        if (matchingFiles.Count == 0 && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (!matchingFiles.Any() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             matchingFiles = ridFiles
                 .Where(f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))

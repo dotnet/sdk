@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 
@@ -44,9 +45,9 @@ internal class MockArchiveDownloader : IArchiveDownloader
         string DestinationPath);
 
     /// <summary>
-    /// The extension to append to the base path. Defaults to ".tar.gz".
+    /// The extension to append to the base path. Defaults to <see cref="DotnetupTestUtilities.DefaultArchiveFileExtension"/>.
     /// </summary>
-    public string ArchiveFileExtension { get; set; } = ".tar.gz";
+    public string ArchiveFileExtension { get; set; } = DotnetupTestUtilities.DefaultArchiveFileExtension;
 
     public string DownloadArchiveWithVerification(
         DotnetInstallRequest installRequest,

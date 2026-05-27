@@ -10,6 +10,7 @@ using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
 using Xunit;
 
@@ -110,7 +111,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
     {
         const string version = "10.0.100-preview.4.25216.37";
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
-        string ext = ".tar.gz";
+        string ext = DotnetupTestUtilities.DefaultArchiveFileExtension;
         string expectedHash = new string('d', 128);
         var (handler, history) = BuildHandler(new()
         {
@@ -245,7 +246,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
     {
         const string version = "10.0.0-preview.4.25216.10";
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
-        string ext = ".tar.gz";
+        string ext = DotnetupTestUtilities.DefaultArchiveFileExtension;
         string expectedHash = new string('e', 128);
         var (handler, _) = BuildHandler(new()
         {
