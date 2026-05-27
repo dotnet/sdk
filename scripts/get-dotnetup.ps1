@@ -8,8 +8,6 @@
     https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe), verifies the
     SHA-512 checksum, and installs the binary to a local directory.
 
-    No Azure DevOps credentials are required.
-
 .PARAMETER InstallDir
     Directory to install dotnetup into. Defaults to ~/.dotnetup.
 
@@ -43,14 +41,20 @@ function Get-RuntimeId {
         return $RuntimeId
     }
 
+    # Use RuntimeInformation so this works on both Windows PowerShell 5.1
+    # and PowerShell Core ($IsWindows/$IsMacOS/$IsLinux only exist on Core).
+
     # Detect OS
-    if ($IsWindows -or ($env:OS -eq "Windows_NT")) {
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::Windows)) {
         $os = "win"
     }
-    elseif ($IsMacOS) {
+    elseif ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::OSX)) {
         $os = "osx"
     }
-    elseif ($IsLinux) {
+    elseif ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::Linux)) {
         $os = "linux"
 
         # Detect musl vs glibc
@@ -94,17 +98,6 @@ function Get-RuntimeId {
 }
 
 # --- Main ---
-
-# Windows PowerShell (5.x) is not supported; require PowerShell 6+ (pwsh).
-# The 'PSEdition' property is only present on 5+, so usage on 4 and below will be null,
-# so we check that the version isn't Core instead of "version is Desktop"
-if ($PSVersionTable.PSEdition -ne "Core") {
-    throw @"
-This script requires PowerShell Core (pwsh) and cannot run on Windows PowerShell 5.x.
-Install PowerShell Core from: https://aka.ms/install-powershell
-Then re-run this script with 'pwsh' instead of 'powershell'.
-"@
-}
 
 $rid = Get-RuntimeId
 Write-Host "Detected runtime: $rid" -ForegroundColor Cyan
