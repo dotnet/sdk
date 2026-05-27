@@ -13,9 +13,9 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
  * TestHostProcessPIDRequestSerializer: 2 (reserved - not registered on the SDK side)
  * CommandLineOptionMessagesSerializer: 3
  * Reserved: 4 (was ModuleSerializer, removed as unused)
- * DiscoveredTestMessageSerializer: 5
- * TestResultMessageSerializer: 6
- * FileArtifactMessageSerializer: 7
+ * DiscoveredTestMessagesSerializer: 5
+ * TestResultMessagesSerializer: 6
+ * FileArtifactMessagesSerializer: 7
  * TestSessionEventSerializer: 8
  * HandshakeMessageSerializer: 9
  */
