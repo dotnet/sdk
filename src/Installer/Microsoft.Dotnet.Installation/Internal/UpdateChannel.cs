@@ -97,8 +97,9 @@ internal class UpdateChannel
 
     /// <summary>
     /// Checks if the given version matches this channel pattern.
-    /// Supports exact versions, named channels (latest, lts, preview),
-    /// major-only, major.minor, and feature band patterns.
+    /// Supports exact versions, named channels (latest, lts, preview, daily),
+    /// major-only, major.minor, and feature band patterns (each of these may
+    /// also carry a <c>-daily</c> suffix to narrow the match to prerelease versions).
     /// </summary>
     public bool Matches(ReleaseVersion version)
     {
@@ -107,33 +108,13 @@ internal class UpdateChannel
             return false;
         }
 
-        // Daily channels match the same versions their base channel would, but
-        // restricted to prerelease versions. A stable release is not a daily
-        // build, even if its version falls inside the base scope; rejecting it
-        // here keeps the channel's "what satisfies me?" answer coherent for GC
-        // and reporting.
-        if (IsDaily)
-        {
-            if (IsStableRelease(version))
-            {
-                return false;
-            }
-
-            if (Name.Equals(DailyKeyword, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return new UpdateChannel(BaseChannel).Matches(version);
-        }
-
         // Exact version match
         if (string.Equals(version.ToString(), Name, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
-        // Named channels (lts, latest, preview)
+        // Named channels (lts, latest, preview, daily)
         if (TryMatchNamedChannel(version, out var namedMatch))
         {
             return namedMatch;
@@ -143,6 +124,21 @@ internal class UpdateChannel
         if (int.TryParse(Name, out var major))
         {
             return version.Major == major;
+        }
+
+        // Scoped daily channels (e.g. "10.0-daily", "10.0.1xx-daily") match the
+        // same versions their base scope would, but restricted to prerelease
+        // versions. A stable release is not a daily build, even if its version
+        // falls inside the base scope; rejecting it here keeps the channel's
+        // "what satisfies me?" answer coherent for GC and reporting.
+        if (IsDaily)
+        {
+            if (IsStableRelease(version))
+            {
+                return false;
+            }
+
+            return new UpdateChannel(BaseChannel).Matches(version);
         }
 
         return MatchesMajorMinorOrFeatureBand(version);
@@ -169,6 +165,13 @@ internal class UpdateChannel
         if (Name.Equals("preview", StringComparison.OrdinalIgnoreCase))
         {
             result = true;
+            return true;
+        }
+
+        // Bare "daily" matches any prerelease version; stable releases are not daily builds.
+        if (Name.Equals(DailyKeyword, StringComparison.OrdinalIgnoreCase))
+        {
+            result = !IsStableRelease(version);
             return true;
         }
 
