@@ -3,7 +3,7 @@
 
 using System.Xml;
 using Microsoft.DotNet.Cli.Commands;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.List.Reference.Tests
@@ -237,6 +237,36 @@ Commands:
                 #:project Lib/Lib.csproj
 
                 Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+Lib/Lib.csproj";
+
+            new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
+        }
+
+        [Fact]
+        public void ItDoesNotPrintFileBasedAppReferences_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:project Lib/Lib.csproj
+                #:ref Util.cs
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
                 """);
             CreateMinimalProject(testInstance.Path, "Lib");
 

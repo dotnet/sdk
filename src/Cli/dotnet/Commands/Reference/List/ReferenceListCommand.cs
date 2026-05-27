@@ -9,6 +9,7 @@ using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
@@ -43,9 +44,9 @@ internal class ReferenceListCommand : CommandBase<ListReferenceCommandDefinition
         ProjectInstance projectInstance = new(msbuildProj.ProjectRootElement);
         Reporter.Output.WriteLine($"{CliStrings.ProjectReferenceOneOrMore}");
         Reporter.Output.WriteLine(new string('-', CliStrings.ProjectReferenceOneOrMore.Length));
-        foreach (var item in projectInstance.GetItems("ProjectReference"))
+        foreach (var include in p2ps.SelectMany(static item => item.Includes()))
         {
-            Reporter.Output.WriteLine(item.EvaluatedInclude);
+            Reporter.Output.WriteLine(projectInstance.ExpandString(include));
         }
 
         return 0;
