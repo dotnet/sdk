@@ -1268,6 +1268,41 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """,
                 includeInternalSymbols: false);
         }
+
+        [Fact]
+        public void TestExplicitInterfaceEventWithInaccessibleTypeArgumentIsExcluded()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    internal class InternalArg { }
+
+                    public interface IPublicNotifications<T>
+                    {
+                        event System.Action<T> Notify;
+                    }
+
+                    public class EventSource : IPublicNotifications<InternalArg>
+                    {
+                        event System.Action<InternalArg> IPublicNotifications<InternalArg>.Notify { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource
+                    {
+                    }
+
+                    public partial interface IPublicNotifications<T>
+                    {
+                        event System.Action<T> Notify;
+                    }
+                }
+                """,
+                includeInternalSymbols: false);
+        }
         [Fact]
         public void TestCustomAttributeGeneration()
         {
