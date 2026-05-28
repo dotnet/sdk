@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="xunit.v3.assert" VersionOverride="$(XUnitV3Version)" />
     <PackageReference Include="xunit.v3.extensibility.core" />
     <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
@@ -36,5 +36,24 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests" Key="$(TemplateEnginePublicKey)" />
   </ItemGroup>
+
+  <!-- Copy the nupkg to TestPackagesDir so integration tests can consume it.
+       This replaces the BuildTestPackages.targets entry that re-packed this project
+       with different global properties, which caused a parallel-build race condition
+       on referenced projects' obj/ output DLLs (e.g. RunnableProjects.dll).
+       Guard with IsCrossTargetingBuild so this runs only once in the outer build of a
+       multi-targeting project, avoiding concurrent copies per inner TFM build.
+       Skip in VMR/source-build where integration tests don't run and versioning
+       properties may not be available in the outer cross-targeting evaluation. -->
+  <Target Name="CopyPackageToTestPackagesDir" AfterTargets="Pack"
+          Condition="'$(TestLayoutDir)' != '' and '$(DotNetBuild)' != 'true' and ('$(IsCrossTargetingBuild)' == 'true' or '$(TargetFrameworks)' == '')">
+    <PropertyGroup>
+      <_TestPackagesDir>$(TestLayoutDir)testpackages/</_TestPackagesDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(_TestPackagesDir)" Condition="!Exists('$(_TestPackagesDir)')" />
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg"
+          DestinationFolder="$(_TestPackagesDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

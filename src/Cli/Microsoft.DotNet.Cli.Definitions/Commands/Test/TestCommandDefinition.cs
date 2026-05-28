@@ -31,16 +31,31 @@ internal abstract partial class TestCommandDefinition : Command
     }
 
     public static TestCommandDefinition Create()
+        => Create(Environment.CurrentDirectory);
+
+    internal static TestCommandDefinition Create(string startDirectory)
     {
-        string? globalJsonPath = GetGlobalJsonPath(Environment.CurrentDirectory);
-        if (!File.Exists(globalJsonPath))
+        string? globalJsonPath = GetGlobalJsonPath(startDirectory);
+        if (globalJsonPath is null)
         {
             return new VSTest();
         }
 
-        string jsonText = File.ReadAllText(globalJsonPath);
-
-        var globalJson = JsonSerializer.Deserialize(jsonText, GlobalJsonSerializerContext.Default.GlobalJsonModel);
+        GlobalJsonModel? globalJson;
+        try
+        {
+            string jsonText = File.ReadAllText(globalJsonPath);
+            globalJson = JsonSerializer.Deserialize(jsonText, GlobalJsonSerializerContext.Default.GlobalJsonModel);
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        {
+            // The global.json file is unreadable or malformed (for example, empty or mid-edit). This
+            // method is invoked very early during CLI parser construction, so throwing here would
+            // bring down ALL commands (including `dotnet --version`). Fall back to the default
+            // runner; if the user actually runs `dotnet test`, the test command itself will surface
+            // a clearer error when it tries to load the configuration.
+            return new VSTest();
+        }
 
         var name = globalJson?.Test?.RunnerName;
 
