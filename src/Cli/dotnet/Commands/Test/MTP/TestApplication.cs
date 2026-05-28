@@ -321,7 +321,7 @@ internal sealed class TestApplication(
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
         if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? protocolVersions) ||
-            protocolVersions is null)
+            string.IsNullOrWhiteSpace(protocolVersions))
         {
             // The handshake didn't advertise any supported protocol versions. Return empty so the
             // handler can surface a dedicated "missing protocol versions" failure to the user via

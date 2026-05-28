@@ -36,7 +36,7 @@ internal sealed class TestApplicationHandler
 
         if (!gotSupportedVersion)
         {
-            string failureMessage = handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? supportedProtocolVersions) && !string.IsNullOrEmpty(supportedProtocolVersions)
+            string failureMessage = handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? supportedProtocolVersions) && !string.IsNullOrWhiteSpace(supportedProtocolVersions)
                 ? string.Format(CliCommandStrings.DotnetTestIncompatibleHandshakeVersion, supportedProtocolVersions, ProtocolConstants.SupportedVersions)
                 : string.Format(CliCommandStrings.DotnetTestMissingHandshakeProtocolVersions, ProtocolConstants.SupportedVersions);
 
@@ -57,7 +57,7 @@ internal sealed class TestApplicationHandler
             return false;
         }
 
-        var arch = architecture!.ToLower();
+        var arch = architecture!.ToLowerInvariant();
         var tfm = TargetFrameworkParser.GetShortTargetFramework(framework);
         var currentHandshakeInfo = (tfm, arch, executionId!);
 
@@ -103,7 +103,7 @@ internal sealed class TestApplicationHandler
 
     private static bool TryGetRequiredHandshakeProperty(HandshakeMessage handshakeMessage, byte propertyId, out string? value, out string? failureMessage)
     {
-        if (handshakeMessage.Properties.TryGetValue(propertyId, out value) && !string.IsNullOrEmpty(value))
+        if (handshakeMessage.Properties.TryGetValue(propertyId, out value) && !string.IsNullOrWhiteSpace(value))
         {
             failureMessage = null;
             return true;
@@ -118,7 +118,7 @@ internal sealed class TestApplicationHandler
 
     private static string ValidateRequiredMessageProperty(string? value, string propertyName, string messageTypeName)
     {
-        if (string.IsNullOrEmpty(value))
+        if (string.IsNullOrWhiteSpace(value))
         {
             throw new InvalidOperationException(string.Format(
                 CliCommandStrings.DotnetTestMissingRequiredMessageProperty,
