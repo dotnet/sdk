@@ -257,10 +257,16 @@ internal sealed class TestApplication(
                 switch (request)
                 {
                     case HandshakeMessage handshakeMessage:
-                        _handshakes.Add(server, handshakeMessage);
+                        if (!_handshakes.TryAdd(server, handshakeMessage))
+                        {
+                            throw new InvalidOperationException(CliCommandStrings.DotnetTestDuplicateHandshakeOnConnection);
+                        }
                         string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
-                        OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
-                        return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
+                        // If the handler rejects the handshake (unsupported version, missing required
+                        // properties, mismatching info, ...) respond with an empty negotiated version so
+                        // Microsoft.Testing.Platform stops sending further messages on this connection.
+                        bool handshakeAccepted = OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                        return Task.FromResult((IResponse)CreateHandshakeMessage(handshakeAccepted ? negotiatedVersion : string.Empty));
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -347,7 +353,7 @@ internal sealed class TestApplication(
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         });
 
-    public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
+    public bool OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
         => _handler.OnHandshakeReceived(handshakeMessage, gotSupportedVersion);
 
     private void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
