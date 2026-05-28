@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - **Windows**, **macOS**, or **Linux**
-- A terminal (like bash, or zsh - Powershell (Core) support coming soon!)
+- A terminal (like bash, or zsh - Powershell (Core))
 - No administrator / root access required for Isolation or Terminal Mode. Replacement Mode on Windows requires administrator privileges.
 
 ## Download dotnetup
@@ -20,7 +20,7 @@ curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash
 iwr https://aka.ms/dotnetup/get-dotnetup.ps1 | iex
 ```
 
-These scripts will download the latest version of `dotnetup` and install it in your user directory, then update your $PATH so that `dotnetup` is available in your terminal.
+These scripts will download the latest version of `dotnetup` and install it in your user directory, then print instructions to update your $PATH so that `dotnetup` is available in your terminal.
 
 ## First-Time Setup
 
