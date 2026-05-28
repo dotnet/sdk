@@ -350,6 +350,16 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         }
         else if (parentNode is CompilationUnitSyntax)
         {
+            foreach (BaseTypeDeclarationSyntax typeNode in GetMembersOfType<BaseTypeDeclarationSyntax>(parentNode))
+            {
+                dictionary.TryAdd(GetDocId(typeNode, model), typeNode);
+            }
+
+            foreach (DelegateDeclarationSyntax delegateNode in GetMembersOfType<DelegateDeclarationSyntax>(parentNode))
+            {
+                dictionary.TryAdd(GetDocId(delegateNode, model), delegateNode);
+            }
+
             foreach (BaseNamespaceDeclarationSyntax namespaceNode in parentNode.DescendantNodes().OfType<BaseNamespaceDeclarationSyntax>())
             {
                 dictionary.TryAdd(GetDocId(namespaceNode, model), namespaceNode);
