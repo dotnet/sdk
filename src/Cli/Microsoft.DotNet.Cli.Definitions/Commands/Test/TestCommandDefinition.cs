@@ -55,17 +55,13 @@ internal abstract partial class TestCommandDefinition : Command
         }
 
         string? globalJsonRunnerName = TryGetRunnerNameFromGlobalJson(startDirectory);
-        if (globalJsonRunnerName is null || globalJsonRunnerName.Equals(VSTestRunnerName, StringComparison.OrdinalIgnoreCase))
+        if (globalJsonRunnerName is null)
         {
             return new VSTest();
         }
 
-        if (globalJsonRunnerName.Equals(MicrosoftTestingPlatformRunnerName, StringComparison.OrdinalIgnoreCase))
-        {
-            return new MicrosoftTestingPlatform();
-        }
-
-        throw new InvalidOperationException(string.Format(CommandDefinitionStrings.CmdUnsupportedTestRunnerDescription, globalJsonRunnerName));
+        return TryResolveRunner(globalJsonRunnerName)
+            ?? throw new InvalidOperationException(string.Format(CommandDefinitionStrings.CmdUnsupportedTestRunnerDescription, globalJsonRunnerName));
     }
 
     private static TestCommandDefinition? TryResolveRunner(string name)

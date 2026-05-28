@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             using var temp = new TempDirectory();
             File.WriteAllText(Path.Combine(temp.Path, "global.json"), string.Empty);
 
-            var command = TestCommandDefinition.Create(temp.Path);
+            var command = TestCommandDefinition.Create(temp.Path, testRunnerEnvironmentValue: null);
 
             command.Should().BeOfType<TestCommandDefinition.VSTest>(
                 "an empty global.json must not crash the CLI parser (regression for https://github.com/dotnet/sdk/issues/52384)");
@@ -174,7 +174,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             using var temp = new TempDirectory();
             File.WriteAllText(Path.Combine(temp.Path, "global.json"), "{ this is not valid json");
 
-            var command = TestCommandDefinition.Create(temp.Path);
+            var command = TestCommandDefinition.Create(temp.Path, testRunnerEnvironmentValue: null);
 
             command.Should().BeOfType<TestCommandDefinition.VSTest>();
         }
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Path.Combine(temp.Path, "global.json"),
                 """{ "test": { "runner": "Microsoft.Testing.Platform" } }""");
 
-            var command = TestCommandDefinition.Create(temp.Path);
+            var command = TestCommandDefinition.Create(temp.Path, testRunnerEnvironmentValue: null);
 
             command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>();
         }
@@ -203,7 +203,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Path.Combine(temp.Path, "global.json"),
                 """{ "test": { "runner": "definitely-not-a-real-runner" } }""");
 
-            Action act = () => TestCommandDefinition.Create(temp.Path);
+            // Pass an explicit null env value so the test cannot be silently disabled by a
+            // DOTNET_TEST_RUNNER value that happens to be set in the developer/CI environment.
+            Action act = () => TestCommandDefinition.Create(temp.Path, testRunnerEnvironmentValue: null);
 
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("*definitely-not-a-real-runner*");
