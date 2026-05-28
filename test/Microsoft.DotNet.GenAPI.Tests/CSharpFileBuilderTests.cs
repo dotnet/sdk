@@ -36,6 +36,43 @@ namespace Microsoft.DotNet.GenAPI.Tests
             // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
             string header = "")
         {
+            string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, assemblyName, header);
+
+            SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
+            SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
+
+            // compare SyntaxTree and not string representation
+            Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
+                $"Expected:\n{expected}\nResulted:\n{resultedString}");
+        }
+
+        private void RunTestAndCompareOutput(string original,
+            string expected,
+            bool includeInternalSymbols = true,
+            bool includeEffectivelyPrivateSymbols = true,
+            bool includeExplicitInterfaceImplementationSymbols = true,
+            bool allowUnsafe = false,
+            string[] excludedAttributeList = null,
+            [CallerMemberName] string assemblyName = "",
+            // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
+            string header = "")
+        {
+            string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, assemblyName, header);
+
+            Assert.Equal(expected.ReplaceLineEndings("\n"), resultedString.ReplaceLineEndings("\n"));
+        }
+
+        private static string GenerateOutput(string original,
+            bool includeInternalSymbols,
+            bool includeEffectivelyPrivateSymbols,
+            bool includeExplicitInterfaceImplementationSymbols,
+            bool allowUnsafe,
+            string[] excludedAttributeList,
+            string assemblyName,
+            string header)
+        {
             using StringWriter stringWriter = new();
 
             Mock<ILog> log = new();
@@ -60,17 +97,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
             csharpFileBuilder.WriteAssembly(assemblySymbols.First().Value);
 
-            StringBuilder stringBuilder = stringWriter.GetStringBuilder();
-            string resultedString = stringBuilder.ToString();
-
-            stringBuilder.Remove(0, stringBuilder.Length);
-
-            SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
-            SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
-
-            // compare SyntaxTree and not string representation
-            Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
-                $"Expected:\n{expected}\nResulted:\n{resultedString}");
+            return stringWriter.ToString();
         }
 
         [Fact]
@@ -1042,6 +1069,29 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                         public abstract event System.EventHandler<bool> TextChanged;
                     }
 
+                    public partial class Events
+                    {
+                        public event System.EventHandler<string> OnNewMessage { add { } remove { } }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestEventGenerationOutput()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class Events
+                    {
+                        public event System.EventHandler<string> OnNewMessage { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
                     public partial class Events
                     {
                         public event System.EventHandler<string> OnNewMessage { add { } remove { } }
