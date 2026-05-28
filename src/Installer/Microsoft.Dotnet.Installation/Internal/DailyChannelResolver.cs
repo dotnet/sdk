@@ -146,13 +146,6 @@ internal sealed class DailyChannelResolver : IDisposable
             return null;
         }
 
-        if (!IsAllowedRedirectTarget(finalUri))
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.NetworkError,
-                $"Daily channel '{partialVersion}-daily' redirected to disallowed host '{finalUri.Host}' (expected one of: {string.Join(", ", UrlSanitizer.KnownDownloadDomains)}).");
-        }
-
         var version = ExtractVersionFromUrl(finalUri);
         if (version == null)
         {
@@ -172,20 +165,6 @@ internal sealed class DailyChannelResolver : IDisposable
         }
 
         return version;
-    }
-
-    /// <summary>
-    /// Returns true when <paramref name="uri"/> uses HTTPS and points at a
-    /// host on <see cref="UrlSanitizer.KnownDownloadDomains"/>.
-    /// </summary>
-    public static bool IsAllowedRedirectTarget(Uri uri)
-    {
-        if (!uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return UrlSanitizer.KnownDownloadDomains.Any(host => uri.Host.Equals(host, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

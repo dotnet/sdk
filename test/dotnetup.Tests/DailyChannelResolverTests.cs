@@ -143,8 +143,6 @@ public class DailyChannelResolverTests
         // If aka.ms changes its not-found fallback to a host other than bing.com (so
         // IsAkaMsShortlinkNotFound's URL pattern misses) but still returns HTML, the
         // Content-Type check should still treat the response as "no daily build available".
-        // We point the redirect at an allowed host (ci.dot.net) so IsAllowedRedirectTarget
-        // doesn't intercept first, and label the response as text/html.
         const string prefix = "https://aka.ms/dotnet/10.0/daily/dotnet-sdk-";
         using var handler = new RedirectHandler(
             new Dictionary<string, string>
@@ -174,17 +172,6 @@ public class DailyChannelResolverTests
     public void IsHtmlContent_RecognizesHtmlMediaType(string? mediaType, bool expected)
     {
         DailyChannelResolver.IsHtmlContent(mediaType).Should().Be(expected);
-    }
-
-    [Theory]
-    [InlineData("https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip", true)]
-    [InlineData("https://builds.dotnet.microsoft.com/sdk/10.0.100-preview.4.25216.37/dotnet-sdk.zip", true)]
-    [InlineData("https://dotnetbuilds.azureedge.net/public/Sdk/10.0.100/dotnet-sdk.zip", true)]
-    [InlineData("https://evil.example.com/Sdk/10.0.100-preview.4/dotnet-sdk.zip", false)]
-    [InlineData("http://ci.dot.net/public/Sdk/10.0.100/dotnet-sdk.zip", false)] // HTTP rejected
-    public void IsAllowedRedirectTarget_RecognizesAllowlist(string url, bool expected)
-    {
-        DailyChannelResolver.IsAllowedRedirectTarget(new Uri(url)).Should().Be(expected);
     }
 
     [Theory]
