@@ -11,6 +11,23 @@ export PATH=$DOTNET_ROOT:$PATH
 
 export TestExecutionDirectory=$(pwd)/testExecutionDirectory
 mkdir $TestExecutionDirectory
+
+# Old .NET runtimes (< .NET 6) can't discover ICU on Azure Linux 3 because
+# ICU's version number is higher than what those runtimes probe for via dlopen.
+# Create symlinks with version numbers that old runtimes expect.
+if [ -f /etc/azurelinux-release ]; then
+    ICU_COMPAT_DIR="$TestExecutionDirectory/icu_compat"
+    mkdir -p "$ICU_COMPAT_DIR"
+    for lib in libicuuc libicui18n libicudata; do
+        REAL_LIB=$(find /usr/lib64 /usr/lib -maxdepth 1 -name "${lib}.so.*" ! -type l 2>/dev/null | head -1)
+        if [ -n "$REAL_LIB" ]; then
+            for ver in $(seq 50 73); do
+                ln -sf "$REAL_LIB" "$ICU_COMPAT_DIR/${lib}.so.${ver}"
+            done
+        fi
+    done
+    export LD_LIBRARY_PATH="$ICU_COMPAT_DIR:${LD_LIBRARY_PATH:-}"
+fi
 export DOTNET_CLI_HOME=$TestExecutionDirectory/.dotnet
 cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionDirectory/
 

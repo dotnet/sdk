@@ -101,6 +101,15 @@ namespace Microsoft.NET.TestFramework
                         return false;
                     }
                 }
+                else if (osId.Equals("azurelinux", StringComparison.OrdinalIgnoreCase) ||
+                         osId.Equals("mariner", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Azure Linux / CBL-Mariner doesn't ship netcoreapp1.x runtimes
+                    if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
                 else if (Version.TryParse(versionString, out Version osVersion))
                 {
                     if (osId.Equals("fedora", StringComparison.OrdinalIgnoreCase))
