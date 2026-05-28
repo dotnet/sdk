@@ -12,8 +12,11 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GetPackagesToPrune : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class GetPackagesToPrune : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         // Minimum .NET Core version that supports package pruning
         private const int FrameworkReferenceMinVersion = 3;
         
@@ -133,13 +136,19 @@ namespace Microsoft.NET.Build.Tasks
                 PackagesToPrune = (TaskItem[])existingResult;
                 return;
             }
+            AbsolutePath prunePackageDataRoot = TaskEnvironment.GetAbsolutePath(PrunePackageDataRoot);
 
-            PackagesToPrune = LoadPackagesToPrune(key, TargetingPackRoots, PrunePackageDataRoot, Log, AllowMissingPrunePackageData);
+            AbsolutePath[] targetingPackRoots = TargetingPackRoots
+                .Where(r => !string.IsNullOrEmpty(r))
+                .Select(r => TaskEnvironment.GetAbsolutePath(r))
+                .ToArray();
+
+            PackagesToPrune = LoadPackagesToPrune(key, targetingPackRoots, prunePackageDataRoot, Log, AllowMissingPrunePackageData);
 
             BuildEngine4.RegisterTaskObject(key, PackagesToPrune, RegisteredTaskObjectLifetime.Build, true);
         }
 
-        static TaskItem[] LoadPackagesToPrune(CacheKey key, string[] targetingPackRoots, string prunePackageDataRoot, Logger log, bool allowMissingPrunePackageData)
+        static TaskItem[] LoadPackagesToPrune(CacheKey key, AbsolutePath[] targetingPackRoots, AbsolutePath prunePackageDataRoot, Logger log, bool allowMissingPrunePackageData)
         {
             Dictionary<string, NuGetVersion> packagesToPrune = new();
 
@@ -225,7 +234,7 @@ namespace Microsoft.NET.Build.Tasks
             return frameworkPackages;
         }
 
-        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromPrunePackageData(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string prunePackageDataRoot)
+        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromPrunePackageData(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, AbsolutePath prunePackageDataRoot)
         {
             string packageOverridesPath = Path.Combine(prunePackageDataRoot, targetFrameworkVersion, frameworkReference, "PackageOverrides.txt");
             if (File.Exists(packageOverridesPath))
@@ -238,7 +247,7 @@ namespace Microsoft.NET.Build.Tasks
             return null;
         }
 
-        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromTargetingPack(Logger log, string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string [] targetingPackRoots)
+        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromTargetingPack(Logger log, string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, AbsolutePath[] targetingPackRoots)
         {
             var nugetFramework = new NuGetFramework(targetFrameworkIdentifier, Version.Parse(targetFrameworkVersion));
 
@@ -256,7 +265,7 @@ namespace Microsoft.NET.Build.Tasks
             return null;
         }
 
-        static Dictionary<string, NuGetVersion> TryLoadPackagesToPruneForVersion(Logger log, string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string[] targetingPackRoots, string prunePackageDataRoot, bool loadPrunePackageDataFromNearestFramework)
+        static Dictionary<string, NuGetVersion> TryLoadPackagesToPruneForVersion(Logger log, string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, AbsolutePath[] targetingPackRoots, AbsolutePath prunePackageDataRoot, bool loadPrunePackageDataFromNearestFramework)
         {
             var currentVersion = Version.Parse(targetFrameworkVersion);
             

@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using global::NuGet.Frameworks;
 using global::NuGet.Versioning;
+using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.Build.Tasks.ConflictResolution;
 
@@ -115,17 +116,18 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
         return frameworkPackages.ToArray();
     }
 
-    public static FrameworkPackages LoadFrameworkPackagesFromPack(Logger log, NuGetFramework framework, string frameworkName, string targetingPackRoot)
+    public static FrameworkPackages LoadFrameworkPackagesFromPack(Logger log, NuGetFramework framework, string frameworkName, AbsolutePath targetingPackRoot)
     {
         if (framework is null || framework.Framework != FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
         {
             return null;
         }
 
-        if (!string.IsNullOrEmpty(targetingPackRoot))
+        if (targetingPackRoot.Value is not null)
         {
             var packsFolder = Path.Combine(targetingPackRoot, frameworkName + ".Ref");
-            log.LogMessage("Looking for targeting packs in {0}", packsFolder);
+            var packsFolderForLog = Path.Combine(targetingPackRoot.OriginalValue, frameworkName + ".Ref");
+            log.LogMessage("Looking for targeting packs in {0}", packsFolderForLog);
             if (Directory.Exists(packsFolder))
             {
                 var packVersionPattern = $"{framework.Version.Major}.{framework.Version.Minor}.*";
@@ -153,12 +155,12 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
                 }
                 else
                 {
-                    log.LogMessage("No package overrides found in {0}", packsFolder);
+                    log.LogMessage("No package overrides found in {0}", packsFolderForLog);
                 }
             }
             else
             {
-                log.LogMessage("Targeting pack folder {0} does not exist", packsFolder);
+                log.LogMessage("Targeting pack folder {0} does not exist", packsFolderForLog);
             }
         }
 
