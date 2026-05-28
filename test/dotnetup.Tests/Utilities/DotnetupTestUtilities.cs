@@ -21,6 +21,11 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 internal static class DotnetupTestUtilities
 {
     /// <summary>
+    /// The default archive file extension used for .NET downloads (.tar.gz on all platforms).
+    /// </summary>
+    public const string DefaultArchiveFileExtension = ".tar.gz";
+
+    /// <summary>
     /// Creates a test environment with proper temporary directories and environment configuration.
     /// </summary>
     public static TestEnvironment CreateTestEnvironment()

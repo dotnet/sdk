@@ -97,14 +97,14 @@ internal class DotnetArchiveExtractor : IDisposable
 
     public void Prepare()
     {
-        var archiveName = $"dotnet-{Guid.NewGuid()}";
-        _archivePath = Path.Combine(ScratchDownloadDirectory, archiveName + DotnetupUtilities.GetArchiveFileExtensionForPlatform());
+        var archiveBaseName = $"dotnet-{Guid.NewGuid()}";
+        var archiveBasePath = Path.Combine(ScratchDownloadDirectory, archiveBaseName);
 
         var (reporter, downloadTask) = ProgressTracker.BeginDownload();
 
         try
         {
-            _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
+            _archivePath = _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, archiveBasePath, reporter);
         }
         catch (DotnetInstallException)
         {
@@ -221,7 +221,7 @@ internal class DotnetArchiveExtractor : IDisposable
         var shouldSkipEntry = CreateExistingSubcomponentSkipPredicate(targetDir, _request.Options.Verbosity);
 
         // Extract archive, redirecting muxer to temp path and skipping existing subcomponents
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
         {
             ExtractTarArchive(archivePath, targetDir, installTask, MuxerHandler, TrackSubcomponent, shouldSkipEntry);
         }
