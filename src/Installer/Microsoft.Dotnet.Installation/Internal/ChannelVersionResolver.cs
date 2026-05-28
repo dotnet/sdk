@@ -108,23 +108,27 @@ internal class ChannelVersionResolver
             return true;
         }
 
-        // For "<version>-daily" channels, validate the version prefix as a partial
-        // version. Daily applies only to partial versions (major / major.minor /
-        // feature band) — fully-qualified versions like "10.0.103-daily" are rejected
-        // because there's no such thing as "the daily 10.0.103" (a specific patch is
-        // already specific).
-        if (channel.EndsWith(DailySuffix, StringComparison.OrdinalIgnoreCase))
+        // The only two forms that include a '-' are:
+        //   * "<partial-version>-daily" (e.g. "10.0-daily", "10.0.1xx-daily").
+        //     Daily only applies to partial versions; "10.0.103-daily" is rejected
+        //     because a specific patch is already specific.
+        //   * a fully-qualified version with a prerelease tag (e.g. "10.0.100-preview.1.32640").
+        //     The prerelease tag is opaque; we only validate the numeric prefix.
+        var dashIndex = channel.IndexOf('-', StringComparison.Ordinal);
+        if (dashIndex >= 0)
         {
-            var partialVersion = channel.Substring(0, channel.Length - DailySuffix.Length);
-            if (string.IsNullOrEmpty(partialVersion))
+            var versionPart = channel.Substring(0, dashIndex);
+            var suffix = channel.Substring(dashIndex);
+
+            if (suffix.Equals(DailySuffix, StringComparison.OrdinalIgnoreCase))
             {
-                return false;
+                return !string.IsNullOrEmpty(versionPart) && IsValidPartialVersion(versionPart);
             }
 
-            return IsValidPartialVersion(partialVersion);
+            return IsValidNumericVersion(versionPart);
         }
 
-        return IsValidPartialVersion(channel) || IsValidFullyQualifiedVersion(channel);
+        return IsValidPartialVersion(channel) || IsValidNumericVersion(channel);
     }
 
     /// <summary>
@@ -172,23 +176,6 @@ internal class ChannelVersionResolver
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Validates a fully-qualified version: either a numeric <c>major[.minor[.patch[.rev]]]</c>
-    /// (e.g. <c>10.0.103</c>) or such a version with a prerelease tag (e.g.
-    /// <c>10.0.100-preview.1.32640</c>).
-    /// </summary>
-    private static bool IsValidFullyQualifiedVersion(string channel)
-    {
-        var dashIndex = channel.IndexOf('-', StringComparison.Ordinal);
-        if (dashIndex < 0)
-        {
-            return IsValidNumericVersion(channel);
-        }
-
-        var versionPart = channel.Substring(0, dashIndex);
-        return IsValidNumericVersion(versionPart);
     }
 
     /// <summary>
