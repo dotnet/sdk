@@ -130,6 +130,7 @@ jobs:
           BuildConfig: $(buildConfiguration)
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
           MSBUILDALWAYSRETRY: true
+          TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
@@ -181,6 +182,7 @@ jobs:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
+            TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### POST ###############
     - ${{ if eq(parameters.publishXunitResults, true) }}:
