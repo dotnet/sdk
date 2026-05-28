@@ -2644,6 +2644,22 @@ Proceed?</value>
   <data name="UnexpectedHelpMessage" xml:space="preserve">
     <value>An unexpected help-related message was received when `--help` wasn't used.</value>
   </data>
+  <data name="UnsupportedOptionInTestApplicationArguments" xml:space="preserve">
+    <value>The option '{0}' was passed to the test application via '{1}', but it is not supported through this mechanism. Pass it directly to 'dotnet test' instead.</value>
+    <comment>{Locked="dotnet test"} {0} is the option name (e.g. --help). {1} is the source the option was passed through (e.g. TestingPlatformCommandLineArguments).</comment>
+  </data>
+  <data name="UnsupportedOptionInTestApplicationArgumentsSource_RunArguments" xml:space="preserve">
+    <value>RunArguments (e.g. via TestingPlatformCommandLineArguments)</value>
+    <comment>{Locked="RunArguments"} {Locked="TestingPlatformCommandLineArguments"} Describes the source for UnsupportedOptionInTestApplicationArguments.</comment>
+  </data>
+  <data name="UnsupportedOptionInTestApplicationArgumentsSource_LaunchSettings" xml:space="preserve">
+    <value>commandLineArgs in launchSettings.json</value>
+    <comment>{Locked="commandLineArgs"} {Locked="launchSettings.json"} Describes the source for UnsupportedOptionInTestApplicationArguments.</comment>
+  </data>
+  <data name="UnsupportedOptionInTestApplicationArgumentsSource_CliArguments" xml:space="preserve">
+    <value>command-line arguments after '--'</value>
+    <comment>Describes the source for UnsupportedOptionInTestApplicationArguments. The '--' is the literal end-of-options separator.</comment>
+  </data>
   <data name="MismatchingHandshakeInfo" xml:space="preserve">
     <value>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</value>
   </data>

@@ -3583,6 +3583,26 @@ et les ID de package correspondants aux outils installés, utilisez la commande
         <target state="translated">Les lignes avec des modifications non enregistrées représentent les modifications des actions autres que les commandes de charge de travail CLI .NET. Il s’agit généralement d’une mise à jour du Kit de développement logiciel (SDK) .NET ou de Visual Studio.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnsupportedOptionInTestApplicationArguments">
+        <source>The option '{0}' was passed to the test application via '{1}', but it is not supported through this mechanism. Pass it directly to 'dotnet test' instead.</source>
+        <target state="new">The option '{0}' was passed to the test application via '{1}', but it is not supported through this mechanism. Pass it directly to 'dotnet test' instead.</target>
+        <note>{Locked="dotnet test"} {0} is the option name (e.g. --help). {1} is the source the option was passed through (e.g. TestingPlatformCommandLineArguments).</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedOptionInTestApplicationArgumentsSource_CliArguments">
+        <source>command-line arguments after '--'</source>
+        <target state="new">command-line arguments after '--'</target>
+        <note>Describes the source for UnsupportedOptionInTestApplicationArguments. The '--' is the literal end-of-options separator.</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedOptionInTestApplicationArgumentsSource_LaunchSettings">
+        <source>commandLineArgs in launchSettings.json</source>
+        <target state="new">commandLineArgs in launchSettings.json</target>
+        <note>{Locked="commandLineArgs"} {Locked="launchSettings.json"} Describes the source for UnsupportedOptionInTestApplicationArguments.</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedOptionInTestApplicationArgumentsSource_RunArguments">
+        <source>RunArguments (e.g. via TestingPlatformCommandLineArguments)</source>
+        <target state="new">RunArguments (e.g. via TestingPlatformCommandLineArguments)</target>
+        <note>{Locked="RunArguments"} {Locked="TestingPlatformCommandLineArguments"} Describes the source for UnsupportedOptionInTestApplicationArguments.</note>
+      </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
         <target state="translated">Mettez à jour tous les outils.</target>

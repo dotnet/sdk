@@ -63,6 +63,14 @@ internal class TestApplicationActionQueue
                         result = await testApp.RunAsync();
                     }
                 }
+                catch (GracefulException ex)
+                {
+                    // User errors raised as GracefulException should be reported as a clean message
+                    // (no stack trace, no wrapping format) so the user sees an actionable error.
+                    Logger.LogTrace($"GracefulException running test module {module.RunProperties?.Command} {module.RunProperties?.Arguments}: {ex}");
+                    Reporter.Error.WriteLine(ex.Message);
+                    result = ExitCode.GenericFailure;
+                }
                 catch (Exception ex)
                 {
                     var exAsString = ex.ToString();

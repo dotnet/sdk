@@ -3583,6 +3583,26 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">기록되지 않은 변경 내용이 있는 행은 .NET CLI 워크로드 명령 이외의 작업에서 변경된 사항을 나타냅니다. 이러한 변경 사항은 일반적으로 .NET SDK 또는 Visual Studio에 대한 업데이트를 나타냅니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnsupportedOptionInTestApplicationArguments">
+        <source>The option '{0}' was passed to the test application via '{1}', but it is not supported through this mechanism. Pass it directly to 'dotnet test' instead.</source>
+        <target state="new">The option '{0}' was passed to the test application via '{1}', but it is not supported through this mechanism. Pass it directly to 'dotnet test' instead.</target>
+        <note>{Locked="dotnet test"} {0} is the option name (e.g. --help). {1} is the source the option was passed through (e.g. TestingPlatformCommandLineArguments).</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedOptionInTestApplicationArgumentsSource_CliArguments">
+        <source>command-line arguments after '--'</source>
+        <target state="new">command-line arguments after '--'</target>
+        <note>Describes the source for UnsupportedOptionInTestApplicationArguments. The '--' is the literal end-of-options separator.</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedOptionInTestApplicationArgumentsSource_LaunchSettings">
+        <source>commandLineArgs in launchSettings.json</source>
+        <target state="new">commandLineArgs in launchSettings.json</target>
+        <note>{Locked="commandLineArgs"} {Locked="launchSettings.json"} Describes the source for UnsupportedOptionInTestApplicationArguments.</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedOptionInTestApplicationArgumentsSource_RunArguments">
+        <source>RunArguments (e.g. via TestingPlatformCommandLineArguments)</source>
+        <target state="new">RunArguments (e.g. via TestingPlatformCommandLineArguments)</target>
+        <note>{Locked="RunArguments"} {Locked="TestingPlatformCommandLineArguments"} Describes the source for UnsupportedOptionInTestApplicationArguments.</note>
+      </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>
         <target state="translated">모든 도구를 업데이트합니다.</target>

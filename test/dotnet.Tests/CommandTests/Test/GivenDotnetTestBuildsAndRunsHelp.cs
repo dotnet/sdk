@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Utils;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
@@ -86,6 +87,54 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             noAnsiOptionCount.Should().Be(1, $"Option '--no-ansi' should not appear more than once in help output");
 
             result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [InlineData(TestingConstants.Debug, "--help")]
+        [InlineData(TestingConstants.Debug, "-?")]
+        [InlineData(TestingConstants.Debug, "--list-tests")]
+        [InlineData(TestingConstants.Release, "--help")]
+        [InlineData(TestingConstants.Release, "-?")]
+        [InlineData(TestingConstants.Release, "--list-tests")]
+        [Theory]
+        public void PassingHelpOrListTestsViaTestingPlatformCommandLineArguments_ShouldFailWithClearError(string configuration, string forbiddenOption)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", identifier: $"{configuration}_{forbiddenOption}").WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration, $"-p:TestingPlatformCommandLineArguments={forbiddenOption}");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                string expectedSource = CliCommandStrings.UnsupportedOptionInTestApplicationArgumentsSource_RunArguments;
+                string expectedMessage = string.Format(CliCommandStrings.UnsupportedOptionInTestApplicationArguments, forbiddenOption, expectedSource);
+                result.StdErr.Should().Contain(expectedMessage);
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [InlineData(TestingConstants.Debug, "--help")]
+        [InlineData(TestingConstants.Debug, "--list-tests")]
+        [InlineData(TestingConstants.Release, "--help")]
+        [InlineData(TestingConstants.Release, "--list-tests")]
+        [Theory]
+        public void PassingHelpOrListTestsViaUnmatchedTokens_ShouldFailWithClearError(string configuration, string forbiddenOption)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", identifier: $"{configuration}_{forbiddenOption}_unmatched").WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration, "--", forbiddenOption);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                string expectedSource = CliCommandStrings.UnsupportedOptionInTestApplicationArgumentsSource_CliArguments;
+                string expectedMessage = string.Format(CliCommandStrings.UnsupportedOptionInTestApplicationArguments, forbiddenOption, expectedSource);
+                result.StdErr.Should().Contain(expectedMessage);
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         private static int CountOptionOccurrences(string helpOutput, string optionName)

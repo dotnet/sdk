@@ -42,6 +42,8 @@ internal sealed class TestApplication(
     {
         // TODO: RunAsync is probably expected to be executed exactly once on each TestApplication instance.
         // Consider throwing an exception if it's called more than once.
+        ValidateTestApplicationArguments();
+
         var processStartInfo = CreateProcessStartInfo();
 
         var cancellationTokenSource = new CancellationTokenSource();
@@ -212,6 +214,103 @@ internal sealed class TestApplication(
         builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
 
         return builder.ToString();
+    }
+
+    // Options that, when passed through channels that the .NET CLI cannot observe, would put the test
+    // application into a mode the SDK is not prepared to handle (e.g. dumping help, only listing tests).
+    // The names below correspond to those recognized by Microsoft.Testing.Platform's
+    // PlatformCommandLineProvider (HelpOptionKey, HelpOptionQuestionMark, DiscoverTestsOptionKey).
+    private static readonly string[] s_helpOptions = ["--help", "-?"];
+    private const string ListTestsOption = "--list-tests";
+
+    private void ValidateTestApplicationArguments()
+    {
+        var forbiddenOptions = new List<string>(capacity: 3);
+        if (!TestOptions.IsHelp)
+        {
+            forbiddenOptions.AddRange(s_helpOptions);
+        }
+
+        if (!TestOptions.IsDiscovery)
+        {
+            forbiddenOptions.Add(ListTestsOption);
+        }
+
+        if (forbiddenOptions.Count == 0)
+        {
+            return;
+        }
+
+        // Arguments coming after '--' on the dotnet test command line are passed through unchanged.
+        CheckTokens(_buildOptions.TestApplicationArguments, forbiddenOptions, CliCommandStrings.UnsupportedOptionInTestApplicationArgumentsSource_CliArguments);
+
+        // RunArguments comes from MSBuild evaluation and includes $(TestingPlatformCommandLineArguments).
+        CheckTokens(TokenizeArguments(Module.RunProperties.Arguments), forbiddenOptions, CliCommandStrings.UnsupportedOptionInTestApplicationArgumentsSource_RunArguments);
+
+        if (Module.LaunchSettings is ProjectLaunchProfile launchProfile
+            && !_buildOptions.NoLaunchProfileArguments
+            && !string.IsNullOrEmpty(launchProfile.CommandLineArgs))
+        {
+            CheckTokens(TokenizeArguments(launchProfile.CommandLineArgs), forbiddenOptions, CliCommandStrings.UnsupportedOptionInTestApplicationArgumentsSource_LaunchSettings);
+        }
+    }
+
+    private static void CheckTokens(IEnumerable<string> tokens, IReadOnlyList<string> forbiddenOptions, string sourceDescription)
+    {
+        foreach (var token in tokens)
+        {
+            // Treat '--option=value' as just the option name for matching purposes.
+            int equalsIndex = token.IndexOf('=');
+            var optionName = equalsIndex >= 0 ? token.Substring(0, equalsIndex) : token;
+
+            foreach (var forbidden in forbiddenOptions)
+            {
+                if (string.Equals(optionName, forbidden, StringComparison.Ordinal))
+                {
+                    throw new GracefulException(
+                        string.Format(CliCommandStrings.UnsupportedOptionInTestApplicationArguments, forbidden, sourceDescription));
+                }
+            }
+        }
+    }
+
+    // Minimal command-line tokenizer that splits on whitespace while honoring double-quote pairs.
+    // It is intentionally simple: it isn't trying to fully replicate platform argv parsing, just to
+    // extract whole tokens for forbidden-option detection.
+    private static IEnumerable<string> TokenizeArguments(string? arguments)
+    {
+        if (string.IsNullOrEmpty(arguments))
+        {
+            yield break;
+        }
+
+        var current = new StringBuilder();
+        bool inQuotes = false;
+        for (int i = 0; i < arguments.Length; i++)
+        {
+            char c = arguments[i];
+            if (c == '"')
+            {
+                inQuotes = !inQuotes;
+            }
+            else if (char.IsWhiteSpace(c) && !inQuotes)
+            {
+                if (current.Length > 0)
+                {
+                    yield return current.ToString();
+                    current.Clear();
+                }
+            }
+            else
+            {
+                current.Append(c);
+            }
+        }
+
+        if (current.Length > 0)
+        {
+            yield return current.ToString();
+        }
     }
 
     private async Task WaitConnectionAsync(CancellationToken token)
