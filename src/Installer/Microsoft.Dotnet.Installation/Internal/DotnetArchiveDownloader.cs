@@ -175,29 +175,33 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     }
 
     /// <summary>
-    /// Downloads the archive for the specified installation and verifies its hash.
-    /// Checks the download cache first to avoid re-downloading.
+    /// Downloads the archive for the specified installation request and verifies its hash.
+    /// The implementation resolves the appropriate archive format and appends the file extension
+    /// to the provided base path.
     /// </summary>
     /// <param name="installRequest">The .NET installation request details</param>
     /// <param name="resolvedVersion">The resolved version to download</param>
-    /// <param name="destinationPath">The local path to save the downloaded file</param>
+    /// <param name="destinationBasePath">The local base path (without extension) to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    public void DownloadArchiveWithVerification(
+    /// <returns>The full path of the downloaded archive, including the resolved file extension.</returns>
+    public string DownloadArchiveWithVerification(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion,
-        string destinationPath,
+        string destinationBasePath,
         IProgress<DownloadProgress>? progress = null)
     {
         using var op = Metrics.Track("download/complete");
         op.Tag("download.version", resolvedVersion.ToString());
 
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
+        string extension = GetExtensionFromUrl(downloadUrl);
+        string destinationPath = destinationBasePath + extension;
 
         op.Tag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
 
         if (TryServeCachedArchive(downloadUrl, expectedHash, destinationPath, progress))
         {
-            return;
+            return destinationPath;
         }
 
         DownloadArchive(downloadUrl, destinationPath, progress);
@@ -209,6 +213,26 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
         try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
         catch { /* Ignore errors adding to cache - it's not critical */ }
+
+        return destinationPath;
+    }
+
+    /// <summary>
+    /// Extracts the archive file extension from a download URL.
+    /// </summary>
+    private static string GetExtensionFromUrl(string url)
+    {
+        // Use Uri.LocalPath to strip query strings/fragments before checking the extension.
+        // The .tar.gz check is needed because Path.GetExtension only returns the last
+        // extension (".gz"), not the compound ".tar.gz".
+        var localPath = new Uri(url).LocalPath;
+
+        if (localPath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+        {
+            return ".tar.gz";
+        }
+
+        return Path.GetExtension(localPath);
     }
 
     private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
@@ -286,19 +310,24 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// Returns true if a manifest miss should fall back to the blob feed.
     /// We only fall back when the user gave us an exact prerelease version
     /// (e.g. <c>10.0.100-preview.4.25216.37</c>) and the manifest doesn't yet
-    /// know about it. Stable versions and named channels (e.g. "preview") are
-    /// served only from the manifest so that real misses surface as errors.
+    /// know about it, OR when the channel is a daily channel (where the
+    /// resolved version always points at a blob-feed-only build). Stable
+    /// versions and named channels (e.g. "preview") are served only from the
+    /// manifest so that real misses surface as errors.
     /// </summary>
     private static bool ShouldFallbackToBlobFeed(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion)
     {
-        if (!installRequest.Channel.IsFullySpecifiedVersion())
+        // DailyChannelResolver only returns prerelease versions, so we don't
+        // need to re-check the resolved version's prerelease label here.
+        if (installRequest.Channel.IsDaily)
         {
-            return false;
+            return true;
         }
 
-        if (string.IsNullOrEmpty(resolvedVersion.Prerelease))
+        if (string.IsNullOrEmpty(resolvedVersion.Prerelease)
+            || !installRequest.Channel.IsFullySpecifiedVersion())
         {
             return false;
         }
@@ -315,18 +344,31 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         ReleaseVersion resolvedVersion)
     {
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
-        string extension = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
+        var locationsChecked = new List<string>();
 
-        var location = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, extension);
-        string? hash = TryGetHashFromUrl(location.ChecksumUrl, resolvedVersion, installRequest.Component);
+        // Prefer tar.gz, fall back to zip if unavailable (older .NET versions may not publish tar.gz for Windows)
+        var tarLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".tar.gz");
+        locationsChecked.Add(tarLocation.ChecksumUrl);
+        string? hash = TryGetHashFromUrl(tarLocation.ChecksumUrl, resolvedVersion, installRequest.Component);
         if (hash != null)
         {
-            return (location.ArchiveUrl, hash);
+            return (tarLocation.ArchiveUrl, hash);
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            var zipLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".zip");
+            locationsChecked.Add(zipLocation.ChecksumUrl);
+            hash = TryGetHashFromUrl(zipLocation.ChecksumUrl, resolvedVersion, installRequest.Component);
+            if (hash != null)
+            {
+                return (zipLocation.ArchiveUrl, hash);
+            }
         }
 
         throw new DotnetInstallException(
             DotnetInstallErrorCode.VersionNotFound,
-            $"Version {resolvedVersion} for {installRequest.Component} was not found in the release manifest or blob feed at {location.ChecksumUrl}",
+            $"Version {resolvedVersion} for {installRequest.Component} was not found in the release manifest or blob feed (checked: {string.Join(", ", locationsChecked)})",
             version: resolvedVersion.ToString(),
             component: installRequest.Component.ToString());
     }

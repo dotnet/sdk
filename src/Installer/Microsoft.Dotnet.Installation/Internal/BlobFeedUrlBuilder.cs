@@ -61,20 +61,24 @@ internal static class BlobFeedUrlBuilder
     };
 
     /// <summary>
+    /// Component → archive filename prefix used in both blob feed paths and
+    /// aka.ms shortlinks (e.g. <c>dotnet-sdk</c>, <c>dotnet-runtime</c>).
+    /// </summary>
+    public static string GetArchivePrefix(InstallComponent component) => component switch
+    {
+        InstallComponent.SDK => "dotnet-sdk",
+        InstallComponent.Runtime => "dotnet-runtime",
+        InstallComponent.ASPNETCore => "aspnetcore-runtime",
+        InstallComponent.WindowsDesktop => "windowsdesktop-runtime",
+        _ => throw new ArgumentOutOfRangeException(nameof(component), component, "Unsupported install component"),
+    };
+
+    /// <summary>
     /// Archive filename, e.g. "dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip".
     /// </summary>
     public static string GetArchiveFileName(InstallComponent component, ReleaseVersion version, string rid, string extension)
     {
-        string prefix = component switch
-        {
-            InstallComponent.SDK => "dotnet-sdk",
-            InstallComponent.Runtime => "dotnet-runtime",
-            InstallComponent.ASPNETCore => "aspnetcore-runtime",
-            InstallComponent.WindowsDesktop => "windowsdesktop-runtime",
-            _ => throw new ArgumentOutOfRangeException(nameof(component), component, "Unsupported install component"),
-        };
-
-        return $"{prefix}-{version}-{rid}{extension}";
+        return $"{GetArchivePrefix(component)}-{version}-{rid}{extension}";
     }
 
     /// <summary>

@@ -1,0 +1,260 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
+using Xunit;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
+
+public class DailyChannelResolverTests
+{
+    private const string SampleArchiveUrl =
+        "https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip";
+
+    [Fact]
+    public void Resolve_RuntimeComponent_ReturnsRuntimeVersionNotSdkVersion()
+    {
+        // Test that we correctly handle differences between SDK and Runtime versions
+        // Daily-channel SDK and runtime builds are published at the same prerelease
+        // tag but DIFFERENT base versions (SDK 10.0.110 vs Runtime 10.0.10, sharing
+        // -servicing.26276.118).
+
+        const string sdkArchiveUrl =
+            "https://ci.dot.net/public/Sdk/10.0.110-servicing.26276.118/dotnet-sdk-10.0.110-win-x64.zip";
+        const string runtimeArchiveUrl =
+            "https://ci.dot.net/public/Runtime/10.0.10-servicing.26276.118/dotnet-runtime-10.0.10-win-x64.zip";
+
+        using var handler = new RedirectHandler(new Dictionary<string, string>
+        {
+            ["https://aka.ms/dotnet/10.0/daily/dotnet-sdk-"] = sdkArchiveUrl,
+            ["https://aka.ms/dotnet/10.0/daily/dotnet-runtime-"] = runtimeArchiveUrl,
+        });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10.0-daily"), InstallArchitecture.x64, InstallComponent.Runtime);
+
+        version.Should().NotBeNull();
+        version!.ToString().Should().Be("10.0.10-servicing.26276.118");
+    }
+
+    [Fact]
+    public void Resolve_StableRedirectTarget_ReturnsNull()
+    {
+        // If aka.ms is ever misconfigured to redirect a daily link to a stable
+        // release archive, the resolver should treat that as "no daily build
+        // available" rather than returning a stable version that UpdateChannel.Matches
+        // would refuse to satisfy.
+        using var handler = new RedirectHandler(new Dictionary<string, string>
+        {
+            ["https://aka.ms/dotnet/10.0/daily/dotnet-sdk-"]
+                = "https://ci.dot.net/public/Sdk/10.0.100/dotnet-sdk-10.0.100-win-x64.zip",
+        });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10.0-daily"), InstallArchitecture.x64);
+
+        version.Should().BeNull();
+    }
+
+    [Fact]
+    public void Resolve_ScopedDaily_ExtractsVersionFromRedirectTarget()
+    {
+        using var handler = new RedirectHandler(new Dictionary<string, string>
+        {
+            // Match any aka.ms request that starts with the scope path.
+            ["https://aka.ms/dotnet/10.0/daily/dotnet-sdk-"] = SampleArchiveUrl,
+        });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10.0-daily"), InstallArchitecture.x64);
+
+        version.Should().NotBeNull();
+        version!.ToString().Should().Be("10.0.100-preview.4.25216.37");
+    }
+
+    [Fact]
+    public void Resolve_BareMajorDaily_NormalizesToMajorMinor()
+    {
+        using var handler = new RedirectHandler(new Dictionary<string, string>
+        {
+            ["https://aka.ms/dotnet/10.0/daily/dotnet-sdk-"] = SampleArchiveUrl,
+        });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10-daily"), InstallArchitecture.x64);
+
+        version.Should().NotBeNull();
+        version!.ToString().Should().Be("10.0.100-preview.4.25216.37");
+    }
+
+    [Fact]
+    public void Resolve_FeatureBandDaily_PassesScopeThrough()
+    {
+        using var handler = new RedirectHandler(new Dictionary<string, string>
+        {
+            ["https://aka.ms/dotnet/10.0.1xx/daily/dotnet-sdk-"] = SampleArchiveUrl,
+        });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10.0.1xx-daily"), InstallArchitecture.x64);
+
+        version.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Resolve_AkaMsReturnsNotFound_ReturnsNull()
+    {
+        // Empty redirect map → handler returns 404 for every request.
+        using var handler = new RedirectHandler(new Dictionary<string, string>());
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10.0-daily"), InstallArchitecture.x64);
+
+        version.Should().BeNull();
+    }
+
+    [Fact]
+    public void Resolve_NonDailyChannel_Throws()
+    {
+        using var resolver = new DailyChannelResolver();
+
+        Assert.Throws<ArgumentException>(() =>
+            resolver.Resolve(new UpdateChannel("10.0"), InstallArchitecture.x64));
+    }
+
+    [Fact]
+    public void Resolve_HtmlContentResponse_ReturnsNull()
+    {
+        // If aka.ms changes its not-found fallback to a host other than bing.com (so
+        // IsAkaMsShortlinkNotFound's URL pattern misses) but still returns HTML, the
+        // Content-Type check should still treat the response as "no daily build available".
+        const string prefix = "https://aka.ms/dotnet/10.0/daily/dotnet-sdk-";
+        using var handler = new RedirectHandler(
+            new Dictionary<string, string>
+            {
+                [prefix] = "https://ci.dot.net/public/maintenance.html",
+            },
+            new Dictionary<string, string>
+            {
+                [prefix] = "text/html",
+            });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel("10.0-daily"), InstallArchitecture.x64);
+
+        version.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("text/html", true)]
+    [InlineData("text/HTML", true)] // case-insensitive
+    [InlineData("application/octet-stream", false)]
+    [InlineData("application/zip", false)]
+    [InlineData("application/x-gzip", false)]
+    [InlineData(null, false)] // missing Content-Type header — let other checks decide
+    [InlineData("", false)]
+    public void IsHtmlContent_RecognizesHtmlMediaType(string? mediaType, bool expected)
+    {
+        DailyChannelResolver.IsHtmlContent(mediaType).Should().Be(expected);
+    }
+
+    [Theory]
+    // Real aka.ms not-found redirect shape (observed against https://aka.ms/dotnet/12.0/daily/...):
+    [InlineData("https://www.bing.com/?ref=aka&shorturl=dotnet/12.0/daily/dotnet-sdk-win-x64.zip", true)]
+    [InlineData("https://bing.com/?ref=aka&shorturl=dotnet/12.0/daily/dotnet-sdk-linux-x64.tar.gz", true)]
+    // Case-insensitive host and query.
+    [InlineData("https://WWW.BING.COM/?REF=AKA&shorturl=dotnet/12.0/daily/dotnet-sdk-osx-arm64.tar.gz", true)]
+    // Plain bing.com without the ref=aka marker — could be a real user-facing redirect chain; don't treat as not-found.
+    [InlineData("https://www.bing.com/search?q=dotnet+sdk", false)]
+    [InlineData("https://www.bing.com/", false)]
+    // Legitimate daily-build hosts: never match the not-found pattern.
+    [InlineData("https://ci.dot.net/public/Sdk/10.0.100/dotnet-sdk.zip", false)]
+    [InlineData("https://builds.dotnet.microsoft.com/sdk/10.0.100/dotnet-sdk.zip", false)]
+    public void IsAkaMsShortlinkNotFound_RecognizesBingFallbackPattern(string url, bool expected)
+    {
+        DailyChannelResolver.IsAkaMsShortlinkNotFound(new Uri(url)).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip", "10.0.100-preview.4.25216.37")]
+    [InlineData("https://builds.dotnet.microsoft.com/sdk/9.0.103/dotnet-sdk-9.0.103-win-x64.zip", "9.0.103")]
+    [InlineData("https://ci.dot.net/no-version-here/file.zip", null)]
+    public void ExtractVersionFromUrl_FindsFirstParseableSegment(string url, string? expected)
+    {
+        var version = DailyChannelResolver.ExtractVersionFromUrl(new Uri(url));
+
+        if (expected == null)
+        {
+            version.Should().BeNull();
+        }
+        else
+        {
+            version.Should().NotBeNull();
+            version!.ToString().Should().Be(expected);
+        }
+    }
+
+    /// <summary>
+    /// Stub HTTP handler that maps a URL prefix to a final URL. When a request
+    /// comes in matching a prefix, it returns a 200 response whose
+    /// <see cref="HttpResponseMessage.RequestMessage"/> URI is rewritten to
+    /// the final URL — emulating the effect of HttpClient following 30x
+    /// redirects all the way to the blob storage URL.
+    /// </summary>
+    private sealed class RedirectHandler : HttpMessageHandler
+    {
+        private readonly Dictionary<string, string> _redirectMap;
+        private readonly Dictionary<string, string>? _contentTypes;
+
+        public RedirectHandler(Dictionary<string, string> redirectMap, Dictionary<string, string>? contentTypes = null)
+        {
+            _redirectMap = redirectMap;
+            _contentTypes = contentTypes;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            string url = request.RequestUri!.ToString();
+
+            foreach (var (prefix, target) in _redirectMap)
+            {
+                if (url.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    string contentType = (_contentTypes is not null && _contentTypes.TryGetValue(prefix, out var ct))
+                        ? ct
+                        : "application/octet-stream";
+                    var content = new ByteArrayContent(Array.Empty<byte>());
+                    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+                    var response = new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = content,
+                        // Rewrite the URI on the request to simulate the post-redirect state.
+                        RequestMessage = new HttpRequestMessage(HttpMethod.Get, target),
+                    };
+                    return Task.FromResult(response);
+                }
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)
+            {
+                RequestMessage = request,
+            });
+        }
+    }
+}

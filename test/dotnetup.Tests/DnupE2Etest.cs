@@ -62,12 +62,10 @@ public class InstallEndToEndTests
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
 
         var updateChannel = new UpdateChannel(channel);
-        var expectedVersion = new ChannelVersionResolver().Resolve(
-            new DotnetInstallRequest(
-                new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
-                updateChannel,
-                InstallComponent.SDK,
-                new InstallRequestOptions()));
+        var expectedVersion = new ChannelVersionResolver().GetLatestVersionForChannel(
+            updateChannel,
+            InstallComponent.SDK,
+            InstallerUtilities.GetDefaultInstallArchitecture());
 
         expectedVersion.Should().NotBeNull($"Channel {channel} should resolve to a valid version");
         Console.WriteLine($"Channel '{channel}' resolved to version: {expectedVersion}");
@@ -378,6 +376,54 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     }
 
     /// <summary>
+    /// Installs the latest daily-channel SDK end-to-end. Exercises the full path:
+    /// `dotnetup sdk daily` → DailyChannelResolver hits aka.ms to discover the latest
+    /// daily prerelease version → DotnetArchiveDownloader pulls the matching archive
+    /// from the blob feed → install completes and is recorded in the manifest.
+    /// </summary>
+    [Fact]
+    public void SdkInstall_DailyChannel()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildSdkArguments("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        // Like SdkInstall_FullySpecifiedPreviewVersion_UsesBlobFeedFallback, we don't
+        // pin the manifest's recorded version because daily channel resolves to a
+        // rolling prerelease that changes day-to-day.
+        VerifyManifestContains(testEnv, InstallComponent.SDK, install =>
+        {
+            install.Version.Should().NotBeNullOrEmpty();
+            // Daily versions are always prerelease.
+            install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+        });
+    }
+
+    /// <summary>
+    /// Installs the latest daily-channel runtime end-to-end. Same flow as
+    /// <see cref="SdkInstall_DailyChannel"/> but exercises the Runtime component, which
+    /// is published at a different base version than the SDK (e.g. SDK 10.0.110 vs
+    /// Runtime 10.0.10 sharing -servicing.26276.118). This catches the case where
+    /// DailyChannelResolver resolves the SDK version and then tries to download a
+    /// non-existent runtime archive from the blob feed.
+    /// </summary>
+    [Fact]
+    public void RuntimeInstall_DailyChannel()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
+
+        VerifyManifestContains(testEnv, InstallComponent.Runtime, install =>
+        {
+            install.Version.Should().NotBeNullOrEmpty();
+            install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+        });
+    }
+
+    /// <summary>
     /// Looks up the current daily preview SDK version by following the aka.ms redirect
     /// for the SDK archive on the channel with the highest major version in the release
     /// manifest. If that channel doesn't yield a prerelease, probes the next-major
@@ -387,7 +433,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     private static string? TryResolveCurrentDailyPreviewSdkVersion()
     {
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
-        string ext = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
+        string ext = DotnetupTestUtilities.DefaultArchiveFileExtension;
 
         int latestManifestMajor = new ReleaseManifest().GetReleasesIndex()
             .Select(product =>
