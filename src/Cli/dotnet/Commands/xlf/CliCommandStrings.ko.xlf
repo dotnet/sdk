@@ -684,8 +684,8 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
-        <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
-        <target state="translated">옵션 아키텍처, 구성, 프레임워크, 운영 체제 및 런타임은 '--test-modules' 옵션과 함께 사용할 수 없습니다.</target>
+        <source>The options architecture, configuration, framework, operating system, runtime, and use-current-runtime cannot be used with '--test-modules' option.</source>
+        <target state="needs-review-translation">옵션 아키텍처, 구성, 프레임워크, 운영 체제 및 런타임은 '--test-modules' 옵션과 함께 사용할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">

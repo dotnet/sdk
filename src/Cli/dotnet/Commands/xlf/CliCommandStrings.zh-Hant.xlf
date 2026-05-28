@@ -684,8 +684,8 @@ This is equivalent to deleting project.assets.json.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
-        <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
-        <target state="translated">選項結構、設定、架構、作業系統和執行階段不能與 '--test-modules' 選項一起使用。</target>
+        <source>The options architecture, configuration, framework, operating system, runtime, and use-current-runtime cannot be used with '--test-modules' option.</source>
+        <target state="needs-review-translation">選項結構、設定、架構、作業系統和執行階段不能與 '--test-modules' 選項一起使用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">

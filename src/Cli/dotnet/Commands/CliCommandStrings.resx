@@ -492,7 +492,7 @@ This is equivalent to deleting project.assets.json.</value>
     <value>NUMBER</value>
   </data>
   <data name="CmdOptionCannotBeUsedWithTestModulesDescription" xml:space="preserve">
-    <value>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</value>
+    <value>The options architecture, configuration, framework, operating system, runtime, and use-current-runtime cannot be used with '--test-modules' option.</value>
   </data>
   <data name="CmdOutdatedDescription" xml:space="preserve">
     <value>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</value>

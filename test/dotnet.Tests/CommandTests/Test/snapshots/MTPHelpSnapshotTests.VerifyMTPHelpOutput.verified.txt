@@ -35,6 +35,7 @@ Options:
   --no-build                                      Do not build the project before testing. Implies --no-restore. [default: False]
   --no-dependencies                               Do not build project-to-project references and only build the specified project. [default: False]
   --artifacts-path <ARTIFACTS_DIR>                The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.
+  --ucr, --use-current-runtime                    Use current runtime as the target runtime. [default: False]
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
   --output <Detailed|Normal>                      Verbosity of test output.
