@@ -103,7 +103,8 @@ public sealed class CSharpAssemblyDocumentGenerator
         {
             document = await Formatter.FormatAsync(document, DefineFormattingOptions()).ConfigureAwait(false);
             SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
-            document = document.WithSyntaxRoot(root.Rewrite(SingleLineStatementCSharpSyntaxRewriter.Singleton));
+            root = root.Rewrite(SingleLineStatementCSharpSyntaxRewriter.Singleton);
+            document = document.WithSyntaxRoot(root.Rewrite(MemberSpacingCSharpSyntaxRewriter.Singleton));
         }
 
         return document;
