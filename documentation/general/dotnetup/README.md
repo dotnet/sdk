@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - **Windows**, **macOS**, or **Linux**
-- A terminal (like bash, or zsh - Powershell (Core))
+- A terminal (like bash, zsh, or PowerShell (Core))
 - No administrator / root access required for Isolation or Terminal Mode. Replacement Mode on Windows requires administrator privileges.
 
 ## Download dotnetup
