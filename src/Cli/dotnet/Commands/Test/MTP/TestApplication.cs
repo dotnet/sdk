@@ -274,9 +274,11 @@ internal sealed class TestApplication(
         }
     }
 
-    // Minimal command-line tokenizer that splits on whitespace while honoring double-quote pairs.
-    // It is intentionally simple: it isn't trying to fully replicate platform argv parsing, just to
-    // extract whole tokens for forbidden-option detection.
+    // Minimal command-line tokenizer that splits on whitespace (and also semicolons, which MSBuild
+    // commonly uses as a list separator and which could otherwise smuggle a forbidden option past
+    // validation) while honoring double-quote pairs. It is intentionally simple: it isn't trying to
+    // fully replicate platform argv parsing, just to extract whole tokens for forbidden-option
+    // detection.
     private static IEnumerable<string> TokenizeArguments(string? arguments)
     {
         if (string.IsNullOrEmpty(arguments))
@@ -293,7 +295,7 @@ internal sealed class TestApplication(
             {
                 inQuotes = !inQuotes;
             }
-            else if (char.IsWhiteSpace(c) && !inQuotes)
+            else if (!inQuotes && (char.IsWhiteSpace(c) || c == ';'))
             {
                 if (current.Length > 0)
                 {
