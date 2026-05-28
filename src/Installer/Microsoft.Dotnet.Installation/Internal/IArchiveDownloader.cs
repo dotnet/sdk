@@ -12,14 +12,17 @@ internal interface IArchiveDownloader
 {
     /// <summary>
     /// Downloads the archive for the specified installation request and verifies its hash.
+    /// The implementation resolves the appropriate archive format and appends the file extension
+    /// to the provided base path.
     /// </summary>
     /// <param name="installRequest">The installation request containing component and install root info.</param>
     /// <param name="resolvedVersion">The resolved version to download.</param>
-    /// <param name="destinationPath">The local path to save the downloaded file.</param>
+    /// <param name="destinationBasePath">The local base path (without extension) to save the downloaded file.</param>
     /// <param name="progress">Optional progress reporting.</param>
-    void DownloadArchiveWithVerification(
+    /// <returns>The full path of the downloaded archive, including the resolved file extension.</returns>
+    string DownloadArchiveWithVerification(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion,
-        string destinationPath,
+        string destinationBasePath,
         IProgress<DownloadProgress>? progress = null);
 }

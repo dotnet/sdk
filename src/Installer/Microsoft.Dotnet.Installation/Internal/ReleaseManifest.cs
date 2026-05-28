@@ -302,14 +302,24 @@ internal class ReleaseManifest
     private static ReleaseFile? FindMatchingFile(ReleaseComponent release, DotnetInstallRequest installRequest)
     {
         var rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
-        var fileExtension = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
 
-        var matchingFiles = release.Files
+        var ridFiles = release.Files
              .Where(f => f.Rid == rid) // TODO: Do we support musl here?
-             .Where(f => f.Name.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
              .Where(f => !IsCompositeArchive(f.Name))
              .Where(f => !IsApphostPackArchive(f.Name))
              .ToList();
+
+        // Prefer tar.gz, fall back to zip if unavailable (older .NET versions may not publish tar.gz for Windows)
+        var matchingFiles = ridFiles
+             .Where(f => f.Name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+             .ToList();
+
+        if (!matchingFiles.Any() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            matchingFiles = ridFiles
+                .Where(f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
 
         if (matchingFiles.Count == 0)
         {

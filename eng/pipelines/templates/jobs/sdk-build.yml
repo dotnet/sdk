@@ -35,6 +35,7 @@ parameters:
   projectsArgument: ''
   ### ARCADE ###
   preSteps: []
+  enableMicrobuildForMacAndLinux: false
 
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
@@ -51,6 +52,7 @@ jobs:
     helixRepo: dotnet/sdk
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     enableMicrobuild: true
+    enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
@@ -135,6 +137,12 @@ jobs:
           BuildConfig: $(buildConfiguration)
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
           MSBUILDALWAYSRETRY: true
+          # Required by the MicroBuild signing plugin to acquire a federated
+          # token for ESRP. AzDO exposes System.AccessToken automatically to
+          # script processes on Windows agents but not on Linux/macOS, so the
+          # SignFiles task fails with "Access token is not available" without
+          # this env var.
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:

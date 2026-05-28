@@ -1,62 +1,60 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Downloads the latest dotnetup binary from the dotnetup CI pipeline and installs it locally.
+    Downloads the latest dotnetup daily build and installs it locally.
 
 .DESCRIPTION
-    Uses the Azure CLI (az) to query the dotnetup CI pipeline in dnceng/internal,
-    download the platform-appropriate artifact, and install it to a local directory.
-
-    You must have the Azure CLI installed with the azure-devops extension, and be
-    logged in with 'az login' with access to the dnceng/internal project.
+    Downloads dotnetup from the public aka.ms shortlinks (e.g.
+    https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe), verifies the
+    SHA-512 checksum, and installs the binary to a local directory.
 
 .PARAMETER InstallDir
     Directory to install dotnetup into. Defaults to ~/.dotnetup.
 
-.PARAMETER Branch
-    The branch to get the latest build from. Defaults to 'release/dnup'.
+.PARAMETER Quality
+    Build quality to install. Defaults to 'daily'.
 
 .PARAMETER RuntimeId
     Override automatic OS/architecture detection with an explicit RID
     (e.g. win-x64, linux-arm64, osx-arm64, linux-musl-x64).
 
 .EXAMPLE
-    # Ensure you're logged in, then run:
-    az login
     ./get-dotnetup.ps1
 
 .EXAMPLE
-    # Override RID and install directory:
     ./get-dotnetup.ps1 -RuntimeId linux-musl-x64 -InstallDir /opt/dotnetup
 #>
 [CmdletBinding()]
 param(
     [string]$InstallDir = (Join-Path $HOME ".dotnetup"),
-    [string]$Branch = "release/dnup",
+    [string]$Quality = "daily",
     [string]$RuntimeId
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-
-$AzdoOrg = "https://dev.azure.com/dnceng"
-$AzdoProject = "internal"
-$PipelineId = 1544
+$BaseUrl = "https://aka.ms/dotnet/dotnetup/$Quality"
 
 function Get-RuntimeId {
     if ($RuntimeId) {
         return $RuntimeId
     }
 
+    # Use RuntimeInformation so this works on both Windows PowerShell 5.1
+    # and PowerShell Core ($IsWindows/$IsMacOS/$IsLinux only exist on Core).
+
     # Detect OS
-    if ($IsWindows -or ($env:OS -eq "Windows_NT")) {
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::Windows)) {
         $os = "win"
     }
-    elseif ($IsMacOS) {
+    elseif ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::OSX)) {
         $os = "osx"
     }
-    elseif ($IsLinux) {
+    elseif ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::Linux)) {
         $os = "linux"
 
         # Detect musl vs glibc
@@ -101,114 +99,78 @@ function Get-RuntimeId {
 
 # --- Main ---
 
-# Windows PowerShell (5.x) is not supported; require PowerShell 6+ (pwsh).
-# The 'PSEdition' property is only present on 5+, so usage on 4 and below will be null,
-# so we check that the version isn't Core instead of "version is Desktop"
-if ($PSVersionTable.PSEdition -ne "Core") {
-    throw @"
-This script requires PowerShell Core (pwsh) and cannot run on Windows PowerShell 5.x.
-Install PowerShell Core from: https://aka.ms/install-powershell
-Then re-run this script with 'pwsh' instead of 'powershell'.
-"@
-}
-
-# Check for Azure CLI
-if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
-    throw @"
-Azure CLI (az) is required but was not found on PATH.
-Install it from: https://aka.ms/install-az-cli
-
-After installing, log in with:
-    az login
-"@
-}
-
-# Check for the azure-devops extension
-$extList = az extension show --name azure-devops 2>&1
-if ($LASTEXITCODE -ne 0) {
-    throw @"
-The 'azure-devops' Azure CLI extension is required but is not installed.
-Install it with:
-    az extension add --name azure-devops
-"@
-}
-
 $rid = Get-RuntimeId
 Write-Host "Detected runtime: $rid" -ForegroundColor Cyan
 
-# Get latest successful build for the specified branch
-Write-Host "Querying for latest successful build on $Branch..." -ForegroundColor Cyan
-
-$runsJson = az pipelines runs list `
-    --pipeline-ids $PipelineId `
-    --branch $Branch `
-    --status completed `
-    --query-order FinishTimeDesc `
-    --top 10 `
-    --org $AzdoOrg `
-    --project $AzdoProject `
-    --query "[?result=='succeeded' || result=='partiallySucceeded'] | [0].id" `
-    --output tsv
-
-if ($LASTEXITCODE -ne 0) {
-    throw @"
-Failed to query pipeline runs. Ensure you are logged in and have access to dnceng/internal:
-
-    az login
-    az devops configure --defaults organization=$AzdoOrg project=$AzdoProject
-
-Error: $runsJson
-"@
-}
-
-$runId = ($runsJson | Out-String).Trim()
-if (-not $runId) {
-    throw "No successful builds found for pipeline $PipelineId on branch $Branch."
-}
-
-$buildUrl = "$AzdoOrg/$AzdoProject/_build/results?buildId=$runId"
-Write-Host "Found build $runId" -ForegroundColor Green
-Write-Host "  $buildUrl" -ForegroundColor DarkGray
-
-# Download the artifact
-$artifactName = "dotnetup-standalone-$rid"
-Write-Host "Downloading artifact '$artifactName'..." -ForegroundColor Cyan
+$binaryName = if ($rid -like "win-*") { "dotnetup.exe" } else { "dotnetup" }
+$fileName = if ($rid -like "win-*") { "dotnetup-$rid.exe" } else { "dotnetup-$rid" }
+$downloadUrl = "$BaseUrl/$fileName"
+$checksumUrl = "$downloadUrl.sha512"
 
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "dotnetup-install-$([System.IO.Path]::GetRandomFileName())"
+New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 
 try {
-    az pipelines runs artifact download `
-        --artifact-name $artifactName `
-        --path $tempDir `
-        --run-id $runId `
-        --org $AzdoOrg `
-        --project $AzdoProject 2>&1
+    $tempBinary = Join-Path $tempDir $fileName
 
-    if ($LASTEXITCODE -ne 0) {
+    function Invoke-WithRetry {
+        param([scriptblock]$ScriptBlock, [string]$ActionDescription, [int]$MaxAttempts = 3)
+        $attempt = 1
+        while ($true) {
+            try {
+                & $ScriptBlock
+                return
+            }
+            catch {
+                if ($attempt -ge $MaxAttempts) {
+                    throw "${ActionDescription} failed after $MaxAttempts attempts.`nError: $($_.Exception.Message)"
+                }
+                $delay = [Math]::Pow(2, $attempt)
+                Write-Host "${ActionDescription} failed (attempt $attempt of $MaxAttempts): $($_.Exception.Message). Retrying in $delay seconds..." -ForegroundColor Yellow
+                Start-Sleep -Seconds $delay
+                $attempt++
+            }
+        }
+    }
+
+    Write-Host "Downloading $downloadUrl" -ForegroundColor Cyan
+    try {
+        Invoke-WithRetry -ActionDescription "Download from $downloadUrl" -ScriptBlock {
+            Invoke-WebRequest -Uri $downloadUrl -OutFile $tempBinary -UseBasicParsing
+        }
+    }
+    catch {
         throw @"
-Failed to download artifact '$artifactName' for run $runId.
+Failed to download dotnetup from $downloadUrl
 Available RIDs: win-x64, win-arm64, linux-x64, linux-arm64, linux-musl-x64, linux-musl-arm64, osx-x64, osx-arm64
-Use -RuntimeId to specify the correct RID.
+Use -RuntimeId to specify the correct RID, or -Quality to select a different build quality.
+
+Error: $($_.Exception.Message)
 "@
     }
 
-    # Find the binary in the downloaded contents
-    $binaryName = if ($rid -like "win-*") { "dotnetup.exe" } else { "dotnetup" }
-    $foundBinary = Get-ChildItem -Path $tempDir -Recurse -Filter $binaryName | Select-Object -First 1
-    if (-not $foundBinary) {
-        throw "Could not find '$binaryName' in the downloaded artifact. Contents: $(Get-ChildItem -Path $tempDir -Recurse | Select-Object -ExpandProperty FullName)"
+    Write-Host "Verifying SHA-512 checksum..." -ForegroundColor Cyan
+    $tempChecksum = Join-Path $tempDir "$fileName.sha512"
+    Invoke-WithRetry -ActionDescription "Download checksum from $checksumUrl" -ScriptBlock {
+        Invoke-WebRequest -Uri $checksumUrl -OutFile $tempChecksum -UseBasicParsing
     }
 
-    # Install just the binary
+    $expected = ((Get-Content $tempChecksum -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
+    $actual = (Get-FileHash -Path $tempBinary -Algorithm SHA512).Hash.ToLowerInvariant()
+    if ($expected -ne $actual) {
+        throw "Checksum mismatch.`n  Expected: $expected`n  Actual:   $actual"
+    }
+    Write-Host "Checksum verified." -ForegroundColor Green
+
+    # Install just the binary (renamed to plain dotnetup[.exe])
     Write-Host "Installing to $InstallDir..." -ForegroundColor Cyan
     if (-not (Test-Path $InstallDir)) {
         New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
     }
 
-    Copy-Item -Path $foundBinary.FullName -Destination $InstallDir -Force
-
-    # Verify the binary is present
     $installedBinary = Join-Path $InstallDir $binaryName
+    Copy-Item -Path $tempBinary -Destination $installedBinary -Force
+
     if (-not (Test-Path $installedBinary)) {
         throw "Installation failed: '$installedBinary' not found after copy."
     }
