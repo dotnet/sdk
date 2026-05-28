@@ -911,6 +911,64 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
+        public void TestBlankLineGenerationBetweenTypes()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class First
+                    {
+                        public void Method1()
+                        {
+                        }
+
+                        public void Method2()
+                        {
+                        }
+                    }
+
+                    public class Second
+                    {
+                        public int Property { get; set; }
+
+                        public void Method()
+                        {
+                        }
+                    }
+
+                    public interface Third
+                    {
+                        int Property { get; }
+
+                        void Method();
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class First
+                    {
+                        public void Method1() { }
+                        public void Method2() { }
+                    }
+
+                    public partial class Second
+                    {
+                        public int Property { get { throw null; } set { } }
+                        public void Method() { }
+                    }
+
+                    public partial interface Third
+                    {
+                        int Property { get; }
+                        void Method();
+                    }
+                }
+                """);
+        }
+
+        [Fact]
         public void TestExplicitInterfaceImplementationNotNullConstraint()
         {
             RunTest(original: """
@@ -941,6 +999,39 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     {
                         void Method<T>(T value)
                             where T : notnull;
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestBlankLineGenerationBetweenNestedTypeLikeMembers()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class Container
+                    {
+                        public delegate void ADelegate();
+                        public class BNested
+                        {
+                        }
+                        public delegate void CDelegate();
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Container
+                    {
+                        public delegate void ADelegate();
+
+                        public partial class BNested
+                        {
+                        }
+
+                        public delegate void CDelegate();
                     }
                 }
                 """);
