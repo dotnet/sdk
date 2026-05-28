@@ -20,54 +20,45 @@ function InstallBootstrapSdkWithDotnetup() {
         $sdkVersions += @($GlobalJson.tools.additionalDotNetVersions | Where-Object { -not [string]::IsNullOrEmpty($_) })
     }
 
-    # Filter out versions already present in either an externally provided
-    # dotnet root or the repo-local one.
     $dotnetRoot = Join-Path $RepoRoot '.dotnet'
-    $versionsToInstall = @()
-    foreach ($ver in $sdkVersions) {
-        $alreadyInstalled = $false
-        foreach ($root in @($env:DOTNET_INSTALL_DIR, $dotnetRoot)) {
-            if (-not [string]::IsNullOrEmpty($root) -and (Test-Path ([IO.Path]::Combine($root, 'sdk', $ver)))) {
-                Write-Host "Bootstrap SDK '$ver' already present at '$root'; skipping." -ForegroundColor DarkGray
-                $alreadyInstalled = $true
-                break
-            }
-        }
-        if (-not $alreadyInstalled) {
-            $versionsToInstall += $ver
-        }
-    }
 
-    if ($versionsToInstall.Count -eq 0) {
-        Set-Content -Path (Join-Path $dotnetRoot '.version') -Value $dotnetSdkVersion -NoNewline
-        return
-    }
-
-    Write-Host "Installing SDK(s) '$($versionsToInstall -join ', ')' to '$dotnetRoot' via dotnetup..." -ForegroundColor Cyan
+    Write-Host "Installing SDK(s) '$($sdkVersions -join ', ')' to '$dotnetRoot' via dotnetup..." -ForegroundColor Cyan
 
     $dotnetupDir = Join-Path $PSScriptRoot 'dotnetup'
     $dotnetupExe = Join-Path $dotnetupDir 'dotnetup.exe'
 
-    # Seed $LASTEXITCODE so strict mode can read it if the called script
-    # short-circuits without invoking a native process.
-    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    & (Join-Path $RepoRoot 'scripts\get-dotnetup.ps1') -InstallDir $dotnetupDir
-    if ($LASTEXITCODE -ne 0) {
-        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup (exit code '$LASTEXITCODE')."
-        ExitWithExitCode $LASTEXITCODE
+    # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
+    $skipDownload = $false
+    if (Test-Path $dotnetupExe) {
+        $age = (Get-Date) - (Get-Item $dotnetupExe).LastWriteTime
+        if ($age.TotalHours -lt 24) {
+            Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
+            $skipDownload = $true
+        }
+    }
+
+    if (-not $skipDownload) {
+        # Seed $LASTEXITCODE so strict mode can read it if the called script
+        # short-circuits without invoking a native process.
+        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+        & (Join-Path $RepoRoot 'scripts\get-dotnetup.ps1') -InstallDir $dotnetupDir
+        if ($LASTEXITCODE -ne 0) {
+            Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup (exit code '$LASTEXITCODE')."
+            ExitWithExitCode $LASTEXITCODE
+        }
     }
 
     # Keep dotnetup's manifest under artifacts instead of the user's home dir.
     $env:DOTNET_DOTNETUP_DATA_DIR = Join-Path $ArtifactsDir '.dotnetup'
 
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    & $dotnetupExe sdk install @versionsToInstall `
+    & $dotnetupExe sdk install @sdkVersions `
         --install-path $dotnetRoot `
         --untracked `
         --set-default-install false `
         --interactive false
     if ($LASTEXITCODE -ne 0) {
-        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install .NET SDK(s) '$($versionsToInstall -join ', ')' to '$dotnetRoot' using dotnetup (exit code '$LASTEXITCODE')."
+        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install .NET SDK(s) '$($sdkVersions -join ', ')' to '$dotnetRoot' using dotnetup (exit code '$LASTEXITCODE')."
         ExitWithExitCode $LASTEXITCODE
     }
 

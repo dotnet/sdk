@@ -135,11 +135,23 @@ function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
     $dotnetupExe = Join-Path $dotnetupDir "dotnetup.exe"
 
-    # Acquire the latest dotnetup daily build using the in-repo install script.
-    # get-dotnetup.ps1 may short-circuit without invoking a native process,
-    # leaving $LASTEXITCODE unset; seed it so strict mode can read it.
-    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
+    # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
+    $skipDownload = $false
+    if (Test-Path $dotnetupExe) {
+        $age = (Get-Date) - (Get-Item $dotnetupExe).LastWriteTime
+        if ($age.TotalHours -lt 24) {
+            Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
+            $skipDownload = $true
+        }
+    }
+
+    if (-not $skipDownload) {
+        # Acquire the latest dotnetup daily build using the in-repo install script.
+        # get-dotnetup.ps1 may short-circuit without invoking a native process,
+        # leaving $LASTEXITCODE unset; seed it so strict mode can read it.
+        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+        & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
+    }
 
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
     & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --set-default-install false --untracked --interactive false

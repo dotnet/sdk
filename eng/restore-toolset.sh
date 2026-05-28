@@ -55,13 +55,29 @@ function InstallDotNetSharedFrameworks {
   local dotnetup_dir="$script_dir/dotnetup"
   local dotnetup_exe="$dotnetup_dir/dotnetup"
 
-  # Acquire the latest dotnetup daily build using the in-repo install script.
-  # build.sh runs under `set -e`, so we have to invoke the script in a way that
-  # doesn't trigger errexit; otherwise the script's non-zero exit aborts the
-  # whole build before our diagnostic error message can fire.
-  if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
-    echo "Failed to acquire dotnetup."
-    ExitWithExitCode 1
+  # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
+  local skip_download=false
+  if [[ -f "$dotnetup_exe" ]]; then
+    local current_time
+    current_time=$(date +%s)
+    local file_time
+    file_time=$(stat -c %Y "$dotnetup_exe" 2>/dev/null || stat -f %m "$dotnetup_exe" 2>/dev/null || echo 0)
+    local age_seconds=$((current_time - file_time))
+    if [[ $age_seconds -lt 86400 ]]; then
+      echo "dotnetup binary is less than 24 hours old; skipping re-download."
+      skip_download=true
+    fi
+  fi
+
+  if [[ "$skip_download" != true ]]; then
+    # Acquire the latest dotnetup daily build using the in-repo install script.
+    # build.sh runs under `set -e`, so we have to invoke the script in a way that
+    # doesn't trigger errexit; otherwise the script's non-zero exit aborts the
+    # whole build before our diagnostic error message can fire.
+    if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
+      echo "Failed to acquire dotnetup."
+      ExitWithExitCode 1
+    fi
   fi
 
   "$dotnetup_exe" runtime install "${versions_to_install[@]}" --install-path "$dotnet_root" --set-default-install false --untracked --interactive false
