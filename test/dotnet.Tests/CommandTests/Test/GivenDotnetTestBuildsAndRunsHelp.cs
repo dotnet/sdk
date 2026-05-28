@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void PassingHelpOrListTestsViaTestingPlatformCommandLineArguments_ShouldFailWithClearError(string configuration, string forbiddenOption)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", identifier: $"{configuration}_{forbiddenOption}").WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", identifier: $"{configuration}_{SanitizeForIdentifier(forbiddenOption)}").WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void PassingHelpOrListTestsViaUnmatchedTokens_ShouldFailWithClearError(string configuration, string forbiddenOption)
         {
-            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", identifier: $"{configuration}_{forbiddenOption}_unmatched").WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", identifier: $"{configuration}_{SanitizeForIdentifier(forbiddenOption)}_unmatched").WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -135,6 +135,87 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [InlineData(TestingConstants.Debug, "--help")]
+        [InlineData(TestingConstants.Debug, "-?")]
+        [InlineData(TestingConstants.Debug, "--list-tests")]
+        [InlineData(TestingConstants.Release, "--help")]
+        [InlineData(TestingConstants.Release, "-?")]
+        [InlineData(TestingConstants.Release, "--list-tests")]
+        [Theory]
+        public void PassingHelpOrListTestsViaLaunchSettings_ShouldFailWithClearError(string configuration, string forbiddenOption)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: $"{configuration}_{SanitizeForIdentifier(forbiddenOption)}_launchsettings").WithSource();
+
+            var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+            File.WriteAllText(launchSettingsPath, $$"""
+                {
+                    "profiles": {
+                        "MyProfile": {
+                            "commandName": "Project",
+                            "commandLineArgs": "{{forbiddenOption}}"
+                        }
+                    }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                string expectedSource = CliCommandStrings.UnsupportedOptionInTestApplicationArgumentsSource_LaunchSettings;
+                string expectedMessage = string.Format(CliCommandStrings.UnsupportedOptionInTestApplicationArguments, forbiddenOption, expectedSource);
+                result.StdErr.Should().Contain(expectedMessage);
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void PassingHelpInLaunchSettings_IsBypassedByNoLaunchProfileArguments(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", identifier: $"{configuration}_nolaunchprofileargs").WithSource();
+
+            var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+            File.WriteAllText(launchSettingsPath, """
+                {
+                    "profiles": {
+                        "MyProfile": {
+                            "commandName": "Project",
+                            "commandLineArgs": "--help"
+                        }
+                    }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration, "--no-launch-profile-arguments");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                string unsupportedFragment = string.Format(CliCommandStrings.UnsupportedOptionInTestApplicationArguments, "--help", CliCommandStrings.UnsupportedOptionInTestApplicationArgumentsSource_LaunchSettings);
+                result.StdErr.Should().NotContain(unsupportedFragment);
+            }
+
+            result.ExitCode.Should().NotBe(ExitCodes.GenericFailure);
+        }
+
+        private static string SanitizeForIdentifier(string value)
+        {
+            // Test identifiers are appended to the test-asset path; some forbidden options (e.g. '-?')
+            // contain characters that are invalid in Windows file paths.
+            var sb = new System.Text.StringBuilder(value.Length);
+            foreach (char c in value)
+            {
+                sb.Append(char.IsLetterOrDigit(c) ? c : '_');
+            }
+            return sb.ToString();
         }
 
         private static int CountOptionOccurrences(string helpOutput, string optionName)
