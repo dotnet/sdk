@@ -24,9 +24,20 @@ internal class ChannelVersionResolver
     public const string LtsChannel = "lts";
 
     /// <summary>
+    /// Channel keyword for the latest daily build (latest major version).
+    /// </summary>
+    public const string DailyChannel = "daily";
+
+    /// <summary>
+    /// Suffix that turns any partial version channel into a daily-build channel
+    /// (e.g. <c>10.0-daily</c>, <c>10.0.1xx-daily</c>).
+    /// </summary>
+    public const string DailySuffix = "-daily";
+
+    /// <summary>
     /// Known channel keywords that are always valid.
     /// </summary>
-    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel];
+    public static readonly IReadOnlyList<string> KnownChannelKeywords = [LatestChannel, PreviewChannel, LtsChannel, DailyChannel];
 
     /// <summary>
     /// Maximum reasonable major version number. .NET versions are currently single-digit;
@@ -35,15 +46,17 @@ internal class ChannelVersionResolver
     internal const int MaxReasonableMajorVersion = 99;
 
     private readonly ReleaseManifest _releaseManifest = new();
+    private DailyChannelResolver? _dailyChannelResolver;
 
     public ChannelVersionResolver()
     {
 
     }
 
-    public ChannelVersionResolver(ReleaseManifest releaseManifest)
+    public ChannelVersionResolver(ReleaseManifest releaseManifest, DailyChannelResolver dailyChannelResolver)
     {
         _releaseManifest = releaseManifest;
+        _dailyChannelResolver = dailyChannelResolver;
     }
 
     public IEnumerable<string> GetSupportedChannels(bool includeFeatureBands = true)
@@ -76,11 +89,6 @@ internal class ChannelVersionResolver
 
     }
 
-    public ReleaseVersion? Resolve(DotnetInstallRequest installRequest)
-    {
-        return GetLatestVersionForChannel(installRequest.Channel, installRequest.Component);
-    }
-
     /// <summary>
     /// Checks if a channel string looks like a valid .NET version/channel format.
     /// This is a preliminary validation before attempting resolution.
@@ -100,14 +108,38 @@ internal class ChannelVersionResolver
             return true;
         }
 
-        // Check for prerelease suffix (e.g., "10.0.100-preview.1.32640")
+        // The only two forms that include a '-' are:
+        //   * "<partial-version>-daily" (e.g. "10.0-daily", "10.0.1xx-daily").
+        //     Daily only applies to partial versions; "10.0.103-daily" is rejected
+        //     because a specific patch is already specific.
+        //   * a fully-qualified version with a prerelease tag (e.g. "10.0.100-preview.1.32640").
+        //     The prerelease tag is opaque; we only validate the numeric prefix.
         var dashIndex = channel.IndexOf('-', StringComparison.Ordinal);
-        var hasPrerelease = dashIndex >= 0;
-        var versionPart = hasPrerelease ? channel.Substring(0, dashIndex) : channel;
+        if (dashIndex >= 0)
+        {
+            var versionPart = channel.Substring(0, dashIndex);
+            var suffix = channel.Substring(dashIndex);
 
-        // Try to parse as a version-like string
-        var parts = versionPart.Split('.');
-        if (parts.Length is 0 or > 4)
+            if (suffix.Equals(DailySuffix, StringComparison.OrdinalIgnoreCase))
+            {
+                return !string.IsNullOrEmpty(versionPart) && IsValidPartialVersion(versionPart);
+            }
+
+            return IsValidNumericVersion(versionPart);
+        }
+
+        return IsValidPartialVersion(channel) || IsValidNumericVersion(channel);
+    }
+
+    /// <summary>
+    /// Validates a partial version channel string: bare major (e.g. <c>10</c>),
+    /// major.minor (e.g. <c>10.0</c>), or feature band (e.g. <c>10.0.1xx</c>).
+    /// Rejects fully-qualified versions and prerelease tags.
+    /// </summary>
+    private static bool IsValidPartialVersion(string partialVersion)
+    {
+        var parts = partialVersion.Split('.');
+        if (parts.Length is 0 or > 3)
         {
             return false;
         }
@@ -127,35 +159,53 @@ internal class ChannelVersionResolver
             }
         }
 
-        if (parts.Length >= 3 && !IsValidPatchPart(parts[2], hasPrerelease))
+        if (parts.Length == 3)
         {
-            return false;
-        }
-
-        return true;
-    }
-
-    private static bool IsValidPatchPart(string patch, bool hasPrerelease)
-    {
-        if (string.IsNullOrEmpty(patch))
-        {
-            return false;
-        }
-
-        // Allow feature band pattern (e.g., "1xx", "101xx"), but NOT with a prerelease suffix.
-        if (patch.EndsWith("xx", StringComparison.OrdinalIgnoreCase))
-        {
-            if (hasPrerelease)
+            // A partial version's third part must be a feature band pattern like "1xx", not a numeric patch.
+            var patch = parts[2];
+            if (!patch.EndsWith("xx", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
             var prefix = patch.Substring(0, patch.Length - 2);
-            return prefix.Length > 0 && int.TryParse(prefix, out _);
+            if (prefix.Length == 0 || !int.TryParse(prefix, out _))
+            {
+                return false;
+            }
         }
 
-        // Allow fully specified numeric patch (e.g., "103"), optionally with a prerelease suffix.
-        return int.TryParse(patch, out var numericPatch) && numericPatch >= 0;
+        return true;
+    }
+
+    /// <summary>
+    /// Validates a numeric <c>major.minor.patch</c> version (no feature band, no
+    /// prerelease tag, all three parts required).
+    /// </summary>
+    private static bool IsValidNumericVersion(string version)
+    {
+        var parts = version.Split('.');
+        if (parts.Length != 3)
+        {
+            return false;
+        }
+
+        if (!int.TryParse(parts[0], out var major) || major < 0 || major > MaxReasonableMajorVersion)
+        {
+            return false;
+        }
+
+        if (!int.TryParse(parts[1], out var minor) || minor < 0)
+        {
+            return false;
+        }
+
+        if (!int.TryParse(parts[2], out var patch) || patch < 0)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -201,11 +251,25 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
-    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "preview")</param>
+    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "preview", "10.0.1xx-daily")</param>
     /// <param name="component">The component to check (ie SDK or runtime)</param>
+    /// <param name="architecture">
+    /// Architecture to use when resolving daily channels (selects the correct aka.ms RID-suffixed
+    /// link). Optional; defaults to the current process architecture. Ignored for non-daily channels.
+    /// </param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
-    public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
+    public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component, InstallArchitecture? architecture = null)
     {
+        // Daily channels are resolved via aka.ms redirect rather than the release manifest.
+        if (channel.IsDaily)
+        {
+            _dailyChannelResolver ??= new DailyChannelResolver(_releaseManifest);
+            return _dailyChannelResolver.Resolve(
+                channel,
+                architecture ?? InstallerUtilities.GetDefaultInstallArchitecture(),
+                component);
+        }
+
         if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))
         {
             var productIndex = _releaseManifest.GetReleasesIndex();

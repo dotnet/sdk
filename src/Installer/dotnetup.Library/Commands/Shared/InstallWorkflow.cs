@@ -118,6 +118,18 @@ internal class InstallWorkflow
 
         var (channel, isFromGlobalJson) = ResolveChannel(component, explicitChannel, globalJson);
 
+        // Validate the channel format before any network calls so bogus inputs (e.g. "preview-daily",
+        // "100-daily", typos) fail fast with a clean InvalidChannel error instead of bubbling up as
+        // a 404 from the release manifest or aka.ms redirect.
+        if (!ChannelVersionResolver.IsValidChannelFormat(channel))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidChannel,
+                $"'{channel}' is not a recognized .NET version or channel for {component.GetDisplayName()}. "
+                + "Use a channel like 'latest', 'lts', 'preview', a version scope like '10.0' or '10.0.1xx', "
+                + "a daily-build scope like '10.0-daily' or '10.0.1xx-daily', or a fully-qualified version like '10.0.103'.");
+        }
+
         var request = new DotnetInstallRequest(
             installRoot,
             new UpdateChannel(channel),
@@ -132,7 +144,7 @@ internal class InstallWorkflow
                 Verbosity = _command.Verbosity
             });
 
-        var resolvedVersion = _command.ChannelVersionResolver.Resolve(request);
+        var resolvedVersion = _command.ChannelVersionResolver.GetLatestVersionForChannel(request.Channel, request.Component, request.InstallRoot.Architecture);
 
         if (resolvedVersion is null)
         {
