@@ -30,24 +30,25 @@ internal sealed class TestApplicationHandler
 
         if (!gotSupportedVersion)
         {
+            string failureMessage = handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? supportedProtocolVersions) && supportedProtocolVersions is not null
+                ? string.Format(CliCommandStrings.DotnetTestIncompatibleHandshakeVersion, supportedProtocolVersions, ProtocolConstants.SupportedVersions)
+                : string.Format(CliCommandStrings.DotnetTestMissingHandshakeProtocolVersions, ProtocolConstants.SupportedVersions);
+
             _output.HandshakeFailure(
                 _module.TargetPath,
                 string.Empty,
                 ExitCode.GenericFailure,
-                string.Format(
-                    CliCommandStrings.DotnetTestIncompatibleHandshakeVersion,
-                    handshakeMessage.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions],
-                    ProtocolConstants.SupportedVersions),
+                failureMessage,
                 string.Empty);
 
-            // Protocol version is not supported.
+            // Protocol version is not supported (or wasn't advertised at all).
             // We don't attempt to do anything else.
             return;
         }
 
-        var executionId = handshakeMessage.Properties[HandshakeMessagePropertyNames.ExecutionId];
-        var arch = handshakeMessage.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
-        var tfm = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
+        var executionId = GetRequiredHandshakeProperty(handshakeMessage, HandshakeMessagePropertyNames.ExecutionId);
+        var arch = GetRequiredHandshakeProperty(handshakeMessage, HandshakeMessagePropertyNames.Architecture).ToLower();
+        var tfm = TargetFrameworkParser.GetShortTargetFramework(GetRequiredHandshakeProperty(handshakeMessage, HandshakeMessagePropertyNames.Framework));
         var currentHandshakeInfo = (tfm, arch, executionId);
 
         if (!_handshakeInfo.HasValue)
@@ -59,7 +60,7 @@ internal sealed class TestApplicationHandler
             throw new InvalidOperationException(string.Format(CliCommandStrings.MismatchingHandshakeInfo, currentHandshakeInfo, _handshakeInfo.Value));
         }
 
-        var hostType = handshakeMessage.Properties[HandshakeMessagePropertyNames.HostType];
+        var hostType = GetRequiredHandshakeProperty(handshakeMessage, HandshakeMessagePropertyNames.HostType);
         // https://github.com/microsoft/testfx/blob/2a9a353ec2bb4ce403f72e8ba1f29e01e7cf1fd4/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs#L87-L97
         if (hostType == "TestHost")
         {
@@ -67,10 +68,23 @@ internal sealed class TestApplicationHandler
             // AssemblyRunStarted counts "retry count", and writes to terminal "(Try <number-of-try>) Running tests from <assembly>"
             // So, we want to call it only for test host, and not for test host controller (or orchestrator, if in future it will handshake as well)
             // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
-            var instanceId = handshakeMessage.Properties[HandshakeMessagePropertyNames.InstanceId];
+            var instanceId = GetRequiredHandshakeProperty(handshakeMessage, HandshakeMessagePropertyNames.InstanceId);
             var handshakeInfo = _handshakeInfo.Value;
             _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId);
         }
+    }
+
+    private static string GetRequiredHandshakeProperty(HandshakeMessage handshakeMessage, byte propertyId)
+    {
+        if (!handshakeMessage.Properties.TryGetValue(propertyId, out string? value) || value is null)
+        {
+            throw new InvalidOperationException(string.Format(
+                CliCommandStrings.DotnetTestMissingRequiredMessageProperty,
+                GetHandshakePropertyName(propertyId),
+                nameof(HandshakeMessage)));
+        }
+
+        return value;
     }
 
     private static string GetHandshakePropertyName(byte propertyId) =>
@@ -192,11 +206,18 @@ internal sealed class TestApplicationHandler
         var handshakeInfo = _handshakeInfo.Value;
         foreach (var artifact in fileArtifactMessages.FileArtifacts)
         {
+            if (string.IsNullOrEmpty(artifact.FullPath))
+            {
+                throw new InvalidOperationException(string.Format(
+                    CliCommandStrings.DotnetTestMissingRequiredMessageProperty,
+                    nameof(FileArtifactMessage.FullPath),
+                    nameof(FileArtifactMessage)));
+            }
+
             _output.ArtifactAdded(
                 outOfProcess: false,
                 _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
-                // TODO: Revise null suppression here.
-                artifact.TestDisplayName, artifact.FullPath!);
+                artifact.TestDisplayName, artifact.FullPath);
         }
     }
 
@@ -206,7 +227,10 @@ internal sealed class TestApplicationHandler
         {
             LogSessionEvent(sessionEvent);
 
-            // TODO: Validate if we should get this message in help mode or not.
+            if (_options.IsHelp)
+            {
+                throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(TestSessionEvent)));
+            }
 
             if (!_handshakeInfo.HasValue)
             {
@@ -219,13 +243,21 @@ internal sealed class TestApplicationHandler
                 throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, sessionEvent.ExecutionId, nameof(TestSessionEvent), _handshakeInfo.Value.ExecutionId));
             }
 
+            if (string.IsNullOrEmpty(sessionEvent.SessionUid))
+            {
+                throw new InvalidOperationException(string.Format(
+                    CliCommandStrings.DotnetTestMissingRequiredMessageProperty,
+                    nameof(TestSessionEvent.SessionUid),
+                    nameof(TestSessionEvent)));
+            }
+
             if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)
             {
-                IncreaseTestSessionStart(sessionEvent.SessionUid!);
+                IncreaseTestSessionStart(sessionEvent.SessionUid);
             }
             else if (sessionEvent.SessionType == SessionEventTypes.TestSessionEnd)
             {
-                var (testSessionStartCount, testSessionEndCount) = IncreaseTestSessionEnd(sessionEvent.SessionUid!);
+                var (testSessionStartCount, testSessionEndCount) = IncreaseTestSessionEnd(sessionEvent.SessionUid);
                 if (testSessionEndCount > testSessionStartCount)
                 {
                     throw new InvalidOperationException(CliCommandStrings.UnexpectedTestSessionEnd);
