@@ -104,8 +104,11 @@ namespace Microsoft.NET.TestFramework
                 else if (osId.Equals("azurelinux", StringComparison.OrdinalIgnoreCase) ||
                          osId.Equals("mariner", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Azure Linux / CBL-Mariner doesn't ship netcoreapp1.x runtimes
-                    if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                    // Azure Linux 3 ships ICU 72 which uses versioned symbol names (e.g. u_charsToUChars_72).
+                    // Old .NET runtimes (< .NET 5) try to load symbols with older version suffixes that don't
+                    // exist in ICU 72, so they crash with "undefined symbol" errors. This is an ABI incompatibility
+                    // that can't be fixed via symlinks. Skip all pre-.NET 5 frameworks on Azure Linux.
+                    if (nugetFramework.Version < new Version(5, 0, 0, 0))
                     {
                         return false;
                     }
