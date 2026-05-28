@@ -23,7 +23,10 @@
 
   <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+      <_ProjectReferenceOutputs Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+      <!-- Exclude .pdb files: in official builds (DebugType=portable) they are published via the symbol server,
+           not bundled inside the NuGet package. -->
+      <BuildOutputInPackage Include="@(_ProjectReferenceOutputs)" Condition="'%(_ProjectReferenceOutputs.Extension)' != '.pdb'" />
     </ItemGroup>
   </Target>
 
