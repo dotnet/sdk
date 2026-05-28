@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -59,7 +60,13 @@ internal sealed class DailyChannelResolver : IDisposable
         }
 
         string rid = DotnetupUtilities.GetRuntimeIdentifier(architecture);
-        string extension = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
+        // aka.ms has historically published the daily SDK as .zip for Windows RIDs
+        // and .tar.gz elsewhere. (.tar.gz is now also published for Windows — see PR
+        // #54467 — but .zip is the long-standing format we know is always present
+        // back through older daily channels.) We only need one URL that resolves to
+        // the daily build to extract a version from the redirect target, so pick
+        // the historically-published extension for the platform.
+        string extension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".zip" : ".tar.gz";
         string archivePrefix = BlobFeedUrlBuilder.GetArchivePrefix(component);
 
         // Bare "daily": probe major+1 first so we pick up a new major as soon
