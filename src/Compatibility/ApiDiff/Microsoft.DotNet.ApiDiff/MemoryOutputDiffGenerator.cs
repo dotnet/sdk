@@ -350,6 +350,16 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         }
         else if (parentNode is CompilationUnitSyntax)
         {
+            foreach (BaseTypeDeclarationSyntax typeNode in GetMembersOfType<BaseTypeDeclarationSyntax>(parentNode))
+            {
+                dictionary.TryAdd(GetDocId(typeNode, model), typeNode);
+            }
+
+            foreach (DelegateDeclarationSyntax delegateNode in GetMembersOfType<DelegateDeclarationSyntax>(parentNode))
+            {
+                dictionary.TryAdd(GetDocId(delegateNode, model), delegateNode);
+            }
+
             foreach (BaseNamespaceDeclarationSyntax namespaceNode in parentNode.DescendantNodes().OfType<BaseNamespaceDeclarationSyntax>())
             {
                 dictionary.TryAdd(GetDocId(namespaceNode, model), namespaceNode);
@@ -551,7 +561,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         MemberDeclarationSyntax attributelessParentNode = GetNodeWithoutAttributes(memberParentNode);
         SyntaxNode childlessParentNode = GetChildlessNode(attributelessParentNode);
 
-        SyntaxTriviaList parentLeadingTrivia = parentChangeType == ChangeType.Unchanged ? _twoSpacesTrivia.AddRange(parentNode.GetLeadingTrivia()) : parentNode.GetLeadingTrivia();
+        SyntaxTriviaList parentLeadingTrivia = GetLineLeadingTrivia(parentNode.GetLeadingTrivia(), parentChangeType == ChangeType.Unchanged ? _twoSpacesTrivia : default);
 
         string openingBraceCode = GetDeclarationAndOpeningBraceCode(childlessParentNode, parentLeadingTrivia);
         string? diffedOpeningBraceCode = GetDiffedCode(openingBraceCode);
@@ -571,7 +581,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             {
                 ChangeType.Inserted  => GenerateAddedDiff(codeToDiff),
                 ChangeType.Deleted   => GenerateDeletedDiff(codeToDiff),
-                ChangeType.Unchanged => codeToDiff,
+                ChangeType.Unchanged => RemoveWhitespaceOnlyLines(codeToDiff),
                 _ => throw new InvalidOperationException($"Unexpected change type '{parentChangeType}'."),
             };
         }
@@ -730,9 +740,59 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         string unchangedText = unchangedNode.ToFullString();
         foreach (var line in InlineDiffBuilder.Diff(oldText: unchangedText, newText: unchangedText).Lines)
         {
+            if (string.IsNullOrWhiteSpace(line.Text))
+            {
+                continue;
+            }
+
             sb.AppendLine($"  {line.Text}");
         }
         return sb.ToString();
+    }
+
+    private static string RemoveWhitespaceOnlyLines(string text)
+    {
+        StringBuilder sb = new();
+
+        foreach (string line in text.Split('\n'))
+        {
+            string lineContent = line.EndsWith('\r') ? line[..^1] : line;
+            if (string.IsNullOrWhiteSpace(lineContent))
+            {
+                continue;
+            }
+
+            sb.AppendLine(lineContent);
+        }
+
+        return sb.ToString();
+    }
+
+    private static SyntaxTriviaList GetLineLeadingTrivia(SyntaxTriviaList leadingTrivia, SyntaxTriviaList prefix)
+    {
+        string indentation = GetIndentation(leadingTrivia);
+        return string.IsNullOrEmpty(indentation)
+            ? prefix
+            : prefix.Add(SyntaxFactory.Whitespace(indentation));
+    }
+
+    private static string GetIndentation(SyntaxTriviaList leadingTrivia)
+    {
+        for (int i = leadingTrivia.Count - 1; i >= 0; i--)
+        {
+            SyntaxTrivia trivia = leadingTrivia[i];
+            if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
+            {
+                return trivia.ToFullString();
+            }
+
+            if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
+            {
+                return string.Empty;
+            }
+        }
+
+        return string.Empty;
     }
 
     private static string? GenerateDiff(DiffPaneModel diff)
