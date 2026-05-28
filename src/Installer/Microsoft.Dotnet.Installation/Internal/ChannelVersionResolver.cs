@@ -161,11 +161,19 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Parses a version channel string into its components.
     /// </summary>
-    /// <param name="channel">Channel string to parse (e.g., "9", "9.0", "9.0.1xx", "9.0.103")</param>
+    /// <param name="channel">Channel string to parse (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "10.0.100-preview.1.32640")</param>
     /// <returns>Tuple containing (major, minor, featureBand, isFullySpecified)</returns>
     private static (int Major, int Minor, string? FeatureBand, bool IsFullySpecified) ParseVersionChannel(UpdateChannel channel)
     {
-        var parts = channel.Name.Split('.');
+        // Strip any prerelease/build suffix (e.g., "-preview.3.26170.106") before
+        // splitting on '.', otherwise the prerelease dots inflate parts.Length and
+        // parts[2] becomes something like "100-preview" which fails int.TryParse.
+        var name = channel.Name;
+        var dashIndex = name.IndexOf('-', StringComparison.Ordinal);
+        var hasPrerelease = dashIndex >= 0;
+        var versionPart = hasPrerelease ? name.Substring(0, dashIndex) : name;
+
+        var parts = versionPart.Split('.');
         int major = parts.Length > 0 && int.TryParse(parts[0], out var m) ? m : -1;
         int minor = parts.Length > 1 && int.TryParse(parts[1], out var n) ? n : -1;
 
@@ -175,14 +183,14 @@ internal class ChannelVersionResolver
 
         if (parts.Length >= 3)
         {
-            if (parts[2].EndsWith("xx", StringComparison.OrdinalIgnoreCase))
+            if (!hasPrerelease && parts[2].EndsWith("xx", StringComparison.OrdinalIgnoreCase))
             {
-                // Feature band pattern (e.g., "1xx")
+                // Feature band pattern (e.g., "1xx"). Feature bands cannot carry a prerelease suffix (enforced by IsValidPatchPart).
                 featureBand = parts[2].Substring(0, parts[2].Length - 2);
             }
             else if (int.TryParse(parts[2], out _))
             {
-                // Fully specified version (e.g., "9.0.103")
+                // Fully specified version, with or without prerelease (e.g., "9.0.103" or "10.0.100-preview.1.32640").
                 isFullySpecified = true;
             }
         }

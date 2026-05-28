@@ -161,6 +161,8 @@ FILE_NAME="dotnetup-${RID}"
 DOWNLOAD_URL="${BASE_URL}/${FILE_NAME}"
 CHECKSUM_URL="${DOWNLOAD_URL}.sha512"
 
+INSTALLED_BINARY="${INSTALL_DIR}/dotnetup"
+
 TEMP_DIR=$(mktemp -d)
 
 cleanup() {

@@ -121,11 +121,13 @@ function CreateVSShortcut() {
 function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
 
-    # Skip if every requested framework is already on disk.
+    # Skip if every requested framework is already on disk. Accept either an
+    # exact version or a major.minor channel; treat as present if any matching
+    # patch (e.g. 6.0.36) exists under shared\Microsoft.NETCore.App.
+    $fxRoot = Join-Path $dotnetRoot 'shared\Microsoft.NETCore.App'
     $versionsToInstall = @($versions | Where-Object {
-        -not (Test-Path -PathType Container `
-              (Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$_"))
-    })
+            -not (Test-Path -PathType Container (Join-Path $fxRoot "$_*"))
+        })
     if ($versionsToInstall.Count -eq 0) {
         return
     }
@@ -133,10 +135,26 @@ function InstallDotNetSharedFrameworks([string[]]$versions) {
     $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
     $dotnetupExe = Join-Path $dotnetupDir "dotnetup.exe"
 
-    # Acquire the latest dotnetup daily build using the in-repo install script.
-    & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
+    # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
+    $skipDownload = $false
+    if (Test-Path $dotnetupExe) {
+        $age = (Get-Date) - (Get-Item $dotnetupExe).LastWriteTime
+        if ($age.TotalHours -lt 24) {
+            Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
+            $skipDownload = $true
+        }
+    }
 
-    & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --no-progress --set-default-install false --untracked --interactive false
+    if (-not $skipDownload) {
+        # Acquire the latest dotnetup daily build using the in-repo install script.
+        # get-dotnetup.ps1 may short-circuit without invoking a native process,
+        # leaving $LASTEXITCODE unset; seed it so strict mode can read it.
+        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+        & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
+    }
+
+    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+    & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --set-default-install false --untracked --interactive false
 
     if ($lastExitCode -ne 0) {
         throw "Failed to install shared frameworks ($($versionsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
