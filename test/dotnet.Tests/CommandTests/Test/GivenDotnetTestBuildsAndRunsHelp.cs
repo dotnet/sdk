@@ -199,11 +199,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
+                // The bypass is correct iff the launch-settings-sourced validation error never fires.
+                // The test asset itself will still fail (it throws when '--from-launch-settings' isn't
+                // present), but that failure mode is unrelated to this PR and proves the launch
+                // settings args were not forwarded.
                 string unsupportedFragment = string.Format(CliCommandStrings.UnsupportedOptionInTestApplicationArguments, "--help", CliCommandStrings.UnsupportedOptionInTestApplicationArgumentsSource_LaunchSettings);
                 result.StdErr.Should().NotContain(unsupportedFragment);
+                result.StdOut.Should().NotContain(unsupportedFragment);
+                result.StdOut.Should().Contain("FAILED to find argument from launchSettings.json");
             }
-
-            result.ExitCode.Should().NotBe(ExitCodes.GenericFailure);
         }
 
         private static string SanitizeForIdentifier(string value)
