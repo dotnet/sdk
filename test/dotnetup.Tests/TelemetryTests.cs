@@ -708,16 +708,8 @@ public class DotnetupTelemetryTests : IDisposable
             "eventid-test-2", ActivityKind.Internal);
         Assert.NotNull(activity2);
 
-        // Replicate the production EventId derivation logic from EmitCompletionLog.
-        static int DeriveEventId(Activity activity)
-        {
-            Span<byte> spanIdBytes = stackalloc byte[8];
-            activity.SpanId.CopyTo(spanIdBytes);
-            return BitConverter.ToInt32(spanIdBytes);
-        }
-
-        var eventId1 = DeriveEventId(activity1);
-        var eventId2 = DeriveEventId(activity2);
+        var eventId1 = DotnetupTelemetry.DeriveEventIdFromSpanId(activity1);
+        var eventId2 = DotnetupTelemetry.DeriveEventIdFromSpanId(activity2);
 
         // Each activity gets a random SpanId; the derived EventId must not be
         // the old constant zero and must differ between activities.

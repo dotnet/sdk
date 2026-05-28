@@ -501,11 +501,7 @@ public sealed class DotnetupTelemetry : IDisposable
         var state = BuildCompletionState(eventName, activity, elapsedMs);
         var formattedMessage = $"dotnetup/{eventName}";
 
-        //  EventId.Id is int (32 bits) and ActivitySpanId is 64 bits.
-        //  Thus, the lower 32 bits of the 64-bit SpanId are used for the EventId.Id.
-        Span<byte> spanIdBytes = stackalloc byte[8];
-        activity.SpanId.CopyTo(spanIdBytes);
-        var eventIdInt = BitConverter.ToInt32(spanIdBytes);
+        var eventIdInt = DeriveEventIdFromSpanId(activity);
 
         _logger.Log(
             LogLevel.Information,
@@ -514,6 +510,17 @@ public sealed class DotnetupTelemetry : IDisposable
             state,
             exception: null,
             formatter: (_, _) => formattedMessage);
+    }
+
+    /// <summary>
+    /// Derives a unique <see cref="EventId"/> integer from the lower 32 bits of an
+    /// <see cref="Activity"/>'s <see cref="Activity.SpanId"/>.
+    /// </summary>
+    internal static int DeriveEventIdFromSpanId(Activity activity)
+    {
+        Span<byte> spanIdBytes = stackalloc byte[8];
+        activity.SpanId.CopyTo(spanIdBytes);
+        return BitConverter.ToInt32(spanIdBytes);
     }
 
     /// <summary>
