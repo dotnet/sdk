@@ -133,3 +133,18 @@ internal static class HandshakeMessageFieldsId
 {
     public const int MessagesSerializerId = 9;
 }
+
+internal static class TestInProgressMessagesFieldsId
+{
+    public const int MessagesSerializerId = 10;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort TestInProgressMessageList = 3;
+}
+
+internal static class TestInProgressMessageFieldsId
+{
+    public const ushort Uid = 1;
+    public const ushort DisplayName = 2;
+}

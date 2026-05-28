@@ -409,7 +409,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (_options.ShowActiveTests)
         {
-            asm.TestNodeResultsState?.RemoveRunningTestNode(testNodeUid);
+            asm.TestNodeResultsState?.RemoveRunningTestNode(instanceId, testNodeUid);
         }
 
         switch (outcome)
@@ -950,9 +950,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         };
 
     public void TestInProgress(
+        string assembly,
+        string? targetFramework,
+        string? architecture,
+        string executionId,
+        string instanceId,
         string testNodeUid,
-        string displayName,
-        string executionId)
+        string displayName)
     {
         TestProgressState asm = _assemblies[executionId];
 
@@ -960,7 +964,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             asm.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
             asm.TestNodeResultsState.AddRunningTestNode(
-                Interlocked.Increment(ref _counter), testNodeUid, displayName, CreateStopwatch());
+                Interlocked.Increment(ref _counter), instanceId, testNodeUid, displayName, CreateStopwatch());
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
