@@ -38,7 +38,7 @@ Options:
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
   --output <Detailed|Normal>                      Verbosity of test output.
-  --list-tests <list-tests>                       List the discovered tests instead of running the tests.
+  --list-tests <text|json>                        List the discovered tests instead of running the tests. An optional output format (text or json) may be provided.
   --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application. [default: False]
   --no-launch-profile-arguments                   Do not use arguments specified in launch profile to run the application. [default: False]
   -?, -h, --help                                  Show command line help.

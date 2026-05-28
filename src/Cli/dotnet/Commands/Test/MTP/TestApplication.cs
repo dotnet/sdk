@@ -187,6 +187,10 @@ internal sealed class TestApplication(
         if (TestOptions.IsDiscovery)
         {
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
+            if (!string.IsNullOrEmpty(TestOptions.ListTestsArgument))
+            {
+                builder.Append($" {ArgumentEscaper.EscapeSingleArg(TestOptions.ListTestsArgument)}");
+            }
         }
 
         if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)

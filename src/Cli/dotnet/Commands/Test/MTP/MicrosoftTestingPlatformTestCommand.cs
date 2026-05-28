@@ -33,6 +33,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var testOptions = new TestOptions(
             IsHelp: isHelp,
             IsDiscovery: parseResult.HasOption(definition.ListTestsOption),
+            ListTestsArgument: parseResult.GetValue(definition.ListTestsOption),
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);

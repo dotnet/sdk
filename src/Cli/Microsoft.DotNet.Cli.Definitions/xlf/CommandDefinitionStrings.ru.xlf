@@ -414,6 +414,11 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">LOGGER</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdMTPListTestsDescription">
+        <source>List the discovered tests instead of running the tests. An optional output format (text or json) may be provided.</source>
+        <target state="new">List the discovered tests instead of running the tests. An optional output format (text or json) may be provided.</target>
+        <note>The values 'text' and 'json' inside parentheses are option arguments and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">Максимальное число тестовых модулей, которые могут выполняться параллельно.</target>

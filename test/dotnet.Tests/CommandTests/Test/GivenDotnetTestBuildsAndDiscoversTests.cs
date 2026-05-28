@@ -180,5 +180,48 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   args[11]=--dotnet-test-pipe
                 """);
         }
+
+        [InlineData(TestingConstants.Debug, "text")]
+        [InlineData(TestingConstants.Debug, "json")]
+        [InlineData(TestingConstants.Release, "text")]
+        [InlineData(TestingConstants.Release, "json")]
+        [Theory]
+        public void DiscoverTestProjectForwardsListTestsArgument(string configuration, string listTestsArgument)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestAppPrintingCommandLineArguments", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("--list-tests", listTestsArgument, "-c", configuration);
+
+            result.StdOut.Should().Contain($"""
+                 args[0]=--list-tests
+                  args[1]={listTestsArgument}
+                  args[2]=--server
+                  args[3]=dotnettestcli
+                  args[4]=--dotnet-test-pipe
+                """);
+        }
+
+        [InlineData("foo")]
+        [InlineData("JSON")]
+        [InlineData("TEXT")]
+        [Theory]
+        public void DiscoverTestProjectRejectsInvalidListTestsArgument(string listTestsArgument)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("--list-tests", listTestsArgument);
+
+            result.ExitCode.Should().NotBe(ExitCodes.Success);
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain($"Argument '{listTestsArgument}' not recognized");
+            }
+        }
     }
 }

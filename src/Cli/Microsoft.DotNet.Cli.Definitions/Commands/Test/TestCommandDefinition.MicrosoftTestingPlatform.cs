@@ -113,12 +113,15 @@ internal abstract partial class TestCommandDefinition
         };
 
         public const string ListTestsOptionName = "--list-tests";
+        public const string ListTestsTextArgument = "text";
+        public const string ListTestsJsonArgument = "json";
 
-        public readonly Option<string> ListTestsOption = new(ListTestsOptionName)
+        public readonly Option<string> ListTestsOption = new Option<string>(ListTestsOptionName)
         {
-            Description = CommandDefinitionStrings.CmdListTestsDescription,
-            Arity = ArgumentArity.Zero
-        };
+            Description = CommandDefinitionStrings.CmdMTPListTestsDescription,
+            HelpName = $"{ListTestsTextArgument}|{ListTestsJsonArgument}",
+            Arity = ArgumentArity.ZeroOrOne
+        }.AcceptOnlyFromAmong(ListTestsTextArgument, ListTestsJsonArgument);
 
         public readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
         {
