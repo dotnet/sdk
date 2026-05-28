@@ -143,6 +143,19 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
+        public void TestGlobalNamespaceDeclaration()
+        {
+            RunTest(original: """
+                public class Class1 { }
+                """,
+                expected: """
+                public partial class Class1
+                {
+                }
+                """);
+        }
+
+        [Fact]
         public void TestNamespaceDeclaration()
         {
             RunTest(original: """
@@ -1160,6 +1173,29 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                         public abstract event System.EventHandler<bool> TextChanged;
                     }
 
+                    public partial class Events
+                    {
+                        public event System.EventHandler<string> OnNewMessage { add { } remove { } }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestEventGenerationOutput()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class Events
+                    {
+                        public event System.EventHandler<string> OnNewMessage { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
                     public partial class Events
                     {
                         public event System.EventHandler<string> OnNewMessage { add { } remove { } }
