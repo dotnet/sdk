@@ -71,6 +71,12 @@ internal abstract partial class TestCommandDefinition
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestNoBuild=true");
 
+        public readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
+        {
+            Description = CommandDefinitionStrings.NoDependenciesOptionDescription,
+            Arity = ArgumentArity.Zero
+        }.ForwardAs("-property:BuildProjectReferences=false");
+
         public readonly Option<string> ResultsOption = new Option<string>("--results-directory")
         {
             Description = CommandDefinitionStrings.CmdResultsDirectoryDescription,
@@ -170,6 +176,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(ArtifactsPathOption);
             Options.Add(DiagOption);
             Options.Add(NoBuildOption);
+            Options.Add(NoDependenciesOption);
             Options.Add(ResultsOption);
             Options.Add(CollectOption);
             Options.Add(BlameOption);
