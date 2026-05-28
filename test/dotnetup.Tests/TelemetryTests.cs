@@ -508,6 +508,22 @@ public class DotnetupTelemetryTests : IDisposable
         Assert.Equal("user", activity.GetTagItem("error.category"));
     }
 
+    [Theory]
+    [InlineData(DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts, "user")]
+    [InlineData(DotnetInstallErrorCode.ProcessStartFailed, "product")]
+    [InlineData(DotnetInstallErrorCode.ReleaseLookupFailed, "product")]
+    public void RecordException_ClassifiesNewErrorCodes(DotnetInstallErrorCode errorCode, string expectedCategory)
+    {
+        using var activity = DotnetupTelemetry.CommandSource.StartActivity(
+            $"test-classifier-{errorCode}", ActivityKind.Internal);
+        Assert.NotNull(activity);
+
+        SimulateRecordException(activity,
+            new DotnetInstallException(errorCode, "test"));
+
+        Assert.Equal(expectedCategory, activity.GetTagItem("error.category"));
+    }
+
     [Fact]
     public void RecordException_UnknownException_DefaultsToProduct()
     {

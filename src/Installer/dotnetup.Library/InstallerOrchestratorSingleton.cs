@@ -262,7 +262,8 @@ internal class InstallerOrchestratorSingleton
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts,
                     $"The install path '{installRequest.InstallRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
-                    "To avoid conflicts, use a different install path or remove the existing installation first.",
+                    "To avoid conflicts, use a different install path, remove the existing installation first, " +
+                    "or use the --untracked option to install without tracking.",
                     version: versionToInstall.ToString(),
                     component: installRequest.Component.ToString());
             }
