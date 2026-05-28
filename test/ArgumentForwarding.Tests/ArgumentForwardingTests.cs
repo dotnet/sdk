@@ -250,7 +250,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                    FileName = SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath,
                     Arguments = $"{ReflectorPath} {testUserArgument}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,

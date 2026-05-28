@@ -361,7 +361,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             cmd.ExitCode.Should().NotBe(0);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 cmd.StdErr.Should().StartWith("No templates or subcommands found");
             }
@@ -436,7 +436,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             cmd.ExitCode.Should().NotBe(0);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 cmd.StdErr.Should().StartWith("No templates or subcommands found matching: 'c'.");
             }

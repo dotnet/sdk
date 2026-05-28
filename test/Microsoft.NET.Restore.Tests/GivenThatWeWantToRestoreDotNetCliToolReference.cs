@@ -50,8 +50,8 @@ namespace Microsoft.NET.Restore.Tests
 
             TestAsset toolReferenceProjectInstance = TestAssetsManager.CreateTestProject(toolReferenceProject, identifier: toolReferenceProject.Name);
 
-            DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
-            DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
+            DeleteFolder(Path.Combine(SdkTestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
+            DeleteFolder(Path.Combine(SdkTestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
             NuGetConfigWriter.Write(toolReferenceProjectInstance.TestRoot, nupkgPath);
 
             RestoreCommand restoreCommand =
@@ -60,7 +60,7 @@ namespace Microsoft.NET.Restore.Tests
             var restoreResult = restoreCommand
                 .Execute("/v:n");
 
-            var assetsJsonPath = Path.Combine(TestContext.Current.NuGetCachePath,
+            var assetsJsonPath = Path.Combine(SdkTestContext.Current.NuGetCachePath,
                                              ".tools",
                                              toolProject.Name.ToLowerInvariant(),
                                              ProjectToolVersion,

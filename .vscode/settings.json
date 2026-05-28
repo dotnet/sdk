@@ -1,6 +1,7 @@
 {
     "dotnet.testWindow.disableAutoDiscovery": true,
     "dotnet.testWindow.disableBuildOnRun": true,
+    "dotnet.enableWorkspaceBasedDevelopment": false,
     "dotnet.defaultSolution": "cli.slnf",
     "files.associations": {
       "*.slnf": "json",

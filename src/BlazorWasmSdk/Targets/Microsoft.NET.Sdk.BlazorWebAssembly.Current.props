@@ -33,6 +33,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <StaticWebAssetStandaloneHosting Condition="'$(StaticWebAssetStandaloneHosting)' == '' and '$(StaticWebAssetProjectMode)' == 'Root'">true</StaticWebAssetStandaloneHosting>
     <StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute Condition="'$(StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute)' == ''">true</StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute>
     <StaticWebAssetsGetEmbeddedPublishAssetsTargets>ComputeFilesToPublish;GetCurrentProjectEmbeddedPublishStaticWebAssetItems</StaticWebAssetsGetEmbeddedPublishAssetsTargets>
+
+    <!-- Regex route constraint support for Blazor routing -->
+    <BlazorRoutingEnableRegexConstraint Condition="'$(BlazorRoutingEnableRegexConstraint)' == ''">false</BlazorRoutingEnableRegexConstraint>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" />

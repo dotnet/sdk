@@ -141,7 +141,7 @@ namespace N
                         GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.F.x", "N.F.X"), ("/0/Test0.cs", 12, 26), ("/0/Test1.cs", 7, 26)),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
@@ -167,7 +167,7 @@ namespace N
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
@@ -191,7 +191,7 @@ namespace N
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion
@@ -418,6 +418,35 @@ namespace N
             GetCA1708CSharpResultAt(12, 36, Parameter, "N.C.operator +(N.C, int)"),
             GetCA1708CSharpResultAt(18, 20, Parameter, "N.C.this[int, int]"),
             GetCA1708CSharpResultAt(30, 30, Parameter, "N.D.SomeDelegate"));
+        }
+
+        [Fact]
+        public async Task TestMultipleExtensionBlocks()
+        {
+            string code = @"
+public static class StringExtensions
+{
+    private const string ExtensionString = ""Extension"";
+
+    // Static class extensions
+    extension(string)
+    {
+        public static string CreateExtension() => ExtensionString;
+    }
+
+    // Instance extensions
+    extension(string s)
+    {
+        public bool IsExtensionString() => s == ExtensionString;
+    }
+}
+";
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp14,
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

@@ -23,7 +23,7 @@ Options:
                                                   Examples:
                                                   -e VARIABLE=abc
                                                   -e VARIABLE="value with spaces"
-                                                  -e VARIABLE="value;seperated with;semicolons"
+                                                  -e VARIABLE="value;separated with;semicolons"
                                                   -e VAR1=abc -e VAR2=def -e VAR3=ghi
   -c, --configuration <CONFIGURATION>             The configuration to use for running tests. The default for most projects is 'Debug'.
   -f, --framework <FRAMEWORK>                     The target framework to run tests for. The target framework must also be specified in the project file.
@@ -33,6 +33,8 @@ Options:
   -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
   --no-restore                                    Do not restore the project before building. [default: False]
   --no-build                                      Do not build the project before testing. Implies --no-restore. [default: False]
+  --no-dependencies                               Do not build project-to-project references and only build the specified project. [default: False]
+  --artifacts-path <ARTIFACTS_DIR>                The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
   --output <Detailed|Normal>                      Verbosity of test output.
@@ -64,3 +66,7 @@ Platform Options:
 Extension Options:
   --report-trx           Enable generating TRX report
   --report-trx-filename  The name of the generated TRX report
+  --show-stderr          Determines when to show captured error output of a test.
+                         Valid values are 'All', 'Failed', 'None'. Default is 'All'.
+  --show-stdout          Determines when to show captured standard output of a test.
+                         Valid values are 'All', 'Failed', 'None'. Default is 'All'.

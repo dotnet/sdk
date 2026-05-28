@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.SdkVulnerability;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
@@ -37,10 +38,11 @@ public class RestoringCommand : MSBuildForwardingApp
         string? msbuildPath = null,
         string? userProfileDir = null,
         bool? advertiseWorkloadUpdates = null)
-        : base(GetCommandArguments(msbuildArgs, noRestore),  msbuildPath)
+        : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath)
     {
         userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
         Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
+        SdkVulnerabilityNotifier.BackgroundUpdateCacheIfNeeded();
         SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
         AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.OtherMSBuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
@@ -118,13 +120,13 @@ public class RestoringCommand : MSBuildForwardingApp
         ReadOnlyDictionary<string, string> restoreProperties =
             msbuildArgs.GlobalProperties?
             .Where(kvp => !IsPropertyExcludedFromRestore(kvp.Key))?
-            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase) is { } filteredList ? new(filteredList): ReadOnlyDictionary<string, string>.Empty;
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase) is { } filteredList ? new(filteredList) : ReadOnlyDictionary<string, string>.Empty;
         var restoreMSBuildArgs =
             MSBuildArgs.FromProperties(RestoreOptimizationProperties)
                        .CloneWithAdditionalTargets("Restore")
                        .CloneWithExplicitArgs([.. newArgumentsToAdd, .. existingArgumentsToForward])
                        .CloneWithAdditionalProperties(restoreProperties);
-        if (msbuildArgs.Verbosity is {} verbosity)
+        if (msbuildArgs.Verbosity is { } verbosity)
         {
             restoreMSBuildArgs = restoreMSBuildArgs.CloneWithVerbosity(verbosity);
         }
@@ -171,7 +173,7 @@ public class RestoringCommand : MSBuildForwardingApp
 
     private static readonly List<string> FlagsThatTriggerSilentSeparateRestore = [.. ComputeFlags(FlagsThatTriggerSilentRestore)];
 
-    private static readonly List<string> PropertiesToExcludeFromSeparateRestore = [ .. PropertiesToExcludeFromRestore ];
+    private static readonly List<string> PropertiesToExcludeFromSeparateRestore = [.. PropertiesToExcludeFromRestore];
 
     /// <summary>
     /// We investigate the arguments we're about to send to a separate restore call and filter out

@@ -273,7 +273,7 @@ class TestClass
                 test.ExpectedDiagnostics.Add(GetCSharpResultAt(8, 9, "SetSwitch"));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

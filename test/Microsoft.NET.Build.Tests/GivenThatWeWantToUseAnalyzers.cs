@@ -270,6 +270,8 @@ namespace Microsoft.NET.Build.Tests
                                 ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/cs/Microsoft.CodeQuality.Analyzers.dll"),
                                 ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/cs/Microsoft.CodeQuality.CSharp.Analyzers.dll"),
                                 ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll"),
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Extensions.Logging.Generators.dll"),
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Extensions.Options.SourceGeneration.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.LibraryImportGenerator.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.JavaScript.JSImportGenerator.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.SourceGeneration.dll"),
@@ -346,18 +348,18 @@ namespace Microsoft.NET.Build.Tests
 
         static readonly List<string> nugetRoots = new()
             {
-                TestContext.Current.NuGetCachePath,
+                SdkTestContext.Current.NuGetCachePath,
                 Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder"),
-                Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "packs")
+                Path.Combine(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot, "packs")
             };
 
         static (string package, string version, string path) GetPackageAndPath(string absolutePath)
         {
             absolutePath = Path.GetFullPath(absolutePath);
 
-            if (absolutePath.StartsWith(TestContext.Current.ToolsetUnderTest.SdksPath))
+            if (absolutePath.StartsWith(SdkTestContext.Current.ToolsetUnderTest.SdksPath))
             {
-                string path = absolutePath.Substring(TestContext.Current.ToolsetUnderTest.SdksPath.Length + 1)
+                string path = absolutePath.Substring(SdkTestContext.Current.ToolsetUnderTest.SdksPath.Length + 1)
                     .Replace(Path.DirectorySeparatorChar, '/');
                 var components = path.Split(new char[] { '/' }, 2);
                 string sdkName = components[0];

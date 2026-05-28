@@ -260,7 +260,7 @@ abstract class F : System.ComponentModel.Component
 "
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -311,7 +311,7 @@ abstract class F : System.ComponentModel.Component
 "
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -357,7 +357,7 @@ End Class
 "
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -392,7 +392,7 @@ End Class
 "
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

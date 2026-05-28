@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .Execute(ConsoleLoggerOutputNormal);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(ConsoleLoggerOutputNormal);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .Execute(ConsoleLoggerOutputNormal);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -147,7 +147,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(1);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Failed TestNamespace.VSTestXunitTests.VSTestXunitFailTest");
                 result.StdOut.Should().Contain("Total:     2");
@@ -177,7 +177,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "console;verbosity=normal", "--", "RunConfiguration.ResultsDirectory=" + trxLoggerDirectory);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 // We append current date time to trx file name, hence modifying this check
                 Assert.True(Directory.EnumerateFiles(trxLoggerDirectory, trxFileNamePattern).Any());
@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                        .Execute("--no-build", "-v:m");
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotContain("Restore");
                 //  https://github.com/dotnet/sdk/issues/3684
@@ -321,7 +321,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .WithWorkingDirectory(rootPath)
                                         .Execute("--no-restore");
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -350,7 +350,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .Execute("-v", verbosity);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 if (shouldShowPassedTests)
                 {
@@ -400,7 +400,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .And
                 .HaveStdOutContaining(rid);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -422,7 +422,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                        .Execute("--nologo");
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotContain("Microsoft (R) Test Execution Command Line Tool Version");
                 result.StdOut.Should().Contain("Total:     2");
@@ -457,7 +457,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                 result.StdOut + Environment.NewLine + result.StdErr);
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -493,7 +493,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--results-directory", resultsDirectory);
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -529,7 +529,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--results-directory", resultsDirectory);
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -566,7 +566,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--results-directory", resultsDirectory);
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -598,7 +598,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "--filter", "VSTestPassTest");
 
             // Verify test results
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("No code coverage data available. Code coverage is currently supported only on Windows, Linux x64 and macOS x64.");
                 result.StdOut.Should().Contain("Total:     1");
@@ -626,7 +626,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute();
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Important text");
             }
@@ -673,7 +673,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("--arch", "wrongArchitecture");
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("error NETSDK1083: The specified RuntimeIdentifier");
                 result.StdOut.Should().Contain("wrongArchitecture");
@@ -701,7 +701,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("--filter", filter);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     1");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -716,7 +716,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([flag]);
 
-            var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b");
+            // Use a unique subdirectory per flag to avoid conflicts between theory data rows.
+            // --diag creates a file, while --output and --results-directory create directories.
+            var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b", flag.TrimStart('-'));
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
@@ -724,7 +726,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute(flag, pathWithComma);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -732,7 +734,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/54209")]
         // Even count of slash/backslash
         [InlineData("--output", "\\\\")]
         [InlineData("--output", "\\\\\\\\")]
@@ -772,7 +774,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute(flag, flagDirectory + slashesOrBackslashes);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -795,7 +797,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute(testProjectDirectory, arg);
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
@@ -824,7 +826,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .Execute(ConsoleLoggerOutputNormal.Concat([property]));
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Total tests: 2");
                 result.StdOut.Should().Contain("Passed: 1");
@@ -845,7 +847,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(ConsoleLoggerOutputNormal.Concat(["-dl:my.dll"]));
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 // This ensures that this was passed to MSBuild and not vstest.console.
                 result.StdOut.Should().Contain("error MSB1021: Cannot create an instance of the logger my.dll.");

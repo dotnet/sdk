@@ -1,6 +1,10 @@
 # Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=101
 
-trigger: none
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
 
 pr:
   branches:
@@ -13,10 +17,12 @@ pr:
     - eng
     - build
     - src
+    - template_feed
     - test
     - '*.yml'
     - '*.props'
     - '*.targets'
+    - global.json
     exclude:
     - documentation/*
     - README.md
@@ -57,7 +63,7 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        demands: ImageOverride -equals build.azurelinux.3.amd64.open
         os: linux
       helixTargetQueue: ubuntu.2204.amd64.open
 

@@ -26,13 +26,13 @@ internal static class MSBuildUtility
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
     static extern bool ProjectShouldBuild(SolutionFile solutionFile, string projectFile);
 
-    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
+    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
-        bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
+        int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
-        if (!isBuiltOrRestored)
+        if (buildExitCode != 0)
         {
-            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
+            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildExitCode);
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
@@ -73,16 +73,16 @@ internal static class MSBuildUtility
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
 
-        return (projects, isBuiltOrRestored);
+        return (projects, buildExitCode);
     }
 
-    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
+    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
     {
-        bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
+        int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
 
-        if (!isBuiltOrRestored)
+        if (buildExitCode != 0)
         {
-            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
+            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildExitCode);
         }
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
@@ -94,7 +94,7 @@ internal static class MSBuildUtility
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, configuration: null, platform: null);
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
-        return (projects, isBuiltOrRestored);
+        return (projects, buildExitCode);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult)
@@ -103,10 +103,25 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
+        // Terminal logger arguments (e.g. --tl:off, -terminalLogger:auto, -tlp:default=true)
+        // should be forwarded to MSBuild during the build phase rather than being passed to
+        // the test application as it doesn't recognize them. See https://github.com/dotnet/sdk/issues/52229.
+        var terminalLoggerArgs = new List<string>();
+        for (int i = otherArgs.Count - 1; i >= 0; i--)
+        {
+            if (LoggerUtility.IsTerminalLoggerArgument(otherArgs[i]))
+            {
+                terminalLoggerArgs.Add(otherArgs[i]);
+                otherArgs.RemoveAt(i);
+            }
+        }
+        terminalLoggerArgs.Reverse();
+
         var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
 
-        var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
-            .Concat(binLogArgs);
+        var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
+            .Concat(binLogArgs)
+            .Concat(terminalLoggerArgs);
 
         string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
         if (resultsDirectory is not null)
@@ -130,7 +145,7 @@ internal static class MSBuildUtility
         var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
 
         if ((projectOrSolutionOptionValue is not null && positionalProjectOrSolution is not null) ||
-            testModulesFilterOptionValue is not null && positionalTestModules is not null)
+            (testModulesFilterOptionValue is not null && positionalTestModules is not null))
         {
             throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
         }
@@ -216,7 +231,7 @@ internal static class MSBuildUtility
             {
                 if (i == 0)
                 {
-                    positionalTestModules = token;
+                    positionalProjectOrSolution = token;
                     otherArgs.RemoveAt(0);
                     break;
                 }
@@ -230,13 +245,13 @@ internal static class MSBuildUtility
         return (positionalProjectOrSolution, positionalTestModules);
     }
 
-
-    private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
+    private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
         if (buildOptions.HasNoBuild)
         {
-            return true;
+            return 0;
         }
+
         List<string> msbuildArgs = [.. buildOptions.MSBuildArgs, filePath];
 
         if (buildOptions.Verbosity is null)
@@ -248,13 +263,11 @@ internal static class MSBuildUtility
             msbuildArgs,
             CommonOptions.CreatePropertyOption(),
             CommonOptions.CreateRestorePropertyOption(),
-            CommonOptions.CreateRequiredMSBuildTargetOption(CliConstants.MTPTarget),
+            CommonOptions.CreateRequiredMSBuildTargetOption(TestCommandDefinition.MicrosoftTestingPlatform.BuildTargetName),
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());
 
-        int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
-
-        return result == (int)BuildResultCode.Success;
+        return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
     }
 
     private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(

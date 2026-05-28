@@ -59,7 +59,7 @@ namespace EndToEnd.Tests
                     project.Root.Add(itemGroup);
                 });
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new RestoreCommand(testInstance)
                 .Execute()
@@ -93,7 +93,7 @@ namespace EndToEnd.Tests
                     project.Root.Add(itemGroup);
                 });
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new RestoreCommand(testInstance)
                 .Execute()

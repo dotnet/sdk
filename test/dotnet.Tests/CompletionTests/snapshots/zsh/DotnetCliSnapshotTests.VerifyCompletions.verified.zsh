@@ -426,10 +426,10 @@ _testhost() {
                                                             ;;
                                                         (author)
                                                             _arguments "${_arguments_options[@]}" : \
-                                                                '--allow-untrusted-root[]' \
                                                                 '--configfile=[]: : ' \
                                                                 '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                                                 '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                                                '--allow-untrusted-root[]' \
                                                                 '--help[Show command line help.]' \
                                                                 '-h[Show command line help.]' \
                                                                 ':NAME: ' \
@@ -438,11 +438,11 @@ _testhost() {
                                                             ;;
                                                         (repository)
                                                             _arguments "${_arguments_options[@]}" : \
-                                                                '--allow-untrusted-root[]' \
-                                                                '--owners=[]: : ' \
                                                                 '--configfile=[]: : ' \
                                                                 '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                                                 '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                                                '--allow-untrusted-root[]' \
+                                                                '--owners=[]: : ' \
                                                                 '--help[Show command line help.]' \
                                                                 '-h[Show command line help.]' \
                                                                 ':NAME: ' \
@@ -451,11 +451,11 @@ _testhost() {
                                                             ;;
                                                         (source)
                                                             _arguments "${_arguments_options[@]}" : \
-                                                                '--owners=[]: : ' \
-                                                                '--source-url=[]: : ' \
                                                                 '--configfile=[]: : ' \
                                                                 '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                                                 '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                                                '--owners=[]: : ' \
+                                                                '--source-url=[]: : ' \
                                                                 '--help[Show command line help.]' \
                                                                 '-h[Show command line help.]' \
                                                                 ':NAME: ' \
@@ -463,11 +463,11 @@ _testhost() {
                                                             ;;
                                                         (certificate)
                                                             _arguments "${_arguments_options[@]}" : \
-                                                                '--allow-untrusted-root[]' \
-                                                                '--algorithm=[]: :((SHA256\:"SHA256" SHA384\:"SHA384" SHA512\:"SHA512" ))' \
                                                                 '--configfile=[]: : ' \
                                                                 '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                                                 '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                                                '--allow-untrusted-root[]' \
+                                                                '--algorithm=[]: :((SHA256\:"SHA256" SHA384\:"SHA384" SHA512\:"SHA512" ))' \
                                                                 '--help[Show command line help.]' \
                                                                 '-h[Show command line help.]' \
                                                                 ':NAME: ' \
@@ -932,8 +932,8 @@ _testhost() {
                         '--os=[The target operating system.]:OS: ' \
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
                         '--artifacts-path=[The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.]:ARTIFACTS_DIR: ' \
-                        '*--environment=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
-                        '*-e=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
+                        '*--environment=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;separated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
+                        '*-e=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;separated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         '*::applicationArguments -- Arguments passed to the application that is being run.: ' \
@@ -1047,8 +1047,8 @@ _testhost() {
                         '-s=[The settings file to use when running tests.]:SETTINGS_FILE: ' \
                         '--list-tests[List the discovered tests instead of running the tests.]' \
                         '-t[List the discovered tests instead of running the tests.]' \
-                        '*--environment=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
-                        '*-e=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
+                        '*--environment=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;separated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
+                        '*-e=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;separated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
                         '--filter=[Run tests that match the given expression.                                         Examples\:                                         Run tests with priority set to 1\: --filter \"Priority = 1\"                                         Run a test with the specified full name\: --filter \"FullyQualifiedName=Namespace.ClassName.MethodName\"                                         Run tests that contain the specified name\: --filter \"FullyQualifiedName~Namespace.Class\"                                         See https\://aka.ms/vstest-filtering for more information on filtering support.                                         ]:EXPRESSION: ' \
                         '*--test-adapter-path=[The path to the custom adapters to use for the test run.]:ADAPTER_PATH: ' \
                         '*--logger=[The logger to use for test results.                                         Examples\:                                         Log in trx format using a unique file name\: --logger trx                                         Log in trx format using the specified file name\: --logger \"trx;LogFileName=<TestResults.trx>\"                                         See https\://aka.ms/vstest-report for more information on logger arguments.]:LOGGER: ' \
@@ -1059,6 +1059,7 @@ _testhost() {
                         '--diag=[Enable verbose logging to the specified file.]:LOG_FILE: ' \
                         '-d=[Enable verbose logging to the specified file.]:LOG_FILE: ' \
                         '--no-build[Do not build the project before testing. Implies --no-restore.]' \
+                        '--no-dependencies[Do not build project-to-project references and only build the specified project.]' \
                         '--results-directory=[The directory where the test results will be placed. The specified directory will be created if it does not exist.]:RESULTS_DIR: ' \
                         '*--collect=[The friendly name of the data collector to use for the test run.                                         More info here\: https\://aka.ms/vstest-collect]:DATA_COLLECTOR_NAME: ' \
                         '--blame[Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.  When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.  Based on the additional settings, hang dump or crash dump can also be collected.  Example\:   Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.   (Crash dumps require additional setup, see below.)   dotnet test --blame-hang --blame-crash Example\:   Timeout the test run when a test takes more than 20 minutes and collect hang dump.   dotnet test --blame-hang-timeout 20min ]' \

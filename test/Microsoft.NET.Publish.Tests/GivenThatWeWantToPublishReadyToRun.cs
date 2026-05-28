@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -488,6 +488,74 @@ public class Program
             }
 
             return null;
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void It_creates_partial_readytorun_images_for_specified_assemblies(string targetFramework)
+        {
+            var projectName = "CrossgenPartialTest";
+
+            var testProject = CreateTestProjectForR2RTesting(
+                targetFramework,
+                projectName,
+                "ClassLib");
+
+            testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.SelfContained = "True";
+            testProject.AddItem("PublishReadyToRunPartialAssemblies", "Include", "ClassLib.dll");
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var publishCommand = new PublishCommand(testProjectInstance);
+            publishCommand.Execute().Should().Pass();
+
+            DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
+                targetFramework,
+                "Debug",
+                testProject.RuntimeIdentifier);
+
+            var mainProjectDll = Path.Combine(publishDirectory.FullName, $"{projectName}.dll");
+            var classLibDll = Path.Combine(publishDirectory.FullName, $"ClassLib.dll");
+
+            DoesImageHaveR2RInfo(mainProjectDll).Should().BeTrue();
+            // Partial compilation still produces an R2R image
+            DoesImageHaveR2RInfo(classLibDll).Should().BeTrue();
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void It_compiles_partial_assemblies_separately_in_composite_mode(string targetFramework)
+        {
+            var projectName = "CrossgenCompositePartialTest";
+
+            var testProject = CreateTestProjectForR2RTesting(
+                targetFramework,
+                projectName,
+                "ClassLib");
+
+            testProject.AdditionalProperties["PublishReadyToRun"] = "True";
+            testProject.AdditionalProperties["PublishReadyToRunComposite"] = "True";
+            testProject.SelfContained = "True";
+            testProject.AddItem("PublishReadyToRunPartialAssemblies", "Include", "ClassLib.dll");
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var publishCommand = new PublishCommand(testProjectInstance);
+            publishCommand.Execute().Should().Pass();
+
+            DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
+                targetFramework,
+                "Debug",
+                testProject.RuntimeIdentifier);
+
+            var mainProjectDll = Path.Combine(publishDirectory.FullName, $"{projectName}.dll");
+            var classLibDll = Path.Combine(publishDirectory.FullName, $"ClassLib.dll");
+
+            // Main project should be compiled (into the composite image)
+            DoesImageHaveR2RInfo(mainProjectDll).Should().BeTrue();
+            // Partial assembly should be excluded from composite and compiled separately
+            DoesImageHaveR2RInfo(classLibDll).Should().BeTrue();
         }
 
         public static bool DoesImageHaveR2RInfo(string path)

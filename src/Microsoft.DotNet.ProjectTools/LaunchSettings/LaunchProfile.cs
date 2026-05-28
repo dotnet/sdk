@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.DotNet.ProjectTools;
 
-public abstract class LaunchProfile
+internal abstract class LaunchProfile
 {
     [JsonIgnore]
     public string? LaunchProfileName { get; init; }
@@ -18,5 +18,9 @@ public abstract class LaunchProfile
     public string? CommandLineArgs { get; init; }
 
     [JsonPropertyName("environmentVariables")]
-    public ImmutableDictionary<string, string> EnvironmentVariables { get; init; } = [];
+    public ImmutableDictionary<string, string> EnvironmentVariables
+    {
+        get;
+        init => field = value ?? [];
+    } = [];
 }

@@ -581,7 +581,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
                 .WithSource()
                 .Restore(Log);
-            var sdkFeatureBand = new SdkFeatureBand(TestContext.Current.ToolsetUnderTest.SdkVersion);
+            var sdkFeatureBand = new SdkFeatureBand(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
             // Write fake updates file
             Directory.CreateDirectory(Path.Combine(testInstance.Path, ".dotnet"));
             File.WriteAllText(Path.Combine(testInstance.Path, ".dotnet", $".workloadAdvertisingUpdates{sdkFeatureBand}"), @"[""maui""]");
@@ -619,7 +619,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var testInstance = TestAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
                 .Restore(Log);
-            var sdkFeatureBand = new SdkFeatureBand(TestContext.Current.ToolsetUnderTest.SdkVersion);
+            var sdkFeatureBand = new SdkFeatureBand(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
             // Write fake updates file
             Directory.CreateDirectory(Path.Combine(testInstance.Path, ".dotnet"));
             File.WriteAllText(Path.Combine(testInstance.Path, ".dotnet", $".workloadAdvertisingUpdates6.0.100"), @"[""maui""]");

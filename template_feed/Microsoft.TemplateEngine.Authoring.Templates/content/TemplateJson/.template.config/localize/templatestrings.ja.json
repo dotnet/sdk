@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "template.json configuration file",
+  "description": ".NET テンプレート用の template.json 構成ファイルのテンプレート。構成の詳細については、「https://aka.ms/template-json-reference」を参照してください。",
+  "symbols/CreateTemplateConfigFolder/description": ".template.config フォルダーに template.json を作成する必要がある場合は True。",
+  "symbols/CreateTemplateConfigFolder/displayName": "Create .template.config folder",
+  "symbols/TemplateName/description": "テンプレート名。",
+  "symbols/TemplateName/displayName": "テンプレート名",
+  "symbols/TemplateShortName/description": "テンプレートの短い名前。",
+  "symbols/TemplateShortName/displayName": "テンプレートの短い名前",
+  "symbols/TemplateIdentity/description": "テンプレート ID (一意である必要があります)。",
+  "symbols/TemplateIdentity/displayName": "テンプレート ID",
+  "postActions/instructions/description": "手動操作が必要です",
+  "postActions/instructions/manualInstructions/default/text": "エディターで template.json を開き、構成を完了します。"
+}

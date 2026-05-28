@@ -22,7 +22,7 @@ public class PackageTests
             "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj"
         };
 
-        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "containerize.csproj");
+        string projectFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "containerize.csproj");
         XDocument project = XDocument.Load(projectFilePath);
         XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
 
@@ -41,10 +41,8 @@ public class PackageTests
             "Microsoft.Build.Utilities.Core",
             "Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "Nuget.Packaging",
-            "System.Text.Json",
             "Valleysoft.DockerCredsProvider",
-            "Microsoft.Extensions.Logging",
-            "Microsoft.Extensions.Logging.Abstractions"
+            "Microsoft.Extensions.Logging"
         };
         IReadOnlyList<string> knownProjectReferences = new List<string>()
         {
@@ -52,7 +50,7 @@ public class PackageTests
             "..\\..\\Microsoft.Extensions.Logging.MSBuild\\Microsoft.Extensions.Logging.MSBuild.csproj"
         };
 
-        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
+        string projectFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
         XDocument project = XDocument.Load(projectFilePath);
         XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
 
@@ -77,20 +75,15 @@ public class PackageTests
               "containerize/containerize.dll",
               "containerize/containerize.runtimeconfig.json",
               "containerize/Microsoft.DotNet.Cli.Utils.dll",
-              "containerize/Microsoft.Extensions.Configuration.Abstractions.dll",
               "containerize/Microsoft.Extensions.Configuration.Binder.dll",
               "containerize/Microsoft.Extensions.Configuration.dll",
-              "containerize/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
               "containerize/Microsoft.Extensions.DependencyInjection.dll",
               "containerize/Microsoft.Extensions.DependencyModel.dll",
-              "containerize/Microsoft.Extensions.Logging.Abstractions.dll",
               "containerize/Microsoft.Extensions.Logging.Configuration.dll",
               "containerize/Microsoft.Extensions.Logging.Console.dll",
               "containerize/Microsoft.Extensions.Logging.MSBuild.dll",
               "containerize/Microsoft.Extensions.Logging.dll",
               "containerize/Microsoft.Extensions.Options.ConfigurationExtensions.dll",
-              "containerize/Microsoft.Extensions.Options.dll",
-              "containerize/Microsoft.Extensions.Primitives.dll",
               "containerize/Microsoft.NET.Build.Containers.dll",
               "containerize/Newtonsoft.Json.dll",
               "containerize/NuGet.Common.dll",
@@ -107,21 +100,10 @@ public class PackageTests
               "Icon.png",
               "Microsoft.NET.Build.Containers.nuspec",
               "README.md",
-              "tasks/net472/Microsoft.NET.Build.Containers.dll",
-              "tasks/net472/Newtonsoft.Json.dll",
-              "tasks/net472/NuGet.Common.dll",
-              "tasks/net472/NuGet.Configuration.dll",
-              "tasks/net472/NuGet.Frameworks.dll",
-              "tasks/net472/NuGet.Packaging.dll",
-              "tasks/net472/NuGet.Versioning.dll",
               $"tasks/{netTFM}/Microsoft.DotNet.Cli.Utils.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.Logging.Abstractions.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.MSBuild.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.Options.dll",
-              $"tasks/{netTFM}/Microsoft.Extensions.Primitives.dll",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.deps.json",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.dll",
               $"tasks/{netTFM}/Newtonsoft.Json.dll",

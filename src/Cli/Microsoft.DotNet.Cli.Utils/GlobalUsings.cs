@@ -9,7 +9,7 @@ global using System.Runtime.InteropServices;
 
 global using Microsoft.DotNet.Cli.Utils;
 
-#if !DOTNET_BUILDSOURCEONLY
+#if TARGET_WINDOWS
 global using Windows.Win32;
 global using Windows.Win32.Foundation;
 global using WDK = Windows.Wdk;

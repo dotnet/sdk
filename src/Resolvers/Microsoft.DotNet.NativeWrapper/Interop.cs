@@ -3,6 +3,9 @@
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
+#if NET
+using System.Runtime.InteropServices.Marshalling;
+#endif
 
 namespace Microsoft.DotNet.NativeWrapper
 {
@@ -40,6 +43,9 @@ namespace Microsoft.DotNet.NativeWrapper
         // already be loaded in the process. Unfortunately there are no issues or pull requests tracking the original
         // implementation of this as it was committed directly from a dev branch into main.
 
+        // lpFileName passed to LoadLibraryEx must be a full path.
+        private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
+
         private static void PreloadWindowsLibrary(string dllFileName)
         {
             string? basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
@@ -49,6 +55,9 @@ namespace Microsoft.DotNet.NativeWrapper
             // return value is intentionally ignored as we let the subsequent P/Invokes fail naturally.
             LoadLibraryExW(dllPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
         }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        private static extern IntPtr LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
 #endif
 
 #if NET
@@ -71,17 +80,6 @@ namespace Microsoft.DotNet.NativeWrapper
 
             return handle;
         }
-#endif
-
-        // lpFileName passed to LoadLibraryEx must be a full path.
-        private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
-
-#if NET
-        [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
-        private static partial nint LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
-#else
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        private static extern IntPtr LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
 #endif
 
         /// <summary>
@@ -260,10 +258,10 @@ namespace Microsoft.DotNet.NativeWrapper
 #if NET
         [LibraryImport(Constants.HostFxr, StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(PlatformStringMarshaller))]
         [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-        internal static partial int hostfxr_get_dotnet_environment_info(
+        internal static partial StatusCode hostfxr_get_dotnet_environment_info(
 #else
         [DllImport(Constants.HostFxr, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int hostfxr_get_dotnet_environment_info(
+        internal static extern StatusCode hostfxr_get_dotnet_environment_info(
 #endif
             string? dotnetRoot,
             nint reserved,
@@ -425,25 +423,143 @@ namespace Microsoft.DotNet.NativeWrapper
             string? exeDir,
             hostfxr_get_available_sdks_result_fn result);
 
-#if NET
-        public static partial class Unix
+        /// <summary>
+        ///  Delegate type identifiers for <see cref="hostfxr_get_runtime_delegate"/>.
+        /// </summary>
+        internal enum hostfxr_delegate_type
         {
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-            private static partial nint realpath(string path, nint buffer);
-
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-            private static partial void free(nint ptr);
-
-            public static string? realpath(string path)
-            {
-                nint ptr = realpath(path, nint.Zero);
-                string? result = Marshal.PtrToStringUTF8(ptr);
-                free(ptr);
-                return result;
-            }
+            hdt_com_activation = 0,
+            hdt_load_in_memory_assembly = 1,
+            hdt_winrt_activation = 2,
+            hdt_com_register = 3,
+            hdt_com_unregister = 4,
+            hdt_load_assembly_and_get_function_pointer = 5,
+            hdt_get_function_pointer = 6,
+            hdt_load_assembly = 7,
+            hdt_load_assembly_bytes = 8,
         }
+
+        /// <summary>
+        ///  Parameters for <see cref="hostfxr_initialize_for_runtime_config"/> and
+        ///  <see cref="hostfxr_initialize_for_dotnet_command_line"/>.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct hostfxr_initialize_parameters
+        {
+            public nint size;
+            public nint host_path;
+            public nint dotnet_root;
+        }
+
+        /// <summary>
+        ///  Initializes the hosting context from a runtime configuration file.
+        /// </summary>
+#if NET
+        [LibraryImport(Constants.HostFxr)]
+        [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+        internal static partial StatusCode hostfxr_initialize_for_runtime_config(
+#else
+        [DllImport(Constants.HostFxr, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern StatusCode hostfxr_initialize_for_runtime_config(
 #endif
+            nint runtimeConfigPath,
+            in hostfxr_initialize_parameters parameters,
+            out nint hostContextHandle);
+
+        /// <summary>
+        ///  Gets a runtime delegate of the specified type.
+        /// </summary>
+#if NET
+        [LibraryImport(Constants.HostFxr)]
+        [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+        internal static partial StatusCode hostfxr_get_runtime_delegate(
+#else
+        [DllImport(Constants.HostFxr, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern StatusCode hostfxr_get_runtime_delegate(
+#endif
+            nint hostContextHandle,
+            hostfxr_delegate_type type,
+            out nint @delegate);
+
+        /// <summary>
+        ///  Initializes the hosting context for running a dotnet command line application.
+        /// </summary>
+#if NET
+        [LibraryImport(Constants.HostFxr,
+            StringMarshalling = StringMarshalling.Custom,
+            StringMarshallingCustomType = typeof(PlatformStringMarshaller))]
+        [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+        internal static partial StatusCode hostfxr_initialize_for_dotnet_command_line(
+#else
+        [DllImport(Constants.HostFxr, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern StatusCode hostfxr_initialize_for_dotnet_command_line(
+#endif
+            int argc,
+#if NET
+            [MarshalUsing(typeof(ArrayMarshaller<string, nint>))]
+            [MarshalUsing(typeof(PlatformStringMarshaller), ElementIndirectionDepth = 1)]
+#else
+            [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPWStr)]
+#endif
+            [In] string[] argv,
+            in hostfxr_initialize_parameters parameters,
+            out nint hostContextHandle);
+
+        /// <summary>
+        ///  Runs the application initialized by <see cref="hostfxr_initialize_for_dotnet_command_line"/>.
+        /// </summary>
+#if NET
+        [LibraryImport(Constants.HostFxr)]
+        [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+        internal static partial StatusCode hostfxr_run_app(
+#else
+        [DllImport(Constants.HostFxr, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern StatusCode hostfxr_run_app(
+#endif
+            nint hostContextHandle);
+
+        /// <summary>
+        ///  Closes the hosting context handle and releases associated resources.
+        /// </summary>
+#if NET
+        [LibraryImport(Constants.HostFxr)]
+        [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+        internal static partial StatusCode hostfxr_close(
+#else
+        [DllImport(Constants.HostFxr, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern StatusCode hostfxr_close(
+#endif
+            nint hostContextHandle);
+
+        /// <summary>
+        ///  Sets a runtime property value. Must be called before the runtime is loaded.
+        /// </summary>
+        /// <param name="hostContextHandle">Handle from initialization. The runtime must not be loaded yet.</param>
+        /// <param name="name">Name of the property to set.</param>
+        /// <param name="value">Value to set, or <see langword="null"/> to remove the property.</param>
+        /// <returns>
+        ///  <see cref="StatusCode.Success"/> on success, <see cref="StatusCode.InvalidArgFailure"/> if the runtime
+        ///  is already loaded, or another error status code.
+        /// </returns>
+        /// <remarks>
+        ///  <para>
+        ///   Properties set through this API are passed to the runtime during initialization and can affect
+        ///   runtime behavior. Once the runtime is loaded, properties become read-only.
+        ///  </para>
+        /// </remarks>
+#if NET
+        [LibraryImport(
+            Constants.HostFxr,
+            StringMarshalling = StringMarshalling.Custom,
+            StringMarshallingCustomType = typeof(PlatformStringMarshaller))]
+        [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+        internal static partial StatusCode hostfxr_set_runtime_property_value(
+#else
+        [DllImport(Constants.HostFxr, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern StatusCode hostfxr_set_runtime_property_value(
+#endif
+            nint hostContextHandle,
+            string name,
+            string? value);
     }
 }

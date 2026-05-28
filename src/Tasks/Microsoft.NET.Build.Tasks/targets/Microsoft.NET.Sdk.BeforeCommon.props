@@ -17,6 +17,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Import bundled version information that needs to be available before the Common.props / D.B.props import
        in order for users to be able to reference it. -->
-  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="'$(NetCoreSdkRoot)' == '' and Exists('$(NETCoreSdkBundledVersionsProps)')" /> 
+  <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="'$(NetCoreSdkRoot)' == '' and Exists('$(NETCoreSdkBundledVersionsProps)')" />
 
 </Project>

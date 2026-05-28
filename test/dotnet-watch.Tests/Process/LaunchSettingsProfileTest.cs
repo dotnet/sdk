@@ -48,7 +48,9 @@ public class LaunchSettingsProfileTest
         }
         """);
 
-        var projectPath = Path.Combine(project.TestRoot, "Project1", "Project1.csproj");
+        var projectPath = new ProjectRepresentation(
+            projectPath: Path.Combine(project.TestRoot, "Project1", "Project1.csproj"),
+            entryPointFilePath: null);
 
         var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: "http", _logger);
         Assert.NotNull(expected);
@@ -81,7 +83,9 @@ public class LaunchSettingsProfileTest
         }
         """);
 
-        var projectPath = Path.Combine(project.Path, "Project1", "Project1.csproj");
+        var projectPath = new ProjectRepresentation(
+            projectPath: Path.Combine(project.Path, "Project1", "Project1.csproj"),
+            entryPointFilePath: null);
 
         var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: null, _logger);
         Assert.Null(expected);

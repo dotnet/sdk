@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 
@@ -67,6 +68,13 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
     /// <summary>
     /// Gets whether signatures for workload packages and installers should be verified.
     /// </summary>
+    /// <remarks>
+    /// Controls both NuGet package signature verification (passed to
+    /// <see cref="NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads"/>) and
+    /// MSI Authenticode verification (passed to
+    /// <see cref="Install.WorkloadInstallerFactory.GetWorkloadInstaller"/>).
+    /// Set by <see cref="WorkloadUtilities.ShouldVerifySignatures(bool)"/>.
+    /// </remarks>
     protected bool VerifySignatures
     {
         get;
@@ -105,7 +113,7 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
             ? tempDirPath
             : Definition.TempDirOption != null && !string.IsNullOrWhiteSpace(parseResult.GetValue(Definition.TempDirOption))
                 ? parseResult.GetValue(Definition.TempDirOption)!
-                : PathUtilities.CreateTempSubdirectory();
+                : TemporaryDirectory.CreateSubdirectory();
 
         TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
@@ -117,15 +125,12 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
         else
         {
             IsPackageDownloaderProvided = false;
-            PackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+            PackageDownloader = NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
                 TempPackagesDirectory,
-                filePermissionSetter: null,
-                new FirstPartyNuGetPackageSigningVerifier(),
+                VerifySignatures,
                 nugetLogger,
                 Reporter,
-                restoreActionConfig: RestoreActionConfiguration,
-                verifySignatures: VerifySignatures,
-                shouldUsePackageSourceMapping: true);
+                RestoreActionConfiguration);
         }
     }
 }

@@ -210,7 +210,7 @@ internal sealed class TestApplicationHandler
 
             if (!_handshakeInfo.HasValue)
             {
-                throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(DiscoveredTestMessages)));
+                throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(TestSessionEvent)));
             }
 
             if (sessionEvent.ExecutionId != _handshakeInfo.Value.ExecutionId)
@@ -230,6 +230,10 @@ internal sealed class TestApplicationHandler
                 {
                     throw new InvalidOperationException(CliCommandStrings.UnexpectedTestSessionEnd);
                 }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(sessionEvent), $"Unknown session event type: {sessionEvent.SessionType}");
             }
         }
     }

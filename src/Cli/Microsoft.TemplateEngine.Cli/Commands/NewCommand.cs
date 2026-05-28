@@ -3,20 +3,16 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
+using Microsoft.DotNet.Cli.Help;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal partial class NewCommand : BaseCommand<NewCommandArgs>, ICustomHelp
+    internal partial class NewCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewCommandDefinition definition)
+        : BaseCommand<NewCommandArgs, NewCommandDefinition>(hostBuilder, definition), ICustomHelp
     {
-        internal NewCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, CommandDefinition.New.Command)
-        {
-            this.DocsLink = "https://aka.ms/dotnet-new";
-        }
-
         protected internal override IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager)
         {
             if (context is not TextCompletionContext textCompletionContext)

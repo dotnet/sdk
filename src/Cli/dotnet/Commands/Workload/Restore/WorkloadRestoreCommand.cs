@@ -63,7 +63,7 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         });
 
         workloadInstaller.Shutdown();
-        
+
         return 0;
     }
 

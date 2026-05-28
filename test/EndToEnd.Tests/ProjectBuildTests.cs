@@ -329,7 +329,8 @@ namespace EndToEnd.Tests
         [InlineData("xunit", "C#")]
         [InlineData("xunit", "VB")]
         [InlineData("xunit", "F#")]
-        [InlineData("blazorwasm")]
+        // Skip = "https://github.com/dotnet/sdk/issues/53791"
+        //[InlineData("blazorwasm")]
         [InlineData("web")]
         [InlineData("web", "C#")]
         [InlineData("web", "F#")]
@@ -402,7 +403,7 @@ namespace EndToEnd.Tests
 
         private static string DetectExpectedDefaultFramework(string template = "")
         {
-            string dotnetFolder = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
+            string dotnetFolder = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
             if (latestMajorVersion == 11)
@@ -468,7 +469,7 @@ namespace EndToEnd.Tests
                     $"/bl:{templateName}-{(selfContained ? "selfcontained" : "fdd")}-{language}-{framework}-{{}}.binlog"
                 ];
 
-                string dotnetRoot = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
+                string dotnetRoot = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
                 new DotnetBuildCommand(Log, projectDirectory)
                      .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet
                      .WithWorkingDirectory(projectDirectory)

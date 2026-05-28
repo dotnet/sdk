@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
@@ -9,13 +10,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 {
     public class TestCommandDefinitionTests
     {
-        [Fact]
-        public void SurroundWithDoubleQuotesWithNullThrows()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                VSTestOptions.SurroundWithDoubleQuotes(null!));
-        }
-
         [Theory]
         [InlineData("")]
         [InlineData("\"a\"")]
@@ -23,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void SurroundWithDoubleQuotesWhenAlreadySurroundedDoesNothing(string input)
         {
             var escapedInput = "\"" + input + "\"";
-            var result = VSTestOptions.SurroundWithDoubleQuotes(escapedInput);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(escapedInput);
             result.Should().Be(escapedInput);
         }
 
@@ -35,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("a\"")]
         public void SurroundWithDoubleQuotesWhenNotSurroundedSurrounds(string input)
         {
-            var result = VSTestOptions.SurroundWithDoubleQuotes(input);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
@@ -46,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("/\\/\\/\\\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyEvenCountOfTrailingBackslashes(string input)
         {
-            var result = VSTestOptions.SurroundWithDoubleQuotes(input);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
@@ -57,14 +51,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("/\\/\\/\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyOddCountOfTrailingBackslashes(string input)
         {
-            var result = VSTestOptions.SurroundWithDoubleQuotes(input);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\\\"");
         }
 
         [Fact]
         public void VSTestCommandIncludesPropertiesOption()
         {
-            var command = TestCommandParser.GetCommand();
+            var command = TestCommandDefinition.Create();
             
             // Verify that the command includes a property option that supports the /p alias
             var propertyOption = command.Options.FirstOrDefault(o => 
@@ -72,6 +66,28 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             
             propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.CreatePropertyOption to support /p Property=Value syntax");
             propertyOption.Aliases.Should().Contain("/p", "CreatePropertyOption should include /p alias for MSBuild compatibility");
+        }
+
+        [Fact]
+        public void VSTestCommandIncludesNoDependenciesOption()
+        {
+            var command = new TestCommandDefinition.VSTest();
+            var parseResult = command.Parse(["--no-dependencies"]);
+            var forwarded = parseResult.OptionValuesToBeForwarded(command);
+
+            forwarded.Should().Contain("-property:BuildProjectReferences=false",
+                "--no-dependencies should be forwarded to MSBuild as BuildProjectReferences=false to skip building project-to-project references.");
+        }
+
+        [Fact]
+        public void MTPCommandIncludesNoDependenciesOption()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--no-dependencies"]);
+            var forwarded = parseResult.OptionValuesToBeForwarded(command);
+
+            forwarded.Should().Contain("--property:BuildProjectReferences=false",
+                "--no-dependencies should be forwarded to MSBuild as BuildProjectReferences=false to skip building project-to-project references.");
         }
 
         [Fact]
@@ -138,6 +154,79 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             int settingsCount = TestCommand.GetSettingsCount(settings);
             settingsCount.Should().Be(0);
             TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(expectedContainsBuiltTestSource);
+        }
+
+        [Fact]
+        public void Create_WhenGlobalJsonIsEmpty_FallsBackToVSTestInsteadOfThrowing()
+        {
+            using var temp = new TempDirectory();
+            File.WriteAllText(Path.Combine(temp.Path, "global.json"), string.Empty);
+
+            var command = TestCommandDefinition.Create(temp.Path);
+
+            command.Should().BeOfType<TestCommandDefinition.VSTest>(
+                "an empty global.json must not crash the CLI parser (regression for https://github.com/dotnet/sdk/issues/52384)");
+        }
+
+        [Fact]
+        public void Create_WhenGlobalJsonIsMalformed_FallsBackToVSTestInsteadOfThrowing()
+        {
+            using var temp = new TempDirectory();
+            File.WriteAllText(Path.Combine(temp.Path, "global.json"), "{ this is not valid json");
+
+            var command = TestCommandDefinition.Create(temp.Path);
+
+            command.Should().BeOfType<TestCommandDefinition.VSTest>();
+        }
+
+        [Fact]
+        public void Create_WhenGlobalJsonHasMtpRunner_ReturnsMicrosoftTestingPlatform()
+        {
+            using var temp = new TempDirectory();
+            File.WriteAllText(
+                Path.Combine(temp.Path, "global.json"),
+                """{ "test": { "runner": "Microsoft.Testing.Platform" } }""");
+
+            var command = TestCommandDefinition.Create(temp.Path);
+
+            command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>();
+        }
+
+        [Fact]
+        public void Create_WhenGlobalJsonHasUnknownRunner_StillThrowsInvalidOperation()
+        {
+            // The "unknown runner" failure is intentional user-facing feedback for a typo in a
+            // well-formed global.json and is preserved by the fix for #52384 (which only relaxes
+            // the unreadable/malformed cases).
+            using var temp = new TempDirectory();
+            File.WriteAllText(
+                Path.Combine(temp.Path, "global.json"),
+                """{ "test": { "runner": "definitely-not-a-real-runner" } }""");
+
+            Action act = () => TestCommandDefinition.Create(temp.Path);
+
+            act.Should().Throw<InvalidOperationException>();
+        }
+
+        private sealed class TempDirectory : IDisposable
+        {
+            public string Path { get; } = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "TestCommandDefinitionTests_" + Guid.NewGuid().ToString("N"));
+
+            public TempDirectory() => Directory.CreateDirectory(Path);
+
+            public void Dispose()
+            {
+                try
+                {
+                    Directory.Delete(Path, recursive: true);
+                }
+                catch
+                {
+                    // best-effort cleanup
+                }
+            }
         }
     }
 }

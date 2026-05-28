@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset(appName)
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new BuildCommand(testInstance)
                 .Execute()
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithToolDependency", identifier: toolPrefersCLIRuntime ? "preferCLIRuntime" : "")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance = testInstance.WithProjectChanges(project =>
             {
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithToolDependency")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             string projectFolder = null;
 
@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new BuildCommand(testInstance)
                 .Execute()
@@ -217,7 +217,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset("DependencyContextFromTool")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             testInstance.Restore(Log);
 
@@ -233,7 +233,7 @@ namespace Microsoft.DotNet.Tests
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithDirectDep")
                 .WithSource();
 
-            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
             new BuildCommand(testInstance)
                 .Execute()

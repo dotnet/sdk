@@ -33,6 +33,7 @@ namespace GenerateDocumentationAndConfigFiles
         {
             const int expectedArguments = 23;
             const string validateOnlyPrefix = "-validateOnly:";
+            const string analyzerVersionTemplate = "${AnalyzerVersion}";
 
             if (args.Length != expectedArguments)
             {
@@ -451,7 +452,9 @@ namespace GenerateDocumentationAndConfigFiles
 
                     if (!string.IsNullOrWhiteSpace(analyzerVersion))
                     {
-                        writer.Write("version", analyzerVersion);
+                        // Keep the checked-in SARIF stable across SDK version updates.
+                        // The build resolves this placeholder into the intermediate output that gets packed.
+                        writer.Write("version", analyzerVersionTemplate);
                     }
 
                     writer.Write("language", culture.Name);
@@ -528,7 +531,20 @@ namespace GenerateDocumentationAndConfigFiles
                     // Note: Although a using statement exists for the textWriter, its scope is the whole method.
                     // So Dispose isn't called before the whole method returns.
                     textWriter.Close();
-                    Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                    try
+                    {
+                        Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                    }
+                    finally
+                    {
+                        // Best-effort cleanup of the temp sarif file (fileWithPath points to the temp-* file, not the checked-in one).
+                        try
+                        {
+                            File.Delete(fileWithPath);
+                        }
+                        catch (IOException) { }
+                        catch (UnauthorizedAccessException) { }
+                    }
                 }
 
                 return;

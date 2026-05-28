@@ -139,7 +139,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_uses_customized_PackagedShimOutputRootDirectory(bool multiTarget, string targetFramework)
         {
-            string shimoutputPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "shimoutput");
+            string shimoutputPath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "shimoutput");
             TestAsset helloWorldAsset = TestAssetsManager
                 .CopyTestAsset("PortableTool", "PackagedShimOutputRootDirectory" + multiTarget.ToString(), identifier: multiTarget.ToString() + targetFramework)
                 .WithSource()
