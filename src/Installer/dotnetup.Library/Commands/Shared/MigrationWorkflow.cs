@@ -279,12 +279,8 @@ internal static class MigrationWorkflow
         var remaining = new List<MigrationSelection>(runtimeMigrations.Count);
         foreach (var migration in runtimeMigrations)
         {
-            var resolveProbe = new DotnetInstallRequest(
-                installRoot,
-                migration.Channel,
-                migration.Component,
-                new InstallRequestOptions());
-            ReleaseVersion? resolvedVersion = channelVersionResolver.Resolve(resolveProbe);
+            ReleaseVersion? resolvedVersion = channelVersionResolver.GetLatestVersionForChannel(
+                migration.Channel, migration.Component, installRoot.Architecture);
 
             if (resolvedVersion is null ||
                 !RuntimeFolderExistsOnDisk(installRoot, migration.Component, resolvedVersion))
