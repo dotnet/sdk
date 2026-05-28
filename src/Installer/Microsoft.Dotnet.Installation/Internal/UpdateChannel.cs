@@ -34,28 +34,14 @@ internal class UpdateChannel
         Name.EndsWith(DailySuffix, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
-    /// For daily channels, the version scope without the <c>-daily</c> suffix
-    /// (e.g. <c>10.0-daily</c> → <c>10.0</c>). Bare <c>daily</c> returns
-    /// <c>"daily"</c> — it has no explicit scope and is resolved separately.
-    /// For non-daily channels, returns the channel name unchanged.
+    /// Strips the <c>-daily</c> suffix from a channel name (e.g. <c>"10.0-daily"</c>
+    /// → <c>"10.0"</c>). Returns the input unchanged if it doesn't end with
+    /// <c>-daily</c>.
     /// </summary>
-    public string BaseChannel
-    {
-        get
-        {
-            if (!IsDaily)
-            {
-                return Name;
-            }
-
-            if (Name.Equals(DailyKeyword, StringComparison.OrdinalIgnoreCase))
-            {
-                return DailyKeyword;
-            }
-
-            return Name.Substring(0, Name.Length - DailySuffix.Length);
-        }
-    }
+    public static string StripDailySuffix(string channelName)
+        => channelName.EndsWith(DailySuffix, StringComparison.OrdinalIgnoreCase)
+            ? channelName.Substring(0, channelName.Length - DailySuffix.Length)
+            : channelName;
 
     /// <summary>
     /// Checks if the channel string looks like an SDK version or feature band pattern rather than a runtime version.
@@ -138,7 +124,7 @@ internal class UpdateChannel
                 return false;
             }
 
-            return new UpdateChannel(BaseChannel).Matches(version);
+            return new UpdateChannel(StripDailySuffix(Name)).Matches(version);
         }
 
         return MatchesMajorMinorOrFeatureBand(version);

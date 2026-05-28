@@ -48,20 +48,32 @@ public class UpdateChannelTests
     }
 
     [Theory]
-    [InlineData("daily", true, "daily")]
-    [InlineData("DAILY", true, "daily")]
-    [InlineData("10-daily", true, "10")]
-    [InlineData("10.0-daily", true, "10.0")]
-    [InlineData("10.0.1xx-daily", true, "10.0.1xx")]
-    [InlineData("10.0-DAILY", true, "10.0")]
-    [InlineData("10.0", false, "10.0")]
-    [InlineData("preview", false, "preview")]
-    [InlineData("10.0.100-preview.1", false, "10.0.100-preview.1")]
-    public void IsDaily_And_BaseChannel_ReturnExpected(string name, bool expectedIsDaily, string expectedBase)
+    [InlineData("daily", true)]
+    [InlineData("DAILY", true)]
+    [InlineData("10-daily", true)]
+    [InlineData("10.0-daily", true)]
+    [InlineData("10.0.1xx-daily", true)]
+    [InlineData("10.0-DAILY", true)]
+    [InlineData("10.0", false)]
+    [InlineData("preview", false)]
+    [InlineData("10.0.100-preview.1", false)]
+    public void IsDaily_ReturnsExpected(string name, bool expectedIsDaily)
     {
         var channel = new UpdateChannel(name);
 
         channel.IsDaily.Should().Be(expectedIsDaily);
-        channel.BaseChannel.Should().Be(expectedBase);
+    }
+
+    [Theory]
+    [InlineData("10-daily", "10")]
+    [InlineData("10.0-daily", "10.0")]
+    [InlineData("10.0.1xx-daily", "10.0.1xx")]
+    [InlineData("10.0-DAILY", "10.0")]
+    [InlineData("10.0", "10.0")] // no suffix → returned as-is
+    [InlineData("preview", "preview")]
+    [InlineData("", "")]
+    public void StripDailySuffix_ReturnsScope(string channelName, string expectedScope)
+    {
+        UpdateChannel.StripDailySuffix(channelName).Should().Be(expectedScope);
     }
 }

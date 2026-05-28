@@ -81,7 +81,7 @@ internal sealed class DailyChannelResolver : IDisposable
         }
 
         // "<M>-daily" → use "<M>.0" as the aka.ms partial version (aka.ms paths use major.minor).
-        string partialVersion = NormalizePartialVersion(channel.BaseChannel);
+        string partialVersion = NormalizePartialVersion(UpdateChannel.StripDailySuffix(channel.Name));
         return TryResolvePartialVersion(partialVersion, archivePrefix, rid, extension);
     }
 
