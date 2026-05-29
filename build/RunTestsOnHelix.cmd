@@ -33,9 +33,7 @@ set DOTNET_SDK_TEST_ASSETS_DIRECTORY=%TestExecutionDirectory%\TestAssets
 REM call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
 
-REM We downloaded a special zip of files to the .nuget folder so add that as a source
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
-PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure"
 dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile %TestExecutionDirectory%\nuget.config
 if exist %TestExecutionDirectory%\Testpackages dotnet nuget add source %TestExecutionDirectory%\Testpackages --name testpackages --configfile %TestExecutionDirectory%\nuget.config
 
@@ -43,6 +41,12 @@ dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirector
 dotnet nuget remove source dotnet6-internal-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet7-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet7-internal-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet8-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet8-internal-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet9-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet9-internal-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet10-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet10-internal-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source richnav --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source vs-impl --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet-libraries-transport --configfile %TestExecutionDirectory%\nuget.config
