@@ -355,6 +355,7 @@
     <Project Path="test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj" />
     <Project Path="test/dotnet-watch-test-browser/dotnet-watch-test-browser.csproj" />
     <Project Path="test/dotnet-watch.Tests/dotnet-watch.Tests.csproj" />
+    <Project Path="test/dotnet-aot.Tests/dotnet-aot.Tests.csproj" />
     <Project Path="test/dotnet.Tests/dotnet.Tests.csproj" />
     <Project Path="test/EndToEnd.Tests/EndToEnd.Tests.csproj" />
     <Project Path="test/HelixTasks/HelixTasks.csproj" />
