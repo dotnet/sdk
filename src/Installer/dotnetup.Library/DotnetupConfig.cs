@@ -33,7 +33,6 @@ internal class DotnetupConfigData
 {
     public string SchemaVersion { get; set; } = "1";
     public PathPreference PathPreference { get; set; } = PathPreference.FullPathReplacement;
-    public bool DisableInstallConversion { get; set; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

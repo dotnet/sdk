@@ -162,7 +162,8 @@ internal class UpdateWorkflow
             return false;
         }
 
-        var latestVersion = _channelVersionResolver.GetLatestVersionForChannel(channel, spec.Component);
+        // Pass architecture so daily channels can be resolved via DailyChannelResolver.
+        var latestVersion = _channelVersionResolver.GetLatestVersionForChannel(channel, spec.Component, installRoot.Architecture);
         string displayName = spec.Component.GetDisplayName();
         if (latestVersion is null)
         {
