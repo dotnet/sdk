@@ -122,14 +122,14 @@ namespace Microsoft.NET.Publish.Tests
             CheckVersionsInDepsFile(depsFilePath);
         }
 
-        [Fact]
+        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
         public void Inbox_version_of_assembly_is_loaded_over_applocal_version()
         {
             var (coreDir, publishDir, immutableDir) = TestConflictResult();
             immutableDir.Should().BeEquivalentTo(coreDir, "immutable collections library from Framework should win");
         }
 
-        [Fact]
+        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
         public void Inbox_version_is_loaded_if_runtime_file_versions_arent_in_deps()
         {
             static void testProjectChanges(TestProject testProject)
@@ -141,7 +141,7 @@ namespace Microsoft.NET.Publish.Tests
             immutableDir.Should().BeEquivalentTo(coreDir, "inbox immutable collections library from should win");
         }
 
-        [Fact]
+        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
         public void Local_version_of_assembly_with_higher_version_is_loaded_over_inbox_version()
         {
             static void publishFolderChanges(string publishFolder)

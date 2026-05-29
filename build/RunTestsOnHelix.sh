@@ -12,6 +12,18 @@ export PATH=$DOTNET_ROOT:$PATH
 export TestExecutionDirectory=$(pwd)/testExecutionDirectory
 mkdir $TestExecutionDirectory
 
+# Azure Linux 3 is missing zlib-devel, so the linker can't find -lz for NativeAOT.
+# Create a symlink in a local directory and add it to LIBRARY_PATH so clang/ld finds it.
+if [ -f /etc/azurelinux-release ]; then
+    REAL_LIBZ=$(find /usr/lib64 /usr/lib -maxdepth 1 -name "libz.so.1*" ! -type l 2>/dev/null | head -1)
+    if [ -n "$REAL_LIBZ" ] && [ ! -f "$(dirname "$REAL_LIBZ")/libz.so" ]; then
+        ZLIB_COMPAT_DIR="$TestExecutionDirectory/zlib_compat"
+        mkdir -p "$ZLIB_COMPAT_DIR"
+        ln -sf "$REAL_LIBZ" "$ZLIB_COMPAT_DIR/libz.so"
+        export LIBRARY_PATH="${ZLIB_COMPAT_DIR}${LIBRARY_PATH:+:$LIBRARY_PATH}"
+    fi
+fi
+
 export DOTNET_CLI_HOME=$TestExecutionDirectory/.dotnet
 cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionDirectory/
 
