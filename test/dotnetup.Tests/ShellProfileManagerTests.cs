@@ -601,6 +601,91 @@ public class ShellProfileManagerTests : IDisposable
             .And.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
     }
 
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_WritesUserEntryThroughProvider()
+    {
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "user-profile.sh");
+
+        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, InstallType.User, provider);
+
+        var profilePath = Path.Combine(_tempDir, "user-profile.sh");
+        File.Exists(profilePath).Should().BeTrue();
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain("print-env-script");
+        // User install with a non-default install root should pass --dotnet-install-path through.
+        content.Should().Contain("--dotnet-install-path");
+        content.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_SystemInstall_WritesDotnetupOnlyEntry()
+    {
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "system-profile.sh");
+
+        // dotnetRoot is irrelevant for System (dotnet assumed already on PATH), but the parameter
+        // is non-nullable so pass the fake path.
+        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, InstallType.System, provider);
+
+        var profilePath = Path.Combine(_tempDir, "system-profile.sh");
+        File.Exists(profilePath).Should().BeTrue();
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain("--dotnetup-only");
+        content.Should().NotContain("--dotnet-install-path");
+    }
+
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_DefaultInstallPath_OmitsInstallPathFlag()
+    {
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "default-profile.sh");
+
+        // When the install root equals the manager's default install path, the path should be
+        // omitted from the entry so `print-env-script` can fall back to its default-detection.
+        var defaultPath = manager.GetDefaultDotnetInstallPath();
+
+        manager.ApplyTerminalProfileModifications(defaultPath, InstallType.User, provider);
+
+        var profilePath = Path.Combine(_tempDir, "default-profile.sh");
+        File.Exists(profilePath).Should().BeTrue();
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().NotContain("--dotnet-install-path");
+        content.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_ThrowsOnNullDotnetRoot()
+    {
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "null-profile.sh");
+
+        var act = () => manager.ApplyTerminalProfileModifications(null!, InstallType.User, provider);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_WritesToAllProviderPaths()
+    {
+        // Simulates Windows where PowerShellEnvShellProvider returns multiple profile paths
+        // (one per PowerShell flavor). Verifies the dispatch threads through to every path.
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "flavor1.ps1", "flavor2.ps1");
+
+        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, InstallType.User, provider);
+
+        var path1 = Path.Combine(_tempDir, "flavor1.ps1");
+        var path2 = Path.Combine(_tempDir, "flavor2.ps1");
+        File.Exists(path1).Should().BeTrue();
+        File.Exists(path2).Should().BeTrue();
+        File.ReadAllText(path1).Should().Contain(ShellProfileManager.BeginMarkerComment);
+        File.ReadAllText(path2).Should().Contain(ShellProfileManager.BeginMarkerComment);
+    }
+
     /// <summary>
     /// Test-only shell provider that targets files in the temp directory.
     /// </summary>
