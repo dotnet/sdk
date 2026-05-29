@@ -85,7 +85,8 @@ Network Discovery and File Sharing is found under the 'advanced' tab, then under
 - Inside the VM, go to "Allow an app through Windows Firewall", and add "Remote Service Management" to the list of allowed apps and features.  This allows PsExec to launch commands quickly, otherwise there is a delay of around 15-30 seconds for each command that is run.
 - Download PSTools (https://learn.microsoft.com/en-us/sysinternals/downloads/pstools), extract them somewhere, and add that folder to your PATH.  Run `psexec \\WINDEV2401EVAL cmd /c dir c:\` (replacing `WINDEV2401EVAL` with the VM machine name) to verify that PsExec can run commands on the VM.  The command should complete in less than a second.  If it takes longer then the Remote Service Management firewall rule is probably not enabled correctly.
 - Create a `C:\SdkTesting` folder inside the VM.  Copy the standalone installer for the baseline version of the SDK used to test (for example `dotnet-sdk-8.0.100-win-x64.exe`) to that folder
-- Make sure that the "Windows Remote Management" service is running on the host machine.  The easiest way to do this is to run `winrm quickconfig` from a command prompt.  This is needed for the tests to call the WMI APIs to control the virtual machine.
+- If you will be running the workload set tests (`WorkloadSetTests`, `WorkloadSetTests2`, `VSWorkloadTests`), also create `C:\SdkTesting\workloadsets\testworkloadsetversions.json` inside the VM (see [Workload set test versions](#workload-set-test-versions) below).
+- Make sure that the "Windows Remote Management" service is running on the host machine.The easiest way to do this is to run `winrm quickconfig` from a command prompt.  This is needed for the tests to call the WMI APIs to control the virtual machine.
 - Recommended:
   - Install [Visual Studio Remote Tools](https://learn.microsoft.com/visualstudio/debugger/remote-debugging?view=vs-2022#download-and-install-the-remote-tools) in the VM so that if you need to debug the SDK you can do so.  Run the remote tools and allow it through the firewall
   - Install any other tools or set up any other settings you would like on the VM to help investigate failures.  It's easier if you do this all as part of the initial state, otherwise each time you run a test the state will be reset so you may end up repeating the same actions multiple times.
@@ -115,6 +116,40 @@ Example:
     ]
 }
 ```
+
+## Workload set test versions
+
+Tests that exercise workload set installation (`WorkloadSetTests`, `WorkloadSetTests2`, `VSWorkloadTests`, anything that derives from `WorkloadSetTestsBase`) read a `testworkloadsetversions.json` file from inside the VM at:
+
+```
+C:\SdkTesting\workloadsets\testworkloadsetversions.json
+```
+
+This file is a flat JSON object mapping string keys to string workload set version values. The tests use it to pick known existing workload set versions to install and update between, rather than hard-coding versions that may go stale.
+
+| Key | Required? | Used for | Default |
+|---|---|---|---|
+| `version1` | yes | Initial workload set version to install/pin | — |
+| `versionpreview` | yes | Preview workload set version | — |
+| `version2` | yes | A second/later workload set version (for update scenarios) | — |
+| `previousbandversion` | optional | Workload set from a previous feature band (cross-band install tests) | `"8.0.204"` |
+| `needsIncludePreviews` | optional | Whether `--include-previews` is needed for the configured feeds to resolve the versions above (`"true"`/`"false"`) | `"false"` |
+
+The version numbers you choose depend on what's available on the feeds you've added via `VMTestSettings.NuGetSourcesToAdd`. Pick three workload set versions for the SDK feature band you're testing, ordered so that update scenarios make sense (`version1` should be older than `version2`), with `versionpreview` being a preview of the same band.
+
+Example:
+
+```json
+{
+    "version1": "9.0.100-rtm.24551.5",
+    "versionpreview": "9.0.100-preview.7.24407.12",
+    "version2": "9.0.101-servicing.24561.3",
+    "previousbandversion": "8.0.204",
+    "needsIncludePreviews": "true"
+}
+```
+
+If the file is missing when one of these tests runs, the test will fail with `FileNotFoundException` pointing at the expected path.
 
 ## Checkpoint limit
 
