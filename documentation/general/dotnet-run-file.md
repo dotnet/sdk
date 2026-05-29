@@ -267,12 +267,14 @@ We do not limit these directives to appear only in entry point files because it 
 - which also makes it possible to share it independently or symlink it to multiple script folders,
 - and it's similar to `global using`s which users usually put into a single file but don't have to.
 
-We disallow duplicate `#:` directives (except `#:project` and `#:ref`) to allow us to design some deduplication mechanism in the future.
-Specifically, directives are considered duplicate if their type and name (case insensitive) are equal.
-`#:project` and `#:ref` duplicates are allowed because MSBuild allows duplicate `<ProjectReference />` items.
-Later with deduplication, separate "self-contained" utilities could reference overlapping sets of packages
-even if they end up in the same compilation.
-For example, properties could be concatenated via `;`, more specific package versions could override less specific ones.
+Duplicate directives are handled according to the MSBuild construct they represent.
+For `#:sdk`, `#:property`, and `#:package`, directives are considered duplicate if their kind and name are equal case-insensitively.
+If the duplicate has the same unevaluated value (before any MSBuild variable expansion), it is ignored.
+If the duplicate has a different unevaluated value, it is an error (which might be relaxed in the future with smarter deduplication,
+for example, properties could be concatenated via `;`, more specific package versions could override less specific ones.)
+For `#:project`, `#:ref`, `#:include`, and `#:exclude`, duplicates are allowed and translated to the corresponding MSBuild items.
+Any resulting item behavior, including warnings for duplicate `Compile` items, is left to MSBuild and the compiler.
+Directive deduplication allows separate "self-contained" utilities to e.g. reference overlapping sets of packages even if they end up in the same compilation.
 
 During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the converted `.csproj` file when needed.
 Files included with `#:include` are copied into the converted project directory; if an included file is not picked up by the converted project's defaults, the corresponding project item is also written explicitly into an `<ItemGroup>` in the converted project.
@@ -400,6 +402,6 @@ Instead of implicitly including files from the target directory, the importing c
 
 [artifacts-output]: https://learn.microsoft.com/dotnet/core/sdk/artifacts-output
 [verbose-env]: https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables#dotnet_cli_context_
-[ignored-directives]: https://github.com/dotnet/csharplang/blob/main/proposals/ignored-directives.md
+[ignored-directives]: https://github.com/dotnet/csharplang/blob/c85bbf501958fa86ee2db94b14c82ee8fd2066b9/proposals/csharp-14.0/ignored-directives.md
 [shebang]: https://en.wikipedia.org/wiki/Shebang_%28Unix%29
 [temp-guidelines]: https://github.com/dotnet/runtime/blob/d0e6ce8332a514d70b635ca4829bf863157256fe/docs/design/security/unix-tmp.md

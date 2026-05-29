@@ -23,17 +23,27 @@ static unsafe partial class NativeEntryPoint
         string sdkDir = PlatformStringMarshaller.ConvertToManaged(sdkDirPtr) ?? string.Empty;
         string hostfxrPath = PlatformStringMarshaller.ConvertToManaged(hostfxrPathPtr) ?? string.Empty;
 
-        // Make hostfxr discoverable for NativeWrapper P/Invokes (required on non-Windows)
-        if (!string.IsNullOrEmpty(hostfxrPath))
-        {
-            AppContext.SetData("HOSTFXR_PATH", hostfxrPath);
-        }
-
         string[] args = new string[argc];
         nint* argv = (nint*)argvPtr;
         for (int i = 0; i < argc; i++)
         {
             args[i] = PlatformStringMarshaller.ConvertToManaged(argv[i]) ?? string.Empty;
+        }
+
+        return ExecuteCore(hostPath, dotnetRoot, sdkDir, hostfxrPath, args);
+    }
+
+    /// <summary>
+    ///  Core execution logic, separated from native marshalling for testability.
+    /// </summary>
+    internal static int ExecuteCore(
+        string hostPath, string dotnetRoot, string sdkDir,
+        string hostfxrPath, string[] args)
+    {
+        // Make hostfxr discoverable for NativeWrapper P/Invokes (required on non-Windows)
+        if (!string.IsNullOrEmpty(hostfxrPath))
+        {
+            AppContext.SetData("HOSTFXR_PATH", hostfxrPath);
         }
 
         // Try the AOT-compiled path for supported commands (if enabled)

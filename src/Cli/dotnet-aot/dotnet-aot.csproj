@@ -39,6 +39,8 @@
     <RuntimeIdentifier Condition="$(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx'))">$(TargetRid)</RuntimeIdentifier>
   </PropertyGroup>
 
+  <Import Project="AotSourceFiles.props" />
+
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
     <Compile Include="ManagedHost.cs" />
