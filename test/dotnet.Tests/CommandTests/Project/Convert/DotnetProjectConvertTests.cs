@@ -1821,6 +1821,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var libDllProjectPath = Path.Join("Lib", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll");
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $$"""
+            #!/usr/bin/env dotnet
             #:property FileBasedProgramsItemMapping=.dll=Reference
             #:include {{libDllDirectivePath}}
             Console.WriteLine(Lib.LibClass.GetMessage());
@@ -1908,6 +1909,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             Path.Join(testInstance.Path, "Lib.dll"));
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
             #:property FileBasedProgramsItemMapping=.dll=Reference
             #:include *.dll
             Console.WriteLine(Lib.LibClass.GetMessage());
@@ -2200,6 +2202,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var dependencyDllProjectPath = Path.Join("Dependency", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Dependency.dll");
 
         File.WriteAllText(Path.Join(libDir, "lib.cs"), $$"""
+            #!/usr/bin/env dotnet
             #:property OutputType=Library
             #:property FileBasedProgramsItemMapping=.dll=Reference
             #:include {{dependencyDllDirectivePath}}
