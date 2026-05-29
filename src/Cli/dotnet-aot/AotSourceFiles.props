@@ -1,0 +1,18 @@
+<Project>
+
+  <!--
+    Shared source file list for the AOT CLI bridge.
+    Imported by both dotnet-aot.csproj and dotnet-aot.Tests.csproj
+    to keep the file list in sync.
+
+    Only includes files that compile without internal NativeWrapper dependencies.
+    NativeEntryPoint.cs and ManagedHost.cs are added separately by each consumer
+    because ManagedHost.cs requires InternalsVisibleTo access to NativeWrapper.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandLineInfo.cs" Link="CommandLineInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
+    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+  </ItemGroup>
+
+</Project>

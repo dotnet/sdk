@@ -731,7 +731,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
         int exitCode, string? outputData, string? errorData)
     {
-        TestProgressState assemblyRun = _assemblies[executionId];
+        // Defense in depth: AssemblyRunCompleted is normally only invoked for an executionId that
+        // AssemblyRunStarted already registered in _assemblies (via GetOrAddAssemblyRun, gated on the
+        // TestHost handshake by TestApplicationHandler). If a future regression or lifecycle race
+        // (e.g., _assemblies.Clear() running before this completes) hands us an unknown id, surface
+        // a handshake failure instead of throwing a KeyNotFoundException that buries the real exit
+        // cause.
+        if (!_assemblies.TryGetValue(executionId, out TestProgressState? assemblyRun))
+        {
+            HandshakeFailure(assemblyPath: string.Empty, targetFramework: null, exitCode, outputData ?? string.Empty, errorData ?? string.Empty);
+            return;
+        }
+
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
