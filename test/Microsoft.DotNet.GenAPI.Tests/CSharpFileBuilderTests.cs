@@ -1205,6 +1205,105 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
+        public void TestExplicitInterfaceEventGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public interface INotifications
+                    {
+                        event System.Action<string> PublicEvent;
+                        event System.Action<int> ExplicitEvent;
+                    }
+
+                    public class EventSource : INotifications
+                    {
+                        public event System.Action<string> PublicEvent { add { } remove { } }
+                        event System.Action<int> INotifications.ExplicitEvent { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource : INotifications
+                    {
+                        event System.Action<int> INotifications.ExplicitEvent { add { } remove { } }
+                        public event System.Action<string> PublicEvent { add { } remove { } }
+                    }
+
+                    public partial interface INotifications
+                    {
+                        event System.Action<int> ExplicitEvent;
+                        event System.Action<string> PublicEvent;
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestExplicitInterfaceEventFromInternalInterfaceIsExcluded()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    internal interface IInternalNotifications
+                    {
+                        event System.Action<int> InternalEvent;
+                    }
+
+                    public class EventSource : IInternalNotifications
+                    {
+                        event System.Action<int> IInternalNotifications.InternalEvent { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource
+                    {
+                    }
+                }
+                """,
+                includeInternalSymbols: false);
+        }
+
+        [Fact]
+        public void TestExplicitInterfaceEventWithInaccessibleTypeArgumentIsExcluded()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    internal class InternalArg { }
+
+                    public interface IPublicNotifications<T>
+                    {
+                        event System.Action<T> Notify;
+                    }
+
+                    public class EventSource : IPublicNotifications<InternalArg>
+                    {
+                        event System.Action<InternalArg> IPublicNotifications<InternalArg>.Notify { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource
+                    {
+                    }
+
+                    public partial interface IPublicNotifications<T>
+                    {
+                        event System.Action<T> Notify;
+                    }
+                }
+                """,
+                includeInternalSymbols: false);
+        }
+        [Fact]
         public void TestCustomAttributeGeneration()
         {
             RunTest(original: """
