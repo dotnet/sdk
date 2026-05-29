@@ -679,6 +679,8 @@ internal static partial class SignatureVerifier
         var rawTokens = new List<byte[]>();
         foreach (CryptographicAttributeObject attr in primarySigner.UnsignedAttributes)
         {
+            // RFC 5652 §5.3 defines unsignedAttrs as an optional, open-ended collection, so we don't fail on any unexpected attributes.
+            // https://www.rfc-editor.org/rfc/rfc5652#section-5.3
             if (attr.Oid.Value == OidTimestampToken)
             {
                 rawTokens.AddRange(attr.Values.Select(v => v.RawData));
