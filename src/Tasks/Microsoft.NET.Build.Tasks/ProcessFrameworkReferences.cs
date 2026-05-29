@@ -1125,23 +1125,11 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!string.IsNullOrEmpty(NetCoreRoot) && !string.IsNullOrEmpty(NETCoreSdkVersion))
                 {
-                    string? userLocalPackFolder = null;
-                    try
+                    AbsolutePath netCoreRoot = TaskEnvironment.GetAbsolutePath(NetCoreRoot);
+                    if (WorkloadFileBasedInstall.IsUserLocal(netCoreRoot, NETCoreSdkVersion) &&
+                        new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath() is { } userProfileDir)
                     {
-                        AbsolutePath netCoreRoot = TaskEnvironment.GetAbsolutePath(NetCoreRoot);
-                        if (WorkloadFileBasedInstall.IsUserLocal(netCoreRoot, NETCoreSdkVersion) &&
-                            new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath() is { } userProfileDir)
-                        {
-                            userLocalPackFolder = Path.Combine(userProfileDir, "packs");
-                        }
-                    }
-                    catch (Exception ex) when (ex is ArgumentException or PathTooLongException or NotSupportedException or System.Security.SecurityException)
-                    {
-                    }
-
-                    if (userLocalPackFolder is not null)
-                    {
-                        yield return userLocalPackFolder;
+                        yield return Path.Combine(TaskEnvironment.GetAbsolutePath(userProfileDir), "packs");
                     }
                 }
 
@@ -1194,23 +1182,19 @@ namespace Microsoft.NET.Build.Tasks
         {
             return new(() =>
         {
-                if (string.IsNullOrWhiteSpace(NetCoreRoot))
-                {
-                    throw new ArgumentException(
-                        "'sdkRootPath' cannot be null or whitespace",
-                        "sdkRootPath");
-                }
-
                 string? userProfileDir = new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath();
-                AbsolutePath netCoreRoot = TaskEnvironment.GetAbsolutePath(NetCoreRoot);
+                string? absoluteUserProfileDir = userProfileDir is null ? null : (string)TaskEnvironment.GetAbsolutePath(userProfileDir);
+
+
+                string netCoreRoot = string.IsNullOrWhiteSpace(NetCoreRoot) ? NetCoreRoot : TaskEnvironment.GetAbsolutePath(NetCoreRoot);
 
                 //  Use TaskEnvironment.ProjectDirectory (rather than Directory.GetCurrentDirectory) as the starting point
                 //  to search for global.json, since the current directory is not guaranteed to match the project directory
                 //  when tasks run on MSBuild worker nodes.
                 string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(TaskEnvironment.ProjectDirectory);
 
-                var manifestProvider = new SdkDirectoryWorkloadManifestProvider(netCoreRoot, NETCoreSdkVersion, TaskEnvironment.GetEnvironmentVariable, userProfileDir, globalJsonPath);
-                return WorkloadResolver.Create(manifestProvider, netCoreRoot, NETCoreSdkVersion, userProfileDir, TaskEnvironment.GetEnvironmentVariable);
+                var manifestProvider = new SdkDirectoryWorkloadManifestProvider(netCoreRoot, NETCoreSdkVersion, TaskEnvironment.GetEnvironmentVariable, absoluteUserProfileDir, globalJsonPath);
+                return WorkloadResolver.Create(manifestProvider, netCoreRoot, NETCoreSdkVersion, absoluteUserProfileDir, TaskEnvironment.GetEnvironmentVariable);
         });
         }
 
