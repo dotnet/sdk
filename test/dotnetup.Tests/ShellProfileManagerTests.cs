@@ -553,8 +553,52 @@ public class ShellProfileManagerTests : IDisposable
         var provider = new PowerShellEnvShellProvider();
         var paths = provider.GetProfilePaths();
 
-        paths.Should().HaveCount(1);
-        paths[0].Should().EndWith("Microsoft.PowerShell_profile.ps1");
+        if (OperatingSystem.IsWindows())
+        {
+            // Windows returns one path per installed PowerShell flavor; Windows PowerShell 5.1
+            // ships in-box on supported Windows versions, so at minimum we expect that profile.
+            paths.Should().NotBeEmpty();
+            paths.Should().AllSatisfy(p => p.Should().EndWith("profile.ps1"));
+        }
+        else
+        {
+            paths.Should().HaveCount(1);
+            paths[0].Should().EndWith("profile.ps1");
+            paths[0].Should().NotEndWith("Microsoft.PowerShell_profile.ps1");
+        }
+    }
+
+    [Fact]
+    public void PowerShellProvider_GetWindowsProfilePaths_ReturnsBothFlavors()
+    {
+        var documents = Path.Combine(_tempDir, "Documents");
+
+        var paths = PowerShellEnvShellProvider.GetWindowsProfilePaths(documents);
+
+        paths.Should().HaveCount(2);
+        paths[0].Should().Be(Path.Combine(documents, "WindowsPowerShell", "profile.ps1"));
+        paths[1].Should().Be(Path.Combine(documents, "PowerShell", "profile.ps1"));
+    }
+
+    [Fact]
+    public void PowerShellProvider_GetWindowsProfilePaths_HonorsCustomDocumentsFolder()
+    {
+        // Simulates OneDrive Known Folder redirection: Documents is at a non-default location.
+        var redirected = Path.Combine(_tempDir, "OneDrive", "Documents");
+
+        var paths = PowerShellEnvShellProvider.GetWindowsProfilePaths(redirected);
+
+        paths.Should().HaveCount(2);
+        paths.Should().AllSatisfy(p => p.Should().StartWith(redirected));
+    }
+
+    [Fact]
+    public void PowerShellProvider_GetWindowsProfilePaths_ThrowsWhenDocumentsFolderMissing()
+    {
+        var act = () => PowerShellEnvShellProvider.GetWindowsProfilePaths(string.Empty);
+
+        act.Should().Throw<DotnetInstallException>()
+            .And.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
     }
 
     /// <summary>
