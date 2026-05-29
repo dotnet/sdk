@@ -683,7 +683,10 @@ internal static partial class SignatureVerifier
             // https://www.rfc-editor.org/rfc/rfc5652#section-5.3
             if (attr.Oid.Value == OidTimestampToken)
             {
-                rawTokens.AddRange(attr.Values.Select(v => v.RawData));
+                foreach (AsnEncodedData value in attr.Values)
+                {
+                    rawTokens.Add(value.RawData);
+                }
             }
         }
         return rawTokens;
