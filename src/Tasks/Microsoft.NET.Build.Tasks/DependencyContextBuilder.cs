@@ -41,7 +41,6 @@ namespace Microsoft.NET.Build.Tasks
         private readonly bool _isPortable;
         private readonly HashSet<string> _usedLibraryNames;
         private readonly RuntimeGraph _runtimeGraph;
-        private readonly Func<string, AbsolutePath> _getAbsolutePath;
 
         private Dictionary<ReferenceInfo, string> _referenceLibraryNames;
 
@@ -50,12 +49,11 @@ namespace Microsoft.NET.Build.Tasks
 
         private const string NetCorePlatformLibrary = "Microsoft.NETCore.App";
 
-        public DependencyContextBuilder(SingleProjectInfo mainProjectInfo, bool includeRuntimeFileVersions, RuntimeGraph runtimeGraph, ProjectContext projectContext, LockFileLookup libraryLookup, Func<string, AbsolutePath> getAbsolutePath = null)
+        public DependencyContextBuilder(SingleProjectInfo mainProjectInfo, bool includeRuntimeFileVersions, RuntimeGraph runtimeGraph, ProjectContext projectContext, LockFileLookup libraryLookup)
         {
             _mainProjectInfo = mainProjectInfo;
             _includeRuntimeFileVersions = includeRuntimeFileVersions;
             _runtimeGraph = runtimeGraph;
-            _getAbsolutePath = getAbsolutePath ?? TaskEnvironment.Fallback.GetAbsolutePath;
 
             _dependencyLibraries = projectContext.LockFileTarget.Libraries
                 .Select(lockFileTargetLibrary =>
@@ -103,12 +101,10 @@ namespace Microsoft.NET.Build.Tasks
             string runtimeIdentifier,
             bool isSelfContained,
             string platformLibraryName,
-            string targetFramework,
-            Func<string, AbsolutePath> getAbsolutePath = null)
+            string targetFramework)
         {
             _mainProjectInfo = mainProjectInfo;
             _includeRuntimeFileVersions = includeRuntimeFileVersions;
-            _getAbsolutePath = getAbsolutePath ?? TaskEnvironment.Fallback.GetAbsolutePath;
 
             _isFrameworkDependent = LockFileExtensions.IsFrameworkDependent(
                 runtimeFrameworks,
@@ -303,7 +299,7 @@ namespace Microsoft.NET.Build.Tasks
                     name: GetReferenceLibraryName(directReference),
                     version: directReference.Version,
                     hash: string.Empty,
-                    runtimeAssemblyGroups: [new RuntimeAssetGroup(string.Empty, [CreateRuntimeFile(directReference.FileName, GetAbsolutePath(directReference.FullPath), directReference.DestinationSubPath)])],
+                    runtimeAssemblyGroups: [new RuntimeAssetGroup(string.Empty, [CreateRuntimeFile(directReference.FileName, directReference.FullPath, directReference.DestinationSubPath)])],
                     nativeLibraryGroups: [],
                     resourceAssemblies: CreateResourceAssemblies(directReference.ResourceAssemblies),
                     dependencies: [],
@@ -611,11 +607,11 @@ namespace Microsoft.NET.Build.Tasks
             {
                 var runtimeAssemblyGroup = new RuntimeAssetGroup(string.Empty,
                     runtimePack.Value.Where(asset => asset.AssetType == AssetType.Runtime)
-                    .Select(asset => CreateRuntimeFile(asset.DestinationSubPath, GetAbsolutePath(asset.SourcePath))));
+                    .Select(asset => CreateRuntimeFile(asset.DestinationSubPath, asset.SourcePath)));
 
                 var nativeLibraryGroup = new RuntimeAssetGroup(string.Empty,
                     runtimePack.Value.Where(asset => asset.AssetType == AssetType.Native)
-                    .Select(asset => CreateRuntimeFile(asset.DestinationSubPath, GetAbsolutePath(asset.SourcePath))));
+                    .Select(asset => CreateRuntimeFile(asset.DestinationSubPath, asset.SourcePath)));
 
                 return new ModifiableRuntimeLibrary(new RuntimeLibrary(
                     type: "runtimepack",
@@ -656,10 +652,11 @@ namespace Microsoft.NET.Build.Tasks
                 (string Path, string DestinationSubPath) assembly = userRuntimeAssemblies is not null
                     ? userRuntimeAssemblies.FirstOrDefault(p => Path.GetFileNameWithoutExtension(p.Path).Equals(fileName))
                     : default;
-                AbsolutePath assemblyPath = !string.IsNullOrWhiteSpace(assembly.Path) ? GetAbsolutePath(assembly.Path) : default;
-                AbsolutePath libraryPath = !string.IsNullOrWhiteSpace(library.Path) ? GetAbsolutePath(library.Path) : default;
-                var runtimeFile = !string.IsNullOrWhiteSpace(assembly.Path) && File.Exists(assemblyPath) ? CreateRuntimeFile(referenceProjectInfo.OutputName, assemblyPath, assembly.DestinationSubPath) :
-                                  !string.IsNullOrWhiteSpace(library.Path) && File.Exists(libraryPath) ? CreateRuntimeFile(referenceProjectInfo.OutputName, libraryPath) :
+                string mainProjectDirectory = Path.GetDirectoryName(_mainProjectInfo.ProjectPath);
+                string assemblyPath = !string.IsNullOrWhiteSpace(assembly.Path) ? assembly.Path : null;
+                string libraryPath = !string.IsNullOrWhiteSpace(library.Path) ? Path.Combine(mainProjectDirectory, library.Path) : null;
+                var runtimeFile = assemblyPath != null && File.Exists(assemblyPath) ? CreateRuntimeFile(referenceProjectInfo.OutputName, assemblyPath, assembly.DestinationSubPath) :
+                                  libraryPath != null && File.Exists(libraryPath) ? CreateRuntimeFile(referenceProjectInfo.OutputName, libraryPath) :
                                   new RuntimeFile(referenceProjectInfo.OutputName, string.Empty, string.Empty);
                 runtimeAssemblyGroups.Add(new RuntimeAssetGroup(string.Empty, [runtimeFile]));
 
@@ -825,10 +822,10 @@ namespace Microsoft.NET.Build.Tasks
         private RuntimeFile CreateRuntimeFile(ResolvedFile resolvedFile)
         {
             string relativePath = string.IsNullOrEmpty(resolvedFile.PathInPackage) ? resolvedFile.DestinationSubPath : resolvedFile.PathInPackage;
-            return CreateRuntimeFile(relativePath, GetAbsolutePath(resolvedFile.SourcePath), resolvedFile.DestinationSubPath);
+            return CreateRuntimeFile(relativePath, resolvedFile.SourcePath, resolvedFile.DestinationSubPath);
         }
 
-        private RuntimeFile CreateRuntimeFile(string path, AbsolutePath fullPath, string localPath = null)
+        private RuntimeFile CreateRuntimeFile(string path, string fullPath, string localPath = null)
         {
             if (_includeRuntimeFileVersions)
             {
@@ -840,11 +837,6 @@ namespace Microsoft.NET.Build.Tasks
             {
                 return new RuntimeFile(path, null, null, localPath);
             }
-        }
-
-        private AbsolutePath GetAbsolutePath(string path)
-        {
-            return _getAbsolutePath(path);
         }
 
         private static IEnumerable<ResourceAssembly> CreateResourceAssemblies(IEnumerable<ResourceAssemblyInfo> resourceAssemblyInfos)

@@ -229,7 +229,7 @@ namespace Microsoft.NET.Build.Tasks
                         string.IsNullOrEmpty(RuntimeGraphPath) ? RuntimeGraphPath : TaskEnvironment.GetAbsolutePath(RuntimeGraphPath));
                 }
 
-                builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup, TaskEnvironment.GetAbsolutePath);
+                builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup);
             }
             else
             {
@@ -240,8 +240,7 @@ namespace Microsoft.NET.Build.Tasks
                     EffectiveRuntimeIdentifier,
                     IsSelfContained,
                     PlatformLibraryName,
-                    TargetFramework,
-                    TaskEnvironment.GetAbsolutePath);
+                    TargetFramework);
             }
 
             builder = builder
@@ -269,7 +268,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 string destinationSubDir = i.GetMetadata(MetadataKeys.DestinationSubDirectory);
                 string destinationSubPath = string.IsNullOrEmpty(destinationSubDir) ? null : Path.Combine(destinationSubDir, Path.GetFileName(i.ItemSpec));
-                return (i.ItemSpec, destinationSubPath);
+                return (TaskEnvironment.GetAbsolutePath(i.ItemSpec).Value, destinationSubPath);
             }).ToArray();
             DependencyContext dependencyContext = builder.Build(userRuntimeAssemblies);
 
