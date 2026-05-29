@@ -9,6 +9,14 @@ trigger:
     - internal/release/*
     - exp/*
 
+schedules:
+- cron: '0 0 * * 0'
+  displayName: Weekly CodeQL/SDL build
+  branches:
+    include:
+    - main
+  always: true
+
 pr:
   branches:
     include:
@@ -103,13 +111,14 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
+          publishBuiltAssets: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           locBranch: release/10.0.3xx
           # WORKAROUND: BinSkim requires the folder exist prior to scanning.
           preSteps:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
             displayName: Create artifacts/bin directory
-          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
             timeoutInMinutes: 180
             windowsJobParameterSets:
             ### OFFICIAL ###
@@ -163,8 +172,9 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
+          publishBuiltAssets: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
             timeoutInMinutes: 90
             linuxJobParameterSets:
             ### OFFICIAL ###
@@ -246,8 +256,9 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
+          publishBuiltAssets: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
             timeoutInMinutes: 90
             macOSJobParameterSets:
             ### OFFICIAL ###
@@ -272,6 +283,7 @@ extends:
               os: macOS
             helixTargetQueue: osx.15.arm64
             populateInternalRuntimeVariables: true
+            publishBuiltAssets: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             macOSJobParameterSets:
             - categoryName: TestBuild

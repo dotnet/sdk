@@ -57,6 +57,7 @@ stages:
         demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
+      publishBuiltAssets: true
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
@@ -66,6 +67,7 @@ stages:
         demands: ImageOverride -equals build.azurelinux.3.amd64.open
         os: linux
       helixTargetQueue: ubuntu.2204.amd64.open
+      publishBuiltAssets: true
 
   ############### MACOS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
@@ -75,6 +77,7 @@ stages:
         vmImage: macOS-latest
         os: macOS
       helixTargetQueue: osx.15.amd64.open
+      publishBuiltAssets: true
   ### ARM64 ###
   - ${{ if eq(parameters.enableArm64Job, true) }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
@@ -84,6 +87,7 @@ stages:
           vmImage: macOS-latest
           os: macOS
         helixTargetQueue: osx.15.arm64.open
+        publishBuiltAssets: true
         macOSJobParameterSets:
         - categoryName: TestBuild
           targetArchitecture: arm64
