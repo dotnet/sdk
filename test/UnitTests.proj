@@ -76,7 +76,7 @@
        Targeting ~5 minutes per work item across all platforms. -->
   <PropertyGroup>
     <BaseMethodLimit Condition="'$(TestFullMSBuild)' == 'true'">64</BaseMethodLimit>
-    <BaseMethodLimit Condition="$(TargetRid.StartsWith('osx-arm64'))">128</BaseMethodLimit>
+    <BaseMethodLimit Condition="'$(TargetOS)' == 'osx' and '$(TargetArchitecture)' == 'arm64'">128</BaseMethodLimit>
     <BaseMethodLimit Condition="'$(BaseMethodLimit)' == ''">32</BaseMethodLimit>
   </PropertyGroup>
 
@@ -85,7 +85,7 @@
        fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
   <ItemGroup>
     <SDKCustomXUnitProject Update="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj">
-      <MethodLimitMultiplier>5</MethodLimitMultiplier>
+      <MethodLimitMultiplier>10</MethodLimitMultiplier>
     </SDKCustomXUnitProject>
     <SDKCustomXUnitProject Update="TemplateEngine\**\*.csproj;**\Microsoft.TemplateEngine.Cli.UnitTests.csproj">
       <MethodLimitMultiplier>20</MethodLimitMultiplier>
