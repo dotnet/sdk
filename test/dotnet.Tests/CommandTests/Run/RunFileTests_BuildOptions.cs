@@ -944,7 +944,8 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("hello");
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property ext=.json
@@ -956,7 +957,8 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("hello");
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
 
         File.WriteAllText(Path.Join(testInstance.Path, "file.cs"), """
             class Util { public static string Greet() => "hello from util"; }
@@ -989,7 +991,8 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("hello");
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
     }
 
     /// <summary>

@@ -1376,7 +1376,6 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                       <ItemGroup>
                         <Clean Include="/artifacts/*" />
-                        <CompilerVisibleItemMetadata Include="Compile" MetadataName="FileBasedProgramsFromIncludeDirective" />
                       </ItemGroup>
 
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -1464,7 +1463,6 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                       <ItemGroup>
                         <Clean Include="/artifacts/*" />
-                        <CompilerVisibleItemMetadata Include="Compile" MetadataName="FileBasedProgramsFromIncludeDirective" />
                       </ItemGroup>
 
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -1541,7 +1539,6 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                       <ItemGroup>
                         <Clean Include="/artifacts/*" />
-                        <CompilerVisibleItemMetadata Include="Compile" MetadataName="FileBasedProgramsFromIncludeDirective" />
                       </ItemGroup>
 
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -1617,7 +1614,6 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
 
                       <ItemGroup>
                         <Clean Include="/artifacts/*" />
-                        <CompilerVisibleItemMetadata Include="Compile" MetadataName="FileBasedProgramsFromIncludeDirective" />
                       </ItemGroup>
 
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -2318,8 +2314,6 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         var baseDirectory = TestPathUtility.ResolveTempPrefixLink(Path.GetDirectoryName(entryPointPath)!);
         var replacements = new List<(string, string)>
         {
-            (NormalizePath(entryPointPath), nameof(CSharpCompilerCommand.FilePathWithForwardSlashes)),
-            (NormalizePath(Path.Join(artifactsDir, "obj", "debug", $"{fileName}.GlobalUsings.g.cs")), nameof(CSharpCompilerCommand.GlobalUsingsFilePathWithForwardSlashes)),
             (TestPathUtility.ResolveTempPrefixLink(entryPointPath), nameof(CSharpCompilerCommand.EntryPointFileFullPath)),
             (baseDirectory + Path.DirectorySeparatorChar, nameof(CSharpCompilerCommand.BaseDirectoryWithTrailingSeparator)),
             (baseDirectory, nameof(CSharpCompilerCommand.BaseDirectory)),

@@ -564,7 +564,6 @@ public sealed class VirtualProjectBuilder
 
                   <ItemGroup>
                     <Clean Include="{EscapeValue(artifactsPath)}/*" />
-                    <CompilerVisibleItemMetadata Include="Compile" MetadataName="{FromIncludeDirectiveMetadataName}" />
                   </ItemGroup>
 
                 """);

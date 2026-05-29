@@ -12,8 +12,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpMissingShebangInFileBasedProgram : MissingShebangInFileBasedProgram
     {
-        private const string FromIncludeDirectiveMetadataName = "build_metadata.Compile.FileBasedProgramsFromIncludeDirective";
-
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
@@ -24,35 +22,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                 var entryPointFilePath = context.Options.GetMSBuildPropertyValue(
                     MSBuildPropertyOptionNames.EntryPointFilePath, context.Compilation);
                 if (string.IsNullOrEmpty(entryPointFilePath))
-                {
-                    return;
-                }
-
-                // Find #:include trees upfront so we can report directly
-                // from a SyntaxTreeAction without needing CompilationEnd.
-                // We avoid CompilationEnd so diagnostics appear as live IDE diagnostics.
-                // We replicate Roslyn's generated code detection here because
-                // Compilation.SyntaxTrees is the raw set (unlike RegisterSyntaxTreeAction
-                // which gets automatic filtering via ConfigureGeneratedCodeAnalysis).
-                var hasIncludedCompileFile = false;
-                foreach (var tree in context.Compilation.SyntaxTrees)
-                {
-                    if (tree.FilePath.Equals(entryPointFilePath, StringComparison.Ordinal) ||
-                        IsGeneratedCode(tree, context.Options.AnalyzerConfigOptionsProvider))
-                    {
-                        continue;
-                    }
-
-                    if (IsFromIncludeDirective(tree, context.Options.AnalyzerConfigOptionsProvider))
-                    {
-                        hasIncludedCompileFile = true;
-                        break;
-                    }
-                }
-
-                // Only report when #:include directives are used.
-                // Single-file programs don't need a shebang to distinguish the entry point.
-                if (!hasIncludedCompileFile)
                 {
                     return;
                 }
@@ -70,73 +39,32 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                         return;
                     }
 
-                    var location = root.GetFirstToken(includeZeroWidth: true).GetLocation();
+                    var includeDirective = root.GetLeadingTrivia().FirstOrDefault(IsIncludeDirective);
+                    if (includeDirective == default)
+                    {
+                        return;
+                    }
+
+                    var location = includeDirective.GetLocation();
                     context.ReportDiagnostic(location.CreateDiagnostic(Rule));
                 });
             });
         }
 
-        private static bool IsFromIncludeDirective(SyntaxTree tree, AnalyzerConfigOptionsProvider optionsProvider)
-            => optionsProvider.GetOptions(tree)
-                .TryGetValue(FromIncludeDirectiveMetadataName, out var value) &&
-                value.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Replicates Roslyn's generated code detection which checks:
-        /// the <c>generated_code</c> analyzer config option,
-        /// common file name patterns, and <c>&lt;auto-generated&gt;</c> comment headers.
-        /// Based on <see href="https://github.com/dotnet/roslyn/blob/0504782ef845507260874f2efc253b36d1775685/src/Compilers/Core/Portable/SourceGeneration/GeneratedCodeUtilities.cs">GeneratedCodeUtilities</see>.
-        /// </summary>
-        private static bool IsGeneratedCode(SyntaxTree tree, AnalyzerConfigOptionsProvider optionsProvider)
+        private static bool IsIncludeDirective(SyntaxTrivia trivia)
         {
-            if (optionsProvider.GetOptions(tree)
-                    .TryGetValue("generated_code", out var generatedValue) &&
-                generatedValue.Equals("true", StringComparison.OrdinalIgnoreCase))
+            const string hashColon = "#:";
+            const string include = "include";
+
+            var text = trivia.ToString().AsSpan().TrimStart();
+            if (!text.StartsWith(hashColon, StringComparison.Ordinal))
             {
-                return true;
+                return false;
             }
 
-            var filePath = tree.FilePath;
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                var fileName = Path.GetFileName(filePath);
-                if (fileName.StartsWith("TemporaryGeneratedFile_", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                var nameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-                if (nameWithoutExtension.EndsWith(".designer", StringComparison.OrdinalIgnoreCase) ||
-                    nameWithoutExtension.EndsWith(".generated", StringComparison.OrdinalIgnoreCase) ||
-                    nameWithoutExtension.EndsWith(".g", StringComparison.OrdinalIgnoreCase) ||
-                    nameWithoutExtension.EndsWith(".g.i", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            // Check for <auto-generated> or <autogenerated> comment at the top of the file.
-            foreach (var trivia in tree.GetRoot().GetLeadingTrivia())
-            {
-                switch (trivia.Kind())
-                {
-                    case SyntaxKind.SingleLineCommentTrivia:
-                    case SyntaxKind.MultiLineCommentTrivia:
-                        var text = trivia.ToString();
-                        if (text.Contains("<auto-generated") || text.Contains("<autogenerated"))
-                        {
-                            return true;
-                        }
-                        break;
-                    case SyntaxKind.WhitespaceTrivia:
-                    case SyntaxKind.EndOfLineTrivia:
-                        continue;
-                    default:
-                        return false;
-                }
-            }
-
-            return false;
+            var trimmedContent = text[hashColon.Length..].TrimStart();
+            return trimmedContent.StartsWith(include, StringComparison.Ordinal) &&
+                (trimmedContent.Length == include.Length || char.IsWhiteSpace(trimmedContent[include.Length]));
         }
     }
 }

@@ -57,8 +57,6 @@ internal sealed partial class CSharpCompilerCommand
     internal string BaseDirectoryWithTrailingSeparator => field ??= BaseDirectory + Path.DirectorySeparatorChar;
     internal string FileName => field ??= Path.GetFileName(EntryPointFileFullPath);
     internal string FileNameWithoutExtension => field ??= Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
-    internal string FilePathWithForwardSlashes => field ??= EntryPointFileFullPath.Replace('\\', '/');
-    internal string GlobalUsingsFilePathWithForwardSlashes => field ??= Path.Join(ArtifactsPath, "obj", "debug", $"{FileName}.GlobalUsings.g.cs").Replace('\\', '/');
 
     /// <summary>
     /// Compiler command line arguments to use. If empty, default arguments are used.

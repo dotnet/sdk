@@ -174,12 +174,6 @@ build_property.EnableGeneratedComInterfaceComImportInterop = false
 build_property.EffectiveAnalysisLevelStyle = {TargetFrameworkVersion}
 build_property.EnableCodeStyleSeverity = 
 
-[{FilePathWithForwardSlashes}]
-build_metadata.Compile.FileBasedProgramsFromIncludeDirective = 
-
-[{GlobalUsingsFilePathWithForwardSlashes}]
-build_metadata.Compile.FileBasedProgramsFromIncludeDirective = 
-
 """;
     }
 

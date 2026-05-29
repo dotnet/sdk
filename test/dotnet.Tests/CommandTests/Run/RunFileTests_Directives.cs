@@ -1601,7 +1601,6 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
         Log.WriteLine(actualProject);
 
         actualProject.Should().Contain("""<Compile Include="B.cs" FileBasedProgramsFromIncludeDirective="true" />""");
-        actualProject.Should().Contain("""<CompilerVisibleItemMetadata Include="Compile" MetadataName="FileBasedProgramsFromIncludeDirective" />""");
 
         actualProject.Should().NotContain(".proto");
     }
