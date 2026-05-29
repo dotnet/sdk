@@ -5,19 +5,13 @@ Usage:
   dotnet new TestAssets.PostActions.RunScript.Basic [options] [template options]
 
 Options:
-  -n, --name <name>                The name for the output being created. If no name is specified, the name of the 
-                                   output directory is used.
+  -n, --name <name>                The name for the output being created. If no name is specified, the name of the output directory is used.
   -o, --output <output>            Location to place the generated output.
-  --dry-run                        Displays a summary of what would happen if the given command line were run if it 
-                                   would result in a template creation. [default: False]
-  --force                          Forces content to be generated even if it would change existing files. [default: 
-                                   False]
-  --no-update-check                Disables checking for the template package updates when instantiating a template. 
-                                   [default: False]
+  --dry-run                        Displays a summary of what would happen if the given command line were run if it would result in a template creation. [default: False]
+  --force                          Forces content to be generated even if it would change existing files. [default: False]
+  --no-update-check                Disables checking for the template package updates when instantiating a template. [default: False]
   --project <project>              The project that should be used for context evaluation.
-  --allow-scripts <No|Prompt|Yes>  Specifies if post action scripts should run. Templates can run arbitrary code 
-                                   through MSBuild whether or not this option is enabled; only use templates from 
-                                   trusted sources. [default: Prompt]
+  --allow-scripts <No|Prompt|Yes>  Specifies if post action scripts should run. Templates can run arbitrary code through MSBuild whether or not this option is enabled; only use templates from trusted sources. [default: Prompt]
 
 Template options:
    (No options)
