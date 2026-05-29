@@ -41,18 +41,13 @@ namespace Microsoft.NET.Build.Tasks
                 PackageFolders = PackageFolders.Concat(lockFile.PackageFolders.Select(p => p.Path)).ToArray();
             }
 
-            // Capture the caller's original folder shapes so that absolutization stays internal to
-            // this task and never leaks into the [Output] items' PackageDirectory metadata.
-            string[] originalPackageFolders = PackageFolders;
-
             // NuGetPackageResolver probes the file system for each folder, so paths must be
             // absolutized relative to the project rather than the process working directory.
-            // Null/empty entries are passed through so NuGet's resolver handles them as it did pre-migration.
-            PackageFolders = originalPackageFolders
+            string[] absolutePackageFolders = PackageFolders
                 .Select(p => string.IsNullOrEmpty(p) ? p : (string)TaskEnvironment.GetAbsolutePath(p))
                 .ToArray();
 
-            var packageResolver = NuGetPackageResolver.CreateResolver(PackageFolders);
+            var packageResolver = NuGetPackageResolver.CreateResolver(absolutePackageFolders);
 
             int index = 0;
             var updatedItems = new ITaskItem[Items.Length];
@@ -83,11 +78,11 @@ namespace Microsoft.NET.Build.Tasks
                 // byte-identical to the pre-migration behavior.
                 if (packageRoot != null)
                 {
-                    int folderIndex = Array.IndexOf(PackageFolders, packageRoot);
+                    int folderIndex = Array.IndexOf(absolutePackageFolders, packageRoot);
                     if (folderIndex >= 0
-                        && !string.Equals(originalPackageFolders[folderIndex], packageRoot, StringComparison.Ordinal))
+                        && !string.Equals(PackageFolders[folderIndex], packageRoot, StringComparison.Ordinal))
                     {
-                        packageDirectory = originalPackageFolders[folderIndex] + packageDirectory.Substring(packageRoot.Length);
+                        packageDirectory = PackageFolders[folderIndex] + packageDirectory.Substring(packageRoot.Length);
                     }
                 }
 

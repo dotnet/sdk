@@ -10,15 +10,21 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     {
         // Sin 1 (Output property contamination): when the caller passes a relative PackageFolders
         // entry, the migration must NOT leak the TaskEnvironment-absolutized form into the
-        // [Output] items' PackageDirectory metadata.
-        [Fact]
-        public void PackageDirectoryMetadata_PreservesRelativeFolderShape_WhenInputIsRelative()
+        // [Output] items' PackageDirectory metadata. The relative prefix is substituted back into
+        // NuGet's absolutized result via string surgery, so this exercises that surgery across a
+        // range of folder shapes (nested, forward slashes, trailing separators).
+        [Theory]
+        [InlineData("packages")]               // flat relative folder
+        [InlineData("nested/packages")]        // nested with forward slash
+        [InlineData("a/b/c/packages")]         // deeply nested
+        [InlineData("packages/")]              // trailing separator
+        public void PackageDirectoryMetadata_PreservesRelativeFolderShape_WhenInputIsRelative(string relativeFolder)
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "gpd-rel-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(projectDir);
             try
             {
-                var absolutePackagesDir = Path.Combine(projectDir, "packages");
+                var absolutePackagesDir = Path.Combine(projectDir, relativeFolder);
                 CreateFakeNuGetPackage(absolutePackagesDir, "Newtonsoft.Json", "13.0.1");
 
                 var item = new TaskItem("Newtonsoft.Json");
@@ -31,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                     Items = new ITaskItem[] { item },
                     // Relative folder — would have produced relative metadata pre-migration.
-                    PackageFolders = new[] { "packages" }
+                    PackageFolders = new[] { relativeFolder }
                 };
 
                 task.Execute().Should().BeTrue("task should locate the package via the absolutized folder");
@@ -42,10 +48,18 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 resolved.Should().NotBeNullOrEmpty("a package directory should be resolved");
                 Path.IsPathRooted(resolved).Should().BeFalse(
                     "PackageDirectory must preserve the caller's relative shape; absolutization must not leak into [Output]");
-                resolved.Should().StartWith("packages",
+                resolved.Should().StartWith(relativeFolder,
                     "the original relative prefix should be substituted back into the result");
-                resolved.Should().NotStartWith(projectDir,
+                resolved.Should().NotContain(projectDir,
                     "TaskEnvironment.ProjectDirectory must not leak into PackageDirectory metadata");
+
+                // Strongest check on the string surgery: re-rooting the returned relative path at the
+                // project directory must point at the exact location NuGet resolved the package to,
+                // regardless of separator/nesting differences in the substituted prefix.
+                Path.GetFullPath(Path.Combine(projectDir, resolved))
+                    .Should().Be(
+                        Path.GetFullPath(Path.Combine(absolutePackagesDir, "newtonsoft.json", "13.0.1")),
+                        "the rewritten relative path must resolve to the same physical package directory NuGet found");
             }
             finally
             {
