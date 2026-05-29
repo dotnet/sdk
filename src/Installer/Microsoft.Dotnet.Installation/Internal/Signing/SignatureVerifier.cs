@@ -919,7 +919,7 @@ internal static partial class SignatureVerifier
             if (signingTimeUtc >= expiration)
             {
                 result.Add(FailureCode.SignedAfterExpiration,
-                    $"Content was signed at {signingTimeUtc:O} which is not before its expiration {expiration:O}.");
+                    $"Content was signed at {signingTimeUtc:O}, after its expiration {expiration:O}.");
             }
 
             if (nowUtc >= expiration)
