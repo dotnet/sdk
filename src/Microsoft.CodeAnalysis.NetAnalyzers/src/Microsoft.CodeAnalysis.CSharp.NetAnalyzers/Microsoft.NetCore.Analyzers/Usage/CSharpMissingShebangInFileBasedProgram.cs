@@ -53,16 +53,21 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
 
         private static bool IsIncludeDirective(SyntaxTrivia trivia)
         {
-            const string hashColon = "#:";
             const string include = "include";
 
-            var text = trivia.ToString().AsSpan().TrimStart();
-            if (!text.StartsWith(hashColon, StringComparison.Ordinal))
+            var structure = trivia.GetStructure();
+            if (structure is null)
             {
                 return false;
             }
 
-            var trimmedContent = text[hashColon.Length..].TrimStart();
+            var content = structure.ChildTokens().FirstOrDefault(static token => token.IsKind(SyntaxKind.StringLiteralToken));
+            if (!content.IsKind(SyntaxKind.StringLiteralToken))
+            {
+                return false;
+            }
+
+            var trimmedContent = content.Text.AsSpan().TrimStart();
             return trimmedContent.StartsWith(include, StringComparison.Ordinal) &&
                 (trimmedContent.Length == include.Length || char.IsWhiteSpace(trimmedContent[include.Length]));
         }
