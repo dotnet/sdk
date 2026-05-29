@@ -268,7 +268,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 string destinationSubDir = i.GetMetadata(MetadataKeys.DestinationSubDirectory);
                 string destinationSubPath = string.IsNullOrEmpty(destinationSubDir) ? null : Path.Combine(destinationSubDir, Path.GetFileName(i.ItemSpec));
-                return (TaskEnvironment.GetAbsolutePath(i.ItemSpec).Value, destinationSubPath);
+                return (TaskEnvironment.GetAbsolutePath(i.ItemSpec), destinationSubPath);
             }).ToArray();
             DependencyContext dependencyContext = builder.Build(userRuntimeAssemblies);
 
