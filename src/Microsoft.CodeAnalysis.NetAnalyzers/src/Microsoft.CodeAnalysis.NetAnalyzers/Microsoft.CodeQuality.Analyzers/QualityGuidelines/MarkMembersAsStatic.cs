@@ -230,6 +230,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
+            // Do not analyze operator methods. Regular operators are already required to be static in C#.
+            // C# 14 compound assignment operators (e.g. operator +=) are required to be instance methods
+            // and cannot be made static, so flagging them is a false positive.
+            if (methodSymbol.MethodKind is MethodKind.UserDefinedOperator or MethodKind.Conversion)
+            {
+                return false;
+            }
+
             // Don't report methods which have a single throw statement
             // with NotImplementedException or NotSupportedException
             if (context.IsMethodNotImplementedOrSupported())
