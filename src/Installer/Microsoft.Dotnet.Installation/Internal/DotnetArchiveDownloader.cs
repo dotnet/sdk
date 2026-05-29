@@ -196,7 +196,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     {
         // Daily-channel builds are blob-feed-only: they are never listed in the releases
         // manifest and have no detached .p7s signature. Skip the signature-verified manifest
-        // lookup entirely and go straight to the blob feed.
+        // lookup entirely and go straight to the blob feed: https://github.com/dotnet/sdk/issues/54278 with handle validation of these.
         if (installRequest.Channel.IsDaily)
         {
             return ResolveBlobFeedEntry(installRequest, resolvedVersion);
