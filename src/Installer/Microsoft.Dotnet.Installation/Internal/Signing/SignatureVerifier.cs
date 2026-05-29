@@ -679,13 +679,9 @@ internal static partial class SignatureVerifier
         var rawTokens = new List<byte[]>();
         foreach (CryptographicAttributeObject attr in primarySigner.UnsignedAttributes)
         {
-            if (attr.Oid.Value != OidTimestampToken)
+            if (attr.Oid.Value == OidTimestampToken)
             {
-                continue;
-            }
-            foreach (AsnEncodedData v in attr.Values)
-            {
-                rawTokens.Add(v.RawData);
+                rawTokens.AddRange(attr.Values.Select(v => v.RawData));
             }
         }
         return rawTokens;
