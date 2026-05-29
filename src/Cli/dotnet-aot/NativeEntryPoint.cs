@@ -8,6 +8,12 @@ namespace Microsoft.DotNet.Cli;
 
 static unsafe partial class NativeEntryPoint
 {
+    /// <summary>
+    ///  When set by the native entry point, commands use this instead of
+    ///  discovering the dotnet root via PATH / environment probing.
+    /// </summary>
+    internal static string? DotnetRoot { get; set; }
+
     [UnmanagedCallersOnly(EntryPoint = "dotnet_execute")]
     static int Execute(
         nint hostPathPtr,      // const char_t* host_path
@@ -68,7 +74,7 @@ static unsafe partial class NativeEntryPoint
         // Try the AOT-compiled path for supported commands (if enabled)
         if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
         {
-            Program.DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
+            DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
             try
             {
                 var parseResult = Parser.Parse(args);

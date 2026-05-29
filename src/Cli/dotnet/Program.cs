@@ -29,12 +29,6 @@ namespace Microsoft.DotNet.Cli;
 public class Program
 {
 #if CLI_AOT
-    /// <summary>
-    ///  When set by the native entry point, commands use this instead of
-    ///  discovering the dotnet root via PATH / environment probing.
-    /// </summary>
-    internal static string? DotnetRoot { get; set; }
-
     public static int Main(string[] args)
     {
         try
