@@ -93,6 +93,15 @@
     <SDKCustomXUnitProject Update="**\Microsoft.DotNet.ApiCompatibility.Tests.csproj;**\Microsoft.DotNet.ApiDiff.Tests.csproj;**\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;**\Microsoft.DotNet.GenAPI.Tests.csproj">
       <MethodLimitMultiplier>10</MethodLimitMultiplier>
     </SDKCustomXUnitProject>
+    <!-- EndToEnd.Tests needs installer archives which are excluded from the shared
+         correlation payload to reduce download/unpack overhead for all other work items.
+         AdditionalPayloadDir: directory whose files are included in the per-item payload.
+         AdditionalPayloadDestination: relative path under the correlation payload root
+         where files are copied at runtime so the test's expected paths resolve correctly. -->
+    <SDKCustomXUnitProject Update="EndToEnd.Tests\EndToEnd.Tests.csproj">
+      <AdditionalPayloadDir>$(RepoRoot)artifacts\tmp\HelixInstallerArchives</AdditionalPayloadDir>
+      <AdditionalPayloadDestination>d/.nuget</AdditionalPayloadDestination>
+    </SDKCustomXUnitProject>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(CustomHelixTargetQueue)' != '' ">
@@ -155,7 +164,24 @@
 
     <PropertyGroup>
       <HelixPayloadOnHost>$(RepoRoot)artifacts\tmp\Helixpayload</HelixPayloadOnHost>
+      <HelixNuGetPayload>$(RepoRoot)artifacts\tmp\HelixNuGetPayload</HelixNuGetPayload>
+      <HelixInstallerArchives>$(RepoRoot)artifacts\tmp\HelixInstallerArchives</HelixInstallerArchives>
     </PropertyGroup>
+
+    <!-- Stage nupkgs (excluding installer archives) for the shared correlation payload.
+         This avoids downloading large SDK archives on every work item. -->
+    <ItemGroup>
+      <_ShippingNuGetPackages Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.nupkg" />
+      <_InstallerArchives Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.zip;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.tar.gz;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.rpm;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.deb;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.exe;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.pkg" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_ShippingNuGetPackages)" DestinationFiles="@(_ShippingNuGetPackages->'$(HelixNuGetPayload)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_InstallerArchives)" DestinationFiles="@(_InstallerArchives->'$(HelixInstallerArchives)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(HelixPayloadOnHost)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
@@ -184,7 +210,6 @@
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
       <MicrosoftNETBuildExtensions>$(RepoRoot)artifacts\bin\$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MicrosoftNETBuildExtensions>
-      <ArtifactsShippingPackages>$(RepoRoot)artifacts\packages\$(Configuration)\Shipping</ArtifactsShippingPackages>
     </PropertyGroup>
 
     <TarGzFileCreateFromDirectory
@@ -214,7 +239,7 @@
         <Destination>r</Destination>
       </HelixCorrelationPayload>
 
-      <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
+      <HelixCorrelationPayload Include="$(HelixNuGetPayload)">
         <Destination>d/.nuget</Destination>
       </HelixCorrelationPayload>
     </ItemGroup>
