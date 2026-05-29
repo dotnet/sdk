@@ -259,6 +259,11 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_the_app_from_the_output_folder(string targetFramework)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
+            {
+                return;
+            }
+
             RunAppFromOutputFolder("RunFromOutputFolder_" + targetFramework, false, false, targetFramework);
         }
 
@@ -267,6 +272,11 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_a_rid_specific_app_from_the_output_folder(string targetFramework)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
+            {
+                return;
+            }
+
             RunAppFromOutputFolder("RunFromOutputFolderWithRID_" + targetFramework, true, false, targetFramework);
         }
 
