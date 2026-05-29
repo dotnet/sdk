@@ -1,18 +1,47 @@
 <Project>
 
   <!--
-    Shared source file list for the AOT CLI bridge.
-    Imported by both dotnet-aot.csproj and dotnet-aot.Tests.csproj
-    to keep the file list in sync.
+    Shared item list for the AOT CLI bridge.
+    Imported by both dotnet-aot.csproj and dotnet-aot.Tests.csproj so that the test
+    project compiles exactly the same parser/command surface as the AOT binary, keeping
+    the two in sync.
 
-    Only includes files that compile without internal NativeWrapper dependencies.
-    NativeEntryPoint.cs and ManagedHost.cs are added separately by each consumer
-    because ManagedHost.cs requires InternalsVisibleTo access to NativeWrapper.
+    Includes the linked source files, the generated string resources those sources
+    reference (CliStrings, CliCommandStrings), and the dependencies required to compile
+    them (Definitions project + SolutionPersistence package).
+
+    NativeEntryPoint.cs and ManagedHost.cs are added separately by each consumer because
+    ManagedHost.cs requires InternalsVisibleTo access to NativeWrapper and the test
+    project stubs it.
+
+    All paths are relative to this file ($(MSBuildThisFileDirectory)) so they resolve
+    correctly regardless of the importing project's location.
   -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandLineInfo.cs" Link="CommandLineInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnFileFactory.cs" Link="SlnFileFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnfFileHelper.cs" Link="SlnfFileHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\MsbuildProject.cs" Link="MsbuildProject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionCommandParser.cs" Link="Commands\Solution\SolutionCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionArgumentValidator.cs" Link="Commands\Solution\SolutionArgumentValidator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\List\SolutionListCommand.cs" Link="Commands\Solution\List\SolutionListCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Migrate\SolutionMigrateCommand.cs" Link="Commands\Solution\Migrate\SolutionMigrateCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Remove\SolutionRemoveCommand.cs" Link="Commands\Solution\Remove\SolutionRemoveCommand.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
   </ItemGroup>
 
 </Project>
