@@ -152,8 +152,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- For AOT publish, we only need Compile (not full Build) since IlcCompile reads from
          @(IntermediateAssembly) in obj\, not from bin\ output. Skipping Build avoids producing
          unnecessary self-contained managed output (apphost, deps.json, runtimeconfig, runtime
-         pack files) in the output directory that would confuse users and automation. -->
-    <_BeforePublishAotBuildTargets Condition="'$(PublishAot)' == 'true'">
+         pack files) in the output directory that would confuse users and automation.
+         Set UseAotOptimizedPublish=false to restore the previous behavior of running full Build. -->
+    <UseAotOptimizedPublish Condition="'$(UseAotOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">true</UseAotOptimizedPublish>
+    <_BeforePublishAotBuildTargets Condition="'$(UseAotOptimizedPublish)' == 'true'">
       BuildOnlySettings;
       PrepareForBuild;
       PrepareResources;
@@ -164,11 +166,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <Target Name="_PublishBuildAlternative"
-          Condition="'$(NoBuild)' != 'true' and '$(PublishAot)' != 'true'"
+          Condition="'$(NoBuild)' != 'true' and '$(UseAotOptimizedPublish)' != 'true'"
           DependsOnTargets="Build;$(_CorePublishTargets)" />
 
   <Target Name="_PublishAotBuildAlternative"
-          Condition="'$(NoBuild)' != 'true' and '$(PublishAot)' == 'true'"
+          Condition="'$(NoBuild)' != 'true' and '$(UseAotOptimizedPublish)' == 'true'"
           DependsOnTargets="$(_PublishAotBuildAlternativeDependsOn)" />
 
   <Target Name="_PublishNoBuildAlternative"
