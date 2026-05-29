@@ -255,7 +255,7 @@ internal static partial class SignatureVerifier
             if (!s_allowedPublicKeyOids.Contains(keyOid))
             {
                 result.Add(FailureCode.SignatureAlgorithmNotPermitted,
-                    $"Signer public-key algorithm OID '{keyOid}' is not permitted. Allowed: RSA (≥4096-bit), ML-DSA, SLH-DSA, Composite ML-DSA.");
+                    $"Signer public-key algorithm OID '{keyOid}' is not permitted. Allowed: {string.Join(", ", s_allowedPublicKeyOids)}.");
             }
             else if (keyOid == OidRsa)
             {
@@ -648,8 +648,8 @@ internal static partial class SignatureVerifier
         var decoded = new List<TsaToken>(rawTokens.Count);
         for (int i = 0; i < rawTokens.Count; i++)
         {
-            string positionLabel = rawTokens.Count == 1 ? "" : $" #{i + 1} of {rawTokens.Count}";
-            if (TryDecodeAndBindToken(rawTokens[i], primarySigner, positionLabel, result) is { } token)
+            string tokenLabel = rawTokens.Count == 1 ? "token" : $"token #{i + 1} of {rawTokens.Count}";
+            if (TryDecodeAndBindToken(rawTokens[i], primarySigner, tokenLabel, result) is { } token)
             {
                 decoded.Add(token);
             }
@@ -691,17 +691,17 @@ internal static partial class SignatureVerifier
         return rawTokens;
     }
 
-    private static TsaToken? TryDecodeAndBindToken(byte[] raw, SignerInfo primarySigner, string positionLabel, VerificationResult result)
+    private static TsaToken? TryDecodeAndBindToken(byte[] raw, SignerInfo primarySigner, string tokenLabel, VerificationResult result)
     {
         if (!Rfc3161TimestampToken.TryDecode(raw, out Rfc3161TimestampToken? token, out _) || token is null)
         {
-            result.Add(FailureCode.TimestampMalformed, $"Could not decode RFC 3161 timestamp token{positionLabel}.");
+            result.Add(FailureCode.TimestampMalformed, $"Could not decode RFC 3161 {tokenLabel}.");
             return null;
         }
 
         if (!token.VerifySignatureForSignerInfo(primarySigner, out X509Certificate2? tsaCert) || tsaCert is null)
         {
-            result.Add(FailureCode.TimestampBindingInvalid, $"RFC 3161 timestamp token{positionLabel} does not cover the primary signature (VerifySignatureForSignerInfo failed).");
+            result.Add(FailureCode.TimestampBindingInvalid, $"RFC 3161 {tokenLabel} does not cover the primary signature (VerifySignatureForSignerInfo failed).");
             return null;
         }
 
