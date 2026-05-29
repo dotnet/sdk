@@ -139,11 +139,12 @@ public sealed class VirtualProjectBuilder
     internal static string GetTempSubdirectory()
     {
         // We want a location where permissions are expected to be restricted to the current user.
-        // Use SpecialFolderOption.Create so the directory is created if it doesn't exist;
-        // without this, GetFolderPath returns an empty string on Linux when ~/.local/share is absent.
+        // Use SpecialFolderOption.DoNotVerify so the path is computed regardless of whether it
+        // exists yet; without it, GetFolderPath returns an empty string on Linux when
+        // ~/.local/share is absent (documented BCL behavior).
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? Path.GetTempPath()
-            : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create);
+            : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify);
 
         if (string.IsNullOrEmpty(directory))
         {

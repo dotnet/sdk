@@ -11,7 +11,7 @@ public class VirtualProjectBuilderTests
     /// Verifies that <see cref="VirtualProjectBuilder.GetTempSubdirectory"/> returns a non-empty path
     /// even when <c>XDG_DATA_HOME</c> points to a directory that does not yet exist.
     /// Regression test for https://github.com/dotnet/sdk/issues/XXXXX:
-    /// the BCL <c>GetFolderPath</c> overload without <c>SpecialFolderOption.Create</c>
+    /// the BCL <c>GetFolderPath</c> overload without a non-None <c>SpecialFolderOption</c>
     /// returns an empty string on Linux when <c>~/.local/share</c> is absent.
     /// </summary>
     [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.FreeBSD)]
@@ -43,7 +43,7 @@ public class VirtualProjectBuilderTests
             // Restore the original value (null removes the variable).
             Environment.SetEnvironmentVariable("XDG_DATA_HOME", previousValue);
 
-            // Clean up any directory that was created by SpecialFolderOption.Create.
+            // Clean up any directory that may have been created.
             if (Directory.Exists(nonExistentXdgDataHome))
             {
                 Directory.Delete(nonExistentXdgDataHome, recursive: true);

@@ -166,10 +166,10 @@ internal static class DotnetupPaths
         // macOS:   ~/Library/Application Support
         // Linux:   $XDG_DATA_HOME or ~/.local/share
         //
-        // Pass SpecialFolderOption.Create so the directory is created if absent.
-        // Without this, GetFolderPath returns an empty string on Linux when
-        // ~/.local/share does not exist (documented BCL behavior), causing
-        // dotnetup to throw an InvalidOperationException on bare Linux environments.
-        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create);
+        // Pass SpecialFolderOption.DoNotVerify so the path is computed regardless of whether it
+        // exists yet. On Linux, GetFolderPath returns an empty string when ~/.local/share does not
+        // exist unless a non-None option is passed. EnsureDataDirectoryExists creates the directory
+        // when needed.
+        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify);
     }
 }
