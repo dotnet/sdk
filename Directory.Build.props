@@ -13,7 +13,6 @@
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
   <PropertyGroup>
     <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
@@ -26,6 +25,9 @@
     <OSName Condition="'$(OSName)' == '' AND $(PortableTargetRid) != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
     <OSName Condition="'$(OSName)' == '' AND $(TargetRid) != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
     <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
+
+    <!-- Workaround for https://github.com/NuGet/Home/issues/14745 -->
+    <SDKAnalysisLevel>10.0.200</SDKAnalysisLevel>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -48,12 +50,8 @@
     <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
     <NetCurrent>net10.0</NetCurrent>
     <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
-    <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
     <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
     <VisualStudioTargetFramework>net472</VisualStudioTargetFramework>
-
-    <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
-    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
@@ -82,9 +80,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <!-- <TestRunnerAdditionalArguments>-parallel none</TestRunnerAdditionalArguments> -->
   </PropertyGroup>
 
   <PropertyGroup>

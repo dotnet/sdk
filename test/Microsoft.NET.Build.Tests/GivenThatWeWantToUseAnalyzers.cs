@@ -346,18 +346,18 @@ namespace Microsoft.NET.Build.Tests
 
         static readonly List<string> nugetRoots = new()
             {
-                TestContext.Current.NuGetCachePath,
+                SdkTestContext.Current.NuGetCachePath,
                 Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder"),
-                Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "packs")
+                Path.Combine(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot, "packs")
             };
 
         static (string package, string version, string path) GetPackageAndPath(string absolutePath)
         {
             absolutePath = Path.GetFullPath(absolutePath);
 
-            if (absolutePath.StartsWith(TestContext.Current.ToolsetUnderTest.SdksPath))
+            if (absolutePath.StartsWith(SdkTestContext.Current.ToolsetUnderTest.SdksPath))
             {
-                string path = absolutePath.Substring(TestContext.Current.ToolsetUnderTest.SdksPath.Length + 1)
+                string path = absolutePath.Substring(SdkTestContext.Current.ToolsetUnderTest.SdksPath.Length + 1)
                     .Replace(Path.DirectorySeparatorChar, '/');
                 var components = path.Split(new char[] { '/' }, 2);
                 string sdkName = components[0];

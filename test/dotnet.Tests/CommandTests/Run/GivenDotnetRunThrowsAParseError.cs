@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
             new DotnetCommand(Log, "run")
                 // executing in a known path, with no project, is a sure way to get run to throw a parse error
-                .WithWorkingDirectory(Path.GetTempPath())
+                .WithWorkingDirectory(Directory.CreateTempSubdirectory().FullName)
                 .Execute("--", "1")
                 .Should().Fail()
                 .And.HaveStdErrContainingOnce("Couldn't find a project to run.");

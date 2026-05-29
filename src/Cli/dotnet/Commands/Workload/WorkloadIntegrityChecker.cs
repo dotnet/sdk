@@ -5,6 +5,7 @@
 
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -17,8 +18,8 @@ internal static class WorkloadIntegrityChecker
     {
         var creationResult = new WorkloadResolverFactory().Create();
         var sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
-        var verifySignatures = WorkloadCommandBase.ShouldVerifySignatures();
-        var tempPackagesDirectory = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
+        var verifySignatures = WorkloadUtilities.ShouldVerifySignatures(skipSignCheck: false);
+        var tempPackagesDirectory = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
         var packageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
             tempPackagesDirectory,
             verboseLogger: new NullLogger(),

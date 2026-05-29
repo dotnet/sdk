@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net9.0;$(CurrentTargetFramework)</TargetFrameworks>
+    <!-- Disable default items to avoid glob expansion failures on macOS with long paths.
+         Globs like **/*.cs and **/*.resx fail to expand and become literal filenames,
+         causing CS2021/CS2001 and MSB3552 errors respectively.
+         See https://github.com/dotnet/msbuild/issues/12546 -->
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+
+  <!-- Opt in to receiving environment variables as @(RuntimeEnvironmentVariable) items from dotnet run -e -->
+  <ItemGroup Condition="'$(EnableRuntimeEnvironmentVariableSupport)' != 'false'">
+    <ProjectCapability Include="RuntimeEnvironmentVariableSupport" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+
+  <Target Name="ComputeAvailableDevices" Returns="@(Devices)" DependsOnTargets="ResolveFrameworkReferences">
+    <!-- If SingleDevice property is set, return only one device -->
+    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' == 'true'">
+      <Devices Include="single-device" Description="Single Device" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
+    </ItemGroup>
+    <!-- Otherwise return multiple devices based on target framework -->
+    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' != 'net9.0'">
+      <Devices Include="test-device-1" Description="Test Device 1" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
+      <Devices Include="test-device-2" Description="Test Device 2" Type="Device" Status="Online" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' == 'net9.0'">
+      <Devices Include="test-device-downlevel-1" Description="Test Device Downlevel 1" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
+      <Devices Include="test-device-downlevel-2" Description="Test Device Downlevel 2" Type="Simulator" Status="Booted" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Generate a file with Device and RuntimeIdentifier properties if they are set -->
+  <Target Name="GenerateDeviceInfo" 
+          BeforeTargets="CoreCompile" 
+          Condition="'$(Device)' != ''">
+    
+    <PropertyGroup>
+      <DeviceInfoFile>$(IntermediateOutputPath)DeviceInfo.cs</DeviceInfoFile>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <DeviceInfoLines Include="// &lt;auto-generated/&gt;" />
+      <DeviceInfoLines Include="namespace DotNetRunDevices%3B" />
+      <DeviceInfoLines Include=" " />
+      <DeviceInfoLines Include="internal static class DeviceInfo" />
+      <DeviceInfoLines Include="{" />
+      <DeviceInfoLines Include="    public const string Device = &quot;$(Device)&quot;%3B" />
+      <DeviceInfoLines Include="    public const string RuntimeIdentifier = &quot;$(RuntimeIdentifier)&quot;%3B" />
+      <DeviceInfoLines Include="}" />
+    </ItemGroup>
+    
+    <WriteLinesToFile File="$(DeviceInfoFile)" Lines="@(DeviceInfoLines)" Overwrite="true" />
+    
+    <ItemGroup>
+      <Compile Include="$(DeviceInfoFile)" />
+      <FileWrites Include="$(DeviceInfoFile)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Log environment variables passed via dotnet run -e during build -->
+  <Target Name="_LogRuntimeEnvironmentVariableDuringBuild" 
+          BeforeTargets="CoreCompile" 
+          Condition="'@(RuntimeEnvironmentVariable)' != ''">
+    <Message Text="Build: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+  </Target>
+
+  <!-- Log environment variables passed via dotnet run -e during ComputeRunArguments -->
+  <Target Name="_LogRuntimeEnvironmentVariableDuringComputeRunArguments" 
+          BeforeTargets="ComputeRunArguments" 
+          Condition="'@(RuntimeEnvironmentVariable)' != ''">
+    <Message Text="ComputeRunArguments: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+  </Target>
+
+  <!-- DeployToDevice target for testing, ResolveFrameworkReferences mimics Android -->
+  <Target Name="DeployToDevice" DependsOnTargets="ResolveFrameworkReferences">
+    <Message Text="DeployToDevice: Deployed to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" />
+    <!-- Log environment variables passed via dotnet run -e -->
+    <Message Text="DeployToDevice: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+  </Target>
+
+</Project>
