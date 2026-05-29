@@ -12,6 +12,7 @@ internal class SdkInstallCommand(ParseResult result) : InstallCommand(result)
     private readonly string[] _channels = result.GetValue(SdkInstallCommandParser.ChannelArguments) ?? [];
 
     public override bool UpdateGlobalJson { get; } = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption) ?? false;
+    public override IReadOnlyCollection<InstallComponent> MigrationComponents => [InstallComponent.SDK];
 
     protected override string GetCommandName() => "sdk/install";
 
