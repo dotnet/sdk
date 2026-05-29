@@ -194,6 +194,14 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
     private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
+        // Daily-channel builds are blob-feed-only: they are never listed in the releases
+        // manifest and have no detached .p7s signature. Skip the signature-verified manifest
+        // lookup entirely and go straight to the blob feed.
+        if (installRequest.Channel.IsDaily)
+        {
+            return ResolveBlobFeedEntry(installRequest, resolvedVersion);
+        }
+
         var result = _releaseManifest.TryFindReleaseFile(installRequest, resolvedVersion);
 
         switch (result.Status)
