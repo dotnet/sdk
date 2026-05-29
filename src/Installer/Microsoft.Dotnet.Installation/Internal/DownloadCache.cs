@@ -26,8 +26,18 @@ internal class DownloadCache
 
     public DownloadCache(string? cacheDirectory = null)
     {
+        // DownloadCache lives in the layer-agnostic Microsoft.Dotnet.Installation
+        // library and cannot reference DotnetupPaths (which lives in the
+        // higher-level dotnetup.Library). Callers that know the dotnetup-specific
+        // location inject it via cacheDirectory; otherwise we compute a
+        // self-contained default here.
+        //
+        // DoNotVerify so the path is returned even when the directory does not yet
+        // exist; It will be created later if needed.
         _cacheDirectory = cacheDirectory ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.DoNotVerify),
             "dotnetup",
             "downloadcache");
         _cacheIndexPath = Path.Combine(_cacheDirectory, "cache-index.json");
