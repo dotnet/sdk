@@ -148,11 +148,28 @@ Copyright (c) .NET Foundation. All rights reserved.
     </_CorePublishTargets>
 
     <_PublishNoBuildAlternativeDependsOn>$(_BeforePublishNoBuildTargets);$(_CorePublishTargets)</_PublishNoBuildAlternativeDependsOn>
+
+    <!-- For AOT publish, we only need Compile (not full Build) since IlcCompile reads from
+         @(IntermediateAssembly) in obj\, not from bin\ output. Skipping Build avoids producing
+         unnecessary self-contained managed output (apphost, deps.json, runtimeconfig, runtime
+         pack files) in the output directory that would confuse users and automation. -->
+    <_BeforePublishAotBuildTargets Condition="'$(PublishAot)' == 'true'">
+      BuildOnlySettings;
+      PrepareForBuild;
+      PrepareResources;
+      Compile;
+      CreateSatelliteAssemblies;
+    </_BeforePublishAotBuildTargets>
+    <_PublishAotBuildAlternativeDependsOn>$(_BeforePublishAotBuildTargets);$(_CorePublishTargets)</_PublishAotBuildAlternativeDependsOn>
   </PropertyGroup>
 
   <Target Name="_PublishBuildAlternative"
-          Condition="'$(NoBuild)' != 'true'"
+          Condition="'$(NoBuild)' != 'true' and '$(PublishAot)' != 'true'"
           DependsOnTargets="Build;$(_CorePublishTargets)" />
+
+  <Target Name="_PublishAotBuildAlternative"
+          Condition="'$(NoBuild)' != 'true' and '$(PublishAot)' == 'true'"
+          DependsOnTargets="$(_PublishAotBuildAlternativeDependsOn)" />
 
   <Target Name="_PublishNoBuildAlternative"
           Condition="'$(NoBuild)' == 'true'"
@@ -160,7 +177,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="Publish"
           Condition="$(IsPublishable) == 'true'"
-          DependsOnTargets="_PublishBuildAlternative;_PublishNoBuildAlternative" >
+          DependsOnTargets="_PublishBuildAlternative;_PublishAotBuildAlternative;_PublishNoBuildAlternative" >
 
     <!-- Ensure there is minimal verbosity output pointing to the publish directory and not just the
          build step's minimal output. Otherwise there is no indication at minimal verbosity of where
