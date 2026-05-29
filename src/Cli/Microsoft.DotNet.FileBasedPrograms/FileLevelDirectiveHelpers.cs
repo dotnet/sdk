@@ -159,7 +159,7 @@ internal static class FileLevelDirectiveHelpers
                 {
                     if (checkDuplicates)
                     {
-                        deduplicator.CheckDirective(directive, errorReporter);
+                        deduplicator.CheckDirective(directive, errorReporter, shouldKeep: out _);
                     }
 
                     builder?.Add(directive);
@@ -875,23 +875,24 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
 /// <summary>
 /// Detects duplicate directives (by type and case-insensitive name)
-/// and reports errors via the provided <see cref="ErrorReporter"/>.
+/// and reports errors via the provided <see cref="ErrorReporter"/> when their values differ.
 /// </summary>
 /// <remarks>
-/// <c>#:project</c> and <c>#:ref</c> duplicates are allowed (MSBuild can handle multiple <c>ProjectReference</c>s).
+/// <c>#:project</c>, <c>#:ref</c>, <c>#:include</c>, and <c>#:exclude</c> duplicates are allowed (MSBuild can handle them).
 /// </remarks>
 internal struct DirectiveDeduplicator
 {
     private Dictionary<CSharpDirective.Named, CSharpDirective.Named>? _seen;
 
     /// <summary>
-    /// Checks <paramref name="directive"/> for duplication and reports an error if it was already seen.
+    /// Checks <paramref name="directive"/> for duplication and reports an error if a different unevaluated value was already seen.
     /// </summary>
-    public void CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError)
+    /// <param name="shouldKeep"><see langword="false"/> if a duplicate directive was already seen and this directive should be skipped.</param>
+    public void CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError, out bool shouldKeep)
     {
-        // Duplicate #:project and #:ref directives are allowed (MSBuild can handle that).
-        if (directive is CSharpDirective.Project or CSharpDirective.Ref)
+        if (directive is CSharpDirective.Project or CSharpDirective.Ref or CSharpDirective.IncludeOrExclude)
         {
+            shouldKeep = true;
             return;
         }
 
@@ -899,14 +900,43 @@ internal struct DirectiveDeduplicator
 
         if (_seen.TryGetValue(directive, out var existingDirective))
         {
+            if (HasSameValue(existingDirective, directive))
+            {
+                shouldKeep = false;
+                return;
+            }
+
             var typeAndName = $"#:{existingDirective.KindToString()} {existingDirective.Name}";
             reportError(directive.Info.SourceFile.Text, directive.Info.SourceFile.Path, directive.Info.Span,
                 string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
+
+            shouldKeep = false;
+            return;
         }
         else
         {
             _seen.Add(directive, directive);
         }
+
+        shouldKeep = true;
+    }
+
+    private static bool HasSameValue(CSharpDirective.Named existingDirective, CSharpDirective.Named directive)
+    {
+        Debug.Assert(NamedDirectiveComparer.Instance.Equals(existingDirective, directive));
+        Debug.Assert(existingDirective is CSharpDirective.Sdk or CSharpDirective.Property or CSharpDirective.Package);
+        Debug.Assert(directive is CSharpDirective.Sdk or CSharpDirective.Property or CSharpDirective.Package);
+
+        return (existingDirective, directive) switch
+        {
+            (CSharpDirective.Sdk existing, CSharpDirective.Sdk current) =>
+                string.Equals(existing.Version, current.Version, StringComparison.Ordinal),
+            (CSharpDirective.Property existing, CSharpDirective.Property current) =>
+                string.Equals(existing.Value, current.Value, StringComparison.Ordinal),
+            (CSharpDirective.Package existing, CSharpDirective.Package current) =>
+                string.Equals(existing.Version, current.Version, StringComparison.Ordinal),
+            _ => false,
+        };
     }
 }
 

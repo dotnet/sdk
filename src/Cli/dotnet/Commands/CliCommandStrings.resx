@@ -2657,6 +2657,25 @@ Proceed?</value>
     <value>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</value>
     <comment>{Locked="ExecutionId"}</comment>
   </data>
+  <data name="DotnetTestMissingHandshakeProtocolVersions" xml:space="preserve">
+    <value>The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</value>
+  </data>
+  <data name="DotnetTestMissingRequiredMessageProperty" xml:space="preserve">
+    <value>The required property '{0}' was missing or empty in the message of type '{1}'.</value>
+  </data>
+  <data name="DotnetTestDuplicateHandshakeOnConnection" xml:space="preserve">
+    <value>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</value>
+  </data>
+  <data name="UnknownSessionEventType" xml:space="preserve">
+    <value>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</value>
+  </data>
+  <data name="UnexpectedMessageWithoutTestHostHandshake" xml:space="preserve">
+    <value>Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</value>
+  </data>
+  <data name="RunAsyncCalledMoreThanOnce" xml:space="preserve">
+    <value>'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</value>
+    <comment>{Locked="TestApplication.RunAsync"}</comment>
+  </data>
   <data name="ErrorColon" xml:space="preserve">
     <value>error:</value>
   </data>
