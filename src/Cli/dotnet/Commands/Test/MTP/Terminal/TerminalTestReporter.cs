@@ -871,8 +871,53 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.Append(' ');
         AppendAssemblyResult(terminal, assemblyRun);
         terminal.Append(' ');
+        AppendAssemblyTestCounts(terminal, assemblyRun);
+        terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
         terminal.AppendLine();
+    }
+
+    /// <summary>
+    /// Renders a compact, per-assembly counts block that mirrors the in-progress indicator.
+    /// Full-ANSI terminals get "[✓P/xF/↓S]" (with optional "/rR"); simple terminals
+    /// (NoAnsi / SimpleAnsi / CI) get the ASCII "[+P/xF/?S]" form so logs stay font- and
+    /// encoding-friendly. Glyphs and colors are intentionally kept in sync with the rendering in
+    /// <see cref="AnsiTerminalTestProgressFrame"/> and <see cref="SimpleTerminal.RenderProgress"/>.
+    /// </summary>
+    private static void AppendAssemblyTestCounts(ITerminal terminal, TestProgressState assemblyRun)
+    {
+        int failed = assemblyRun.FailedTests;
+        int passed = assemblyRun.PassedTests;
+        int skipped = assemblyRun.SkippedTests;
+        int retried = assemblyRun.RetriedFailedTests;
+
+        bool unicode = terminal is AnsiTerminal;
+        char passedGlyph = unicode ? '✓' : '+';
+        char skippedGlyph = unicode ? '↓' : '?';
+
+        terminal.Append('[');
+
+        AppendGlyphCount(terminal, passedGlyph, passed, TerminalColor.DarkGreen);
+        terminal.Append('/');
+        AppendGlyphCount(terminal, 'x', failed, TerminalColor.DarkRed);
+        terminal.Append('/');
+        AppendGlyphCount(terminal, skippedGlyph, skipped, TerminalColor.DarkYellow);
+
+        if (retried > 0)
+        {
+            terminal.Append('/');
+            AppendGlyphCount(terminal, 'r', retried, TerminalColor.Gray);
+        }
+
+        terminal.Append(']');
+    }
+
+    private static void AppendGlyphCount(ITerminal terminal, char glyph, int count, TerminalColor color)
+    {
+        terminal.SetColor(color);
+        terminal.Append(glyph);
+        terminal.Append(count.ToString(CultureInfo.CurrentCulture));
+        terminal.ResetColor();
     }
 
     /// <summary>
