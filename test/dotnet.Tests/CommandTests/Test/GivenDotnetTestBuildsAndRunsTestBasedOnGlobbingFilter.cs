@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunTestProjectWithFilterOfDll_ShouldReturnExitCodeSuccess()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             new BuildCommand(testInstance)
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunTestProjectsWithFilterOfDll_ShouldReturnExitCodeGenericFailure()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             new BuildCommand(testInstance, "TestProject")
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunTestProjectWithFilterOfDllWithRootDirectory_ShouldReturnExitCodeSuccess()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             new BuildCommand(testInstance)

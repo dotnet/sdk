@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -147,7 +148,7 @@ namespace System.Diagnostics.CodeAnalysis
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -244,7 +245,7 @@ public class C
     public string SomeStringProp { get; set; }
 }",
                 NumberOfFixAllIterations = 2
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -368,7 +369,7 @@ class C
     private S2 s4;
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
@@ -397,7 +398,7 @@ public record struct MyRecord2()
     private bool _x = false;
     public bool SomeBool { get; set; } = false;
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
@@ -470,7 +471,7 @@ public struct MyStruct3
     public MyStruct3() { }
     public static bool SomeBool { get; set; }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task TestCSAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
@@ -483,7 +484,7 @@ public struct MyStruct3
             };
 
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

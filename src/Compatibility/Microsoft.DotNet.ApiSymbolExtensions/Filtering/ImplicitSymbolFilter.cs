@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
                 // If the method is an explicitly implemented getter or setter, exclude it.
                 // https://github.com/dotnet/roslyn/issues/53911
                 if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
-                    method.ExplicitInterfaceImplementations.Any(m => m is { MethodKind: MethodKind.PropertyGet or MethodKind.PropertySet }))
+                    method.ExplicitInterfaceImplementations.Any(m => m is { MethodKind: MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.EventAdd or MethodKind.EventRemove }))
                 {
                     return false;
                 }

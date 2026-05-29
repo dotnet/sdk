@@ -8,7 +8,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBase(log)
 {
-
     /// <summary>
     /// <c>dotnet run file.cs</c> succeeds without a project file.
     /// </summary>
@@ -19,7 +18,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("Program.CS", true)]
     public void FilePath(string? path, bool differentCasing)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
 
@@ -52,7 +51,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void FilePath_WithoutRun()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "Program.cs")
@@ -153,7 +152,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void FilePath_DifferentCasing()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         var result = new DotnetCommand(Log, "run", "program.cs")
@@ -181,7 +180,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void FilePath_OutsideWorkDir()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         var dirName = Path.GetFileName(testInstance.Path);
@@ -199,7 +198,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void FilePath_AsProjectArgument()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "--project", "Program.cs")
@@ -219,7 +218,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("watch", "--project", true)]
     public void Precedence_BuiltInCommand(string cmd, string error, bool errorInStdErr)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, cmd), """
             #!/usr/bin/env dotnet
             Console.WriteLine("hello 1");
@@ -267,7 +266,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("./test.dll")]
     public void Precedence_Dll(string arg)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "test.dll"), """
             #!/usr/bin/env dotnet
             Console.WriteLine("hello world");
@@ -294,7 +293,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
     public void Precedence_NuGetTool()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "complog"), """
             #!/usr/bin/env dotnet
             Console.WriteLine("hello world");
@@ -338,7 +337,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ReadFromStdin()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         new DotnetCommand(Log, "run", "-")
             .WithWorkingDirectory(testInstance.Path)
             .WithStandardInput("""
@@ -361,7 +360,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ReadFromStdin_BuildProps()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
             <Project>
@@ -398,7 +397,11 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ReadFromStdin_ProjectReference()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        // Ensure the runfile directory has a NuGet.config so the virtual project created by
+        // `dotnet run -` can resolve packages from test feeds during restore.
+        CopyNuGetConfigToRunfileDirectory();
+
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libDir = Path.Join(testInstance.Path, "lib");
         Directory.CreateDirectory(libDir);
@@ -458,7 +461,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ReadFromStdin_RefDirective()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libDir = Path.Join(testInstance.Path, "lib");
         Directory.CreateDirectory(libDir);
@@ -530,7 +533,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ReadFromStdin_AfterDoubleDash()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         new DotnetCommand(Log, "run", "--", "-")
             .WithWorkingDirectory(testInstance.Path)
             .WithStandardInput("""Console.WriteLine("stdin code");""")
@@ -549,7 +552,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("../MSBuildTestApp/")]
     public void FolderPath(string? path)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         path ??= testInstance.Path;
@@ -570,7 +573,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectPath_DoesNotExist()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "./App.csproj")
@@ -590,7 +593,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectPath_Exists()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
@@ -608,7 +611,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_NoRunVerb()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
         File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
         Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
@@ -625,7 +628,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_FileOption()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
         File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
         Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
@@ -646,7 +649,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_ProjectOption_NoWarning()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
@@ -668,7 +671,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_Warns()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
@@ -693,7 +696,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_NonExistentCsFile_Warns()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
@@ -718,7 +721,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_DoubleDash_NoWarning()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
@@ -739,7 +742,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_DoubleDashAfterFile_Warns()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
@@ -764,7 +767,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_UnrecognizedArg_Warns()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
@@ -789,7 +792,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_KnownOption_Warns()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
@@ -814,7 +817,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ProjectInCurrentDirectory_UnrecognizedArg_DoubleDash_NoWarning()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 
@@ -840,7 +843,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("build", "Program.cs", "-consoleLoggerParameters:NoSummary")]
     public void ExtraArgWithFileEntryPoint_Warns(string command, string arg1, string arg2)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, command, arg1, arg2)
@@ -862,7 +865,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("publish")]
     public void NonExistentCsFile_Warns(string command)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         new DotnetCommand(Log, command, "nonexistent.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -882,7 +885,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("--no-incremental", "Program.cs")]
     public void SingleFileEntryPoint_NoWarning(params string[] extraArgs)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, ["build", .. extraArgs])
@@ -902,7 +905,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("Program.vb")]
     public void NonCsFileExtensionWithShebang(string fileName)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, fileName), """
             #!/usr/bin/env dotnet
             Console.WriteLine("hello world");
@@ -925,7 +928,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [InlineData("Program.vb")]
     public void NonCsFileExtensionWithNoShebang(string fileName)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, fileName), s_program);
 
         new DotnetCommand(Log, "run", fileName)
@@ -941,7 +944,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void MultipleEntryPoints()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), s_program);
 
@@ -964,7 +967,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void NoCode()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -982,7 +985,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ClassLibrary_EntryPointFileExists()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
 
         new DotnetCommand(Log, "run", "Util.cs")
@@ -998,7 +1001,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void ClassLibrary_EntryPointFileDoesNotExist()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
 
         new DotnetCommand(Log, "run", "NonExistentFile.cs")
@@ -1018,7 +1021,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void MultipleFiles_RunEntryPoint()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programDependingOnUtil);
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
 
@@ -1049,7 +1052,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void MultipleFiles_EnableDefaultCompileItemsViaDirectoryBuildProps()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             #!/usr/bin/env dotnet
             {s_programDependingOnUtil}
@@ -1076,7 +1079,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void MultipleFiles_DirectivesInOtherFiles()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "A.cs"), """
             #!/usr/bin/env dotnet
             Console.WriteLine(B.M());
@@ -1091,7 +1094,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
                 public static string M() => "String from Util";
             }
             """);
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
             <Project>
               <ItemGroup>
                 <Compile Include="B.cs" />
@@ -1115,7 +1118,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void MultipleFiles_RunLibraryFile()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programDependingOnUtil);
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
 
@@ -1141,7 +1144,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void NestedProjectFiles()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         Directory.CreateDirectory(Path.Join(testInstance.Path, "nested"));
         File.WriteAllText(Path.Join(testInstance.Path, "nested", "App.csproj"), s_consoleProject);
@@ -1160,7 +1163,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
     [Fact]
     public void RunNestedProjectFile()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
 

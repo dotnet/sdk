@@ -76,3 +76,5 @@
 # Ensure files are included in git archive
 ###############################################################################
 /template_feed/Microsoft.DotNet.Common.ItemTemplates/content/Gitattributes/.gitattributes -export-ignore
+
+.github/workflows/*.lock.yml linguist-generated=true merge=ours

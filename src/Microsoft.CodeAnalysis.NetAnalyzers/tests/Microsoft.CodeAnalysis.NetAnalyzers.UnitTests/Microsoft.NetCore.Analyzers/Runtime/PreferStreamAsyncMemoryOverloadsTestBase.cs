@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -57,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             test.ExpectedDiagnostics.AddRange(expected);
 
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         // Verifies that the analyzer generates the specified VB diagnostic results, if any, for the specified originalSource.
@@ -77,7 +78,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             test.ExpectedDiagnostics.AddRange(expected);
 
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         // Retrieves the C# diagnostic for the specified rule, lines, columns, method and preferred method.

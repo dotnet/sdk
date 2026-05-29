@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -4749,7 +4750,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task CS8VerifyAnalyzerAsync(string originalCode)
@@ -4762,7 +4763,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VB16VerifyCodeFixAsync(string originalCode, string fixedCode)
@@ -4776,7 +4777,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VB16VerifyAnalyzerAsync(string originalCode)
@@ -4789,7 +4790,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

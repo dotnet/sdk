@@ -30,7 +30,7 @@
          no that we do not silently miss cross-genning some bits. When a TFM for a tool is updated,
          update its path explicitly. If all TFMs match, update DefaultToolTfm -->
     <PropertyGroup>
-      <DefaultToolTfm>net10.0</DefaultToolTfm>
+      <DefaultToolTfm>$(SdkTargetFramework)</DefaultToolTfm>
 
       <NetSdkAnalyzers>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\analyzers\</NetSdkAnalyzers>
       <NetSdkTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
@@ -56,9 +56,6 @@
 
       <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles);$(InstallerOutputDirectory)Roslyn\binfx\**\*" />
 
-      <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
-      <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\Microsoft.CodeAnalysis.VisualBasic.dll" />
-
       <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error, and they need to stay their original architecture. -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)TestHost*\**\*" />
       <!-- Removing Full CLR built DumpMiniTool executables from Crossgen, because they need to stay their original architecture to allow creating dumps with a given bitness. -->
@@ -83,13 +80,18 @@
       <RemainingFiles Include="$(ContainerTasks)**\*" />
 
       <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
-      <RemainingFiles Remove="$(NetSdkAnalyzers)Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" />
+      <RoslynFiles Remove="$(InstallerOutputDirectory)**\Microsoft.CodeAnalysis.VisualBasic*.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.CodeAnalysis.VisualBasic*.dll" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
 
-      <!-- Don't CrossGen bundled DotnetTools -->
-      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\*" />
+      <!-- Don't CrossGen .NET Framework components of DotnetTools -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\BuildHost-net472\**\*" />
+
+      <!-- Don't CrossGen assemblies injected by dotnet-watch into user apps at runtime -->
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\dotnet-watch\**\Microsoft.Extensions.DotNetDeltaApplier.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\dotnet-watch\**\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" />
 
       <!-- Don't crossgen satellite assemblies -->
       <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\**\*.resources.dll" />
@@ -100,6 +102,29 @@
       <!-- Don't crossgen reference assemblies redisted with msbuild for RoslynCodeTaskFactory -->
       <RazorToolFiles Remove="$(InstallerOutputDirectory)**\ref\*.dll" />
       <RemainingFiles Remove="$(InstallerOutputDirectory)**\ref\*.dll" />
+
+      <!-- Don't crossgen DotnetTools assemblies that are unique to DotnetTools. Crossgen'ing these provides
+           limited value given usage/scenarios. Crossgen'ing assemblies that exist elsewhere in the layout
+           provides value because they will be deduplicated with the other copies therefore reducing the
+           overall size of the layout. -->
+      <_DotnetToolsCandidateFiles Include="$(InstallerOutputDirectory)DotnetTools\**\*" />
+      <_NonDotnetToolsReferenceFiles Include="@(RoslynFiles)" />
+      <_NonDotnetToolsReferenceFiles Include="@(FSharpFiles)" />
+      <_NonDotnetToolsReferenceFiles Include="@(RazorToolFiles)" />
+      <_NonDotnetToolsReferenceFiles Include="@(RemainingFiles)" />
+      <_NonDotnetToolsReferenceFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\*" />
+    </ItemGroup>
+
+    <!-- Filter DotnetTools assemblies: only crossgen those that also exist elsewhere in the layout. -->
+    <FilterItemsByDuplicateHash
+        CandidateFiles="@(_DotnetToolsCandidateFiles)"
+        ReferenceFiles="@(_NonDotnetToolsReferenceFiles)">
+      <Output TaskParameter="UnmatchedFiles" ItemName="_DotnetToolsUniqueFiles" />
+    </FilterItemsByDuplicateHash>
+
+    <!-- Remove DotnetTools-unique assemblies from crossgen -->
+    <ItemGroup>
+      <RemainingFiles Remove="@(_DotnetToolsUniqueFiles)" />
     </ItemGroup>
 
     <AddMetadataIsPE Items="@(RoslynFiles)">

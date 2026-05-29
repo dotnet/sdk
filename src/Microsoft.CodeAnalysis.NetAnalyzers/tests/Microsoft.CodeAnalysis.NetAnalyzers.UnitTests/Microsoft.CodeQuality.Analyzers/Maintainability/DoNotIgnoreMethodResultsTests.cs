@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -98,7 +99,7 @@ public class Test
 }",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -122,7 +123,7 @@ Class C
 End Class",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
@@ -154,7 +155,7 @@ public class Test
 }}",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -178,7 +179,7 @@ Class C
 End Class",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
@@ -211,7 +212,7 @@ public class Test
 }}",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -235,7 +236,7 @@ Class C
 End Class",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
@@ -535,7 +536,7 @@ public class Test
                 {
                     GetCSharpObjectCreationResultAt(10, 13, "ThrowsException", "Test"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -564,7 +565,7 @@ End Class",
                 {
                     GetBasicStringCreationResultAt(10, 41, "ThrowsException", "ToLower"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
@@ -603,7 +604,7 @@ public class Test
                 {
                     GetCSharpObjectCreationResultAt(10, 13, "ThrowsException", "Test"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -632,7 +633,7 @@ End Class",
                 {
                     GetBasicStringCreationResultAt(10, 41, "ThrowsException", "ToLower"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
@@ -664,7 +665,7 @@ public class Test
                 {
                     GetCSharpObjectCreationResultAt(9, 9, "ThrowsException", "Test"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -693,7 +694,7 @@ End Class",
                 {
                     GetBasicStringCreationResultAt(11, 9, "ThrowsException", "ToLower"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3104, "https://github.com/dotnet/roslyn-analyzers/issues/3104")]
@@ -837,7 +838,7 @@ public class Class1
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpUserDefinedMethodResultAt(13, 9, "Method1", "GetSomeValue"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbtest = new VerifyVB.Test
             {
@@ -878,7 +879,7 @@ End Class
                 vbtest.ExpectedDiagnostics.Add(GetBasicUserDefinedMethodResultAt(15, 9, "Method1", "GetSomeValue"));
             }
 
-            await vbtest.RunAsync();
+            await vbtest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

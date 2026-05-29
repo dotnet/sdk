@@ -204,6 +204,21 @@
         <target state="translated">이미지가 제공되지 않았으므로 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidAuthResponse_DisallowedScheme">
+        <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
+        <target state="new">bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
+        <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
+        <target state="new">bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
+        <source>bearer realm '{0}' is not a valid absolute URI</source>
+        <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
+      </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
         <target state="translated">CONTAINER2031: 컨테이너 이미지 형식 '{0}' 지원되지 않습니다. 지원되는 형식은 '{1}'.</target>
@@ -253,6 +268,11 @@
         <source>CONTAINER2017: A ContainerPort item was provided with an invalid port type '{0}'. ContainerPort items must have an Include value that is an integer, and a Type value that is either 'tcp' or 'udp'.</source>
         <target state="translated">CONTAINER2017: 잘못된 포트 유형 '{0}'과(와) 함께 ContainerPort 항목이 제공되었습니다. ContainerPort 항목에는 정수인 Include 값과 'tcp' 또는 'udp'인 Type 값이 있어야 합니다.</target>
         <note>{StrBegins="CONTAINER2017: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidRegistryAuthResponse">
+        <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
+        <target state="new">CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</target>
+        <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
       </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
         <source>CONTAINER2018: Invalid SDK prerelease version '{0}' - only 'rc' and 'preview' are supported.</source>

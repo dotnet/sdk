@@ -65,7 +65,7 @@ internal sealed class WorkloadCleanCommand : WorkloadCommandBase<WorkloadCleanCo
     /// </summary>
     private void DisplayUninstallableVSWorkloads()
     {
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         // We don't want to print MSI related content in a file-based installation.
         if (!(_workloadInstaller.GetType() == typeof(NetSdkMsiInstallerClient)))
         {

@@ -93,7 +93,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     [FullMSBuildOnlyFact]
     public void UsingCscManually()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Test.csproj"), $"""
             <Project Sdk="Microsoft.NET.Sdk">
@@ -158,7 +158,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         }
 
         configure?.Invoke(project);
-        return _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod);
+        return TestAssetsManager.CreateTestProject(project, callingMethod: callingMethod);
     }
 
     private static void AddCompilersToolsetPackage(TestProject project)
@@ -202,7 +202,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         using (var reader = BinaryLogReader.Create(binaryLogPath))
         {
             var call = reader.ReadAllCompilerCalls().Should().ContainSingle().Subject;
-            Path.GetFileName(call.CompilerFilePath).Should().Be(compilerFileName);
+            Path.GetFileNameWithoutExtension(call.CompilerFilePath).Should().Be(Path.GetFileNameWithoutExtension(compilerFileName));
 
             const string toolsetPackageName = "microsoft.net.compilers.toolset";
             if (toolsetPackage)

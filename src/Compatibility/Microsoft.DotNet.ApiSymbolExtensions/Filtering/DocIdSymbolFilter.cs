@@ -70,11 +70,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         {
             foreach (string id in ids)
             {
-#if NET
                 if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith('#') && !id.StartsWith("//"))
-#else
-                if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
-#endif
                 {
                     yield return id.Trim();
                 }
