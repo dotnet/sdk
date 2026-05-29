@@ -4,16 +4,21 @@ labels: ["dotnetup", "untriaged"]
 body:
   - type: markdown
     attributes:
-      value: Use this template for issues with **dotnetup**.
+      value: |
+        Use this template for issues with **dotnetup**.
+
+        For general dotnetup questions or suggestions, post in [dotnetup discussions](https://github.com/dotnet/sdk/discussions/categories/dotnetup).
 
   - type: checkboxes
     id: prerequisites
     attributes:
       label: Prerequisites
       options:
+        - label: I have read the [dotnetup documentation](https://github.com/dotnet/sdk/tree/release/dnup/documentation/general/dotnetup).
+          required: true
         - label: I have searched for [existing dotnetup issues](https://github.com/dotnet/sdk/issues?q=is%3Aissue%20state%3Aopen%20label%3Adotnetup).
           required: true
-        - label: I have read the [dotnetup documentation](https://github.com/dotnet/sdk/tree/release/dnup/documentation/general/dotnetup).
+        - label: I have searched for [existing dotnetup discussions](https://github.com/dotnet/sdk/discussions/categories/dotnetup).
           required: true
 
   - type: dropdown
