@@ -20,14 +20,18 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// Tests for the blob feed fallback path used when the release manifest does
 /// not list the requested version (e.g. daily/preview builds).
 /// </summary>
-public class DotnetArchiveDownloaderBlobFeedTests
+public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
 {
     private readonly ITestOutputHelper _log;
 
     public DotnetArchiveDownloaderBlobFeedTests(ITestOutputHelper log)
     {
         _log = log;
+        // Defensive: clear any IT-policy override leaked from an earlier test.
+        UnsignedSourcePolicy.OverrideForTesting = null;
     }
+
+    public void Dispose() => UnsignedSourcePolicy.OverrideForTesting = null;
 
     [Theory]
     [InlineData(InstallComponent.SDK, "Sdk", "dotnet-sdk")]
@@ -260,6 +264,45 @@ public class DotnetArchiveDownloaderBlobFeedTests
 
         url.Should().Be($"https://ci.dot.net/public/Runtime/{version}/dotnet-runtime-{version}-{rid}{ext}");
         hash.Should().Be(expectedHash);
+    }
+
+    // --- UnsignedSourcePolicy coverage ---
+
+    [Theory]
+    [InlineData("daily", true)]                          // bare daily channel
+    [InlineData("10.0-daily", true)]                     // suffixed daily channel
+    [InlineData("10.0.100-preview.4.25216.37", true)]    // fully-specified prerelease
+    [InlineData("10.0.100", false)]                      // stable version
+    [InlineData("preview", false)]                       // named channel (resolved via signed manifest)
+    [InlineData("lts", false)]                           // named channel
+    [InlineData("10.0", false)]                          // major.minor channel
+    public void MayDownloadUnsigned_ClassifiesChannel(string channel, bool expected)
+        => UnsignedSourcePolicy.MayDownloadUnsigned(BuildRequest(channel, InstallComponent.SDK))
+            .Should().Be(expected);
+
+    /// <summary>
+    /// Defense-in-depth: when the IT "block unsigned downloads" policy is in effect,
+    /// the blob-feed fallback inside the downloader must refuse with a clear
+    /// <see cref="DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy"/> error
+    /// and issue no HTTP probe.
+    /// </summary>
+    [Fact]
+    public void ResolveManifestEntry_BlockedByPolicy_ThrowsClearError()
+    {
+        UnsignedSourcePolicy.OverrideForTesting = () => true;
+
+        const string version = "10.0.100-preview.4.25216.37";
+        var (handler, history) = BuildHandler(new());
+
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+
+        var ex = Assert.Throws<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy);
+        ex.Message.Should().Contain(version);
+        history.Should().BeEmpty("policy check must short-circuit before any blob-feed probe");
     }
 
     // --- Test helpers ---

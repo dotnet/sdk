@@ -343,6 +343,27 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion)
     {
+        // Blob-feed downloads have no detached CMS signature — only a SHA-512 hash file.
+        // Defense-in-depth: refuse before issuing any blob-feed request when the host has
+        // the "block unsigned downloads" policy enabled. The user-facing warning about
+        // unsigned downloads is emitted up-front by the orchestrator (see
+        // UnsignedSourcePolicy.MayDownloadUnsigned), so no per-fallback warning is needed here.
+        if (UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy,
+                string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    Strings.UnsignedDownloadBlockedByPolicy,
+                    installRequest.Component,
+                    resolvedVersion,
+                    UnsignedSourcePolicy.WindowsPolicyKey,
+                    UnsignedSourcePolicy.WindowsPolicyValueName,
+                    UnsignedSourcePolicy.UnixPolicyFile),
+                version: resolvedVersion.ToString(),
+                component: installRequest.Component.ToString());
+        }
+
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var locationsChecked = new List<string>();
 

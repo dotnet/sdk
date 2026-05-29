@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -52,6 +54,8 @@ internal class InstallerOrchestratorSingleton
 #pragma warning disable CA1822 // Intentionally an instance method on a singleton
     public InstallResult Install(ResolvedInstallRequest resolvedRequest, bool noProgress = false)
     {
+        WarnIfUnsignedSourcesPossible([resolvedRequest]);
+
         IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
         using var reporter = new LazyProgressReporter(progressTarget);
         using var prepared = PrepareInstall(resolvedRequest, new InstallBatchContext(reporter, resolvedRequest.ResolvedVersion.ToString().Length), out var alreadyInstalledResult);
@@ -74,6 +78,8 @@ internal class InstallerOrchestratorSingleton
     /// <returns>A batch result containing both successes and per-request failures.</returns>
     public InstallBatchResult InstallMany(IReadOnlyList<ResolvedInstallRequest> requests, IProgressReporter sharedReporter)
     {
+        WarnIfUnsignedSourcesPossible(requests);
+
         // Compute a shared version-display width so all rows in this batch align even
         // when versions differ in length (e.g. stable "10.0.201" + daily "11.0.100-preview.3.26207.106").
         int versionDisplayWidth = requests.Count == 0
@@ -101,6 +107,20 @@ internal class InstallerOrchestratorSingleton
         }
 
         return new InstallBatchResult(results, failures);
+    }
+
+    /// <summary>
+    /// Emits a one-shot console warning if any request in the batch may be served from
+    /// an unsigned source (the public blob feed used for daily channels and unknown
+    /// prerelease versions). Called up-front, before any progress UI is created, so the
+    /// notice is not lost behind a live progress widget.
+    /// </summary>
+    private static void WarnIfUnsignedSourcesPossible(IReadOnlyList<ResolvedInstallRequest> requests)
+    {
+        if (requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r.Request)))
+        {
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
+        }
     }
 
     /// <summary>
