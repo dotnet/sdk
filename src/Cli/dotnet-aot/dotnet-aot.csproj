@@ -39,13 +39,12 @@
     <RuntimeIdentifier Condition="$(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx'))">$(TargetRid)</RuntimeIdentifier>
   </PropertyGroup>
 
+  <Import Project="AotSourceFiles.props" />
+
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
     <Compile Include="ManagedHost.cs" />
     <Compile Include="..\dotnet\Program.cs" Link="Program.cs" />
-    <Compile Include="..\dotnet\CommandLineInfo.cs" Link="CommandLineInfo.cs" />
-    <Compile Include="..\dotnet\Parser.cs" Link="Parser.cs" />
-    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup>
