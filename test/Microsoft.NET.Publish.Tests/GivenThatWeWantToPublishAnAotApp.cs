@@ -1418,6 +1418,13 @@ public class NativeLibraryClass
                 "the output directory should not contain deps.json from Build");
             managedBuildArtifacts.Should().NotContain(f => f.Equals($"{projectName}.runtimeconfig.json", StringComparison.OrdinalIgnoreCase),
                 "the output directory should not contain runtimeconfig.json from Build");
+            // Also verify no runtime pack assemblies leaked from a self-contained Build
+            managedBuildArtifacts.Should().NotContain(f => f.Equals("System.Private.CoreLib.dll", StringComparison.OrdinalIgnoreCase),
+                "the output directory should not contain runtime pack assemblies from Build");
+            managedBuildArtifacts.Should().NotContain(f => f.Equals("coreclr.dll", StringComparison.OrdinalIgnoreCase) ||
+                                                           f.Equals("libcoreclr.so", StringComparison.OrdinalIgnoreCase) ||
+                                                           f.Equals("libcoreclr.dylib", StringComparison.OrdinalIgnoreCase),
+                "the output directory should not contain the CoreCLR runtime from Build");
         }
 
         [RequiresMSBuildVersionFact("17.0.0.32901")]
