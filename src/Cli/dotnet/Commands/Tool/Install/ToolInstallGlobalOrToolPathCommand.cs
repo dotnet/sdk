@@ -392,7 +392,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                         newInstalledPackage.Id,
                         newInstalledPackage.Version.ToNormalizedString()).Green());
             }
-            else if (oldPackage.Version != newInstalledPackage.Version)
+            else
             {
                 _reporter.WriteLine(
                     string.Format(
@@ -400,15 +400,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                         newInstalledPackage.Id,
                         oldPackage.Version.ToNormalizedString(),
                         newInstalledPackage.Version.ToNormalizedString()).Green());
-            }
-            else
-            {
-                _reporter.WriteLine(
-                    string.Format(
-
-                        newInstalledPackage.Version.IsPrerelease ?
-                        CliCommandStrings.UpdateSucceededPreVersionNoChange : CliCommandStrings.UpdateSucceededStableVersionNoChange,
-                        newInstalledPackage.Id, newInstalledPackage.Version).Green());
             }
         }
     }

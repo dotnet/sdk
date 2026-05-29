@@ -4,13 +4,17 @@
 using System.Runtime.Versioning;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch;
 
 internal static class ProjectGraphUtilities
 {
-    public static string GetDisplayName(this ProjectGraphNode projectNode)
-        => projectNode.ProjectInstance.GetDisplayName();
+    extension(ProjectGraphNode projectNode)
+    {
+        public string GetDisplayName()
+            => projectNode.ProjectInstance.GetDisplayName();
+    }
 
     public static string GetDisplayName(this ProjectInstance project)
         => $"{Path.GetFileNameWithoutExtension(project.FullPath)} ({project.GetTargetFramework()})";
@@ -18,7 +22,7 @@ internal static class ProjectGraphUtilities
     public static string GetTargetFramework(this ProjectInstance project)
         => project.GetPropertyValue(PropertyNames.TargetFramework);
 
-    public static IEnumerable<string> GetTargetFrameworks(this ProjectInstance project)
+    public static IReadOnlyList<string> GetTargetFrameworks(this ProjectInstance project)
         => project.GetStringListPropertyValue(PropertyNames.TargetFrameworks);
 
     public static Version? GetTargetFrameworkVersion(this ProjectGraphNode projectNode)
@@ -69,13 +73,13 @@ internal static class ProjectGraphUtilities
     public static bool AreDefaultItemsEnabled(this ProjectGraphNode projectNode)
         => projectNode.GetBooleanPropertyValue(PropertyNames.EnableDefaultItems);
 
-    public static IEnumerable<string> GetDefaultItemExcludes(this ProjectGraphNode projectNode)
+    public static IReadOnlyList<string> GetDefaultItemExcludes(this ProjectGraphNode projectNode)
         => projectNode.GetStringListPropertyValue(PropertyNames.DefaultItemExcludes);
 
-    public static IEnumerable<string> GetStringListPropertyValue(this ProjectGraphNode projectNode, string propertyName)
+    public static IReadOnlyList<string> GetStringListPropertyValue(this ProjectGraphNode projectNode, string propertyName)
         => projectNode.ProjectInstance.GetStringListPropertyValue(propertyName);
 
-    public static IEnumerable<string> GetStringListPropertyValue(this ProjectInstance project, string propertyName)
+    public static IReadOnlyList<string> GetStringListPropertyValue(this ProjectInstance project, string propertyName)
         => project.GetPropertyValue(propertyName).Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
     public static bool GetBooleanPropertyValue(this ProjectGraphNode projectNode, string propertyName, bool defaultValue = false)
@@ -87,15 +91,27 @@ internal static class ProjectGraphUtilities
     public static bool GetBooleanMetadataValue(this ProjectItemInstance item, string metadataName, bool defaultValue = false)
         => item.GetMetadataValue(metadataName) is { Length: > 0 } value ? bool.TryParse(value, out var result) && result : defaultValue;
 
+    /// <summary>
+    /// Yields the project itself and all its ancestors, excluding outer build nodes.
+    /// </summary>
     public static IEnumerable<ProjectGraphNode> GetAncestorsAndSelf(this ProjectGraphNode project)
         => GetAncestorsAndSelf([project]);
 
+    /// <summary>
+    /// Yields the given projects and all their ancestors, excluding outer build nodes.
+    /// </summary>
     public static IEnumerable<ProjectGraphNode> GetAncestorsAndSelf(this IEnumerable<ProjectGraphNode> projects)
         => GetTransitiveProjects(projects, static project => project.ReferencingProjects);
 
+    /// <summary>
+    /// Yields the project itself and all transitively referenced projects, excluding outer build nodes.
+    /// </summary>
     public static IEnumerable<ProjectGraphNode> GetDescendantsAndSelf(this ProjectGraphNode project)
         => GetDescendantsAndSelf([project]);
 
+    /// <summary>
+    /// Yields the given projects and all transitively referenced projects, excluding outer build nodes.
+    /// </summary>
     public static IEnumerable<ProjectGraphNode> GetDescendantsAndSelf(this IEnumerable<ProjectGraphNode> projects)
         => GetTransitiveProjects(projects, static project => project.ProjectReferences);
 
@@ -113,7 +129,10 @@ internal static class ProjectGraphUtilities
             var project = queue.Dequeue();
             if (visited.Add(project))
             {
-                yield return project;
+                if (project.ProjectInstance.GetTargetFramework() != "")
+                {
+                    yield return project;
+                }
 
                 foreach (var referencingProject in getEdges(project))
                 {

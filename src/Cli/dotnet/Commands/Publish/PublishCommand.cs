@@ -44,7 +44,7 @@ public class PublishCommand : RestoringCommand
 
         bool noRestore = noBuild || parseResult.HasOption(definition.NoRestoreOption);
 
-        return CommandFactory.CreateVirtualOrPhysicalCommand(
+        return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(

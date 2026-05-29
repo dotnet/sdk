@@ -17,7 +17,7 @@ internal static class LockFileExtensions
         var fallbackPackageFolders = packageFoldersCount > 1 ? packageFolders.Skip(1) : packageFolders;
 
         var packageDirectory = new FallbackPackagePathResolver(userPackageFolder, fallbackPackageFolders)
-            .GetPackageDirectory(library.Name, library.Version);
+            .GetPackageDirectory(library.Name!, library.Version!)!;
 
         return packageDirectory;
     }

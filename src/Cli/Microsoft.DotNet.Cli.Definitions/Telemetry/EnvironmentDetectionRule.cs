@@ -70,6 +70,24 @@ internal class AnyPresentEnvironmentRule : EnvironmentDetectionRule
 }
 
 /// <summary>
+/// Rule that matches when any of the specified sub-rules match.
+/// </summary>
+internal class AnyMatchEnvironmentRule : EnvironmentDetectionRule
+{
+    private readonly EnvironmentDetectionRule[] _rules;
+
+    public AnyMatchEnvironmentRule(params EnvironmentDetectionRule[] rules)
+    {
+        _rules = rules ?? throw new ArgumentNullException(nameof(rules));
+    }
+
+    public override bool IsMatch()
+    {
+        return _rules.Any(rule => rule.IsMatch());
+    }
+}
+
+/// <summary>
 /// Rule that matches when an environment variable contains a specific value (case-insensitive).
 /// </summary>
 internal class EnvironmentVariableValueRule : EnvironmentDetectionRule

@@ -626,7 +626,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                     }
                 },
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -656,7 +656,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                              """)
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -692,7 +692,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                     }
                 },
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -716,7 +716,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                              """)
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -778,7 +778,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                     OutputKind = outputKind,
                 },
                 LanguageVersion = LanguageVersion.CSharp14
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private Task VerifyCsAsync(OutputKind outputKind, string testCode, string fixedCode = null)
@@ -789,7 +789,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 FixedCode = fixedCode!,
                 TestState = { OutputKind = outputKind },
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private Task VerifyVbAsync(OutputKind outputKind, string testCode, string fixedCode = null)
@@ -799,7 +799,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 TestCode = testCode,
                 FixedCode = fixedCode!,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

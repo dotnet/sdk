@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
@@ -17,10 +16,9 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
     private ImmutableHashSet<ProjectInstanceId> _browserLaunchAttempted = [];
 
     /// <summary>
-    /// Installs browser launch/reload trigger.
+    /// Returns an output observing action that triggers the launch of the browser, or null if the browser should not be launched.
     /// </summary>
-    public void InstallBrowserLaunchTrigger(
-        ProcessSpec processSpec,
+    public Action<OutputLine>? TryGetBrowserLaunchOutputObserver(
         ProjectGraphNode projectNode,
         ProjectOptions projectOptions,
         AbstractBrowserRefreshServer? server,
@@ -33,10 +31,10 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
                 logger.LogError("Test requires browser to launch");
             }
 
-            return;
+            return null;
         }
 
-        WebServerProcessStateObserver.Observe(projectNode, processSpec, url =>
+        return WebServerProcessStateObserver.GetObserver(projectNode, url =>
         {
             if (projectOptions.IsMainProject &&
                 ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, key) => set.Add(key), projectNode.ProjectInstance.GetId()))

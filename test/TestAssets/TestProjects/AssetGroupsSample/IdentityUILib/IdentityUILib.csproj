@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <Copyright>© Microsoft</Copyright>
+    <Product>Asset Groups Test</Product>
+    <Company>Microsoft</Company>
+    <Description>Library producing grouped assets (Bootstrap V4/V5 variants)</Description>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+
+    <StaticWebAssetBasePath>Identity</StaticWebAssetBasePath>
+
+    <PackageOutputPath>$(AspNetTestPackageSource)</PackageOutputPath>
+    <PackageVersion>1.0.0</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="V5" Order="0" SourceId="$(PackageId)" IncludePattern="V5/**" RelativePathPattern="V5/**" RelativePathPrefix="#[{BootstrapVersion}]~/" ContentRootSuffix="V5" />
+    <StaticWebAssetGroupDefinition Include="BootstrapVersion" Value="V4" Order="1" SourceId="$(PackageId)" IncludePattern="V4/**" RelativePathPattern="V4/**" RelativePathPrefix="#[{BootstrapVersion}]~/" ContentRootSuffix="V4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <Import Project="StaticWebAssets.Groups.targets" />
+
+</Project>

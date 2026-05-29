@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
@@ -203,6 +202,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             info.Environment.Add("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             info.Environment.Add("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
             info.Environment.Add("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
+
+            // Aspire DCP logging:
+            info.Environment.Add("DCP_DIAGNOSTICS_LOG_FOLDER", Path.Combine(testOutputPath, "dcp"));
+            info.Environment.Add("DCP_DIAGNOSTICS_LOG_LEVEL", "debug");
 
             // suppress all timeouts:
             info.Environment.Add("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");

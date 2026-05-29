@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../CliCommandStrings.resx">
     <body>
@@ -110,6 +110,21 @@
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
         <target state="new">List available devices for running the application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestDuplicateHandshakeOnConnection">
+        <source>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</source>
+        <target state="new">Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMissingHandshakeProtocolVersions">
+        <source>The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</source>
+        <target state="new">The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMissingRequiredMessageProperty">
+        <source>The required property '{0}' was missing or empty in the message of type '{1}'.</source>
+        <target state="new">The required property '{0}' was missing or empty in the message of type '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
@@ -698,11 +713,6 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
         <target state="translated">PACKAGE_NAME</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="translated">Odwołanie do pakietu do dodania. Może to mieć postać tylko identyfikatora pakietu, na przykład „Newtonsoft.Json”, lub identyfikatora pakietu i wersji rozdzielonych znakiem „@”, na przykład „Newtonsoft.Json@13.0.3”</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdPackageDirectory">
         <source>PACKAGE_DIR</source>
         <target state="translated">PACKAGE_DIR</target>
@@ -1036,16 +1046,6 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Konsola jest już w trybie dzielenia na partie.</target>
         <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">Nie można przekonwertować wartości właściwości „{0}” na wartość logiczną.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">Nie można przekonwertować wartości właściwości „{0}” na ciąg.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">Nie można odnaleźć projektu. Upewnij się, że projekt istnieje w programie {0} lub przekaż ścieżkę do projektu przy użyciu {1}.</target>
@@ -1307,16 +1307,6 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">zakończono niepowodzeniem, z następującą liczbą błędów: {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedWithErrorsAndWarnings">
-        <source>failed with {0} error(s) and {1} warning(s)</source>
-        <target state="translated">zakończono niepowodzeniem, z błędami w liczbie: {0} i ostrzeżeniami w liczbie: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedWithWarnings">
-        <source>failed with {0} warning(s)</source>
-        <target state="translated">zakończono niepowodzeniem, z ostrzeżeniami w liczbie: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ForTest">
         <source>For test</source>
         <target state="translated">Na potrzeby testu</target>
@@ -1571,11 +1561,6 @@ Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Nie można określić opcji „{0}” przy jednoczesnym używaniu znaku „-” do odczytu pliku ze standardowych danych wejściowych.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidSemVerVersionString">
-        <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="translated">Nie można przeanalizować ciągu „{0}” jako wersji semantycznej.</target>
-        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
@@ -2386,6 +2371,11 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Kontekst projektu</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskDeleteSource">
+        <source>Delete all source files after conversion?</source>
+        <target state="translated">Usunąć wszystkie pliki źródłowe po konwersji?</target>
+        <note>Asking whether to irreversibly delete the entry point file and all files included via #:include directives and default item globbing.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Konwertuj program oparty na plikach na program oparty na projekcie.</target>
@@ -2396,10 +2386,30 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Określ katalog wyjściowy (naciśnij Enter, aby użyć wartości domyślnej: „{0}”, katalog nie może istnieć):</target>
         <note>{0} is the default value</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceNo">
+        <source>No - keep all source files</source>
+        <target state="translated">Nie — zachowaj wszystkie pliki źródłowe</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSourceChoiceYes">
+        <source>Yes - delete all source files</source>
+        <target state="translated">Tak — usuń wszystkie pliki źródłowe</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeletedSourceFile">
+        <source>Deleted source file: {0}</source>
+        <target state="translated">Usunięto plik źródłowy: {0}</target>
+        <note>{0} is the source file path.</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
         <target state="translated">Określa zmiany bez faktycznej modyfikacji systemu plików</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDuplicateRefFolderName">
+        <source>Multiple referenced files would be converted into the same directory: '{0}'</source>
+        <target state="new">Multiple referenced files would be converted into the same directory: '{0}'</target>
+        <note>{0} is the target directory path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
@@ -2421,15 +2431,10 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Przebieg próbny: spowoduje utworzenie pliku: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
-      <trans-unit id="ProjectConvertWouldDeleteFile">
-        <source>Dry run: would delete file: {0}</source>
-        <target state="translated">Przebieg próbny: spowoduje usunięcie pliku: {0}</target>
-        <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldMoveFile">
-        <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="translated">Przebieg próbny: spowoduje przeniesienie pliku „{0}” do „{1}”.</target>
-        <note>{0} and {1} are file full paths.</note>
+      <trans-unit id="ProjectConvertWouldDeleteSourceFile">
+        <source>Dry run: would delete source file: {0}</source>
+        <target state="translated">Przebieg próbny: spowoduje usunięcie pliku źródłowego: {0}</target>
+        <note>{0} is the source file path.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
@@ -2643,6 +2648,11 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
         <target state="translated">Uruchamianie polecenia platformy .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunAsyncCalledMoreThanOnce">
+        <source>'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</source>
+        <target state="new">'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</target>
+        <note>{Locked="TestApplication.RunAsync"}</note>
+      </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
         <target state="new">Available devices:</target>
@@ -2764,6 +2774,16 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">„{0}” nie jest prawidłowym plikiem projektu.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandWarningCsFileArgumentPassedToProject">
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <note>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandWarningFileArgumentPassedToProject">
+        <source>Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was passed as an argument to the project '{1}'. To run it as a file-based app, use 'dotnet run --file {0}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</target>
+        <note>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</note>
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
         <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
@@ -3183,8 +3203,8 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <note />
       </trans-unit>
       <trans-unit id="ToolAlreadyInstalled">
-        <source>Tool '{0}' is already installed.</source>
-        <target state="translated">Narzędzie „{0}” jest już zainstalowane.</target>
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="translated">Narzędzie „{0}” (wersja: „{1}”) jest już zainstalowane.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolCommandDescription">
@@ -3294,16 +3314,6 @@ Pomyślnie zainstalowano narzędzie „{1}” (wersja: „{2}”).</target>
       <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
         <source>NuGet configuration file '{0}' does not exist.</source>
         <target state="translated">Plik konfiguracji pakietu NuGet „{0}” nie istnieje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">Identyfikator pakietu NuGet narzędzia do zainstalowania.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
@@ -3538,16 +3548,6 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <target state="translated">Zaktualizuj narzędzie globalne lub lokalne.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to update.</source>
-        <target state="translated">Identyfikator pakietu NuGet narzędzia do zaktualizowania.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
         <source>Tool '{0}' has multiple versions installed and cannot be updated.</source>
         <target state="translated">Jest zainstalowanych wiele wersji narzędzia „{0}” i nie można go zaktualizować.</target>
@@ -3583,6 +3583,11 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <target state="translated">Komunikat typu „{0}” został odebrany przed otrzymaniem jakichkolwiek uzgadniań, co jest nieoczekiwane.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutTestHostHandshake">
+        <source>Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</source>
+        <target state="new">Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
         <target state="translated">Odebrano zdarzenie zakończenia sesji testowej bez odpowiedniego uruchomienia sesji testowej.</target>
@@ -3601,6 +3606,11 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
       <trans-unit id="UnknownRecordsInformationalMessage">
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">Wiersze z niezarejestrowanymi zmianami reprezentują zmiany pochodzące z akcji innych niż polecenia obciążenia interfejsu wiersza polecenia platformy .NET. Zazwyczaj oznacza to aktualizację zestawu .NET SDK lub programu Visual Studio.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownSessionEventType">
+        <source>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</source>
+        <target state="new">Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
@@ -3636,16 +3646,6 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
       <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
         <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
         <target state="translated">Określono, aby aktualizować obciążenia przy użyciu {0} z wiersza polecenia, ale plik global.json w {1} został określony do użycia {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="translated">Narzędzie „{0}” zostało ponownie zainstalowane z wersją wstępną (wersja „{1}”).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="translated">Narzędzie „{0}” zostało ponownie zainstalowane przy użyciu najnowszej stabilnej wersji (wersja „{1}”).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
@@ -3718,21 +3718,6 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <target state="translated">Nie można określić parametru --version, jeśli argument pakietu zawiera już wersję.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">Właściwość „{0}” musi być obiektem, jeśli jest określona.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Szczegółowość</target>
@@ -3777,6 +3762,16 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <source>Run Microsoft Test Engine (VSTest) commands.</source>
         <target state="translated">Uruchom polecenia aparatu Microsoft Test Engine (VSTest).</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
+        <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</source>
+        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</target>
+        <note>{0} is the .cs file path argument.</note>
+      </trans-unit>
+      <trans-unit id="WarningFileArgumentPassedToMSBuild">
+        <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</source>
+        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</target>
+        <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
         <source>Start a file watcher that runs a command when files change.</source>

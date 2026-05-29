@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if TARGET_WINDOWS
 using System.Runtime.Versioning;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.Com.Urlmon;
+#endif
 
 namespace Microsoft.DotNet.Cli.Utils;
 
@@ -11,14 +13,14 @@ internal class DangerousFileDetector : IDangerousFileDetector
 {
     public bool IsDangerous(string filePath)
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            return false;
-        }
-
+#if TARGET_WINDOWS
         return InternetSecurity.IsDangerous(filePath);
+#else
+        return false;
+#endif
     }
 
+#if TARGET_WINDOWS
     private static class InternetSecurity
     {
         private const string CLSID_InternetSecurityManager = "7b8a2d94-0ac9-11d1-896c-00c04fb6bfc4";
@@ -74,4 +76,5 @@ internal class DangerousFileDetector : IDangerousFileDetector
             return true;
         }
     }
+#endif
 }

@@ -309,7 +309,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">환경 변수의 값을 설정합니다. 
@@ -319,7 +319,7 @@ Examples:
 예:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -652,7 +652,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">환경 변수의 값을 설정합니다. 
@@ -663,7 +663,7 @@ Examples:
 예:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -1548,6 +1548,11 @@ If command is specified without the argument, it lists all the template packages
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">파일 기반 프로그램을 프로젝트 기반 프로그램으로 변환합니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSource">
+        <source>Delete all source files after conversion</source>
+        <target state="translated">변환 후 모든 원본 파일을 삭제</target>
+        <note>This will delete the entry point file and all files included via #:include directives and default item globbing.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>

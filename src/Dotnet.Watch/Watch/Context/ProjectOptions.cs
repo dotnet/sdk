@@ -15,6 +15,26 @@ internal sealed record ProjectOptions
     public required string WorkingDirectory { get; init; }
 
     /// <summary>
+    /// Target framework to use to launch the project.
+    /// If the project multi-targets and <see cref="TargetFramework"/> is null
+    /// the user will be prompted for the framework in interactive mode
+    /// or an error is reported in non-interactive mode.
+    /// </summary>
+    public string? TargetFramework { get; init; }
+
+    /// <summary>
+    /// Device identifier to use when launching the project.
+    /// If the project supports device selection and <see cref="Device"/> is null
+    /// the user will be prompted for a device in interactive mode.
+    /// </summary>
+    public string? Device { get; init; }
+
+    /// <summary>
+    /// RuntimeIdentifier provided by the selected device, if any.
+    /// </summary>
+    public string? DeviceRuntimeIdentifier { get; init; }
+
+    /// <summary>
     /// No value indicates that no launch profile should be used.
     /// Null value indicates that the default launch profile should be used.
     /// </summary>

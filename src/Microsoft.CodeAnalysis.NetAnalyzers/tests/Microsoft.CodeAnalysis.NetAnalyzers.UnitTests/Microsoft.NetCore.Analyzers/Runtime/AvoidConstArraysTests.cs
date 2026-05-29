@@ -521,7 +521,7 @@ namespace Z
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -804,7 +804,7 @@ public class Test
     }
 }",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6686")]
@@ -819,7 +819,7 @@ public class MyClass
     public List<object> Cases => new() { new object[0] };
 }",
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6697")]
@@ -1022,7 +1022,7 @@ public class MyClass
             {
                 TestCode = source,
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7111, "https://github.com/dotnet/roslyn-analyzers/issues/7111")]
@@ -1052,7 +1052,7 @@ public class MyClass
                 {
                     OutputKind = OutputKind.ConsoleApplication
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7216, "https://github.com/dotnet/roslyn-analyzers/issues/7216")]

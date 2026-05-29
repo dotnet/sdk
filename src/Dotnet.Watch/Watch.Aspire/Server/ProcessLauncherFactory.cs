@@ -7,7 +7,6 @@ using System.IO.Pipes;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Channels;
-using Aspire.Tools.Service;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;

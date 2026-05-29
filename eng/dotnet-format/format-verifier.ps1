@@ -56,8 +56,9 @@ try {
 
     if ($stage -eq "prepare" -or $stage -eq "format-workspace") {
         Write-Output "$(Get-Date) - Finding solutions."
-        $solutions = Get-ChildItem -Filter *.sln -Recurse -Depth 2 | Select-Object -ExpandProperty FullName | Where-Object { $_ -match '.sln$' }
+        $solutions = Get-ChildItem -Include *.sln,*.slnf,*.slnx -Recurse -Depth 2 | Select-Object -ExpandProperty FullName
 
+        $solutionFound = $false
         foreach ($solution in $solutions) {
             $solutionPath = Split-Path $solution
             $solutionFile = Split-Path $solution -leaf
@@ -66,6 +67,7 @@ try {
                 continue
             }
 
+            $solutionFound = $true
             Set-Location $solutionPath
 
             if ($stage -eq "prepare") {
@@ -98,6 +100,12 @@ try {
             }
 
             Write-Output "$(Get-Date) - $solutionFile - Complete"
+        }
+
+        if (-not $solutionFound) {
+            $solutionNames = $solutions | ForEach-Object { Split-Path $_ -Leaf }
+            Write-Output "$(Get-Date) - Target solution '$targetSolution' was not found. Available solutions ($($solutionNames.Count)): $($solutionNames -join ', ')"
+            exit -1
         }
     }
 

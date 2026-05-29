@@ -206,7 +206,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </value>
   </data>
@@ -219,7 +219,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </value>
   </data>
@@ -938,6 +938,10 @@ If not specified the file will be generated inside the default 'TestResults' dir
   </data>
   <data name="ProjectConvertDryRun" xml:space="preserve">
     <value>Determines changes without actually modifying the file system</value>
+  </data>
+  <data name="ProjectConvertDeleteSource" xml:space="preserve">
+    <value>Delete all source files after conversion</value>
+    <comment>This will delete the entry point file and all files included via #:include directives and default item globbing.</comment>
   </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>

@@ -1,0 +1,132 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.NetCore.Analyzers.Usage;
+
+namespace Microsoft.NetCore.CSharp.Analyzers.Usage
+{
+    [DiagnosticAnalyzer(LanguageNames.CSharp)]
+    public sealed class CSharpMissingShebangInFileBasedProgram : MissingShebangInFileBasedProgram
+    {
+        public override void Initialize(AnalysisContext context)
+        {
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+
+            context.RegisterCompilationStartAction(context =>
+            {
+                var entryPointFilePath = context.Options.GetMSBuildPropertyValue(
+                    MSBuildPropertyOptionNames.EntryPointFilePath, context.Compilation);
+                if (string.IsNullOrEmpty(entryPointFilePath))
+                {
+                    return;
+                }
+
+                // Count non-generated trees upfront so we can report directly
+                // from a SyntaxTreeAction without needing CompilationEnd.
+                // We avoid CompilationEnd so diagnostics appear as live IDE diagnostics.
+                // We replicate Roslyn's generated code detection here because
+                // Compilation.SyntaxTrees is the raw set (unlike RegisterSyntaxTreeAction
+                // which gets automatic filtering via ConfigureGeneratedCodeAnalysis).
+                int nonGeneratedTreeCount = 0;
+                foreach (var tree in context.Compilation.SyntaxTrees)
+                {
+                    if (IsGeneratedCode(tree, context.Options.AnalyzerConfigOptionsProvider))
+                    {
+                        continue;
+                    }
+
+                    nonGeneratedTreeCount++;
+                }
+
+                // Only report when there are multiple non-generated files
+                // (i.e., #:include directives are used).
+                // Single-file programs don't need a shebang to distinguish the entry point.
+                if (nonGeneratedTreeCount <= 1)
+                {
+                    return;
+                }
+
+                context.RegisterSyntaxTreeAction(context =>
+                {
+                    if (!context.Tree.FilePath.Equals(entryPointFilePath, StringComparison.Ordinal))
+                    {
+                        return;
+                    }
+
+                    var root = context.Tree.GetRoot(context.CancellationToken);
+                    if (root.GetLeadingTrivia().Any(SyntaxKind.ShebangDirectiveTrivia))
+                    {
+                        return;
+                    }
+
+                    var location = root.GetFirstToken(includeZeroWidth: true).GetLocation();
+                    context.ReportDiagnostic(location.CreateDiagnostic(Rule));
+                });
+            });
+        }
+
+        /// <summary>
+        /// Replicates Roslyn's generated code detection which checks:
+        /// the <c>generated_code</c> analyzer config option,
+        /// common file name patterns, and <c>&lt;auto-generated&gt;</c> comment headers.
+        /// Based on <see href="https://github.com/dotnet/roslyn/blob/0504782ef845507260874f2efc253b36d1775685/src/Compilers/Core/Portable/SourceGeneration/GeneratedCodeUtilities.cs">GeneratedCodeUtilities</see>.
+        /// </summary>
+        private static bool IsGeneratedCode(SyntaxTree tree, AnalyzerConfigOptionsProvider optionsProvider)
+        {
+            if (optionsProvider.GetOptions(tree)
+                    .TryGetValue("generated_code", out var generatedValue) &&
+                generatedValue.Equals("true", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            var filePath = tree.FilePath;
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                var fileName = Path.GetFileName(filePath);
+                if (fileName.StartsWith("TemporaryGeneratedFile_", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                var nameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                if (nameWithoutExtension.EndsWith(".designer", StringComparison.OrdinalIgnoreCase) ||
+                    nameWithoutExtension.EndsWith(".generated", StringComparison.OrdinalIgnoreCase) ||
+                    nameWithoutExtension.EndsWith(".g", StringComparison.OrdinalIgnoreCase) ||
+                    nameWithoutExtension.EndsWith(".g.i", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            // Check for <auto-generated> or <autogenerated> comment at the top of the file.
+            foreach (var trivia in tree.GetRoot().GetLeadingTrivia())
+            {
+                switch (trivia.Kind())
+                {
+                    case SyntaxKind.SingleLineCommentTrivia:
+                    case SyntaxKind.MultiLineCommentTrivia:
+                        var text = trivia.ToString();
+                        if (text.Contains("<auto-generated") || text.Contains("<autogenerated"))
+                        {
+                            return true;
+                        }
+                        break;
+                    case SyntaxKind.WhitespaceTrivia:
+                    case SyntaxKind.EndOfLineTrivia:
+                        continue;
+                    default:
+                        return false;
+                }
+            }
+
+            return false;
+        }
+    }
+}

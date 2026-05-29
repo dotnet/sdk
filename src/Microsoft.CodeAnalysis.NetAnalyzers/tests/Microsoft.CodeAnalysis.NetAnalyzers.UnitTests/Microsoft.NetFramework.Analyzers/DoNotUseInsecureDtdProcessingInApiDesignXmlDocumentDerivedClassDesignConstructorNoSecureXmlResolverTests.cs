@@ -572,7 +572,7 @@ End Namespace",
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private async Task VerifyVisualBasicAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -584,7 +584,7 @@ End Namespace",
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

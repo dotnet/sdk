@@ -39,10 +39,6 @@ internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> 
     /// <summary>
     /// Starts the Kestrel WebSocket server.
     /// </summary>
-    /// <param name="hostName">Host name to bind to</param>
-    /// <param name="port">HTTP port to bind to (0 for auto-assign)</param>
-    /// <param name="securePort">HTTPS port to bind to in addition to HTTP port. Null to skip HTTPS.</param>
-    /// <param name="cancellationToken">Cancellation token</param>
     public static async ValueTask<KestrelWebSocketServer> StartServerAsync(WebSocketConfig config, RequestDelegate requestHandler, CancellationToken cancellationToken)
     {
         var host = new HostBuilder()

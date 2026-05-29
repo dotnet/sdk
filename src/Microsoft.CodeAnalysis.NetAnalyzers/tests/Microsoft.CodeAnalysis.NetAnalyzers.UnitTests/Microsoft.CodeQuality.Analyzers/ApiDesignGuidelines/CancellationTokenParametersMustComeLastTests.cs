@@ -468,7 +468,7 @@ public class C
 }"
                    }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
@@ -498,7 +498,7 @@ public class C
 }"
                    }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
@@ -553,7 +553,7 @@ public class C
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
@@ -607,7 +607,7 @@ End Class"
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
@@ -651,7 +651,7 @@ public class C2
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -681,7 +681,7 @@ End Class"
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
@@ -713,7 +713,7 @@ public record " + prefix + "R" + suffix + @"(CancellationToken t, int i) {}"
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

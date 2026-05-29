@@ -309,7 +309,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Ustawia wartość zmiennej środowiskowej. 
@@ -652,7 +652,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Ustawia wartość zmiennej środowiskowej. 
@@ -1548,6 +1548,11 @@ Jeśli polecenie zostanie określone bez argumentu, zostanie wyświetlona lista 
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Konwertuj program oparty na plikach na program oparty na projekcie.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertDeleteSource">
+        <source>Delete all source files after conversion</source>
+        <target state="translated">Usuń wszystkie pliki źródłowe po konwersji</target>
+        <note>This will delete the entry point file and all files included via #:include directives and default item globbing.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>

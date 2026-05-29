@@ -60,7 +60,7 @@ internal abstract partial class HotReloadAppModel()
     {
         if (!project.IsNetCoreApp(Versions.Version6_0))
         {
-            LogWarning("target framework is older than 6.0");
+            logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_TargetFramework, Versions.Version6_0);
             return false;
         }
 
@@ -80,13 +80,36 @@ internal abstract partial class HotReloadAppModel()
                 ? (PropertyNames.PublishTrimmed, true)
                 : (PropertyNames.StartupHookSupport, false);
 
-            LogWarning(string.Format("'{0}' property is '{1}'", propertyName, propertyValue));
+            logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, propertyName, propertyValue.ToString(), PropertyNames.StartupHookSupport, "True");
             return false;
         }
 
-        return true;
+        // MetadataUpdaterSupport is the primary indicator of whether the runtime supports Hot Reload.
+        // It is however not correctly set prior to .NET 11, so we use Optimize and DebugSymbols instead for older frameworks.
+        // See https://github.com/dotnet/runtime/pull/127163
+        if (project.IsNetCoreApp(Versions.Version11_0))
+        {
+            if (!project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.MetadataUpdaterSupport, defaultValue: true))
+            {
+                logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, PropertyNames.MetadataUpdaterSupport, "False", PropertyNames.MetadataUpdaterSupport, "True");
+                return false;
+            }
+        }
+        else
+        {
+            if (project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.Optimize))
+            {
+                logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, PropertyNames.Optimize, "True", PropertyNames.Optimize, "False");
+                return false;
+            }
 
-        void LogWarning(string reason)
-            => logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload, reason);
+            if (!project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.DebugSymbols))
+            {
+                logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, PropertyNames.DebugSymbols, "False", PropertyNames.DebugSymbols, "True");
+                return false;
+            }
+        }
+
+        return true;
     }
 }

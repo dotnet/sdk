@@ -63,7 +63,7 @@ End Class",
                         GetBasicResultAt(12, 9, 9, 31, "Function XamlReader.Load(stream As Stream) As Object", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

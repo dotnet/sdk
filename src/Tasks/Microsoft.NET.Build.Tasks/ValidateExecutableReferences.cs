@@ -9,6 +9,7 @@ using Microsoft.DotNet.Cli;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class ValidateExecutableReferences : TaskBase
     {
         public bool SelfContained { get; set; }

@@ -25,7 +25,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
         bool isInteractive,
         VerbosityOptions verbosity = VerbosityOptions.normal,
         string? targetSdkVersion = null,
-        bool? verifySignatures = null,
+        bool? verifyMsiSignature = null,
         IReporter? reporter = null,
         IWorkloadInstallationRecordRepository? workloadRecordRepo = null,
         string? currentSdkVersion = null,
@@ -51,13 +51,16 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
 
         var restoreConfig = new RestoreActionConfig(Interactive: isInteractive);
 
+        // When verifyMsiSignature is not specified by the caller, we delegate to
+        // WorkloadUtilities.ShouldVerifySignatures() which respects the registry policy
+        // and dotnet host signing status.
         Installer = WorkloadInstallerFactory.GetWorkloadInstaller(
             reporter,
             _currentSdkFeatureBand,
             WorkloadResolver,
             verbosity,
             userProfileDir,
-            verifySignatures ?? !SignCheck.IsDotNetSigned(),
+            verifyMsiSignature: verifyMsiSignature ?? WorkloadUtilities.ShouldVerifySignatures(),
             restoreActionConfig: restoreConfig,
             elevationRequired: false,
             shouldLog: false);
@@ -77,7 +80,7 @@ internal class WorkloadInfoHelper : IWorkloadInfoHelper
     public InstalledWorkloadsCollection AddInstalledVsWorkloads(IEnumerable<WorkloadId> sdkWorkloadIds)
     {
         InstalledWorkloadsCollection installedWorkloads = new(sdkWorkloadIds, $"SDK {_currentSdkFeatureBand}");
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
         if (OperatingSystem.IsWindows())
         {
             VisualStudioWorkloads.GetInstalledWorkloads(WorkloadResolver, installedWorkloads);

@@ -103,10 +103,25 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
+        // Terminal logger arguments (e.g. --tl:off, -terminalLogger:auto, -tlp:default=true)
+        // should be forwarded to MSBuild during the build phase rather than being passed to
+        // the test application as it doesn't recognize them. See https://github.com/dotnet/sdk/issues/52229.
+        var terminalLoggerArgs = new List<string>();
+        for (int i = otherArgs.Count - 1; i >= 0; i--)
+        {
+            if (LoggerUtility.IsTerminalLoggerArgument(otherArgs[i]))
+            {
+                terminalLoggerArgs.Add(otherArgs[i]);
+                otherArgs.RemoveAt(i);
+            }
+        }
+        terminalLoggerArgs.Reverse();
+
         var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
-            .Concat(binLogArgs);
+            .Concat(binLogArgs)
+            .Concat(terminalLoggerArgs);
 
         string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
         if (resultsDirectory is not null)
