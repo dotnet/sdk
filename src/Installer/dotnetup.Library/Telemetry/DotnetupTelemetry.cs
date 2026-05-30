@@ -36,9 +36,13 @@ public sealed class DotnetupTelemetry : IDisposable
         Constants.Telemetry.BootstrapperSourceName,
         GetVersion());
 
-    private static readonly string s_defaultStorageDirectory = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "dotnetup", "TelemetryStorageService");
+    private static readonly string s_defaultStorageDirectory =
+        Path.Combine(
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.DoNotVerify),
+            "dotnetup",
+            "TelemetryStorageService");
 
     private static readonly string? s_diskLogPath = GetDiskLogPath();
 
