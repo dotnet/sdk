@@ -417,6 +417,21 @@ public class ParserTests
         parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
     }
 
+    [Fact]
+    public void Parser_BareDotnetup_BindsInteractiveOption()
+    {
+        // Regression test: bare `dotnetup` routes to SdkInstallCommand, but until
+        // CommonOptions.InteractiveOption was registered on the root command,
+        // ParseResult.GetValue returned default(bool)=false for the option without
+        // running its DefaultValueFactory (!IsCIEnvironmentOrRedirected()). That
+        // suppressed first-use onboarding for bare `dotnetup` invocations.
+        var parseResult = Parser.Parse([]);
+
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetResult(CommonOptions.InteractiveOption).Should().NotBeNull(
+            "InteractiveOption must be bound on the root command so its DefaultValueFactory runs for bare `dotnetup`");
+    }
+
     #endregion
 
     #region Help Differentiation Tests
