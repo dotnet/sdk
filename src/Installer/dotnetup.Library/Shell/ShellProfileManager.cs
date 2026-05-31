@@ -41,7 +41,7 @@ public class ShellProfileManager
 
         foreach (var profilePath in profilePaths)
         {
-            if (EnsureEntryInFile(profilePath, entry))
+            if (EnsureEntryInFile(profilePath, entry, provider.NewFileEncoding))
             {
                 modifiedFiles.Add(profilePath);
             }
@@ -75,7 +75,7 @@ public class ShellProfileManager
     /// it is replaced in-place to preserve the user's ordering. Otherwise the entry is appended.
     /// Returns true if the file was modified, false if the entry was already correct.
     /// </summary>
-    private static bool EnsureEntryInFile(string profilePath, string entry)
+    private static bool EnsureEntryInFile(string profilePath, string entry, Encoding newFileEncoding)
     {
         var directory = Path.GetDirectoryName(profilePath);
         if (!string.IsNullOrEmpty(directory))
@@ -88,7 +88,7 @@ public class ShellProfileManager
             // New file — write the managed block using a consistent newline style.
             var newFileState = new ProfileFileState(
                 [.. GetWrappedEntryLines(entry)],
-                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                newFileEncoding,
                 Environment.NewLine,
                 EndsWithTrailingNewLine: true);
             WriteProfileFile(profilePath, newFileState);

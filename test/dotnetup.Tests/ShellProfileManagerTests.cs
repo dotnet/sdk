@@ -102,6 +102,35 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
+    public void AddProfileEntries_NewFile_DefaultsToBomLessUtf8()
+    {
+        var profilePath = Path.Combine(_tempDir, "new-default.sh");
+        var provider = new TestShellProvider(_tempDir, "new-default.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble).Should().BeFalse(
+            "new files should default to BOM-less UTF-8 for POSIX shells");
+    }
+
+    [Fact]
+    public void AddProfileEntries_NewFile_HonorsProviderNewFileEncoding()
+    {
+        var profilePath = Path.Combine(_tempDir, "new-bom.ps1");
+        var provider = new TestShellProvider(_tempDir, "new-bom.ps1")
+        {
+            NewFileEncodingOverride = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+        };
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble).Should().BeTrue(
+            "providers that opt into a BOM should have new files written with that BOM");
+    }
+
+    [Fact]
     public void AddProfileEntries_PreservesUtf8BomAndCrLfLineEndings()
     {
         var profilePath = Path.Combine(_tempDir, "preserve-add.sh");
@@ -702,6 +731,10 @@ public class ShellProfileManagerTests : IDisposable
         public string Extension => "sh";
         public string? HelpDescription => null;
         public string? ProfileEntryOverride { get; init; }
+        public Encoding? NewFileEncodingOverride { get; init; }
+
+        Encoding IEnvShellProvider.NewFileEncoding
+            => NewFileEncodingOverride ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true) =>
             includeDotnet

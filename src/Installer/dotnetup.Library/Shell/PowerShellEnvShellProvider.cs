@@ -55,6 +55,20 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
         return [Path.Combine(profileDir, ProfileFileName)];
     }
 
+    // Windows PowerShell 5.1 reads .ps1 files without a BOM as the system ANSI code page,
+    // so a BOM-less profile containing non-ASCII characters (e.g. an install path under a
+    // username with accented or CJK characters) would be misinterpreted and likely fail
+    // to invoke dotnetup. On Windows we therefore create new PowerShell profile files as
+    // UTF-8 with BOM. PowerShell 7+ handles a BOM transparently, so it's safe to use the
+    // same encoding for the pwsh profile location too. On non-Windows we keep the BOM-less
+    // default — PowerShell 7 on Linux/macOS treats BOM-less .ps1 files as UTF-8.
+    //
+    // Existing profile files (regardless of where they live) keep their detected encoding;
+    // see ShellProfileManager.ReadProfileFile.
+    public Encoding NewFileEncoding => OperatingSystem.IsWindows()
+        ? new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
+        : new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
     // Write to profile.ps1, which applies to all PowerShell hosts, rather than
     // Microsoft.PowerShell_profile.ps1, which only applies to the console host.
     //
