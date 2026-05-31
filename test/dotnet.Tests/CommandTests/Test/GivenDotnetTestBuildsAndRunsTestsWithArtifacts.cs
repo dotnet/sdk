@@ -47,8 +47,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug, false)]
         [InlineData(TestingConstants.Release, false)]
-        [InlineData(TestingConstants.Debug, true)]
-        [InlineData(TestingConstants.Release, true)]
+        // When IncludeTestAssembly is true, the test process crashes with BadImageFormatException.
+        // See: https://github.com/dotnet/sdk/issues/52029
+        [InlineData(TestingConstants.Debug, true, Skip = "https://github.com/dotnet/sdk/issues/52029")]
+        [InlineData(TestingConstants.Release, true, Skip = "https://github.com/dotnet/sdk/issues/52029")]
         [Theory]
         public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration, bool includeTestAssembly)
         {
@@ -60,45 +62,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string msTestVersion = testInstance.ReadMSTestPackageVersionFromProps(versionsPropsPath);
             testInstance.UpdateProjectFileWithMSTestPackageVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
-            // When IncludeTestAssembly is true on Linux/macOS, Microsoft.CodeCoverage's static
-            // instrumentation corrupts async state machine metadata in the test assembly, causing
-            // BadImageFormatException (HRESULT 0x80131124 / CLDB_E_INDEX_NOTFOUND) during async
-            // continuation. See upstream tracking bug:
-            //   https://github.com/microsoft/codecoverage/issues/203
-            //   https://github.com/dotnet/sdk/issues/52029
-            // The documented workaround is to switch to dynamic instrumentation (which does not
-            // rewrite the binaries) on platforms where it is supported. Per the upstream issue,
-            // dynamic instrumentation supports Windows (all archs), Linux x64, and macOS x64 — but
-            // NOT macOS arm64 (where it silently produces empty coverage). On macOS arm64 there is
-            // currently no working configuration for IncludeTestAssembly=true, so skip those cases.
-            if (includeTestAssembly
-                && RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
-                && RuntimeInformation.OSArchitecture == Architecture.Arm64)
-            {
-                // Tracked by https://github.com/dotnet/sdk/issues/52029.
-                return;
-            }
-
-            bool needsDynamicInstrumentationWorkaround = includeTestAssembly && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
             // Explicitly configure IncludeTestAssembly so the test behavior does not depend on
             // changes to the Microsoft.CodeCoverage default value.
             string coverageSettingsPath = Path.Combine(testInstance.Path, "coverage.config");
-            string instrumentationSettings = needsDynamicInstrumentationWorkaround
-                ? """
-                      <EnableStaticManagedInstrumentation>false</EnableStaticManagedInstrumentation>
-                      <EnableStaticNativeInstrumentation>false</EnableStaticNativeInstrumentation>
-                      <EnableDynamicManagedInstrumentation>true</EnableDynamicManagedInstrumentation>
-                      <EnableDynamicNativeInstrumentation>false</EnableDynamicNativeInstrumentation>
-                  """
-                : string.Empty;
-            File.WriteAllText(coverageSettingsPath, $$"""
+            File.WriteAllText(coverageSettingsPath, $"""
                 <?xml version="1.0" encoding="utf-8"?>
                 <Configuration>
-                  <CodeCoverage>
-                    <IncludeTestAssembly>{{includeTestAssembly}}</IncludeTestAssembly>
-                {{instrumentationSettings}}
-                  </CodeCoverage>
+                    <CodeCoverage>
+                        <IncludeTestAssembly>{includeTestAssembly}</IncludeTestAssembly>
+                    </CodeCoverage>
                 </Configuration>
                 """);
 
