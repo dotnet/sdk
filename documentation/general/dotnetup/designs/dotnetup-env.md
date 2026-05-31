@@ -56,6 +56,9 @@ dotnetup env set <none|shell|all>   # persist mode in config and apply
 dotnetup env show                   # display current mode; if applied state has
                                     # drifted from the configured mode, report that
                                     # too
+dotnetup env script                 # print a shell-specific script that exports
+                                    # PATH/DOTNET_ROOT for the current dotnet
+                                    # install (formerly `dotnetup print-env-script`)
 ```
 
 `env set` is idempotent — running it again with the same mode is a no-op (and is also
@@ -77,6 +80,12 @@ Apply logic lives in a shared `PathPreferenceApplier` helper so that `dotnetup i
 and `dotnetup env set` go through the same code path. The walkthrough refactors in
 #53838 / #53837 then only need to change the question-asking layer, not the apply
 layer.
+
+The existing top-level `dotnetup print-env-script` command moves under the `env`
+family as `dotnetup env script` (it generates env-var wiring — same domain). To
+avoid breaking managed profile blocks written by previous dotnetup versions, the
+old `print-env-script` name is kept as a hidden top-level alias for one release,
+then removed.
 
 The rest of this document explains the reasoning behind each choice and the
 alternatives considered.
@@ -222,7 +231,7 @@ question-asking layer, not the apply layer.
    - Edge case: if no admin install exists (`GetProgramFilesDotnetPaths()` empty),
      the unwind has nothing to add back to system PATH and cmd.exe is left with
      no dotnet at all. Surface a warning on the mode switch.
-3. **Add new `env` parent command** with `set` / `show` subcommands under
+3. **Add new `env` parent command** with `set` / `show` / `script` subcommands under
    `src/Installer/dotnetup.Library/Commands/Env/`. Wire into `Parser.cs`.
    - `env show` displays the current mode and, if applied state has drifted from
      the configured mode, reports the drift. For `All`, drift = user dotnet not at
@@ -230,6 +239,11 @@ question-asking layer, not the apply layer.
      user-scope `DOTNET_ROOT` ≠ user dotnet path. For `Shell`, drift = managed
      block missing from the configured shell's profile file. All checks are
      read-only (no elevation needed).
+   - `env script` is the existing `PrintEnvScriptCommand` moved under `env`. The
+     top-level `dotnetup print-env-script` stays as a hidden alias that delegates
+     to `env script`, so managed profile blocks written by earlier dotnetup
+     versions keep working. Remove the alias one release later. Newly-written
+     managed blocks invoke `env script`.
 4. **Delete `DefaultInstallCommand`** + parser + tests; remove from `Parser.cs`. No
    alias.
 5. **Refactor `InitWorkflows`** finalize step to call `PathPreferenceApplier.Apply`
