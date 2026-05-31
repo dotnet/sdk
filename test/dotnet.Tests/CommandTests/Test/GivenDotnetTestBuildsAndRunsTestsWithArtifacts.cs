@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug, true, Skip = "https://github.com/dotnet/sdk/issues/52029")]
         [InlineData(TestingConstants.Release, true, Skip = "https://github.com/dotnet/sdk/issues/52029")]
         [Theory]
-        public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeGenericFailure(string configuration, bool includeTestAssembly)
+        public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration, bool includeTestAssembly)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
 
