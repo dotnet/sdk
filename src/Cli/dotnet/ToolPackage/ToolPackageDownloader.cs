@@ -142,6 +142,11 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
         var package = localRepository.FindPackage(packageId.ToString(), version);
 
+        if (package is null)
+        {
+            throw new ToolPackageException(string.Format(CliStrings.ToolPackageNotATool, packageId));
+        }
+
         if (verbosity.IsDetailedOrDiagnostic())
         {
             Reporter.Output.WriteLine($"Locating package {packageId}@{version} in package store {packagesRootPath.Value}");
