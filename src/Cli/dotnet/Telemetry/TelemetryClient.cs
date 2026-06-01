@@ -94,9 +94,7 @@ public class TelemetryClient : ITelemetryClient
         s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
-#if !CLI_AOT
             .AddRuntimeInstrumentation()
-#endif
             ;
 
         if (s_enableOtlpExporter)
