@@ -132,7 +132,7 @@ again, you can opt out via `#:property PackAsTool=false`.
 
 Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
 
-Sub-commands of `dotnet package add` and `dotnet reference` can be used to manipulate `#:package`/`#:project` directives in the C# files,
+Sub-commands of `dotnet package add` and `dotnet reference` can be used to manipulate `#:package`/`#:project`/`#:ref` directives in the C# files,
 similarly to what the commands do for project-based apps. For example, `dotnet package add PackageName --file app.cs`.
 
 ## Multiple files

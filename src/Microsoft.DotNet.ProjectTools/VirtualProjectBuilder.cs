@@ -20,7 +20,17 @@ public sealed class VirtualProjectBuilder
 {
     internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
 
+    /// <summary>
+    /// Metadata applied to items generated from <c>#:include</c> directives.
+    /// Its value is <c>true</c>.
+    /// </summary>
     internal const string FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective";
+
+    /// <summary>
+    /// Metadata applied to <c>ProjectReference</c> items generated from <c>#:ref</c> directives.
+    /// Its value is the path of the referenced file-based app.
+    /// </summary>
+    public const string RefDirectiveIncludeMetadataName = "FileBasedProgramsRefDirectiveInclude";
 
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
@@ -105,11 +115,14 @@ public sealed class VirtualProjectBuilder
         => entryPointFilePath + CsprojExtension;
 
     public static bool TryGetEntryPointFilePathFromVirtualProjectPath(string projectPath, [NotNullWhen(returnValue: true)] out string? entryPointFilePath)
+        => TryGetEntryPointFilePathFromVirtualProjectPath(projectPath, validateEntryPointPath: true, out entryPointFilePath);
+
+    public static bool TryGetEntryPointFilePathFromVirtualProjectPath(string projectPath, bool validateEntryPointPath, [NotNullWhen(returnValue: true)] out string? entryPointFilePath)
     {
         if (projectPath.EndsWith(CsprojExtension, StringComparison.OrdinalIgnoreCase))
         {
             entryPointFilePath = projectPath[..^CsprojExtension.Length];
-            if (IsValidEntryPointPath(entryPointFilePath))
+            if (!validateEntryPointPath || IsValidEntryPointPath(entryPointFilePath))
             {
                 return true;
             }
@@ -839,7 +852,7 @@ public sealed class VirtualProjectBuilder
                 {
                     var virtualProjectPath = GetVirtualProjectPath(refDirective.ResolvedPath);
                     writer.WriteLine($"""
-                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" />
+                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" {RefDirectiveIncludeMetadataName}="{EscapeValue(refDirective.ResolvedPath)}" />
                         """);
                 }
 

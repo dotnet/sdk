@@ -253,7 +253,7 @@ Lib/Lib.csproj";
         }
 
         [Fact]
-        public void ItDoesNotPrintFileBasedAppReferences_FileBasedApp()
+        public void ItPrintsFileBasedAppReferences_FileBasedApp()
         {
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var appFile = Path.Join(testInstance.Path, "Program.cs");
@@ -273,7 +273,61 @@ Lib/Lib.csproj";
             var outputText = CliStrings.ProjectReferenceOneOrMore;
             outputText += $@"
 {new string('-', outputText.Length)}
-Lib/Lib.csproj";
+Lib/Lib.csproj
+Util.cs";
+
+            new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
+        }
+
+        [Fact]
+        public void ItPrintsFileBasedAppReferenceWithMSBuildPropertyInPath_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            var utilFile = Path.Join(testInstance.Path, "Util.cs");
+            File.WriteAllText(appFile, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref $(MSBuildThisFileDirectory)Util.cs
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(utilFile, """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+{utilFile.Replace('\\', '/')}";
+
+            new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
+        }
+
+        [Fact]
+        public void ItPrintsFileBasedAppReferenceWhenReferencedFileDoesNotExist_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref Missing
+
+                Console.WriteLine();
+                """);
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+Missing";
 
             new DotnetCommand(Log, "reference", "list", "--file", appFile)
                 .WithWorkingDirectory(testInstance.Path)

@@ -8,6 +8,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
@@ -42,7 +43,21 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
             throw new GracefulException(CliCommandStrings.InvalidOptionForFileBasedApp, Definition.FrameworkOption.Name);
         }
 
-        var references = _arguments.Select(p =>
+        var projectReferenceArguments = new List<string>();
+        var fileBasedAppReferenceArguments = new List<string>();
+        foreach (var argument in _arguments)
+        {
+            if (msbuildProj.HasFileBasedAppReference(argument))
+            {
+                fileBasedAppReferenceArguments.Add(argument);
+            }
+            else
+            {
+                projectReferenceArguments.Add(argument);
+            }
+        }
+
+        var references = projectReferenceArguments.Select(p =>
         {
             var fullPath = Path.GetFullPath(p);
             if (!Directory.Exists(fullPath))
@@ -59,6 +74,9 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
         int numberOfRemovedReferences = msbuildProj.RemoveProjectToProjectReferences(
             _parseResult.GetValue(Definition.FrameworkOption),
             references);
+
+        numberOfRemovedReferences += msbuildProj.RemoveFileBasedAppReferences(fileBasedAppReferenceArguments.Select(reference =>
+            (Include: VirtualProjectBuilder.GetVirtualProjectPath(Path.GetFullPath(reference)), DisplayInclude: reference)));
 
         if (numberOfRemovedReferences != 0)
         {

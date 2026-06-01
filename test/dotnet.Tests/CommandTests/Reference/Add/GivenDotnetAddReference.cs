@@ -3,6 +3,7 @@
 
 using Msbuild.Tests.Utilities;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Add.Reference.Tests
 {
@@ -292,6 +293,84 @@ Commands:
 
                 Console.WriteLine();
                 """);
+        }
+
+        [Fact]
+        public void ItAddsFileBasedAppReferenceDirective_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+
+            new DotnetCommand(Log, "reference", "add", "Util.cs", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Util.cs"));
+
+            File.ReadAllText(appFile).Should().Be($$"""
+                #:ref Util.cs
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+
+                Console.WriteLine();
+                """);
+        }
+
+        [Fact]
+        public void WhenFileBasedAppReferenceAlreadyExistsItDoesntDuplicate_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref Util.cs
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+            var contentBefore = File.ReadAllText(appFile);
+
+            new DotnetCommand(Log, "reference", "add", "Util.cs", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectAlreadyHasAreference, "Util.cs"));
+
+            File.ReadAllText(appFile).Should().Be(contentBefore);
+        }
+
+        [Fact]
+        public void ItMatchesMSBuildPropertyRefDirectiveWhenAddingReference_FileBasedApp()
+        {
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref $(MSBuildThisFileDirectory)Util.cs
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+            var contentBefore = File.ReadAllText(appFile);
+
+            new DotnetCommand(Log, "reference", "add", "Util.cs", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectAlreadyHasAreference, "Util.cs"));
+
+            File.ReadAllText(appFile).Should().Be(contentBefore);
         }
 
         [Fact]

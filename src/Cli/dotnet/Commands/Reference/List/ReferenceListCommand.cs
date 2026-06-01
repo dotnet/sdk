@@ -5,11 +5,9 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
@@ -34,19 +32,18 @@ internal class ReferenceListCommand : CommandBase<ListReferenceCommandDefinition
     public override int Execute()
     {
         var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false, _allowedAppKinds);
-        var p2ps = msbuildProj.GetProjectToProjectReferences();
-        if (!p2ps.Any())
+        var references = msbuildProj.GetReferencesForDisplay().ToList();
+        if (references.Count == 0)
         {
             Reporter.Output.WriteLine(string.Format(CliStrings.NoReferencesFound, CliStrings.P2P, _fileOrDirectory));
             return 0;
         }
 
-        ProjectInstance projectInstance = new(msbuildProj.ProjectRootElement);
         Reporter.Output.WriteLine($"{CliStrings.ProjectReferenceOneOrMore}");
         Reporter.Output.WriteLine(new string('-', CliStrings.ProjectReferenceOneOrMore.Length));
-        foreach (var include in p2ps.SelectMany(static item => item.Includes()))
+        foreach (var reference in references)
         {
-            Reporter.Output.WriteLine(projectInstance.ExpandString(include));
+            Reporter.Output.WriteLine(reference);
         }
 
         return 0;
