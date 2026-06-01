@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
-#if !CLI_AOT
 using NuGet.Common;
-#endif
 
 namespace Microsoft.DotNet.Configurer
 {
@@ -12,7 +10,6 @@ namespace Microsoft.DotNet.Configurer
     {
         public const string DotnetHomeVariableName = CliFolderPathCalculatorCore.DotnetHomeVariableName;
         private const string DotnetProfileDirectoryName = CliFolderPathCalculatorCore.DotnetProfileDirectoryName;
-#if !CLI_AOT
         private const string ToolsShimFolderName = "tools";
         private const string ToolsResolverCacheFolderName = "toolResolverCache";
 
@@ -39,35 +36,26 @@ namespace Microsoft.DotNet.Configurer
                     : ToolsShimPath;
             }
         }
-#endif
 
         public static string DotnetUserProfileFolderPath =>
             Path.Combine(DotnetHomePath, DotnetProfileDirectoryName);
 
-#if !CLI_AOT
         public static string ToolsResolverCachePath => Path.Combine(DotnetUserProfileFolderPath, ToolsResolverCacheFolderName);
-#endif
 
         public static string DotnetHomePath
         {
             get
             {
                 return new CliFolderPathCalculatorCore().GetDotnetHomePath()
-#if CLI_AOT
-                    ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
-#else
                     ?? throw new ConfigurationException(
                             string.Format(
                                 LocalizableStrings.FailedToDetermineUserHomeDirectory,
                                 DotnetHomeVariableName))
                         .DisplayAsError();
-#endif
             }
         }
 
-#if !CLI_AOT
         public static string NuGetUserSettingsDirectory =>
             NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-#endif
     }
 }
