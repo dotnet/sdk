@@ -769,8 +769,8 @@ internal static partial class SignatureVerifier
     /// <summary>
     /// Sets up <see cref="X509ChainPolicy"/>: <see cref="X509ChainTrustMode.CustomRootTrust"/>
     /// against ONLY the explicitly-supplied <paramref name="customRoots"/> (the pinned PEMs
-    /// in <c>codesignctl.pem</c> / <c>timestampctl.pem</c>)
-    /// ntire-chain revocation, EKU enforcement at chain-build time
+    /// in <c>codesignctl.pem</c> / <c>timestampctl.pem</c>) and configure
+    /// entire-chain revocation, EKU enforcement at chain-build time
     /// (defense-in-depth on top of the leaf-only EKU bag check), and a strict
     /// <see cref="X509VerificationFlags.NoFlag"/> (release manifests are FRESH artifacts so we
     /// surface NotTimeValid as a failure rather than ignoring it).
