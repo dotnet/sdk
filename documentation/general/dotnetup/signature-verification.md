@@ -133,7 +133,7 @@ The verifier accepts only the following SPKI algorithm OIDs:
   (RSA-2048, RSA-3072) are rejected as `WeakSignatureKey`.
 
 - **Post-quantum** pure-mode OIDs only (ML-DSA, SLH-DSA, Composite ML-DSA).
-  Pre-hash PQC variants such as pure ECDSA are rejected. Windows does not fully support ECC/ECDSA. https://learn.microsoft.com/en-us/security/trusted-root/program-requirements#b-signature-requirements
+  Pre-hash PQC variants are rejected. Classical ECC/ECDSA keys are also rejected. Windows does not fully support ECC/ECDSA. https://learn.microsoft.com/security/trusted-root/program-requirements#b-signature-requirements
 
 For pure-PQC signatures the algorithm OID is repurposed as the CMS
 `digestAlgorithm` identifier — per
