@@ -76,7 +76,7 @@ internal class Parser
 
         rootCommand.SetAction(parseResult =>
         {
-            return new SdkInstallCommand(parseResult).Execute();
+            return new SdkInstallCommand(parseResult, channelArgument: null).Execute();
         });
 
         return rootCommand;
