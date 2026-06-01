@@ -255,6 +255,40 @@ internal sealed class TestApplicationHandler
         }
     }
 
+    internal void OnTestInProgressReceived(TestInProgressMessages testInProgressMessages)
+    {
+        LogTestInProgress(testInProgressMessages);
+
+        if (_options.IsHelp)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(TestInProgressMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(TestInProgressMessages)));
+        }
+
+        if (testInProgressMessages.ExecutionId != _handshakeInfo.Value.ExecutionId)
+        {
+            // Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.
+            throw new InvalidOperationException(string.Format(CliCommandStrings.DotnetTestMismatchingExecutionId, testInProgressMessages.ExecutionId, nameof(TestInProgressMessages), _handshakeInfo.Value.ExecutionId));
+        }
+
+        var handshakeInfo = _handshakeInfo.Value;
+        foreach (TestInProgressMessage inProgressMessage in testInProgressMessages.InProgressMessages)
+        {
+            _output.TestInProgress(
+                _module.TargetPath,
+                handshakeInfo.TargetFramework,
+                handshakeInfo.Architecture,
+                handshakeInfo.ExecutionId,
+                testInProgressMessages.InstanceId!,
+                inProgressMessage.Uid!,
+                inProgressMessage.DisplayName!);
+        }
+    }
+
     internal void OnFileArtifactsReceived(FileArtifactMessages fileArtifactMessages)
     {
         LogFileArtifacts(fileArtifactMessages);
@@ -481,6 +515,26 @@ internal sealed class TestApplicationHandler
             logMessageBuilder.AppendLine($"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
                 $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", (failedTestResult.Exceptions ?? Array.Empty<ExceptionMessage>()).Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
                 $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
+        }
+
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogTestInProgress(TestInProgressMessages testInProgressMessages)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"TestInProgress Execution Id: {testInProgressMessages.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestInProgress Instance Id: {testInProgressMessages.InstanceId}");
+
+        foreach (TestInProgressMessage inProgressMessage in testInProgressMessages.InProgressMessages)
+        {
+            logMessageBuilder.AppendLine($"TestInProgress: {inProgressMessage.Uid}, {inProgressMessage.DisplayName}");
         }
 
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());

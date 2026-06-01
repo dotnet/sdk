@@ -36,6 +36,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly TestProgressStateAwareTerminal _terminalWithProgress;
 
+    /// <summary>
+    /// Whether to track and render currently running tests. Gated on both the caller-requested
+    /// <see cref="TerminalTestReporterOptions.ShowActiveTests"/> and the effective progress
+    /// capability of the console: if progress cannot actually be rendered (e.g. redirected stdout,
+    /// non-TTY, or ANSI not supported) there is no point allocating per-test running-state.
+    /// </summary>
+    private readonly bool _showActiveTests;
+
     private int _handshakeFailuresCount;
 
     private readonly uint? _originalConsoleMode;
@@ -94,6 +102,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _terminalWithProgress = new TestProgressStateAwareTerminal(terminal, showProgress);
+        _showActiveTests = _options.ShowActiveTests && showProgress;
     }
 
     public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
@@ -407,9 +416,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
         var attempt = asm.TryCount;
 
-        if (_options.ShowActiveTests)
+        if (_showActiveTests)
         {
-            asm.TestNodeResultsState?.RemoveRunningTestNode(testNodeUid);
+            asm.TestNodeResultsState?.RemoveRunningTestNode(instanceId, testNodeUid);
         }
 
         switch (outcome)
@@ -977,17 +986,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
         };
 
     public void TestInProgress(
+        string assembly,
+        string? targetFramework,
+        string? architecture,
+        string executionId,
+        string instanceId,
         string testNodeUid,
-        string displayName,
-        string executionId)
+        string displayName)
     {
         TestProgressState asm = _assemblies[executionId];
 
-        if (_options.ShowActiveTests)
+        if (_showActiveTests)
         {
             asm.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
             asm.TestNodeResultsState.AddRunningTestNode(
-                Interlocked.Increment(ref _counter), testNodeUid, displayName, CreateStopwatch());
+                Interlocked.Increment(ref _counter), instanceId, testNodeUid, displayName, CreateStopwatch());
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
