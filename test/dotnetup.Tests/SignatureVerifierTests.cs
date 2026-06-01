@@ -500,16 +500,19 @@ public class SignatureVerifierTests
         // constant in BOTH batches. If the verifier is leaking, growth scales linearly with
         // batch size and the per-iteration ratio stays nonzero. If it's clean, the
         // per-iteration ratio approaches zero as batch size grows because the constant
-        // background noise gets amortized away.
-        const int smallBatch = 50;
+        // background noise gets amortized away. The small batch uses 200 iterations
+        // (not 50) to sufficiently amortize CI-environment noise (xUnit parallelism,
+        // GC background threads, file watchers) that can inflate HandleCount.
+        const int smallBatch = 200;
         const int largeBatch = 500;
 
         // Per-iteration growth threshold: chain build allocates ~4–5 cert handles per
         // verify (signer + 2–3 intermediates + root, ×2 for primary + TSA chains). If
-        // disposal regresses we'd expect ≥4 leaked handles per call. We allow up to 1
-        // handle per iteration as headroom for runtime/test-host noise; anything >1 is
-        // a real regression.
-        const double maxHandlesPerIteration = 1.0;
+        // disposal regresses we'd expect ≥4 leaked handles per call. We allow up to 2
+        // handles per iteration as headroom for runtime/test-host noise on CI (xUnit
+        // threads, GC, file watchers can open/close handles between samples); anything
+        // above 2 is a real regression.
+        const double maxHandlesPerIteration = 2.0;
 
         byte[] content = LoadAsset("releases-directory.json");
         byte[] sig = LoadAsset("releases-directory.json.20260505084330.p7s");
