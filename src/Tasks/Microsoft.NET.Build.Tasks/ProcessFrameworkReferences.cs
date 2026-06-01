@@ -1129,7 +1129,7 @@ namespace Microsoft.NET.Build.Tasks
                     if (WorkloadFileBasedInstall.IsUserLocal(netCoreRoot, NETCoreSdkVersion) &&
                         new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath() is { } userProfileDir)
                     {
-                        yield return Path.Combine(TaskEnvironment.GetAbsolutePath(userProfileDir), "packs");
+                        yield return Path.Combine(userProfileDir, "packs");
                     }
                 }
 
@@ -1183,7 +1183,7 @@ namespace Microsoft.NET.Build.Tasks
             return new(() =>
         {
                 string? userProfileDir = new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath();
-                string? absoluteUserProfileDir = userProfileDir is null ? null : (string)TaskEnvironment.GetAbsolutePath(userProfileDir);
+                string? absoluteUserProfileDir = string.IsNullOrEmpty(userProfileDir) ? null : (string)TaskEnvironment.GetAbsolutePath(userProfileDir);
 
 
                 string netCoreRoot = string.IsNullOrWhiteSpace(NetCoreRoot) ? NetCoreRoot : TaskEnvironment.GetAbsolutePath(NetCoreRoot);
