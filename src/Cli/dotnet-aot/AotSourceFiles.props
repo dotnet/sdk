@@ -34,6 +34,7 @@
     <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryClient.cs" Link="TelemetryClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryCommonProperties.cs" Link="TelemetryCommonProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ITelemetryClient.cs" Link="ITelemetryClient.cs" />
   </ItemGroup>
 

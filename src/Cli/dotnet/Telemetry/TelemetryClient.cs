@@ -22,9 +22,9 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 public class TelemetryClient : ITelemetryClient
 {
 #if CLI_AOT
-    private static Dictionary<string, string?> s_commonProperties = [];
+    private static IDictionary<string, string?> s_commonProperties = new Dictionary<string, string?>();
 #else
-    private static FrozenDictionary<string, string?> s_commonProperties = [];
+    private static FrozenDictionary<string, string?> s_commonProperties = FrozenDictionary<string, string?>.Empty;
     private Task? _trackEventTask;
 #endif
 
@@ -166,22 +166,7 @@ public class TelemetryClient : ITelemetryClient
         }
 
         CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
-#if CLI_AOT
-        if (s_commonProperties.Count == 0)
-        {
-            s_commonProperties = new Dictionary<string, string?>
-            {
-                { "OS Version", RuntimeInformation.OSDescription },
-                { "OS Platform", OperatingSystem.IsWindows() ? "Windows" : OperatingSystem.IsMacOS() ? "macOS" : "Linux" },
-                { "OS Architecture", RuntimeInformation.OSArchitecture.ToString() },
-                { "Runtime Id", RuntimeInformation.RuntimeIdentifier },
-                { "Product Version", Product.Version },
-                { "SessionId", CurrentSessionId },
-            };
-        }
-#else
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
-#endif
     }
 
     /// <summary>
