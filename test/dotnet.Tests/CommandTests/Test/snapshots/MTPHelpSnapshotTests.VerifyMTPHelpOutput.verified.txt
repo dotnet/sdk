@@ -45,6 +45,10 @@ Options:
 
 Waiting for options and extensions...
 Platform Options:
+  --ansi                          Control whether ANSI escape characters are emitted.
+                                  Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
+                                  'on' forces ANSI escape codes (including cursor movement) even when stdout is redirected; pair it with --no-progress if you only want colors.
+                                  When both --ansi and --no-ansi are provided, --ansi wins.
   --debug                         Allows to pause execution in order to attach to the process for debug purposes.
   --diagnostic                    Enable the diagnostic logging. The default log level is 'Trace'.
                                   The file will be written in the output directory with the name log_[yyMMddHHmmssfff].diag
@@ -60,19 +64,15 @@ Platform Options:
   --ignore-exit-code              Do not report non successful exit value for specific exit codes
                                   (e.g. '--ignore-exit-code 8;9' ignore exit code 8 and 9 and will return 0 in these case)
   --info                          Display .NET test application information.
+  --show-stderr                   Determines when to show captured error output of a test.
+                                  Valid values are 'All', 'Failed', 'None'. Default is 'All'.
+  --show-stdout                   Determines when to show captured standard output of a test.
+                                  Valid values are 'All', 'Failed', 'None'. Default is 'All'.
   --timeout                       A global test execution timeout.
-                                  Takes one argument as string in the format <value>[h|m|s] where 'value' is float.
+                                  Takes one argument as a time value with an explicit unit suffix. Accepted suffixes are 'ms'/'mil(s)'/'millisecond(s)', 's'/'sec(s)'/'second(s)', 'm'/'min(s)'/'minute(s)', 'h'/'hour(s)', and 'd'/'day(s)', e.g. '500ms', '5400s', '90m', '1.5h', '1d'.
 
 Extension Options:
-  --ansi                 Control whether ANSI escape characters are emitted.
-                         Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
-                         'on' forces ANSI escape codes (including cursor movement) even when stdout is redirected; pair it with --no-progress if you only want colors.
-                         When both --ansi and --no-ansi are provided, --ansi wins.
   --report-trx           Enable generating TRX report
   --report-trx-filename  The name of the generated TRX report. May include a relative or absolute path; relative paths are resolved against the test results directory and missing directories are created.
                          Supports the following placeholders: {pname} (test application name), {pid} (process ID), {asm} (entry assembly name), {tfm} (target framework moniker), {time} (timestamp).
                          Example: MyReport_{tfm}.trx
-  --show-stderr          Determines when to show captured error output of a test.
-                         Valid values are 'All', 'Failed', 'None'. Default is 'All'.
-  --show-stdout          Determines when to show captured standard output of a test.
-                         Valid values are 'All', 'Failed', 'None'. Default is 'All'.
