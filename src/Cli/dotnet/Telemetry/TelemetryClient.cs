@@ -38,11 +38,7 @@ public class TelemetryClient : ITelemetryClient
 
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
-#if CLI_AOT
-    private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculatorCore.DotnetUserProfileFolderPath, "TelemetryStorageService");
-#else
     private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
-#endif
     // Note: The TelemetryClient instance constructor takes in an environment provider. These fields don't use that currently.
     private static readonly string? s_environmentStoragePath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
 #endif

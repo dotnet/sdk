@@ -38,14 +38,6 @@ namespace Microsoft.DotNet.Configurer
             return Path.Combine(homePath, DotnetProfileDirectoryName);
         }
 
-        /// <summary>
-        /// Convenience property that returns the .dotnet user profile folder path
-        /// using the default (process environment) configuration.
-        /// </summary>
-        public static string DotnetUserProfileFolderPath =>
-            new CliFolderPathCalculatorCore().GetDotnetUserProfileFolderPath()
-                ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), DotnetProfileDirectoryName);
-
         public string? GetDotnetHomePath()
         {
             var home = _getEnvironmentVariable(DotnetHomeVariableName);
