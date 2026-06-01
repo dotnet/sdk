@@ -180,7 +180,9 @@ internal sealed class TestApplicationHandler
         {
             _output.TestDiscovered(_handshakeInfo.Value.ExecutionId,
                 ValidateRequiredMessageProperty(test.DisplayName, nameof(DiscoveredTestMessage.DisplayName), nameof(DiscoveredTestMessage)),
-                ValidateRequiredMessageProperty(test.Uid, nameof(DiscoveredTestMessage.Uid), nameof(DiscoveredTestMessage)));
+                ValidateRequiredMessageProperty(test.Uid, nameof(DiscoveredTestMessage.Uid), nameof(DiscoveredTestMessage)),
+                test.FilePath,
+                test.LineNumber);
         }
     }
 
@@ -444,7 +446,12 @@ internal sealed class TestApplicationHandler
 
         foreach (var discoveredTestMessage in discoveredTestMessages.DiscoveredMessages)
         {
-            logMessageBuilder.AppendLine($"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
+            logMessageBuilder.AppendLine($"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}, " +
+                $"FilePath={discoveredTestMessage.FilePath}, LineNumber={discoveredTestMessage.LineNumber}, " +
+                $"Namespace={discoveredTestMessage.Namespace}, TypeName={discoveredTestMessage.TypeName}, " +
+                $"MethodName={discoveredTestMessage.MethodName}, " +
+                $"ParameterTypeFullNames=[{string.Join(", ", discoveredTestMessage.ParameterTypeFullNames)}], " +
+                $"Traits=[{string.Join(", ", discoveredTestMessage.Traits.Select(t => $"{t.Key}={t.Value}"))}]");
         }
 
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());

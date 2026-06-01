@@ -869,7 +869,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
     internal void TestDiscovered(
         string executionId,
         string? displayName,
-        string? uid)
+        string? uid,
+        string? filePath,
+        int? lineNumber)
     {
         if (!_isDiscovery)
         {
@@ -882,7 +884,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
-        asm.DiscoverTest(displayName, uid);
+        asm.DiscoverTest(displayName, uid, filePath, lineNumber);
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
@@ -901,12 +903,26 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid) in assembly.DiscoveredTestNames)
+            foreach ((string? displayName, string? uid, string? filePath, int? lineNumber) in assembly.DiscoveredTestNames)
             {
                 if (displayName is not null)
                 {
                     terminal.Append(SingleIndentation);
-                    terminal.AppendLine(displayName);
+                    terminal.Append(displayName);
+                    if (!string.IsNullOrEmpty(filePath))
+                    {
+                        terminal.Append(" [");
+                        terminal.Append(filePath);
+                        if (lineNumber is > 0)
+                        {
+                            terminal.Append(':');
+                            terminal.Append(lineNumber.Value.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                        terminal.Append(']');
+                    }
+
+                    terminal.AppendLine();
                 }
             }
 
