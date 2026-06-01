@@ -19,8 +19,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// - [Required] TargetPath: the output dll path
         /// - [Required] RuntimeTargetFramework: the target framework to run tests on
         /// - [Optional] Arguments: a string of arguments to be passed to the XUnit console runner
-        /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to the base method limit
-        ///   used for partitioning tests into Helix shards (base is 16, or 32 for FullFramework)
+        /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to BaseMethodLimit
+        ///   used for partitioning tests into Helix shards
         /// The two required parameters will be automatically created if XUnitProject.Identity is set to the path of the XUnit csproj file
         /// </summary>
         [Required]
@@ -42,6 +42,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// The runtime identifier of the target Helix queue (e.g. osx-arm64, linux-x64).
         /// </summary>
         public string TargetRid { get; set; } = "";
+
+        /// <summary>
+        /// Base number of test methods per Helix work item shard.
+        /// Per-project MethodLimitMultiplier scales this value.
+        /// Defaults to 32.
+        /// </summary>
+        public int BaseMethodLimit { get; set; } = 32;
 
         /// <summary>
         /// Optional timeout for all created workitems
@@ -154,20 +161,20 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 msbuildAdditionalSdkResolverFolder = "";
             }
 
-            var isFullMSBuild = string.Equals(Environment.GetEnvironmentVariable("TestFullMSBuild"), "true", StringComparison.OrdinalIgnoreCase);
-            var baseMethodLimit = isFullMSBuild ? 32 : 16;
+            var methodLimit = BaseMethodLimit;
             if (xunitProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
             {
                 if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
                 {
-                    baseMethodLimit *= multiplier;
+                    methodLimit *= multiplier;
                 }
                 else
                 {
                     Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
                 }
             }
-            var scheduler = new AssemblyScheduler(methodLimit: baseMethodLimit);
+
+            var scheduler = new AssemblyScheduler(methodLimit: methodLimit);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
