@@ -36,6 +36,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly TestProgressStateAwareTerminal _terminalWithProgress;
 
+    /// <summary>
+    /// Whether to track and render currently running tests. Gated on both the caller-requested
+    /// <see cref="TerminalTestReporterOptions.ShowActiveTests"/> and the effective progress
+    /// capability of the console: if progress cannot actually be rendered (e.g. redirected stdout,
+    /// non-TTY, or ANSI not supported) there is no point allocating per-test running-state.
+    /// </summary>
+    private readonly bool _showActiveTests;
+
     private int _handshakeFailuresCount;
 
     private readonly uint? _originalConsoleMode;
@@ -94,6 +102,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _terminalWithProgress = new TestProgressStateAwareTerminal(terminal, showProgress);
+        _showActiveTests = _options.ShowActiveTests && showProgress;
     }
 
     public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
@@ -407,9 +416,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
         var attempt = asm.TryCount;
 
-        if (_options.ShowActiveTests)
+        if (_showActiveTests)
         {
-            asm.TestNodeResultsState?.RemoveRunningTestNode(testNodeUid);
+            asm.TestNodeResultsState?.RemoveRunningTestNode(instanceId, testNodeUid);
         }
 
         switch (outcome)
@@ -731,7 +740,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
         int exitCode, string? outputData, string? errorData)
     {
-        TestProgressState assemblyRun = _assemblies[executionId];
+        // Defense in depth: AssemblyRunCompleted is normally only invoked for an executionId that
+        // AssemblyRunStarted already registered in _assemblies (via GetOrAddAssemblyRun, gated on the
+        // TestHost handshake by TestApplicationHandler). If a future regression or lifecycle race
+        // (e.g., _assemblies.Clear() running before this completes) hands us an unknown id, surface
+        // a handshake failure instead of throwing a KeyNotFoundException that buries the real exit
+        // cause.
+        if (!_assemblies.TryGetValue(executionId, out TestProgressState? assemblyRun))
+        {
+            HandshakeFailure(assemblyPath: string.Empty, targetFramework: null, exitCode, outputData ?? string.Empty, errorData ?? string.Empty);
+            return;
+        }
+
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
@@ -858,7 +878,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
     internal void TestDiscovered(
         string executionId,
         string? displayName,
-        string? uid)
+        string? uid,
+        string? filePath,
+        int? lineNumber)
     {
         if (!_isDiscovery)
         {
@@ -871,7 +893,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
-        asm.DiscoverTest(displayName, uid);
+        asm.DiscoverTest(displayName, uid, filePath, lineNumber);
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
@@ -890,12 +912,26 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid) in assembly.DiscoveredTestNames)
+            foreach ((string? displayName, string? uid, string? filePath, int? lineNumber) in assembly.DiscoveredTestNames)
             {
                 if (displayName is not null)
                 {
                     terminal.Append(SingleIndentation);
-                    terminal.AppendLine(displayName);
+                    terminal.Append(displayName);
+                    if (!string.IsNullOrEmpty(filePath))
+                    {
+                        terminal.Append(" [");
+                        terminal.Append(filePath);
+                        if (lineNumber is > 0)
+                        {
+                            terminal.Append(':');
+                            terminal.Append(lineNumber.Value.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                        terminal.Append(']');
+                    }
+
+                    terminal.AppendLine();
                 }
             }
 
@@ -950,17 +986,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
         };
 
     public void TestInProgress(
+        string assembly,
+        string? targetFramework,
+        string? architecture,
+        string executionId,
+        string instanceId,
         string testNodeUid,
-        string displayName,
-        string executionId)
+        string displayName)
     {
         TestProgressState asm = _assemblies[executionId];
 
-        if (_options.ShowActiveTests)
+        if (_showActiveTests)
         {
             asm.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
             asm.TestNodeResultsState.AddRunningTestNode(
-                Interlocked.Increment(ref _counter), testNodeUid, displayName, CreateStopwatch());
+                Interlocked.Increment(ref _counter), instanceId, testNodeUid, displayName, CreateStopwatch());
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);

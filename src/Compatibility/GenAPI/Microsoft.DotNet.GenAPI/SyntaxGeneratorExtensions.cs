@@ -81,6 +81,15 @@ namespace Microsoft.DotNet.GenAPI
 
             if (symbol is IEventSymbol eventSymbol && !eventSymbol.IsAbstract)
             {
+                // SyntaxGenerator.CustomEventDeclaration does not support generating explicit interface
+                // implementations, so build the EventDeclarationSyntax directly in that case. Otherwise
+                // GenAPI emits nothing for the explicit event and the generated reference source fails
+                // to compile (CS0535).
+                if (!eventSymbol.ExplicitInterfaceImplementations.IsEmpty)
+                {
+                    return CreateExplicitInterfaceEventDeclaration(syntaxGenerator, eventSymbol);
+                }
+
                 // adds generation of add & remove accessors for the non abstract events.
                 return syntaxGenerator.CustomEventDeclaration(eventSymbol.Name,
                     syntaxGenerator.TypeExpression(eventSymbol.Type),
@@ -107,6 +116,35 @@ namespace Microsoft.DotNet.GenAPI
                 // re-throw the ArgumentException with the symbol that caused it.
                 throw new ArgumentException(ex.Message, symbol.ToDisplayString(), innerException: ex);
             }
+        }
+
+        // Builds an EventDeclarationSyntax for an explicit interface implementation event with empty
+        // add/remove accessors. SyntaxGenerator.CustomEventDeclaration does not expose an overload
+        // for specifying an explicit interface specifier.
+        private static EventDeclarationSyntax CreateExplicitInterfaceEventDeclaration(
+            SyntaxGenerator syntaxGenerator,
+            IEventSymbol eventSymbol)
+        {
+            IEventSymbol implementedEvent = eventSymbol.ExplicitInterfaceImplementations[0];
+            TypeSyntax eventType = (TypeSyntax)syntaxGenerator.TypeExpression(eventSymbol.Type);
+            NameSyntax interfaceName = (NameSyntax)syntaxGenerator.TypeExpression(implementedEvent.ContainingType);
+
+            AccessorListSyntax accessorList = SyntaxFactory.AccessorList(SyntaxFactory.List(new[]
+            {
+                SyntaxFactory.AccessorDeclaration(SyntaxKind.AddAccessorDeclaration)
+                    .WithBody(SyntaxFactory.Block()),
+                SyntaxFactory.AccessorDeclaration(SyntaxKind.RemoveAccessorDeclaration)
+                    .WithBody(SyntaxFactory.Block())
+            }));
+
+            return SyntaxFactory.EventDeclaration(
+                attributeLists: default,
+                modifiers: default,
+                eventKeyword: SyntaxFactory.Token(SyntaxKind.EventKeyword),
+                type: eventType,
+                explicitInterfaceSpecifier: SyntaxFactory.ExplicitInterfaceSpecifier(interfaceName),
+                identifier: SyntaxFactory.Identifier(implementedEvent.Name),
+                accessorList: accessorList);
         }
 
         // Gets the list of base class and interfaces for a given symbol INamedTypeSymbol.

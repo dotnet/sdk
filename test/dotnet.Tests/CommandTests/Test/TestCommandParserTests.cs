@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             using var temp = new TempDirectory();
             File.WriteAllText(Path.Combine(temp.Path, "global.json"), string.Empty);
 
-            var command = TestCommandDefinition.Create(temp.Path);
+            var command = TestCommandDefinition.Create(temp.Path, testRunnerEnvironmentValue: null);
 
             command.Should().BeOfType<TestCommandDefinition.VSTest>(
                 "an empty global.json must not crash the CLI parser (regression for https://github.com/dotnet/sdk/issues/52384)");
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             using var temp = new TempDirectory();
             File.WriteAllText(Path.Combine(temp.Path, "global.json"), "{ this is not valid json");
 
-            var command = TestCommandDefinition.Create(temp.Path);
+            var command = TestCommandDefinition.Create(temp.Path, testRunnerEnvironmentValue: null);
 
             command.Should().BeOfType<TestCommandDefinition.VSTest>();
         }
@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Path.Combine(temp.Path, "global.json"),
                 """{ "test": { "runner": "Microsoft.Testing.Platform" } }""");
 
-            var command = TestCommandDefinition.Create(temp.Path);
+            var command = TestCommandDefinition.Create(temp.Path, testRunnerEnvironmentValue: null);
 
             command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>();
         }
@@ -216,9 +216,160 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Path.Combine(temp.Path, "global.json"),
                 """{ "test": { "runner": "definitely-not-a-real-runner" } }""");
 
-            Action act = () => TestCommandDefinition.Create(temp.Path);
+            // Pass an explicit null env value so the test cannot be silently disabled by a
+            // DOTNET_TEST_RUNNER value that happens to be set in the developer/CI environment.
+            Action act = () => TestCommandDefinition.Create(temp.Path, testRunnerEnvironmentValue: null);
 
-            act.Should().Throw<InvalidOperationException>();
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("*definitely-not-a-real-runner*");
+        }
+
+        [Fact]
+        public void Create_WhenEnvironmentVariableIsMtp_ReturnsMicrosoftTestingPlatform()
+        {
+            using var temp = new TempDirectory();
+
+            var command = TestCommandDefinition.Create(temp.Path, "Microsoft.Testing.Platform");
+
+            command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>(
+                "DOTNET_TEST_RUNNER=Microsoft.Testing.Platform should select MTP without requiring a global.json (#51505).");
+        }
+
+        [Fact]
+        public void Create_WhenEnvironmentVariableIsVSTest_ReturnsVSTest()
+        {
+            using var temp = new TempDirectory();
+
+            var command = TestCommandDefinition.Create(temp.Path, "VSTest");
+
+            command.Should().BeOfType<TestCommandDefinition.VSTest>();
+        }
+
+        [Fact]
+        public void Create_EnvironmentVariableMatchIsCaseInsensitive()
+        {
+            using var temp = new TempDirectory();
+
+            var command = TestCommandDefinition.Create(temp.Path, "microsoft.testing.platform");
+
+            command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>();
+        }
+
+        [Theory]
+        [InlineData(" VSTest ")]
+        [InlineData("\tVSTest\n")]
+        public void Create_TrimsWhitespaceAroundEnvironmentVariableValue_VSTest(string envValue)
+        {
+            using var temp = new TempDirectory();
+
+            var command = TestCommandDefinition.Create(temp.Path, envValue);
+
+            command.Should().BeOfType<TestCommandDefinition.VSTest>(
+                "shell/editor mishaps that surround the env var with whitespace must not silently change the selected runner.");
+        }
+
+        [Theory]
+        [InlineData(" Microsoft.Testing.Platform ")]
+        [InlineData("\tMicrosoft.Testing.Platform\n")]
+        public void Create_TrimsWhitespaceAroundEnvironmentVariableValue_MTP(string envValue)
+        {
+            using var temp = new TempDirectory();
+
+            var command = TestCommandDefinition.Create(temp.Path, envValue);
+
+            command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>();
+        }
+
+        [Fact]
+        public void Create_EnvironmentVariableTakesPrecedenceOverGlobalJson_MtpOverridesVSTest()
+        {
+            using var temp = new TempDirectory();
+            File.WriteAllText(
+                Path.Combine(temp.Path, "global.json"),
+                """{ "test": { "runner": "VSTest" } }""");
+
+            var command = TestCommandDefinition.Create(temp.Path, "Microsoft.Testing.Platform");
+
+            command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>(
+                "DOTNET_TEST_RUNNER should override the runner configured in global.json (#51505).");
+        }
+
+        [Fact]
+        public void Create_EnvironmentVariableTakesPrecedenceOverGlobalJson_VSTestOverridesMtp()
+        {
+            using var temp = new TempDirectory();
+            File.WriteAllText(
+                Path.Combine(temp.Path, "global.json"),
+                """{ "test": { "runner": "Microsoft.Testing.Platform" } }""");
+
+            var command = TestCommandDefinition.Create(temp.Path, "VSTest");
+
+            command.Should().BeOfType<TestCommandDefinition.VSTest>(
+                "DOTNET_TEST_RUNNER should override the runner configured in global.json (#51505).");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Create_WhenEnvironmentVariableIsEmptyOrWhitespace_FallsBackToGlobalJson(string? envValue)
+        {
+            using var temp = new TempDirectory();
+            File.WriteAllText(
+                Path.Combine(temp.Path, "global.json"),
+                """{ "test": { "runner": "Microsoft.Testing.Platform" } }""");
+
+            var command = TestCommandDefinition.Create(temp.Path, envValue);
+
+            command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>(
+                "an unset or whitespace-only DOTNET_TEST_RUNNER must not block the global.json runner from being honored.");
+        }
+
+        [Fact]
+        public void Create_WhenEnvironmentVariableIsUnknown_FallsBackToGlobalJson()
+        {
+            // An unrecognized DOTNET_TEST_RUNNER value must NOT throw — TestCommandDefinition.Create
+            // is invoked during CLI parser construction (i.e. for every `dotnet ...` invocation,
+            // including `dotnet --version` and `dotnet build`). A stale or mistyped env var that
+            // a user inadvertently left set must not crash every command on the box.
+            using var temp = new TempDirectory();
+            File.WriteAllText(
+                Path.Combine(temp.Path, "global.json"),
+                """{ "test": { "runner": "Microsoft.Testing.Platform" } }""");
+
+            var command = TestCommandDefinition.Create(temp.Path, "definitely-not-a-real-runner");
+
+            command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>(
+                "an unrecognized env var value should be ignored so the global.json runner still wins.");
+        }
+
+        [Fact]
+        public void Create_WhenEnvironmentVariableIsUnknownAndNoGlobalJson_DefaultsToVSTest()
+        {
+            using var temp = new TempDirectory();
+
+            var command = TestCommandDefinition.Create(temp.Path, "definitely-not-a-real-runner");
+
+            command.Should().BeOfType<TestCommandDefinition.VSTest>(
+                "with no other configuration, an unrecognized env var value should fall back to the default runner instead of crashing the CLI.");
+        }
+
+        [Fact]
+        public void Create_ValidEnvironmentVariableShieldsInvalidGlobalJson()
+        {
+            // When DOTNET_TEST_RUNNER is set to a recognized runner, it must take precedence
+            // and prevent the throw that would otherwise come from an invalid global.json
+            // runner name. This is the key escape hatch: a user with a broken global.json can
+            // unblock themselves by setting the env var instead of editing the repo config.
+            using var temp = new TempDirectory();
+            File.WriteAllText(
+                Path.Combine(temp.Path, "global.json"),
+                """{ "test": { "runner": "definitely-not-a-real-runner" } }""");
+
+            var command = TestCommandDefinition.Create(temp.Path, "Microsoft.Testing.Platform");
+
+            command.Should().BeOfType<TestCommandDefinition.MicrosoftTestingPlatform>(
+                "a valid DOTNET_TEST_RUNNER should shield users from an unsupported runner name in global.json.");
         }
 
         private sealed class TempDirectory : IDisposable
