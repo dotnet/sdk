@@ -195,15 +195,6 @@
   <data name="SpecifyAtLeastOneProjectToRemove" xml:space="preserve">
     <value>You must specify at least one project to remove.</value>
   </data>
-  <data name="CouldNotFindProjectOrDirectory" xml:space="preserve">
-    <value>Could not find project or directory `{0}`.</value>
-  </data>
-  <data name="CouldNotFindAnyProjectInDirectory" xml:space="preserve">
-    <value>Could not find any project in `{0}`.</value>
-  </data>
-  <data name="MoreThanOneProjectInDirectory" xml:space="preserve">
-    <value>Found more than one project in `{0}`. Specify which one to use.</value>
-  </data>
   <data name="NoReferencesFound" xml:space="preserve">
     <value>There are no {0} references in project {1}.</value>
   </data>

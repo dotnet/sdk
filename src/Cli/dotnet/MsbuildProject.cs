@@ -5,6 +5,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 #if !CLI_AOT
 using Microsoft.Build.Construction;
@@ -14,7 +15,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.ProjectTools;
 using NuGet.Frameworks;
 #endif
 
@@ -23,64 +23,12 @@ namespace Microsoft.DotNet.Cli;
 internal class MsbuildProject
 {
     public static string GetProjectFileFromDirectory(string projectDirectory)
-    {
-        DirectoryInfo dir;
-        try
-        {
-            dir = new DirectoryInfo(projectDirectory);
-        }
-        catch (ArgumentException)
-        {
-            throw new GracefulException(CliStrings.CouldNotFindProjectOrDirectory, projectDirectory);
-        }
-
-        if (!dir.Exists)
-        {
-            throw new GracefulException(CliStrings.CouldNotFindProjectOrDirectory, projectDirectory);
-        }
-
-        FileInfo[] files = dir.GetFiles("*proj");
-        if (files.Length == 0)
-        {
-            throw new GracefulException(CliStrings.CouldNotFindAnyProjectInDirectory, projectDirectory);
-        }
-
-        if (files.Length > 1)
-        {
-            throw new GracefulException(CliStrings.MoreThanOneProjectInDirectory, projectDirectory);
-        }
-
-        return files[0].FullName;
-    }
+        => ProjectLocator.TryGetProjectFileFromDirectory(projectDirectory, out var projectFilePath, out var error)
+            ? projectFilePath
+            : throw new GracefulException(error);
 
     public static bool TryGetProjectFileFromDirectory(string projectDirectory, [NotNullWhen(true)] out string projectFilePath)
-    {
-        projectFilePath = null;
-
-        DirectoryInfo dir;
-        try
-        {
-            dir = new DirectoryInfo(projectDirectory);
-        }
-        catch (ArgumentException)
-        {
-            return false;
-        }
-
-        if (!dir.Exists)
-        {
-            return false;
-        }
-
-        FileInfo[] files = dir.GetFiles("*proj");
-        if (files.Length != 1)
-        {
-            return false;
-        }
-
-        projectFilePath = files[0].FullName;
-        return true;
-    }
+        => ProjectLocator.TryGetProjectFileFromDirectory(projectDirectory, out projectFilePath, out _);
 
 #if !CLI_AOT
     const string ProjectItemElementType = "ProjectReference";
