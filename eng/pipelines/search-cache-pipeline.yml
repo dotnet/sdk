@@ -13,8 +13,12 @@ schedules:
   always: true # Trigger even when there are no code changes.
 
 parameters:
-- name: publishToBlob
-  displayName: Publish to blob?
+- name: publishFiles
+  displayName: Publish files to ESRP (download.visualstudio.microsoft.com)?
+  type: boolean
+  default: true
+- name: updateAkaMsLink
+  displayName: Update aka.ms/dotnet/templating/searchcacheurl to the new ESRP URL?
   type: boolean
   default: true
 
@@ -24,13 +28,16 @@ variables:
 
 resources:
   repositories:
-  - repository: 1ESPipelineTemplates
+  # MicroBuild publish wrapper. It internally declares the 1ESPipelineTemplates
+  # repository resource and extends v1/1ES.Official.PipelineTemplate.yml, while
+  # injecting the MicroBuild publish-authorization plugin required for ESRP publishing.
+  - repository: MicroBuildTemplates
     type: git
-    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    name: 1ESPipelineTemplates/MicroBuildTemplate
     ref: refs/tags/release
 
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  template: azure-pipelines/1ES.Official.Publish.yml@MicroBuildTemplates
   parameters:
     sdl:
       sourceAnalysisPool:
@@ -46,6 +53,11 @@ extends:
           image: 1es-ubuntu-2204
           os: linux
         templateContext:
+          # The MicroBuild publish-authorization plugin only needs to run on the
+          # publishing job, not on this Linux build job.
+          mb:
+            publish:
+              enabled: false
           outputs:
           - output: pipelineArtifact
             targetPath: $(Build.ArtifactStagingDirectory)
@@ -148,9 +160,8 @@ extends:
               nonTemplatePacks.json
             TargetFolder: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
 
-      - ${{ if eq(parameters.publishToBlob, true) }}:
-        # An entirely separate job is required to run AzureFileCopy@6, which is a Windows-only task.
-        # If the Create job was rewritten to use PowerShell instead of Bash, Create and Publish could be combined into a single Windows job.
+      - ${{ if eq(parameters.publishFiles, true) }}:
+        # An entirely separate Windows job is required for ESRP publishing.
         - job: Publish
           dependsOn: Create
           pool:
@@ -166,13 +177,135 @@ extends:
               artifactName: ArtifactsToPublish
 
           steps:
-          - task: AzureFileCopy@6
-            displayName: Upload to blob storage
-            inputs:
-              SourcePath: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/*.json
-              # Service connection: https://dnceng.visualstudio.com/internal/_settings/adminservices?resourceId=010b0bdc-9487-484f-af2d-ca3ae3235b84
-              azureSubscription: DOTNET-Templating - PME
-              Destination: AzureBlob
-              # These variables are defined in the pipeline's Variables UI.
-              storage: $(CacheFileStorageAccount)
-              ContainerName: $(CacheFileStorageContainer)
+          # Publish the search cache JSON files via ESRP (Release Studio) to
+          # download.visualstudio.microsoft.com. This replaces the retired,
+          # DDFUN-managed 'dotnettemplating' blob storage account.
+          # The ESRP connected service, key vault, and signing cert are baked into the
+          # template. $(ESRPOwners)/$(ESRPApprovers) are comma-separated aliases defined
+          # in the pipeline's Variables UI; both must be PME-account holders.
+          - template: azure-pipelines/MicroBuild.Publish.ReleaseStudio.yml@MicroBuildTemplates
+            parameters:
+              intent: 'filedownloadlinkgeneration'
+              contentType: 'Binaries'
+              contentSource: 'Folder'
+              folderLocation: '$(System.DefaultWorkingDirectory)/ArtifactsToPublish'
+              waitForReleaseCompletion: true
+              owners: '$(ESRPOwners)'
+              approvers: '$(ESRPApprovers)'
+
+          # Capture the per-file download URLs that ESRP generated. Each publish run produces
+          # brand-new, GUID-based URLs under download.visualstudio.microsoft.com, so the
+          # aka.ms link must be repointed every run.
+          # ESRP_RELEASE_DETAILS schema:
+          #   { "status": "pass", "files": [ { "fileDownloadDetails": [ { "downloadUrl": "..." } ] } ] }
+          - ${{ if eq(parameters.updateAkaMsLink, true) }}:
+            - pwsh: |
+                $ErrorActionPreference = 'Stop'
+                $json = $env:ESRP_RELEASE_DETAILS
+                if ([string]::IsNullOrEmpty($json)) { Write-Error 'ESRP_RELEASE_DETAILS is not set or empty.'; exit 1 }
+                $details = ConvertFrom-Json $json
+                if ($details.status -ne 'pass') { Write-Error "ESRP publishing did not pass. Status: '$($details.status)'."; exit 1 }
+
+                # The aka.ms links track the v2 search cache file and the non-template-packs file.
+                # Match on the published file name (the original name is preserved as the last URL
+                # segment) rather than on a release-details property name, which is more robust
+                # across schema revisions.
+                $searchCacheUrl = $null
+                $nonTemplatePacksUrl = $null
+                foreach ($file in $details.files) {
+                  foreach ($detail in $file.fileDownloadDetails) {
+                    $url = $detail.downloadUrl
+                    Write-Host "Published: $url"
+                    if ($url -like '*/NuGetTemplateSearchInfoVer2.json') { $searchCacheUrl = $url }
+                    if ($url -like '*/nonTemplatePacks.json') { $nonTemplatePacksUrl = $url }
+                  }
+                }
+                if ([string]::IsNullOrWhiteSpace($searchCacheUrl)) {
+                  Write-Error 'Could not find the NuGetTemplateSearchInfoVer2.json download URL in ESRP_RELEASE_DETAILS.'
+                  exit 1
+                }
+                if ([string]::IsNullOrWhiteSpace($nonTemplatePacksUrl)) {
+                  Write-Error 'Could not find the nonTemplatePacks.json download URL in ESRP_RELEASE_DETAILS.'
+                  exit 1
+                }
+                Write-Host "Search cache URL: $searchCacheUrl"
+                Write-Host "Non-template packs URL: $nonTemplatePacksUrl"
+                Write-Host "##vso[task.setvariable variable=SearchCacheDownloadUrl;isOutput=true]$searchCacheUrl"
+                Write-Host "##vso[task.setvariable variable=NonTemplatePacksDownloadUrl;isOutput=true]$nonTemplatePacksUrl"
+              name: capture
+              displayName: Capture ESRP download URLs
+              env:
+                ESRP_RELEASE_DETAILS: $(ESRP_RELEASE_DETAILS)
+
+            # Repoint the aka.ms links at the new ESRP URLs using the corp Redirection Management
+            # API (same contract as dotnet/arcade's AkaMSLinkManager). The /bulk endpoint accepts
+            # an array, so both links are updated in a single call. The service connection identity
+            # must own the links. The following variables are defined in the pipeline's Variables UI:
+            #   AkaMsServiceConnection           - AzureRM service connection whose identity can manage the links
+            #   AkaMsTenantId                    - redirection (AME) tenant GUID
+            #   AkaMsShortUrl                    - 'dotnet/templating/searchcacheurl' (no 'aka.ms/' prefix)
+            #   AkaMsNonTemplatePacksShortUrl    - 'dotnet/templating/nontemplatepacksurl' (no 'aka.ms/' prefix)
+            #   AkaMsOwners                      - semicolon-delimited owner aliases
+            #   AkaMsGroupOwner                  - owning security-group alias (may be empty)
+            # Only repoint the production links from main; manual/test runs on other branches
+            # should not move them (point the short-url vars at test links to validate this step).
+            - task: AzureCLI@2
+              displayName: Update aka.ms search cache links
+              condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+              inputs:
+                azureSubscription: $(AkaMsServiceConnection)
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  $ErrorActionPreference = 'Stop'
+                  $searchCacheUrl      = $env:SEARCH_CACHE_URL
+                  $nonTemplatePacksUrl = $env:NON_TEMPLATE_PACKS_URL
+                  $shortUrl            = $env:AKAMS_SHORT_URL
+                  $nonShortUrl         = $env:AKAMS_NONTEMPLATEPACKS_SHORT_URL
+                  $tenant              = $env:AKAMS_TENANT_ID
+                  $owners              = $env:AKAMS_OWNERS
+                  $groupOwner          = $env:AKAMS_GROUP_OWNER
+
+                  foreach ($required in @{ SEARCH_CACHE_URL = $searchCacheUrl; NON_TEMPLATE_PACKS_URL = $nonTemplatePacksUrl; AKAMS_SHORT_URL = $shortUrl; AKAMS_NONTEMPLATEPACKS_SHORT_URL = $nonShortUrl; AKAMS_TENANT_ID = $tenant; AKAMS_OWNERS = $owners }.GetEnumerator()) {
+                    if ([string]::IsNullOrWhiteSpace($required.Value)) { Write-Error "Required value '$($required.Key)' is empty."; exit 1 }
+                  }
+
+                  $token = az account get-access-token `
+                    --scope 'https://msazurecloud.onmicrosoft.com/RedirectionMgmtApi-Prod/.default' `
+                    --query accessToken -o tsv
+                  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($token)) { Write-Error 'Failed to acquire redirection API token.'; exit 1 }
+
+                  $lastModifiedBy = $owners.Split(';')[0].Trim()
+                  function New-Link($short, $target, $description) {
+                    @{
+                      shortUrl       = $short
+                      targetUrl      = $target
+                      owners         = $owners
+                      groupOwner     = $groupOwner
+                      lastModifiedBy = $lastModifiedBy
+                      description    = $description
+                      isVanity       = $true
+                      isAllowParam   = $true
+                    }
+                  }
+                  $body = ConvertTo-Json @(
+                    (New-Link $shortUrl    $searchCacheUrl      'dotnet templating search cache (published via ESRP)'),
+                    (New-Link $nonShortUrl $nonTemplatePacksUrl 'dotnet templating non-template packs (published via ESRP)')
+                  )
+
+                  $uri = "https://redirectionapi-ame.trafficmanager.net/api/aka/1/$tenant/bulk"
+                  Write-Host "PUT $uri"
+                  Write-Host "  $shortUrl -> $searchCacheUrl"
+                  Write-Host "  $nonShortUrl -> $nonTemplatePacksUrl"
+                  $resp = Invoke-WebRequest -Method Put -Uri $uri `
+                    -Headers @{ Authorization = "Bearer $token" } `
+                    -ContentType 'application/json' -Body $body -UseBasicParsing
+                  Write-Host "Redirection API status: $($resp.StatusCode)"
+              env:
+                SEARCH_CACHE_URL: $(capture.SearchCacheDownloadUrl)
+                NON_TEMPLATE_PACKS_URL: $(capture.NonTemplatePacksDownloadUrl)
+                AKAMS_SHORT_URL: $(AkaMsShortUrl)
+                AKAMS_NONTEMPLATEPACKS_SHORT_URL: $(AkaMsNonTemplatePacksShortUrl)
+                AKAMS_TENANT_ID: $(AkaMsTenantId)
+                AKAMS_OWNERS: $(AkaMsOwners)
+                AKAMS_GROUP_OWNER: $(AkaMsGroupOwner)
