@@ -127,6 +127,7 @@ internal sealed unsafe class ManagedHost : IDisposable
 
         try
         {
+            var _init = Activities.Source.StartActivity("aot-hostfxr-initialization");
             StatusCode result = Interop.hostfxr_initialize_for_dotnet_command_line(
                 args.Length,
                 args,
@@ -135,7 +136,14 @@ internal sealed unsafe class ManagedHost : IDisposable
 
             if (result != StatusCode.Success && handle == 0)
             {
+                _init?.SetStatus(ActivityStatusCode.Error);
+                _init?.Stop();
                 throw new InvalidOperationException($"hostfxr_initialize_for_dotnet_command_line failed. Status: {result} (0x{(uint)result:X8})");
+            }
+            else
+            {
+                _init?.SetStatus(ActivityStatusCode.Ok);
+                _init?.Stop();
             }
 
             try
@@ -167,6 +175,7 @@ internal sealed unsafe class ManagedHost : IDisposable
                     }
                 }
 
+                using var _invoke = Activities.Source.StartActivity("aot-coreclr-invocation");
                 StatusCode appResult = Interop.hostfxr_run_app(handle);
                 return (int)appResult;
             }

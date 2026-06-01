@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
@@ -42,15 +43,19 @@ static unsafe partial class NativeEntryPoint
         string hostPath, string dotnetRoot, string sdkDir,
         string hostfxrPath, string[] args)
     {
+        DateTime preTelemetry = DateTime.UtcNow;
         // Initialize OTel telemetry (mirrors managed Program.cs setup).
         var telemetryClient = new TelemetryClient(sessionId: null);
+        DateTime postTelemetry = DateTime.UtcNow;
         var mainActivity = Activities.Source.StartActivity("native-entrypoint", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
 
         // Backdate the activity start to process start time for accurate timing.
         if (mainActivity is not null)
         {
-            mainActivity.SetCustomProperty("process.start_time", Process.GetCurrentProcess().StartTime.ToUniversalTime());
-            Console.WriteLine("Native entry point is tracking telemetry");
+            mainActivity.SetStartTime(Process.GetCurrentProcess().StartTime.ToUniversalTime());
+            using var telemetryActivity = Activities.Source.StartActivity("aot-telemetry-setup");
+            telemetryActivity?.SetStartTime(preTelemetry);
+            telemetryActivity?.SetEndTime(postTelemetry);
         }
 
         int exitCode = 1;
@@ -67,28 +72,32 @@ static unsafe partial class NativeEntryPoint
             // Try the AOT-compiled path for supported commands (if enabled)
             if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
             {
-                using var _ = Activities.Source.StartActivity("aot-parsing", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
+                var parse = Activities.Source.StartActivity("aot-parsing");
                 var parseResult = Parser.Parse(args);
-
+                parse?.Stop();
+                mainActivity?.SetDisplayName(parseResult);
                 if (parseResult.Errors.Count == 0)
                 {
+                    using var invoke = Activities.Source.StartActivity("aot-invocation");
                     try
                     {
                         exitCode = Parser.Invoke(parseResult);
                         success = true;
                         return exitCode;
                     }
+                    catch (Utils.GracefulException ex)
+                    {
+                        Reporter.Error.WriteLine(ex.Message.Red());
+                        invoke?.SetStatus(ActivityStatusCode.Error);
+                        invoke?.AddException(ex);
+                        success = false;
+                        exitCode = 1;
+                        return exitCode;
+                    }
                     catch (CommandNotAvailableInAotException)
                     {
                         // Command requires managed CLI — fall through to managed fallback below.
                     }
-                    catch (Utils.GracefulException ex)
-                    {
-                        Reporter.Error.WriteLine(ex.Message.Red());
-                        success = false;
-                        exitCode = 1;
-                    }
-
                 }
             }
 
