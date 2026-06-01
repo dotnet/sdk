@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
@@ -18,8 +17,9 @@ internal static class EnvCommandParser
 
         command.Subcommands.Add(EnvSetCommandParser.ConstructCommand());
         command.Subcommands.Add(EnvShowCommandParser.ConstructCommand());
-        command.Subcommands.Add(PrintEnvScriptCommandParser.ConstructCommand(name: "script"));
+        command.Subcommands.Add(EnvScriptCommandParser.ConstructCommand(name: "script"));
 
         return command;
     }
 }
+

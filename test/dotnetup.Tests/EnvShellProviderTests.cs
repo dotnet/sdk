@@ -3,7 +3,7 @@
 
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -299,7 +299,7 @@ public class EnvShellProviderTests
     }
 
     [Fact]
-    public void PrintEnvScriptCommand_ShouldWriteLongScriptWithoutBomOrWrapping()
+    public void EnvScriptCommand_ShouldWriteLongScriptWithoutBomOrWrapping()
     {
         // Arrange
         var provider = new BashEnvShellProvider();
@@ -308,7 +308,7 @@ public class EnvShellProviderTests
         using var output = new MemoryStream();
 
         // Act
-        PrintEnvScriptCommand.WriteScript(output, script);
+        EnvScriptCommand.WriteScript(output, script);
 
         // Assert
         var bytes = output.ToArray();
