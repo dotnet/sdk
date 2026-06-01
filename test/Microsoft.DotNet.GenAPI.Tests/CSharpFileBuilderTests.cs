@@ -36,6 +36,43 @@ namespace Microsoft.DotNet.GenAPI.Tests
             // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
             string header = "")
         {
+            string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, assemblyName, header);
+
+            SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
+            SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
+
+            // compare SyntaxTree and not string representation
+            Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
+                $"Expected:\n{expected}\nResulted:\n{resultedString}");
+        }
+
+        private void RunTestAndCompareOutput(string original,
+            string expected,
+            bool includeInternalSymbols = true,
+            bool includeEffectivelyPrivateSymbols = true,
+            bool includeExplicitInterfaceImplementationSymbols = true,
+            bool allowUnsafe = false,
+            string[] excludedAttributeList = null,
+            [CallerMemberName] string assemblyName = "",
+            // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
+            string header = "")
+        {
+            string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, assemblyName, header);
+
+            Assert.Equal(expected.ReplaceLineEndings("\n"), resultedString.ReplaceLineEndings("\n"));
+        }
+
+        private static string GenerateOutput(string original,
+            bool includeInternalSymbols,
+            bool includeEffectivelyPrivateSymbols,
+            bool includeExplicitInterfaceImplementationSymbols,
+            bool allowUnsafe,
+            string[] excludedAttributeList,
+            string assemblyName,
+            string header)
+        {
             using StringWriter stringWriter = new();
 
             Mock<ILog> log = new();
@@ -60,17 +97,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
             csharpFileBuilder.WriteAssembly(assemblySymbols.First().Value);
 
-            StringBuilder stringBuilder = stringWriter.GetStringBuilder();
-            string resultedString = stringBuilder.ToString();
-
-            stringBuilder.Remove(0, stringBuilder.Length);
-
-            SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
-            SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
-
-            // compare SyntaxTree and not string representation
-            Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
-                $"Expected:\n{expected}\nResulted:\n{resultedString}");
+            return stringWriter.ToString();
         }
 
         [Fact]
@@ -113,6 +140,19 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 namespace A.C.D {{ public partial struct Bar {{}} }}
                 ",
                 header: customHeader);
+        }
+
+        [Fact]
+        public void TestGlobalNamespaceDeclaration()
+        {
+            RunTest(original: """
+                public class Class1 { }
+                """,
+                expected: """
+                public partial class Class1
+                {
+                }
+                """);
         }
 
         [Fact]
@@ -871,6 +911,64 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
+        public void TestBlankLineGenerationBetweenTypes()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class First
+                    {
+                        public void Method1()
+                        {
+                        }
+
+                        public void Method2()
+                        {
+                        }
+                    }
+
+                    public class Second
+                    {
+                        public int Property { get; set; }
+
+                        public void Method()
+                        {
+                        }
+                    }
+
+                    public interface Third
+                    {
+                        int Property { get; }
+
+                        void Method();
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class First
+                    {
+                        public void Method1() { }
+                        public void Method2() { }
+                    }
+
+                    public partial class Second
+                    {
+                        public int Property { get { throw null; } set { } }
+                        public void Method() { }
+                    }
+
+                    public partial interface Third
+                    {
+                        int Property { get; }
+                        void Method();
+                    }
+                }
+                """);
+        }
+
+        [Fact]
         public void TestExplicitInterfaceImplementationNotNullConstraint()
         {
             RunTest(original: """
@@ -901,6 +999,39 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     {
                         void Method<T>(T value)
                             where T : notnull;
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestBlankLineGenerationBetweenNestedTypeLikeMembers()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class Container
+                    {
+                        public delegate void ADelegate();
+                        public class BNested
+                        {
+                        }
+                        public delegate void CDelegate();
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Container
+                    {
+                        public delegate void ADelegate();
+
+                        public partial class BNested
+                        {
+                        }
+
+                        public delegate void CDelegate();
                     }
                 }
                 """);
@@ -1050,6 +1181,128 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                 """);
         }
 
+        [Fact]
+        public void TestEventGenerationOutput()
+        {
+            RunTestAndCompareOutput(original: """
+                namespace Foo
+                {
+                    public class Events
+                    {
+                        public event System.EventHandler<string> OnNewMessage { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Events
+                    {
+                        public event System.EventHandler<string> OnNewMessage { add { } remove { } }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestExplicitInterfaceEventGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public interface INotifications
+                    {
+                        event System.Action<string> PublicEvent;
+                        event System.Action<int> ExplicitEvent;
+                    }
+
+                    public class EventSource : INotifications
+                    {
+                        public event System.Action<string> PublicEvent { add { } remove { } }
+                        event System.Action<int> INotifications.ExplicitEvent { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource : INotifications
+                    {
+                        event System.Action<int> INotifications.ExplicitEvent { add { } remove { } }
+                        public event System.Action<string> PublicEvent { add { } remove { } }
+                    }
+
+                    public partial interface INotifications
+                    {
+                        event System.Action<int> ExplicitEvent;
+                        event System.Action<string> PublicEvent;
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public void TestExplicitInterfaceEventFromInternalInterfaceIsExcluded()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    internal interface IInternalNotifications
+                    {
+                        event System.Action<int> InternalEvent;
+                    }
+
+                    public class EventSource : IInternalNotifications
+                    {
+                        event System.Action<int> IInternalNotifications.InternalEvent { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource
+                    {
+                    }
+                }
+                """,
+                includeInternalSymbols: false);
+        }
+
+        [Fact]
+        public void TestExplicitInterfaceEventWithInaccessibleTypeArgumentIsExcluded()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    internal class InternalArg { }
+
+                    public interface IPublicNotifications<T>
+                    {
+                        event System.Action<T> Notify;
+                    }
+
+                    public class EventSource : IPublicNotifications<InternalArg>
+                    {
+                        event System.Action<InternalArg> IPublicNotifications<InternalArg>.Notify { add { } remove { } }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class EventSource
+                    {
+                    }
+
+                    public partial interface IPublicNotifications<T>
+                    {
+                        event System.Action<T> Notify;
+                    }
+                }
+                """,
+                includeInternalSymbols: false);
+        }
         [Fact]
         public void TestCustomAttributeGeneration()
         {

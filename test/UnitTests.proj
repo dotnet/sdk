@@ -71,6 +71,15 @@
     <SDKCustomXUnitProject Include="**\*.AoT.Tests.csproj" />
   </ItemGroup>
 
+  <!-- Helix work-item partitioning configuration.
+       effective limit = BaseMethodLimit × MethodLimitMultiplier (per-project).
+       Targeting ~5 minutes per work item across all platforms. -->
+  <PropertyGroup>
+    <BaseMethodLimit Condition="'$(TestFullMSBuild)' == 'true'">64</BaseMethodLimit>
+    <BaseMethodLimit Condition="$(TargetRid.StartsWith('osx-arm64'))">128</BaseMethodLimit>
+    <BaseMethodLimit Condition="'$(BaseMethodLimit)' == ''">32</BaseMethodLimit>
+  </PropertyGroup>
+
   <!-- Consolidate Helix shards for assemblies with very short test durations.
        MethodLimitMultiplier increases the methods-per-shard threshold, producing
        fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
