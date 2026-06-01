@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !CLI_AOT
 using System.Collections.Frozen;
+#if !CLI_AOT
 using System.Net.NetworkInformation;
 #endif
 using Microsoft.DotNet.Cli.Utils;
@@ -72,7 +72,7 @@ internal class TelemetryCommonProperties(
 #endif
 
 #if CLI_AOT
-    public Dictionary<string, string?> GetTelemetryCommonProperties(string? currentSessionId) => new Dictionary<string, string?>
+    public FrozenDictionary<string, string?> GetTelemetryCommonProperties(string? currentSessionId) => new Dictionary<string, string?>
     {
         { OSVersion,        RuntimeInformation.OSDescription },
         { OSPlatform,       (OperatingSystem.IsWindows() ? "Windows" : OperatingSystem.IsMacOS() ? "macOS" : "Linux") },
@@ -83,7 +83,7 @@ internal class TelemetryCommonProperties(
         { TelemetryProfile, Environment.GetEnvironmentVariable(TelemetryProfileEnvironmentVariable) },
         { KernelVersion,    GetKernelVersion() },
         { SessionId,        currentSessionId }
-    };
+    }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 #else
     public FrozenDictionary<string, string?> GetTelemetryCommonProperties(string? currentSessionId) => new Dictionary<string, string?>
     {

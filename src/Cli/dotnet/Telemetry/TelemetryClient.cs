@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !CLI_AOT
 using System.Collections.Frozen;
-#endif
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -21,10 +19,8 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class TelemetryClient : ITelemetryClient
 {
-#if CLI_AOT
-    private static IDictionary<string, string?> s_commonProperties = new Dictionary<string, string?>();
-#else
     private static FrozenDictionary<string, string?> s_commonProperties = FrozenDictionary<string, string?>.Empty;
+#if !CLI_AOT
     private Task? _trackEventTask;
 #endif
 
