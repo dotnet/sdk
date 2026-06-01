@@ -15,14 +15,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 internal enum PathPreference
 {
-    /// <summary>No PATH replacement. User runs commands via <c>dotnetup dotnet</c>.</summary>
-    DotnetupDotnet = 1,
+    /// <summary>No PATH wiring. User runs commands via <c>dotnetup dotnet</c>.</summary>
+    None = 1,
 
     /// <summary>Add dotnetup-managed dotnet to a shell profile file.</summary>
-    ShellProfile = 2,
+    Shell = 2,
 
-    /// <summary>Full PATH and DOTNET_ROOT replacement (the existing set-default-install behavior).</summary>
-    FullPathReplacement = 3,
+    /// <summary>Shell profile plus user-level env-var PATH/DOTNET_ROOT (so cmd.exe and GUI apps see the user dotnet too).</summary>
+    All = 3,
 }
 
 /// <summary>
@@ -32,7 +32,7 @@ internal enum PathPreference
 internal class DotnetupConfigData
 {
     public string SchemaVersion { get; set; } = "1";
-    public PathPreference PathPreference { get; set; } = PathPreference.FullPathReplacement;
+    public PathPreference PathPreference { get; set; } = PathPreference.All;
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

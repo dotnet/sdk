@@ -6,9 +6,9 @@ using System.CommandLine.Completions;
 using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 using System.Reflection;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.DefaultInstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedAdminPath;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.PrintEnvScript;
@@ -59,7 +59,7 @@ internal class Parser
         rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());
         rootCommand.Subcommands.Add(SdkUninstallCommandParser.GetRootUninstallCommand());
         rootCommand.Subcommands.Add(ElevatedAdminPathCommandParser.GetCommand());
-        rootCommand.Subcommands.Add(DefaultInstallCommandParser.GetCommand());
+        rootCommand.Subcommands.Add(EnvCommandParser.GetCommand());
         rootCommand.Subcommands.Add(PrintEnvScriptCommandParser.GetCommand());
         rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
         rootCommand.Subcommands.Add(DotnetCommandParser.GetCommand());
@@ -112,7 +112,7 @@ internal class Parser
         [
             (Strings.HelpInstallCommandsTitle, ["sdk", "runtime", "install", "update", "uninstall"]),
             (Strings.HelpQueryCommandsTitle, ["list"]),
-            (Strings.HelpConfigCommandsTitle, ["print-env-script", "defaultinstall", "init"]),
+            (Strings.HelpConfigCommandsTitle, ["env", "init"]),
             (Strings.HelpUtilityCommandsTitle, ["dotnet"]),
         ];
 

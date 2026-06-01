@@ -37,7 +37,7 @@ public class DotnetupConfigTests : IDisposable
     {
         var config = new DotnetupConfigData
         {
-            PathPreference = PathPreference.ShellProfile,
+            PathPreference = PathPreference.Shell,
         };
 
         DotnetupConfig.Write(config);
@@ -45,14 +45,14 @@ public class DotnetupConfigTests : IDisposable
 
         var loaded = DotnetupConfig.Read();
         loaded.Should().NotBeNull();
-        loaded!.PathPreference.Should().Be(PathPreference.ShellProfile);
+        loaded!.PathPreference.Should().Be(PathPreference.Shell);
         loaded.SchemaVersion.Should().Be("1");
     }
 
     [Theory]
-    [InlineData(PathPreference.DotnetupDotnet)]
-    [InlineData(PathPreference.ShellProfile)]
-    [InlineData(PathPreference.FullPathReplacement)]
+    [InlineData(PathPreference.None)]
+    [InlineData(PathPreference.Shell)]
+    [InlineData(PathPreference.All)]
     internal void ReadPathPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
     {
         DotnetupConfig.Write(new DotnetupConfigData { PathPreference = preference });

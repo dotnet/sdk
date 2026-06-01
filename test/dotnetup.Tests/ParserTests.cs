@@ -9,7 +9,7 @@ public class ParserTests
 {
     public static IEnumerable<object[]> ShellOverrideCommandArgs =>
     [
-        [new[] { "defaultinstall", "user", "--shell", "bash" }],
+        [new[] { "env", "set", "shell", "--shell", "bash" }],
         [new[] { "init", "--shell", "bash" }]
     ];
 
@@ -135,15 +135,46 @@ public class ParserTests
     }
 
     [Fact]
-    public void Parser_ShouldParseDefaultInstallCommand()
+    public void Parser_ShouldParseEnvSetCommand()
     {
-        // Arrange
-        var args = new[] { "defaultinstall", "user" };
+        var args = new[] { "env", "set", "shell" };
 
-        // Act
         var parseResult = Parser.Parse(args);
 
-        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseEnvShowCommand()
+    {
+        var args = new[] { "env", "show" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseEnvScriptCommand()
+    {
+        var args = new[] { "env", "script" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldStillParsePrintEnvScriptAlias()
+    {
+        // print-env-script remains as a hidden top-level alias for backwards compat.
+        var args = new[] { "print-env-script" };
+
+        var parseResult = Parser.Parse(args);
+
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
     }

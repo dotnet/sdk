@@ -22,16 +22,26 @@ internal static class PrintEnvScriptCommandParser
         Arity = ArgumentArity.ZeroOrOne
     };
 
-    private static readonly Command s_printEnvScriptCommand = ConstructCommand();
+    private static readonly Command s_printEnvScriptCommand = ConstructCommand(name: "print-env-script", hidden: true);
 
     public static Command GetCommand()
     {
         return s_printEnvScriptCommand;
     }
 
-    private static Command ConstructCommand()
+    /// <summary>
+    /// Constructs a new command instance that emits the env script. Used by both the
+    /// top-level (now hidden) <c>print-env-script</c> command and the <c>env script</c>
+    /// subcommand. Each invocation returns a fresh <see cref="Command"/> because
+    /// System.CommandLine does not allow the same instance to be attached to multiple
+    /// parent commands.
+    /// </summary>
+    internal static Command ConstructCommand(string name, bool hidden = false)
     {
-        Command command = new("print-env-script", "Generates a shell script that configures the environment for .NET");
+        Command command = new(name, "Generates a shell script that configures the environment for .NET")
+        {
+            Hidden = hidden,
+        };
 
         command.Options.Add(ShellOption);
         command.Options.Add(DotnetInstallPathOption);

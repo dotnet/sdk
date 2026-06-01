@@ -20,6 +20,39 @@ public class ShellProfileManager
         bool EndsWithTrailingNewLine);
 
     /// <summary>
+    /// Returns the subset of the provider's profile paths that currently contain a managed
+    /// dotnetup block. Useful for drift detection by callers that need to know whether the
+    /// configured shell mode has actually been applied.
+    /// </summary>
+    public static IReadOnlyList<string> GetProfilePathsWithEntries(IEnvShellProvider provider)
+    {
+        var result = new List<string>();
+        foreach (var profilePath in provider.GetProfilePaths())
+        {
+            if (!File.Exists(profilePath))
+            {
+                continue;
+            }
+
+            // Cheap substring check: the begin marker uniquely identifies the managed block.
+            // We intentionally don't parse here — drift detection just needs a yes/no.
+            try
+            {
+                if (File.ReadAllText(profilePath).Contains(BeginMarkerComment, StringComparison.Ordinal))
+                {
+                    result.Add(profilePath);
+                }
+            }
+            catch (IOException)
+            {
+                // If we can't read the file, treat it as "no managed block detected".
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Ensures the correct dotnetup profile entry is present in all profile files for the given shell provider.
     /// If an entry already exists, it is replaced in-place. If no entry exists, one is appended.
     /// Existing files are updated via a write-and-replace flow to avoid partially written profiles.

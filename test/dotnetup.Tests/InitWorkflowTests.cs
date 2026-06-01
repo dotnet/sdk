@@ -36,14 +36,14 @@ public class InitWorkflowTests : IDisposable
     // ── ShouldPromptToConvertSystemInstalls ──
 
     [Fact]
-    public void ShouldReplaceSystemConfiguration_ReturnsFalse_ForDotnetupDotnet()
+    public void ShouldReplaceSystemConfiguration_ReturnsFalse_ForNone()
     {
-        InitWorkflows.ShouldReplaceSystemConfiguration(PathPreference.DotnetupDotnet)
+        InitWorkflows.ShouldReplaceSystemConfiguration(PathPreference.None)
             .Should().BeFalse();
     }
 
     [Theory]
-    [InlineData(PathPreference.FullPathReplacement)]
+    [InlineData(PathPreference.All)]
     internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(PathPreference preference)
     {
         InitWorkflows.ShouldReplaceSystemConfiguration(preference)
@@ -51,15 +51,15 @@ public class InitWorkflowTests : IDisposable
     }
 
     [Fact]
-    public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_ForDotnetupDotnet()
+    public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_ForNone()
     {
-        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.DotnetupDotnet)
+        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.None)
             .Should().BeFalse();
     }
 
     [Theory]
-    [InlineData(PathPreference.ShellProfile)]
-    [InlineData(PathPreference.FullPathReplacement)]
+    [InlineData(PathPreference.Shell)]
+    [InlineData(PathPreference.All)]
     internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(PathPreference preference)
     {
         InitWorkflows.ShouldPromptToConvertSystemInstalls(preference)
@@ -69,7 +69,7 @@ public class InitWorkflowTests : IDisposable
     // ── PromptInstallsToMigrateIfDesired — early-exit paths ──
 
     [Fact]
-    public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenPreferenceIsDotnetupDotnet()
+    public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenPreferenceIsNone()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
@@ -81,7 +81,7 @@ public class InitWorkflowTests : IDisposable
             ]);
 
         var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock, PathPreference.DotnetupDotnet, installRoot);
+            mock, PathPreference.None, installRoot);
 
         result.Should().BeEmpty();
         // GetExistingSystemInstalls should not be called when ShouldPromptToConvertSystemInstalls is false
@@ -99,7 +99,7 @@ public class InitWorkflowTests : IDisposable
 
         string manifestPath = Path.Combine(_tempDir, "manifest.json");
         var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock, PathPreference.ShellProfile, installRoot, manifestPath);
+            mock, PathPreference.Shell, installRoot, manifestPath);
 
         result.Should().BeEmpty();
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
@@ -119,7 +119,7 @@ public class InitWorkflowTests : IDisposable
 
         var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
             mock,
-            PathPreference.ShellProfile,
+            PathPreference.Shell,
             installRoot,
             interactive: false);
 

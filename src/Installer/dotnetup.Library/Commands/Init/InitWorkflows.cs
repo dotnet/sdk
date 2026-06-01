@@ -36,7 +36,7 @@ internal class InitWorkflows
     /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
     /// </summary>
     public static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
-        preference is PathPreference.FullPathReplacement;
+        preference is PathPreference.All;
 
     /// <summary>
     /// Returns true when the user chose a mode that shadows the system PATH and should therefore
@@ -44,7 +44,7 @@ internal class InitWorkflows
     /// </summary>
     public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference)
     {
-        return preference != PathPreference.DotnetupDotnet;
+        return preference != PathPreference.None;
     }
 
     // ── Init Flow Orchestrators ──
@@ -103,15 +103,12 @@ internal class InitWorkflows
         // Save config and apply configuration(s).
         SaveConfigAndDisplayResult(pathPreference, previousPreference);
 
-        if (pathPreference is PathPreference.ShellProfile)
-        {
-            _dotnetEnvironment.ApplyTerminalProfileModifications(installRoot.Path, shellProvider: command.ShellProvider);
-        }
-
-        if (ShouldReplaceSystemConfiguration(pathPreference))
-        {
-            _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
-        }
+        PathPreferenceApplier.Apply(
+            pathPreference,
+            previousPreference,
+            _dotnetEnvironment,
+            installRoot.Path,
+            command.ShellProvider);
 
         return effectiveRequests;
     }
@@ -193,17 +190,17 @@ internal class InitWorkflows
         {
             if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
             {
-                return PathPreference.DotnetupDotnet;
+                return PathPreference.None;
             }
 
-            return PathPreference.ShellProfile;
+            return PathPreference.Shell;
         }
 
         if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
                 $"[{DotnetupTheme.Current.Warning}]Warning:[/] Shell '{ShellDetection.GetCurrentShellDisplayName().EscapeMarkup()}' is not supported for automatic environment configuration. dotnetup will continue without changing your shell profile unless you specify one with --shell."));
-            return PathPreference.DotnetupDotnet;
+            return PathPreference.None;
         }
 
         return ValidatePathPreference(PromptPathPreference());
@@ -211,7 +208,7 @@ internal class InitWorkflows
 
     private static PathPreference ValidatePathPreference(PathPreference preference)
     {
-        if (preference == PathPreference.FullPathReplacement && !OperatingSystem.IsWindows())
+        if (preference == PathPreference.All && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
@@ -309,9 +306,9 @@ internal class InitWorkflows
 
         return selected switch
         {
-            0 => PathPreference.DotnetupDotnet,
-            1 => PathPreference.ShellProfile,
-            _ => PathPreference.FullPathReplacement,
+            0 => PathPreference.None,
+            1 => PathPreference.Shell,
+            _ => PathPreference.All,
         };
     }
 
@@ -539,9 +536,9 @@ internal class InitWorkflows
     {
         string? guidance = preference switch
         {
-            PathPreference.DotnetupDotnet => Strings.PathGuidanceDotnetupDotnet,
-            PathPreference.ShellProfile => Strings.PathGuidanceShellProfile,
-            PathPreference.FullPathReplacement => Strings.PathGuidanceFullReplacement,
+            PathPreference.None => Strings.PathGuidanceDotnetupDotnet,
+            PathPreference.Shell => Strings.PathGuidanceShellProfile,
+            PathPreference.All => Strings.PathGuidanceFullReplacement,
             _ => null,
         };
 
