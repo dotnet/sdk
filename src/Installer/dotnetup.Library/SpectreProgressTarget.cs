@@ -13,7 +13,7 @@ public class SpectreProgressTarget : IProgressTarget
     {
         private readonly TaskCompletionSource _overallTask = new();
         private readonly ProgressContext _progressContext;
-        private readonly List<ProgressTaskImpl> _tasks = [];
+        private readonly List<ShimmerProgressTask> _tasks = [];
 
         public Reporter()
         {
@@ -45,7 +45,8 @@ public class SpectreProgressTarget : IProgressTarget
 
         public IProgressTask AddTask(string description, double maxValue)
         {
-            var task = new ProgressTaskImpl(_progressContext.AddTask(description, maxValue: maxValue));
+            var adapter = new SpectreProgressTaskAdapter(_progressContext.AddTask(description, maxValue: maxValue));
+            var task = new ShimmerProgressTask(adapter);
             _tasks.Add(task);
             return task;
         }
@@ -61,115 +62,14 @@ public class SpectreProgressTarget : IProgressTarget
         }
     }
 
-    private sealed class ProgressTaskImpl : IProgressTask, IDisposable
+    /// <summary>
+    /// Adapter that makes <see cref="Spectre.Console.ProgressTask"/> usable as a plain
+    /// <see cref="IProgressTask"/> backing store for <see cref="ShimmerProgressTask"/>.
+    /// </summary>
+    private sealed class SpectreProgressTaskAdapter(Spectre.Console.ProgressTask task) : IProgressTask
     {
-        private readonly Spectre.Console.ProgressTask _task;
-        private string _baseDescription;
-        private readonly string? _shimmerWord;
-        private readonly string? _restEscaped;
-        private readonly Timer? _shimmerTimer;
-        private int _shimmerTick;
-        private volatile bool _shimmerStopped;
-
-        public ProgressTaskImpl(Spectre.Console.ProgressTask task)
-        {
-            _task = task;
-            _baseDescription = task.Description;
-
-            int spaceIndex = _baseDescription.IndexOf(' ', StringComparison.Ordinal);
-            if (spaceIndex > 0 && _baseDescription.StartsWith("Installing", StringComparison.Ordinal))
-            {
-                _shimmerWord = _baseDescription[..spaceIndex];
-                _restEscaped = _baseDescription[spaceIndex..].EscapeMarkup();
-                _shimmerTimer = new Timer(OnShimmerTick, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(80));
-            }
-        }
-
-        /// <summary>
-        /// Timer callback that creates a "shimmer" wave effect on the status word (e.g. "Installing").
-        /// A bright highlight sweeps left-to-right across the characters, fading from bold white at
-        /// the center to grey at the edges, then briefly exits before re-entering.
-        /// </summary>
-        private void OnShimmerTick(object? state)
-        {
-            if (_shimmerStopped)
-            {
-                return;
-            }
-
-            try
-            {
-                int tick = Interlocked.Increment(ref _shimmerTick);
-                int wordLen = _shimmerWord!.Length;
-                // Wave sweeps across the word then briefly exits before re-entering.
-                int totalPositions = wordLen + 6;
-                // Offset by -3 so the shimmer wave starts off-screen (left of the word)
-                // and sweeps across naturally before exiting on the right.
-                int center = (tick % totalPositions) - 3;
-
-                var sb = new StringBuilder();
-                for (int i = 0; i < wordLen; i++)
-                {
-                    int distance = Math.Abs(i - center);
-                    string ch = _shimmerWord[i].ToString().EscapeMarkup();
-
-                    sb.Append(distance switch
-                    {
-                        0 => $"[white bold]{ch}[/]",
-                        1 => $"[grey85]{ch}[/]",
-                        _ => $"[grey]{ch}[/]",
-                    });
-                }
-
-                sb.Append(_restEscaped);
-                _task.Description = sb.ToString();
-            }
-            catch
-            {
-                // Shimmer is cosmetic — swallow any rendering errors silently.
-            }
-        }
-
-        public void StopShimmer()
-        {
-            _shimmerStopped = true;
-            _shimmerTimer?.Change(Timeout.Infinite, Timeout.Infinite);
-            _shimmerTimer?.Dispose();
-            _task.Description = _baseDescription;
-        }
-
-        public void Dispose() => StopShimmer();
-
-        public double Value
-        {
-            get => _task.Value;
-            set
-            {
-                _task.Value = value;
-                if (value >= _task.MaxValue && _shimmerTimer is not null && !_shimmerStopped)
-                {
-                    StopShimmer();
-                }
-            }
-        }
-
-        public string Description
-        {
-            get => _task.Description;
-            set
-            {
-                _task.Description = value;
-                // Keep _baseDescription in sync so that StopShimmer() restores the
-                // latest externally-set description (e.g. "Installed ...") instead of
-                // the original construction-time text (e.g. "Installing ...").
-                _baseDescription = value;
-            }
-        }
-
-        public double MaxValue
-        {
-            get => _task.MaxValue;
-            set => _task.MaxValue = value;
-        }
+        public string Description { get => task.Description; set => task.Description = value; }
+        public double Value { get => task.Value; set => task.Value = value; }
+        public double MaxValue { get => task.MaxValue; set => task.MaxValue = value; }
     }
 }
