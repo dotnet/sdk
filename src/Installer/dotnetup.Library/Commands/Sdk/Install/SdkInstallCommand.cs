@@ -7,11 +7,19 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
-internal class SdkInstallCommand(ParseResult result) : InstallCommand(result)
+internal class SdkInstallCommand : InstallCommand
 {
-    private readonly string[] _channels = result.GetValue(SdkInstallCommandParser.ChannelArguments) ?? [];
+    private readonly string[] _channels;
 
-    public override bool UpdateGlobalJson { get; } = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption) ?? false;
+    public SdkInstallCommand(ParseResult result, Argument<string[]>? channelArgument = null) : base(result)
+    {
+        _channels = channelArgument is not null
+            ? result.GetValue(channelArgument) ?? []
+            : [];
+        UpdateGlobalJson = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption) ?? false;
+    }
+
+    public override bool UpdateGlobalJson { get; }
     public override IReadOnlyCollection<InstallComponent> MigrationComponents => [InstallComponent.SDK];
 
     protected override string GetCommandName() => "sdk/install";

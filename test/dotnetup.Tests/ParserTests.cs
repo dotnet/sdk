@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -430,6 +432,69 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
         parseResult.GetResult(CommonOptions.InteractiveOption).Should().NotBeNull(
             "InteractiveOption must be bound on the root command so its DefaultValueFactory runs for bare `dotnetup`");
+    }
+
+    #endregion
+
+    #region Channel Argument Parser Tests
+
+    [Theory]
+    [InlineData("9.0")]
+    [InlineData("latest")]
+    [InlineData("10.0.1xx")]
+    [InlineData("10.0.100-preview.1.32640")]
+    [InlineData("11.0.100-preview.3.26170.106")]
+    public void Parser_SdkInstall_PreservesExactChannelArgument(string channel)
+    {
+        // Regression test: the ChannelArguments Argument<string[]> was previously shared
+        // between the `sdk install` and root `install` commands. System.CommandLine may
+        // re-parent a shared Argument to the last command that added it, causing the
+        // other command's parse result to silently lose the token — leading to global.json
+        // fallback and wrong-version installs (e.g. preview.3 → preview.4).
+        var args = new[] { "sdk", "install", channel };
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Errors.Should().BeEmpty();
+        var channels = parseResult.GetValue(SdkInstallCommandParser.SdkChannelArguments);
+        channels.Should().NotBeNull();
+        channels.Should().ContainSingle().Which.Should().Be(channel);
+    }
+
+    [Theory]
+    [InlineData("9.0")]
+    [InlineData("latest")]
+    [InlineData("10.0.100-preview.1.32640")]
+    [InlineData("11.0.100-preview.3.26170.106")]
+    public void Parser_RootInstall_PreservesExactChannelArgument(string channel)
+    {
+        // Same regression test for the root `install` command path.
+        var args = new[] { "install", channel };
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Errors.Should().BeEmpty();
+        var channels = parseResult.GetValue(SdkInstallCommandParser.RootChannelArguments);
+        channels.Should().NotBeNull();
+        channels.Should().ContainSingle().Which.Should().Be(channel);
+    }
+
+    [Fact]
+    public void Parser_SdkInstall_FullPreviewVersion_WithAllOptions()
+    {
+        // Regression test: full command line as used by configure-toolset.ps1
+        var args = new[] {
+            "sdk", "install", "11.0.100-preview.3.26170.106",
+            "--install-path", @"D:\sdk\.dotnet",
+            "--untracked",
+            "--set-default-install", "false",
+            "--interactive", "false"
+        };
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Errors.Should().BeEmpty();
+        var channels = parseResult.GetValue(SdkInstallCommandParser.SdkChannelArguments);
+        channels.Should().ContainSingle().Which.Should().Be("11.0.100-preview.3.26170.106");
+        parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
+        parseResult.GetValue(CommonOptions.InteractiveOption).Should().BeFalse();
     }
 
     #endregion
