@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
@@ -32,12 +33,13 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
             string[] excludedAttributeList = null,
+            ISymbolFilter additionalApiInclusionFilter = null,
             [CallerMemberName] string assemblyName = "",
             // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
             string header = "")
         {
             string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, assemblyName, header);
+                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, additionalApiInclusionFilter, assemblyName, header);
 
             SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
             SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
@@ -59,7 +61,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             string header = "")
         {
             string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, assemblyName, header);
+                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, additionalApiInclusionFilter: null, assemblyName, header);
 
             Assert.Equal(expected.ReplaceLineEndings("\n"), resultedString.ReplaceLineEndings("\n"));
         }
@@ -70,6 +72,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeExplicitInterfaceImplementationSymbols,
             bool allowUnsafe,
             string[] excludedAttributeList,
+            ISymbolFilter additionalApiInclusionFilter,
             string assemblyName,
             string header)
         {
@@ -80,8 +83,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
             (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
                 .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe);
 
-            ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
-            ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
+            ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, additionalApiInclusionFilter: additionalApiInclusionFilter);
+            ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, additionalApiInclusionFilter: additionalApiInclusionFilter);
 
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
                 log.Object,
@@ -3483,6 +3486,122 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                         }
                     }
                     """,
+                includeInternalSymbols: false);
+        }
+
+        [Fact]
+        public void TestIncludeApiFileEmitsInternalOOBAttribute()
+        {
+            using TempDirectory root = new();
+            string includeDocIdFilePath = Path.Combine(root.DirPath, "inclusions.txt");
+            File.WriteAllText(includeDocIdFilePath, """
+            T:System.Runtime.CompilerServices.CollectionBuilderAttribute
+            """);
+
+            ISymbolFilter inclusionFilter = new CompositeSymbolFilter(CompositeSymbolFilterMode.Or)
+                .Add(DocIdSymbolFilter.CreateFromFiles([includeDocIdFilePath], includeDocIds: true));
+
+            RunTest(original: """
+                    using System;
+                    using System.Collections;
+                    using System.Collections.Generic;
+                    using System.Runtime.CompilerServices;
+                    namespace a
+                    {
+                        #pragma warning disable CS0436
+                        [CollectionBuilder(typeof(LineBufferBuilder), "Create")]
+                        #pragma warning restore CS0436
+                        public class LineBuffer : IEnumerable<char>
+                        {
+                            public LineBuffer(ReadOnlySpan<char> buffer) { }
+
+                            public IEnumerator<char> GetEnumerator() => default!;
+                            IEnumerator IEnumerable.GetEnumerator() => default!;
+                        }
+
+                        public static class LineBufferBuilder
+                        {
+                            public static LineBuffer Create(ReadOnlySpan<char> values) => new LineBuffer(values);
+                        }
+                    }
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal sealed class CollectionBuilderAttribute(Type builderType, string methodName) : Attribute
+                        {
+                            public Type BuilderType { get; } = builderType;
+
+                            public string MethodName { get; } = methodName;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        [System.Runtime.CompilerServices.CollectionBuilder(typeof(LineBufferBuilder), "Create")]
+                        public partial class LineBuffer : System.Collections.Generic.IEnumerable<char>, System.Collections.IEnumerable
+                        {
+                            public LineBuffer(System.ReadOnlySpan<char> buffer) { }
+
+                            public System.Collections.Generic.IEnumerator<char> GetEnumerator() { throw null; }
+
+                            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+                        }
+
+                        public static partial class LineBufferBuilder
+                        {
+                            public static LineBuffer Create(System.ReadOnlySpan<char> values) { throw null; }
+                        }
+                    }
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal sealed partial class CollectionBuilderAttribute : Attribute
+                        {
+                            public CollectionBuilderAttribute(Type builderType, string methodName) { }
+
+                            public Type BuilderType { get { throw null; } }
+
+                            public string MethodName { get { throw null; } }
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false,
+                additionalApiInclusionFilter: inclusionFilter);
+        }
+
+        [Fact]
+        public void TestIncludeInternalCompilerAttributeByDocIdList()
+        {
+            ISymbolFilter inclusionFilter = new CompositeSymbolFilter(CompositeSymbolFilterMode.Or)
+                .Add(DocIdSymbolFilter.CreateFromLists(["T:System.Runtime.CompilerServices.IsExternalInit"], includeDocIds: true));
+
+            RunTest(original: """
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal static class IsExternalInit { }
+                    }
+                    """,
+                expected: """
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal static partial class IsExternalInit
+                        {
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false,
+                additionalApiInclusionFilter: inclusionFilter);
+        }
+
+        [Fact]
+        public void TestInternalOOBAttributeNotEmittedWithoutInclusionFilter()
+        {
+            RunTest(original: """
+                    namespace System.Runtime.CompilerServices
+                    {
+                        internal static class IsExternalInit { }
+                    }
+                    """,
+                expected: "",
                 includeInternalSymbols: false);
         }
     }
