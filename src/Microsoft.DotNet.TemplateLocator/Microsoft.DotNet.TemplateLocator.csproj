@@ -8,6 +8,7 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsPackable>true</IsPackable>
     <IsPackable Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">false</IsPackable>
+    <PackageId>microsoft.dotnet.templateLocator</PackageId>
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
