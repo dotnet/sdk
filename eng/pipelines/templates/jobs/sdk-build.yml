@@ -230,11 +230,10 @@ jobs:
       condition: always()
 
     - ${{ if eq(parameters.publishBuiltAssets, true) }}:
-      - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
+      - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
         displayName: 🟣 Publish Built Assets
         inputs:
-          PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
-          ArtifactName: Assets_$(System.PhaseName)
-          publishLocation: Container
+          targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
+          artifactName: Assets_$(System.PhaseName)
         continueOnError: true
-        condition: succeeded()
+        condition: not(canceled())

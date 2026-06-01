@@ -111,7 +111,6 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
-          publishBuiltAssets: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           locBranch: release/10.0.3xx
           # WORKAROUND: BinSkim requires the folder exist prior to scanning.
@@ -172,7 +171,6 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
-          publishBuiltAssets: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
             timeoutInMinutes: 90
@@ -256,7 +254,6 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
-          publishBuiltAssets: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
             timeoutInMinutes: 90
@@ -283,7 +280,6 @@ extends:
               os: macOS
             helixTargetQueue: osx.15.arm64
             populateInternalRuntimeVariables: true
-            publishBuiltAssets: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             macOSJobParameterSets:
             - categoryName: TestBuild
