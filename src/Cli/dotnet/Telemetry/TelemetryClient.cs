@@ -28,9 +28,7 @@ public class TelemetryClient : ITelemetryClient
     private static MeterProvider? s_metricsProvider;
     private static readonly TracerProviderBuilder s_tracerProviderBuilder;
     private static TracerProvider? s_tracerProvider;
-#if !CLI_AOT
     private static readonly List<Activity> s_activities = [];
-#endif
 
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
@@ -38,9 +36,7 @@ public class TelemetryClient : ITelemetryClient
     // Note: The TelemetryClient instance constructor takes in an environment provider. These fields don't use that currently.
     private static readonly string? s_environmentStoragePath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
 #endif
-#if !CLI_AOT
     private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
-#endif
     private static readonly bool s_disableTraceExport = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
     // The OTLP exporter is enabled when:
     //   1. The SDK-specific DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER env var is true, or
@@ -104,12 +100,10 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProviderBuilder.AddOtlpExporter();
         }
 
-#if !CLI_AOT
         if (!string.IsNullOrWhiteSpace(s_diskLogPath))
         {
             s_tracerProviderBuilder.AddInMemoryExporter(s_activities);
         }
-#endif
 
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
         if (!s_disableTraceExport)
@@ -217,7 +211,6 @@ public class TelemetryClient : ITelemetryClient
         s_metricsProvider?.ForceFlush(s_flushTimeoutMs);
     }
 
-#if !CLI_AOT
     public static void WriteLogIfNecessary()
     {
         if (!string.IsNullOrWhiteSpace(s_diskLogPath) && s_activities.Any())
@@ -225,7 +218,6 @@ public class TelemetryClient : ITelemetryClient
             TelemetryDiskLogger.WriteLog(s_diskLogPath, s_activities);
         }
     }
-#endif
 
     public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
