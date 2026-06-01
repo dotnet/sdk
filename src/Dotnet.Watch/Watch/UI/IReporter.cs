@@ -175,9 +175,9 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
         .Add(DotNetWatchContext.BuildLogComponentName, Emoji.Build)
         .Add(HotReloadDotNetWatcher.ClientLogComponentName, Emoji.HotReload)
         .Add(HotReloadDotNetWatcher.AgentLogComponentName, Emoji.Agent)
-        .Add(BrowserRefreshServer.ServerLogComponentName, Emoji.Refresh)
-        .Add(BrowserConnection.AgentLogComponentName, Emoji.Agent)
-        .Add(BrowserConnection.ServerLogComponentName, Emoji.Browser)
+        .Add(WebApplicationAppModel.ServerLogComponentName, Emoji.Refresh)
+        .Add(WebApplicationAppModel.ConnectionAgentLogComponentName, Emoji.Agent)
+        .Add(WebApplicationAppModel.ConnectionServerLogComponentName, Emoji.Browser)
         .Add(AspireServiceFactory.AspireLogComponentName, Emoji.Aspire);
 
     // predefined messages used for testing:
