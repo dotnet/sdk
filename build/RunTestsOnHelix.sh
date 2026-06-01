@@ -20,7 +20,6 @@ export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/TestAssets
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
 
-# We downloaded a special zip of files to the .nuget folder so add that as a source
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget add source $DOTNET_ROOT/.nuget --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
@@ -29,6 +28,12 @@ dotnet nuget remove source dotnet6-transport --configfile $TestExecutionDirector
 dotnet nuget remove source dotnet6-internal-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet7-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet7-internal-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet8-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet8-internal-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet9-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet9-internal-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet10-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet10-internal-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source richnav --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source vs-impl --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet-libraries-transport --configfile $TestExecutionDirectory/NuGet.config
