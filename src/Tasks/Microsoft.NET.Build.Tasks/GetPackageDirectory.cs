@@ -41,8 +41,6 @@ namespace Microsoft.NET.Build.Tasks
                 PackageFolders = PackageFolders.Concat(lockFile.PackageFolders.Select(p => p.Path)).ToArray();
             }
 
-            // Resolve package folders relative to the project directory. Empty entries are left
-            // as-is since GetAbsolutePath rejects them.
             string[] absolutePackageFolders = PackageFolders
                 .Select(p => string.IsNullOrEmpty(p) ? p : (string)TaskEnvironment.GetAbsolutePath(p))
                 .ToArray();
