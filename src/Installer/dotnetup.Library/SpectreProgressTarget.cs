@@ -64,7 +64,7 @@ public class SpectreProgressTarget : IProgressTarget
     private sealed class ProgressTaskImpl : IProgressTask, IDisposable
     {
         private readonly Spectre.Console.ProgressTask _task;
-        private readonly string _baseDescription;
+        private string _baseDescription;
         private readonly string? _shimmerWord;
         private readonly string? _restEscaped;
         private readonly Timer? _shimmerTimer;
@@ -156,7 +156,14 @@ public class SpectreProgressTarget : IProgressTarget
         public string Description
         {
             get => _task.Description;
-            set => _task.Description = value;
+            set
+            {
+                _task.Description = value;
+                // Keep _baseDescription in sync so that StopShimmer() restores the
+                // latest externally-set description (e.g. "Installed ...") instead of
+                // the original construction-time text (e.g. "Installing ...").
+                _baseDescription = value;
+            }
         }
 
         public double MaxValue
