@@ -62,7 +62,14 @@ internal static class ProjectGraphUtilities
         => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetName);
 
     public static string? GetIntermediateOutputDirectory(this ProjectInstance project)
-        => project.GetPropertyValue(PropertyNames.IntermediateOutputPath) is { Length: >0 } path ? Path.Combine(project.Directory, path) : null;
+    {
+        var intermediateOutputPath = project.GetPropertyValue(PropertyNames.IntermediateOutputPath);
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            intermediateOutputPath = intermediateOutputPath.Replace("\\", "");
+        }
+        return intermediateOutputPath is { Length: > 0 } path ? Path.Combine(project.Directory, path) : null;
+    }
 
     public static IEnumerable<string> GetCapabilities(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetItems(ItemNames.ProjectCapability).Select(item => item.EvaluatedInclude);
