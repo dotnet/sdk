@@ -288,6 +288,30 @@ public class SignatureVerifierTests
     }
 
     [Fact]
+    public void Verify_NuGetPackageSignature_FromOlderTsa_FlagsTimestampIssuerMismatch()
+    {
+        // The Microsoft.AspNetCore.App.Runtime 3.1.32 NuGet signature carries an RFC 3161 timestamp from a TSA leaf issued by:
+        // CN=DigiCert Trusted G4 RSA4096 SHA256 TimeStamping CA
+        var result = SignatureVerifier.Verify(
+            LoadAsset("releases-directory.json"),
+            LoadAsset("nuget-aspnetcore-3.1.32.signature.p7s"),
+            ProductionOptions(requireExpiration: false),
+            s_pinnedNow,
+            VerificationMode.CollectAll);
+
+        var codes = result.Failures.Select(f => f.Code).ToHashSet();
+        codes.Should().Contain(FailureCode.TimestampIssuerMismatch,
+            "the 2022-era DigiCert TSA intermediate is not the spec §7 pin");
+
+        // Sanity: the TSA token must have actually been extracted; otherwise the DN check
+        // wouldn't have run and this test would pass vacuously (TimestampMissing would
+        // appear in the failure set instead).
+        codes.Should().NotContain(FailureCode.TimestampMissing,
+            "EvaluateTimestamp must hand a TsaToken to EvaluateTimestampChains so the issuer-DN check actually runs");
+        result.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
     public void Verify_NuGetPackageSignature_PassesAlgorithmAndEkuChecks()
     {
         // Confirms the algorithm + EKU checks DON'T over-fire on a legitimate Microsoft NuGet
@@ -708,6 +732,60 @@ public class SignatureVerifierTests
         // (We also carry pre-hash PQC OIDs that aren't in BCL's KnownOids arrays \u2014 those
         // are fine; BCL's KnownOids only enumerates what each BCL key class can decode, not
         // every OID that may appear in CMS SignedData.)
+    }
+
+    // ---------------- Servicing early-warning for pinned issuer intermediates expiry  ----------------
+
+    /// <summary>
+    /// CommonName -> <c>notAfter</c> for each DigiCert intermediate the verifier pins by DN
+    /// (see <see cref="SignatureVerifier.s_requiredIssuerRdns"/> and
+    /// <see cref="SignatureVerifier.s_requiredTimestampIssuerRdns"/>). When a pin is
+    /// rotated, add/remove the matching entry here — the test below fails if a pinned CN
+    /// has no mapping. <c>notAfter</c> comes from the cert itself (X509Certificate2.NotAfter
+    /// on any signed release, or DigiCert's published root list).
+    /// </summary>
+    private static readonly Dictionary<string, DateTimeOffset> s_pinnedIssuerExpirations = new(StringComparer.Ordinal)
+    {
+        ["DigiCert Trusted G4 Code Signing RSA4096 SHA384 2021 CA1"] = new(2036, 4, 28, 23, 59, 59, TimeSpan.Zero),
+        ["DigiCert Trusted G4 TimeStamping RSA4096 SHA256 2025 CA1"] = new(2038, 1, 14, 0, 0, 0, TimeSpan.Zero),
+    };
+
+    [Fact]
+    public void PinnedIssuerCertificates_HaveAtLeast90DaysUntilExpiration()
+    {
+        // Warn ≥90d before a pinned intermediate expires, so the DN pin, PEM, and digest
+        // allow-list can be rotated before customers see IssuerMismatch / WeakDigest /
+        // ChainBuildFailed. DN sets are read straight from SignatureVerifier so a newly
+        // pinned issuer without a mapping entry fails the test instead of going unnoticed.
+        var threshold = DateTimeOffset.UtcNow.AddDays(90);
+
+        (string Role, (string Oid, string Value)[] Rdns)[] pinnedDns =
+        [
+            ("signer-issuer",    SignatureVerifier.s_requiredIssuerRdns),
+            ("timestamp-issuer", SignatureVerifier.s_requiredTimestampIssuerRdns),
+        ];
+
+        foreach (var (role, rdns) in pinnedDns)
+        {
+            string? cn = rdns
+                .Where(r => r.Oid == SigningConstants.DnOids.CommonName)
+                .Select(r => r.Value)
+                .SingleOrDefault();
+
+            cn.Should().NotBeNull(
+                $"the pinned {role} DN must contain exactly one CN component");
+
+            s_pinnedIssuerExpirations.Should().ContainKey(cn!,
+                $"pinned {role} CN={cn} has no entry in s_pinnedIssuerExpirations; add the " +
+                "CN -> notAfter mapping when adding/rotating a pin");
+
+            var notAfter = s_pinnedIssuerExpirations[cn!];
+            notAfter.Should().BeAfter(threshold,
+                $"pinned {role} CN={cn} expires {notAfter:O} (<90d). Roll the DN pin in " +
+                "SignatureVerifier.DistinguishedNames.cs, refresh the matching PEM under " +
+                "src/Layout/redist/trustedroots/, audit the digest/signature allow-lists, " +
+                "and update s_pinnedIssuerExpirations");
+        }
     }
 
     /// <summary>

@@ -33,7 +33,9 @@ internal static partial class SignatureVerifier
     // the code-signing intermediate pin in §5.2. The CN intentionally differs from
     // s_requiredIssuerRdns above (timestamping vs. code-signing intermediates are distinct
     // certs in the DigiCert hierarchy) — the visual similarity is not duplication.
-    private static readonly (string Oid, string Value)[] s_requiredTimestampIssuerRdns =
+    // internal: PinnedIssuerCertificates_HaveAtLeast90DaysUntilExpiration enumerates this
+    // alongside s_requiredIssuerRdns to enforce a 90-day expiration warning.
+    internal static readonly (string Oid, string Value)[] s_requiredTimestampIssuerRdns =
     [
         (SigningConstants.DnOids.CommonName,   "DigiCert Trusted G4 TimeStamping RSA4096 SHA256 2025 CA1"),
         (SigningConstants.DnOids.Organization, SigningConstants.DnValues.DigiCertOrg),
