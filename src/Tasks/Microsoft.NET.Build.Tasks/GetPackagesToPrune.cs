@@ -64,11 +64,20 @@ namespace Microsoft.NET.Build.Tasks
             public HashSet<string> FrameworkReferences { get; set; }
             public bool LoadPrunePackageDataFromNearestFramework { get; set; }
 
+            //  The resolved (absolutized) prune package data root and targeting pack roots are part of the cache key.
+            //  Otherwise two projects with the same framework values but different resolved roots (for example, the same
+            //  project-relative path under different TaskEnvironment.ProjectDirectory values) could incorrectly reuse the
+            //  first project's package data from the build-wide cache.
+            public string PrunePackageDataRoot { get; set; }
+            public string[] TargetingPackRoots { get; set; }
+
             public override bool Equals(object obj) => obj is CacheKey key &&
                 TargetFrameworkIdentifier == key.TargetFrameworkIdentifier &&
                 TargetFrameworkVersion == key.TargetFrameworkVersion &&
                 FrameworkReferences.SetEquals(key.FrameworkReferences) &&
-                LoadPrunePackageDataFromNearestFramework == key.LoadPrunePackageDataFromNearestFramework;
+                LoadPrunePackageDataFromNearestFramework == key.LoadPrunePackageDataFromNearestFramework &&
+                PrunePackageDataRoot == key.PrunePackageDataRoot &&
+                TargetingPackRoots.SequenceEqual(key.TargetingPackRoots);
             public override int GetHashCode()
             {
 #if NET
@@ -80,6 +89,11 @@ namespace Microsoft.NET.Build.Tasks
                     hashCode.Add(frameworkReference);
                 }
                 hashCode.Add(LoadPrunePackageDataFromNearestFramework);
+                hashCode.Add(PrunePackageDataRoot);
+                foreach (var targetingPackRoot in TargetingPackRoots)
+                {
+                    hashCode.Add(targetingPackRoot);
+                }
                 return hashCode.ToHashCode();
 #else
                 int hashCode = 1436330440;
@@ -91,6 +105,11 @@ namespace Microsoft.NET.Build.Tasks
                     hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(frameworkReference);
                 }
                 hashCode = hashCode * -1521134295 + LoadPrunePackageDataFromNearestFramework.GetHashCode();
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(PrunePackageDataRoot);
+                foreach (var targetingPackRoot in TargetingPackRoots)
+                {
+                    hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(targetingPackRoot);
+                }
                 return hashCode;
 #endif
             }
@@ -121,12 +140,21 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+            AbsolutePath prunePackageDataRoot = TaskEnvironment.GetAbsolutePath(PrunePackageDataRoot);
+
+            AbsolutePath[] targetingPackRoots = TargetingPackRoots
+                .Where(r => !string.IsNullOrEmpty(r))
+                .Select(r => TaskEnvironment.GetAbsolutePath(r))
+                .ToArray();
+
             CacheKey key = new()
             {
                 TargetFrameworkIdentifier = TargetFrameworkIdentifier,
                 TargetFrameworkVersion = TargetFrameworkVersion,
                 FrameworkReferences = runtimeFrameworks.ToHashSet(),
-                LoadPrunePackageDataFromNearestFramework = LoadPrunePackageDataFromNearestFramework
+                LoadPrunePackageDataFromNearestFramework = LoadPrunePackageDataFromNearestFramework,
+                PrunePackageDataRoot = prunePackageDataRoot.Value,
+                TargetingPackRoots = targetingPackRoots.Select(r => r.Value).ToArray()
             };
 
             //  Cache framework package values per build
@@ -136,12 +164,6 @@ namespace Microsoft.NET.Build.Tasks
                 PackagesToPrune = (TaskItem[])existingResult;
                 return;
             }
-            AbsolutePath prunePackageDataRoot = TaskEnvironment.GetAbsolutePath(PrunePackageDataRoot);
-
-            AbsolutePath[] targetingPackRoots = TargetingPackRoots
-                .Where(r => !string.IsNullOrEmpty(r))
-                .Select(r => TaskEnvironment.GetAbsolutePath(r))
-                .ToArray();
 
             PackagesToPrune = LoadPackagesToPrune(key, targetingPackRoots, prunePackageDataRoot, Log, AllowMissingPrunePackageData);
 

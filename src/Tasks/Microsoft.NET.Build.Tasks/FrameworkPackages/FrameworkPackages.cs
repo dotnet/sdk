@@ -123,7 +123,7 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
             return null;
         }
 
-        if (targetingPackRoot.Value is not null)
+        if (!string.IsNullOrEmpty(targetingPackRoot.Value))
         {
             var packsFolder = Path.Combine(targetingPackRoot, frameworkName + ".Ref");
             var packsFolderForLog = Path.Combine(targetingPackRoot.OriginalValue, frameworkName + ".Ref");

@@ -20,6 +20,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         private static GetPackagesToPrune CreateTask(TaskTestEnvironment env, string targetingPackRoots, string prunePackageDataRoot, bool allowMissing = false)
         {
+            return CreateTask(env, new[] { targetingPackRoots }, prunePackageDataRoot, allowMissing);
+        }
+
+        private static GetPackagesToPrune CreateTask(TaskTestEnvironment env, string[] targetingPackRoots, string prunePackageDataRoot, bool allowMissing = false)
+        {
             var frameworkReference = new TaskItem(NetCoreApp);
             var targetingPack = new TaskItem(NetCoreApp);
             targetingPack.SetMetadata("RuntimeFrameworkName", NetCoreApp);
@@ -32,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 TargetFrameworkVersion = TargetFrameworkVersion,
                 FrameworkReferences = new ITaskItem[] { frameworkReference },
                 TargetingPacks = new ITaskItem[] { targetingPack },
-                TargetingPackRoots = new[] { targetingPackRoots },
+                TargetingPackRoots = targetingPackRoots,
                 PrunePackageDataRoot = prunePackageDataRoot,
                 AllowMissingPrunePackageData = allowMissing,
                 LoadPrunePackageDataFromNearestFramework = false,
@@ -110,6 +115,66 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.PackagesToPrune.Should().ContainSingle()
                 .Which.ItemSpec.Should().Be("Newtonsoft.Json");
+        }
+
+        [Fact]
+        public void ItFallsBackToALaterTargetingPackRootWhenAnEarlierOneHasNoData()
+        {
+            using var env = new TaskTestEnvironment();
+
+            // Only the second targeting pack root has the data; the first points at an
+            // existing-but-empty directory. This verifies LoadFrameworkPackagesFromPack
+            // iterates the AbsolutePath[] and absolutizes each entry (not just the first).
+            const string emptyTargetingPackRoot = "packs-empty";
+            const string realTargetingPackRoot = "packs-real";
+            env.CreateProjectDirectory(emptyTargetingPackRoot);
+            env.CreateProjectFile(
+                Path.Combine(
+                    realTargetingPackRoot,
+                    NetCoreApp + ".Ref",
+                    TargetFrameworkVersion + ".0",
+                    "data",
+                    "PackageOverrides.txt"),
+                "Newtonsoft.Json|13.0.1");
+
+            // Empty-but-existing prune data so the task falls back to the targeting pack lookup.
+            const string emptyPruneDataRelative = "EmptyPruneData";
+            env.CreateProjectDirectory(emptyPruneDataRelative);
+
+            var task = CreateTask(
+                env,
+                targetingPackRoots: new[] { emptyTargetingPackRoot, realTargetingPackRoot },
+                prunePackageDataRoot: emptyPruneDataRelative);
+
+            task.Execute().Should().BeTrue(
+                "the lookup should continue to later targeting pack roots when an earlier one has no data");
+
+            task.PackagesToPrune.Should().ContainSingle()
+                .Which.ItemSpec.Should().Be("Newtonsoft.Json");
+        }
+
+        [Fact]
+        public void ItSucceedsWithNoPackagesWhenTargetingPackFolderDoesNotExist()
+        {
+            using var env = new TaskTestEnvironment();
+
+            // Point both roots at non-existent folders so Directory.Exists(packsFolder) is false
+            // (the missing-folder branch in LoadFrameworkPackagesFromPack). With AllowMissing set,
+            // the task should succeed without throwing and produce no packages.
+            const string missingTargetingPackRoot = "does-not-exist";
+            const string emptyPruneDataRelative = "EmptyPruneData";
+            env.CreateProjectDirectory(emptyPruneDataRelative);
+
+            var task = CreateTask(
+                env,
+                targetingPackRoots: missingTargetingPackRoot,
+                prunePackageDataRoot: emptyPruneDataRelative,
+                allowMissing: true);
+
+            task.Execute().Should().BeTrue(
+                "a non-existent targeting pack folder should be handled gracefully when AllowMissingPrunePackageData is true");
+
+            task.PackagesToPrune.Should().BeEmpty();
         }
     }
 }
