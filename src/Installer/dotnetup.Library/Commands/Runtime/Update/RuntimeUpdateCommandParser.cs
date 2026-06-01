@@ -14,13 +14,6 @@ internal static class RuntimeUpdateCommandParser
         return s_runtimeUpdateCommand;
     }
 
-    private static readonly Command s_rootUpdateCommand = ConstructCommand();
-
-    public static Command GetRootUpdateCommand()
-    {
-        return s_rootUpdateCommand;
-    }
-
     private static Command ConstructCommand()
     {
         Command command = new("update", "Updates tracked .NET Runtime installations.");

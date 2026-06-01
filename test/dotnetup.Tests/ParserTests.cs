@@ -4,6 +4,9 @@
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Uninstall;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -495,6 +498,74 @@ public class ParserTests
         channels.Should().ContainSingle().Which.Should().Be("11.0.100-preview.3.26170.106");
         parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
         parseResult.GetValue(CommonOptions.InteractiveOption).Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Uninstall Argument Parser Tests
+
+    [Theory]
+    [InlineData("9.0")]
+    [InlineData("10.0.304")]
+    [InlineData("11.0.100-preview.3.26170.106")]
+    public void Parser_SdkUninstall_PreservesExactChannelArgument(string channel)
+    {
+        // Regression: shared Argument<string?> between `sdk uninstall` and root `uninstall`.
+        var args = new[] { "sdk", "uninstall", channel };
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Errors.Should().BeEmpty();
+        var value = parseResult.GetValue(SdkUninstallCommandParser.SdkChannelArgument);
+        value.Should().Be(channel);
+    }
+
+    [Theory]
+    [InlineData("9.0")]
+    [InlineData("10.0.304")]
+    [InlineData("11.0.100-preview.3.26170.106")]
+    public void Parser_RootUninstall_PreservesExactChannelArgument(string channel)
+    {
+        // Same regression test for the root `uninstall` shortcut.
+        var args = new[] { "uninstall", channel };
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Errors.Should().BeEmpty();
+        var value = parseResult.GetValue(SdkUninstallCommandParser.RootChannelArgument);
+        value.Should().Be(channel);
+    }
+
+    #endregion
+
+    #region Runtime Argument Parser Tests
+
+    [Theory]
+    [InlineData("6.0")]
+    [InlineData("aspnetcore@9.0")]
+    [InlineData("windowsdesktop@10.0")]
+    public void Parser_RuntimeInstall_PreservesExactComponentSpec(string spec)
+    {
+        var args = new[] { "runtime", "install", spec };
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Errors.Should().BeEmpty();
+        var specs = parseResult.GetValue(RuntimeInstallCommandParser.ComponentSpecsArgument);
+        specs.Should().NotBeNull();
+        specs.Should().ContainSingle().Which.Should().Be(spec);
+    }
+
+    [Theory]
+    [InlineData("6.0")]
+    [InlineData("aspnetcore@9.0")]
+    [InlineData("windowsdesktop@10.0")]
+    public void Parser_RuntimeUninstall_PreservesExactComponentSpec(string spec)
+    {
+        // Regression: shared Argument<string?> between `runtime uninstall` and root shortcut.
+        var args = new[] { "runtime", "uninstall", spec };
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Errors.Should().BeEmpty();
+        var value = parseResult.GetValue(RuntimeUninstallCommandParser.ComponentSpecArgument);
+        value.Should().Be(spec);
     }
 
     #endregion
