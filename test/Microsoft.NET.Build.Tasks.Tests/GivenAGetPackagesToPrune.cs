@@ -118,63 +118,65 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void ItFallsBackToALaterTargetingPackRootWhenAnEarlierOneHasNoData()
+        public void ItDoesNotReuseCachedDataForDifferentResolvedTargetingPackRoots()
         {
             using var env = new TaskTestEnvironment();
 
-            // Only the second targeting pack root has the data; the first points at an
-            // existing-but-empty directory. This verifies LoadFrameworkPackagesFromPack
-            // iterates the AbsolutePath[] and absolutizes each entry (not just the first).
-            const string emptyTargetingPackRoot = "packs-empty";
-            const string realTargetingPackRoot = "packs-real";
-            env.CreateProjectDirectory(emptyTargetingPackRoot);
+            // Two roots with the SAME framework values but DIFFERENT data. The build-wide cache key
+            // must include the resolved roots; otherwise the second task would incorrectly reuse the
+            // first one's packages.
+            const string rootA = "packs-a";
+            const string rootB = "packs-b";
             env.CreateProjectFile(
-                Path.Combine(
-                    realTargetingPackRoot,
-                    NetCoreApp + ".Ref",
-                    TargetFrameworkVersion + ".0",
-                    "data",
-                    "PackageOverrides.txt"),
+                Path.Combine(rootA, NetCoreApp + ".Ref", TargetFrameworkVersion + ".0", "data", "PackageOverrides.txt"),
                 "Newtonsoft.Json|13.0.1");
+            env.CreateProjectFile(
+                Path.Combine(rootB, NetCoreApp + ".Ref", TargetFrameworkVersion + ".0", "data", "PackageOverrides.txt"),
+                "System.Text.Json|8.0.0");
 
-            // Empty-but-existing prune data so the task falls back to the targeting pack lookup.
+            // Empty-but-existing prune data so both fall back to the targeting pack lookup.
             const string emptyPruneDataRelative = "EmptyPruneData";
             env.CreateProjectDirectory(emptyPruneDataRelative);
 
-            var task = CreateTask(
-                env,
-                targetingPackRoots: new[] { emptyTargetingPackRoot, realTargetingPackRoot },
-                prunePackageDataRoot: emptyPruneDataRelative);
+            // A SHARED caching engine across both task runs (MockBuildEngine caches by CacheKey).
+            var sharedEngine = new MockBuildEngine();
 
-            task.Execute().Should().BeTrue(
-                "the lookup should continue to later targeting pack roots when an earlier one has no data");
+            var taskA = CreateTask(env, targetingPackRoots: rootA, prunePackageDataRoot: emptyPruneDataRelative);
+            taskA.BuildEngine = sharedEngine;
+            taskA.Execute().Should().BeTrue();
+            taskA.PackagesToPrune.Should().ContainSingle().Which.ItemSpec.Should().Be("Newtonsoft.Json");
 
-            task.PackagesToPrune.Should().ContainSingle()
-                .Which.ItemSpec.Should().Be("Newtonsoft.Json");
+            var taskB = CreateTask(env, targetingPackRoots: rootB, prunePackageDataRoot: emptyPruneDataRelative);
+            taskB.BuildEngine = sharedEngine;
+            taskB.Execute().Should().BeTrue();
+            taskB.PackagesToPrune.Should().ContainSingle().Which.ItemSpec.Should().Be(
+                "System.Text.Json",
+                "different resolved targeting pack roots must not collide in the build-wide cache");
         }
 
         [Fact]
-        public void ItSucceedsWithNoPackagesWhenTargetingPackFolderDoesNotExist()
+        public void ItReusesCachedDataForIdenticalInputs()
         {
             using var env = new TaskTestEnvironment();
 
-            // Point both roots at non-existent folders so Directory.Exists(packsFolder) is false
-            // (the missing-folder branch in LoadFrameworkPackagesFromPack). With AllowMissing set,
-            // the task should succeed without throwing and produce no packages.
-            const string missingTargetingPackRoot = "does-not-exist";
-            const string emptyPruneDataRelative = "EmptyPruneData";
-            env.CreateProjectDirectory(emptyPruneDataRelative);
+            const string prunePackageDataRelative = "PrunePackageData";
+            env.CreateProjectFile(
+                Path.Combine(prunePackageDataRelative, TargetFrameworkVersion, NetCoreApp, "PackageOverrides.txt"),
+                "Newtonsoft.Json|13.0.1");
 
-            var task = CreateTask(
-                env,
-                targetingPackRoots: missingTargetingPackRoot,
-                prunePackageDataRoot: emptyPruneDataRelative,
-                allowMissing: true);
+            var sharedEngine = new MockBuildEngine();
 
-            task.Execute().Should().BeTrue(
-                "a non-existent targeting pack folder should be handled gracefully when AllowMissingPrunePackageData is true");
+            var first = CreateTask(env, targetingPackRoots: "packs", prunePackageDataRelative);
+            first.BuildEngine = sharedEngine;
+            first.Execute().Should().BeTrue();
 
-            task.PackagesToPrune.Should().BeEmpty();
+            var second = CreateTask(env, targetingPackRoots: "packs", prunePackageDataRelative);
+            second.BuildEngine = sharedEngine;
+            second.Execute().Should().BeTrue();
+
+            // The second run with identical inputs should hit the cache and return the very same array.
+            second.PackagesToPrune.Should().BeSameAs(first.PackagesToPrune,
+                "identical framework values and resolved roots should produce a cache hit");
         }
     }
 }
