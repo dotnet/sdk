@@ -18,7 +18,7 @@ parameters:
   type: boolean
   default: true
 - name: updateAkaMsLink
-  displayName: Update aka.ms/dotnet/templating/searchcacheurl to the new ESRP URL?
+  displayName: Update the aka.ms links (searchcacheurl and nontemplatepacksurl) to the new ESRP URLs?
   type: boolean
   default: true
 
@@ -299,7 +299,7 @@ extends:
                   Write-Host "  $nonShortUrl -> $nonTemplatePacksUrl"
                   $resp = Invoke-WebRequest -Method Put -Uri $uri `
                     -Headers @{ Authorization = "Bearer $token" } `
-                    -ContentType 'application/json' -Body $body -UseBasicParsing
+                    -ContentType 'application/json' -Body $body
                   Write-Host "Redirection API status: $($resp.StatusCode)"
               env:
                 SEARCH_CACHE_URL: $(capture.SearchCacheDownloadUrl)
