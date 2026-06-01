@@ -80,7 +80,10 @@
   <!-- This target adds all of our PackageReference and ProjectReference's runtime assets to our package output. -->
   <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" TargetPath="%(ReferenceCopyLocalPaths.DestinationSubPath)" />
+      <_LocalPaths Include="@(ReferenceCopyLocalPaths)" />
+      <!-- Exclude .pdb files: in official builds (DebugType=portable) they are published via the symbol server,
+           not bundled inside the NuGet package. -->
+      <BuildOutputInPackage Include="@(_LocalPaths)" TargetPath="%(_LocalPaths.DestinationSubPath)" Condition="'%(_LocalPaths.Extension)' != '.pdb'" />
     </ItemGroup>
   </Target>
 
