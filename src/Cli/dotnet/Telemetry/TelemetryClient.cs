@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class TelemetryClient : ITelemetryClient
 {
-    private static FrozenDictionary<string, string?> s_commonProperties = FrozenDictionary<string, string?>.Empty;
+    private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
 
     private static readonly MeterProviderBuilder s_metricsProviderBuilder;
@@ -80,8 +80,7 @@ public class TelemetryClient : ITelemetryClient
         s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
-            .AddRuntimeInstrumentation()
-            ;
+            .AddRuntimeInstrumentation();
 
         if (s_enableOtlpExporter)
         {
