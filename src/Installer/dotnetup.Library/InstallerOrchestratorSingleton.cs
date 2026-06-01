@@ -255,6 +255,16 @@ internal class InstallerOrchestratorSingleton
                 return null;
             }
 
+            // For --untracked installs the manifest is null, so the check above is
+            // skipped. Fall back to a filesystem check using the same layout validation
+            // that CommitPreparedInstall uses post-extraction. This runs inside the
+            // mutex so another dotnetup process can't be mid-extraction when we probe.
+            if (installRequest.Options.Untracked && new ArchiveInstallationValidator().Validate(install))
+            {
+                alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
+                return null;
+            }
+
             if (!installRequest.Options.Untracked
                 && !manifest!.IsRootTracked(installRequest.InstallRoot)
                 && DotnetupSharedManifest.HasDotnetArtifacts(installRequest.InstallRoot.Path))
