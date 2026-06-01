@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias NativeWrapper;
+
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
+using NativeConstants = NativeWrapper::Microsoft.DotNet.NativeWrapper.Constants;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -143,11 +146,11 @@ internal sealed unsafe class ManagedHost : IDisposable
                 if (!string.IsNullOrEmpty(hostfxrPath))
                 {
                     StatusCode propertyResult = Interop.hostfxr_set_runtime_property_value(
-                        handle, Microsoft.DotNet.NativeWrapper.Constants.RuntimeProperty.HostFxrPath, hostfxrPath);
+                        handle, NativeConstants.RuntimeProperty.HostFxrPath, hostfxrPath);
                     if (propertyResult != StatusCode.Success)
                     {
                         throw new InvalidOperationException(
-                            $"hostfxr_set_runtime_property_value failed for {Microsoft.DotNet.NativeWrapper.Constants.RuntimeProperty.HostFxrPath}. Status: {propertyResult} (0x{(uint)propertyResult:X8})");
+                            $"hostfxr_set_runtime_property_value failed for {NativeConstants.RuntimeProperty.HostFxrPath}. Status: {propertyResult} (0x{(uint)propertyResult:X8})");
                     }
                 }
 

@@ -2,21 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Frozen;
-#if !CLI_AOT
 using System.Net.NetworkInformation;
-#endif
 using Microsoft.DotNet.Cli.Utils;
-#if !CLI_AOT
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Utilities;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
-#endif
 using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class TelemetryCommonProperties(
-#if !CLI_AOT
     Func<string>? getCurrentDirectory = null,
     Func<string, string>? hasher = null,
     Func<string?>? getMACAddress = null,
@@ -25,10 +20,8 @@ internal class TelemetryCommonProperties(
     IUserLevelCacheWriter? userLevelCacheWriter = null,
     ICIEnvironmentDetector? ciEnvironmentDetector = null,
     ILLMEnvironmentDetector? llmEnvironmentDetector = null
-#endif
     )
 {
-#if !CLI_AOT
     private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
     private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
     private readonly ILLMEnvironmentDetector _llmEnvironmentDetector = llmEnvironmentDetector ?? new LLMEnvironmentDetectorForTelemetry();
@@ -37,7 +30,6 @@ internal class TelemetryCommonProperties(
     private readonly Func<string?> _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
     private readonly Func<string> _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
     private readonly IUserLevelCacheWriter _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
-#endif
 
     private const string OSVersion = "OS Version";
     private const string OSPlatform = "OS Platform";
@@ -46,45 +38,23 @@ internal class TelemetryCommonProperties(
     private const string RuntimeId = "Runtime Id";
     private const string ProductVersion = "Product Version";
     private const string TelemetryProfile = "Telemetry Profile";
-#if !CLI_AOT
     private const string CurrentPathHash = "Current Path Hash";
     private const string DeviceId = "devdeviceid";
     private const string MachineId = "Machine ID";
     private const string MachineIdOld = "Machine ID Old";
     private const string DockerContainer = "Docker Container";
-#endif
     private const string KernelVersion = "Kernel Version";
-#if !CLI_AOT
     private const string InstallationType = "Installation Type";
     private const string ProductType = "Product Type";
     private const string LibcRelease = "Libc Release";
     private const string LibcVersion = "Libc Version";
-#endif
     private const string SessionId = "SessionId";
-#if !CLI_AOT
     private const string CI = "Continuous Integration";
     private const string LLM = "llm";
-#endif
     private const string TelemetryProfileEnvironmentVariable = "DOTNET_CLI_TELEMETRY_PROFILE";
-#if !CLI_AOT
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
-#endif
 
-#if CLI_AOT
-    public FrozenDictionary<string, string?> GetTelemetryCommonProperties(string? currentSessionId) => new Dictionary<string, string?>
-    {
-        { OSVersion,        RuntimeInformation.OSDescription },
-        { OSPlatform,       (OperatingSystem.IsWindows() ? "Windows" : OperatingSystem.IsMacOS() ? "macOS" : "Linux") },
-        { OSArchitecture,   RuntimeInformation.OSArchitecture.ToString() },
-        { OutputRedirected, Console.IsOutputRedirected.ToString() },
-        { RuntimeId,        RuntimeInformation.RuntimeIdentifier },
-        { ProductVersion,   Product.Version },
-        { TelemetryProfile, Environment.GetEnvironmentVariable(TelemetryProfileEnvironmentVariable) },
-        { KernelVersion,    GetKernelVersion() },
-        { SessionId,        currentSessionId }
-    }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
-#else
     public FrozenDictionary<string, string?> GetTelemetryCommonProperties(string? currentSessionId) => new Dictionary<string, string?>
     {
         { OSVersion,        RuntimeEnvironment.OperatingSystemVersion },
@@ -122,7 +92,6 @@ internal class TelemetryCommonProperties(
             return Guid.NewGuid().ToString();
         }
     }
-#endif
 
     /// <summary>
     /// Returns a string identifying the OS kernel.

@@ -37,6 +37,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryCommonProperties.cs" Link="TelemetryCommonProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ITelemetryClient.cs" Link="ITelemetryClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryDiskLogger.cs" Link="TelemetryDiskLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\IDockerContainerDetector.cs" Link="Telemetry\IDockerContainerDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\DockerContainerDetectorForTelemetry.cs" Link="Telemetry\DockerContainerDetectorForTelemetry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ILLMEnvironmentDetector.cs" Link="Telemetry\ILLMEnvironmentDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\LLMEnvironmentDetectorForTelemetry.cs" Link="Telemetry\LLMEnvironmentDetectorForTelemetry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\MacAddressGetter.cs" Link="Telemetry\MacAddressGetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\DevDeviceIDGetter.cs" Link="Telemetry\DevDeviceIDGetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ExternalTelemetryProperties.cs" Link="Telemetry\ExternalTelemetryProperties.cs" />
   </ItemGroup>
 
   <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
