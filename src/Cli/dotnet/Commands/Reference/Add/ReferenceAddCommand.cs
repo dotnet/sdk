@@ -149,13 +149,11 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
         int numberOfAddedReferences = editor.AddProjectReferences(
             refs.Zip(projectReferenceArguments, (reference, argument) =>
                 (ProjectFilePath: reference.ProjectRootElement.FullPath,
-                 DirectiveInclude: GetDirectiveInclude(argument, editor.EntryPointFileDirectory),
-                 DisplayInclude: Path.GetRelativePath(editor.EntryPointFileDirectory, reference.ProjectRootElement.FullPath))));
+                 DirectiveInclude: GetDirectiveInclude(argument, editor.EntryPointFileDirectory))));
 
         numberOfAddedReferences += editor.AddFileBasedAppReferences(fileBasedAppReferenceArguments.Select(argument =>
             (FilePath: Path.GetFullPath(argument),
-             DirectiveInclude: GetDirectiveInclude(argument, editor.EntryPointFileDirectory),
-             DisplayInclude: GetDirectiveInclude(argument, editor.EntryPointFileDirectory))));
+             DirectiveInclude: GetDirectiveInclude(argument, editor.EntryPointFileDirectory))));
 
         if (numberOfAddedReferences != 0)
         {

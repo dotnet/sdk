@@ -303,7 +303,7 @@ Util.cs";
             var outputText = CliStrings.ProjectReferenceOneOrMore;
             outputText += $@"
 {new string('-', outputText.Length)}
-{utilFile.Replace('\\', '/')}";
+$(MSBuildThisFileDirectory)Util.cs";
 
             new DotnetCommand(Log, "reference", "list", "--file", appFile)
                 .WithWorkingDirectory(testInstance.Path)
@@ -426,7 +426,7 @@ Other/Other.csproj";
             var outputText = CliStrings.ProjectReferenceOneOrMore;
             outputText += $@"
 {new string('-', outputText.Length)}
-{testDir}\Lib\Lib.csproj";
+$(MSBuildThisFileDirectory)Lib/Lib.csproj";
 
             var cmd = new DotnetCommand(Log, "reference", "list", "--file", appFile)
                 .WithWorkingDirectory(testDir)

@@ -379,7 +379,7 @@ Options:
                 .Should().Pass()
                 .And.HaveStdOutContaining(string.Format(
                     CliStrings.ProjectReferenceRemoved,
-                    Path.GetFullPath(Path.Join(testInstance.Path, "Lib", "Lib.csproj"))));
+                    "$(MSBuildThisFileDirectory)Lib/Lib.csproj"));
 
             File.ReadAllText(appFile).Should().Be("""
                 #:project Other/Other.csproj
@@ -443,7 +443,7 @@ Options:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectReferenceRemoved, "Util.cs"));
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectReferenceRemoved, "$(MSBuildThisFileDirectory)Util.cs"));
 
             File.ReadAllText(appFile).Should().Be($$"""
                 #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
@@ -547,7 +547,7 @@ Options:
                 .Execute();
 
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, referenceArgument));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, "Missing"));
             File.ReadAllText(appFile).Should().Be("""
                 Console.WriteLine();
                 """);
@@ -617,7 +617,7 @@ Options:
                 .Execute();
 
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, referenceArgument));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, "Missing"));
             File.ReadAllText(appFile).Should().Be($$"""
                 #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
 

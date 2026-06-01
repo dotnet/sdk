@@ -34,56 +34,54 @@ internal sealed class FileBasedAppReferenceEditor
         {
             if (directive is CSharpDirective.Project projectDirective)
             {
-                yield return GetProjectDirectiveDisplay(projectDirective);
+                yield return projectDirective.Name;
             }
             else if (directive is CSharpDirective.Ref refDirective)
             {
-                yield return GetRefDirectiveDisplay(refDirective);
+                yield return refDirective.Name;
             }
         }
     }
 
-    public int AddProjectReferences(IEnumerable<(string ProjectFilePath, string DirectiveInclude, string DisplayInclude)> references)
+    public int AddProjectReferences(IEnumerable<(string ProjectFilePath, string DirectiveInclude)> references)
     {
         int numberOfAddedReferences = 0;
 
         foreach (var reference in references)
         {
-            string displayReference = PathUtility.GetPathWithBackSlashes(reference.DisplayInclude);
-            if (ContainsProjectReference(reference.ProjectFilePath))
+            if (TryGetProjectReferenceDisplay(reference.ProjectFilePath, out var existingReferenceDisplay))
             {
                 Reporter.Output.WriteLine(string.Format(
                     CliStrings.ProjectAlreadyHasAreference,
-                    displayReference));
+                    existingReferenceDisplay));
                 continue;
             }
 
             numberOfAddedReferences++;
             _sourceEditor.Add(new CSharpDirective.Project(default, reference.DirectiveInclude));
-            Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, displayReference));
+            Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, reference.DirectiveInclude));
         }
 
         return numberOfAddedReferences;
     }
 
-    public int AddFileBasedAppReferences(IEnumerable<(string FilePath, string DirectiveInclude, string DisplayInclude)> references)
+    public int AddFileBasedAppReferences(IEnumerable<(string FilePath, string DirectiveInclude)> references)
     {
         int numberOfAddedReferences = 0;
 
         foreach (var reference in references)
         {
-            string displayReference = PathUtility.GetPathWithBackSlashes(reference.DisplayInclude);
-            if (ContainsFileBasedAppReference(reference.FilePath))
+            if (TryGetFileBasedAppReferenceDisplay(reference.FilePath, out var existingReferenceDisplay))
             {
                 Reporter.Output.WriteLine(string.Format(
                     CliStrings.ProjectAlreadyHasAreference,
-                    displayReference));
+                    existingReferenceDisplay));
                 continue;
             }
 
             numberOfAddedReferences++;
             _sourceEditor.Add(new CSharpDirective.Ref(default, reference.DirectiveInclude));
-            Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, displayReference));
+            Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, reference.DirectiveInclude));
         }
 
         return numberOfAddedReferences;
@@ -129,7 +127,7 @@ internal sealed class FileBasedAppReferenceEditor
         foreach (var directive in matchingDirectives)
         {
             _sourceEditor.Remove(directive);
-            Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, GetProjectRemovalDisplay(directive, reference)));
+            Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, directive.Name));
         }
 
         return matchingDirectives.Count;
@@ -147,64 +145,42 @@ internal sealed class FileBasedAppReferenceEditor
         foreach (var directive in matchingDirectives)
         {
             _sourceEditor.Remove(directive);
-            Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, PathUtility.GetPathWithBackSlashes(reference)));
+            Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, directive.Name));
         }
 
         return matchingDirectives.Count;
     }
 
-    private bool ContainsProjectReference(string projectFilePath)
-        => _sourceEditor.Directives
+    private bool TryGetProjectReferenceDisplay(string projectFilePath, out string display)
+    {
+        var directive = _sourceEditor.Directives
             .OfType<CSharpDirective.Project>()
-            .Any(d => PathsEqual(GetProjectDirectiveFullPath(d), projectFilePath));
+            .FirstOrDefault(d => PathsEqual(GetProjectDirectiveFullPath(d), projectFilePath));
 
-    private bool ContainsFileBasedAppReference(string filePath)
-        => _sourceEditor.Directives
+        if (directive is null)
+        {
+            display = string.Empty;
+            return false;
+        }
+
+        display = directive.Name;
+        return true;
+    }
+
+    private bool TryGetFileBasedAppReferenceDisplay(string filePath, out string display)
+    {
+        var directive = _sourceEditor.Directives
             .OfType<CSharpDirective.Ref>()
-            .Any(d => PathsEqual(GetRefDirectiveFullPath(d), filePath));
+            .FirstOrDefault(d => PathsEqual(GetRefDirectiveFullPath(d), filePath));
 
-    private string GetProjectDirectiveDisplay(CSharpDirective.Project projectDirective)
-    {
-        string expandedName = _projectInstance.ExpandString(projectDirective.Name);
-        if (string.Equals(projectDirective.Name, expandedName, StringComparison.Ordinal))
+        if (directive is null)
         {
-            return NormalizePath(projectDirective.Name);
+            display = string.Empty;
+            return false;
         }
 
-        return PathUtility.GetPathWithBackSlashes(GetProjectDirectiveFullPath(projectDirective));
-    }
-
-    private string GetProjectRemovalDisplay(CSharpDirective.Project projectDirective, string reference)
-    {
-        string expandedName = _projectInstance.ExpandString(projectDirective.Name);
-        if (!string.Equals(projectDirective.Name, expandedName, StringComparison.Ordinal))
-        {
-            return PathUtility.GetPathWithBackSlashes(GetProjectDirectiveFullPath(projectDirective));
-        }
-
-        var directiveDisplays = new[]
-        {
-            projectDirective.Name,
-            Path.GetRelativePath(EntryPointFileDirectory, GetProjectDirectiveFullPath(projectDirective)),
-        };
-
-        foreach (var alternative in GetProjectReferenceDisplayAlternatives(reference))
-        {
-            if (directiveDisplays.Any(d => string.Equals(NormalizePath(d), NormalizePath(alternative), StringComparison.OrdinalIgnoreCase)))
-            {
-                return alternative;
-            }
-        }
-
-        return GetProjectDirectiveDisplay(projectDirective);
-    }
-
-    private string GetRefDirectiveDisplay(CSharpDirective.Ref refDirective)
-    {
-        string expandedName = _projectInstance.ExpandString(refDirective.Name);
-        return string.Equals(refDirective.Name, expandedName, StringComparison.Ordinal)
-            ? NormalizePath(refDirective.Name)
-            : NormalizePath(GetRefDirectiveFullPath(refDirective));
+        display = directive.Name;
+        return true;
     }
 
     private string GetProjectDirectiveFullPath(CSharpDirective.Project projectDirective)
@@ -235,17 +211,6 @@ internal sealed class FileBasedAppReferenceEditor
         {
             yield return ResolveProjectReferenceArgumentFullPath(appRelativePath);
         }
-    }
-
-    private IEnumerable<string> GetProjectReferenceDisplayAlternatives(string reference)
-    {
-        yield return reference;
-
-        var fullPath = Path.GetFullPath(reference);
-        yield return fullPath;
-
-        var projectFilePath = ResolveProjectReferenceArgumentFullPath(fullPath);
-        yield return Path.GetRelativePath(EntryPointFileDirectory, projectFilePath);
     }
 
     private static string ResolveProjectReferenceArgumentFullPath(string fullPath)

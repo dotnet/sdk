@@ -266,7 +266,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, @"Lib\Lib.csproj"));
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Lib"));
 
             File.ReadAllText(appFile).Should().Be("""
                 #:project Lib
@@ -286,7 +286,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, @"Lib\Lib.csproj"));
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Lib"));
 
             File.ReadAllText(appFile).Should().Be("""
                 #:project Lib
@@ -368,7 +368,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectAlreadyHasAreference, "Util.cs"));
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectAlreadyHasAreference, "$(MSBuildThisFileDirectory)Util.cs"));
 
             File.ReadAllText(appFile).Should().Be(contentBefore);
         }
@@ -389,7 +389,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, @"Other\Other.csproj"));
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Other"));
 
             File.ReadAllText(appFile).Should().Be("""
                 #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
@@ -415,7 +415,7 @@ Commands:
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, @"Other\Other.csproj"));
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Other"));
 
             File.ReadAllText(appFile).Should().Be("""
                 #:project Lib
@@ -610,7 +610,7 @@ Commands:
                 .WithWorkingDirectory(lib.Path)
                 .Execute(setup.ValidRefCsprojPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAlreadyHasAreference, @"ValidRef\ValidRef.csproj"));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAlreadyHasAreference, "ValidRef/ValidRef.csproj"));
 
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore);
@@ -633,7 +633,7 @@ Commands:
                 .Execute();
 
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAlreadyHasAreference, @"ValidRef\ValidRef.csproj"));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAlreadyHasAreference, "ValidRef/ValidRef.csproj"));
             File.ReadAllText(appFile).Should().Be(contentBefore);
         }
 
@@ -792,8 +792,8 @@ Commands:
         [Fact]
         public void ItAddsMultipleRefsNoCondToTheSameItemGroup_FileBasedApp()
         {
-            var outputText = $@"{string.Format(CliStrings.ReferenceAddedToTheProject, @"Lib\Lib.csproj")}
-{string.Format(CliStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj")}";
+            var outputText = $@"{string.Format(CliStrings.ReferenceAddedToTheProject, "Lib/Lib.csproj")}
+{string.Format(CliStrings.ReferenceAddedToTheProject, "ValidRef/ValidRef.csproj")}";
 
             var setup = Setup();
             var appFile = CreateFileBasedApp(setup.TestRoot);
@@ -961,7 +961,7 @@ Commands:
                 .Execute();
 
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, @"..\ValidRef\ValidRef.csproj"));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, "../ValidRef/ValidRef.csproj"));
             File.ReadAllText(appFile).Should().Be("""
                 #:project ../ValidRef/ValidRef.csproj
 
@@ -1079,7 +1079,7 @@ Commands:
                     .Execute(Path.GetDirectoryName(setup.ValidRefCsprojPath) ?? string.Empty);
 
             result.Should().Pass();
-            result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj"));
+            result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, "ValidRef"));
             result.StdErr.Should().BeEmpty();
         }
 
@@ -1094,7 +1094,7 @@ Commands:
                 .Execute();
 
             result.Should().Pass();
-            result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj"));
+            result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, "ValidRef"));
             result.StdErr.Should().BeEmpty();
             File.ReadAllText(appFile).Should().Contain("#:project ValidRef");
         }
