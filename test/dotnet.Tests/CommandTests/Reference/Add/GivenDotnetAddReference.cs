@@ -610,7 +610,7 @@ Commands:
                 .WithWorkingDirectory(lib.Path)
                 .Execute(setup.ValidRefCsprojPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAlreadyHasAreference, "ValidRef/ValidRef.csproj"));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAlreadyHasAreference, @"ValidRef\ValidRef.csproj"));
 
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore);
@@ -1079,7 +1079,7 @@ Commands:
                     .Execute(Path.GetDirectoryName(setup.ValidRefCsprojPath) ?? string.Empty);
 
             result.Should().Pass();
-            result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, "ValidRef"));
+            result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj"));
             result.StdErr.Should().BeEmpty();
         }
 
