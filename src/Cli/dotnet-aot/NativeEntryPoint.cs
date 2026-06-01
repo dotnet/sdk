@@ -44,12 +44,13 @@ static unsafe partial class NativeEntryPoint
     {
         // Initialize OTel telemetry (mirrors managed Program.cs setup).
         var telemetryClient = new TelemetryClient(sessionId: null);
-        using var mainActivity = Activities.Source.StartActivity("main", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
+        var mainActivity = Activities.Source.StartActivity("native-entrypoint", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
 
         // Backdate the activity start to process start time for accurate timing.
         if (mainActivity is not null)
         {
             mainActivity.SetCustomProperty("process.start_time", Process.GetCurrentProcess().StartTime.ToUniversalTime());
+            Console.WriteLine("Native entry point is tracking telemetry");
         }
 
         int exitCode = 1;
@@ -66,6 +67,7 @@ static unsafe partial class NativeEntryPoint
             // Try the AOT-compiled path for supported commands (if enabled)
             if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
             {
+                using var _ = Activities.Source.StartActivity("aot-parsing", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
                 var parseResult = Parser.Parse(args);
 
                 if (parseResult.Errors.Count == 0)
@@ -113,6 +115,7 @@ static unsafe partial class NativeEntryPoint
         {
             mainActivity?.AddTag("process.exit.code", exitCode);
             mainActivity?.SetStatus(success ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            mainActivity?.Stop();
             TelemetryClient.FlushProviders();
         }
     }

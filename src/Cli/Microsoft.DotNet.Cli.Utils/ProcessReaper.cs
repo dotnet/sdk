@@ -44,12 +44,14 @@ internal class ProcessReaper : IDisposable
             EnableWindowsCtrlCHandling();
         }
 
+        public delegate bool ConsoleCtrlEventHandler(uint ctrlType);
+
         private static void EnableWindowsCtrlCHandling()
         {
             SetConsoleCtrlHandler(null, false);
 
             [DllImport("kernel32.dll", SetLastError = true)]
-            static extern bool SetConsoleCtrlHandler(Delegate? handler, bool add);
+            static extern bool SetConsoleCtrlHandler(ConsoleCtrlEventHandler? handler, bool add);
         }
 
 #if TARGET_WINDOWS
