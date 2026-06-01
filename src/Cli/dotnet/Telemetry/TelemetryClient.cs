@@ -20,9 +20,7 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 public class TelemetryClient : ITelemetryClient
 {
     private static FrozenDictionary<string, string?> s_commonProperties = FrozenDictionary<string, string?>.Empty;
-#if !CLI_AOT
     private Task? _trackEventTask;
-#endif
 
     private static readonly MeterProviderBuilder s_metricsProviderBuilder;
     private static MeterProvider? s_metricsProvider;
@@ -221,7 +219,6 @@ public class TelemetryClient : ITelemetryClient
 
     public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
-#if !CLI_AOT
         if (!Enabled)
         {
             return;
@@ -231,10 +228,8 @@ public class TelemetryClient : ITelemetryClient
         _trackEventTask = _trackEventTask == null
             ? Task.Run(() => TrackEventTask(eventName, properties))
             : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties));
-#endif
     }
 
-#if !CLI_AOT
     public void ThreadBlockingTrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
         if (!Enabled)
@@ -270,5 +265,4 @@ public class TelemetryClient : ITelemetryClient
             .OrderBy(p => p.Key);
         return [.. common, .. properties];
     }
-#endif
 }
