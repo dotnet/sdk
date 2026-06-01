@@ -1,12 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !CLI_AOT
 using System.Collections.Frozen;
+#endif
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
+#if !CLI_AOT
 using Microsoft.DotNet.Configurer;
+#endif
 
-#if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
+#if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR && !CLI_AOT
 using Azure.Monitor.OpenTelemetry.Exporter;
 #endif
 using OpenTelemetry;
@@ -19,22 +23,28 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class TelemetryClient : ITelemetryClient
 {
+#if !CLI_AOT
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
+#endif
 
     private static readonly MeterProviderBuilder s_metricsProviderBuilder;
     private static MeterProvider? s_metricsProvider;
     private static readonly TracerProviderBuilder s_tracerProviderBuilder;
     private static TracerProvider? s_tracerProvider;
+#if !CLI_AOT
     private static readonly List<Activity> s_activities = [];
+#endif
 
-#if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
+#if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR && !CLI_AOT
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
     private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
     // Note: The TelemetryClient instance constructor takes in an environment provider. These fields don't use that currently.
     private static readonly string? s_environmentStoragePath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
 #endif
+#if !CLI_AOT
     private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
+#endif
     private static readonly bool s_disableTraceExport = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
     // The OTLP exporter is enabled when:
     //   1. The SDK-specific DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER env var is true, or
@@ -56,18 +66,22 @@ public class TelemetryClient : ITelemetryClient
     /// </summary>
     private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 
+#if !CLI_AOT
     public static string? CurrentSessionId { get; private set; } = null;
+#endif
     public static bool DisabledForTests
     {
         get => field;
         set
         {
             field = value;
+#if !CLI_AOT
             // When disabled, clear the session ID.
             if (field)
             {
                 CurrentSessionId = null;
             }
+#endif
         }
     } = false;
     public static ActivityContext ParentActivityContext { get; private set; }
@@ -80,7 +94,10 @@ public class TelemetryClient : ITelemetryClient
         s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
-            .AddRuntimeInstrumentation();
+#if !CLI_AOT
+            .AddRuntimeInstrumentation()
+#endif
+            ;
 
         if (s_enableOtlpExporter)
         {
@@ -97,12 +114,14 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProviderBuilder.AddOtlpExporter();
         }
 
+#if !CLI_AOT
         if (!string.IsNullOrWhiteSpace(s_diskLogPath))
         {
             s_tracerProviderBuilder.AddInMemoryExporter(s_activities);
         }
+#endif
 
-#if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
+#if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR && !CLI_AOT
         if (!s_disableTraceExport)
         {
             var storageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
@@ -148,23 +167,43 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProvider ??= s_tracerProviderBuilder.Build();
         }
 
+#if !CLI_AOT
         CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
+#endif
     }
 
     /// <summary>
-    /// Uses the OpenTelemetry SDK's Propagation API to derive the parent activity context from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
+    /// Derives the parent activity context. Checks runtime properties first (set by the AOT
+    /// bridge via <c>hostfxr_set_runtime_property_value</c>), then falls back to the
+    /// <c>TRACEPARENT</c> / <c>TRACESTATE</c> environment variables.
     /// </summary>
     private static ActivityContext? GetParentActivityContext()
     {
-        var traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        // Runtime properties take precedence — they are set by the AOT bridge when it
+        // falls back to the managed CLI so that the managed spans become children of the
+        // AOT-side main activity.
+        var traceParent = AppContext.GetData(Activities.TRACEPARENT) as string;
+
+        // Fall back to environment variables for external callers.
+        if (string.IsNullOrEmpty(traceParent))
+        {
+            traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        }
+
         if (string.IsNullOrEmpty(traceParent))
         {
             return null;
         }
 
         var carrierMap = new Dictionary<string, IEnumerable<string>?> { { "traceparent", [traceParent] } };
-        var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
+
+        var traceState = AppContext.GetData(Activities.TRACESTATE) as string;
+        if (string.IsNullOrEmpty(traceState))
+        {
+            traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
+        }
+
         if (!string.IsNullOrEmpty(traceState))
         {
             carrierMap.Add("tracestate", [traceState]);
@@ -190,6 +229,7 @@ public class TelemetryClient : ITelemetryClient
         s_metricsProvider?.ForceFlush(s_flushTimeoutMs);
     }
 
+#if !CLI_AOT
     public static void WriteLogIfNecessary()
     {
         if (!string.IsNullOrWhiteSpace(s_diskLogPath) && s_activities.Any())
@@ -197,9 +237,11 @@ public class TelemetryClient : ITelemetryClient
             TelemetryDiskLogger.WriteLog(s_diskLogPath, s_activities);
         }
     }
+#endif
 
     public void TrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
+#if !CLI_AOT
         if (!Enabled)
         {
             return;
@@ -209,8 +251,10 @@ public class TelemetryClient : ITelemetryClient
         _trackEventTask = _trackEventTask == null
             ? Task.Run(() => TrackEventTask(eventName, properties))
             : _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties));
+#endif
     }
 
+#if !CLI_AOT
     public void ThreadBlockingTrackEvent(string eventName, IDictionary<string, string?>? properties)
     {
         if (!Enabled)
@@ -246,4 +290,5 @@ public class TelemetryClient : ITelemetryClient
             .OrderBy(p => p.Key);
         return [.. common, .. properties];
     }
+#endif
 }

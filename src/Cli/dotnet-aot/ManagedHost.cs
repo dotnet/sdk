@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
+using NativeWrapper = Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -141,11 +144,24 @@ internal sealed unsafe class ManagedHost : IDisposable
                 if (!string.IsNullOrEmpty(hostfxrPath))
                 {
                     StatusCode propertyResult = Interop.hostfxr_set_runtime_property_value(
-                        handle, Constants.RuntimeProperty.HostFxrPath, hostfxrPath);
+                        handle, NativeWrapper.Constants.RuntimeProperty.HostFxrPath, hostfxrPath);
                     if (propertyResult != StatusCode.Success)
                     {
                         throw new InvalidOperationException(
-                            $"hostfxr_set_runtime_property_value failed for {Constants.RuntimeProperty.HostFxrPath}. Status: {propertyResult} (0x{(uint)propertyResult:X8})");
+                            $"hostfxr_set_runtime_property_value failed for {NativeWrapper.Constants.RuntimeProperty.HostFxrPath}. Status: {propertyResult} (0x{(uint)propertyResult:X8})");
+                    }
+                }
+
+                // Propagate OTel trace context to the managed CLI so that its spans
+                // become children of the AOT-side main activity.
+                if (Activity.Current is { } currentActivity)
+                {
+                    string traceparent = $"00-{currentActivity.Context.TraceId}-{currentActivity.Context.SpanId}-{(currentActivity.Context.TraceFlags == ActivityTraceFlags.Recorded ? "01" : "00")}";
+                    Interop.hostfxr_set_runtime_property_value(handle, Activities.TRACEPARENT, traceparent);
+
+                    if (!string.IsNullOrEmpty(currentActivity.Context.TraceState))
+                    {
+                        Interop.hostfxr_set_runtime_property_value(handle, Activities.TRACESTATE, currentActivity.Context.TraceState);
                     }
                 }
 
