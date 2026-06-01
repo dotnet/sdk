@@ -3409,6 +3409,89 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
+        public void TestIndexerWithCustomName()
+        {
+            RunTest(original: """
+                    namespace a
+                    {
+                        public partial class Foo
+                        {
+                            [System.Runtime.CompilerServices.IndexerName("MyItem")]
+                            public string this[int index] => string.Empty;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        public partial class Foo
+                        {
+                            [System.Runtime.CompilerServices.IndexerName("MyItem")]
+                            public string this[int index] { get { throw null; } }
+                        }
+                    }
+                    """);
+        }
+
+        [Fact]
+        public void TestIndexerWithDefaultNameDoesNotEmitIndexerNameAttribute()
+        {
+            RunTest(original: """
+                    namespace a
+                    {
+                        public partial class Foo
+                        {
+                            public string this[int index] => string.Empty;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        public partial class Foo
+                        {
+                            public string this[int index] { get { throw null; } }
+                        }
+                    }
+                    """);
+        }
+
+        [Fact]
+        public void TestExplicitInterfaceIndexerWithCustomNameDoesNotEmitIndexerNameAttribute()
+        {
+            RunTest(original: """
+                    namespace a
+                    {
+                        public partial interface IFoo
+                        {
+                            [System.Runtime.CompilerServices.IndexerName("MyItem")]
+                            string this[int index] { get; }
+                        }
+
+                        public partial class Foo : IFoo
+                        {
+                            string IFoo.this[int index] => string.Empty;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        public partial class Foo : IFoo
+                        {
+                            string IFoo.this[int index] { get { throw null; } }
+                        }
+
+                        public partial interface IFoo
+                        {
+                            [System.Runtime.CompilerServices.IndexerName("MyItem")]
+                            string this[int index] { get; }
+                        }
+                    }
+                    """);
+        }
+
+        [Fact]
         public void TestExplicitInterfaceNonGenericCollections()
         {
             RunTest(original: """
