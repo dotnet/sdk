@@ -36,7 +36,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     BuildEngine = new MockBuildEngine(),
                     TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
                     Items = new ITaskItem[] { item },
-                    // Relative folder — would have produced relative metadata pre-migration.
+                    // Production folders are usually absolute; this test deliberately uses a relative
+                    // one to verify a relative input still yields relative PackageDirectory metadata.
                     PackageFolders = new[] { relativeFolder }
                 };
 

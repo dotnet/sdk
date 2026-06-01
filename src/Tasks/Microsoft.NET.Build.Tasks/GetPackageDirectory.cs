@@ -41,8 +41,8 @@ namespace Microsoft.NET.Build.Tasks
                 PackageFolders = PackageFolders.Concat(lockFile.PackageFolders.Select(p => p.Path)).ToArray();
             }
 
-            // NuGetPackageResolver probes the file system for each folder, so paths must be
-            // absolutized relative to the project rather than the process working directory.
+            // Resolve package folders relative to the project directory. Empty entries are left
+            // as-is since GetAbsolutePath rejects them.
             string[] absolutePackageFolders = PackageFolders
                 .Select(p => string.IsNullOrEmpty(p) ? p : (string)TaskEnvironment.GetAbsolutePath(p))
                 .ToArray();
@@ -73,9 +73,8 @@ namespace Microsoft.NET.Build.Tasks
                     continue;
                 }
 
-                // If the resolver matched against a folder we absolutized, rewrite the result to use
-                // the caller's original (possibly relative) prefix so PackageDirectory metadata is
-                // byte-identical to the pre-migration behavior.
+                // Restore the caller's original (possibly relative) folder prefix so the
+                // PackageDirectory metadata is unchanged from before absolutization.
                 if (packageRoot != null)
                 {
                     int folderIndex = Array.IndexOf(absolutePackageFolders, packageRoot);
