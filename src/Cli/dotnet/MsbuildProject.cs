@@ -6,17 +6,12 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
-using Microsoft.DotNet.Cli.Commands;
-using Microsoft.DotNet.Cli.Commands.Reference;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 using NuGet.Frameworks;
 
@@ -34,34 +29,17 @@ internal class MsbuildProject
     private IEnumerable<string> cachedRuntimeIdentifiers;
     private IEnumerable<string> cachedConfigurations;
     private readonly bool _interactive = false;
-    private readonly string _entryPointFilePath;
 
-    private MsbuildProject(ProjectCollection projects, ProjectRootElement project, bool interactive, string entryPointFilePath = null)
+    private MsbuildProject(ProjectCollection projects, ProjectRootElement project, bool interactive)
     {
         _projects = projects;
         ProjectRootElement = project;
         ProjectDirectory = PathUtilities.EnsureTrailingSlash(ProjectRootElement.DirectoryPath);
         _interactive = interactive;
-        _entryPointFilePath = entryPointFilePath;
     }
 
-    public bool IsFileBasedApp => _entryPointFilePath is not null;
-
     public static MsbuildProject FromFileOrDirectory(ProjectCollection projects, string fileOrDirectory, bool interactive)
-        => FromFileOrDirectory(projects, fileOrDirectory, interactive, AppKinds.ProjectBased);
-
-    public static MsbuildProject FromFileOrDirectory(ProjectCollection projects, string fileOrDirectory, bool interactive, AppKinds allowedAppKinds)
     {
-        if (allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(fileOrDirectory))
-        {
-            return FromFileBasedApp(projects, fileOrDirectory, interactive);
-        }
-
-        if (!allowedAppKinds.HasFlag(AppKinds.ProjectBased))
-        {
-            throw new GracefulException(CliCommandStrings.InvalidFilePath, fileOrDirectory);
-        }
-
         if (File.Exists(fileOrDirectory))
         {
             return FromFile(projects, fileOrDirectory, interactive);
@@ -88,33 +66,6 @@ internal class MsbuildProject
         return new MsbuildProject(projects, project, interactive);
     }
 
-    private static MsbuildProject FromFileBasedApp(ProjectCollection projects, string entryPointFilePath, bool interactive)
-    {
-        string entryPointFullPath = Path.GetFullPath(entryPointFilePath);
-        var builder = new VirtualProjectBuilder(entryPointFullPath, VirtualProjectBuildingCommand.TargetFramework);
-
-        builder.CreateProjectInstance(
-            projects,
-            ErrorReporters.IgnoringReporter,
-            project: out _,
-            out var projectRootElement,
-            evaluatedDirectives: out _);
-
-        return new MsbuildProject(projects, projectRootElement, interactive, entryPointFullPath);
-    }
-
-    public void Save()
-    {
-        if (IsFileBasedApp)
-        {
-            VirtualProjectReferenceReflector.ReflectChangesToDirectives(ProjectRootElement, _entryPointFilePath);
-        }
-        else
-        {
-            ProjectRootElement.Save();
-        }
-    }
-
     public static MsbuildProject FromDirectory(ProjectCollection projects, string projectDirectory, bool interactive)
     {
         var projectFilePath = GetProjectFileFromDirectory(projectDirectory);
@@ -137,18 +88,14 @@ internal class MsbuildProject
         => ProjectLocator.TryGetProjectFileFromDirectory(projectDirectory, out projectFilePath, out _);
 
     public int AddProjectToProjectReferences(string framework, IEnumerable<string> refs)
-        => AddProjectToProjectReferences(framework, refs.Select(static r => (Include: r, DirectiveInclude: (string)null)));
-
-    public int AddProjectToProjectReferences(string framework, IEnumerable<(string Include, string DirectiveInclude)> refs)
     {
         int numberOfAddedReferences = 0;
 
         ProjectItemGroupElement itemGroup = ProjectRootElement.FindUniformOrCreateItemGroupWithCondition(
             ProjectItemElementType,
             framework);
-        foreach (var reference in refs)
+        foreach (var @ref in refs.Select((r) => PathUtility.GetPathWithBackSlashes(r)))
         {
-            var @ref = PathUtility.GetPathWithBackSlashes(reference.Include);
             if (ProjectRootElement.HasExistingItemWithCondition(framework, @ref))
             {
                 Reporter.Output.WriteLine(string.Format(
@@ -158,46 +105,9 @@ internal class MsbuildProject
             }
 
             numberOfAddedReferences++;
-
-            // For file-based apps, we keep the original text so it can be reflected back to the directive.
-            // For example, `#:project Lib` will be added as `<ProjectReference Include="Lib" />` instead of `<ProjectReference Include="Lib\Lib.csproj" />`.
-            // This is fine because ProjectRootElement is not evaluated, it is just a transfer mechanism.
-            var itemInclude = IsFileBasedApp && reference.DirectiveInclude is not null
-                ? reference.DirectiveInclude
-                : @ref;
-            var item = ProjectRootElement.CreateItemElement(ProjectItemElementType, itemInclude);
-            itemGroup.AppendChild(item);
+            itemGroup.AppendChild(ProjectRootElement.CreateItemElement(ProjectItemElementType, @ref));
 
             Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, @ref));
-        }
-
-        return numberOfAddedReferences;
-    }
-
-    public int AddFileBasedAppReferences(IEnumerable<(string Include, string DirectiveInclude)> refs)
-    {
-        int numberOfAddedReferences = 0;
-
-        ProjectItemGroupElement itemGroup = ProjectRootElement.FindUniformOrCreateItemGroupWithCondition(
-            ProjectItemElementType,
-            framework: null);
-        foreach (var reference in refs)
-        {
-            string displayReference = PathUtility.GetPathWithBackSlashes(reference.DirectiveInclude);
-            if (ProjectRootElement.HasExistingItemWithCondition(framework: null, reference.Include))
-            {
-                Reporter.Output.WriteLine(string.Format(
-                    CliStrings.ProjectAlreadyHasAreference,
-                    displayReference));
-                continue;
-            }
-
-            numberOfAddedReferences++;
-            var item = ProjectRootElement.CreateItemElement(ProjectItemElementType, reference.Include);
-            itemGroup.AppendChild(item);
-            item.AddMetadata(VirtualProjectBuilder.RefDirectiveIncludeMetadataName, reference.DirectiveInclude);
-
-            Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, displayReference));
         }
 
         return numberOfAddedReferences;
@@ -215,67 +125,9 @@ internal class MsbuildProject
         return totalNumberOfRemovedReferences;
     }
 
-    public int RemoveFileBasedAppReferences(IEnumerable<(string Include, string DisplayInclude)> refs)
-    {
-        int totalNumberOfRemovedReferences = 0;
-
-        foreach (var reference in refs)
-        {
-            totalNumberOfRemovedReferences += RemoveFileBasedAppReference(reference.Include, reference.DisplayInclude);
-        }
-
-        return totalNumberOfRemovedReferences;
-    }
-
-    public bool HasFileBasedAppReference(string reference)
-    {
-        if (!IsFileBasedApp)
-        {
-            return false;
-        }
-
-        string virtualProjectPath = VirtualProjectBuilder.GetVirtualProjectPath(Path.GetFullPath(reference));
-        return ProjectRootElement.HasExistingItemWithCondition(framework: null, virtualProjectPath);
-    }
-
     public IEnumerable<ProjectItemElement> GetProjectToProjectReferences()
     {
-        var projectReferences = ProjectRootElement.GetAllItemsWithElementType(ProjectItemElementType);
-
-        if (!IsFileBasedApp)
-        {
-            return projectReferences;
-        }
-
-        var projectInstance = new ProjectInstance(ProjectRootElement);
-        return projectReferences.Where(p => !VirtualProjectReferenceReflector.IsFileBasedAppReference(p, ProjectRootElement, projectInstance));
-    }
-
-    public IEnumerable<string> GetReferencesForDisplay()
-    {
-        var projectReferences = ProjectRootElement.GetAllItemsWithElementType(ProjectItemElementType);
-        var projectInstance = new ProjectInstance(ProjectRootElement);
-        var refDirectiveDisplayIncludes = IsFileBasedApp
-            ? VirtualProjectReferenceReflector.GetFileBasedAppReferenceDisplayIncludes(ProjectRootElement, _entryPointFilePath)
-            : new Dictionary<string, string>();
-
-        foreach (var item in projectReferences)
-        {
-            foreach (var include in item.Includes())
-            {
-                if (IsFileBasedApp)
-                {
-                    var normalizedInclude = VirtualProjectReferenceReflector.NormalizeProjectReferencePath(Path.GetFullPath(include));
-                    if (refDirectiveDisplayIncludes.TryGetValue(normalizedInclude, out var displayInclude))
-                    {
-                        yield return displayInclude;
-                        continue;
-                    }
-                }
-
-                yield return projectInstance.ExpandString(include);
-            }
-        }
+        return ProjectRootElement.GetAllItemsWithElementType(ProjectItemElementType);
     }
 
     public IEnumerable<string> GetRuntimeIdentifiers()
@@ -386,34 +238,6 @@ internal class MsbuildProject
             Reporter.Output.WriteLine(string.Format(
                 CliStrings.ProjectReferenceCouldNotBeFound,
                 reference));
-        }
-
-        return numberOfRemovedRefs;
-    }
-
-    private int RemoveFileBasedAppReference(string reference, string displayReference)
-    {
-        int numberOfRemovedRefs = 0;
-        string displayReferenceWithBackSlashes = PathUtility.GetPathWithBackSlashes(displayReference);
-
-        foreach (var existingItem in ProjectRootElement.FindExistingItemsWithCondition(framework: null, reference).ToList())
-        {
-            ProjectElementContainer itemGroup = existingItem.Parent;
-            itemGroup.RemoveChild(existingItem);
-            if (itemGroup.Children.Count == 0)
-            {
-                itemGroup.Parent.RemoveChild(itemGroup);
-            }
-
-            numberOfRemovedRefs++;
-            Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, displayReferenceWithBackSlashes));
-        }
-
-        if (numberOfRemovedRefs == 0)
-        {
-            Reporter.Output.WriteLine(string.Format(
-                CliStrings.ProjectReferenceCouldNotBeFound,
-                displayReferenceWithBackSlashes));
         }
 
         return numberOfRemovedRefs;

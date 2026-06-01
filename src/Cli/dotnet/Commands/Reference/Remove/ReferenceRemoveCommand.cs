@@ -6,8 +6,8 @@
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
@@ -36,28 +36,18 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
 
     public override int Execute()
     {
-        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false, _allowedAppKinds);
-
-        if (msbuildProj.IsFileBasedApp && !string.IsNullOrEmpty(_parseResult.GetValue(Definition.FrameworkOption)))
+        if (_allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(_fileOrDirectory))
         {
-            throw new GracefulException(CliCommandStrings.InvalidOptionForFileBasedApp, Definition.FrameworkOption.Name);
+            return ExecuteForFileBasedApp();
         }
 
-        var projectReferenceArguments = new List<string>();
-        var fileBasedAppReferenceArguments = new List<string>();
-        foreach (var argument in _arguments)
+        if (!_allowedAppKinds.HasFlag(AppKinds.ProjectBased))
         {
-            if (msbuildProj.HasFileBasedAppReference(argument))
-            {
-                fileBasedAppReferenceArguments.Add(argument);
-            }
-            else
-            {
-                projectReferenceArguments.Add(argument);
-            }
+            throw new GracefulException(CliCommandStrings.InvalidFilePath, _fileOrDirectory);
         }
 
-        var references = projectReferenceArguments.Select(p =>
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
+        var references = _arguments.Select(p =>
         {
             var fullPath = Path.GetFullPath(p);
             if (!Directory.Exists(fullPath))
@@ -75,12 +65,26 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
             _parseResult.GetValue(Definition.FrameworkOption),
             references);
 
-        numberOfRemovedReferences += msbuildProj.RemoveFileBasedAppReferences(fileBasedAppReferenceArguments.Select(reference =>
-            (Include: VirtualProjectBuilder.GetVirtualProjectPath(Path.GetFullPath(reference)), DisplayInclude: reference)));
-
         if (numberOfRemovedReferences != 0)
         {
-            msbuildProj.Save();
+            msbuildProj.ProjectRootElement.Save();
+        }
+
+        return 0;
+    }
+
+    private int ExecuteForFileBasedApp()
+    {
+        if (!string.IsNullOrEmpty(_parseResult.GetValue(Definition.FrameworkOption)))
+        {
+            throw new GracefulException(CliCommandStrings.InvalidOptionForFileBasedApp, Definition.FrameworkOption.Name);
+        }
+
+        var editor = new FileBasedAppReferenceEditor(_fileOrDirectory);
+        int numberOfRemovedReferences = editor.RemoveReferences(_arguments);
+        if (numberOfRemovedReferences != 0)
+        {
+            editor.Save();
         }
 
         return 0;

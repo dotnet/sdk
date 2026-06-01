@@ -6,8 +6,8 @@
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Package;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
 using NuGet.Frameworks;
 
@@ -32,47 +32,34 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
     {
         using var projects = new ProjectCollection();
         bool interactive = _parseResult.GetValue(Definition.InteractiveOption);
+
+        if (_allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(_fileOrDirectory))
+        {
+            return ExecuteForFileBasedApp(projects, interactive);
+        }
+
+        if (!_allowedAppKinds.HasFlag(AppKinds.ProjectBased))
+        {
+            throw new GracefulException(CliCommandStrings.InvalidFilePath, _fileOrDirectory);
+        }
+
         MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
             projects,
             _fileOrDirectory,
-            interactive,
-            _allowedAppKinds);
+            interactive);
 
         var frameworkString = _parseResult.GetValue(Definition.FrameworkOption);
-
-        if (msbuildProj.IsFileBasedApp && !string.IsNullOrEmpty(frameworkString))
-        {
-            throw new GracefulException(CliCommandStrings.InvalidOptionForFileBasedApp, Definition.FrameworkOption.Name);
-        }
 
         var arguments = _parseResult.GetValue(Definition.ProjectPathArgument).ToList().AsReadOnly();
         PathUtility.EnsureAllPathsExist(arguments,
             CliStrings.CouldNotFindProjectOrDirectory, true);
-
-        var projectReferenceArguments = new List<string>();
-        var fileBasedAppReferenceArguments = new List<string>();
-        foreach (var argument in arguments)
-        {
-            if (msbuildProj.IsFileBasedApp && VirtualProjectBuilder.IsValidEntryPointPath(argument))
-            {
-                fileBasedAppReferenceArguments.Add(argument);
-            }
-            else
-            {
-                projectReferenceArguments.Add(argument);
-            }
-        }
-
-        List<MsbuildProject> refs = [.. projectReferenceArguments.Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))];
-        List<(MsbuildProject Project, string Argument)> fileBasedAppRefs = [.. fileBasedAppReferenceArguments.Select(
-            (r) => (MsbuildProject.FromFileOrDirectory(projects, r, interactive, AppKinds.FileBased), r))];
-        var allRefs = refs.Concat(fileBasedAppRefs.Select(static r => r.Project)).ToList();
+        List<MsbuildProject> refs = [.. arguments.Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))];
 
         if (string.IsNullOrEmpty(frameworkString))
         {
             foreach (var tfm in msbuildProj.GetTargetFrameworks())
             {
-                foreach (var @ref in allRefs)
+                foreach (var @ref in refs)
                 {
                     if (!@ref.CanWorkOnFramework(tfm))
                     {
@@ -96,7 +83,7 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
                 return 1;
             }
 
-            foreach (var @ref in allRefs)
+            foreach (var @ref in refs)
             {
                 if (!@ref.CanWorkOnFramework(framework))
                 {
@@ -113,29 +100,74 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
 
         int numberOfAddedReferences = msbuildProj.AddProjectToProjectReferences(
             frameworkString,
-            msbuildProj.IsFileBasedApp
-                ? relativePathReferences.Zip(projectReferenceArguments, (reference, argument) =>
-                    (Include: reference, DirectiveInclude: GetDirectiveInclude(argument, msbuildProj.ProjectDirectory)))
-                : relativePathReferences.Select(static reference => (Include: reference, DirectiveInclude: (string)null)));
-
-        if (msbuildProj.IsFileBasedApp)
-        {
-            numberOfAddedReferences += msbuildProj.AddFileBasedAppReferences(fileBasedAppRefs.Select(reference =>
-                (Include: reference.Project.ProjectRootElement.FullPath,
-                 DirectiveInclude: GetDirectiveInclude(reference.Argument, msbuildProj.ProjectDirectory))));
-        }
+            relativePathReferences);
 
         if (numberOfAddedReferences != 0)
         {
-            msbuildProj.Save();
+            msbuildProj.ProjectRootElement.Save();
         }
 
         return 0;
     }
 
-    private static string GetDirectiveInclude(string argument, string projectDirectory)
+    private int ExecuteForFileBasedApp(ProjectCollection projects, bool interactive)
     {
-        return Path.GetRelativePath(projectDirectory, Path.GetFullPath(argument)).Replace('\\', '/');
+        if (!string.IsNullOrEmpty(_parseResult.GetValue(Definition.FrameworkOption)))
+        {
+            throw new GracefulException(CliCommandStrings.InvalidOptionForFileBasedApp, Definition.FrameworkOption.Name);
+        }
+
+        var arguments = _parseResult.GetValue(Definition.ProjectPathArgument).ToList().AsReadOnly();
+        PathUtility.EnsureAllPathsExist(arguments, CliStrings.CouldNotFindProjectOrDirectory, true);
+
+        var editor = new FileBasedAppReferenceEditor(_fileOrDirectory);
+        var projectReferenceArguments = new List<string>();
+        var fileBasedAppReferenceArguments = new List<string>();
+        foreach (var argument in arguments)
+        {
+            if (VirtualProjectBuilder.IsValidEntryPointPath(argument))
+            {
+                fileBasedAppReferenceArguments.Add(argument);
+            }
+            else
+            {
+                projectReferenceArguments.Add(argument);
+            }
+        }
+
+        List<MsbuildProject> refs = [.. projectReferenceArguments.Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))];
+        var targetFramework = NuGetFramework.Parse(VirtualProjectBuildingCommand.TargetFramework);
+        foreach (var @ref in refs)
+        {
+            if (!@ref.CanWorkOnFramework(targetFramework))
+            {
+                Reporter.Error.Write(GetProjectNotCompatibleWithFrameworksDisplayString(@ref, [VirtualProjectBuildingCommand.TargetFramework]));
+                return 1;
+            }
+        }
+
+        int numberOfAddedReferences = editor.AddProjectReferences(
+            refs.Zip(projectReferenceArguments, (reference, argument) =>
+                (ProjectFilePath: reference.ProjectRootElement.FullPath,
+                 DirectiveInclude: GetDirectiveInclude(argument, editor.EntryPointFileDirectory),
+                 DisplayInclude: Path.GetRelativePath(editor.EntryPointFileDirectory, reference.ProjectRootElement.FullPath))));
+
+        numberOfAddedReferences += editor.AddFileBasedAppReferences(fileBasedAppReferenceArguments.Select(argument =>
+            (FilePath: Path.GetFullPath(argument),
+             DirectiveInclude: GetDirectiveInclude(argument, editor.EntryPointFileDirectory),
+             DisplayInclude: GetDirectiveInclude(argument, editor.EntryPointFileDirectory))));
+
+        if (numberOfAddedReferences != 0)
+        {
+            editor.Save();
+        }
+
+        return 0;
+
+        static string GetDirectiveInclude(string argument, string projectDirectory)
+        {
+            return Path.GetRelativePath(projectDirectory, Path.GetFullPath(argument)).Replace('\\', '/');
+        }
     }
 
     private static string GetProjectNotCompatibleWithFrameworksDisplayString(MsbuildProject project, IEnumerable<string> frameworksDisplayStrings)
