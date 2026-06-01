@@ -21,7 +21,9 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class TelemetryClient : ITelemetryClient
 {
-#if !CLI_AOT
+#if CLI_AOT
+    private static Dictionary<string, string?> s_commonProperties = [];
+#else
     private static FrozenDictionary<string, string?> s_commonProperties = [];
     private Task? _trackEventTask;
 #endif
@@ -70,22 +72,18 @@ public class TelemetryClient : ITelemetryClient
     /// </summary>
     private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 
-#if !CLI_AOT
     public static string? CurrentSessionId { get; private set; } = null;
-#endif
     public static bool DisabledForTests
     {
         get => field;
         set
         {
             field = value;
-#if !CLI_AOT
             // When disabled, clear the session ID.
             if (field)
             {
                 CurrentSessionId = null;
             }
-#endif
         }
     } = false;
     public static ActivityContext ParentActivityContext { get; private set; }
@@ -171,8 +169,21 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProvider ??= s_tracerProviderBuilder.Build();
         }
 
-#if !CLI_AOT
         CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
+#if CLI_AOT
+        if (s_commonProperties.Count == 0)
+        {
+            s_commonProperties = new Dictionary<string, string?>
+            {
+                { "OS Version", RuntimeInformation.OSDescription },
+                { "OS Platform", OperatingSystem.IsWindows() ? "Windows" : OperatingSystem.IsMacOS() ? "macOS" : "Linux" },
+                { "OS Architecture", RuntimeInformation.OSArchitecture.ToString() },
+                { "Runtime Id", RuntimeInformation.RuntimeIdentifier },
+                { "Product Version", Product.Version },
+                { "SessionId", CurrentSessionId },
+            };
+        }
+#else
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
 #endif
     }
