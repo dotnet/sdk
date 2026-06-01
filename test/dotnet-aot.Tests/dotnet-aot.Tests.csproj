@@ -55,6 +55,11 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
   </ItemGroup>
 
+  <!-- Azure Monitor dependencies aren't part of source build yet - see file://../../../Directory.Build.props#L85 for details -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+  </ItemGroup>
+
   <!-- When publishing AOT, exclude the reflection-mode xUnit packages
        that flow transitively from Microsoft.NET.TestFramework. They ship
        DLLs (xunit.v3.core.dll, xunit.v3.assert.dll) that conflict with the
