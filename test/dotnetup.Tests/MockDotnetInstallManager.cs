@@ -63,7 +63,7 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
         LastDotnetRootForEnvironmentModifications = dotnetRoot;
     }
 
-    public void ApplyTerminalProfileModifications(string dotnetRoot, IEnvShellProvider? shellProvider = null)
+    public void ApplyTerminalProfileModifications(string dotnetRoot, InstallType installType = InstallType.User, IEnvShellProvider? shellProvider = null)
     {
         ApplyTerminalProfileModificationsCallCount++;
         LastDotnetRootForTerminalProfileModifications = dotnetRoot;
