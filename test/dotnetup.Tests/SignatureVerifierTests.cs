@@ -760,7 +760,7 @@ public class SignatureVerifierTests
         // allow-list can be rotated before customers see IssuerMismatch / WeakDigest /
         // ChainBuildFailed. DN sets are read straight from SignatureVerifier so a newly
         // pinned issuer without a mapping entry fails the test instead of going unnoticed.
-        var threshold = DateTimeOffset.UtcNow.AddDays(90);
+        var threshold = DateTimeOffset.UtcNow.AddDays(365);
 
         (string Role, (string Oid, string Value)[] Rdns)[] pinnedDns =
         [
