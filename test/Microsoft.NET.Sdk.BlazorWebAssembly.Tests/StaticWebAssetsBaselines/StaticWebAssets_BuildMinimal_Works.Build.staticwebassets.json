@@ -5484,7 +5484,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\hotreload\\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\hotreload\\Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
