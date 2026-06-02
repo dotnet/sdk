@@ -69,7 +69,10 @@ When either trusted-root collection is empty, the verifier emits
   (`id-data`).
 - The blob MUST carry exactly one `SignerInfo`.
 - The signer certificate MUST be embedded in the CMS `certificates` bag
-  and reachable from the signer identifier.
+  and reachable from the signer identifier. All intermediate certificates
+  needed to build the first simple chain from the signer up to (but not
+  including) the trusted root MUST also be embedded in the same bag; the
+  verifier does not follow AIA URLs (see §6).
 
 Failures: `SigDecodeFailed`, `SigMultipleSigners`, `SignerCertMissing`.
 
@@ -130,7 +133,7 @@ The verifier accepts only the following SPKI algorithm OIDs:
   (RSA-2048, RSA-3072) are rejected as `WeakSignatureKey`.
 
 - **Post-quantum** pure-mode OIDs only (ML-DSA, SLH-DSA, Composite ML-DSA).
-  Pre-hash PQC variants such as pure ECDSA are rejected. Windows does not fully support ECC/ECDSA. https://learn.microsoft.com/en-us/security/trusted-root/program-requirements#b-signature-requirements
+  Pre-hash PQC variants are rejected. Classical ECC/ECDSA keys are also rejected. Windows does not fully support ECC/ECDSA. https://learn.microsoft.com/security/trusted-root/program-requirements#b-signature-requirements
 
 For pure-PQC signatures the algorithm OID is repurposed as the CMS
 `digestAlgorithm` identifier — per
@@ -259,8 +262,7 @@ to:
   defines the attribute as a SET OF `TimeStampToken`, so the attribute MAY appear with
   multiple tokens — each instance is a separate TSA witness over the same
   `SignerInfo.signatureValue` (typically used for renewal as an original TSA cert ages
-  towards expiry, in the same long-term-validation spirit as CAdES-A
-  `archive-time-stamp` renewal per RFC 5126 §6.1).
+  towards expiry).
 - When multiple tokens are present the verifier validates **all** of them: every token
   MUST decode via `Rfc3161TimestampToken.TryDecode`, every token's
   `Rfc3161TimestampToken.VerifySignatureForSignerInfo` MUST succeed, and every TSA
@@ -272,6 +274,13 @@ to:
   cert had to be valid at that point, and later renewal tokens only extend trust
   into the future. Because every token is fully validated, additional tokens cannot
   weaken the signature — each is another mandatory check.
+- Only the **earliest** valid token is used to establish that the primary signature
+  existed while the signing certificate was valid. Non-earliest tokens are treated
+  purely as additional evidence over an already-valid signature, so their `genTime`
+  values MAY fall outside the primary signer certificate's validity period. Each
+  such token's own TSA-cert chain is still evaluated at that token's own `genTime`
+  (see below), so the TSA cert itself MUST have been valid at the moment it issued
+  the token.
 - Each TSA certificate MUST carry EKU exactly `1.3.6.1.5.5.7.3.8`
   (`id-kp-timeStamping`), exclusive of any other OID, per RFC 3161 §2.3
   ("the certificate MUST contain only one instance of the extended key
@@ -321,11 +330,10 @@ to:
     proving the TSA cert signed the `TSTInfo` that carries this `genTime`,
     so `genTime` is authoritative content rather than unverified
     self-assertion. This is the standard PKI long-term-validation
-    pattern (RFC 3161 page 15; same intent as the CAdES-A
-    `archive-time-stamp` renewal pattern in RFC 5126 §6.1). Each TST in
-    a multi-TST set is evaluated independently at its own `genTime`
-    (RFC 3161 §2.4.2 permits a SET OF `TimeStampToken` in the
-    `id-aa-signatureTimeStampToken` unsigned attribute).
+    pattern (RFC 3161 page 15). Each TST in a multi-TST set is evaluated
+    independently at its own `genTime` (RFC 3161 §2.4.2 permits a SET OF
+    `TimeStampToken` in the `id-aa-signatureTimeStampToken` unsigned
+    attribute).
 
 The "authoritative signing time" used everywhere else (cert validity
 window, JSON policy) is `token.TokenInfo.Timestamp` (UTC). The PKCS#9
@@ -477,4 +485,3 @@ The warning is emitted from `InstallerOrchestratorSingleton.Install` /
 `InstallMany` before any progress UI is created; the policy block check
 runs immediately before any blob-feed probe in
 `DotnetArchiveDownloader.ResolveBlobFeedEntry`.
-

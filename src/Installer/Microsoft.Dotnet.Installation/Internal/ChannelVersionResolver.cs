@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -59,9 +60,10 @@ internal class ChannelVersionResolver
         _dailyChannelResolver = dailyChannelResolver;
     }
 
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Kept as instance for API symmetry with other resolver methods and to allow future stateful caching.")]
     public IEnumerable<string> GetSupportedChannels(bool includeFeatureBands = true)
     {
-        var productIndex = _releaseManifest.GetReleasesIndex();
+        var productIndex = ReleaseManifest.Default.GetReleasesIndex();
         return [..KnownChannelKeywords,
             ..productIndex
                 .Where(p => p.IsSupported)
@@ -77,7 +79,7 @@ internal class ChannelVersionResolver
             }
 
             return [product.ProductVersion,
-                ..product.GetReleasesAsync().GetAwaiter().GetResult()
+                ..ReleaseManifest.Default.GetReleases(product)
                     .SelectMany(r => r.Sdks)
                     .Select(sdk => sdk.Version)
                     .OrderByDescending(v => v)
@@ -258,6 +260,7 @@ internal class ChannelVersionResolver
     /// link). Optional; defaults to the current process architecture. Ignored for non-daily channels.
     /// </param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Kept as instance for API symmetry with other resolver methods and to allow future stateful caching.")]
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component, InstallArchitecture? architecture = null)
     {
         // Daily channels are resolved via aka.ms redirect rather than the release manifest.
@@ -272,17 +275,17 @@ internal class ChannelVersionResolver
 
         if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = _releaseManifest.GetReleasesIndex();
+            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
             return GetLatestVersionByReleaseType(productIndex, ReleaseType.LTS, component);
         }
         else if (string.Equals(channel.Name, PreviewChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = _releaseManifest.GetReleasesIndex();
+            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
             return GetLatestPreviewVersion(productIndex, component);
         }
         else if (string.Equals(channel.Name, LatestChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = _releaseManifest.GetReleasesIndex();
+            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
             return GetLatestActiveVersion(productIndex, component);
         }
 
@@ -301,7 +304,7 @@ internal class ChannelVersionResolver
         }
 
         // Load the index manifest
-        var index = _releaseManifest.GetReleasesIndex();
+        var index = ReleaseManifest.Default.GetReleasesIndex();
         if (minor < 0)
         {
             return GetLatestVersionForMajorOrMajorMinor(index, major, component); // Major Only (e.g., "9")
@@ -427,7 +430,9 @@ internal class ChannelVersionResolver
 
         var validProducts = GetProductsInMajorOrMajorMinor(index, major, minor);
         var latestProduct = validProducts.FirstOrDefault();
-        var releases = latestProduct?.GetReleasesAsync().GetAwaiter().GetResult().ToList() ?? [];
+        var releases = latestProduct is not null
+            ? ReleaseManifest.Default.GetReleases(latestProduct).ToList()
+            : [];
         var normalizedFeatureBand = NormalizeFeatureBandInput(featureBand);
 
         foreach (var release in releases)

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -17,12 +16,11 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     private const int RetryDelayMilliseconds = 1000;
 
     private readonly HttpClient _httpClient;
-    private readonly bool _shouldDisposeHttpClient;
     private readonly ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
 
     public DotnetArchiveDownloader()
-        : this(new ReleaseManifest())
+        : this(ReleaseManifest.Default)
     {
     }
 
@@ -30,49 +28,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
         _downloadCache = new DownloadCache(cacheDirectory);
-        if (httpClient == null)
-        {
-            _httpClient = CreateDefaultHttpClient();
-            _shouldDisposeHttpClient = true;
-        }
-        else
-        {
-            _httpClient = httpClient;
-            _shouldDisposeHttpClient = false;
-        }
-    }
-
-    /// <summary>
-    /// Creates an HttpClient with enhanced proxy support for enterprise environments.
-    /// </summary>
-    private static HttpClient CreateDefaultHttpClient()
-    {
-        var handler = new HttpClientHandler()
-        {
-            UseProxy = true,
-            UseDefaultCredentials = true,
-            AllowAutoRedirect = true,
-            MaxAutomaticRedirections = 10,
-            // Do NOT set AutomaticDecompression here. The archives are .tar.gz files
-            // whose gzip layer is handled explicitly by DecompressTarGzIfNeeded().
-            // Enabling automatic decompression causes HttpClient to add Accept-Encoding: gzip
-            // and transparently strip the gzip layer when the CDN returns Content-Encoding: gzip,
-            // resulting in a raw .tar on disk whose hash does not match the manifest's .tar.gz hash.
-        };
-
-        var client = new HttpClient(handler)
-        {
-            Timeout = TimeSpan.FromMinutes(10)
-        };
-
-        // Set user-agent to identify dotnetup in telemetry, including version
-        var informationalVersion = typeof(DotnetArchiveDownloader).Assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        string userAgent = informationalVersion == null ? "dotnetup-dotnet-installer" : $"dotnetup-dotnet-installer/{informationalVersion}";
-
-        client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
-
-        return client;
+        // The HttpClient is either the shared process-wide singleton or supplied by the caller; we never own it.
+        _httpClient = httpClient ?? DefaultHttpClient.Instance;
     }
 
     /// <summary>
@@ -237,6 +194,14 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
     private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
+        // Daily-channel builds are blob-feed-only: they are never listed in the releases
+        // manifest and have no detached .p7s signature. Skip the signature-verified manifest
+        // lookup entirely and go straight to the blob feed: https://github.com/dotnet/sdk/issues/54278 with handle validation of these.
+        if (installRequest.Channel.IsDaily)
+        {
+            return ResolveBlobFeedEntry(installRequest, resolvedVersion);
+        }
+
         var result = _releaseManifest.TryFindReleaseFile(installRequest, resolvedVersion);
 
         switch (result.Status)
@@ -287,9 +252,12 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
         if (string.IsNullOrEmpty(expectedHash))
         {
+            // Fail closed: without a SHA-512 in the (signed) manifest we cannot establish
+            // archive integrity. The signed-manifest → hash → archive trust chain is broken
+            // if the hash is missing.
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.ManifestParseFailed,
-                $"No hash found in manifest for {resolvedVersion}",
+                DotnetInstallErrorCode.ArchiveHashMissing,
+                $"No archive hash found in release manifest for {resolvedVersion}. Cannot verify download integrity.",
                 version: resolvedVersion.ToString(),
                 component: installRequest.Component.ToString());
         }
@@ -591,13 +559,5 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         throw new DotnetInstallException(
                        DotnetInstallErrorCode.HashMismatch,
                        $"File hash mismatch. Expected: {expectedHash}, Actual: {actualHash}");
-    }
-
-    public void Dispose()
-    {
-        if (_shouldDisposeHttpClient)
-        {
-            _httpClient?.Dispose();
-        }
     }
 }
