@@ -110,6 +110,90 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
         await App.WaitUntilOutputContains("Device: test-device-1");
     }
 
+    /// <summary>
+    /// Tests that the device selection prompt works after a TFM selection prompt.
+    /// This is the scenario reported as hanging on macOS: when PhysicalConsole's
+    /// KeyPressed channel is used for the first Spectre prompt, the second prompt
+    /// must also receive key events from the same channel.
+    /// </summary>
+    [Fact]
+    public async Task SelectsFrameworkThenDevice()
+    {
+        var testAsset = TestAssets.CopyTestAsset("DotnetRunDevices")
+            .WithSource();
+
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+
+        // Start watch WITHOUT --framework so both TFM and device prompts appear.
+        App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+        // First prompt: select target framework
+        await App.WaitUntilOutputContains(Resources.SelectTargetFrameworkPrompt);
+
+        foreach (var c in tfm)
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // Second prompt: select device (this is the one that hangs without the fix)
+        await App.WaitUntilOutputContains(Resources.SelectDevicePrompt);
+
+        foreach (var c in "test-device-1")
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // The app should launch and print the selected device
+        await App.WaitUntilOutputContains("Device: test-device-1");
+    }
+
+    /// <summary>
+    /// Simulates the MAUI scenario where ComputeAvailableDevices is only available
+    /// for TFM-specific inner builds (imported conditionally by workload targets).
+    /// When dotnet-watch loads the project graph with null TFM, the outer project
+    /// doesn't have the target, so device selection falls through to the child
+    /// dotnet-run process. This causes a stdin race: dotnet-watch's Console.ReadKey()
+    /// loop steals all key presses from the child process's device prompt.
+    /// </summary>
+    [Fact]
+    public async Task SelectsFrameworkThenDevice_WorkloadConditionalTarget()
+    {
+        var testAsset = TestAssets.CopyTestAsset("DotnetRunDevicesWorkload")
+            .WithSource();
+
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+
+        // Start watch WITHOUT --framework so both TFM and device prompts appear.
+        App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+        // First prompt: select target framework
+        await App.WaitUntilOutputContains(Resources.SelectTargetFrameworkPrompt);
+
+        foreach (var c in tfm)
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // Second prompt: select device.
+        // With the bug, dotnet-watch doesn't see ComputeAvailableDevices in the outer
+        // project, skips device selection, and launches the child dotnet-run which shows
+        // its own device prompt. The child's stdin competes with dotnet-watch's
+        // Console.ReadKey() loop, causing the prompt to hang.
+        await App.WaitUntilOutputContains(Resources.SelectDevicePrompt);
+
+        foreach (var c in "test-device-1")
+        {
+            App.SendKey(c);
+        }
+        App.SendKey('\r');
+
+        // The app should launch and print the selected device
+        await App.WaitUntilOutputContains("Device: test-device-1");
+    }
+
     [Fact]
     public async Task AutoSelectsSingleDevice()
     {
