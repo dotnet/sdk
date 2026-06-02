@@ -95,6 +95,7 @@
         XUnitProjects="@(SDKCustomXUnitProject)"
         IsPosixShell="$(IsPosixShell)"
         TargetRid="$(TargetRid)"
+        BaseMethodLimit="$(BaseMethodLimit)"
         XUnitArguments="$(SDKCustomXUnitArgument)"
         XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)">
       <Output TaskParameter="XUnitWorkItems" ItemName="HelixWorkItem"/>
