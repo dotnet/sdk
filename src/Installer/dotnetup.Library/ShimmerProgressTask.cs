@@ -82,6 +82,11 @@ internal sealed class ShimmerProgressTask : IProgressTask, IDisposable
 
     public void StopShimmer()
     {
+        if (_shimmerStopped)
+        {
+            return;
+        }
+
         _shimmerStopped = true;
         _shimmerTimer?.Change(Timeout.Infinite, Timeout.Infinite);
         _shimmerTimer?.Dispose();

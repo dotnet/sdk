@@ -25,7 +25,7 @@ public class ProgressDescriptionTests
     {
         // Arrange: create a shimmer task with "Installing ..." description
         var inner = new PlainProgressTask("Installing SDK 11.0.100-preview.3");
-        using var shimmer = new ShimmerProgressTask(inner);
+        var shimmer = new ShimmerProgressTask(inner);
 
         // Let the shimmer timer fire at least once
         Thread.Sleep(150);
@@ -39,7 +39,7 @@ public class ProgressDescriptionTests
         shimmer.Description = "Installed SDK 11.0.100-preview.3";
         shimmer.Description.Should().Be("Installed SDK 11.0.100-preview.3");
 
-        // Reporter.Dispose() calls StopShimmer() again — must NOT revert to "Installing"
+        // Reporter.Dispose() calls StopShimmer() again — must be idempotent
         shimmer.Dispose();
         inner.Description.Should().Be("Installed SDK 11.0.100-preview.3",
             "StopShimmer on Dispose must preserve the last externally-set description, not revert to construction-time text");
@@ -62,7 +62,7 @@ public class ProgressDescriptionTests
     public void ShimmerProgressTask_DescriptionSetter_SyncsBaseDescription()
     {
         var inner = new PlainProgressTask("Installing SDK 11.0.100");
-        using var shimmer = new ShimmerProgressTask(inner);
+        var shimmer = new ShimmerProgressTask(inner);
 
         // Stop shimmer first (simulates value reaching 100%)
         shimmer.Value = 100;
