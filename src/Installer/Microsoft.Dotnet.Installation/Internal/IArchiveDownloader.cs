@@ -8,7 +8,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// <summary>
 /// Interface for downloading .NET archives. Enables testing without network access.
 /// </summary>
-internal interface IArchiveDownloader : IDisposable
+internal interface IArchiveDownloader
 {
     /// <summary>
     /// Downloads the archive for the specified installation request and verifies its hash.

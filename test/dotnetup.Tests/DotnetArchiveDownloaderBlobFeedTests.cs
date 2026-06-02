@@ -119,7 +119,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         });
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
 
@@ -139,7 +139,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, history) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
@@ -160,7 +160,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, history) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -181,7 +181,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, _) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -200,7 +200,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, history) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
@@ -229,7 +229,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         });
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
 
@@ -254,7 +254,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         });
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.Runtime), new ReleaseVersion(version));
 
