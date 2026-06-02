@@ -243,16 +243,22 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
         }
-        else if (anyTestFailed || anyAssemblyFailed)
+        else if (anyTestFailed || HasHandshakeFailure)
         {
-            // Handshake/assembly failures take precedence over "Zero tests ran": when an assembly
-            // failed to hand-shake we want the headline to reflect that the run failed, not that
-            // no tests ran (which would imply a benign empty run).
+            // Handshake failures take precedence over "Zero tests ran": when an assembly failed to
+            // hand-shake we want the headline to reflect that the run failed, not that no tests ran
+            // (which would imply a benign empty run). We intentionally do NOT escalate the broader
+            // anyAssemblyFailed here, because a project that legitimately contains zero tests exits
+            // with ExitCodes.ZeroTests (non-zero) and would otherwise be misclassified as a failure.
             terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
         }
         else if (allTestsWereSkipped)
         {
             terminal.Append(CliCommandStrings.ZeroTestsRan);
+        }
+        else if (anyAssemblyFailed)
+        {
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
         }
         else
         {
