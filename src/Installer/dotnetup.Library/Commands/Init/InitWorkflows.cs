@@ -105,7 +105,7 @@ internal class InitWorkflows
 
         if (pathPreference is PathPreference.ShellProfile)
         {
-            _dotnetEnvironment.ApplyTerminalProfileModifications(installRoot.Path, command.ShellProvider);
+            _dotnetEnvironment.ApplyTerminalProfileModifications(installRoot.Path, shellProvider: command.ShellProvider);
         }
 
         if (ShouldReplaceSystemConfiguration(pathPreference))

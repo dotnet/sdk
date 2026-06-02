@@ -92,6 +92,18 @@ public class ParserTests
         parseResult.Errors.Should().BeEmpty();
     }
 
+    [Fact]
+    public void Parser_ShouldParseInitCommandWithInteractiveOption()
+    {
+        var args = new[] { "init", "--interactive" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.InteractiveOption).Should().BeTrue();
+    }
+
     [Theory]
     [MemberData(nameof(MigrateFromSystemCommandArgs))]
     public void Parser_ShouldParseInstallCommandsWithMigrateFromSystem(string[] args)
