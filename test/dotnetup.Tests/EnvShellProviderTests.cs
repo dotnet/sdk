@@ -141,6 +141,22 @@ public class EnvShellProviderTests
     }
 
     [Fact]
+    public void PowerShellProvider_NewFileEncoding_IsBomFullOnWindowsBomLessElsewhere()
+    {
+        // IEnvShellProvider's NewFileEncoding is consulted only when creating brand-new
+        // profile files; existing files always keep their detected encoding. On Windows,
+        // Windows PowerShell 5.1 reads BOM-less .ps1 files as the system ANSI code page
+        // and would mis-decode profiles containing non-ASCII paths, so the PowerShell
+        // provider opts into UTF-8 with BOM. On other OSes BOM-less UTF-8 is the
+        // PowerShell 7+ default.
+        IEnvShellProvider provider = new PowerShellEnvShellProvider();
+        var encoding = provider.NewFileEncoding;
+
+        encoding.Should().BeOfType<UTF8Encoding>();
+        encoding.GetPreamble().Length.Should().Be(OperatingSystem.IsWindows() ? 3 : 0);
+    }
+
+    [Fact]
     public void PowerShellProvider_ShouldIncludeDotnetupDirInPath()
     {
         var provider = new PowerShellEnvShellProvider();

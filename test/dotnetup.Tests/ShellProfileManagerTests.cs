@@ -102,6 +102,35 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
+    public void AddProfileEntries_NewFile_DefaultsToBomLessUtf8()
+    {
+        var profilePath = Path.Combine(_tempDir, "new-default.sh");
+        var provider = new TestShellProvider(_tempDir, "new-default.sh");
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble).Should().BeFalse(
+            "new files should default to BOM-less UTF-8 for POSIX shells");
+    }
+
+    [Fact]
+    public void AddProfileEntries_NewFile_HonorsProviderNewFileEncoding()
+    {
+        var profilePath = Path.Combine(_tempDir, "new-bom.ps1");
+        var provider = new TestShellProvider(_tempDir, "new-bom.ps1")
+        {
+            NewFileEncodingOverride = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+        };
+
+        ShellProfileManager.AddProfileEntries(provider, FakeDotnetupPath);
+
+        var bytes = File.ReadAllBytes(profilePath);
+        bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble).Should().BeTrue(
+            "providers that opt into a BOM should have new files written with that BOM");
+    }
+
+    [Fact]
     public void AddProfileEntries_PreservesUtf8BomAndCrLfLineEndings()
     {
         var profilePath = Path.Combine(_tempDir, "preserve-add.sh");
@@ -553,8 +582,137 @@ public class ShellProfileManagerTests : IDisposable
         var provider = new PowerShellEnvShellProvider();
         var paths = provider.GetProfilePaths();
 
-        paths.Should().HaveCount(1);
-        paths[0].Should().EndWith("Microsoft.PowerShell_profile.ps1");
+        if (OperatingSystem.IsWindows())
+        {
+            // Windows returns one path per installed PowerShell flavor; Windows PowerShell 5.1
+            // ships in-box on supported Windows versions, so at minimum we expect that profile.
+            paths.Should().NotBeEmpty();
+            paths.Should().AllSatisfy(p => p.Should().EndWith("profile.ps1"));
+        }
+        else
+        {
+            paths.Should().HaveCount(1);
+            paths[0].Should().EndWith("profile.ps1");
+            paths[0].Should().NotEndWith("Microsoft.PowerShell_profile.ps1");
+        }
+    }
+
+    [Fact]
+    public void PowerShellProvider_GetWindowsProfilePaths_ReturnsBothFlavors()
+    {
+        var documents = Path.Combine(_tempDir, "Documents");
+
+        var paths = PowerShellEnvShellProvider.GetWindowsProfilePaths(documents);
+
+        paths.Should().HaveCount(2);
+        paths[0].Should().Be(Path.Combine(documents, "WindowsPowerShell", "profile.ps1"));
+        paths[1].Should().Be(Path.Combine(documents, "PowerShell", "profile.ps1"));
+    }
+
+    [Fact]
+    public void PowerShellProvider_GetWindowsProfilePaths_HonorsCustomDocumentsFolder()
+    {
+        // Simulates OneDrive Known Folder redirection: Documents is at a non-default location.
+        var redirected = Path.Combine(_tempDir, "OneDrive", "Documents");
+
+        var paths = PowerShellEnvShellProvider.GetWindowsProfilePaths(redirected);
+
+        paths.Should().HaveCount(2);
+        paths.Should().AllSatisfy(p => p.Should().StartWith(redirected));
+    }
+
+    [Fact]
+    public void PowerShellProvider_GetWindowsProfilePaths_ThrowsWhenDocumentsFolderMissing()
+    {
+        var act = () => PowerShellEnvShellProvider.GetWindowsProfilePaths(string.Empty);
+
+        act.Should().Throw<DotnetInstallException>()
+            .And.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+    }
+
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_WritesUserEntryThroughProvider()
+    {
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "user-profile.sh");
+
+        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, InstallType.User, provider);
+
+        var profilePath = Path.Combine(_tempDir, "user-profile.sh");
+        File.Exists(profilePath).Should().BeTrue();
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain("print-env-script");
+        // User install with a non-default install root should pass --dotnet-install-path through.
+        content.Should().Contain("--dotnet-install-path");
+        content.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_SystemInstall_WritesDotnetupOnlyEntry()
+    {
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "system-profile.sh");
+
+        // dotnetRoot is irrelevant for System (dotnet assumed already on PATH), but the parameter
+        // is non-nullable so pass the fake path.
+        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, InstallType.System, provider);
+
+        var profilePath = Path.Combine(_tempDir, "system-profile.sh");
+        File.Exists(profilePath).Should().BeTrue();
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().Contain("--dotnetup-only");
+        content.Should().NotContain("--dotnet-install-path");
+    }
+
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_DefaultInstallPath_OmitsInstallPathFlag()
+    {
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "default-profile.sh");
+
+        // When the install root equals the manager's default install path, the path should be
+        // omitted from the entry so `print-env-script` can fall back to its default-detection.
+        var defaultPath = manager.GetDefaultDotnetInstallPath();
+
+        manager.ApplyTerminalProfileModifications(defaultPath, InstallType.User, provider);
+
+        var profilePath = Path.Combine(_tempDir, "default-profile.sh");
+        File.Exists(profilePath).Should().BeTrue();
+        var content = File.ReadAllText(profilePath);
+        content.Should().Contain(ShellProfileManager.BeginMarkerComment);
+        content.Should().NotContain("--dotnet-install-path");
+        content.Should().NotContain("--dotnetup-only");
+    }
+
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_ThrowsOnNullDotnetRoot()
+    {
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "null-profile.sh");
+
+        var act = () => manager.ApplyTerminalProfileModifications(null!, InstallType.User, provider);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void EnvironmentManager_ApplyTerminalProfileModifications_WritesToAllProviderPaths()
+    {
+        // Simulates Windows where PowerShellEnvShellProvider returns multiple profile paths
+        // (one per PowerShell flavor). Verifies the dispatch threads through to every path.
+        var manager = new DotnetEnvironmentManager();
+        var provider = new TestShellProvider(_tempDir, "flavor1.ps1", "flavor2.ps1");
+
+        manager.ApplyTerminalProfileModifications(FakeDotnetInstallPath, InstallType.User, provider);
+
+        var path1 = Path.Combine(_tempDir, "flavor1.ps1");
+        var path2 = Path.Combine(_tempDir, "flavor2.ps1");
+        File.Exists(path1).Should().BeTrue();
+        File.Exists(path2).Should().BeTrue();
+        File.ReadAllText(path1).Should().Contain(ShellProfileManager.BeginMarkerComment);
+        File.ReadAllText(path2).Should().Contain(ShellProfileManager.BeginMarkerComment);
     }
 
     /// <summary>
@@ -573,6 +731,10 @@ public class ShellProfileManagerTests : IDisposable
         public string Extension => "sh";
         public string? HelpDescription => null;
         public string? ProfileEntryOverride { get; init; }
+        public Encoding? NewFileEncodingOverride { get; init; }
+
+        Encoding IEnvShellProvider.NewFileEncoding
+            => NewFileEncodingOverride ?? new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
         public string GenerateEnvScript(string dotnetInstallPath, string? dotnetupDir = null, bool includeDotnet = true) =>
             includeDotnet
