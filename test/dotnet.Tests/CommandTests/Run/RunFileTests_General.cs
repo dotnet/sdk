@@ -479,6 +479,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .WithWorkingDirectory(appDir)
             .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
+                #!/usr/bin/env dotnet
                 #:ref $(MSBuildStartupDirectory)/../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
                 """)
@@ -496,6 +497,7 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .WithWorkingDirectory(appDir)
             .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
+                #!/usr/bin/env dotnet
                 #:ref ../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
                 """)

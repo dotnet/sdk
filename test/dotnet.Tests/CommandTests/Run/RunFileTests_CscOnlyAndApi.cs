@@ -307,6 +307,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         File.WriteAllText(libPath, libCode);
 
         var programCode = """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine("Hello " + MyLib.Greeter.Greet());
             """;
@@ -1059,6 +1060,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         File.WriteAllText(libPath, libCode);
 
         var programCode = """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine("Hello " + MyLib.Greeter.Greet());
             """;
@@ -2036,6 +2038,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
             #:ref Lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
             """);
