@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                 },
                 SolutionTransforms = { EnableFileBasedProgramFeature },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
