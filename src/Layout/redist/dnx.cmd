@@ -12,6 +12,6 @@ for /f "tokens=1" %%i in ('"%DOTNET%" --list-sdks') do (
 
 set "SDK_PATH=%~dp0sdk\%SDK_VERSION%\dotnet.dll"
 
-"%DOTNET%" exec "%SDK_PATH%" tool exec %*
+"%DOTNET%" exec "%SDK_PATH%" dnx %*
 
 endlocal
