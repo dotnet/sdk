@@ -121,8 +121,8 @@ internal class ProcessReaper : IDisposable
 
             base.Dispose();
         }
-#endif
     }
+#endif
 
 #if !TARGET_WINDOWS
     private sealed class UnixProcessReaper : ProcessReaper
@@ -167,13 +167,11 @@ internal class ProcessReaper : IDisposable
             // this one does.
             _shutdownMutex?.WaitOne();
 
-#if NET
             if (!_process.WaitForExit(0) && NativeMethods.Posix.kill(processId, NativeMethods.Posix.SIGTERM) != 0)
             {
                 // Couldn't send the signal, don't wait
                 return;
             }
-#endif
 
             // If SIGTERM was ignored by the target, then we'll still wait
             _process.WaitForExit();
