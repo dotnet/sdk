@@ -235,7 +235,7 @@ The directives are processed as follows:
 - Each `#:include` is injected as `<{1} Include="{0}" />` in an `<ItemGroup>`
   where `{0}` is the directive's value and `{1}` is determined by its extension.
   The mapping can be customized by setting the MSBuild property `FileBasedProgramsItemMapping`
-  which is by default set to `.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content`.
+  which is by default set to `.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference`.
 
   It is an error if the value is empty.
 
@@ -267,12 +267,14 @@ We do not limit these directives to appear only in entry point files because it 
 - which also makes it possible to share it independently or symlink it to multiple script folders,
 - and it's similar to `global using`s which users usually put into a single file but don't have to.
 
-We disallow duplicate `#:` directives (except `#:project` and `#:ref`) to allow us to design some deduplication mechanism in the future.
-Specifically, directives are considered duplicate if their type and name (case insensitive) are equal.
-`#:project` and `#:ref` duplicates are allowed because MSBuild allows duplicate `<ProjectReference />` items.
-Later with deduplication, separate "self-contained" utilities could reference overlapping sets of packages
-even if they end up in the same compilation.
-For example, properties could be concatenated via `;`, more specific package versions could override less specific ones.
+Duplicate directives are handled according to the MSBuild construct they represent.
+For `#:sdk`, `#:property`, and `#:package`, directives are considered duplicate if their kind and name are equal case-insensitively.
+If the duplicate has the same unevaluated value (before any MSBuild variable expansion), it is ignored.
+If the duplicate has a different unevaluated value, it is an error (which might be relaxed in the future with smarter deduplication,
+for example, properties could be concatenated via `;`, more specific package versions could override less specific ones.)
+For `#:project`, `#:ref`, `#:include`, and `#:exclude`, duplicates are allowed and translated to the corresponding MSBuild items.
+Any resulting item behavior, including warnings for duplicate `Compile` items, is left to MSBuild and the compiler.
+Directive deduplication allows separate "self-contained" utilities to e.g. reference overlapping sets of packages even if they end up in the same compilation.
 
 During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the converted `.csproj` file when needed.
 Files included with `#:include` are copied into the converted project directory; if an included file is not picked up by the converted project's defaults, the corresponding project item is also written explicitly into an `<ItemGroup>` in the converted project.

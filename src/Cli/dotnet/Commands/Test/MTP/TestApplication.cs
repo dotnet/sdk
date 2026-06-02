@@ -33,6 +33,8 @@ internal sealed class TestApplication(
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
 
+    private int _hasRun;
+
     public TestModule Module { get; } = module;
     public TestOptions TestOptions { get; } = testOptions;
 
@@ -40,8 +42,11 @@ internal sealed class TestApplication(
 
     public async Task<int> RunAsync()
     {
-        // TODO: RunAsync is probably expected to be executed exactly once on each TestApplication instance.
-        // Consider throwing an exception if it's called more than once.
+        if (Interlocked.Exchange(ref _hasRun, 1) != 0)
+        {
+            throw new InvalidOperationException(CliCommandStrings.RunAsyncCalledMoreThanOnce);
+        }
+
         ValidateTestApplicationArguments();
 
         var processStartInfo = CreateProcessStartInfo();
@@ -353,10 +358,16 @@ internal sealed class TestApplication(
                 switch (request)
                 {
                     case HandshakeMessage handshakeMessage:
-                        _handshakes.Add(server, handshakeMessage);
+                        if (!_handshakes.TryAdd(server, handshakeMessage))
+                        {
+                            throw new InvalidOperationException(CliCommandStrings.DotnetTestDuplicateHandshakeOnConnection);
+                        }
                         string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
-                        OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
-                        return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
+                        // If the handler rejects the handshake (unsupported version, missing required
+                        // properties, mismatching info, ...) respond with an empty negotiated version so
+                        // Microsoft.Testing.Platform stops sending further messages on this connection.
+                        bool handshakeAccepted = OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                        return Task.FromResult((IResponse)CreateHandshakeMessage(handshakeAccepted ? negotiatedVersion : string.Empty));
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -372,6 +383,10 @@ internal sealed class TestApplication(
 
                     case FileArtifactMessages fileArtifactMessages:
                         OnFileArtifactMessages(fileArtifactMessages);
+                        break;
+
+                    case TestInProgressMessages testInProgressMessages:
+                        OnTestInProgressMessages(testInProgressMessages);
                         break;
 
                     case TestSessionEvent sessionEvent:
@@ -411,10 +426,11 @@ internal sealed class TestApplication(
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
         if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? protocolVersions) ||
-            protocolVersions is null)
+            string.IsNullOrWhiteSpace(protocolVersions))
         {
-            // It's not expected we hit this.
-            // TODO: Maybe we should fail more hard?
+            // The handshake didn't advertise any supported protocol versions. Return empty so the
+            // handler can surface a dedicated "missing protocol versions" failure to the user via
+            // 'HandshakeFailure' (rather than throwing here, which would route to 'FailFast').
             return string.Empty;
         }
 
@@ -442,7 +458,7 @@ internal sealed class TestApplication(
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         });
 
-    public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
+    public bool OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
         => _handler.OnHandshakeReceived(handshakeMessage, gotSupportedVersion);
 
     private void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
@@ -463,6 +479,9 @@ internal sealed class TestApplication(
 
     private void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
         => _handler.OnFileArtifactsReceived(fileArtifactMessages);
+
+    private void OnTestInProgressMessages(TestInProgressMessages testInProgressMessages)
+        => _handler.OnTestInProgressReceived(testInProgressMessages);
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
         => _handler.OnSessionEventReceived(sessionEvent);

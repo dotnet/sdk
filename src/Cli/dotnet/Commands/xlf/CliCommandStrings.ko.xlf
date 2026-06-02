@@ -112,6 +112,26 @@
         <target state="new">List available devices for running the application.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DotnetTestDuplicateHandshakeOnConnection">
+        <source>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</source>
+        <target state="new">Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMissingHandshakeProtocolVersions">
+        <source>The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</source>
+        <target state="new">The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMissingRequiredMessageProperty">
+        <source>The required property '{0}' was missing or empty in the message of type '{1}'.</source>
+        <target state="new">The required property '{0}' was missing or empty in the message of type '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HandshakeFailuresHeader">
+        <source>Handshake failures:</source>
+        <target state="new">Handshake failures:</target>
+        <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
+      </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
@@ -2633,6 +2653,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">.NET 실행 명령</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunAsyncCalledMoreThanOnce">
+        <source>'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</source>
+        <target state="new">'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</target>
+        <note>{Locked="TestApplication.RunAsync"}</note>
+      </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
         <target state="new">Available devices:</target>
@@ -3563,6 +3588,11 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">핸드셰이크를 받기 전에 예기치 않게 '{0}' 형식의 메시지가 수신되었습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutTestHostHandshake">
+        <source>Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</source>
+        <target state="new">Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
         <target state="translated">해당 테스트 세션을 시작하지 않고 테스트 세션 종료 이벤트를 받았습니다.</target>
@@ -3581,6 +3611,11 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="UnknownRecordsInformationalMessage">
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">기록되지 않은 변경 내용이 있는 행은 .NET CLI 워크로드 명령 이외의 작업에서 변경된 사항을 나타냅니다. 이러한 변경 사항은 일반적으로 .NET SDK 또는 Visual Studio에 대한 업데이트를 나타냅니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownSessionEventType">
+        <source>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</source>
+        <target state="new">Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedOptionInTestApplicationArguments">
