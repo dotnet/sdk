@@ -70,7 +70,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         return null;
     }
 
-    private string GetBrowserLoggerName(int connectionId)
+    private static string GetBrowserLoggerName(int connectionId)
         => $"Browser #{connectionId}";
 
     public bool IsServerSupported(ProjectGraphNode projectNode, ILogger logger)
