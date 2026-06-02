@@ -7,4 +7,4 @@ DOTNET="$(dirname "$0")/dotnet"
 SDK_VERSION=$("$DOTNET" --list-sdks | tail -1 | cut -d' ' -f1)
 SDK_PATH="$(dirname "$0")/sdk/$SDK_VERSION/dotnet.dll"
 
-"$DOTNET" exec "$SDK_PATH" tool exec "$@"
+"$DOTNET" exec "$SDK_PATH" dnx "$@"
