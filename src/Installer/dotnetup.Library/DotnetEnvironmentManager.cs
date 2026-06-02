@@ -351,12 +351,14 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             return;
         }
 
-        // If the install root matches the default dotnetup-managed path, omit it from the profile
-        // entry so `print-env-script` falls back to its built-in default-detection logic. This
-        // keeps profile entries minimal and portable across user-resolved default paths.
-        string? profileDotnetRoot = DotnetupUtilities.PathsEqual(dotnetRoot, GetDefaultDotnetInstallPath())
-            ? null
-            : dotnetRoot;
+        // When the install root is the default path, omit --dotnet-install-path from the
+        // profile entry. At shell startup, `print-env-script` will call
+        // GetDefaultDotnetInstallPath() itself, so the result is identical.
+
+        // Omitting it makes the profile entry portable: if the file syncs to another
+        // machine (e.g. via OneDrive) where the default path differs (different username),
+        // print-env-script resolves the correct path there instead of using a stale literal.
+        string? profileDotnetRoot = GetProfileDotnetRootOrDefault(dotnetRoot);
 
         ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: profileDotnetRoot);
     }
@@ -380,12 +382,21 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             throw new ArgumentNullException(nameof(dotnetRoot));
         }
 
-        string? profileDotnetRoot = DotnetupUtilities.PathsEqual(dotnetRoot, GetDefaultDotnetInstallPath())
-            ? null
-            : dotnetRoot;
+        string? profileDotnetRoot = GetProfileDotnetRootOrDefault(dotnetRoot);
 
         ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: profileDotnetRoot);
     }
+
+    /// <summary>
+    /// Returns null when <paramref name="dotnetRoot"/> matches the default dotnetup-managed
+    /// install path, so the value is omitted from the generated profile entry. Otherwise
+    /// returns the explicit path. See <see cref="ApplyTerminalProfileModificationsWindows"/>
+    /// for why omission keeps the entry portable across machines.
+    /// </summary>
+    private string? GetProfileDotnetRootOrDefault(string dotnetRoot) =>
+        DotnetupUtilities.PathsEqual(dotnetRoot, GetDefaultDotnetInstallPath())
+            ? null
+            : dotnetRoot;
 
     /// <inheritdoc />
     public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests)
