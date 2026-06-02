@@ -29,6 +29,7 @@ internal class ProcessReaper : IDisposable
 {
     private readonly Process _process;
 
+#if TARGET_WINDOWS
     private sealed class WindowsProcessReaper : ProcessReaper
     {
         public WindowsProcessReaper(Process process) : base(process)
@@ -44,17 +45,11 @@ internal class ProcessReaper : IDisposable
             EnableWindowsCtrlCHandling();
         }
 
-        public delegate bool ConsoleCtrlEventHandler(uint ctrlType);
-
-        private static void EnableWindowsCtrlCHandling()
+        private unsafe static void EnableWindowsCtrlCHandling()
         {
-            SetConsoleCtrlHandler(null, false);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            static extern bool SetConsoleCtrlHandler(ConsoleCtrlEventHandler? handler, bool add);
+            PInvoke.SetConsoleCtrlHandler(null, false);
         }
 
-#if TARGET_WINDOWS
         private SafeWaitHandle? _job;
 
         public override void NotifyProcessStarted()
@@ -129,6 +124,7 @@ internal class ProcessReaper : IDisposable
 #endif
     }
 
+#if !TARGET_WINDOWS
     private sealed class UnixProcessReaper : ProcessReaper
     {
         private readonly Mutex _shutdownMutex;
@@ -185,18 +181,16 @@ internal class ProcessReaper : IDisposable
             Environment.ExitCode = _process.ExitCode;
         }
     }
+#endif
 
     /// <inheritdoc cref="ProcessReaper(Process)"/>
     public static ProcessReaper Create(Process process)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
+#if TARGET_WINDOWS
             return new WindowsProcessReaper(process);
-        }
-        else
-        {
+#else
             return new UnixProcessReaper(process);
-        }
+#endif
     }
 
     /// <summary>
