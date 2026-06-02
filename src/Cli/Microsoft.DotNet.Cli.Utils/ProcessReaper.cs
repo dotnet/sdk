@@ -167,12 +167,13 @@ internal class ProcessReaper : IDisposable
             // this one does.
             _shutdownMutex?.WaitOne();
 
-            if (!_process.WaitForExit(0) && NativeMethods.Posix.kill(processId, NativeMethods.Posix.SIGTERM) != 0)
+#if NET
+            if (!_process.WaitForExit(0) && _process.SafeHandle.Signal(PosixSignal.SIGTERM))
             {
                 // Couldn't send the signal, don't wait
                 return;
             }
-
+#endif
             // If SIGTERM was ignored by the target, then we'll still wait
             _process.WaitForExit();
 
