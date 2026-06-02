@@ -200,70 +200,61 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         else
         {
-            if (NoCache)
-            {
-                cache = ComputeCacheEntry();
-                cache?.CurrentEntry.BuildLevel = BuildLevel.All;
-                LastBuild = (BuildLevel.All, cache);
-            }
-            else
-            {
-                var buildLevel = GetBuildLevel(out cache);
-                cache?.CurrentEntry.BuildLevel = buildLevel;
-                LastBuild = (buildLevel, cache);
+            var buildLevel = GetBuildLevel(out cache);
+            cache?.CurrentEntry.BuildLevel = buildLevel;
+            LastBuild = (buildLevel, cache);
 
-                if (buildLevel is BuildLevel.None)
+            if (buildLevel is BuildLevel.None)
+            {
+                if (binaryLogger is not null)
                 {
+                    Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
+                }
+
+                // No rebuild, can reuse run properties.
+                cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
+
+                MarkArtifactsFolderUsed();
+                return 0;
+            }
+
+            if (buildLevel is BuildLevel.Csc)
+            {
+                Debug.Assert(cache is not null);
+
+                MarkBuildStart();
+
+                // Execute CSC.
+                int result = new CSharpCompilerCommand
+                {
+                    EntryPointFileFullPath = Builder.EntryPointFileFullPath,
+                    ArtifactsPath = Builder.ArtifactsPath,
+                    CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
+                    CscArguments = cache.PreviousEntry?.CscArguments ?? [],
+                    BuildResultFile = cache.PreviousEntry?.BuildResultFile,
+                }
+                .Execute(out bool fallbackToNormalBuild);
+
+                if (!fallbackToNormalBuild)
+                {
+                    if (result == 0)
+                    {
+                        ReuseInfoFromPreviousCacheEntry(cache);
+                        MarkBuildSuccess(cache);
+                    }
+
                     if (binaryLogger is not null)
                     {
-                        Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
+                        Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
                     }
 
-                    // No rebuild, can reuse run properties.
-                    cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
-
-                    MarkArtifactsFolderUsed();
-                    return 0;
+                    return result;
                 }
 
-                if (buildLevel is BuildLevel.Csc)
-                {
-                    Debug.Assert(cache is not null);
-
-                    MarkBuildStart();
-
-                    // Execute CSC.
-                    int result = new CSharpCompilerCommand
-                    {
-                        EntryPointFileFullPath = Builder.EntryPointFileFullPath,
-                        ArtifactsPath = Builder.ArtifactsPath,
-                        CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
-                        CscArguments = cache.PreviousEntry?.CscArguments ?? [],
-                        BuildResultFile = cache.PreviousEntry?.BuildResultFile,
-                    }
-                    .Execute(out bool fallbackToNormalBuild);
-
-                    if (!fallbackToNormalBuild)
-                    {
-                        if (result == 0)
-                        {
-                            ReuseInfoFromPreviousCacheEntry(cache);
-                            MarkBuildSuccess(cache);
-                        }
-
-                        if (binaryLogger is not null)
-                        {
-                            Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
-                        }
-
-                        return result;
-                    }
-
-                    Debug.Assert(result != 0);
-                }
-
-                Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
+                Debug.Assert(result != 0);
             }
+
+            Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
 
             MarkBuildStart();
         }
@@ -1044,6 +1035,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public BuildLevel GetBuildLevel(out CacheInfo? cache)
     {
+        if (NoCache)
+        {
+            Reporter.Verbose.WriteLine("Building because --no-cache was specified.");
+            cache = ComputeCacheEntry();
+            return BuildLevel.All;
+        }
+
         if (!NeedsToBuild(out cache))
         {
             Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + Builder.ArtifactsPath);

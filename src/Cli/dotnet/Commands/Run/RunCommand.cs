@@ -142,11 +142,6 @@ public class RunCommand
 
     public int Execute()
     {
-        if (NoBuild && NoCache)
-        {
-            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandDefinition.NoCacheOptionName, RunCommandDefinition.NoBuildOptionName);
-        }
-
         // Create a single logger for all MSBuild operations (device selection + build/run)
         // File-based runs (.cs files) don't support device selection and should use the existing logger behavior
         FacadeLogger? logger = ProjectFileFullPath is not null 
