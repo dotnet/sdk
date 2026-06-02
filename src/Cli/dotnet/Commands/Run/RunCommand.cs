@@ -178,6 +178,7 @@ public class RunCommand
 
             Func<ProjectCollection, ProjectInstance>? projectFactory = null;
             RunProperties? cachedRunProperties = null;
+            bool runPropertiesFromEvaluation = false;
             VirtualProjectBuildingCommand? projectBuilder = null;
             if (ShouldBuild)
             {
@@ -187,6 +188,7 @@ public class RunCommand
                 }
 
                 EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out projectBuilder, selector?.IntermediateOutputPath, selector?.HasRuntimeEnvironmentVariableSupport ?? false);
+                runPropertiesFromEvaluation = projectBuilder?.LastBuild.Level == BuildLevel.All;
             }
             else if (EntryPointFileFullPath is not null && launchProfileParseResult.Profile is not ExecutableLaunchProfile)
             {
@@ -212,7 +214,7 @@ public class RunCommand
                 }
             }
 
-            var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties, logger);
+            var targetCommand = GetTargetCommand(launchProfileParseResult.Profile, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger);
 
             // Send telemetry about the run operation
             SendRunTelemetry(launchProfileParseResult.Profile, projectBuilder);
@@ -234,11 +236,11 @@ public class RunCommand
         }
     }
 
-    internal ICommand GetTargetCommand(LaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
+    internal ICommand GetTargetCommand(LaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, bool runPropertiesFromEvaluation, FacadeLogger? logger)
         => launchSettings switch
         {
-            null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties, logger),
-            ProjectLaunchProfile projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties, logger),
+            null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger),
+            ProjectLaunchProfile projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger),
             ExecutableLaunchProfile executableSettings => GetTargetCommandForExecutable(executableSettings),
             _ => throw new InvalidOperationException()
         };
@@ -561,14 +563,14 @@ public class RunCommand
         }
     }
 
-    private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, FacadeLogger? logger)
+    private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, bool runPropertiesFromEvaluation, FacadeLogger? logger)
     {
         ICommand command;
         if (cachedRunProperties != null)
         {
             // We can skip project evaluation if we already evaluated the project during virtual build
             // or we have cached run properties in previous run (and this is a --no-build or skip-msbuild run).
-            Reporter.Verbose.WriteLine("Getting target command: from cache.");
+            Reporter.Verbose.WriteLine($"Getting target command: from {(runPropertiesFromEvaluation ? "previous evaluation" : "cache")}.");
             command = CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
         }
         else if (projectFactory is null && ProjectFileFullPath is null)
