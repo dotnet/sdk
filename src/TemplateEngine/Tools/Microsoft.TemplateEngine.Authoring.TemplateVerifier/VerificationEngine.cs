@@ -17,10 +17,10 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
     {
         private static readonly IReadOnlyList<string> DefaultVerificationExcludePatterns = new List<string>()
         {
-            @"**/obj/*",
-            @"**\obj\*",
-            @"**/bin/*",
-            @"**\bin\*",
+            @"**/obj/**",
+            @"**\obj\**",
+            @"**/bin/**",
+            @"**\bin\**",
             "*.exe",
             "*.dll",
             "*.",

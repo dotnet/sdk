@@ -2697,6 +2697,10 @@ Proceed?</value>
   <data name="DurationColon" xml:space="preserve">
     <value>duration:</value>
   </data>
+  <data name="HandshakeFailuresHeader" xml:space="preserve">
+    <value>Handshake failures:</value>
+    <comment>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</comment>
+  </data>
   <data name="WorkloadSetHasMissingManifests" xml:space="preserve">
     <value>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</value>
     <comment>{0} is the workload set version. {Locked="dotnet workload repair"}</comment>
