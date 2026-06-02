@@ -13,6 +13,13 @@ public class ParserTests
         [new[] { "init", "--shell", "bash" }]
     ];
 
+    public static IEnumerable<object[]> MigrateFromSystemCommandArgs =>
+    [
+        [new[] { "sdk", "install", "8.0", "--migrate-from-system" }],
+        [new[] { "install", "8.0", "--migrate-from-system" }],
+        [new[] { "runtime", "install", "aspnetcore@9.0", "--migrate-from-system" }]
+    ];
+
     [Fact]
     public void Parser_ShouldParseValidCommands()
     {
@@ -74,6 +81,28 @@ public class ParserTests
     {
         var args = new[] { "init", "--help" };
 
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Parser_ShouldParseInitCommandWithInteractiveOption()
+    {
+        var args = new[] { "init", "--interactive" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.InteractiveOption).Should().BeTrue();
+    }
+
+    [Theory]
+    [MemberData(nameof(MigrateFromSystemCommandArgs))]
+    public void Parser_ShouldParseInstallCommandsWithMigrateFromSystem(string[] args)
+    {
         var parseResult = Parser.Parse(args);
 
         parseResult.Should().NotBeNull();
@@ -253,6 +282,7 @@ public class ParserTests
 
         exitCode.Should().Be(0);
         output.Should().Contain("init");
+        output.Should().NotContain("migrate");
         output.Should().NotContain("walkthrough");
     }
 
@@ -397,6 +427,21 @@ public class ParserTests
         parseResult.Should().NotBeNull();
         parseResult.Errors.Should().BeEmpty();
         parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Parser_BareDotnetup_BindsInteractiveOption()
+    {
+        // Regression test: bare `dotnetup` routes to SdkInstallCommand, but until
+        // CommonOptions.InteractiveOption was registered on the root command,
+        // ParseResult.GetValue returned default(bool)=false for the option without
+        // running its DefaultValueFactory (!IsCIEnvironmentOrRedirected()). That
+        // suppressed first-use onboarding for bare `dotnetup` invocations.
+        var parseResult = Parser.Parse([]);
+
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetResult(CommonOptions.InteractiveOption).Should().NotBeNull(
+            "InteractiveOption must be bound on the root command so its DefaultValueFactory runs for bare `dotnetup`");
     }
 
     #endregion

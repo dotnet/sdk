@@ -49,7 +49,7 @@ public sealed class DefaultInstallCommandTests : IDisposable
 
         exitCode.Should().Be(0, output);
 
-        string profilePath = Path.Combine(_tempHome, ".config", "powershell", "Microsoft.PowerShell_profile.ps1");
+        string profilePath = Path.Combine(_tempHome, ".config", "powershell", "profile.ps1");
         File.Exists(profilePath).Should().BeTrue();
         var profileContents = File.ReadAllText(profilePath);
         profileContents.Should().Contain("print-env-script --shell pwsh");

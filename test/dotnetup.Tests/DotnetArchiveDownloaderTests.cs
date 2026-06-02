@@ -40,7 +40,7 @@ public class DotnetArchiveDownloaderTests
     {
         // The default constructor creates its own HttpClient via CreateDefaultHttpClient().
         // Verify that the handler does NOT have AutomaticDecompression set.
-        using var downloader = new DotnetArchiveDownloader();
+        var downloader = new DotnetArchiveDownloader();
 
         // Use reflection to access the private _httpClient field
         var httpClientField = typeof(DotnetArchiveDownloader)

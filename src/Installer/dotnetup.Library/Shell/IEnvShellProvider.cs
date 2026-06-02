@@ -39,6 +39,15 @@ public interface IEnvShellProvider
     IReadOnlyList<string> GetProfilePaths();
 
     /// <summary>
+    /// The encoding to use when creating a brand-new profile file. Existing files always
+    /// have their detected encoding (including BOM presence) preserved by
+    /// <see cref="ShellProfileManager"/>; this is only consulted when no file exists yet.
+    /// Defaults to UTF-8 without BOM, which is the safe choice for POSIX shells (bash/zsh
+    /// would otherwise execute the BOM bytes as a command).
+    /// </summary>
+    Encoding NewFileEncoding => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
+    /// <summary>
     /// Generates the shell command block to append to a shell profile that will eval dotnetup's env script.
     /// <see cref="ShellProfileManager"/> adds the surrounding marker comments when it writes the block.
     /// </summary>

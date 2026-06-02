@@ -24,9 +24,20 @@ internal interface IDotnetEnvironmentManager
 
     List<DotnetInstall> GetExistingSystemInstalls();
 
+    /// <summary>
+    /// Applies machine/user-level environment configuration (PATH and DOTNET_ROOT environment
+    /// variables) to point to either the system (Program Files) or user dotnet install location.
+    /// </summary>
     void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null);
 
-    void ApplyTerminalProfileModifications(string dotnetRoot, IEnvShellProvider? shellProvider = null);
+    /// <summary>
+    /// Applies dotnetup's profile-file modifications for the current user's shell environment,
+    /// which set up the PATH and DOTNET_ROOT environment variables for the user's shell.
+    /// When <paramref name="installType"/> is <see cref="InstallType.System"/>, dotnet is
+    /// assumed to already be on PATH (set up outside the profile), so the entry only adds
+    /// dotnetup to PATH.
+    /// </summary>
+    void ApplyTerminalProfileModifications(string dotnetRoot, InstallType installType = InstallType.User, IEnvShellProvider? shellProvider = null);
 
     /// <summary>
     /// Updates the global.json file to reflect the installed SDK version,

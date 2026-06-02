@@ -243,7 +243,7 @@ internal class InstallerOrchestratorSingleton
         var installRequest = resolvedRequest.Request;
         var versionToInstall = resolvedRequest.ResolvedVersion;
         var install = new DotnetInstall(installRequest.InstallRoot, versionToInstall, installRequest.Component);
-        ReleaseManifest releaseManifest = new();
+        ReleaseManifest releaseManifest = ReleaseManifest.Default;
         var manifest = installRequest.Options.Untracked ? null : new DotnetupSharedManifest(installRequest.Options.ManifestPath);
 
         using (var finalizeLock = ModifyInstallStateMutex())

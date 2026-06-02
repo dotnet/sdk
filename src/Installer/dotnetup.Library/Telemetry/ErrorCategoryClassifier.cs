@@ -91,7 +91,11 @@ internal static class ErrorCategoryClassifier
         return errorCode is
             DotnetInstallErrorCode.ManifestFetchFailed or
             DotnetInstallErrorCode.DownloadFailed or
-            DotnetInstallErrorCode.NetworkError;
+            DotnetInstallErrorCode.NetworkError or
+            // .p7s sibling download failure. Crypto / policy verification failures use
+            // SignatureVerificationFailed (a non-network code) so HTTP analysis is not
+            // attempted on those.
+            DotnetInstallErrorCode.SignatureDownloadFailed;
     }
 
     /// <summary>

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -33,31 +32,35 @@ internal class InstallWorkflow
     /// Executes the install workflow for the given component specifications.
     /// Each spec is a (component, channel) pair where channel may be null (defaults to global.json or "latest").
     /// When an explicit install path is provided, installs directly.
-    /// When interactive and no explicit path, wraps execution in the init flow
-    /// for environment configuration (path preference, admin migration, etc.).
+    /// When interactive and no explicit path, routes through dotnetup onboarding/setup:
+    /// first-use installs show the intro flow, while later installs reuse saved configuration.
     /// Otherwise, installs to the default/resolved path without prompting.
     /// </summary>
     public void Execute(MinimalInstallSpec[] componentSpecs)
     {
-        var requests = GenerateInstallRequests(componentSpecs);
+        bool runOnboarding = ShouldRunFirstUseOnboarding(_command.Interactive, _command.InstallPath, _command.MigrateFromSystem);
+        bool promptForStarterChannel = ShouldPromptForStarterChannel(runOnboarding, componentSpecs);
+        List<ResolvedInstallRequest> requests;
 
-        if (_command.InstallPath is not null || !_command.Interactive)
+        if (runOnboarding)
         {
-            // Explicit path or non-interactive — skip the init flow entirely
-            ExecuteInstallRequests(requests);
+            // Pre-resolve the user's requests unless we still need to prompt for a starter channel
+            // (in which case the walkthrough generates them after the prompt).
+            var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs);
+            var workflows = new InitWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
+            requests = workflows.InitWalkthrough(_command, initialRequests);
         }
         else
         {
-            // Interactive with no explicit path — init flow for path preference, admin migration, etc.
-            var workflows = new InitWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
-            workflows.BaseConfigurationWalkthrough(
-                requests,
-                () => ExecuteInstallRequests(requests),
-                _command.NoProgress,
-                _command.Interactive,
-                true,
-                false,
-                _command.ShellProvider);
+            requests = GenerateInstallRequests(componentSpecs);
+            if (_command.MigrateFromSystem)
+            {
+                requests = ExecuteWithMigration(requests);
+            }
+            else
+            {
+                ExecuteInstallRequests(requests);
+            }
         }
 
         // Global.json update runs after install in all code paths, but only when
@@ -68,6 +71,46 @@ internal class InstallWorkflow
         {
             _command.DotnetEnvironment.ApplyGlobalJsonModifications(requests);
         }
+
+    }
+
+    /// <summary>
+    /// Two-phase install flow used when <c>--migrate-from-system</c> is supplied without onboarding.
+    /// Phase 1: install the user's primary requests plus any SDK migrations.
+    /// Phase 2: install runtime / aspnetcore / windowsdesktop migrations whose shared-framework
+    /// folder is not already present on disk after Phase 1 (avoids duplicate downloads).
+    /// </summary>
+    private List<ResolvedInstallRequest> ExecuteWithMigration(List<ResolvedInstallRequest> requests)
+    {
+        if (requests.Count == 0)
+        {
+            return requests;
+        }
+
+        var installRoot = requests[0].Request.InstallRoot;
+        var toMigrate = MigrationWorkflow.GetMigrationCandidates(
+            _command.DotnetEnvironment,
+            _command.MigrationComponents);
+        var migrationSelections = MigrationWorkflow.BuildMigrationSelections(
+            toMigrate,
+            installRoot,
+            _command.ManifestPath,
+            requests);
+
+        if (migrationSelections.Count == 0)
+        {
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
+                "No matching untracked system .NET installs were found to migrate."));
+            ExecuteInstallRequests(requests);
+            return requests;
+        }
+
+        SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
+            $"Migrating {migrationSelections.Count} matching system .NET channel(s) because --migrate-from-system was specified."));
+
+        return MigrationWorkflow.ExecuteMigrationInPhases(
+            requests, migrationSelections, _command, installRoot, _command.ManifestPath,
+            runner: ExecuteInstallRequests);
     }
 
     /// <summary>
@@ -102,6 +145,23 @@ internal class InstallWorkflow
         return requests;
     }
 
+    internal static bool ShouldRunFirstUseOnboarding(bool interactive, string? installPath, bool migrateFromSystem = false)
+    {
+        return !migrateFromSystem &&
+            interactive &&
+            installPath is null &&
+            DotnetupConfig.ReadPathPreference() is null;
+    }
+
+    internal static bool ShouldPromptForStarterChannel(bool runOnboarding, MinimalInstallSpec[] componentSpecs)
+    {
+        // Only prompt for the starter channel on a first-run SDK install with no version/channel.
+        // Other components (runtime, aspnetcore, etc.) carry their own resolution and should not
+        // be silently turned into an SDK install via the starter-channel prompt.
+        return runOnboarding &&
+            componentSpecs is [{ Component: InstallComponent.SDK, VersionOrChannel: null }];
+    }
+
     /// <summary>
     /// Resolves a single <see cref="MinimalInstallSpec"/> to a <see cref="ResolvedInstallRequest"/>
     /// by inferring the channel (from global.json or "latest"), resolving the version, and recording telemetry.
@@ -118,6 +178,18 @@ internal class InstallWorkflow
 
         var (channel, isFromGlobalJson) = ResolveChannel(component, explicitChannel, globalJson);
 
+        // Validate the channel format before any network calls so bogus inputs (e.g. "preview-daily",
+        // "100-daily", typos) fail fast with a clean InvalidChannel error instead of bubbling up as
+        // a 404 from the release manifest or aka.ms redirect.
+        if (!ChannelVersionResolver.IsValidChannelFormat(channel))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidChannel,
+                $"'{channel}' is not a recognized .NET version or channel for {component.GetDisplayName()}. "
+                + "Use a channel like 'latest', 'lts', 'preview', a version scope like '10.0' or '10.0.1xx', "
+                + "a daily-build scope like '10.0-daily' or '10.0.1xx-daily', or a fully-qualified version like '10.0.103'.");
+        }
+
         var request = new DotnetInstallRequest(
             installRoot,
             new UpdateChannel(channel),
@@ -132,7 +204,7 @@ internal class InstallWorkflow
                 Verbosity = _command.Verbosity
             });
 
-        var resolvedVersion = _command.ChannelVersionResolver.Resolve(request);
+        var resolvedVersion = _command.ChannelVersionResolver.GetLatestVersionForChannel(request.Channel, request.Component, request.InstallRoot.Architecture);
 
         if (resolvedVersion is null)
         {
@@ -187,30 +259,11 @@ internal class InstallWorkflow
 
     /// <summary>
     /// Executes resolved install requests via the install executor as a concurrent batch.
+    /// Records install-result telemetry and rethrows the first failure, if any.
     /// </summary>
     private void ExecuteInstallRequests(List<ResolvedInstallRequest> requests)
     {
-        var batchResult = InstallExecutor.ExecuteInstalls(requests, _command.NoProgress);
-
-        int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
-        int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);
-        _command.SetCommandTag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
-
-        if (batchResult.Failures.Count > 0)
-        {
-            // Attach failures [1..] to the primary so RecordException stamps
-            // them as error.additional_failures on the command row when
-            // CommandBase catches the rethrown primary. Without this only the
-            // first failure was visible in telemetry even though all were
-            // printed to the user.
-            var primary = batchResult.Failures[0].Exception;
-            for (int i = 1; i < batchResult.Failures.Count; i++)
-            {
-                primary.AttachAdditionalFailure(batchResult.Failures[i].Exception);
-            }
-
-            ExceptionDispatchInfo.Capture(primary).Throw();
-        }
+        InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, _command.NoProgress, _command);
     }
 
     private void ValidateInstallPath(string installPath, PathSource pathSource, string? manifestPath)

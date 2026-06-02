@@ -4,11 +4,14 @@
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+using Microsoft.NET.TestFramework;
 using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -108,7 +111,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
     {
         const string version = "10.0.100-preview.4.25216.37";
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
-        string ext = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
+        string ext = DotnetupTestUtilities.DefaultArchiveFileExtension;
         string expectedHash = new string('d', 128);
         var (handler, history) = BuildHandler(new()
         {
@@ -116,7 +119,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         });
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
 
@@ -136,7 +139,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, history) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
@@ -157,7 +160,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, history) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -178,7 +181,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, _) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -188,6 +191,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
 
     /// <summary>
     /// If both feeds 404 the .sha512 file, surface a clear VersionNotFound error.
+    /// On Windows, both tar.gz and zip are probed before failing.
     /// </summary>
     [Fact]
     public void ResolveManifestEntry_BlobFeed404_ThrowsVersionNotFound()
@@ -196,14 +200,42 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, history) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
         ex.Message.Should().Contain(version);
-        history.Should().HaveCount(1);
+
+        // On Windows, both tar.gz and zip are probed; on other platforms only tar.gz
+        int expectedProbes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 2 : 1;
+        history.Should().HaveCount(expectedProbes);
+    }
+
+    /// <summary>
+    /// On Windows, when the tar.gz archive is not available, the downloader falls back to zip.
+    /// </summary>
+    [PlatformSpecificFact(TestPlatforms.Windows)]
+    public void ResolveManifestEntry_FallsBackToZip_WhenTarGzNotAvailable_OnWindows()
+    {
+        const string version = "10.0.100-preview.4.25216.37";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        string expectedHash = new string('f', 128);
+        var (handler, history) = BuildHandler(new()
+        {
+            // tar.gz checksum not available (404), zip checksum is available
+            [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}.zip.sha512"] = (HttpStatusCode.OK, expectedHash + "\n"),
+        });
+
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+
+        var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
+
+        url.Should().Be($"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-{version}-{rid}.zip");
+        hash.Should().Be(expectedHash);
+        history.Should().HaveCount(2, "should probe tar.gz first, then fall back to zip");
     }
 
     /// <summary>
@@ -214,7 +246,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
     {
         const string version = "10.0.0-preview.4.25216.10";
         string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
-        string ext = DotnetupUtilities.GetArchiveFileExtensionForPlatform();
+        string ext = DotnetupTestUtilities.DefaultArchiveFileExtension;
         string expectedHash = new string('e', 128);
         var (handler, _) = BuildHandler(new()
         {
@@ -222,7 +254,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         });
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.Runtime), new ReleaseVersion(version));
 

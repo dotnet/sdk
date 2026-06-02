@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -12,13 +11,9 @@ using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
-/// Orchestrates the interactive init flow that configures the user's environment
-/// and records the path replacement preference to <c>dotnetup.config.json</c>.
-/// Has two modes:
-/// <list type="bullet">
-/// <item><see cref="FullIntroductionWalkthrough"/> — full first-run experience with channel prompt</item>
-/// <item><see cref="BaseConfigurationWalkthrough"/> — minimal setup, wraps an install action</item>
-/// </list>
+/// Orchestrates the interactive init/onboarding flow that configures the user's
+/// environment and records the path replacement preference to
+/// <c>dotnetup.config.json</c>.
 /// </summary>
 internal class InitWorkflows
 {
@@ -44,121 +39,73 @@ internal class InitWorkflows
         preference is PathPreference.FullPathReplacement;
 
     /// <summary>
-    /// Returns true when the user chose to convert existing system-level .NET installs
-    /// into dotnetup-managed installs. This applies to any mode that shadows the system PATH.
-    /// Also returns false if the user previously opted out via <see cref="DotnetupConfigData.DisableInstallConversion"/>.
+    /// Returns true when the user chose a mode that shadows the system PATH and should therefore
+    /// be offered migration of existing system-level .NET installs into dotnetup-managed installs.
     /// </summary>
-    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference, bool ignoreConfig = false)
+    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference)
     {
-        if (preference == PathPreference.DotnetupDotnet)
-        {
-            return false;
-        }
-
-        if (!ignoreConfig)
-        {
-            var existingConfig = DotnetupConfig.Read();
-            if (existingConfig?.DisableInstallConversion == true)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return preference != PathPreference.DotnetupDotnet;
     }
 
     // ── Init Flow Orchestrators ──
 
     /// <summary>
-    /// Full first-run init flow: shows banner, prompts for channel, generates
-    /// install request, then delegates to <see cref="BaseConfigurationWalkthrough"/>
-    /// for environment setup and installation.
+    /// Interactive onboarding flow used both by the explicit <c>dotnetup init</c> command
+    /// and by the first interactive install when dotnetup has not yet been configured.
+    /// When <paramref name="requests"/> is not supplied, the user is asked to pick a starter
+    /// channel. When it is supplied, the walkthrough reuses the already-resolved install
+    /// requests and skips the extra channel prompt.
     /// </summary>
-    public void FullIntroductionWalkthrough(InstallCommand command)
+    public List<ResolvedInstallRequest> InitWalkthrough(
+        InstallCommand command,
+        List<ResolvedInstallRequest>? requests = null)
     {
         ShowBanner();
+        var effectiveRequests = ResolveWalkthroughRequests(command, requests);
 
-        // Step 0: Explain channels and let the user pick one
-        string selectedChannel = PromptChannel();
-
-        if (selectedChannel == NoneChannel)
-        {
-            // User chose to skip installation — just configure the environment.
-            BaseConfigurationWalkthrough(
-                [],
-                () => { },
-                command.NoProgress,
-                shellProvider: command.ShellProvider);
-            return;
-        }
-
-        // Generate the install request via the workflow (handles path resolution, global.json, validation)
-        var workflow = new InstallWorkflow(command);
-        var requests = workflow.GenerateInstallRequests(
-            [new MinimalInstallSpec(InstallComponent.SDK, selectedChannel)]);
-
-        BaseConfigurationWalkthrough(
-            requests,
-            () => InstallExecutor.ExecuteInstalls(requests, command.NoProgress),
-            command.NoProgress,
-            shellProvider: command.ShellProvider);
-    }
-
-    /// <summary>
-    /// Minimal init flow: prompts for path preference and admin migration (if needed),
-    /// then runs the provided action, saves config, applies system configuration, and
-    /// batch-installs any migrated system installs.
-    /// Called by <see cref="FullIntroductionWalkthrough"/> and by <see cref="InstallWorkflow"/>
-    /// when no explicit install path is provided.
-    /// </summary>
-    /// <param name="requests">The resolved install requests (used for predownload and install root context).</param>
-    /// <param name="primaryActionAfterConfigured">The action to execute after environment configuration (typically the install).</param>
-    /// <param name="noProgress">Whether to suppress progress display.</param>
-    /// <param name="interactive">Whether to prompt the user. When false, uses existing config or defaults — no prompts are shown.</param>
-    /// <param name="deferAdminMigrationUntilEnd">When true, defers the admin migration prompt until the end of the init flow.</param>
-    /// <param name="askEvenIfConfigured">When true, prompts the user even if a preference was previously saved.</param>
-    /// <param name="shellProvider">An optional shell override to use for environment configuration instead of auto-detection.</param>
-    public void BaseConfigurationWalkthrough(
-        List<ResolvedInstallRequest> requests,
-        Action primaryActionAfterConfigured,
-        bool noProgress,
-        bool interactive = true,
-        bool deferAdminMigrationUntilEnd = false,
-        bool askEvenIfConfigured = true,
-        IEnvShellProvider? shellProvider = null)
-    {
         // Determine the install root for environment configuration and migration.
         // Use the first request's root if available, otherwise fall back to the default path.
-        DotnetInstallRoot installRoot = requests.Count > 0
-            ? requests[0].Request.InstallRoot
+        DotnetInstallRoot installRoot = effectiveRequests.Count > 0
+            ? effectiveRequests[0].Request.InstallRoot
             : new DotnetInstallRoot(
                 _dotnetEnvironment.GetDefaultDotnetInstallPath(),
                 InstallerUtilities.GetDefaultInstallArchitecture());
 
         // Fire off background predownload while the user answers prompts.
-        Task? predownloadTask = requests.Count > 0
-            ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(requests[0])
+        Task? predownloadTask = effectiveRequests.Count > 0
+            ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(effectiveRequests[0])
             : null;
 
         // User chooses how to access .NET
         PathPreference? previousPreference = DotnetupConfig.ReadPathPreference();
-        var pathPreference = GetPathPreference(interactive, askEvenIfConfigured, shellProvider);
-        string? manifestPath = requests.Count > 0 ? requests[0].Request.Options.ManifestPath : null;
+        PathPreference pathPreference = GetInitPathPreference(command.Interactive, command.ShellProvider);
+        string? manifestPath = effectiveRequests.Count > 0 ? effectiveRequests[0].Request.Options.ManifestPath : null;
 
-        // (Can Defer) Step 2: Prompt about admin installs before setting up the environment.
-        // In non-interactive mode, skip the migration prompt entirely.
-        List<DotnetInstall> toMigrate = deferAdminMigrationUntilEnd
-            ? []
-            : PromptInstallsToMigrateIfDesired(_dotnetEnvironment, pathPreference, installRoot, manifestPath, askEvenIfConfigured);
+        // Step 2: Prompt about admin installs before setting up the environment.
+        List<MigrationWorkflow.MigrationSelection> toMigrate = PromptInstallsToMigrateIfDesired(
+            _dotnetEnvironment,
+            pathPreference,
+            installRoot,
+            manifestPath,
+            effectiveRequests,
+            command.Interactive);
 
-        // Step 3: Run the primary action (typically installing the base SDK from global.json/latest).
-        RunPrimaryInstall(requests, primaryActionAfterConfigured, predownloadTask);
+        if (toMigrate.Count > 0)
+        {
+            effectiveRequests = RunInstallsWithMigration(
+                command, effectiveRequests, toMigrate, installRoot, manifestPath, predownloadTask);
+        }
+        else
+        {
+            RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress, command);
+        }
 
+        // Save config and apply configuration(s).
         SaveConfigAndDisplayResult(pathPreference, previousPreference);
 
         if (pathPreference is PathPreference.ShellProfile)
         {
-            _dotnetEnvironment.ApplyTerminalProfileModifications(installRoot.Path, shellProvider);
+            _dotnetEnvironment.ApplyTerminalProfileModifications(installRoot.Path, shellProvider: command.ShellProvider);
         }
 
         if (ShouldReplaceSystemConfiguration(pathPreference))
@@ -166,27 +113,66 @@ internal class InitWorkflows
             _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
         }
 
-        // Step 4: Prompt migrating admin installs now that the environment is configured (if deferred).
-        // NOTE: Global.json modification is intentionally NOT done here.
-        // The init flow does not own global.json updates — that responsibility
-        // belongs to InstallWorkflow, gated on the --update-global-json flag
-        // which only the SDK install command exposes.
-        if (deferAdminMigrationUntilEnd)
-        {
-            toMigrate = PromptInstallsToMigrateIfDesired(
-                _dotnetEnvironment, pathPreference, installRoot, manifestPath, askEvenIfConfigured);
-        }
-
-        if (toMigrate.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
-                "You may now use dotnetup. In the meantime, we'll install your remaining components."));
-            ExecuteMigrationBatch(toMigrate, installRoot, noProgress);
-        }
+        return effectiveRequests;
     }
 
-    private static void RunPrimaryInstall(
-        List<ResolvedInstallRequest> requests, Action primaryAction, Task? predownloadTask)
+    private List<ResolvedInstallRequest> ResolveWalkthroughRequests(
+        InstallCommand command,
+        List<ResolvedInstallRequest>? requests)
+    {
+        if (requests is not null)
+        {
+            return requests;
+        }
+
+        // Step 0: Explain channels and let the user pick one
+        string selectedChannel = PromptChannel();
+        if (selectedChannel == NoneChannel)
+        {
+            return [];
+        }
+
+        // Generate the install request via the workflow (handles path resolution, global.json, validation)
+        var workflow = new InstallWorkflow(command);
+        return workflow.GenerateInstallRequests(
+            [new MinimalInstallSpec(InstallComponent.SDK, selectedChannel)]);
+    }
+
+    /// <summary>
+    /// Two-phase install used by the init walkthrough when migrations were selected.
+    /// Phase 1: existing requests + SDK migrations. Phase 2: runtime-style migrations
+    /// not already on disk after Phase 1 (avoids re-downloading runtimes the SDK brought down).
+    /// </summary>
+    private static List<ResolvedInstallRequest> RunInstallsWithMigration(
+        InstallCommand command,
+        List<ResolvedInstallRequest> effectiveRequests,
+        List<MigrationWorkflow.MigrationSelection> toMigrate,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        Task? predownloadTask)
+    {
+        return MigrationWorkflow.ExecuteMigrationInPhases(
+            effectiveRequests, toMigrate, command, installRoot, manifestPath,
+            runner: requests =>
+            {
+                SpectreAnsiConsole.MarkupLine("Setting up your environment.");
+                if (requests.Count > 0)
+                {
+                    DisplayInstallLocation(requests[0]);
+                }
+                // Wait for the predownload to finish (if still running) before starting the real install,
+                // so the cache is populated and we avoid redundant downloads. Only meaningful for Phase 1.
+                predownloadTask?.GetAwaiter().GetResult();
+                predownloadTask = null;
+                InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, command.NoProgress, command);
+            });
+    }
+
+    private static void RunInstallRequests(
+        List<ResolvedInstallRequest> requests,
+        Task? predownloadTask,
+        bool noProgress,
+        CommandBase command)
     {
         SpectreAnsiConsole.MarkupLine("Setting up your environment.");
         if (requests.Count > 0)
@@ -198,19 +184,12 @@ internal class InitWorkflows
         // so the cache is populated and we avoid redundant downloads.
         predownloadTask?.GetAwaiter().GetResult();
 
-        primaryAction();
+        InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, noProgress, command);
     }
 
-    private static PathPreference GetPathPreference(bool interactive, bool askEvenIfConfigured, IEnvShellProvider? shellProvider)
+    private static PathPreference GetInitPathPreference(bool interactive, IEnvShellProvider? shellProvider = null)
     {
-        // If the user already configured their preference (e.g. prior init), reuse it.
-        // In non-interactive mode, use the existing config or default to ShellProfile.
-        PathPreference? existingPreference = DotnetupConfig.ReadPathPreference();
-        if (existingPreference is not null && !askEvenIfConfigured)
-        {
-            return existingPreference.Value;
-        }
-        else if (!interactive)
+        if (!interactive)
         {
             if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
             {
@@ -227,7 +206,11 @@ internal class InitWorkflows
             return PathPreference.DotnetupDotnet;
         }
 
-        var preference = PromptPathPreference();
+        return ValidatePathPreference(PromptPathPreference());
+    }
+
+    private static PathPreference ValidatePathPreference(PathPreference preference)
+    {
         if (preference == PathPreference.FullPathReplacement && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
@@ -333,203 +316,102 @@ internal class InitWorkflows
     }
 
     /// <summary>
-    /// Prompts the user about copying admin-managed installs into the dotnetup-managed directory.
-    /// Installs already tracked in the dotnetup manifest for <paramref name="installRoot"/> are excluded.
+    /// Prompts the user about migrating system installs into the dotnetup-managed directory.
+    /// Existing installs are normalized to update channels and deduplicated before prompting.
     /// </summary>
-    /// <returns>A list of installs to migrate if the user agrees, or an empty list if they decline or no unconverted system installs exist.</returns>
-    internal static List<DotnetInstall> PromptInstallsToMigrateIfDesired(IDotnetEnvironmentManager dotnetEnvironment, PathPreference pathPreference, DotnetInstallRoot installRoot, string? manifestPath = null, bool askEvenIfConfigured = false)
+    /// <returns>A list of deduplicated channel selections to migrate, or an empty list if the user declines or no candidates remain.</returns>
+    internal static List<MigrationWorkflow.MigrationSelection> PromptInstallsToMigrateIfDesired(
+        IDotnetEnvironmentManager dotnetEnvironment,
+        PathPreference pathPreference,
+        DotnetInstallRoot installRoot,
+        string? manifestPath = null,
+        IReadOnlyCollection<ResolvedInstallRequest>? existingRequests = null,
+        bool interactive = true)
     {
-        if (!ShouldPromptToConvertSystemInstalls(pathPreference, ignoreConfig: askEvenIfConfigured))
+        if (!ShouldPromptToConvertSystemInstalls(pathPreference))
         {
             return [];
         }
 
-        var systemInstalls = dotnetEnvironment.GetExistingSystemInstalls();
-        if (systemInstalls.Count == 0)
+        if (!interactive)
         {
             return [];
         }
 
-        systemInstalls = FilterAlreadyTrackedInstalls(systemInstalls, installRoot, manifestPath);
-        if (systemInstalls.Count == 0)
+        var systemInstalls = MigrationWorkflow.GetMigrationCandidates(dotnetEnvironment);
+        var migrationSelections = MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, manifestPath, existingRequests);
+        if (migrationSelections.Count == 0)
         {
             return [];
         }
 
-        return PromptUserForMigration(systemInstalls, dotnetEnvironment, askEvenIfConfigured);
+        return PromptUserForMigration(migrationSelections, dotnetEnvironment);
     }
 
-    /// <summary>
-    /// Filters out system installs already tracked in the dotnetup manifest using
-    /// channel-based matching (e.g. runtime 10.0.4 is skipped if 10.0.5 is tracked).
-    /// Prune stale entries first so manually-deleted installs don't persist.
-    /// </summary>
-    private static List<DotnetInstall> FilterAlreadyTrackedInstalls(
-        List<DotnetInstall> systemInstalls, DotnetInstallRoot installRoot, string? manifestPath)
+    internal static List<string> FormatMigrationDisplayItems(List<MigrationWorkflow.MigrationSelection> migrationSelections)
     {
-        List<Installation> trackedInstalls;
-        using (new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            var manifest = new DotnetupSharedManifest(manifestPath);
-            var manifestData = manifest.ReadManifest();
-            var root = manifestData.DotnetRoots.FirstOrDefault(r =>
-                DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
-            trackedInstalls = root?.Installations ?? [];
-        }
+        bool showArchitecture = migrationSelections
+            .Select(i => i.Architecture)
+            .Distinct()
+            .Skip(1)
+            .Any();
 
-        return [.. systemInstalls
-            .Where(sysInstall =>
-            {
-                string sysChannel = DotnetupUtilities.VersionToPatchBasedChannel(sysInstall.Version, sysInstall.Component);
-                return !trackedInstalls.Exists(tracked =>
-                {
-                    if (tracked.Component != sysInstall.Component)
-                    {
-                        return false;
-                    }
-
-                    if (ReleaseVersion.TryParse(tracked.Version, out var trackedVersion))
-                    {
-                        return DotnetupUtilities.VersionToPatchBasedChannel(trackedVersion, tracked.Component) == sysChannel;
-                    }
-
-                    return tracked.Version == sysInstall.Version.ToString();
-                });
-            }),];
+        return migrationSelections
+            .OrderBy(i => i.Component)
+            .ThenBy(i => i.Channel.Name)
+            .Select(i => showArchitecture
+                ? string.Format(CultureInfo.InvariantCulture, "{0} {1} [{2}]", i.Component.GetDisplayName(), i.Channel.Name, i.Architecture)
+                : string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Channel.Name))
+            .ToList();
     }
 
-    private static List<DotnetInstall> PromptUserForMigration(
-        List<DotnetInstall> systemInstalls, IDotnetEnvironmentManager dotnetEnvironment, bool askEvenIfConfigured)
+    internal static List<MigrationWorkflow.MigrationSelection> PromptUserForMigration(
+        List<MigrationWorkflow.MigrationSelection> migrationSelections,
+        IDotnetEnvironmentManager dotnetEnvironment)
     {
+        if (Console.IsInputRedirected)
+        {
+            SpectreAnsiConsole.MarkupLine(
+                $"[{DotnetupTheme.Current.Dim}]Skipping the migration prompt because interactive input is not available. {GetMigrationRetryHint().EscapeMarkup()}[/]");
+            return [];
+        }
+
         // Find the system install path for display purposes
         var currentInstall = dotnetEnvironment.GetCurrentPathConfiguration();
         string systemPath = currentInstall?.InstallType == InstallType.System
             ? currentInstall.Path
             : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
 
-        SpectreAnsiConsole.MarkupLine($"You have existing system install(s) of .NET in [{DotnetupTheme.Current.Accent}]{systemPath.EscapeMarkup()}[/].");
+        SpectreAnsiConsole.MarkupLine($"You have existing system-managed .NET installs in [{DotnetupTheme.Current.Accent}]{systemPath.EscapeMarkup()}[/].");
 
-        var displayItems = systemInstalls
-            .OrderBy(i => i.Component)
-            .ThenByDescending(i => i.Version)
-            .Select(i => string.Format(CultureInfo.InvariantCulture, "{0} {1}", i.Component.GetDisplayName(), i.Version))
-            .ToList();
+        var displayItems = FormatMigrationDisplayItems(migrationSelections);
 
         var confirmResult = SpectreDisplayHelpers.RenderScrollableListWithConfirm(
             displayItems,
             visibleCount: 3,
-            "Do you want to copy these installs into the dotnetup managed directory?",
-            allowNeverAsk: true);
+            "Do you want dotnetup to install matching versions in its managed directory?");
 
-        HandleMigrationConfirmResult(confirmResult, askEvenIfConfigured);
-        return confirmResult == ConfirmResult.Yes ? systemInstalls : [];
+        HandleMigrationConfirmResult(confirmResult);
+        return confirmResult == ConfirmResult.Yes ? migrationSelections : [];
     }
 
     /// <summary>
-    /// Persists the user's migration-prompt decision: clears a prior opt-out on accept,
-    /// sets <see cref="DotnetupConfigData.DisableInstallConversion"/> on "never ask again",
-    /// or shows a hint on decline.
+    /// Writes the follow-up message after the user accepts or declines the migration prompt.
     /// </summary>
-    private static void HandleMigrationConfirmResult(ConfirmResult confirmResult, bool askEvenIfConfigured)
+    private static void HandleMigrationConfirmResult(ConfirmResult confirmResult)
     {
         if (confirmResult == ConfirmResult.Yes)
         {
-            if (askEvenIfConfigured)
-            {
-                var config = DotnetupConfig.Read() ?? new DotnetupConfigData();
-                if (config.DisableInstallConversion)
-                {
-                    config.DisableInstallConversion = false;
-                    DotnetupConfig.Write(config);
-                }
-            }
-
-            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be installed after your setup completes.[/]");
-        }
-        else if (confirmResult == ConfirmResult.NeverAskAgain)
-        {
-            var config = DotnetupConfig.Read() ?? new DotnetupConfigData();
-            config.DisableInstallConversion = true;
-            DotnetupConfig.Write(config);
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]These will be installed as part of the current setup.[/]");
         }
         else
         {
-            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]You can run 'dotnetup init' again to reconfigure.[/]");
+            SpectreAnsiConsole.MarkupLine($"[{DotnetupTheme.Current.Dim}]{GetMigrationRetryHint().EscapeMarkup()}[/]");
         }
     }
 
-    // ── Migration Batch ──
-
-    /// <summary>
-    /// Installs migrated system installs in two phases: SDKs first (their archives
-    /// typically bundle runtimes), then runtimes that aren't already on disk.
-    /// Failures are collected from both phases and reported at the end.
-    /// </summary>
-    private static void ExecuteMigrationBatch(List<DotnetInstall> toMigrate, DotnetInstallRoot installRoot, bool noProgress)
-    {
-        var sdks = toMigrate.Where(i => i.Component == InstallComponent.SDK).ToList();
-        var runtimes = toMigrate.Where(i => i.Component != InstallComponent.SDK).ToList();
-        var allFailures = new List<InstallFailure>();
-
-        // Phase 1: Install SDKs first — their archives typically bundle runtime binaries.
-        if (sdks.Count > 0)
-        {
-            var sdkRequests = sdks.Select(i => new ResolvedInstallRequest(
-                new DotnetInstallRequest(
-                    installRoot,
-                    new UpdateChannel(DotnetupUtilities.VersionToPatchBasedChannel(i.Version, i.Component)),
-                    i.Component,
-                    new InstallRequestOptions()),
-                i.Version)).ToList();
-
-            var sdkResult = InstallExecutor.ExecuteInstalls(sdkRequests, noProgress);
-            allFailures.AddRange(sdkResult.Failures);
-        }
-
-        SpectreAnsiConsole.WriteLine();
-
-        // Phase 2: Skip runtimes whose folders already landed on disk via SDK archives.
-        var remainingRuntimes = runtimes.Where(r => !RuntimeFolderExistsOnDisk(installRoot, r)).ToList();
-
-        if (remainingRuntimes.Count > 0)
-        {
-            var runtimeRequests = remainingRuntimes.Select(i => new ResolvedInstallRequest(
-                new DotnetInstallRequest(
-                    installRoot,
-                    new UpdateChannel(DotnetupUtilities.VersionToPatchBasedChannel(i.Version, i.Component)),
-                    i.Component,
-                    new InstallRequestOptions()),
-                i.Version)).ToList();
-
-            var runtimeResult = InstallExecutor.ExecuteInstalls(runtimeRequests, noProgress);
-            allFailures.AddRange(runtimeResult.Failures);
-        }
-
-        if (allFailures.Count > 0)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "\n[{0}]{1} of {2} migration install(s) failed. " +
-                "You can retry them later with \"dotnetup install\".[/]",
-                DotnetupTheme.Current.Warning,
-                allFailures.Count,
-                toMigrate.Count));
-        }
-    }
-
-    /// <summary>
-    /// Checks whether a runtime's framework folder already exists on disk,
-    /// typically because it was bundled inside an SDK archive.
-    /// </summary>
-    private static bool RuntimeFolderExistsOnDisk(DotnetInstallRoot installRoot, DotnetInstall runtime)
-    {
-        string frameworkDir = Path.Combine(
-            installRoot.Path,
-            "shared",
-            runtime.Component.GetFrameworkName(),
-            runtime.Version.ToString());
-        return Directory.Exists(frameworkDir);
-    }
+    private static string GetMigrationRetryHint()
+        => "You can migrate matching SDKs or runtimes later with \"dotnetup sdk install --migrate-from-system\" or \"dotnetup runtime install --migrate-from-system\".";
 
     // ── Display Functions ──
 

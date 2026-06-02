@@ -156,7 +156,22 @@ Error: $($_.Exception.Message)
     }
 
     $expected = ((Get-Content $tempChecksum -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
-    $actual = (Get-FileHash -Path $tempBinary -Algorithm SHA512).Hash.ToLowerInvariant()
+    # Compute SHA-512 directly via .NET to avoid relying on Get-FileHash, which is
+    # not always resolvable in stripped-down PowerShell hosts (e.g., some CI agents).
+    $sha512 = [System.Security.Cryptography.SHA512]::Create()
+    try {
+        $stream = [System.IO.File]::OpenRead($tempBinary)
+        try {
+            $hashBytes = $sha512.ComputeHash($stream)
+        }
+        finally {
+            $stream.Dispose()
+        }
+    }
+    finally {
+        $sha512.Dispose()
+    }
+    $actual = ([System.BitConverter]::ToString($hashBytes) -replace '-', '').ToLowerInvariant()
     if ($expected -ne $actual) {
         throw "Checksum mismatch.`n  Expected: $expected`n  Actual:   $actual"
     }

@@ -106,6 +106,14 @@ public enum DotnetInstallErrorCode
     /// cause; this code exists so the telemetry signal isn't literally "Unknown".
     /// </summary>
     ReleaseLookupFailed,
+    /// <summary>The detached CMS signature on a release manifest JSON failed verification.</summary>
+    SignatureVerificationFailed,
+
+    /// <summary>The release manifest is missing a SHA-512 hash for the archive, breaking the signed-manifest → hash → archive trust chain.</summary>
+    ArchiveHashMissing,
+
+    /// <summary>Failed to download the detached CMS signature (.p7s) sibling for a release manifest. Network-related; distinct from <see cref="SignatureVerificationFailed"/> which covers crypto / policy violations.</summary>
+    SignatureDownloadFailed,
 }
 
 /// <summary>

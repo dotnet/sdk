@@ -142,10 +142,11 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var filtered = installs
             .Where(i => i.InstallRoot.Architecture == nativeArch)
+            .DistinctBy(i => (i.Component, Version: i.Version.ToString(), i.InstallRoot.Architecture))
             .ToList();
 
-        // Sort descending so newest versions appear first
-        filtered.Sort((a, b) => string.Compare(b.Version.ToString(), a.Version.ToString(), StringComparison.OrdinalIgnoreCase));
+        // Sort descending so newest versions appear first.
+        filtered.Sort((a, b) => b.Version.CompareTo(a.Version));
         return filtered;
     }
 
@@ -266,6 +267,10 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
     }
 
+    /// <summary>
+    /// Applies machine/user-level environment configuration (PATH and DOTNET_ROOT environment
+    /// variables) to point to either the system (Program Files) or user dotnet install location.
+    /// </summary>
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
     {
         if (OperatingSystem.IsWindows())
@@ -312,47 +317,86 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
     }
 
-    public void ApplyTerminalProfileModifications(string dotnetRoot, IEnvShellProvider? shellProvider = null)
+    /// <summary>
+    /// Applies dotnetup's profile-file modifications for the current user's shell environment,
+    /// which set up the PATH and DOTNET_ROOT environment variables for the user's shell.
+    /// </summary>
+    public void ApplyTerminalProfileModifications(string dotnetRoot, InstallType installType = InstallType.User, IEnvShellProvider? shellProvider = null)
     {
         ArgumentNullException.ThrowIfNull(dotnetRoot);
 
         if (OperatingSystem.IsWindows())
         {
-            // Not implemented yet on Windows
-            return;
+            ApplyTerminalProfileModificationsWindows(dotnetRoot, installType, shellProvider);
         }
         else
         {
-            ConfigureInstallTypeUnix(InstallType.User, dotnetRoot, shellProvider);
+            ApplyTerminalProfileModificationsUnix(dotnetRoot, installType, shellProvider);
         }
     }
 
-    private void ConfigureInstallTypeUnix(InstallType installType, string? dotnetRoot, IEnvShellProvider? shellProvider)
+    private void ApplyTerminalProfileModificationsWindows(string dotnetRoot, InstallType installType, IEnvShellProvider? shellProvider)
+    {
+        var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
+        // The current shell provider on Windows is always the PowerShell provider (see
+        // ShellDetection.GetCurrentShellProvider). We accept a caller-supplied provider for
+        // testability.
+        shellProvider ??= new PowerShellEnvShellProvider();
+
+        if (installType == InstallType.System)
+        {
+            // System install: dotnet is assumed to be on PATH already (configured by the system
+            // installer / admin). The profile entry only adds dotnetup to PATH.
+            ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
+            return;
+        }
+
+        // When the install root is the default path, omit --dotnet-install-path from the
+        // profile entry. At shell startup, `print-env-script` will call
+        // GetDefaultDotnetInstallPath() itself, so the result is identical.
+
+        // Omitting it makes the profile entry portable: if the file syncs to another
+        // machine (e.g. via OneDrive) where the default path differs (different username),
+        // print-env-script resolves the correct path there instead of using a stale literal.
+        string? profileDotnetRoot = GetProfileDotnetRootOrDefault(dotnetRoot);
+
+        ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: profileDotnetRoot);
+    }
+
+    private void ApplyTerminalProfileModificationsUnix(string dotnetRoot, InstallType installType, IEnvShellProvider? shellProvider)
     {
         var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
         shellProvider = ShellDetection.GetCurrentShellProviderOrThrow(shellProvider);
 
-        switch (installType)
+        if (installType == InstallType.System)
         {
-            case InstallType.User:
-                if (string.IsNullOrEmpty(dotnetRoot))
-                {
-                    throw new ArgumentNullException(nameof(dotnetRoot));
-                }
-
-                string? profileDotnetRoot = DotnetupUtilities.PathsEqual(dotnetRoot, GetDefaultDotnetInstallPath())
-                    ? null
-                    : dotnetRoot;
-
-                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: profileDotnetRoot);
-                break;
-            case InstallType.System:
-                ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
-                break;
-            default:
-                throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
+            // System install: dotnet is assumed to be on PATH already (e.g. /usr/share/dotnet
+            // configured by the system package manager). The profile entry only adds dotnetup
+            // to PATH.
+            ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetupOnly: true);
+            return;
         }
+
+        if (string.IsNullOrEmpty(dotnetRoot))
+        {
+            throw new ArgumentNullException(nameof(dotnetRoot));
+        }
+
+        string? profileDotnetRoot = GetProfileDotnetRootOrDefault(dotnetRoot);
+
+        ShellProfileManager.AddProfileEntries(shellProvider, dotnetupPath, dotnetInstallPath: profileDotnetRoot);
     }
+
+    /// <summary>
+    /// Returns null when <paramref name="dotnetRoot"/> matches the default dotnetup-managed
+    /// install path, so the value is omitted from the generated profile entry. Otherwise
+    /// returns the explicit path. See <see cref="ApplyTerminalProfileModificationsWindows"/>
+    /// for why omission keeps the entry portable across machines.
+    /// </summary>
+    private string? GetProfileDotnetRootOrDefault(string dotnetRoot) =>
+        DotnetupUtilities.PathsEqual(dotnetRoot, GetDefaultDotnetInstallPath())
+            ? null
+            : dotnetRoot;
 
     /// <inheritdoc />
     public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests)

@@ -165,6 +165,11 @@ internal static class DotnetupPaths
         // Windows: %LOCALAPPDATA% (e.g., C:\Users\<user>\AppData\Local)
         // macOS:   ~/Library/Application Support
         // Linux:   $XDG_DATA_HOME or ~/.local/share
-        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        //
+        // Use SpecialFolderOption.DoNotVerify to defer creation until
+        // necessary. EnsureDataDirectoryExists creates the data directory.
+        return Environment.GetFolderPath(
+            Environment.SpecialFolder.LocalApplicationData,
+            Environment.SpecialFolderOption.DoNotVerify);
     }
 }

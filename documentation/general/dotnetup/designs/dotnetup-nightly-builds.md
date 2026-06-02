@@ -222,14 +222,14 @@ For a specific prerelease version that isn't in the release manifest:
 The `UpdateChannel` class gains awareness of the `-daily` suffix:
 
 ```csharp
-// New properties
+// New API
 public bool IsDaily => Name.Equals("daily", StringComparison.OrdinalIgnoreCase)
     || Name.EndsWith("-daily", StringComparison.OrdinalIgnoreCase);
-public string BaseChannel => IsDaily
-    ? Name.Equals("daily", StringComparison.OrdinalIgnoreCase)
-        ? "daily"  // bare "daily" is its own base — resolved separately via major+1 probing
-        : Name.Substring(0, Name.LastIndexOf('-'))
-    : Name;
+
+// Helper for the scoped-daily case — bare "daily" is handled separately
+// (resolved via major+1 probing in DailyChannelResolver).
+public static string StripDailySuffix(string scopedDailyChannelName)
+    => scopedDailyChannelName.Substring(0, scopedDailyChannelName.Length - "-daily".Length);
 ```
 
 The `Matches()` method for daily channels matches any version that would match the base channel.
@@ -337,7 +337,7 @@ is needed. We just need the blob-feed download path:
 **Goal**: `dotnetup sdk install 10.0-daily` resolves and installs the latest daily build.
 
 Builds on Phase 1's blob-feed download path by adding version discovery:
-- Extend `UpdateChannel` with `IsDaily` / `BaseChannel` properties for `...-daily` suffix parsing
+- Extend `UpdateChannel` with an `IsDaily` predicate and a `StripDailySuffix` helper for `...-daily` parsing
 - Add `IsValidChannelFormat()` support for `...-daily` channels and bare `daily` (add `daily`
   to the known channel keyword set alongside `latest`, `preview`, `lts`)
 - Extend `ChannelVersionResolver.Resolve()` to detect daily channels and query the aka.ms
