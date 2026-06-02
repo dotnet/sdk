@@ -1,3 +1,23 @@
+# Detect native OS architecture, which may differ from the process architecture
+# (e.g., x64 process running on ARM64 Windows via emulation).
+function Get-NativeMachineArchitecture {
+  try {
+    $osArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+    if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
+      return "arm64"
+    }
+    if ($osArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
+      return "x86"
+    }
+    if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
+      return "arm"
+    }
+  } catch {
+    # Fallback for environments where RuntimeInformation is unavailable
+  }
+  return "x64"
+}
+
 function InitializeCustomSDKToolset {
   if ($env:TestFullMSBuild -eq "true") {
      $env:DOTNET_SDK_TEST_MSBUILD_PATH = InitializeVisualStudioMSBuild -install:$true -vsRequirements:$GlobalJson.tools.'vs-opt'
@@ -15,10 +35,13 @@ function InitializeCustomSDKToolset {
   }
 
   $cli = InitializeDotnetCli -install:$true
-  InstallDotNetSharedFramework "6.0.0"
-  InstallDotNetSharedFramework "7.0.0"
-  InstallDotNetSharedFramework "8.0.0"
-  InstallDotNetSharedFramework "9.0.0"
+
+  $nativeArch = Get-NativeMachineArchitecture
+  InstallDotNetSharedFramework "6.0.0" $nativeArch
+  InstallDotNetSharedFramework "7.0.0" $nativeArch
+  InstallDotNetSharedFramework "8.0.0" $nativeArch
+  InstallDotNetSharedFramework "9.0.0" $nativeArch
+  InstallDotNetSharedFramework "10.0.0" $nativeArch
 
   CreateBuildEnvScripts
   CreateVSShortcut
@@ -42,7 +65,6 @@ function CreateBuildEnvScripts()
   $scriptContents = @"
 @echo off
 title SDK Build ($RepoRoot)
-set DOTNET_MULTILEVEL_LOOKUP=0
 REM https://aka.ms/vs/unsigned-dotnet-debugger-lib
 set VSDebugger_ValidateDotnetDebugLibSignatures=0
 
@@ -62,7 +84,6 @@ DOSKEY killdotnet=taskkill /F /IM dotnet.exe /T ^& taskkill /F /IM VSTest.Consol
   $scriptPath = Join-Path $ArtifactsDir "sdk-build-env.ps1"
   $scriptContents = @"
 `$host.ui.RawUI.WindowTitle = "SDK Build ($RepoRoot)"
-`$env:DOTNET_MULTILEVEL_LOOKUP=0
 # https://aka.ms/vs/unsigned-dotnet-debugger-lib
 `$env:VSDebugger_ValidateDotnetDebugLibSignatures=0
 
@@ -118,13 +139,22 @@ function CreateVSShortcut()
   $shortcut.Save()
 }
 
-function InstallDotNetSharedFramework([string]$version) {
+function InstallDotNetSharedFramework([string]$version, [string]$arch = "") {
   $dotnetRoot = $env:DOTNET_INSTALL_DIR
   $fxDir = Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$version"
 
   if (!(Test-Path $fxDir)) {
     $installScript = GetDotNetInstallScript $dotnetRoot
-    & $installScript -Version $version -InstallDir $dotnetRoot -Runtime "dotnet" -SkipNonVersionedFiles
+    $installArgs = @{
+      Version = $version
+      InstallDir = $dotnetRoot
+      Runtime = "dotnet"
+      SkipNonVersionedFiles = $true
+    }
+    if ($arch) {
+      $installArgs.Architecture = $arch
+    }
+    & $installScript @installArgs
 
     if($lastExitCode -ne 0) {
       throw "Failed to install shared Framework $version to '$dotnetRoot' (exit code '$lastExitCode')."

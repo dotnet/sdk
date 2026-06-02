@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Cli;
@@ -20,8 +19,11 @@ namespace Microsoft.NET.Build.Tasks
     /// targeting packs which provide the reference assemblies, and creates RuntimeFramework
     /// items, which are written to the runtimeconfig file
     /// </summary>
-    public class ProcessFrameworkReferences : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ProcessFrameworkReferences : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         public string? TargetFrameworkIdentifier { get; set; }
 
         [Required]
@@ -1112,7 +1114,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             IEnumerable<string> GetPackFolders()
             {
-                var packRootEnvironmentVariable = Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
+                var packRootEnvironmentVariable = TaskEnvironment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
                 if (!string.IsNullOrEmpty(packRootEnvironmentVariable))
                 {
                     foreach (var packRoot in packRootEnvironmentVariable.Split(Path.PathSeparator))
@@ -1123,8 +1125,9 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!string.IsNullOrEmpty(NetCoreRoot) && !string.IsNullOrEmpty(NETCoreSdkVersion))
                 {
-                    if (WorkloadFileBasedInstall.IsUserLocal(NetCoreRoot, NETCoreSdkVersion) &&
-                        CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath() is { } userProfileDir)
+                    AbsolutePath netCoreRoot = TaskEnvironment.GetAbsolutePath(NetCoreRoot);
+                    if (WorkloadFileBasedInstall.IsUserLocal(netCoreRoot, NETCoreSdkVersion) &&
+                        new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath() is { } userProfileDir)
                     {
                         yield return Path.Combine(userProfileDir, "packs");
                     }
@@ -1139,7 +1142,9 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var packFolder in GetPackFolders())
             {
                 string packPath = Path.Combine(packFolder, packName, packVersion);
-                if (Directory.Exists(packPath))
+                AbsolutePath absolutePackPath = TaskEnvironment.GetAbsolutePath(packPath);
+
+                if (Directory.Exists(absolutePackPath))
                 {
                     return packPath;
                 }
@@ -1177,14 +1182,19 @@ namespace Microsoft.NET.Build.Tasks
         {
             return new(() =>
         {
-                string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
+                string? userProfileDir = new CliFolderPathCalculatorCore(TaskEnvironment.GetEnvironmentVariable).GetDotnetUserProfileFolderPath();
+                string? absoluteUserProfileDir = string.IsNullOrEmpty(userProfileDir) ? null : (string)TaskEnvironment.GetAbsolutePath(userProfileDir);
 
-                //  When running MSBuild tasks, the current directory is always the project directory, so we can use that as the
-                //  starting point to search for global.json
-                string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
 
-                var manifestProvider = new SdkDirectoryWorkloadManifestProvider(NetCoreRoot, NETCoreSdkVersion, userProfileDir, globalJsonPath);
-                return WorkloadResolver.Create(manifestProvider, NetCoreRoot, NETCoreSdkVersion, userProfileDir);
+                string netCoreRoot = string.IsNullOrWhiteSpace(NetCoreRoot) ? NetCoreRoot : TaskEnvironment.GetAbsolutePath(NetCoreRoot);
+
+                //  Use TaskEnvironment.ProjectDirectory (rather than Directory.GetCurrentDirectory) as the starting point
+                //  to search for global.json, since the current directory is not guaranteed to match the project directory
+                //  when tasks run on MSBuild worker nodes.
+                string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(TaskEnvironment.ProjectDirectory);
+
+                var manifestProvider = new SdkDirectoryWorkloadManifestProvider(netCoreRoot, NETCoreSdkVersion, TaskEnvironment.GetEnvironmentVariable, absoluteUserProfileDir, globalJsonPath);
+                return WorkloadResolver.Create(manifestProvider, netCoreRoot, NETCoreSdkVersion, absoluteUserProfileDir, TaskEnvironment.GetEnvironmentVariable);
         });
         }
 

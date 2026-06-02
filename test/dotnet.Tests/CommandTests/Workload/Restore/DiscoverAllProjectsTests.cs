@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
         [Fact]
         public void WhenCallWithNoSlnOrProjectArgumentItCollectProjectsFromSolution()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource()
                 .Path;
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
         [Fact]
         public void WhenCallWithSlnOrProjectArgumentItCollectProjectsFromSolution()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource()
                 .Path;
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
         [Fact]
         public void WhenCallWithDirectoryWith2ProjectItShouldFindAll()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
                 .WithSource()
                 .Path;
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
         [Fact]
         public void WhenCallWithSlnContainingSolutionFolderItExcludesFolderProjectsFromSolution()
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndSolutionFolders")
                 .WithSource()
                 .Path;

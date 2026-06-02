@@ -26,18 +26,23 @@ After the minor release locks down, it transitions into servicing / "QB" (Quarte
 ### Servicing releases
 The .NET SDK has monthly servicing releases (e.g.`7.0.100` VS `7.0.101`) aligning with the .NET Runtime servicing releases. These are for top fixes and security updates only to limit risk.
 Any servicing release is open for check-ins from the day the [branding PRs](https://github.com/dotnet/sdk/pulls?q=is%3Apr+branding) are merged (~1st Tuesday of each month) and when code complete is (typically two weeks later).
-The servicing branches are locked from the time of code complete to the next branding in case we need to respin any monthly release. We use the `Branch Lockdown` label to mark PRs that should go into the next servicing release but the branch is currently not open. Final signoffs are typically in the last week of each month. We have a workflow that will automatically mark any PR targeting a servicing branch outside of the first to third Tuesday window: https://github.com/dotnet/sdk/blob/main/.github/workflows/add-lockdown-label.yml
+The .NET 8 and .NET 9 servicing branches are locked from the time of code complete to the next branding in case we need to respin any monthly release. We use the `Branch Lockdown` label to mark PRs that should go into the next servicing release but the branch is currently not open. Final signoffs are typically in the last week of each month. We have a workflow that will automatically mark any PR targeting a servicing branch outside of the first to third Tuesday window: https://github.com/dotnet/sdk/blob/main/.github/workflows/add-lockdown-label.yml
 ### Schedule
 | Release Type | Frequency    | Lockdown Release  | Branch Open | Lockdown Date (estimate) |
 | -------------|--------------|-------------------|-------------|--------------------------|
 | Major        | Yearly (Nov) | RC2               | ~August     | Mid-September            |
 | Minor        | Quarterly    | Preview 3         | ~Prior release Preview 3 date | End of the month prior to Preview 3 (~7 weeks prior to release) |
-| Servicing    | Monthly      | N/A               | After branding, ~1st Tuesday of the prior month | Third Tuesday of prior month (signoff is ~28th of each month) |
+| Servicing (8/9) | Monthly   | N/A               | After branding, ~1st Tuesday of the prior month | Third Tuesday of prior month (signoff is ~28th of each month) |
+| Servicing (10+) | Monthly   | N/A               | Primary Nxx branch remains open; fork dotnet/dotnet shortly after code complete | N/A |
+
+**NOTE:** Servicing branches starting in 10 no longer have lockdown dates. Instead, we fork the `dotnet/dotnet` repo shortly after code complete. Any remaining changes have to be made (or flowed) directly to the new version-specific branch. The primary `Nxx` branch is then open for all changes.
 
 ### Tactics approval
 Even releases that are in lockdown can still take changes as long as they are approved and the final build isn't complete. To bring a change through tactics, mark it with the label `servicing-consider` and update the description to include 5 sections (Description, Customer Impact, Regression?, Risk, Testing). See previously approved bugs for examples by looking for the [servicing-approved](https://github.com/dotnet/sdk/pulls?q=is%3Apr+label%3AServicing-approved+is%3Aclosed) label.
 
 For servicing changes to other repos like MSBuild and NuGet, we recommend getting approval from tactics before the PR is merged. For codeflow, we do not gate codeflow on approvals as many codeflows are just infra work that doesn't require approval. Separating those out would add additional complexity we want to avoid.
+
+Once your bug is ready for approval (has sign-off and the template details in the description), you can come to tactics for live approval or send email to the tactics alias. If you get tactics approval offline from the .NET QB, remove the `servicing-consider` label, add the `servicing-approved` label, set the milestone to match the runtime release this ships with, and merge if the branch is open.
 
 ## External contributions
 External contributions are encouraged and welcome. There are so many teams working in this repo that it can be hard to track. Contributors looking to learn more about how to contribute should check out the [Developer Guide](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/developer-guide.md).

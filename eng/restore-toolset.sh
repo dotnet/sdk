@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 
+# Detect native machine architecture, handling macOS Rosetta 2
+# where uname -m may report x86_64 on arm64 hardware.
+function GetNativeMachineArchitecture {
+  if [[ "$(uname)" == "Darwin" ]] && [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]]; then
+    echo "arm64"
+    return
+  fi
+  case "$(uname -m)" in
+    arm64|aarch64) echo "arm64" ;;
+    amd64|x86_64) echo "x64" ;;
+    armv*l) echo "arm" ;;
+    i[3-6]86) echo "x86" ;;
+    *) echo "x64" ;;
+  esac
+}
+
 function InitializeCustomSDKToolset {
   if [[ "$restore" != true ]]; then
     return
@@ -21,10 +37,35 @@ function InitializeCustomSDKToolset {
 
   InitializeDotNetCli true
 
-  InstallDotNetSharedFramework "6.0.0"
-  InstallDotNetSharedFramework "7.0.0"
-  InstallDotNetSharedFramework "8.0.0"
-  InstallDotNetSharedFramework "9.0.0"
+  local native_arch
+  native_arch=$(GetNativeMachineArchitecture)
+
+  # Use the pipeline's target architecture for runtime installation when set,
+  # otherwise fall back to the native machine architecture. This handles
+  # cross-compilation scenarios (e.g., x64 build machine targeting arm64).
+  local runtime_arch="${TARGET_ARCHITECTURE:-$native_arch}"
+
+  # On macOS arm64 running under Rosetta 2, uname -m reports x86_64 and
+  # Arcade installs the x64 SDK. Reinstall with the native architecture so
+  # the dotnet host and shared frameworks match the hardware.
+  if [[ "$native_arch" == "arm64" ]] && [[ "$(uname -m)" == "x86_64" ]]; then
+    ReadGlobalVersion "dotnet"
+    local dotnet_sdk_version=$_ReadGlobalVersion
+    echo "Native architecture is arm64 but SDK was installed as x64 (Rosetta 2). Reinstalling for arm64..."
+    rm -rf "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version"
+    InstallDotNet "$DOTNET_INSTALL_DIR" "$dotnet_sdk_version" "$native_arch" "sdk" "false" $runtime_source_feed $runtime_source_feed_key
+
+    # Remove any cached x64 test runtimes from previous builds
+    for fx_version in "6.0.0" "7.0.0" "8.0.0" "9.0.0" "10.0.0"; do
+      rm -rf "$DOTNET_INSTALL_DIR/shared/Microsoft.NETCore.App/$fx_version"
+    done
+  fi
+
+  InstallDotNetSharedFramework "6.0.0" "$runtime_arch"
+  InstallDotNetSharedFramework "7.0.0" "$runtime_arch"
+  InstallDotNetSharedFramework "8.0.0" "$runtime_arch"
+  InstallDotNetSharedFramework "9.0.0" "$runtime_arch"
+  InstallDotNetSharedFramework "10.0.0" "$runtime_arch"
 
   CreateBuildEnvScript
 }
@@ -32,6 +73,7 @@ function InitializeCustomSDKToolset {
 # Installs additional shared frameworks for testing purposes
 function InstallDotNetSharedFramework {
   local version=$1
+  local arch=${2:-}
   local dotnet_root=$DOTNET_INSTALL_DIR
   local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
 
@@ -39,7 +81,12 @@ function InstallDotNetSharedFramework {
     GetDotNetInstallScript "$dotnet_root"
     local install_script=$_GetDotNetInstallScript
 
-    bash "$install_script" --version $version --install-dir "$dotnet_root" --runtime "dotnet" --skip-non-versioned-files
+    local install_args=(--version $version --install-dir "$dotnet_root" --runtime "dotnet" --skip-non-versioned-files)
+    if [[ -n "$arch" ]]; then
+      install_args+=(--architecture "$arch")
+    fi
+
+    bash "$install_script" "${install_args[@]}"
     local lastexitcode=$?
 
     if [[ $lastexitcode != 0 ]]; then
@@ -54,7 +101,6 @@ function CreateBuildEnvScript {
   scriptPath="$artifacts_dir/sdk-build-env.sh"
   scriptContents="
 #!/usr/bin/env bash
-export DOTNET_MULTILEVEL_LOOKUP=0
 
 export DOTNET_ROOT=$DOTNET_INSTALL_DIR
 export DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$DOTNET_INSTALL_DIR
@@ -65,6 +111,7 @@ export DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=0
 "
 
   echo "$scriptContents" > ${scriptPath}
+  chmod +x ${scriptPath}
 }
 
 # ReadVersionFromJson [json key]

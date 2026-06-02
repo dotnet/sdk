@@ -16,7 +16,7 @@ internal static class ValidationUtility
         ValidatePathOptions(pathOptions);
         ValidateOptionsIrrelevantToModulesFilter(parseResult, pathOptions.TestModules);
 
-        void ValidatePathOptions(PathOptions pathOptions)
+        static void ValidatePathOptions(PathOptions pathOptions)
         {
             var count = 0;
             if (pathOptions.TestModules is not null)

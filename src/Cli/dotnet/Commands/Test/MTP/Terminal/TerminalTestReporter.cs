@@ -1,4 +1,5 @@
-﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -35,7 +36,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly TestProgressStateAwareTerminal _terminalWithProgress;
 
+    /// <summary>
+    /// Whether to track and render currently running tests. Gated on both the caller-requested
+    /// <see cref="TerminalTestReporterOptions.ShowActiveTests"/> and the effective progress
+    /// capability of the console: if progress cannot actually be rendered (e.g. redirected stdout,
+    /// non-TTY, or ANSI not supported) there is no point allocating per-test running-state.
+    /// </summary>
+    private readonly bool _showActiveTests;
+
     private int _handshakeFailuresCount;
+
+    private readonly object _handshakeFailuresLock = new();
+    private readonly List<HandshakeFailureRecord> _handshakeFailures = new();
 
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
@@ -93,6 +105,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _terminalWithProgress = new TestProgressStateAwareTerminal(terminal, showProgress);
+        _showActiveTests = _options.ShowActiveTests && showProgress;
     }
 
     public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
@@ -165,6 +178,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
+        lock (_handshakeFailuresLock)
+        {
+            _handshakeFailures.Clear();
+        }
+        _handshakeFailuresCount = 0;
         _buildErrorsCount = 0;
         _testExecutionStartTime = null;
         _testExecutionEndTime = null;
@@ -225,11 +243,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
         }
+        else if (anyTestFailed || HasHandshakeFailure)
+        {
+            // Handshake failures take precedence over "Zero tests ran": when an assembly failed to
+            // hand-shake we want the headline to reflect that the run failed, not that no tests ran
+            // (which would imply a benign empty run). We intentionally do NOT escalate the broader
+            // anyAssemblyFailed here, because a project that legitimately contains zero tests exits
+            // with ExitCodes.ZeroTests (non-zero) and would otherwise be misclassified as a failure.
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
+        }
         else if (allTestsWereSkipped)
         {
             terminal.Append(CliCommandStrings.ZeroTestsRan);
         }
-        else if (anyTestFailed || anyAssemblyFailed)
+        else if (anyAssemblyFailed)
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
         }
@@ -346,6 +373,39 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.AppendLine();
 
         AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
+
+        AppendHandshakeFailureRecap(terminal);
+    }
+
+    private void AppendHandshakeFailureRecap(ITerminal terminal)
+    {
+        // Re-print handshake failures captured during the run so that — even when there is a lot of
+        // diagnostic output before the summary — the user sees the actionable failure context
+        // (assembly, exit code, stdout, stderr) at the end of the run rather than having to scroll
+        // back. See https://github.com/dotnet/sdk/issues/51608.
+        HandshakeFailureRecord[] failures;
+        lock (_handshakeFailuresLock)
+        {
+            if (_handshakeFailures.Count == 0)
+            {
+                return;
+            }
+
+            failures = _handshakeFailures.ToArray();
+        }
+
+        terminal.AppendLine();
+        terminal.SetColor(TerminalColor.DarkRed);
+        terminal.AppendLine(CliCommandStrings.HandshakeFailuresHeader);
+        terminal.ResetColor();
+
+        foreach (HandshakeFailureRecord failure in failures)
+        {
+            terminal.Append(SingleIndentation);
+            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, failure.AssemblyPath, failure.TargetFramework, architecture: null);
+            terminal.AppendLine();
+            AppendExecutableSummary(terminal, failure.ExitCode, failure.OutputData, failure.ErrorData);
+        }
     }
 
     private static void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
@@ -406,9 +466,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
         var attempt = asm.TryCount;
 
-        if (_options.ShowActiveTests)
+        if (_showActiveTests)
         {
-            asm.TestNodeResultsState?.RemoveRunningTestNode(testNodeUid);
+            asm.TestNodeResultsState?.RemoveRunningTestNode(instanceId, testNodeUid);
         }
 
         switch (outcome)
@@ -730,7 +790,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
         int exitCode, string? outputData, string? errorData)
     {
-        TestProgressState assemblyRun = _assemblies[executionId];
+        // Defense in depth: under the current TestApplicationHandler routing this branch is
+        // unreachable in normal operation. OnTestProcessExited only calls AssemblyRunCompleted
+        // when the TestHost handshake was received (which in turn caused AssemblyRunStarted to
+        // register the executionId via GetOrAddAssemblyRun); controller-only handshakes go to
+        // HandshakeFailure directly. The fallback below exists only to keep stray completions
+        // (e.g. one that arrives after TestExecutionCompleted's _assemblies.Clear()) or a future
+        // routing regression from surfacing as a KeyNotFoundException that would bury the real
+        // exit cause.
+        if (!_assemblies.TryGetValue(executionId, out TestProgressState? assemblyRun))
+        {
+            HandshakeFailure(assemblyPath: string.Empty, targetFramework: null, exitCode, outputData ?? string.Empty, errorData ?? string.Empty);
+            return;
+        }
+
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
@@ -765,6 +838,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         Interlocked.Increment(ref _handshakeFailuresCount);
+        lock (_handshakeFailuresLock)
+        {
+            _handshakeFailures.Add(new HandshakeFailureRecord(assemblyPath, targetFramework, exitCode, outputData, errorData));
+        }
+
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
             terminal.ResetColor();
@@ -854,45 +932,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    public void WriteMessage(string text, SystemConsoleColor? color = null, int? padding = null)
-    {
-        if (color != null)
-        {
-            _terminalWithProgress.WriteToTerminal(terminal =>
-            {
-                terminal.SetColor(ToTerminalColor(color.ConsoleColor));
-                if (padding == null)
-                {
-                    terminal.AppendLine(text);
-                }
-                else
-                {
-                    AppendIndentedLine(terminal, text, new string(' ', padding.Value));
-                }
-
-                terminal.ResetColor();
-            });
-        }
-        else
-        {
-            _terminalWithProgress.WriteToTerminal(terminal =>
-            {
-                if (padding == null)
-                {
-                    terminal.AppendLine(text);
-                }
-                else
-                {
-                    AppendIndentedLine(terminal, text, new string(' ', padding.Value));
-                }
-            });
-        }
-    }
-
     internal void TestDiscovered(
         string executionId,
         string? displayName,
-        string? uid)
+        string? uid,
+        string? filePath,
+        int? lineNumber)
     {
         if (!_isDiscovery)
         {
@@ -905,7 +950,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
-        asm.DiscoverTest(displayName, uid);
+        asm.DiscoverTest(displayName, uid, filePath, lineNumber);
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
@@ -924,12 +969,26 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid) in assembly.DiscoveredTestNames)
+            foreach ((string? displayName, string? uid, string? filePath, int? lineNumber) in assembly.DiscoveredTestNames)
             {
                 if (displayName is not null)
                 {
                     terminal.Append(SingleIndentation);
-                    terminal.AppendLine(displayName);
+                    terminal.Append(displayName);
+                    if (!string.IsNullOrEmpty(filePath))
+                    {
+                        terminal.Append(" [");
+                        terminal.Append(filePath);
+                        if (lineNumber is > 0)
+                        {
+                            terminal.Append(':');
+                            terminal.Append(lineNumber.Value.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                        terminal.Append(']');
+                    }
+
+                    terminal.AppendLine();
                 }
             }
 
@@ -984,137 +1043,30 @@ internal sealed partial class TerminalTestReporter : IDisposable
         };
 
     public void TestInProgress(
+        string assembly,
+        string? targetFramework,
+        string? architecture,
+        string executionId,
+        string instanceId,
         string testNodeUid,
-        string displayName,
-        string executionId)
+        string displayName)
     {
         TestProgressState asm = _assemblies[executionId];
 
-        if (_options.ShowActiveTests)
+        if (_showActiveTests)
         {
             asm.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
             asm.TestNodeResultsState.AddRunningTestNode(
-                Interlocked.Increment(ref _counter), testNodeUid, displayName, CreateStopwatch());
+                Interlocked.Increment(ref _counter), instanceId, testNodeUid, displayName, CreateStopwatch());
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
-    public void WritePlatformAndExtensionOptions(HelpContext context,
-        IEnumerable<CommandLineOptionMessage> builtInOptions,
-        IEnumerable<CommandLineOptionMessage> nonBuiltInOptions,
-        Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
-    {
-        if (_wasCancelled)
-        {
-            return;
-        }
-
-        if (builtInOptions.Any())
-        {
-            WriteOtherOptionsSection(context, CliCommandStrings.HelpPlatformOptions, builtInOptions);
-            context.Output.WriteLine();
-        }
-
-        if (nonBuiltInOptions.Any())
-        {
-            WriteOtherOptionsSection(context, CliCommandStrings.HelpExtensionOptions, nonBuiltInOptions);
-            context.Output.WriteLine();
-        }
-        WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
-    }
-
-    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOptionMessage> options)
-    {
-        List<TwoColumnHelpRow> optionRows = [];
-
-        foreach (var option in options)
-        {
-            if (option.IsHidden != true)
-            {
-                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description ?? string.Empty));
-            }
-        }
-
-        if (optionRows.Count > 0)
-        {
-            WriteHeading(title, null);
-            context.HelpBuilder.WriteColumns(optionRows, context);
-        }
-    }
-
-
-    private void WriteHeading(string? heading, string? description)
-    {
-        if (!string.IsNullOrWhiteSpace(heading))
-        {
-            WriteMessage(heading);
-        }
-
-        if (!string.IsNullOrWhiteSpace(description))
-        {
-            int maxWidth = int.MaxValue - SingleIndentation.Length;
-            foreach (var part in WrapText(description!, maxWidth))
-            {
-                WriteMessage(SingleIndentation);
-                WriteMessage(part);
-            }
-        }
-    }
-
-    private static IEnumerable<string> WrapText(string text, int maxWidth)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            yield break;
-        }
-
-        foreach (var part in text.Split(["\r\n", "\n"], StringSplitOptions.None))
-        {
-            for (int i = 0; i < part.Length; i += maxWidth)
-            {
-                int length = Math.Min(maxWidth, part.Length - i);
-                int lastSpace = part.LastIndexOf(' ', i + length, length);
-                if (lastSpace > i)
-                {
-                    length = lastSpace - i + 1;
-                }
-                yield return part.Substring(i, length).TrimEnd();
-            }
-        }
-    }
-
-    public void WriteModulesToMissingOptionsToConsole(Dictionary<bool, List<(string[], string[])>> modulesWithMissingOptions)
-    {
-        var yellow = new SystemConsoleColor { ConsoleColor = ConsoleColor.Yellow };
-        foreach (KeyValuePair<bool, List<(string[], string[])>> groupedModules in modulesWithMissingOptions)
-        {
-            WriteMessage(string.Empty);
-            WriteMessage(groupedModules.Key ? CliCommandStrings.HelpUnavailableOptions : CliCommandStrings.HelpUnavailableExtensionOptions, yellow);
-
-            foreach ((string[] modules, string[] missingOptions) in groupedModules.Value)
-            {
-                if (modules.Length == 0)
-                {
-                    continue;
-                }
-
-                string moduleList = string.Join("\n", modules);
-                StringBuilder line = new();
-                for (int i = 0; i < missingOptions.Length; i++)
-                {
-                    if (i == missingOptions.Length - 1)
-                        line.Append($"--{missingOptions[i]}");
-                    else
-                        line.Append($"--{missingOptions[i]}\n");
-                }
-
-                string format = modules.Length == 1
-                    ? (missingOptions.Length == 1 ? CliCommandStrings.HelpModuleIsMissingTheOptionBelow : CliCommandStrings.HelpModuleIsMissingTheOptionsBelow)
-                    : (missingOptions.Length == 1 ? CliCommandStrings.HelpModulesAreMissingTheOptionBelow : CliCommandStrings.HelpModulesAreMissingTheOptionsBelow);
-                var missing = string.Format(format, moduleList);
-                WriteMessage($"{missing}\n{line}\n");
-            }
-        }
-    }
+    private readonly record struct HandshakeFailureRecord(
+        string AssemblyPath,
+        string? TargetFramework,
+        int ExitCode,
+        string OutputData,
+        string ErrorData);
 }

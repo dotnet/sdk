@@ -1,5 +1,5 @@
-
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -38,7 +38,7 @@ public class DoesNotMatter
                 {
                     GetCA1707CSharpResultAt(line: 2, column: 1, symbolKind: SymbolKind.Assembly, identifierNames: "AssemblyNameHasUnderScore_")
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ public class DoesNotMatter
                     (solution, projectId) =>
                         solution.WithProjectAssemblyName(projectId, "AssemblyNameHasNoUnderScore")
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -230,7 +230,7 @@ public class C
                         VerifyCS.Diagnostic(IdentifiersShouldNotContainUnderscoresAnalyzer.MemberRule).WithLocation(0).WithArguments("DoesNotMatterEnum._"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
@@ -841,7 +841,7 @@ public class SomeClass
 
     public int GetSomethingElse() => 42;
 }"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
@@ -946,7 +946,7 @@ End Class
                 {
                     GetCA1707BasicResultAt(line: 2, column: 1, symbolKind: SymbolKind.Assembly, identifierNames: "AssemblyNameHasUnderScore_")
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -963,7 +963,7 @@ End Class
                     (solution, projectId) =>
                         solution.WithProjectAssemblyName(projectId, "AssemblyNameHasNoUnderScore")
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

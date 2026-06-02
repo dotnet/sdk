@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -7,7 +7,8 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -18,6 +19,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 {
+    private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
+
     private readonly IToolPackageStore _toolPackageStore;
 
     protected readonly IFileSystem _fileSystem;
@@ -54,7 +57,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         _currentWorkingDirectory = currentWorkingDirectory;
 
         _localToolAssetDir = new DirectoryPath(_fileSystem.Directory.CreateTemporarySubdirectory());
-        _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "RuntimeIdentifierGraph.json");
+        _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(AppContext.BaseDirectory!, "RuntimeIdentifierGraph.json");
     }
 
     protected abstract INuGetPackageDownloader CreateNuGetPackageDownloader(
@@ -187,8 +190,10 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 //  Create parent directory in global tool store, for example dotnet\tools\.store\powershell
                 _fileSystem.Directory.CreateDirectory(toolStoreTargetDirectory.GetParentPath().Value);
 
+                var _moveContentActivity = Activities.Source.StartActivity("move-global-tool-content");
                 //  Move tool files from stage to final location
                 FileAccessRetrier.RetryOnMoveAccessFailure(() => _fileSystem.Directory.Move(_globalToolStageDir.Value, toolStoreTargetDirectory.Value));
+                _moveContentActivity?.Dispose();
 
                 rollbackDirectory = toolStoreTargetDirectory.Value;
 
@@ -374,6 +379,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         ToolPackageInstance toolPackageInstance
         )
     {
+        using var _updateRuntimeConfigActivity = Activities.Source.StartActivity("update-runtimeconfig");
         var runtimeConfigFilePath = Path.ChangeExtension(toolPackageInstance.Command.Executable.Value, ".runtimeconfig.json");
 
         // Update the runtimeconfig.json file
@@ -381,11 +387,11 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         {
             string existingJson = _fileSystem.File.ReadAllText(runtimeConfigFilePath);
 
-            var jsonObject = JObject.Parse(existingJson);
-            if (jsonObject["runtimeOptions"] is JObject runtimeOptions)
+            var jsonObject = JsonNode.Parse(existingJson)!.AsObject();
+            if (jsonObject["runtimeOptions"] is JsonObject runtimeOptions)
             {
                 runtimeOptions["rollForward"] = "Major";
-                string updateJson = jsonObject.ToString();
+                string updateJson = jsonObject.ToJsonString(s_writeIndentedOptions);
                 _fileSystem.File.WriteAllText(runtimeConfigFilePath, updateJson);
             }
         }

@@ -21,6 +21,10 @@
 
       <!-- Add metadata for downloading and binplacing -->
       <TargetingPackForPruneData Version="$(TargetingPackPruneVersion).0.0" TargetFrameworkVersion="$(TargetingPackPruneVersion).0" PackageName="%(Identity).Ref" />
+
+      <!-- Add metadata for where the PackageOverrides file should be in repo source -->
+      <TargetingPackForPruneData RepoSourcePath="$(MSBuildProjectDirectory)\PrunePackageData\%(TargetFrameworkVersion)\%(Identity)\PackageOverrides.txt" />
+      
     </ItemGroup>
 
     <MSBuild Projects="$(MSBuildProjectFile)"
@@ -34,16 +38,62 @@
   <Target Name="AddTargetingPacksForPruneDataAsPackageDownloads"
           BeforeTargets="CollectPackageDownloads"
           DependsOnTargets="GetTargetingPacksForPruneData">
-    <CollatePackageDownloads Packages="@(TargetingPackForPruneData->Metadata('PackageName'))"
-                             Condition="'@(TargetingPackForPruneData)' != ''">
+
+    <ItemGroup>
+      <TargetingPackToDownloadForPruneData Include="@(TargetingPackForPruneData)"
+                               Condition="!Exists('%(RepoSourcePath)')" />
+    </ItemGroup>			       
+    <!-- TODO: Version metadata overwrite Workaround until a newer bootstrap SDK
+               is picked up with the CollatePackageDowload "[]" trimming fix. -->
+    <ItemGroup>
+      <_ExistingPackageDownload Include="@(PackageDownload)" Version="$([System.String]::Copy('%(Version)').Trim('[]'))" />
+      <PackageDownload Remove="@(PackageDownload)" />
+    </ItemGroup>
+    <!-- TODO: Version metadata overwrite Workaround until a newer bootstrap SDK
+               is picked up with the CollatePackageDowload "[]" trimming fix. -->
+    <ItemGroup>
+      <_ExistingPackageDownload Include="@(PackageDownload)" Version="$([System.String]::Copy('%(Version)').Trim('[]'))" />
+      <PackageDownload Remove="@(PackageDownload)" />
+    </ItemGroup>
+    <!-- TODO: Version metadata overwrite Workaround until a newer bootstrap SDK
+               is picked up with the CollatePackageDowload "[]" trimming fix. -->
+    <ItemGroup>
+      <_ExistingPackageDownload Include="@(PackageDownload)" Version="$([System.String]::Copy('%(Version)').Trim('[]'))" />
+      <PackageDownload Remove="@(PackageDownload)" />
+    </ItemGroup>
+    
+    <CollatePackageDownloads Packages="@(TargetingPackToDownloadForPruneData->Metadata('PackageName'));@(_ExistingPackageDownload)">
       <Output TaskParameter="PackageDownloads" ItemName="PackageDownload" />
     </CollatePackageDownloads>
   </Target>
 
-  <Target Name="GeneratePackagePruneData" DependsOnTargets="GetTargetingPacksForPruneData">
+  <!-- After each major release, we want to check in the prune package data for that release.  Downloading the targeting packs during the
+       build would require them to be added to the source-build prebuilts, which we want to avoid.  So the build will download the
+       targeting packs if the corresponding files are not found in the repo source, but this target will generate an error unless
+       CopyPrunePackageDataToSource is set to true.  Setting that to true will copy the data from the targeting packs to the repo source
+       where they can be checked in. -->
+  
+  <Target Name="CopyPruneDataToSource" DependsOnTargets="GetTargetingPacksForPruneData">
+    <ItemGroup>
+      <PrunePackageDataToCopyToSource Include="@(TargetingPackForPruneData)"
+        Source="$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(PackageName)', '').ToLower())\%(Version)\data\PackageOverrides.txt"
+        Condition="!Exists('%(RepoSourcePath)')" />
+    </ItemGroup>
+
+    <Error Condition="'@(PrunePackageDataToCopyToSource)' != '' And '$(CopyPrunePackageDataToSource)' != 'true'"
+           Text="Prune package data not found: %(PrunePackageDataToCopyToSource.RepoSourcePath)
+Build with CopyPrunePackageDataToSource set to true to copy these files into the source tree. Then check them in."/>
+    
+    <Copy SourceFiles="%(PrunePackageDataToCopyToSource.Source)"
+          DestinationFiles="%(RepoSourcePath)"
+          SkipUnchangedFiles="true" />    
+    
+  </Target>
+
+  <Target Name="GeneratePackagePruneData" DependsOnTargets="CopyPruneDataToSource">
     <ItemGroup>
       <PrunePackageCopyData Include="@(TargetingPackForPruneData)"
-        Source="$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(PackageName)', '').ToLower())\%(Version)\data\PackageOverrides.txt"
+        Source="%(RepoSourcePath)"
         Destination="$(OutputPath)PrunePackageData\%(TargetFrameworkVersion)\%(Identity)\PackageOverrides.txt" />
     </ItemGroup>
 

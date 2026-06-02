@@ -9,15 +9,16 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
  * NOTE: We have the following ids used for those serializers
  * DO NOT change the IDs of the existing serializers
  * VoidResponseSerializer: 0
- * TestHostProcessExitRequestSerializer: 1
- * TestHostProcessPIDRequestSerializer: 2
+ * TestHostCompletedRequestSerializer: 1 (reserved - not registered on the SDK side)
+ * TestHostProcessPIDRequestSerializer: 2 (reserved - not registered on the SDK side)
  * CommandLineOptionMessagesSerializer: 3
- * ModuleSerializer: 4
- * DiscoveredTestMessageSerializer: 5
- * TestResultMessageSerializer: 6
- * FileArtifactMessageSerializer: 7
+ * Reserved: 4 (was ModuleSerializer, removed as unused)
+ * DiscoveredTestMessagesSerializer: 5
+ * TestResultMessagesSerializer: 6
+ * FileArtifactMessagesSerializer: 7
  * TestSessionEventSerializer: 8
  * HandshakeMessageSerializer: 9
+ * TestInProgressMessagesSerializer: 10
  */
 
 internal static class RegisterSerializers
@@ -31,5 +32,6 @@ internal static class RegisterSerializers
         namedPipeBase.RegisterSerializer(new FileArtifactMessagesSerializer(), typeof(FileArtifactMessages));
         namedPipeBase.RegisterSerializer(new TestSessionEventSerializer(), typeof(TestSessionEvent));
         namedPipeBase.RegisterSerializer(new HandshakeMessageSerializer(), typeof(HandshakeMessage));
+        namedPipeBase.RegisterSerializer(new TestInProgressMessagesSerializer(), typeof(TestInProgressMessages));
     }
 }

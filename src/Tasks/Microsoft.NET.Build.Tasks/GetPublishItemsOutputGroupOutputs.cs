@@ -8,6 +8,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public sealed class GetPublishItemsOutputGroupOutputs : TaskBase
     {
         public ITaskItem[] ResolvedFileToPublish { get; set; }

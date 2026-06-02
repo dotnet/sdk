@@ -23,7 +23,6 @@ parameters:
   targetArchitecture: x64
   publishArgument: ''
   signArgument: ''
-  runTestsAsTool: false
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -97,7 +96,6 @@ jobs:
           ${{ parameters.signArgument }}
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
@@ -106,6 +104,7 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+          MSBUILDALWAYSRETRY: true
 
     - ${{ else }}:
       - script: |
@@ -120,7 +119,6 @@ jobs:
           ${{ parameters.signArgument }} \
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
           /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
-          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
           /p:TargetRid=${{ parameters.runtimeIdentifier }} \
           ${{ parameters.osProperties }} \
@@ -131,6 +129,8 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+          MSBUILDALWAYSRETRY: true
+          TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
@@ -182,6 +182,7 @@ jobs:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
+            TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### POST ###############
     - ${{ if eq(parameters.publishXunitResults, true) }}:

@@ -14,25 +14,27 @@ namespace Microsoft.DotNet.Cli.Extensions;
 
 public static class ParseResultExtensions
 {
-    ///<summary>
+    /// <summary>
     /// Finds the command of the parse result and invokes help for that command.
     /// If no command is specified, invokes help for the application.
-    ///<summary>
-    ///<remarks>
+    /// </summary>
+    /// <remarks>
     /// This is accomplished by finding a set of tokens that should be valid and appending a help token
     /// to that list, then re-parsing the list of tokens. This is not ideal - either we should have a direct way
     /// of invoking help for a ParseResult, or we should eliminate this custom, ad-hoc help invocation by moving
     /// more situations that want to show help into Parsing Errors (which trigger help in the default System.CommandLine pipeline)
     /// or custom Invocation Middleware, so we can more easily create our version of a HelpResult type.
-    ///</remarks>
+    /// </remarks>
     public static void ShowHelp(this ParseResult parseResult)
     {
-        // take from the start of the list until we hit an option/--/unparsed token
-        // since commands can have arguments, we must take those as well in order to get accurate help
-        Parser.Parse([
-            ..parseResult.Tokens.TakeWhile(token => token.Type == TokenType.Argument || token.Type == TokenType.Command || token.Type == TokenType.Directive).Select(t => t.Value),
-            "-h"
-        ]).Invoke();
+        // Take from the start of the list until we hit an option/--/unparsed token.
+        // Since commands can have arguments, we must take those as well in order to get accurate help.
+        var filteredTokenValues = parseResult.Tokens.TakeWhile(token =>
+            token.Type == TokenType.Argument
+                || token.Type == TokenType.Command
+                || token.Type == TokenType.Directive)
+            .Select(t => t.Value);
+        Parser.Parse([.. filteredTokenValues, "-h"]).Invoke();
     }
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
@@ -45,24 +47,26 @@ public static class ParseResultExtensions
                 var rawResourcePartsForThisLocale = DistinctFormatStringParts(CliStrings.UnrecognizedCommandOrArgument);
                 return ErrorContainsAllParts(error.Message, rawResourcePartsForThisLocale);
             });
-            if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors ||
-                parseResult.Errors.Except(unrecognizedTokenErrors).Any())
+
+            if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors
+                || parseResult.Errors.Except(unrecognizedTokenErrors).Any())
             {
                 throw new CommandParsingException(
-                    message: string.Join(Environment.NewLine,
-                                         parseResult.Errors.Select(e => e.Message)),
+                    message: string.Join(Environment.NewLine, parseResult.Errors.Select(e => e.Message)),
                     parseResult: parseResult);
             }
         }
 
-        ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary>
-        static string[] DistinctFormatStringParts(string formatString)
-        {
-            return Regex.Split(formatString, @"{[0-9]+}"); // match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'
-        }
+        /// <summary>
+        /// Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking.
+        /// </summary>
+        static string[] DistinctFormatStringParts(string formatString) =>
+            // Match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'.
+            Regex.Split(formatString, @"{[0-9]+}");
 
-
-        /// <summary>given a string and a series of parts, ensures that all parts are present in the string in sequential order</summary>
+        /// <summary>
+        /// Given a string and a series of parts, ensures that all parts are present in the string in sequential order.
+        /// </summary>
         static bool ErrorContainsAllParts(ReadOnlySpan<char> error, string[] parts)
         {
             foreach (var part in parts)
@@ -73,39 +77,29 @@ public static class ParseResultExtensions
                     error = error.Slice(foundIndex + part.Length);
                     continue;
                 }
-                else
-                {
-                    return false;
-                }
+
+                return false;
             }
+
             return true;
         }
     }
 
-    public static string RootSubCommandResult(this ParseResult parseResult)
-    {
-        return parseResult.RootCommandResult.Children?
-            .Select(child => GetSymbolResultValue(parseResult, child))
-            .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
-    }
+    public static string RootSubCommandResult(this ParseResult parseResult) => parseResult.RootCommandResult.Children?
+        .Select(child => parseResult.GetSymbolResultValue(child))
+        .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
 
-    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
-    {
-        return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
-            Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
-    }
+    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
+        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
+        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
 
-    public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
-    {
-        return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
-    }
+    public static bool IsTopLevelDotnetCommand(this ParseResult parseResult) =>
+        parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
 
-    public static bool CanBeInvoked(this ParseResult parseResult)
-    {
-        return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-            parseResult.Tokens.Any(token => token.Type == TokenType.Directive) ||
-            (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
-    }
+    public static bool CanBeInvoked(this ParseResult parseResult) =>
+        Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
+        || parseResult.Tokens.Any(token => token.Type == TokenType.Directive)
+        || (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
 
     public static int HandleMissingCommand(this ParseResult parseResult)
     {
@@ -114,12 +108,8 @@ public static class ParseResultExtensions
         return 1;
     }
 
-    public static string[] GetArguments(this ParseResult parseResult)
-    {
-        return parseResult.Tokens.Select(t => t.Value)
-            .ToArray()
-            .GetSubArguments();
-    }
+    public static string[] GetArguments(this ParseResult parseResult) =>
+        parseResult.Tokens.Select(t => t.Value).ToArray().GetSubArguments();
 
     public static string[] GetSubArguments(this string[] args)
     {
@@ -131,54 +121,30 @@ public static class ParseResultExtensions
         var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : [];
         subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
 
-        return
-        [
-            .. subargs
-                .SkipWhile(arg => Parser.RootCommand.DiagOption.Name.Equals(arg) || Parser.RootCommand.DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
-                .Skip(1), // remove top level command (ex build or publish)
-            .. runArgs
-        ];
+        // Remove top level command (ex build or publish).
+        var subargsFiltered = subargs
+            .SkipWhile(arg => Parser.RootCommand.DiagOption.Name.Equals(arg)
+                || Parser.RootCommand.DiagOption.Aliases.Contains(arg)
+                || arg.Equals("dotnet"))
+            .Skip(1);
+
+        return [.. subargsFiltered, .. runArgs];
     }
 
-    public static bool DiagOptionPrecedesSubcommand(this string[] args, string subCommand)
-    {
-        if (string.IsNullOrEmpty(subCommand))
-        {
-            return true;
-        }
-
-        for (var i = 0; i < args.Length; i++)
-        {
-            if (args[i].Equals(subCommand))
-            {
-                return false;
-            }
-            else if (Parser.RootCommand.DiagOption.Name.Equals(args) || Parser.RootCommand.DiagOption.Aliases.Contains(args[i]))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static string? GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
+    private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
     {
         CommandResult commandResult => commandResult.Command.Name,
         ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
         _ => parseResult.GetResult(Parser.RootCommand.DotnetSubCommand)?.GetValueOrDefault<string>()
     };
 
-    public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult)
-    {
-        var properties = GetRunPropertyOptions(parseResult, true);
-        return properties?.Where(property => !property.Contains("="));
-    }
+    public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult) =>
+        parseResult.GetRunPropertyOptions(true)?.Where(property => !property.Contains("="));
 
     public static IEnumerable<string> GetRunCommandPropertyValues(this ParseResult parseResult)
     {
-        var shorthandProperties = GetRunPropertyOptions(parseResult, true)?.Where(property => property.Contains("="));
-        var longhandProperties = GetRunPropertyOptions(parseResult, false);
+        var shorthandProperties = parseResult.GetRunPropertyOptions(true)?.Where(property => property.Contains("="));
+        var longhandProperties = parseResult.GetRunPropertyOptions(false);
         return (shorthandProperties, longhandProperties) switch
         {
             (null, null) => Enumerable.Empty<string>(),
@@ -188,7 +154,7 @@ public static class ParseResultExtensions
         };
     }
 
-    private static IEnumerable<string>? GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
+    private static IEnumerable<string>? GetRunPropertyOptions(this ParseResult parseResult, bool shorthand)
     {
         var optionString = shorthand ? "-p" : "--property";
         var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
@@ -213,5 +179,27 @@ public static class ParseResultExtensions
         {
             DebugHelper.WaitForDebugger();
         }
+    }
+
+    public static string GetCommandName(this ParseResult parseResult)
+    {
+        // Walk the parent command tree to find the top-level command name and get the full command name for this ParseResult.
+        List<string> parentNames = [parseResult.CommandResult.Command.Name];
+        var current = parseResult.CommandResult.Parent;
+        while (current is CommandResult parentCommandResult)
+        {
+            parentNames.Add(parentCommandResult.Command.Name);
+            current = parentCommandResult.Parent;
+        }
+        parentNames.Reverse();
+
+        // Options that perform terminating actions are considered part of the command name as they are essentially subcommands themselves.
+        // Example: dotnet --version
+        if (parseResult.Action is InvocableOptionAction { Terminating: true } optionAction)
+        {
+            parentNames.Add(optionAction.Option.Name);
+        }
+
+        return string.Join(' ', parentNames);
     }
 }

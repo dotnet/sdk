@@ -18,7 +18,7 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
 
     public override LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
     {
-        var profile = JsonSerializer.Deserialize<ExecutableLaunchProfile>(json);
+        var profile = JsonSerializer.Deserialize(json, LaunchProfileJsonSerializerContext.Default.ExecutableLaunchProfile);
         if (profile == null)
         {
             return LaunchProfileParseResult.Failure(Resources.LaunchProfileIsNotAJsonObject);

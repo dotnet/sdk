@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
             // NOTE the projects created by CreateTestProject:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary (non-SDK)
             // (TestApp transitively depends on AuxLibrary)
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(CreateTestProject());
 
             VerifyAppBuilds(testAsset, string.Empty);
@@ -33,7 +33,7 @@ namespace Microsoft.NET.Build.Tests
             // NOTE the projects created by CreateTestProject:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(CreateTestProject())
                 .WithProjectChanges(
                     (projectName, project) =>
