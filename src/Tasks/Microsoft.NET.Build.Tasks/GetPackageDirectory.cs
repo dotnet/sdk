@@ -30,6 +30,10 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
+            // The package folder paths (PackageFolders and those read from the assets file) are already
+            // absolute, as they originate from NuGet restore. Likewise, the package directory resolved
+            // below is an absolute on-disk path. These paths are intentionally not wrapped in AbsolutePath:
+            // doing so would not change behavior and would only complicate this code.
             if (!string.IsNullOrEmpty(AssetsFileWithAdditionalPackageFolders))
             {
                 var lockFileCache = new LockFileCache(this);

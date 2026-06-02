@@ -94,6 +94,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         {
             ShowPassedTests = showPassedTests,
             ShowProgress = !noProgress,
+            ShowActiveTests = !noProgress && ansiMode == AnsiMode.AnsiIfPossible,
             AnsiMode = ansiMode,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
