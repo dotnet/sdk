@@ -652,7 +652,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, Resources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
+                {DirectiveError(programPath, 2, Resources.ExperimentalFeatureDisabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective)}
 
                 {CliCommandStrings.RunCommandException}
                 """);
