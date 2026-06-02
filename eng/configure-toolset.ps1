@@ -25,7 +25,7 @@ function InstallBootstrapSdkWithDotnetup() {
     Write-Host "Installing SDK(s) '$($sdkVersions -join ', ')' to '$dotnetRoot' via dotnetup..." -ForegroundColor Cyan
 
     $dotnetupDir = Join-Path $PSScriptRoot 'dotnetup'
-    $dotnetupExe = Join-Path $dotnetupDir 'dotnetup.exe'
+    $dotnetupExe = Join-Path $dotnetupDir (GetExecutableFileName 'dotnetup')
 
     # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
     $skipDownload = $false

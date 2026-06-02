@@ -7,8 +7,13 @@
        Loading the repo-level D.B.props causes the Arcade SDK to be loaded, which computes load-bearing properties from this value -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
-    <!-- Shared version for dotnetup CLI and Microsoft.Dotnet.Installation library -->
-    <DotnetupVersionPrefix>0.1.3</DotnetupVersionPrefix>
+    <!-- Shared version for dotnetup CLI and Microsoft.Dotnet.Installation library.
+         Bumped 0.1.3 -> 0.1.4 to mark the recovery point after the May 14 prod-data
+         outage. Use this as a `dotnetup.version startswith "0.1.4"` filter on
+         dashboards to separate post-mitigation data (per-emit EventId from SpanId,
+         see DotnetupTelemetry.EmitCompletionLog) from the 0.1.3 stream whose
+         constant EventId=0 was being collapsed by upstream dedup. -->
+    <DotnetupVersionPrefix>0.1.4</DotnetupVersionPrefix>
     <DotnetupPreReleaseVersionLabel>preview</DotnetupPreReleaseVersionLabel>
   </PropertyGroup>
 
