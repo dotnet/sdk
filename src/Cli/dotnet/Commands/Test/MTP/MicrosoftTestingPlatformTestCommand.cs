@@ -39,7 +39,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         int? exitCode = null;
         try
         {
-            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested);
+            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, isMultiTestModule: testHandler.TotalTestModuleCount > 1, buildOptions, testOptions, output, OnHelpRequested);
             exitCode = testHandler.RunTestApplications(actionQueue);
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.

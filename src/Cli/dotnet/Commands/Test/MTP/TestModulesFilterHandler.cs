@@ -54,6 +54,8 @@ internal sealed class TestModulesFilterHandler : ITestHandler
         return true;
     }
 
+    public int TotalTestModuleCount => _testModulePaths.Count;
+
     public int RunTestApplications(TestApplicationActionQueue actionQueue)
     {
         var muxerPath = new Muxer().MuxerPath;

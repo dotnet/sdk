@@ -66,6 +66,8 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions) : ITestHandler
         return true;
     }
 
+    public int TotalTestModuleCount => _testApplications.Sum(static group => group.Count());
+
     public int RunTestApplications(TestApplicationActionQueue actionQueue)
     {
         foreach (var testApp in _testApplications)

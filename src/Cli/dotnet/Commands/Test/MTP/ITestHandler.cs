@@ -7,5 +7,11 @@ internal interface ITestHandler
 {
     bool Initialize();
 
+    /// <summary>
+    /// Number of test modules that will be enqueued by <see cref="RunTestApplications"/>.
+    /// Only valid after a successful <see cref="Initialize"/>.
+    /// </summary>
+    int TotalTestModuleCount { get; }
+
     int RunTestApplications(TestApplicationActionQueue actionQueue);
 }
