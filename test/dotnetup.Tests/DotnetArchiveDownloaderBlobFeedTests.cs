@@ -10,6 +10,7 @@ using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
 using Xunit;
@@ -303,6 +304,41 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy);
         ex.Message.Should().Contain(version);
         history.Should().BeEmpty("policy check must short-circuit before any blob-feed probe");
+    }
+
+    [Fact]
+    public void UnsignedDownloadBlockedByPolicy_ClassifiedAsUserError()
+    {
+        ErrorCategoryClassifier.ClassifyInstallError(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy)
+            .Should().Be(ErrorCategory.User, "IT-policy blocks are user/environment errors, not product bugs");
+    }
+
+    [Fact]
+    public void MayDownloadUnsigned_BatchPredicate_TrueWhenAnyRequestIsDaily()
+    {
+        var requests = new List<DotnetInstallRequest>
+        {
+            BuildRequest("10.0.100", InstallComponent.SDK),       // stable — no warning
+            BuildRequest("daily", InstallComponent.Runtime),       // daily — triggers warning
+            BuildRequest("10.0.100", InstallComponent.ASPNETCore), // stable — no warning
+        };
+
+        requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r)).Should().BeTrue(
+            "a batch containing at least one daily request should trigger the unsigned-download warning");
+    }
+
+    [Fact]
+    public void MayDownloadUnsigned_BatchPredicate_FalseWhenAllStable()
+    {
+        var requests = new List<DotnetInstallRequest>
+        {
+            BuildRequest("10.0.100", InstallComponent.SDK),
+            BuildRequest("10.0", InstallComponent.Runtime),
+            BuildRequest("lts", InstallComponent.ASPNETCore),
+        };
+
+        requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r)).Should().BeFalse(
+            "a batch of stable/named-channel requests should not trigger the unsigned-download warning");
     }
 
     // --- Test helpers ---

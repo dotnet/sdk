@@ -314,7 +314,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         // Blob-feed downloads have no detached CMS signature — only a SHA-512 hash file.
         // Defense-in-depth: refuse before issuing any blob-feed request when the host has
         // the "block unsigned downloads" policy enabled. The user-facing warning about
-        // unsigned downloads is emitted up-front by the orchestrator (see
+        // unsigned downloads is emitted up-front by the CLI workflow layer (see
+        // InstallExecutor.ExecuteInstalls / UpdateWorkflow.InstallVersion via
         // UnsignedSourcePolicy.MayDownloadUnsigned), so no per-fallback warning is needed here.
         if (UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
         {

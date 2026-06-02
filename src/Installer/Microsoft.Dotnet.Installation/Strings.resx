@@ -138,7 +138,7 @@
     <comment>Warning shown up-front when an install batch may pull from the public blob feed (daily channel or unknown prerelease version) where no detached CMS signature is published.</comment>
   </data>
   <data name="UnsignedDownloadBlockedByPolicy" xml:space="preserve">
-    <value>An IT policy on this machine requires code-signed downloads. Installing daily or unsigned prerelease builds of {0} {1} is blocked. Choose a released version, or have an administrator clear the policy (registry value {2}\{3} on Windows, file {4} on Linux/macOS).</value>
+    <value>An IT policy on this machine requires code-signed downloads. Installing daily or unsigned prerelease builds of {0} {1} is blocked. Choose a released version, or have an administrator clear the policy (registry value HKLM\{2}\{3} on Windows, file {4} on Linux/macOS).</value>
     <comment>{0}=component name (e.g. SDK), {1}=resolved version, {2}=Windows registry key path, {3}=Windows registry value name, {4}=Unix policy file path.</comment>
   </data>
 </root>

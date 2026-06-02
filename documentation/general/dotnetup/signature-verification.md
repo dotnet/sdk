@@ -481,7 +481,7 @@ the user to choose a released version or escalate to their administrator.
 
 The check is centralized in
 `src/Installer/Microsoft.Dotnet.Installation/Internal/UnsignedSourcePolicy.cs`.
-The warning is emitted from `InstallerOrchestratorSingleton.Install` /
-`InstallMany` before any progress UI is created; the policy block check
+The warning is emitted from `InstallExecutor.ExecuteInstalls` and
+`UpdateWorkflow.InstallVersion` before any progress UI is created; the policy block check
 runs immediately before any blob-feed probe in
 `DotnetArchiveDownloader.ResolveBlobFeedEntry`.
