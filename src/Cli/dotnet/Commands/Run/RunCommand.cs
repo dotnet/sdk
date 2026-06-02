@@ -198,9 +198,10 @@ public class RunCommand
                 projectBuilder = CreateProjectBuilder();
                 projectBuilder.MarkArtifactsFolderUsed();
 
-                var cacheEntry = projectBuilder.GetPreviousCacheEntry();
-                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : projectBuilder.CreateProjectInstance;
-                cachedRunProperties = cacheEntry?.Run;
+                Reporter.Verbose.WriteLine("Checking changes for run properties");
+                var buildLevel = projectBuilder.GetBuildLevel(out var cache);
+                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
+                cachedRunProperties = buildLevel != BuildLevel.All ? cache?.PreviousEntry?.Run : null;
             }
 
             // Deploy step: Call DeployToDevice target if available

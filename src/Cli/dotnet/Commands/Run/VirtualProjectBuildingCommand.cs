@@ -1028,7 +1028,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    public RunFileBuildCacheEntry? GetPreviousCacheEntry()
+    private RunFileBuildCacheEntry? GetPreviousCacheEntry()
     {
         return DeserializeCacheEntry(Path.Join(Builder.ArtifactsPath, BuildSuccessCacheFileName));
     }
@@ -1042,7 +1042,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    private BuildLevel GetBuildLevel(out CacheInfo? cache)
+    public BuildLevel GetBuildLevel(out CacheInfo? cache)
     {
         if (!NeedsToBuild(out cache))
         {
