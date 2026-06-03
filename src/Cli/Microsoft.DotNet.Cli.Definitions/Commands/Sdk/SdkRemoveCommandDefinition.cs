@@ -17,9 +17,10 @@ internal sealed class SdkRemoveCommandDefinition() : SdkRemoveCommandDefinitionB
 
 internal abstract class SdkRemoveCommandDefinitionBase : Command
 {
-    public readonly Argument<string[]> SdkIdArgument = new(CommandDefinitionStrings.CmdSdk)
+    public readonly Argument<string[]> SdkIdArgument = new(CommonArguments.SdkIdArgumentName)
     {
         Description = CommandDefinitionStrings.SdkRemoveAppHelpText,
+        HelpName = CommandDefinitionStrings.CmdSdk,
         Arity = ArgumentArity.OneOrMore,
     };
 

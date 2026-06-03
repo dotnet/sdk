@@ -200,7 +200,7 @@ internal static class SdkAddVersionHelper
 
             return version.ToNormalizedString();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException and not GracefulException)
         {
             throw new GracefulException(
                 string.Format(CliCommandStrings.SdkVersionResolutionFailed, sdkName, ex.Message));
