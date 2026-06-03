@@ -7,38 +7,33 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 
 internal static class SdkUninstallCommandParser
 {
-    // Each command needs its own Argument instance — see SdkInstallCommandParser
-    // for the full explanation of why sharing causes silent parse failures.
-    public static readonly Argument<string?> SdkChannelArgument =
+    public static readonly Argument<string?> ChannelArgument =
         CommonOptions.CreateSdkChannelArgument(required: true, actionVerb: "remove");
 
-    public static readonly Argument<string?> RootChannelArgument =
-        CommonOptions.CreateSdkChannelArgument(required: true, actionVerb: "remove");
-
-    private static readonly Command s_sdkUninstallCommand = ConstructCommand(SdkChannelArgument);
+    private static readonly Command s_sdkUninstallCommand = ConstructCommand();
 
     public static Command GetSdkUninstallCommand()
     {
         return s_sdkUninstallCommand;
     }
 
-    private static readonly Command s_rootUninstallCommand = ConstructCommand(RootChannelArgument);
+    private static readonly Command s_rootUninstallCommand = ConstructCommand();
 
     public static Command GetRootUninstallCommand()
     {
         return s_rootUninstallCommand;
     }
 
-    private static Command ConstructCommand(Argument<string?> channelArgument)
+    private static Command ConstructCommand()
     {
         Command command = new("uninstall", "Removes an install spec and cleans up unused installations");
 
-        command.Arguments.Add(channelArgument);
+        command.Arguments.Add(ChannelArgument);
         command.Options.Add(CommonOptions.SourceOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.InstallPathOption);
 
-        command.SetAction(parseResult => new SdkUninstallCommand(parseResult, channelArgument).Execute());
+        command.SetAction(parseResult => new SdkUninstallCommand(parseResult).Execute());
 
         return command;
     }

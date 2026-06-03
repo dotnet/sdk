@@ -65,18 +65,11 @@ internal class Parser
         rootCommand.Subcommands.Add(DotnetCommandParser.GetCommand());
         rootCommand.Subcommands.Add(InitCommandParser.GetCommand());
 
-        // Bare `dotnetup` routes to SdkInstallCommand. Register --interactive on the root
-        // so that ParseResult.GetValue(InteractiveOption) finds the option bound to the
-        // parsed (root) command and invokes its DefaultValueFactory
-        // (!IsCIEnvironmentOrRedirected()). Without this, GetValue returns default(bool)
-        // for bare `dotnetup`, suppressing first-use onboarding.
-        rootCommand.Options.Add(CommonOptions.InteractiveOption);
-
         ConfigureHelp(rootCommand);
 
         rootCommand.SetAction(parseResult =>
         {
-            return new SdkInstallCommand(parseResult, channelArgument: null).Execute();
+            return new SdkInstallCommand(parseResult).Execute();
         });
 
         return rootCommand;

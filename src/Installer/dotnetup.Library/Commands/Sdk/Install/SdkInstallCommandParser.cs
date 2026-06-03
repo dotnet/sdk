@@ -7,15 +7,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal static class SdkInstallCommandParser
 {
-    // Each command needs its own Argument instance. System.CommandLine ties symbols to
-    // parent commands; sharing the same Argument across two Command trees can cause
-    // the argument's parent to be re-pointed, silently losing user-supplied tokens in
-    // the "other" command's parse result. This is the same problem documented below
-    // for the Command objects — the fix is the same: create a separate instance per use.
-    public static readonly Argument<string[]> SdkChannelArguments =
-        CommonOptions.CreateSdkChannelArguments(actionVerb: "install");
-
-    public static readonly Argument<string[]> RootChannelArguments =
+    public static readonly Argument<string[]> ChannelArguments =
         CommonOptions.CreateSdkChannelArguments(actionVerb: "install");
 
     public static readonly Option<bool?> UpdateGlobalJsonOption = new("--update-global-json")
@@ -25,7 +17,7 @@ internal static class SdkInstallCommandParser
         DefaultValueFactory = r => null
     };
 
-    private static readonly Command s_sdkInstallCommand = ConstructCommand(SdkChannelArguments);
+    private static readonly Command s_sdkInstallCommand = ConstructCommand();
 
     public static Command GetSdkInstallCommand()
     {
@@ -34,20 +26,19 @@ internal static class SdkInstallCommandParser
 
     //  Trying to use the same command object for both "dotnetup install" and "dotnetup sdk install" causes the following exception:
     //  System.InvalidOperationException: Command install has more than one child named "channel".
-    //  So we create a separate instance for each case — and the same applies to the
-    //  Argument instances (see SdkChannelArguments / RootChannelArguments above).
-    private static readonly Command s_rootInstallCommand = ConstructCommand(RootChannelArguments);
+    //  So we create a separate instance for each case
+    private static readonly Command s_rootInstallCommand = ConstructCommand();
 
     public static Command GetRootInstallCommand()
     {
         return s_rootInstallCommand;
     }
 
-    private static Command ConstructCommand(Argument<string[]> channelArguments)
+    private static Command ConstructCommand()
     {
         Command command = new("install", "Installs the .NET SDK");
 
-        command.Arguments.Add(channelArguments);
+        command.Arguments.Add(ChannelArguments);
 
         command.Options.Add(CommonOptions.InstallPathOption);
         command.Options.Add(CommonOptions.SetDefaultInstallOption);
@@ -65,7 +56,7 @@ internal static class SdkInstallCommandParser
         command.Options.Add(CommonOptions.UntrackedOption);
         command.Validators.Add(CommonOptions.RejectShellOptionOnInstallCommand());
 
-        command.SetAction(parseResult => new SdkInstallCommand(parseResult, channelArguments).Execute());
+        command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 
         return command;
     }
