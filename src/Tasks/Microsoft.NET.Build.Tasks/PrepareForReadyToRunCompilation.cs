@@ -158,7 +158,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (eligibility.IsReference)
                     r2rReferenceList.Add(file);
 
-                if (eligibility.IsReference && !eligibility.ReferenceHiddenFromCompositeBuild && !eligibility.Compile)
+                if (eligibility.IsReference && !eligibility.Compile)
                     r2rCompositeReferenceList.Add(file);
 
                 if (!eligibility.Compile)
