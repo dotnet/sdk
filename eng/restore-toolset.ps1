@@ -73,7 +73,11 @@ function InitializeCustomSDKToolset {
     # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
     if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
         $fallbackArchitecture = Get-DotNetInstallFallbackArchitecture
-        InstallDotNetSharedFrameworks -Versions @("6.0", "7.0", "8.0", "9.0", "10.0") -Architecture $fallbackArchitecture
+        $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
+        if ([string]::IsNullOrEmpty($fallbackArchitecture)) {
+            $runtimeSpecs += Get-CurrentRuntimeToolsetSpecs
+        }
+        InstallDotNetSharedFrameworks -RuntimeSpecs $runtimeSpecs -Architecture $fallbackArchitecture
     }
 
     CreateBuildEnvScripts
@@ -176,17 +180,45 @@ function Get-DotNetInstallScriptVersion([string]$version) {
   return $version
 }
 
-function InstallDotNetSharedFrameworks([string[]]$versions, [string]$architecture = "") {
+function Get-VersionDetailsProperty([string]$propertyName) {
+  $versionDetails = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot 'eng\Version.Details.props'))
+  $property = $versionDetails.SelectSingleNode("//$propertyName")
+  if ($null -eq $property) {
+    return ""
+  }
+
+  return $property.InnerText
+}
+
+function Get-CurrentRuntimeToolsetSpecs() {
+  $runtimeVersion = Get-VersionDetailsProperty 'MicrosoftNETCoreAppRefPackageVersion'
+  $aspNetCoreVersion = Get-VersionDetailsProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+
+  $specs = @()
+  if (-not [string]::IsNullOrEmpty($runtimeVersion)) {
+    $specs += $runtimeVersion
+  }
+  if (-not [string]::IsNullOrEmpty($aspNetCoreVersion)) {
+    $specs += "aspnetcore@$aspNetCoreVersion"
+  }
+
+  return $specs
+}
+
+function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$architecture = "") {
   $dotnetRoot = $env:DOTNET_INSTALL_DIR
 
-  # Skip if every requested framework is already on disk. Accept either an
-  # exact version or a major.minor channel; treat as present if any matching
-  # patch (e.g. 6.0.36) exists under shared\Microsoft.NETCore.App.
-  $fxRoot = Join-Path $dotnetRoot 'shared\Microsoft.NETCore.App'
-  $versionsToInstall = @($versions | Where-Object {
-      -not (Test-Path -PathType Container (Join-Path $fxRoot "$_*"))
+  # Skip if every requested framework is already on disk. Accept either a
+  # dotnet runtime version/channel or a component@version spec such as
+  # aspnetcore@11.0.0-preview.6. Treat major.minor channels as present if any
+  # matching patch (e.g. 6.0.36) exists.
+  $runtimeSpecsToInstall = @($runtimeSpecs | Where-Object {
+      $component, $version = if ($_ -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $_ }
+      $sharedFrameworkName = if ($component -eq 'aspnetcore') { 'Microsoft.AspNetCore.App' } elseif ($component -eq 'windowsdesktop') { 'Microsoft.WindowsDesktop.App' } else { 'Microsoft.NETCore.App' }
+      $fxRoot = Join-Path $dotnetRoot "shared\$sharedFrameworkName"
+      -not (Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
     })
-  if ($versionsToInstall.Count -eq 0) {
+  if ($runtimeSpecsToInstall.Count -eq 0) {
     return
   }
 
@@ -216,28 +248,29 @@ function InstallDotNetSharedFrameworks([string[]]$versions, [string]$architectur
     & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
     if ($lastExitCode -ne 0) {
       Write-Host "Failed to acquire dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
-      InstallDotNetSharedFrameworksWithInstallScript -Versions $versionsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
+      InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
       return
     }
   }
 
   if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-  & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --set-default-install false --untracked --interactive false
+  & $dotnetupExe runtime install @runtimeSpecsToInstall --install-path $dotnetRoot --set-default-install false --untracked --interactive false
 
   if ($lastExitCode -ne 0) {
-    Write-Host "Failed to install shared frameworks ($($versionsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
-    InstallDotNetSharedFrameworksWithInstallScript -Versions $versionsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
+    Write-Host "Failed to install shared frameworks ($($runtimeSpecsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
+    InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
   }
 }
 
-function InstallDotNetSharedFrameworksWithInstallScript([string[]]$versions, [string]$dotNetRoot, [string]$architecture = "") {
+function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs, [string]$dotNetRoot, [string]$architecture = "") {
   $installScript = GetDotNetInstallScript $dotNetRoot
-  foreach ($version in $versions) {
+  foreach ($spec in $runtimeSpecs) {
+    $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
     $installVersion = Get-DotNetInstallScriptVersion $version
     $installArgs = @{
       Version = $installVersion
       InstallDir = $dotNetRoot
-      Runtime = "dotnet"
+      Runtime = $component
       SkipNonVersionedFiles = $true
     }
     if (-not [string]::IsNullOrEmpty($architecture)) {
