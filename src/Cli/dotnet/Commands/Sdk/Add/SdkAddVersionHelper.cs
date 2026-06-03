@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Cli.Commands.Sdk.Add;
 /// </summary>
 internal static class SdkAddVersionHelper
 {
+    private const string PackageCacheFolderName = "dotnet-sdk-add";
     /// <summary>
     /// Resolves the version to store in the project or file-based app, and whether an existing reference may be left unchanged.
     /// </summary>
@@ -182,12 +183,15 @@ internal static class SdkAddVersionHelper
 
     private static string GetLatestNuGetSdkVersion(string sdkName, string startDirectory)
     {
-        var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(
-            packageInstallDir: new DirectoryPath(Path.GetTempPath()),
-            currentWorkingDirectory: startDirectory);
+        string packageInstallDir = Path.Combine(Path.GetTempPath(), PackageCacheFolderName, Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(packageInstallDir);
 
         try
         {
+            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                packageInstallDir: new DirectoryPath(packageInstallDir),
+                currentWorkingDirectory: startDirectory);
+
             NuGetVersion version = downloader
                 .GetLatestPackageVersion(new PackageId(sdkName), includePreview: false)
                 .GetAwaiter()
@@ -199,6 +203,27 @@ internal static class SdkAddVersionHelper
         {
             throw new GracefulException(
                 string.Format(CliCommandStrings.SdkVersionResolutionFailed, sdkName, ex.Message));
+        }
+        finally
+        {
+            TryDeleteDirectory(packageInstallDir);
+        }
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, recursive: true);
+            }
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
         }
     }
 }

@@ -37,13 +37,14 @@ internal sealed class SdkRemoveCommand(ParseResult parseResult) : CommandBase(pa
             ? fileOrDirectory
             : MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory);
 
-        return ExecuteForProject(projectFilePath, sdkNames);
+        bool interactive = _parseResult.GetValue(_definition.InteractiveOption);
+        return ExecuteForProject(projectFilePath, sdkNames, interactive);
     }
 
-    private static int ExecuteForProject(string projectFilePath, IEnumerable<string> sdkNames)
+    private static int ExecuteForProject(string projectFilePath, IEnumerable<string> sdkNames, bool interactive)
     {
         using var projects = new ProjectCollection();
-        var msbuildProject = MsbuildProject.FromFile(projects, projectFilePath, interactive: false);
+        var msbuildProject = MsbuildProject.FromFile(projects, projectFilePath, interactive);
         var project = msbuildProject.ProjectRootElement;
         var sdkNameList = sdkNames as IList<string> ?? [.. sdkNames];
 
