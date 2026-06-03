@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().NotBe(0);
             if (!SdkTestContext.IsLocalized())
             {
-                result.StdErr.Should().Contain("use-current-runtime")
+                result.StdErr.Should().Contain("use current runtime")
                     .And.Contain("--test-modules");
             }
         }
