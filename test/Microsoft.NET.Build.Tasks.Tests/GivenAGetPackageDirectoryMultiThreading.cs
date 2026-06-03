@@ -8,7 +8,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAGetPackageDirectoryMultiThreading
     {
-        // Sin 1 (Output property contamination): when the caller passes a relative PackageFolders
+        // When the caller passes a relative PackageFolders
         // entry, the migration must NOT leak the TaskEnvironment-absolutized form into the
         // [Output] items' PackageDirectory metadata. The relative prefix is substituted back into
         // NuGet's absolutized result via string surgery, so this exercises that surgery across a
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        // Sin 6 (Exception type change): the Option-A pass-through for empty PackageFolders
+        // The Option-A pass-through for empty PackageFolders
         // entries must keep GetAbsolutePath from throwing ArgumentException. Specifically: an
         // empty user-package-folder is tolerated by NuGet's VersionFolderPathResolver (it stores
         // the empty string and probes harmlessly fail), so the task must still reach NuGet and
