@@ -44,7 +44,8 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             }
 
             SourceRepository repository = GetSourceRepository(sourceFeed);
-            PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
+            PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidOperationException($"The source '{sourceFeed.Source}' does not provide {nameof(PackageMetadataResource)}.");
             IEnumerable<IPackageSearchMetadata> packagesMetadata = await resource.GetMetadataAsync(
                 packageIdentifier,
                 includePrerelease: true,
@@ -87,7 +88,8 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             string packageIdentifier,
             CancellationToken cancellationToken)
         {
-            var nugetSearchClient = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken).ConfigureAwait(false);
+            var nugetSearchClient = await repository.GetResourceAsync<PackageSearchResource>(cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidOperationException($"The source '{repository.PackageSource.Source}' does not provide {nameof(PackageSearchResource)}.");
 
             var searchResult = (await nugetSearchClient.SearchAsync(
                 packageIdentifier,
