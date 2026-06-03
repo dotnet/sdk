@@ -7,6 +7,11 @@
         <target state="translated">Aktualisieren Sie nur Werbemanifeste.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">Die Optionen {0} und {1} können nicht zusammen verwendet werden.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Aktualisieren Sie alle installierten Workloads.</target>
@@ -20,6 +25,11 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">Aktualisieren Sie Workloads basierend auf der angegebenen Rollbackdefinitionsdatei.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">Es wurde kein Workload-Update gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -42,6 +52,11 @@
         <target state="translated">Fehler beim Update der Workload "{0}". Ursache:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Das Aktualisieren auf eine Rollbackdatei ist nicht mit Workloadsätzen kompatibel. Installation und Update verwenden jetzt lose Manifeste. Verwenden Sie „--version“, um auf eine bestimmte Workloadversion zu aktualisieren.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">Workload(s) erfolgreich aktualisiert: {0}.</target>
@@ -60,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">Fehler bei der Workloadaktualisierung: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">Die Workloadversion „{0}“ wurde nicht gefunden.</target>
         <note />
       </trans-unit>
     </body>

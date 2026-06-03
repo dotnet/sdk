@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/40006")]
         public async Task ChangeFileInDependency()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")

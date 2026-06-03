@@ -283,6 +283,11 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">La solution {0} contient déjà le projet {1} dans le dossier de la solution {2}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="translated">Le fichier de paramètres d’outil n’existe pas pour l’outil {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Mettre à jour</target>
