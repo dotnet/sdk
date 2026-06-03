@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Cli
                 Description = string.Format(CommandDefinitionStrings.SdkIdentityArgumentDescription, exampleSdk, exampleVersion),
                 CustomParser = argumentResult =>
                 {
-                    SdkReferenceIdentity? identity = ParseSdkReferenceIdentity(argumentResult.Tokens[0]?.Value);
+                    SdkReferenceIdentity? identity = ParseSdkReferenceIdentity(argumentResult.Tokens.FirstOrDefault()?.Value);
                     if (identity is null)
                     {
                         throw new GracefulException(CommandDefinitionStrings.SdkIdentityArgumentIdIsNull);
