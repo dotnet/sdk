@@ -494,18 +494,21 @@ public class DotnetupTelemetryTests : IDisposable
         Assert.Equal("InstallFailed", commandActivity.GetTagItem("error.type"));
     }
 
-    [Fact]
-    public void RecordException_ClassifiesByErrorCode()
+    [Theory]
+    [InlineData(DotnetInstallErrorCode.AdminPathBlocked, "user")]
+    [InlineData(DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts, "user")]
+    [InlineData(DotnetInstallErrorCode.ProcessStartFailed, "product")]
+    [InlineData(DotnetInstallErrorCode.ReleaseLookupFailed, "product")]
+    public void RecordException_ClassifiesByErrorCode(DotnetInstallErrorCode errorCode, string expectedCategory)
     {
         using var activity = DotnetupTelemetry.CommandSource.StartActivity(
-            "test-classifier-default", ActivityKind.Internal);
+            $"test-classifier-{errorCode}", ActivityKind.Internal);
         Assert.NotNull(activity);
 
-        // AdminPathBlocked is classified as User by ErrorCategoryClassifier
         SimulateRecordException(activity,
-            new DotnetInstallException(DotnetInstallErrorCode.AdminPathBlocked, "blocked"));
+            new DotnetInstallException(errorCode, "test"));
 
-        Assert.Equal("user", activity.GetTagItem("error.category"));
+        Assert.Equal(expectedCategory, activity.GetTagItem("error.category"));
     }
 
     [Fact]
@@ -692,6 +695,30 @@ public class DotnetupTelemetryTests : IDisposable
         // Common props still land.
         Assert.Contains("os.type", asDict.Keys);
         Assert.Contains("session.id", asDict.Keys);
+    }
+
+    [Fact]
+    public void EmitCompletionLog_EventId_DerivedFromSpanId_IsNonZeroAndUnique()
+    {
+        // Regression: EmitCompletionLog must derive EventId from the Activity's
+        // SpanId so each log emission has a unique EventId. A constant EventId=0
+        // causes the router lens service to deduplicate and drop telemetry rows.
+        using var activity1 = DotnetupTelemetry.CommandSource.StartActivity(
+            "eventid-test-1", ActivityKind.Internal);
+        Assert.NotNull(activity1);
+
+        using var activity2 = DotnetupTelemetry.CommandSource.StartActivity(
+            "eventid-test-2", ActivityKind.Internal);
+        Assert.NotNull(activity2);
+
+        var eventId1 = DotnetupTelemetry.DeriveEventIdFromSpanId(activity1);
+        var eventId2 = DotnetupTelemetry.DeriveEventIdFromSpanId(activity2);
+
+        // Each activity gets a random SpanId; the derived EventId must not be
+        // the old constant zero and must differ between activities.
+        Assert.NotEqual(0, eventId1);
+        Assert.NotEqual(0, eventId2);
+        Assert.NotEqual(eventId1, eventId2);
     }
 }
 

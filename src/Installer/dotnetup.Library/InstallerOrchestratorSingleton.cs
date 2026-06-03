@@ -243,7 +243,7 @@ internal class InstallerOrchestratorSingleton
         var installRequest = resolvedRequest.Request;
         var versionToInstall = resolvedRequest.ResolvedVersion;
         var install = new DotnetInstall(installRequest.InstallRoot, versionToInstall, installRequest.Component);
-        ReleaseManifest releaseManifest = new();
+        ReleaseManifest releaseManifest = ReleaseManifest.Default;
         var manifest = installRequest.Options.Untracked ? null : new DotnetupSharedManifest(installRequest.Options.ManifestPath);
 
         using (var finalizeLock = ModifyInstallStateMutex())
@@ -270,9 +270,10 @@ internal class InstallerOrchestratorSingleton
                 && DotnetupSharedManifest.HasDotnetArtifacts(installRequest.InstallRoot.Path))
             {
                 throw new DotnetInstallException(
-                    DotnetInstallErrorCode.Unknown,
+                    DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts,
                     $"The install path '{installRequest.InstallRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
-                    "To avoid conflicts, use a different install path or remove the existing installation first.",
+                    "To avoid conflicts, use a different install path, remove the existing installation first, " +
+                    "or use the --untracked option to install without tracking.",
                     version: versionToInstall.ToString(),
                     component: installRequest.Component.ToString());
             }

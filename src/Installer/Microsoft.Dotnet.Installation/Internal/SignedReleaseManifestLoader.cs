@@ -1,0 +1,315 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Text.Json;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal.Signing;
+
+namespace Microsoft.Dotnet.Installation.Internal;
+
+/// <summary>
+/// Downloads release manifest JSON, verifies its detached CMS signature against a sibling
+/// <c>.p7s</c>, and hands the verified bytes to the deployment library's file-based parsing
+/// APIs (<see cref="ProductCollection.GetFromFileAsync(string, bool)"/> and
+/// <see cref="Product.GetReleasesAsync(string, bool)"/>) with <c>downloadLatest: false</c> so
+/// the library only parses the local file and never re-fetches the JSON itself.
+///
+/// <para>
+/// Net cost vs. the un-verified path: one extra small GET per JSON (the <c>.p7s</c>) and
+/// ~100 ms of crypto. No double-download. The deployment library is used purely as a parser.
+/// </para>
+///
+/// <para>
+/// Threading: instance methods are sync but the loader can be invoked concurrently by the
+/// orchestrator's parallel <c>PrepareInstall</c> path. <see cref="HttpClient"/> is
+/// thread-safe; the temp directory is per-instance.
+/// </para>
+/// </summary>
+internal sealed class SignedReleaseManifestLoader : IDisposable
+{
+    private static readonly TimeSpan s_manifestFetchTimeout = TimeSpan.FromSeconds(30);
+
+    private readonly HttpClient _httpClient;
+    private readonly SignatureVerificationOptions _options;
+    private readonly Uri _indexUrl;
+    private readonly string _tempDir;
+    private readonly EventHandler _processExitHandler;
+    private int _disposed;
+
+    public SignedReleaseManifestLoader(HttpClient httpClient, SignatureVerificationOptions options, Uri indexUrl)
+    {
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _indexUrl = indexUrl ?? throw new ArgumentNullException(nameof(indexUrl));
+
+        // Directory.CreateTempSubdirectory uses mkdtemp(3) on POSIX which atomically creates
+        // the directory with mode 0700; on Windows %LOCALAPPDATA%\Temp is per-user-ACL'd.
+        _tempDir = Directory.CreateTempSubdirectory("dotnetup-sigverify-").FullName;
+
+        // Windows does not auto-purge %LOCALAPPDATA%\Temp, and the production singleton (see
+        // ReleaseManifest._loader) is never disposed. Hook ProcessExit so the directory is
+        // removed on normal shutdown. Best-effort: a crashed or kill -9'd process still
+        // leaves the directory behind. Per-call temp files are deleted eagerly in
+        // GetVerifiedReleasesIndex / GetVerifiedReleases, so a leaked directory is typically
+        // empty (or holds at most one file from an in-flight verify).
+        _processExitHandler = OnProcessExit;
+        AppDomain.CurrentDomain.ProcessExit += _processExitHandler;
+    }
+
+    private void OnProcessExit(object? sender, EventArgs e) => CleanupTempDir();
+
+    /// <summary>
+    /// Downloads <c>releases-index.json</c> from the configured index URL, verifies its
+    /// detached signature, parses it via the deployment library, and returns the resulting
+    /// <see cref="ProductCollection"/>.
+    /// </summary>
+    public ProductCollection GetVerifiedReleasesIndex()
+    {
+        string tempPath = DownloadAndVerify(_indexUrl);
+        try
+        {
+            return ProductCollection.GetFromFileAsync(tempPath, downloadLatest: false).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            // The deployment library reads the file synchronously and returns a fully-parsed
+            // ProductCollection; the file is not needed after this point. Delete eagerly so a
+            // process kill (no Dispose) doesn't leak the verified JSON.
+            TryDeleteFile(tempPath);
+        }
+    }
+
+    /// <summary>
+    /// Downloads a product's <c>releases.json</c>, verifies its detached signature, and
+    /// returns the parsed releases. The channel URL is host-rebased onto the configured index
+    /// URL via <see cref="GetReleaseUriForConfiguredHost"/> so private mirrors that serve the
+    /// same signed index byte-for-byte resolve channel URLs against the mirror, not back to
+    /// <c>builds.dotnet.microsoft.com</c>.
+    /// </summary>
+    public ReadOnlyCollection<ProductRelease> GetVerifiedReleases(Product product)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+
+        if (product.ReleasesJson is null)
+        {
+            // Defensive: the deployment library reads this from the index JSON via GetUriOrDefault,
+            // so a malformed / legacy entry could leave it null. Surface a clean error rather than NRE.
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Product '{product.ProductVersion}' has no releases.json URL in the verified release index.");
+        }
+
+        Uri channelUrl = GetReleaseUriForConfiguredHost(product.ReleasesJson);
+        string tempPath = DownloadAndVerify(channelUrl);
+        try
+        {
+            return product.GetReleasesAsync(tempPath, downloadLatest: false).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            // See note in GetVerifiedReleasesIndex: the deployment library returns a fully-
+            // parsed collection synchronously, so the verified JSON is no longer needed.
+            TryDeleteFile(tempPath);
+        }
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // Best-effort: orphaned files in _tempDir are picked up by Dispose / ProcessExit.
+        }
+    }
+
+    /// <summary>
+    /// Combines the scheme/host/port of <see cref="_indexUrl"/> with the absolute path of
+    /// <paramref name="originalUrl"/>. If the index URL already shares the same authority as
+    /// the original (the production case), this is a no-op.
+    ///
+    /// <para>
+    /// Trust note: signature verification is signer-pinned (cert subject DN, EKU, chain),
+    /// not host-pinned (dotnetup signature-verification doc §5–6). Rebasing onto a private mirror does
+    /// not weaken the cryptographic check.
+    /// </para>
+    /// </summary>
+    internal Uri GetReleaseUriForConfiguredHost(Uri originalUrl)
+    {
+        if (string.Equals(originalUrl.Authority, _indexUrl.Authority, StringComparison.OrdinalIgnoreCase))
+        {
+            return originalUrl;
+        }
+
+        var builder = new UriBuilder(originalUrl)
+        {
+            Scheme = _indexUrl.Scheme,
+            Host = _indexUrl.Host,
+            Port = _indexUrl.Port,
+            // UserInfo intentionally NOT copied. URL-embedded credentials (user:pass@host)
+            // are deprecated and ignored by HttpClient. Configure auth on DefaultHttpClient
+            // (UseDefaultCredentials, custom handler, env vars) — not in the URL.
+        };
+        return builder.Uri;
+    }
+
+    /// <summary>
+    /// Downloads JSON bytes, fetches the sibling <c>.p7s</c>, runs signature verification, and
+    /// writes the verified bytes to a temp file under <see cref="_tempDir"/>. Caller is
+    /// responsible for not retaining the returned path beyond <see cref="Dispose"/> (the path
+    /// is deleted with the temp directory).
+    /// </summary>
+    /// <returns>The on-disk path to the downloaded and signature-verified releases JSON file.</returns>
+    private string DownloadAndVerify(Uri jsonUrl)
+    {
+        // 1. Download JSON bytes.
+        byte[] jsonBytes;
+        using (var jsonCts = new CancellationTokenSource(s_manifestFetchTimeout))
+        {
+            jsonBytes = _httpClient.GetByteArrayAsync(jsonUrl, jsonCts.Token).GetAwaiter().GetResult();
+        }
+
+        // 2. Parse signature.file from the JSON body.
+        string? sigFileName = ParseSignatureFileField(jsonBytes);
+        if (sigFileName is null)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.SignatureVerificationFailed,
+                $"Release manifest at {jsonUrl} is unsigned — no 'signature' block found. " +
+                "Signature verification is required. This may indicate an EOL channel or a tampered manifest.");
+        }
+
+        // 3. Derive sibling sig URL and download. A 404 here means the .p7s isn't co-hosted
+        //    with the JSON — surface that as SignatureVerificationFailed (specific) rather
+        //    than letting it bubble out as ManifestFetchFailed (which the outer catch in
+        //    ReleaseManifest would attribute to the JSON URL, misleading the user).
+        Uri sigUrl = DeriveSiblingUrl(jsonUrl, sigFileName);
+        byte[] sigBytes;
+        try
+        {
+            using var sigCts = new CancellationTokenSource(s_manifestFetchTimeout);
+            sigBytes = _httpClient.GetByteArrayAsync(sigUrl, sigCts.Token).GetAwaiter().GetResult();
+        }
+        catch (HttpRequestException ex)
+        {
+            // Network-layer failure fetching the .p7s sibling — distinct from a crypto /
+            // policy verification failure on a successfully-downloaded signature. Using a
+            // dedicated SignatureDownloadFailed code keeps the telemetry classifier from
+            // having to special-case SignatureVerificationFailed as "sometimes network,
+            // sometimes crypto" (which would silently drop HTTP details on the crypto path).
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.SignatureDownloadFailed,
+                $"Failed to download detached signature for {jsonUrl} from {sigUrl}: {ex.Message}",
+                ex);
+        }
+
+        // 4. Verify in memory.
+        VerificationResult result = SignatureVerifier.Verify(jsonBytes, sigBytes, _options);
+        if (!result.IsValid)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.SignatureVerificationFailed,
+                FormatVerificationFailure(result, jsonUrl));
+        }
+
+        // 5. Write verified bytes to per-instance temp dir for the deployment library to read.
+        string tempPath = Path.Combine(_tempDir, Path.GetRandomFileName() + ".json");
+        File.WriteAllBytes(tempPath, jsonBytes);
+        return tempPath;
+    }
+
+    /// <summary>
+    /// Reads the <c>signature.file</c> field from a JSON byte array. Returns <see langword="null"/>
+    /// if the <c>signature</c> property or the <c>file</c> sub-property is absent, empty,
+    /// whitespace, or contains characters that would make it more than a bare filename
+    /// (path separators, scheme prefix). Defense in depth: a malicious mirror could otherwise
+    /// point us at <c>"../../etc/passwd"</c> or <c>"https://attacker/x.p7s"</c>; we reject
+    /// those upstream rather than relying on signature verification to catch the misdirected
+    /// fetch later.
+    /// </summary>
+    internal static string? ParseSignatureFileField(byte[] jsonBytes)
+    {
+        using var doc = JsonDocument.Parse(jsonBytes);
+        if (doc.RootElement.ValueKind != JsonValueKind.Object) { return null; }
+
+        JsonElement signatureFileUriLocation;
+        if (!doc.RootElement.TryGetProperty("signature", out JsonElement sig) ||
+            sig.ValueKind != JsonValueKind.Object ||
+            !sig.TryGetProperty("file", out signatureFileUriLocation) ||
+            signatureFileUriLocation.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        string? file = signatureFileUriLocation.GetString();
+        if (string.IsNullOrWhiteSpace(file)) { return null; }
+
+        // Bare filename only — no path traversal, no absolute URL, no directory navigation.
+        // The signing protocol publishes filenames like "releases-index.json.<timestamp>.p7s".
+        if (file.Contains('/', StringComparison.Ordinal) ||
+            file.Contains('\\', StringComparison.Ordinal) ||
+            file.Contains(':', StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return file;
+    }
+
+    /// <summary>
+    /// Derives a sibling URL by replacing the last path segment of <paramref name="jsonUrl"/>
+    /// with <paramref name="sigFileName"/>. <paramref name="sigFileName"/> is required to be a
+    /// bare filename (validated upstream by <see cref="ParseSignatureFileField"/>), so the
+    /// <see cref="Uri(Uri, string)"/> relative-resolution rules give the desired behavior:
+    /// the last segment of the base path is replaced and scheme/host/port are preserved.
+    /// </summary>
+    internal static Uri DeriveSiblingUrl(Uri jsonUrl, string sigFileName) => new(jsonUrl, sigFileName);
+
+    private static string FormatVerificationFailure(VerificationResult result, Uri url)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Signature verification failed for {url}: {result.Failures.Count} issue(s)");
+        foreach (VerificationFailure f in result.Failures)
+        {
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  - {f.Code}: {f.Reason}");
+        }
+        return sb.ToString();
+    }
+
+    public void Dispose()
+    {
+        // Interlocked to keep Dispose + ProcessExit from racing — a test that disposes the
+        // loader and then the process exits would otherwise call CleanupTempDir twice (the
+        // second call is harmless but unhooking the handler twice would throw on some hosts).
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        AppDomain.CurrentDomain.ProcessExit -= _processExitHandler;
+        CleanupTempDir();
+    }
+
+    private void CleanupTempDir()
+    {
+        try
+        {
+            if (Directory.Exists(_tempDir))
+            {
+                Directory.Delete(_tempDir, recursive: true);
+            }
+        }
+        catch
+        {
+            // Cleanup is best-effort; orphaned files are picked up on next reboot (POSIX)
+            // or on the next manual %TEMP% purge (Windows).
+        }
+    }
+}

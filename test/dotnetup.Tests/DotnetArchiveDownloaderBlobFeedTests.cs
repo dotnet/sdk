@@ -10,6 +10,7 @@ using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
 using Xunit;
@@ -20,14 +21,18 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// Tests for the blob feed fallback path used when the release manifest does
 /// not list the requested version (e.g. daily/preview builds).
 /// </summary>
-public class DotnetArchiveDownloaderBlobFeedTests
+public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
 {
     private readonly ITestOutputHelper _log;
 
     public DotnetArchiveDownloaderBlobFeedTests(ITestOutputHelper log)
     {
         _log = log;
+        // Defensive: clear any IT-policy override leaked from an earlier test.
+        UnsignedSourcePolicy.OverrideForTesting = null;
     }
+
+    public void Dispose() => UnsignedSourcePolicy.OverrideForTesting = null;
 
     [Theory]
     [InlineData(InstallComponent.SDK, "Sdk", "dotnet-sdk")]
@@ -119,7 +124,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         });
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
 
@@ -139,7 +144,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, history) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
@@ -160,7 +165,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, history) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -181,7 +186,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, _) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.ReleaseNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(channel, InstallComponent.SDK), new ReleaseVersion(resolved)));
@@ -200,7 +205,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         var (handler, history) = BuildHandler(new());
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var ex = Assert.Throws<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
@@ -229,7 +234,7 @@ public class DotnetArchiveDownloaderBlobFeedTests
         });
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
 
@@ -254,12 +259,86 @@ public class DotnetArchiveDownloaderBlobFeedTests
         });
 
         using var http = new HttpClient(handler);
-        using var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
 
         var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.Runtime), new ReleaseVersion(version));
 
         url.Should().Be($"https://ci.dot.net/public/Runtime/{version}/dotnet-runtime-{version}-{rid}{ext}");
         hash.Should().Be(expectedHash);
+    }
+
+    // --- UnsignedSourcePolicy coverage ---
+
+    [Theory]
+    [InlineData("daily", true)]                          // bare daily channel
+    [InlineData("10.0-daily", true)]                     // suffixed daily channel
+    [InlineData("10.0.100-preview.4.25216.37", true)]    // fully-specified prerelease
+    [InlineData("10.0.100", false)]                      // stable version
+    [InlineData("preview", false)]                       // named channel (resolved via signed manifest)
+    [InlineData("lts", false)]                           // named channel
+    [InlineData("10.0", false)]                          // major.minor channel
+    public void MayDownloadUnsigned_ClassifiesChannel(string channel, bool expected)
+        => UnsignedSourcePolicy.MayDownloadUnsigned(BuildRequest(channel, InstallComponent.SDK))
+            .Should().Be(expected);
+
+    /// <summary>
+    /// Defense-in-depth: when the IT "block unsigned downloads" policy is in effect,
+    /// the blob-feed fallback inside the downloader must refuse with a clear
+    /// <see cref="DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy"/> error
+    /// and issue no HTTP probe.
+    /// </summary>
+    [Fact]
+    public void ResolveManifestEntry_BlockedByPolicy_ThrowsClearError()
+    {
+        UnsignedSourcePolicy.OverrideForTesting = () => true;
+
+        const string version = "10.0.100-preview.4.25216.37";
+        var (handler, history) = BuildHandler(new());
+
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+
+        var ex = Assert.Throws<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy);
+        ex.Message.Should().Contain(version);
+        history.Should().BeEmpty("policy check must short-circuit before any blob-feed probe");
+    }
+
+    [Fact]
+    public void UnsignedDownloadBlockedByPolicy_ClassifiedAsUserError()
+    {
+        ErrorCategoryClassifier.ClassifyInstallError(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy)
+            .Should().Be(ErrorCategory.User, "IT-policy blocks are user/environment errors, not product bugs");
+    }
+
+    [Fact]
+    public void MayDownloadUnsigned_BatchPredicate_TrueWhenAnyRequestIsDaily()
+    {
+        var requests = new List<DotnetInstallRequest>
+        {
+            BuildRequest("10.0.100", InstallComponent.SDK),       // stable — no warning
+            BuildRequest("daily", InstallComponent.Runtime),       // daily — triggers warning
+            BuildRequest("10.0.100", InstallComponent.ASPNETCore), // stable — no warning
+        };
+
+        requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r)).Should().BeTrue(
+            "a batch containing at least one daily request should trigger the unsigned-download warning");
+    }
+
+    [Fact]
+    public void MayDownloadUnsigned_BatchPredicate_FalseWhenAllStable()
+    {
+        var requests = new List<DotnetInstallRequest>
+        {
+            BuildRequest("10.0.100", InstallComponent.SDK),
+            BuildRequest("10.0", InstallComponent.Runtime),
+            BuildRequest("lts", InstallComponent.ASPNETCore),
+        };
+
+        requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r)).Should().BeFalse(
+            "a batch of stable/named-channel requests should not trigger the unsigned-download warning");
     }
 
     // --- Test helpers ---

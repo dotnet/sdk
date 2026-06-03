@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal.Signing;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -37,13 +40,91 @@ internal readonly record struct FindReleaseFileResult(FindReleaseFileStatus Stat
 
 /// <summary>
 /// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.
+///
+/// <para>
+/// Use <see cref="Default"/> rather than constructing instances directly. Sharing a single
+/// instance is what keeps signature verification at one verify per JSON per process —
+/// distinct instances would each run their own download + verify and grow their own caches.
+/// </para>
 /// </summary>
 internal class ReleaseManifest
 {
-    private ProductCollection? _productCollection;
+    // Process-wide default. Lazy because TrustedRootsLoader / DefaultHttpClient construction
+    // shouldn't run unless someone actually queries the manifest. ExecutionAndPublication is
+    // the Lazy<T> default — guarantees single-instantiation under the orchestrator's
+    // Parallel.ForEach without explicit locking.
+    private static Lazy<ReleaseManifest> s_default = new(() => new ReleaseManifest());
+
+    /// <summary>
+    /// The process-wide <see cref="ReleaseManifest"/> shared by version resolution, the install
+    /// orchestrator, and any other consumer. Using the same instance everywhere is what keeps
+    /// signature verification at one verify per JSON per process.
+    /// </summary>
+    public static ReleaseManifest Default => s_default.Value;
+
+    /// <summary>
+    /// Test seam — replaces the process-wide instance with one backed by the supplied loader
+    /// (typically a fake that reads fixtures from disk). Tests MUST call <see cref="ResetDefault"/>
+    /// in teardown so subsequent tests get a clean instance.
+    /// </summary>
+    internal static void SetDefaultForTesting(ReleaseManifest replacement)
+    {
+        ArgumentNullException.ThrowIfNull(replacement);
+        s_default = new Lazy<ReleaseManifest>(() => replacement);
+    }
+
+    /// <summary>Restores the production default. Call from test teardown.</summary>
+    internal static void ResetDefault() =>
+        s_default = new Lazy<ReleaseManifest>(() => new ReleaseManifest());
+
+    // Lazy index: parallel PrepareInstall calls would otherwise race on _productCollection,
+    // each kicking off an independent download + signature verification of releases-index.json.
+    // ExecutionAndPublication (the Lazy<T> default) guarantees single-instantiation. Reset
+    // when the underlying loader is replaced via the test seam.
+    private readonly Lazy<ProductCollection> _productCollection;
+
+    // Per-product release cache. Wrapping the value in Lazy<T> with ExecutionAndPublication
+    // is required: ConcurrentDictionary.GetOrAdd does NOT guarantee single-invocation of the
+    // value factory under concurrent access. Without Lazy<T>, two PrepareInstall threads asking
+    // for the same channel could each download + verify the same JSON.
+    private readonly ConcurrentDictionary<string, Lazy<ReadOnlyCollection<ProductRelease>>> _releaseCache = new(StringComparer.Ordinal);
+
+    // Lazy<T>'s default mode is ExecutionAndPublication, so the orchestrator's parallel
+    // PrepareConcurrent calls cannot double-instantiate the loader.
+    //
+    // We don't dispose the loader explicitly: ReleaseManifest is reached via the static
+    // Default singleton, so its lifetime is the process. The loader registers an
+    // AppDomain.ProcessExit handler to remove its temp directory on normal shutdown, and
+    // each verified JSON is deleted from disk in finally as soon as the deployment library
+    // finishes parsing it (see SignedReleaseManifestLoader.GetVerified*). Windows does not
+    // auto-purge %LOCALAPPDATA%\Temp, so without the ProcessExit hook the directory would
+    // accumulate across runs.
+    private readonly Lazy<SignedReleaseManifestLoader> _loader;
 
     public ReleaseManifest()
     {
+        _loader = new Lazy<SignedReleaseManifestLoader>(() => new SignedReleaseManifestLoader(
+            DefaultHttpClient.Instance,
+            DefaultSignatureOptions.Instance,
+            indexUrl: ProductCollection.ReleasesIndexDefaultUrl));
+        // Method-group form satisfies IDE0200. The instance expression `_loader.Value` is
+        // evaluated eagerly when the method group is bound (here in the constructor), which
+        // forces the loader Lazy. That's fine: constructing SignedReleaseManifestLoader is
+        // a cheap field-store; the expensive network + verify lives inside
+        // GetVerifiedReleasesIndex, which still defers until _productCollection.Value fires.
+        _productCollection = new Lazy<ProductCollection>(_loader.Value.GetVerifiedReleasesIndex);
+    }
+
+    /// <summary>
+    /// Test seam — inject a fake loader (e.g. one that reads fixture JSON+sig from disk).
+    /// </summary>
+    internal ReleaseManifest(SignedReleaseManifestLoader loader)
+    {
+        ArgumentNullException.ThrowIfNull(loader);
+        // Already-constructed value — use the value-taking Lazy ctor (publishes the value
+        // directly, no factory). Satisfies IDE0200.
+        _loader = new Lazy<SignedReleaseManifestLoader>(loader);
+        _productCollection = new Lazy<ProductCollection>(_loader.Value.GetVerifiedReleasesIndex);
     }
 
     /// <summary>
@@ -62,12 +143,20 @@ internal class ReleaseManifest
             {
                 return FindReleaseFileResult.ProductNotFound;
             }
-            var release = FindRelease(product, resolvedVersion, installRequest.Component);
+            // Routes through GetReleases(product) so the per-channel JSON is signature-verified
+            // (and per-process cached) before we trust its contents to drive the archive download.
+            var release = FindRelease(GetReleases(product), resolvedVersion, installRequest.Component);
             if (release is null)
             {
                 return FindReleaseFileResult.ReleaseNotFound;
             }
             return FindReleaseFileResult.FromFile(FindMatchingFile(release, installRequest));
+        }
+        catch (DotnetInstallException)
+        {
+            // Preserve signature-verification and other typed failures thrown from the signed
+            // loader; the generic catch below would otherwise re-wrap them as Unknown.
+            throw;
         }
         catch (HttpRequestException ex)
         {
@@ -90,7 +179,7 @@ internal class ReleaseManifest
         catch (Exception ex)
         {
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.Unknown,
+                DotnetInstallErrorCode.ReleaseLookupFailed,
                 $"Failed to find an available release for install {installRequest}: {ex.Message}",
                 ex,
                 version: resolvedVersion.ToString(),
@@ -99,18 +188,43 @@ internal class ReleaseManifest
     }
 
     /// <summary>
-    /// Gets or loads the ProductCollection.
+    /// Gets or loads the ProductCollection. Backed by a <see cref="Lazy{T}"/> so concurrent
+    /// callers (the orchestrator's parallel PrepareInstall path) cannot race on the
+    /// download + signature verify — ExecutionAndPublication mode guarantees one verify per
+    /// process for the index JSON, matching the per-product cache contract below.
     /// TODO: Caching of the manifest or product collection after the program exits would be ideal.
     /// </summary>
-    public ProductCollection GetReleasesIndex()
-    {
-        if (_productCollection is not null)
-        {
-            return _productCollection;
-        }
+    public ProductCollection GetReleasesIndex() => _productCollection.Value;
 
-        _productCollection = ProductCollection.GetAsync().GetAwaiter().GetResult();
-        return _productCollection;
+    /// <summary>
+    /// Returns releases for a product. Downloaded + signature-verified once per process per
+    /// product, then served from <see cref="_releaseCache"/>. <see cref="Lazy{T}"/> guarantees the
+    /// verify runs exactly once even under concurrent <see cref="GetReleases"/> calls.
+    ///
+    /// <para>
+    /// On failure, the cache entry is removed so a retry within the same process gets a fresh
+    /// attempt. Without this, <see cref="Lazy{T}"/>'s exception memoization would permanently
+    /// block recovery from transient errors (503, network blips) for the rest of the process.
+    /// </para>
+    /// </summary>
+    public ReadOnlyCollection<ProductRelease> GetReleases(Product product)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+        var lazy = _releaseCache.GetOrAdd(product.ProductVersion, _ =>
+            new Lazy<ReadOnlyCollection<ProductRelease>>(
+                () => _loader.Value.GetVerifiedReleases(product),
+                LazyThreadSafetyMode.ExecutionAndPublication));
+        try
+        {
+            return lazy.Value;
+        }
+        catch
+        {
+            // Atomic compare-and-remove: only drop the failed entry, not a fresh one another
+            // thread may have already swapped in.
+            _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>>>(product.ProductVersion, lazy));
+            throw;
+        }
     }
 
     /// <summary>
@@ -148,10 +262,8 @@ internal class ReleaseManifest
     /// <summary>
     /// Finds the specific release for the given version.
     /// </summary>
-    private static ReleaseComponent? FindRelease(Product product, ReleaseVersion resolvedVersion, InstallComponent component)
+    private static ReleaseComponent? FindRelease(ReadOnlyCollection<ProductRelease> releases, ReleaseVersion resolvedVersion, InstallComponent component)
     {
-        var releases = product.GetReleasesAsync().GetAwaiter().GetResult().ToList();
-
         foreach (var release in releases)
         {
             if (component == InstallComponent.SDK)

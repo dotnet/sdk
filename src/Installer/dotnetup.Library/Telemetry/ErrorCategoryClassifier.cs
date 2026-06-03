@@ -46,11 +46,15 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.LocalManifestUserCorrupted => ErrorCategory.User,
             DotnetInstallErrorCode.UserConfigurationCorrupted => ErrorCategory.User,
             DotnetInstallErrorCode.InstallPathIsFile => ErrorCategory.User,
+            DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts => ErrorCategory.User,
+            DotnetInstallErrorCode.ProcessStartFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.ReleaseLookupFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.AdminPathBlocked => ErrorCategory.User,
             DotnetInstallErrorCode.ContextResolutionFailed => ErrorCategory.User,
             DotnetInstallErrorCode.InstallFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.PlatformNotSupported => ErrorCategory.User,
             DotnetInstallErrorCode.UninstallTargetNotFound => ErrorCategory.User,
+            DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy => ErrorCategory.User,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
             _ => ErrorCategory.Product
@@ -88,7 +92,11 @@ internal static class ErrorCategoryClassifier
         return errorCode is
             DotnetInstallErrorCode.ManifestFetchFailed or
             DotnetInstallErrorCode.DownloadFailed or
-            DotnetInstallErrorCode.NetworkError;
+            DotnetInstallErrorCode.NetworkError or
+            // .p7s sibling download failure. Crypto / policy verification failures use
+            // SignatureVerificationFailed (a non-network code) so HTTP analysis is not
+            // attempted on those.
+            DotnetInstallErrorCode.SignatureDownloadFailed;
     }
 
     /// <summary>

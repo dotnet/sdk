@@ -81,9 +81,4 @@ internal class MockArchiveDownloader : IArchiveDownloader
 
         return destinationPath;
     }
-
-    public void Dispose()
-    {
-        // Nothing to dispose
-    }
 }
