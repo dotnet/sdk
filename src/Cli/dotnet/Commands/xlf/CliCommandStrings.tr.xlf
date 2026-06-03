@@ -689,7 +689,7 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
-        <source>The options architecture, configuration, framework, operating system, runtime, and use-current-runtime cannot be used with '--test-modules' option.</source>
+        <source>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</source>
         <target state="needs-review-translation">Mimari, yapılandırma, çerçeve, işletim sistemi ve çalışma zamanı seçenekleri '--test-modules' seçeneğiyle kullanılamaz.</target>
         <note />
       </trans-unit>

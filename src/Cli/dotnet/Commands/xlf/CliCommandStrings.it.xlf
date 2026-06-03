@@ -689,7 +689,7 @@ Equivale a eliminare project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
-        <source>The options architecture, configuration, framework, operating system, runtime, and use-current-runtime cannot be used with '--test-modules' option.</source>
+        <source>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</source>
         <target state="needs-review-translation">Non è possibile usare l'architettura, la configurazione, il framework, il sistema operativo e il runtime delle opzioni con l'opzione '--test-modules'.</target>
         <note />
       </trans-unit>
