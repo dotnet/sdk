@@ -1279,7 +1279,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>SDK reference '{0}' not found in file '{1}'.</value>
   </data>
   <data name="CannotRemovePrimarySdkReference" xml:space="preserve">
-    <value>Cannot remove the primary SDK '{0}' specified on the project element. Remove additive SDK references using the &lt;Sdk&gt; element instead.</value>
+    <value>Cannot remove the primary SDK '{0}'. This SDK must remain as the project's main SDK reference.</value>
   </data>
   <data name="CannotRemovePrimarySdkReferenceInFile" xml:space="preserve">
     <value>Cannot remove the primary SDK '{0}' specified by the first '#:sdk' directive.</value>
