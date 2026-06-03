@@ -1248,11 +1248,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</comment>
   </data>
   <data name="SdkReferenceAddedToProject" xml:space="preserve">
-    <value>SDK reference '{0}'{1} added to file '{2}'.</value>
+    <value>SDK reference '{0}'{1} added to project '{2}'.</value>
     <comment>{0} is SDK name. {1} is optional version suffix like " version '6.2.0'". {2} is project path.</comment>
   </data>
   <data name="SdkReferenceUpdatedInProject" xml:space="preserve">
-    <value>SDK reference '{0}'{1} updated in file '{2}'.</value>
+    <value>SDK reference '{0}'{1} updated in project '{2}'.</value>
     <comment>{0} is SDK name. {1} is optional version suffix like " version '6.2.0'". {2} is project path.</comment>
   </data>
   <data name="SdkReferenceUpdatedInFile" xml:space="preserve">
@@ -1260,7 +1260,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is SDK name. {1} is optional version suffix. {2} is C# file path.</comment>
   </data>
   <data name="SdkReferenceUnchangedInProject" xml:space="preserve">
-    <value>SDK reference '{0}' is already present in file '{1}'.</value>
+    <value>SDK reference '{0}' is already present in project '{1}'.</value>
   </data>
   <data name="SdkReferenceAddedToFile" xml:space="preserve">
     <value>SDK reference '{0}'{1} added to file '{2}'.</value>
@@ -1280,6 +1280,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="CannotRemovePrimarySdkReference" xml:space="preserve">
     <value>Cannot remove the primary SDK '{0}' specified on the project element. Remove additive SDK references using the &lt;Sdk&gt; element instead.</value>
+  </data>
+  <data name="CannotRemovePrimarySdkReferenceInFile" xml:space="preserve">
+    <value>Cannot remove the primary SDK '{0}' specified by the first '#:sdk' directive.</value>
   </data>
   <data name="GlobalJsonFileParsingFailed" xml:space="preserve">
     <value>Could not parse global.json file '{0}': {1}</value>
