@@ -46,7 +46,7 @@ variables:
 - name: _publishArgument
   value: -publish
 - name: _signArgument
-  value: -sign /p:SignCoreSdk=true
+  value: -sign
 - name: _officialBuildProperties
   # The OfficialBuilder property is set to Microsoft for the official build only.
   # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
@@ -156,7 +156,7 @@ extends:
         parameters:
           pool:
             name: $(DncEngInternalBuildPool)
-            image: 1es-ubuntu-2204
+            image: build.azurelinux.3.amd64
             os: linux
           helixTargetQueue: ubuntu.2204.amd64
           oneESCompat:

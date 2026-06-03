@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Cli;
@@ -21,17 +23,27 @@ static unsafe partial class NativeEntryPoint
         string sdkDir = PlatformStringMarshaller.ConvertToManaged(sdkDirPtr) ?? string.Empty;
         string hostfxrPath = PlatformStringMarshaller.ConvertToManaged(hostfxrPathPtr) ?? string.Empty;
 
-        // Make hostfxr discoverable for NativeWrapper P/Invokes (required on non-Windows)
-        if (!string.IsNullOrEmpty(hostfxrPath))
-        {
-            AppContext.SetData("HOSTFXR_PATH", hostfxrPath);
-        }
-
         string[] args = new string[argc];
         nint* argv = (nint*)argvPtr;
         for (int i = 0; i < argc; i++)
         {
             args[i] = PlatformStringMarshaller.ConvertToManaged(argv[i]) ?? string.Empty;
+        }
+
+        return ExecuteCore(hostPath, dotnetRoot, sdkDir, hostfxrPath, args);
+    }
+
+    /// <summary>
+    ///  Core execution logic, separated from native marshalling for testability.
+    /// </summary>
+    internal static int ExecuteCore(
+        string hostPath, string dotnetRoot, string sdkDir,
+        string hostfxrPath, string[] args)
+    {
+        // Make hostfxr discoverable for NativeWrapper P/Invokes (required on non-Windows)
+        if (!string.IsNullOrEmpty(hostfxrPath))
+        {
+            AppContext.SetData("HOSTFXR_PATH", hostfxrPath);
         }
 
         // Try the AOT-compiled path for supported commands (if enabled)
@@ -40,7 +52,19 @@ static unsafe partial class NativeEntryPoint
             var parseResult = Parser.Parse(args);
             if (parseResult.Errors.Count == 0)
             {
-                return Parser.Invoke(parseResult);
+                try
+                {
+                    return Parser.Invoke(parseResult);
+                }
+                catch (CommandNotAvailableInAotException)
+                {
+                    // Command requires managed CLI — fall through to managed fallback below.
+                }
+                catch (Utils.GracefulException ex)
+                {
+                    Reporter.Error.WriteLine(ex.Message.Red());
+                    return 1;
+                }
             }
         }
 

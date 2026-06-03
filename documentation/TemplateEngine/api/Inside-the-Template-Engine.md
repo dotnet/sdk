@@ -18,18 +18,18 @@ designed to separate gathering, instantiating and processing templates.
 
 # Overview of the subsystems
 
-## [IEngineEnvironmentSettings](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IEngineEnvironmentSettings.cs) 
+## [IEngineEnvironmentSettings](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/IEngineEnvironmentSettings.cs) 
 
 This is responsible for holding all properties of the environment.
 
 Template engine provides a default implementation:
-[EngineEnvironmentSettings](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/EngineEnvironmentSettings.cs).
+[EngineEnvironmentSettings](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/EngineEnvironmentSettings.cs).
 
 It has a single constructor that accepts ITemplateEngineHost and set up settings
 based on TemplateEngine.Edge implementation of component manager, paths, and
 environment. All this can also be passed in as optional parameters.
 
-### [ITemplateEngineHost](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs)
+### [ITemplateEngineHost](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs)
 
 The interface is responsible for providing host information to template engine,
 managing file system and logging. Host may also provide default parameter
@@ -51,9 +51,9 @@ explained below.
 If you are considering using the template engine core, you need to create an
 implementation of this interface representing your host. Template engine
 provides the default implementation:
-[DefaultTemplateEngineHost](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/DefaultTemplateEngineHost.cs).
+[DefaultTemplateEngineHost](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/DefaultTemplateEngineHost.cs).
 
-#### [IPhysicalFileSystem](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/PhysicalFileSystem/IPhysicalFileSystem.cs)
+#### [IPhysicalFileSystem](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/PhysicalFileSystem/IPhysicalFileSystem.cs)
 Abstraction over file system, accessible from ITemplateEngineHost.
 
 Each template engine host should support physical and in-memory file system and
@@ -61,11 +61,11 @@ virtualize the file system under a given path. Switching between physical and in
 file systems is done via `ITemplateEngineHost.VirtualizePath` method.
 
 Template engine provides default implementation of file systems:
-[PhysicalFileSystem](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Utils/PhysicalFileSystem.cs)
+[PhysicalFileSystem](../../../src/TemplateEngine/Microsoft.TemplateEngine.Utils/PhysicalFileSystem.cs)
 and
-[InMemoryFileSystem](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Utils/InMemoryFileSystem.cs).
+[InMemoryFileSystem](../../../src/TemplateEngine/Microsoft.TemplateEngine.Utils/InMemoryFileSystem.cs).
 
-### [IComponentManager](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IComponentManager.cs)
+### [IComponentManager](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/IComponentManager.cs)
 
 `ComponentManager` is responsible for loading [components](#components) provided by the host from
 `ITemplateEngineHost.BuiltIns`. Additional components can be added via
@@ -74,12 +74,12 @@ dynamically loaded from template packages during scanning. `ComponentManager`
 implementation is not publicly accessible; however, it is used when default
 implementation of `IEngineEnvironmentSettings` is used.
 
-### [IEnvironment](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IEnvironment.cs)
+### [IEnvironment](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/IEnvironment.cs)
 
 Abstraction over environment variables. Default implementation uses system
 environment variables.
 
-### [IPathInfo](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IPathInfo.cs)
+### [IPathInfo](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/IPathInfo.cs)
 
 Provides the main paths used by template engine: global settings path, host
 settings path, host version settings path.
@@ -93,7 +93,7 @@ The default locations are:
 -   \<home directory\>/.templateengine/\<host ID\>/\<host version\> – host
     version settings
 
-## [TemplatePackageManager](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Settings/TemplatePackageManager.cs) class
+## [TemplatePackageManager](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/Settings/TemplatePackageManager.cs) class
 
 The class responsible for managing templates and templates packages.
 
@@ -113,23 +113,23 @@ The host need to instantiate the class when needed. Note that the first-time run
 can be time consuming, so consider creating one instance for duration of hosting
 application.
 
-## [TemplateCreator](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Template/TemplateCreator.cs) class
+## [TemplateCreator](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/TemplateCreator.cs) class
 
 The class responsible for template creation, including dry run. The host need to
 instantiate the class when needed.
 
 ### Supplying parameters conditions results
 
-It is possible to supply evaluation results of parameters conditions when instantiating template via Edge API [`TemplateCreator.InstantiateAsync`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Template/TemplateCreator.cs#L89). Example use case is instantiation from Visual Studio host, that will leverage condition evaluator integrated within the New Project Dialog. 
+It is possible to supply evaluation results of parameters conditions when instantiating template via Edge API [`TemplateCreator.InstantiateAsync`](https://github.com/dotnet/sdk/blob/6423cf7db53/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/TemplateCreator.cs#L76). Example use case is instantiation from Visual Studio host, that will leverage condition evaluator integrated within the New Project Dialog. 
 
-This can be achieved by passing the structured [`InputDataSet`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Template/InputDataSet.cs) argument that is populated with [`EvaluatedInputParameterData`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Template/EvaluatedInputParameterData.cs) objects for evaluated parameters. 
+This can be achieved by passing the structured [`InputDataSet`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/InputDataSet.cs) argument that is populated with [`EvaluatedInputParameterData`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/EvaluatedInputParameterData.cs) objects for evaluated parameters. 
 
-It is currently not possible to provide just partial external evaluation - meaning that the template engine evaluates either all the parameter conditions or none. If the [`InputDataSet`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Template/InputDataSet.cs) collection contains at least one [`EvaluatedInputParameterData`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Template/EvaluatedInputParameterData.cs) element, results of all parameter conditions are expected to be passed.
+It is currently not possible to provide just partial external evaluation - meaning that the template engine evaluates either all the parameter conditions or none. If the [`InputDataSet`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/InputDataSet.cs) collection contains at least one [`EvaluatedInputParameterData`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/EvaluatedInputParameterData.cs) element, results of all parameter conditions are expected to be passed.
 
-Template engine cross checks externally passed evaluations. If it encounteres mismatch between externally passed result and internal evaluation result a failed `ITemplateCreationResult` is returned from `InstantiateAsync` API. Failure is indicated by [`CondtionsEvaluationMismatch`](https://github.com/dotnet/templating/blob/6f2da67d94a86fa752e336f2611797f9483e44f9/src/Microsoft.TemplateEngine.Edge/Template/CreationResultStatus.cs#L61) in [`Status`](https://github.com/dotnet/templating/blob/6f2da67d94a86fa752e336f2611797f9483e44f9/src/Microsoft.TemplateEngine.Edge/Template/ITemplateCreationResult.cs#L41) property.
+Template engine cross checks externally passed evaluations. If it encounteres mismatch between externally passed result and internal evaluation result a failed `ITemplateCreationResult` is returned from `InstantiateAsync` API. Failure is indicated by [`CondtionsEvaluationMismatch`](https://github.com/dotnet/sdk/blob/6423cf7db53/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/CreationResultStatus.cs#L57) in [`Status`](https://github.com/dotnet/sdk/blob/6423cf7db53/src/TemplateEngine/Microsoft.TemplateEngine.Edge/Template/ITemplateCreationResult.cs#L39) property.
 
 
-## [TemplateConstraintManager](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Constraints/TemplateConstraintManager.cs) class
+## [TemplateConstraintManager](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/TemplateConstraintManager.cs) class
 
 The class responsible for loading available constraint components and evaluating the constraints for given template.
 
@@ -184,12 +184,12 @@ Template package providers responsible for providing template packages the
 template engine needs to manage. There are two kinds of providers:
 
 -   Non-managed
-    ([ITemplatePackageProvider](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProvider.cs))
+    ([ITemplatePackageProvider](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProvider.cs))
     – the template engine uses the packages provided by provider however cannot
     modify them
 
 -   Managed
-    ([IManagedTemplatePackageProvider](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/TemplatePackage/IManagedTemplatePackageProvider.cs))
+    ([IManagedTemplatePackageProvider](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/TemplatePackage/IManagedTemplatePackageProvider.cs))
     – the template engine can install/update/uninstall packages to provider.
 
 Template engine provides the following providers:
@@ -204,17 +204,17 @@ Template engine provides the following providers:
     to current host version.
 
 Template engine also provides [default non-managed provider
-implementation](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Utils/DefaultTemplatePackageProvider.cs)
+implementation](../../../src/TemplateEngine/Microsoft.TemplateEngine.Utils/DefaultTemplatePackageProvider.cs)
 that can be used by other hosts to build simple providers or base implementation
 on. Here are two examples:
-[SdkTemplates](https://github.com/dotnet/sdk/blob/main/src/Cli/dotnet/commands/dotnet-new/BuiltInTemplatePackageProvider.cs)
+[SdkTemplates](../../../src/Cli/dotnet/commands/dotnet-new/BuiltInTemplatePackageProvider.cs)
 and
-[OptionalWorkloads](https://github.com/dotnet/sdk/blob/main/src/Cli/dotnet/commands/dotnet-new/OptionalWorkloadProvider.cs).
+[OptionalWorkloads](../../../src/Cli/dotnet/commands/dotnet-new/OptionalWorkloadProvider.cs).
 
 ### Prioritizing the providers
 
 Template providers can implement the
-[IPrioritizedComponent](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/IPrioritizedComponent.cs)
+[IPrioritizedComponent](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/IPrioritizedComponent.cs)
 interface to setup the provider priority. The providers will be read following
 the priority with the priority with largest value of priority to be preferred in
 case the providers have same templates defined.
@@ -229,7 +229,7 @@ When implementing provider, note that the packages returned by provider will be
 processed exactly in the same order they provided, in case of template is
 available in several packages, the last package will win.
 
-## [Installer](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Installer/IInstaller.cs)
+## [Installer](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Installer/IInstaller.cs)
 
 Installer installs, updates and uninstall the template packages that can be feed
 to template package providers.
@@ -243,7 +243,7 @@ Template engine provides two installer implementations:
 You can use them when implementing your own providers, they are available from
 IComponentManager.
 
-## [Mount point](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Mount/IMountPoint.cs)
+## [Mount point](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Mount/IMountPoint.cs)
 
 Template package location is represented by mount point URI. Mount point that
 can load certain type of URI are also components.
@@ -259,12 +259,12 @@ They are available from IComponentManager.
 It is possible to get mount point using bool TryGetMountPoint(string
 mountPointUri, out IMountPoint mountPoint) method of IEngineEnvironmentSettings.
 
-## [Constraint](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraint.cs)
+## [Constraint](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraint.cs)
 
 The template may define certain constraint(s) under which it can be used. The constraint implementation evaluates those restrictions and whether such template is allowed to be used or is restricted.
 Template engine host works with constraint using `TemplateConstraintManager` class.
 
-## [Bind symbol source](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Components/IBindSymbolSource.cs)
+## [Bind symbol source](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Components/IBindSymbolSource.cs)
 
 The template may define `bind` symbols. Those symbols might be bound to values provided externally using bind symbol source components.
 Default sources are:
@@ -288,38 +288,38 @@ using AddComponent method of IComponentManager.
 
 You can implement the following own components and register them:
 
--   [ITemplateEngineProvider](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProvider.cs)
+-   [ITemplateEngineProvider](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProvider.cs)
     – non-managed template package provider, via
-    [ITemplatePackageProviderFactory](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProviderFactory.cs)
+    [ITemplatePackageProviderFactory](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProviderFactory.cs)
 
--   [IManagedTemplateEngineProvider](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/TemplatePackage/IManagedTemplatePackageProvider.cs)
+-   [IManagedTemplateEngineProvider](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/TemplatePackage/IManagedTemplatePackageProvider.cs)
     – managed template package provider, via
-    [ITemplatePackageProviderFactory](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProviderFactory.cs)
+    [ITemplatePackageProviderFactory](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProviderFactory.cs)
 
--   [IMountPoint](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Mount/IMountPoint.cs)
+-   [IMountPoint](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Mount/IMountPoint.cs)
     – mount point implementation, via
-    [IMountPointFactory](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Mount/IMountPointFactory.cs)
+    [IMountPointFactory](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Mount/IMountPointFactory.cs)
 
--   [IInstaller](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Installer/IInstaller.cs)
+-   [IInstaller](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Installer/IInstaller.cs)
     – template package installer, via
-    [IInstallerFactory](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Installer/IInstallerFactory.cs)
+    [IInstallerFactory](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Installer/IInstallerFactory.cs)
 
--   [ITemplateConstraint](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraint.cs)
+-   [ITemplateConstraint](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraint.cs)
     – constraint implementation, via
-    [ITemplateConstraintFactory](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraintFactory.cs)
+    [ITemplateConstraintFactory](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraintFactory.cs)
 
--   [IBindSymbolSource](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Components/IBindSymbolSource.cs)
+-   [IBindSymbolSource](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/Components/IBindSymbolSource.cs)
     – bind symbol source implementation
 
 It is possible to register additional components to in the following way:
 
 -   Components of
-    [ITemplateEngineHost.BuiltInComponents](https://github.com/dotnet/templating/blob/6ab649522414baa8fe31d08b449a5063e5572291/src/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs#L21)
+    [ITemplateEngineHost.BuiltInComponents](https://github.com/dotnet/sdk/blob/6423cf7db53/src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs#L17)
     will be added when loading environment settings. For
     DefaultTemplateEngineHost they can be passed to constructor.
 
 -   You can use
-    [IComponentManager.AddComponent](https://github.com/dotnet/templating/blob/6ab649522414baa8fe31d08b449a5063e5572291/src/Microsoft.TemplateEngine.Abstractions/IComponentManager.cs#L58)
+    [IComponentManager.AddComponent](https://github.com/dotnet/sdk/blob/6423cf7db53/src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/IComponentManager.cs#L53)
     method to add the component in runtime.
 
 Note that components are not persisted, so they should be added each time
@@ -328,21 +328,21 @@ EngineEnvironmentSettings instance is created.
 # Microsoft.TemplateEngine.IDE 
 
 The package provides
-[Bootstrapper](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.IDE/Bootstrapper.cs)
+[Bootstrapper](../../../src/TemplateEngine/Microsoft.TemplateEngine.IDE/Bootstrapper.cs)
 class allowing to setup and access main functionality of template engine via
 single entry point.
 
 Note that it is not mandatory to use
-[Bootstrapper](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.IDE/Bootstrapper.cs)
+[Bootstrapper](../../../src/TemplateEngine/Microsoft.TemplateEngine.IDE/Bootstrapper.cs)
 class to use template engine, however if you don’t need advanced features it
 might be easier to start with using this API.
 
 Basic workflow:
 
 1.  The application hosting template engine should implement and instantiate
-    [ITemplateEngineHost](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs),
+    [ITemplateEngineHost](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/ITemplateEngineHost.cs),
     or instantiate default implementation
-    ([DefaultTemplateEngineHost](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/DefaultTemplateEngineHost.cs)).
+    ([DefaultTemplateEngineHost](../../../src/TemplateEngine/Microsoft.TemplateEngine.Edge/DefaultTemplateEngineHost.cs)).
 
 2.  The application creates the instance of Bootstrapper:
 
@@ -356,7 +356,7 @@ Basic workflow:
 
 3.  If the application has the templates specific to it, the application should
     implement
-    [ITemplatePackageProvider](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProvider.cs)
+    [ITemplatePackageProvider](../../../src/TemplateEngine/Microsoft.TemplateEngine.Abstractions/TemplatePackage/ITemplatePackageProvider.cs)
     returning available template packages and register it via
     Bootstrapper.AddComponent method or provide it via built-in components of
     the host.
@@ -380,7 +380,7 @@ Basic workflow:
 
     The method also supports filters and criterias to filter templates. The
     default filters are available in
-    [Utils.WellKnownSearchFilters](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Utils/WellKnownSearchFilters.cs)
+    [Utils.WellKnownSearchFilters](../../../src/TemplateEngine/Microsoft.TemplateEngine.Utils/WellKnownSearchFilters.cs)
     class.
 
 7.  To dry run the template, use GetCreationEffectsAsync method.

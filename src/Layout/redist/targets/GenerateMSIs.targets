@@ -84,7 +84,7 @@
         Overwrite="true"
         Encoding="Unicode" />
 
-    <DownloadFile
+    <Microsoft.DotNet.Arcade.Sdk.DownloadFile
         Uri="$(WixDownloadUrl)"
         DestinationPath="$(WixDestinationPath)"
         Overwrite="false" />

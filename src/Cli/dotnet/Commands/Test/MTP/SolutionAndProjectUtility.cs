@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ProjectTools;
@@ -17,6 +19,18 @@ internal static class SolutionAndProjectUtility
 {
     private static readonly string[] s_computeRunArgumentsTarget = [Constants.ComputeRunArguments];
     private static readonly Lock s_buildLock = new();
+
+    /// <summary>
+    /// Parses MSBuild args with the standard set of test command options.
+    /// </summary>
+    internal static MSBuildArgs AnalyzeStandardTestMSBuildArgs(IEnumerable<string> args) =>
+        MSBuildArgs.AnalyzeMSBuildArguments(
+            args,
+            CommonOptions.CreatePropertyOption(),
+            CommonOptions.CreateRestorePropertyOption(),
+            CommonOptions.CreateMSBuildTargetOption(),
+            CommonOptions.CreateVerbosityOption(),
+            CommonOptions.CreateNoLogoOption());
 
     public static (bool SolutionOrProjectFileFound, string Message) TryGetProjectOrSolutionFilePath(string directory, out string projectOrSolutionFilePath, out bool isSolution)
     {
@@ -293,6 +307,136 @@ internal static class SolutionAndProjectUtility
         }
 
         return projects;
+    }
+
+    /// <summary>
+    /// Performs device selection for each TFM BEFORE the build, so that device-provided
+    /// RuntimeIdentifiers are included in the build. Returns a result with device mappings
+    /// and TestTfmsInParallel setting, or null if no device selection is needed.
+    /// When projectCollection/evaluationContext are provided, reuses them to avoid redundant evaluation.
+    /// </summary>
+    internal static DeviceSelectionResult? SelectDevicesBeforeBuild(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        ProjectCollection? projectCollection = null,
+        EvaluationContext? evaluationContext = null)
+    {
+        // --device is already handled by HandleDeviceWithTargetFrameworkSelection
+        if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+        {
+            return null;
+        }
+
+        var msbuildArgs = AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
+
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
+
+        // If Device is already set via -p:Device=..., skip device selection
+        if (globalProperties.TryGetValue("Device", out var deviceProp) && !string.IsNullOrWhiteSpace(deviceProp))
+        {
+            return null;
+        }
+
+        // Create a ProjectCollection if one wasn't provided
+        using var ownedCollection = projectCollection is null ? new ProjectCollection(globalProperties) : null;
+        var collection = projectCollection ?? ownedCollection!;
+        evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+
+        var projectInstance = ProjectInstance.FromFile(projectFilePath, new ProjectOptions
+        {
+            GlobalProperties = collection.GlobalProperties,
+            EvaluationContext = evaluationContext,
+            ProjectCollection = collection,
+        });
+
+        // If the project doesn't support device selection, skip entirely
+        if (!projectInstance.Targets.ContainsKey(Constants.ComputeAvailableDevices))
+        {
+            return null;
+        }
+
+        var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
+        var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+
+        // Read TestTfmsInParallel from the initial evaluation so callers don't need to re-evaluate
+        bool testTfmsInParallel = true;
+        if (bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.TestTfmsInParallel), out bool parsed) ||
+            bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.BuildInParallel), out parsed))
+        {
+            testTfmsInParallel = parsed;
+        }
+
+        bool isInteractive = !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+
+        IEnumerable<string> frameworks;
+        if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
+        {
+            // Single TFM (either explicit or via -f/--framework)
+            frameworks = [targetFramework ?? string.Empty];
+        }
+        else
+        {
+            frameworks = targetFrameworks
+                .Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries)
+                .Select(f => f.Trim())
+                .Where(f => !string.IsNullOrEmpty(f));
+        }
+
+        var devicesByTfm = new Dictionary<string, (string? Device, string? RuntimeIdentifier)>();
+        foreach (var framework in frameworks)
+        {
+            var (device, rid) = SelectDeviceForTfm(projectFilePath, buildOptions, framework, isInteractive);
+            devicesByTfm[framework] = (device, rid);
+        }
+
+        return devicesByTfm.Values.Any(v => v.Device is not null)
+            ? new DeviceSelectionResult(devicesByTfm, testTfmsInParallel)
+            : null;
+    }
+
+    internal sealed record DeviceSelectionResult(
+        Dictionary<string, (string? Device, string? RuntimeIdentifier)> DevicesByTfm,
+        bool TestTfmsInParallel);
+
+    /// <summary>
+    /// Selects a device for a specific TFM using RunCommandSelector.
+    /// Returns (null, null) if no device support or no devices available for this TFM.
+    /// </summary>
+    private static (string? device, string? runtimeIdentifier) SelectDeviceForTfm(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        string? tfm,
+        bool isInteractive)
+    {
+        var msbuildArgsToAppend = buildOptions.MSBuildArgs;
+        if (!string.IsNullOrEmpty(tfm))
+        {
+            msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.TargetFramework}={tfm}");
+        }
+
+        var msbuildArgs = AnalyzeStandardTestMSBuildArgs(msbuildArgsToAppend);
+
+        using var selector = new RunCommandSelector(
+            projectFilePath,
+            isInteractive,
+            msbuildArgs,
+            ImmutableDictionary<string, string>.Empty);
+
+        lock (s_buildLock)
+        {
+            if (!selector.TrySelectDevice(
+                listDevices: false,
+                noRestore: buildOptions.HasNoRestore || buildOptions.HasNoBuild,
+                out var selectedDevice,
+                out var runtimeIdentifier,
+                out _))
+            {
+                throw new GracefulException(
+                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+            }
+
+            return (selectedDevice, runtimeIdentifier);
+        }
     }
 
     private static TestModule? GetModuleFromProject(ProjectInstance project, BuildOptions buildOptions)

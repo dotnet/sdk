@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 
+# Detect native machine architecture, handling macOS Rosetta 2
+# where uname -m may report x86_64 on arm64 hardware.
+function GetNativeMachineArchitecture {
+  if [[ "$(uname)" == "Darwin" ]] && [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]]; then
+    echo "arm64"
+    return
+  fi
+  case "$(uname -m)" in
+    arm64|aarch64) echo "arm64" ;;
+    amd64|x86_64) echo "x64" ;;
+    armv*l) echo "arm" ;;
+    i[3-6]86) echo "x86" ;;
+    *) echo "x64" ;;
+  esac
+}
+
 function InitializeCustomSDKToolset {
   if [[ "$restore" != true ]]; then
     return
@@ -28,14 +44,23 @@ function InitializeCustomSDKToolset {
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    InstallDotNetSharedFrameworks "6.0" "7.0" "8.0" "9.0" "10.0"
+    local fallback_arch="${TARGET_ARCHITECTURE:-}"
+    local native_arch
+    native_arch=$(GetNativeMachineArchitecture)
+    if [[ -z "$fallback_arch" && "$native_arch" == "arm64" && "$(uname -m)" == "x86_64" ]]; then
+      fallback_arch="$native_arch"
+    fi
+
+    InstallDotNetSharedFrameworks "$fallback_arch" "6.0" "7.0" "8.0" "9.0" "10.0"
   fi
 
   CreateBuildEnvScript
 }
 
-# Installs additional shared frameworks for testing purposes (batched, concurrent)
+# Installs additional shared frameworks for testing purposes.
 function InstallDotNetSharedFrameworks {
+  local arch=$1
+  shift
   local dotnet_root=$DOTNET_INSTALL_DIR
   local versions_to_install=()
 
@@ -51,7 +76,32 @@ function InstallDotNetSharedFrameworks {
     return
   fi
 
-  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  if [[ -n "$arch" ]]; then
+    GetDotNetInstallScript "$dotnet_root"
+    local install_script=$_GetDotNetInstallScript
+
+    for version in "${versions_to_install[@]}"; do
+      local install_version="$version"
+      if [[ "$install_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+        install_version="$install_version.0"
+      fi
+
+      local install_args=(--version "$install_version" --install-dir "$dotnet_root" --runtime "dotnet" --skip-non-versioned-files --architecture "$arch")
+
+      bash "$install_script" "${install_args[@]}"
+      local lastexitcode=$?
+
+      if [[ $lastexitcode != 0 ]]; then
+        echo "Failed to install shared framework $version to '$dotnet_root' using dotnet install script for architecture '$arch' (exit code '$lastexitcode')."
+        ExitWithExitCode $lastexitcode
+      fi
+    done
+
+    return
+  fi
+
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local dotnetup_dir="$script_dir/dotnetup"
   local dotnetup_exe="$dotnetup_dir/dotnetup"
 
@@ -71,11 +121,9 @@ function InstallDotNetSharedFrameworks {
 
   if [[ "$skip_download" != true ]]; then
     # Acquire the latest dotnetup daily build using the in-repo install script.
-    # build.sh runs under `set -e`, so we have to invoke the script in a way that
-    # doesn't trigger errexit; otherwise the script's non-zero exit aborts the
-    # whole build before our diagnostic error message can fire.
+    # build.sh runs under `set -e`; guard so we can emit a diagnostic.
     if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
-      echo "Failed to acquire dotnetup."
+      Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup."
       ExitWithExitCode 1
     fi
   fi
@@ -84,7 +132,7 @@ function InstallDotNetSharedFrameworks {
   local lastexitcode=$?
 
   if [[ $lastexitcode != 0 ]]; then
-    echo "Failed to install shared frameworks (${versions_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install shared frameworks (${versions_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
     ExitWithExitCode $lastexitcode
   fi
 }

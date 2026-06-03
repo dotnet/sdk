@@ -8,4 +8,4 @@ See
  - [`Program.cs`](./MyProject.Con/Program.cs)
 
 Related
- - [Available parameter generators](https://github.com/dotnet/templating/wiki/Available-Parameter-Generators)
+ - [Available parameter generators](../../../Available-Symbols-Generators.md)

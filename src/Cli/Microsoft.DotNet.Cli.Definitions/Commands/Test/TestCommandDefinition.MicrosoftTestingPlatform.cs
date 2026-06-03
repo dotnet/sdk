@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -87,6 +88,12 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CmdNoBuildDescription
         };
 
+        public readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
+        {
+            Description = CommandDefinitionStrings.NoDependenciesOptionDescription,
+            Arity = ArgumentArity.Zero
+        }.ForwardAs("--property:BuildProjectReferences=false");
+
         public readonly Option<bool> NoAnsiOption = new("--no-ansi")
         {
             Description = CommandDefinitionStrings.CmdNoAnsiDescription,
@@ -124,6 +131,12 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CommandOptionNoLaunchProfileArgumentsDescription
         };
 
+        public readonly Option<string> DeviceOption = new("--device")
+        {
+            Description = CommandDefinitionStrings.CommandOptionDeviceDescription,
+            HelpName = CommandDefinitionStrings.CommandOptionDeviceHelpName
+        };
+
         public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
 
         public const string BuildTargetName = "_MTPBuild";
@@ -152,6 +165,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(VerbosityOption);
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
+            Options.Add(NoDependenciesOption);
             Options.Add(ArtifactsPathOption);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);
@@ -159,6 +173,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(ListTestsOption);
             Options.Add(NoLaunchProfileOption);
             Options.Add(NoLaunchProfileArgumentsOption);
+            Options.Add(DeviceOption);
             Options.Add(MTPTargetOption);
         }
 

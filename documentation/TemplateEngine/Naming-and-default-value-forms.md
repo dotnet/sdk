@@ -4,8 +4,8 @@
 
 When selecting a `sourceName` for a template you're authoring, keep in mind the default value forms applied to this symbol: 
 - `identity` - the value as entered by user.
-- `namespace` - the value transformed in a way to be a correct .NET namespace.  [Details](https://github.com/dotnet/templating/blob/b0b1283f8c96be35f1b65d4b0c1ec0534d86fc2f/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms/DefaultSafeNamespaceValueFormFactory.cs#L17-L59)
-- `class name` - the value transformed in a way to be a correct .NET class name. [Details](https://github.com/dotnet/templating/blob/b0b1283f8c96be35f1b65d4b0c1ec0534d86fc2f/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms/DefaultSafeNameValueFormFactory.cs#L15-L21)
+- `namespace` - the value transformed in a way to be a correct .NET namespace.  [Details](https://github.com/dotnet/sdk/blob/6423cf7db53/src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms/DefaultSafeNamespaceValueFormFactory.cs#L16-L58)
+- `class name` - the value transformed in a way to be a correct .NET class name. [Details](https://github.com/dotnet/sdk/blob/6423cf7db53/src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms/DefaultSafeNameValueFormFactory.cs#L15-L21)
 - `lower case namespace` - same as `namespace`, but lower case.
 - `lower case class name` - same as `class name`, but lower case.
 
