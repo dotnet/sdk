@@ -117,11 +117,16 @@
     <PackageVersion Include="runtime.linux-musl-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="2.0.302" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
+
+    <!-- OpenTelemetry packages for dotnetup telemetry -->
+    <PackageVersion Include="OpenTelemetry" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="$(OpenTelemetryVersion)" />
     <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="$(SystemCommandLineNamingConventionBinderVersion)" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
     <PackageVersion Include="System.Composition.AttributedModel" Version="$(SystemCompositionAttributedModelPackageVersion)" />

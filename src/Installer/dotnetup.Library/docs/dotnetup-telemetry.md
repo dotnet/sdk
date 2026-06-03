@@ -1,0 +1,72 @@
+# dotnetup Telemetry
+
+dotnetup includes a telemetry feature that collects usage data and sends it to
+Microsoft when you use dotnetup commands. The usage data includes exception
+information when dotnetup crashes. Telemetry data helps the .NET team understand
+how the tools are used so they can be improved. Information on failures helps
+the team resolve problems and fix bugs.
+
+## How to Opt Out
+
+The dotnetup telemetry feature is enabled by default. To opt out of the telemetry
+feature, set the `DOTNET_CLI_TELEMETRY_OPTOUT` environment variable to `1` or `true`.
+
+To suppress the first-run telemetry notice without disabling telemetry, set the
+`DOTNET_NOLOGO` environment variable to `1` or `true`.
+
+## First-Run Notice
+
+dotnetup displays the following message on first run:
+
+    dotnetup collects usage data to help improve your experience. You can opt out
+    by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'.
+    Learn more: https://aka.ms/dotnetup-telemetry
+
+## Data Points
+
+The telemetry feature doesn't collect personal data, such as usernames or email
+addresses. It does not scan your code and does not extract project-level data.
+The data is sent securely to Microsoft servers using Azure Monitor
+(https://azure.microsoft.com/services/monitor/) technology.
+
+Data collected includes:
+
+- Timestamp of invocation
+- Command invoked (e.g., "install", "update", "list")
+- dotnetup version and commit SHA
+- Operating system and architecture
+- Whether running in a CI environment
+- Whether running from an LLM agent (e.g., GitHub Copilot, Claude)
+- Exit code / success or failure status
+- For failures: error type, error category, sanitized error details
+  (no file paths), and the full stack trace with exception messages removed
+
+## Crash Exception Telemetry
+
+If dotnetup crashes, it collects the name of the exception and the stack trace
+of dotnetup code, following the same approach as the .NET SDK. Exception messages
+are not included because they may contain user-provided input.
+For more details on crash exception telemetry, see the
+[.NET CLI telemetry documentation](https://aka.ms/dotnet-cli-telemetry).
+
+## CI and LLM Agent Detection
+
+dotnetup uses the same CI environment detection and LLM agent detection as the
+.NET SDK. For details on which environment variables are checked, see the
+.NET CLI telemetry documentation:
+https://aka.ms/dotnet-cli-telemetry
+
+## Privacy
+
+Protecting your privacy is important to Microsoft. If you suspect the telemetry
+is collecting sensitive data or the data is being insecurely or inappropriately
+handled, file an issue in the dotnet/sdk repository:
+https://github.com/dotnet/sdk/issues
+
+For more information, see the Microsoft Privacy Statement:
+https://www.microsoft.com/privacy/privacystatement
+
+## See Also
+
+- .NET CLI telemetry: https://aka.ms/dotnet-cli-telemetry
+- dotnetup source code: https://github.com/dotnet/sdk/tree/release/dnup/src/Installer/dotnetup
