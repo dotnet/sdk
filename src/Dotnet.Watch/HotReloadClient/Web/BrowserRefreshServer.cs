@@ -23,12 +23,13 @@ namespace Microsoft.DotNet.HotReload;
 /// </summary>
 internal sealed class BrowserRefreshServer(
     ILogger logger,
-    ILoggerFactory loggerFactory,
+    Func<int, ILogger> connectionServerLoggerFactory,
+    Func<int, ILogger> connectionAgentLoggerFactory,
     string middlewareAssemblyPath,
     string dotnetPath,
     WebSocketConfig webSocketConfig,
     bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, loggerFactory)
+    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
     protected override bool SuppressTimeouts
         => suppressTimeouts;
@@ -62,6 +63,7 @@ internal sealed class BrowserRefreshServer(
 
         var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
 
+        // client socket ownership is transferred to the connection:
         var connection = OnBrowserConnected(clientSocket, subProtocol);
         await connection.Disconnected.Task;
     }
