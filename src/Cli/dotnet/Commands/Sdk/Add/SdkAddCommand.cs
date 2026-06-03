@@ -69,8 +69,6 @@ internal sealed class SdkAddCommand : CommandBase<SdkAddCommandDefinitionBase>
             userVersionSpecified,
             startDirectory);
 
-        byte[]? snapshot = null;
-
         SdkAddResult result = ProjectSdkReferenceHelper.AddOrUpdateSdk(
             msbuildProject.ProjectRootElement,
             _sdkId.Id,
@@ -83,7 +81,7 @@ internal sealed class SdkAddCommand : CommandBase<SdkAddCommandDefinitionBase>
             return 0;
         }
 
-        snapshot = File.ReadAllBytes(projectFilePath);
+        byte[] snapshot = File.ReadAllBytes(projectFilePath);
         msbuildProject.ProjectRootElement.Save();
 
         if (_parseResult.GetValue(Definition.NoRestoreOption))
@@ -92,7 +90,10 @@ internal sealed class SdkAddCommand : CommandBase<SdkAddCommandDefinitionBase>
             return 0;
         }
 
-        int exitCode = RestoreCommand.FromArgs([projectFilePath, interactive ? "--interactive" : "--nologo", "-v:q"]).Execute();
+        string[] restoreArgs = interactive
+            ? [projectFilePath, "--nologo", "-v:q", "--interactive"]
+            : [projectFilePath, "--nologo", "-v:q"];
+        int exitCode = RestoreCommand.FromArgs(restoreArgs).Execute();
         if (exitCode != 0)
         {
             File.WriteAllBytes(projectFilePath, snapshot);

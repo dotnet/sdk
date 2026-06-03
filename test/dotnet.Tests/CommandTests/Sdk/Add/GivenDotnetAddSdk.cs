@@ -24,7 +24,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(projectDirectory)
             .Execute("add", "sdk", sdkName, "--version", sdkVersion, "--no-restore")
             .Should().Pass()
-            .And.HaveStdOutContaining($"SDK reference '{sdkName}' version '{sdkVersion}' added to file '{projectFilePath}'");
+            .And.HaveStdOutContaining($"SDK reference '{sdkName}' version '{sdkVersion}' added to project '{projectFilePath}'");
 
         File.ReadAllText(projectFilePath).Should().Contain($"""<Sdk Name="{sdkName}" Version="{sdkVersion}" />""");
     }
@@ -46,7 +46,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(projectDirectory)
             .Execute("add", "sdk", $"{sdkName}@{sdkVersion}", "--no-restore")
             .Should().Pass()
-            .And.HaveStdOutContaining($"SDK reference '{sdkName}' version '{sdkVersion}' added to file '{projectFilePath}'");
+            .And.HaveStdOutContaining($"SDK reference '{sdkName}' version '{sdkVersion}' added to project '{projectFilePath}'");
 
         File.ReadAllText(projectFilePath).Should().Contain($"""<Sdk Name="{sdkName}" Version="{sdkVersion}" />""");
     }
@@ -220,7 +220,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(projectDirectory)
             .Execute("add", "sdk", $"{sdkName}@6.2.0", "--no-restore")
             .Should().Pass()
-            .And.HaveStdOutContaining($"SDK reference '{sdkName}' version '6.2.0' updated in file '{projectFilePath}'");
+            .And.HaveStdOutContaining($"SDK reference '{sdkName}' version '6.2.0' updated in project '{projectFilePath}'");
 
         File.ReadAllText(projectFilePath).Should().Contain($"""<Sdk Name="{sdkName}" Version="6.2.0" />""");
     }
@@ -286,7 +286,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(projectDirectory)
             .Execute("sdk", "add", sdkName, "--no-restore")
             .Should().Pass()
-            .And.HaveStdOutContaining($"SDK reference '{sdkName}' added to file");
+            .And.HaveStdOutContaining($"SDK reference '{sdkName}' added to project");
 
         File.ReadAllText(projectFilePath).Should().Contain($"""<Sdk Name="{sdkName}" />""");
     }

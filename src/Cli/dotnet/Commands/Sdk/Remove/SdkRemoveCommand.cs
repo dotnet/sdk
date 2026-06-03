@@ -101,7 +101,7 @@ internal sealed class SdkRemoveCommand(ParseResult parseResult) : CommandBase(pa
             if (primarySdk != null &&
                 string.Equals(primarySdk.Name, sdkName, StringComparison.OrdinalIgnoreCase))
             {
-                throw new GracefulException(CliCommandStrings.CannotRemovePrimarySdkReference, sdkName);
+                throw new GracefulException(CliCommandStrings.CannotRemovePrimarySdkReferenceInFile, sdkName);
             }
         }
 

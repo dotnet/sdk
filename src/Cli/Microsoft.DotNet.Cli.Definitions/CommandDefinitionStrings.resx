@@ -268,7 +268,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
     <value>SDK reference in the form of an SDK name like '{0}' or SDK name and version separated by '@' like '{0}@{1}'.</value>
   </data>
   <data name="SdkIdentityArgumentIdIsNull" xml:space="preserve">
-    <value>SDK reference name must not be null.</value>
+    <value>SDK reference name must not be null or empty.</value>
   </data>
   <data name="SdkIdentityArgumentVersionIsEmpty" xml:space="preserve">
     <value>SDK version must not be empty when specified using the '@' separator.</value>
