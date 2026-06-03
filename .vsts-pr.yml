@@ -92,3 +92,8 @@ stages:
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml
+
+  ############### HELIX JOB MONITOR ###############
+  - template: /eng/common/core-templates/job/helix-job-monitor.yml
+    parameters:
+      timeoutInMinutes: 120
