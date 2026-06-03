@@ -140,7 +140,8 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 
         //  Create NuGetv3LocalRepository
         NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
-        var package = localRepository.FindPackage(packageId.ToString(), version);
+        // We verify the package has been installed correctly prior to calling this method.
+        var package = localRepository.FindPackage(packageId.ToString(), version)!;
 
         if (verbosity.IsDetailedOrDiagnostic())
         {
