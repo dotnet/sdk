@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hans" original="../CommandDefinitionStrings.resx">
     <body>
@@ -1757,8 +1757,8 @@ The default is to publish a framework-dependent application.</source>
         <note />
       </trans-unit>
       <trans-unit id="SdkIdentityArgumentIdIsNull">
-        <source>SDK reference name must not be null.</source>
-        <target state="new">SDK reference name must not be null.</target>
+        <source>SDK reference name must not be null or empty.</source>
+        <target state="new">SDK reference name must not be null or empty.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkIdentityArgumentVersionIsEmpty">
