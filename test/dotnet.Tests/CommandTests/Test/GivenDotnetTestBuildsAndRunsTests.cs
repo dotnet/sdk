@@ -660,7 +660,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string escapedVersion = Regex.Escape(version);
             string escapedProject = Regex.Escape(projectName);
             // PathUtility.GetDirectorySeparatorChar() already returns a regex-escaped separator.
-            string separator = PathUtility.GetDirectorySeparatorChar().ToString();
+            string separator = PathUtility.GetDirectorySeparatorChar();
             // After the status name we may have an optional "with N error(s)" suffix (rendered when
             // tests failed AND exitCode != 0), so we allow any non-bracket, non-newline characters
             // between the status and the leading "[" that introduces the compact counts block.
