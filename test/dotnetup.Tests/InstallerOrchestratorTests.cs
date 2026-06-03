@@ -8,6 +8,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Xunit;
 
@@ -16,6 +17,46 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class InstallerOrchestratorTests
 {
     #region InstallAlreadyExists
+
+    [Fact]
+    public void PrepareInstall_UntrackedAlreadyInstalled_ReturnsAlreadyInstalledResult()
+    {
+        using var testEnv = new TestEnvironment();
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+        var resolvedVersion = new ReleaseVersion("10.0.100");
+        var request = new DotnetInstallRequest(
+            root,
+            new UpdateChannel("10.0.100"),
+            InstallComponent.SDK,
+            new InstallRequestOptions
+            {
+                Untracked = true,
+                ManifestPath = testEnv.ManifestPath
+            });
+        var resolvedRequest = new ResolvedInstallRequest(request, resolvedVersion);
+        var validator = new MockInstallationValidator(validateResult: true);
+
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var batchContext = new InstallBatchContext(reporter, resolvedVersion.ToString().Length);
+
+        var prepared = InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            resolvedRequest,
+            batchContext,
+            out var alreadyInstalledResult,
+            validator);
+
+        prepared.Should().BeNull();
+        alreadyInstalledResult.Should().NotBeNull();
+        alreadyInstalledResult!.WasAlreadyInstalled.Should().BeTrue();
+        alreadyInstalledResult.Install.InstallRoot.Path.Should().Be(testEnv.InstallPath);
+        alreadyInstalledResult.Install.Component.Should().Be(InstallComponent.SDK);
+        alreadyInstalledResult.Install.Version.ToString().Should().Be("10.0.100");
+        validator.ValidateCalls.Should().Be(1);
+        validator.LastInstall.Should().NotBeNull();
+        validator.LastInstall!.InstallRoot.Path.Should().Be(testEnv.InstallPath);
+        validator.LastInstall.Component.Should().Be(InstallComponent.SDK);
+        validator.LastInstall.Version.ToString().Should().Be("10.0.100");
+    }
 
     [Fact]
     public void InstallAlreadyExists_ReturnsTrueForDuplicateInstall()

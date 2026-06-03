@@ -232,12 +232,14 @@ internal class InstallerOrchestratorSingleton
     /// <param name="resolvedRequest">The resolved installation request with a concrete version.</param>
     /// <param name="batchContext">Shared per-batch progress reporter and version-column width. For single-install scenarios, pass a context whose width matches the request's version length.</param>
     /// <param name="alreadyInstalledResult">Set when the install is already present; null otherwise.</param>
+    /// <param name="installationValidator">Optional validator override used to determine whether an untracked installation already exists on disk.</param>
     /// <returns>A PreparedInstall that can be committed later, or null if already installed.</returns>
 #pragma warning disable CA1822
     public PreparedInstall? PrepareInstall(
         ResolvedInstallRequest resolvedRequest,
         InstallBatchContext batchContext,
-        out InstallResult? alreadyInstalledResult)
+        out InstallResult? alreadyInstalledResult,
+        IInstallationValidator? installationValidator = null)
     {
         alreadyInstalledResult = null;
         var installRequest = resolvedRequest.Request;
@@ -245,6 +247,7 @@ internal class InstallerOrchestratorSingleton
         var install = new DotnetInstall(installRequest.InstallRoot, versionToInstall, installRequest.Component);
         ReleaseManifest releaseManifest = ReleaseManifest.Default;
         var manifest = installRequest.Options.Untracked ? null : new DotnetupSharedManifest(installRequest.Options.ManifestPath);
+        installationValidator ??= new ArchiveInstallationValidator();
 
         using (var finalizeLock = ModifyInstallStateMutex())
         {
@@ -259,7 +262,7 @@ internal class InstallerOrchestratorSingleton
             // skipped. Fall back to a filesystem check using the same layout validation
             // that CommitPreparedInstall uses post-extraction. This runs inside the
             // mutex so another dotnetup process can't be mid-extraction when we probe.
-            if (installRequest.Options.Untracked && new ArchiveInstallationValidator().Validate(install))
+            if (installRequest.Options.Untracked && installationValidator.Validate(install))
             {
                 alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
                 return null;
