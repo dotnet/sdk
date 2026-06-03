@@ -18,7 +18,7 @@ internal sealed class SdkRemoveCommand(ParseResult parseResult) : CommandBase(pa
 
     public override int Execute()
     {
-        var sdkNames = _parseResult.GetValue(_definition.SdkIdArgument) ?? [];
+        var sdkNames = DeduplicateSdkNames(_parseResult.GetValue(_definition.SdkIdArgument) ?? []);
 
         var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(
             _definition.FileOption,
@@ -150,5 +150,20 @@ internal sealed class SdkRemoveCommand(ParseResult parseResult) : CommandBase(pa
         }
 
         return removedCounts.Count > 0 ? 0 : 1;
+    }
+
+    private static List<string> DeduplicateSdkNames(IEnumerable<string> sdkNames)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var result = new List<string>();
+        foreach (string sdkName in sdkNames)
+        {
+            if (seen.Add(sdkName))
+            {
+                result.Add(sdkName);
+            }
+        }
+
+        return result;
     }
 }
