@@ -415,9 +415,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithSource();
 
             string[] args = useFrameworkOption
-                ? new[] { "-c", configuration, "-f", ToolsetInfo.CurrentTargetFramework }
-                : new[] { "-c", configuration };
+                ? new[] { "-c", configuration, "-f", ToolsetInfo.CurrentTargetFramework, "-bl" }
+                : new[] { "-c", configuration, "-bl" };
 
+            // -bl is passed so any future hang produces an MSBuild binlog that the test framework
+            // uploads from the working directory (see https://github.com/dotnet/sdk/issues/54580).
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(args);

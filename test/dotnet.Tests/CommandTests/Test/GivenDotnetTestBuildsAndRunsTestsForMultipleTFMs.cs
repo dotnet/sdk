@@ -107,9 +107,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithSource();
             testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
 
+            // Pass -bl so any future hang produces an MSBuild binlog that the test framework
+            // uploads from the working directory (see https://github.com/dotnet/sdk/issues/54580).
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("--property", $"TestTfmsInParallel={testTfmsInParallel}");
+                                    .Execute("--property", $"TestTfmsInParallel={testTfmsInParallel}", "-bl");
 
             if (testTfmsInParallel)
             {

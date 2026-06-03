@@ -23,9 +23,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("ConsoleAppDoesNothing", Guid.NewGuid().ToString())
                 .WithSource();
 
+            // Pass -bl so any future hang produces an MSBuild binlog that the test framework
+            // uploads from the working directory (see https://github.com/dotnet/sdk/issues/54580).
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("-c", configuration);
+                                    .Execute("-c", configuration, "-bl");
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure, "dotnet test should fail with a meaningful error when run against console app without MTP handshake");
         }
