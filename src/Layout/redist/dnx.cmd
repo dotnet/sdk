@@ -2,7 +2,7 @@
 :: The .NET Foundation licenses this file to you under the MIT license.
 
 @echo off
-setlocal
+setlocal enableextensions
 
 set "DOTNET=%~dp0dotnet.exe"
 
