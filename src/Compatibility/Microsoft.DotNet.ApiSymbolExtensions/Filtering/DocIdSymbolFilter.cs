@@ -6,49 +6,57 @@ using Microsoft.CodeAnalysis;
 namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
 {
     /// <summary>
-    /// Implements the logic of filtering out api.
+    /// Implements the logic of filtering api.
     /// Reads the file with the list of attributes, types, members in DocId format.
     /// </summary>
     public class DocIdSymbolFilter : ISymbolFilter
     {
-        private readonly HashSet<string> _docIdsToExclude;
+        private readonly HashSet<string> _docIds;
+        private readonly bool _includeDocIds;
 
         /// <summary>
-        /// Creates a filter to exclude APIs using the DocIDs provided in the specified files.
+        /// Creates a filter based on the DocIDs provided in the specified files.
         /// </summary>
-        /// <param name="filesWithDocIdsToExclude">A collection of files each containing multiple DocIDs to exclude.</param>
+        /// <param name="filesWithDocIds">A collection of files each containing multiple DocIDs.</param>
+        /// <param name="includeDocIds">When <see langword="false"/> (the default), symbols matching the DocIDs are
+        /// excluded. When <see langword="true"/>, only symbols matching the DocIDs are included.</param>
         /// <returns>An instance of the symbol filter.</returns>
-        public static DocIdSymbolFilter CreateFromFiles(params string[] filesWithDocIdsToExclude)
+        public static DocIdSymbolFilter CreateFromFiles(string[] filesWithDocIds, bool includeDocIds = false)
         {
             List<string> docIds = new();
 
-            foreach (string docIdsToExcludeFile in filesWithDocIdsToExclude)
+            foreach (string docIdsFile in filesWithDocIds)
             {
-                if (string.IsNullOrWhiteSpace(docIdsToExcludeFile))
+                if (string.IsNullOrWhiteSpace(docIdsFile))
                 {
                     continue;
                 }
 
-                foreach (string docId in ReadDocIdsFromList(File.ReadAllLines(docIdsToExcludeFile)))
+                foreach (string docId in ReadDocIdsFromList(File.ReadAllLines(docIdsFile)))
                 {
                     docIds.Add(docId);
                 }
             }
 
-            return new DocIdSymbolFilter(docIds);
+            return new DocIdSymbolFilter(docIds, includeDocIds);
         }
 
         /// <summary>
-        /// Creates a filter to exclude APIs using the DocIDs provided in the specified list.
+        /// Creates a filter based on the DocIDs provided in the specified list.
         /// </summary>
-        /// <param name="docIdsToExclude">A collection of DocIDs to exclude.</param>
+        /// <param name="docIds">A collection of DocIDs.</param>
+        /// <param name="includeDocIds">When <see langword="false"/> (the default), symbols matching the DocIDs are
+        /// excluded. When <see langword="true"/>, only symbols matching the DocIDs are included.</param>
         /// <returns>An instance of the symbol filter.</returns>
-        public static DocIdSymbolFilter CreateFromLists(params string[] docIdsToExclude)
-            => new DocIdSymbolFilter(ReadDocIdsFromList(docIdsToExclude));
+        public static DocIdSymbolFilter CreateFromLists(string[] docIds, bool includeDocIds = false)
+            => new DocIdSymbolFilter(ReadDocIdsFromList(docIds), includeDocIds);
 
         // Private constructor to avoid creating an instance with an empty list.
-        private DocIdSymbolFilter(IEnumerable<string> docIdsToExclude)
-            => _docIdsToExclude = [.. docIdsToExclude];
+        private DocIdSymbolFilter(IEnumerable<string> docIds, bool includeDocIds)
+        {
+            _docIds = [.. docIds];
+            _includeDocIds = includeDocIds;
+        }
 
         /// <summary>
         ///  Determines whether the <see cref="ISymbol"/> should be included.
@@ -58,12 +66,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         public bool Include(ISymbol symbol)
         {
             string? docId = symbol.GetDocumentationCommentId();
-            if (docId is not null && _docIdsToExclude.Contains(docId))
+            if (docId is not null && _docIds.Contains(docId))
             {
-                return false;
+                return _includeDocIds;
             }
 
-            return true;
+            return !_includeDocIds;
         }
 
         private static IEnumerable<string> ReadDocIdsFromList(params string[] ids)

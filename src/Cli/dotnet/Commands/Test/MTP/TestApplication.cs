@@ -284,6 +284,10 @@ internal sealed class TestApplication(
                         OnFileArtifactMessages(fileArtifactMessages);
                         break;
 
+                    case TestInProgressMessages testInProgressMessages:
+                        OnTestInProgressMessages(testInProgressMessages);
+                        break;
+
                     case TestSessionEvent sessionEvent:
                         OnSessionEvent(sessionEvent);
                         break;
@@ -374,6 +378,9 @@ internal sealed class TestApplication(
 
     private void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
         => _handler.OnFileArtifactsReceived(fileArtifactMessages);
+
+    private void OnTestInProgressMessages(TestInProgressMessages testInProgressMessages)
+        => _handler.OnTestInProgressReceived(testInProgressMessages);
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
         => _handler.OnSessionEventReceived(sessionEvent);
