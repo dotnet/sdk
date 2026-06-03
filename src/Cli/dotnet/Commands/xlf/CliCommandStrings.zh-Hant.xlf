@@ -93,8 +93,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotRemovePrimarySdkReference">
-        <source>Cannot remove the primary SDK '{0}' specified on the project element. Remove additive SDK references using the &lt;Sdk&gt; element instead.</source>
-        <target state="new">Cannot remove the primary SDK '{0}' specified on the project element. Remove additive SDK references using the &lt;Sdk&gt; element instead.</target>
+        <source>Cannot remove the primary SDK '{0}'. This SDK must remain as the project's main SDK reference.</source>
+        <target state="new">Cannot remove the primary SDK '{0}'. This SDK must remain as the project's main SDK reference.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemovePrimarySdkReferenceInFile">
