@@ -132,6 +132,40 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 }
             }
 
+            // Handle additional payload files that should be included in this project's work items.
+            // Files are copied into the publish directory and a pre-command copies them to the
+            // correlation payload destination at runtime.
+            string additionalPayloadPreCommand = "";
+            xunitProject.TryGetMetadata("AdditionalPayloadDir", out string additionalPayloadDir);
+            xunitProject.TryGetMetadata("AdditionalPayloadDestination", out string additionalPayloadDestination);
+
+            if (!string.IsNullOrEmpty(additionalPayloadDir) && Directory.Exists(additionalPayloadDir))
+            {
+                string payloadSubdir = Path.Combine(publishDirectory, "_additionalPayload");
+                Directory.CreateDirectory(payloadSubdir);
+
+                foreach (string sourceFile in Directory.GetFiles(additionalPayloadDir, "*", SearchOption.AllDirectories))
+                {
+                    string relativePath = sourceFile.Substring(additionalPayloadDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length + 1);
+                    string destFile = Path.Combine(payloadSubdir, relativePath);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destFile)!);
+                    File.Copy(sourceFile, destFile, overwrite: true);
+                }
+
+                if (!string.IsNullOrEmpty(additionalPayloadDestination))
+                {
+                    if (IsPosixShell)
+                    {
+                        additionalPayloadPreCommand = $"cp -r $HELIX_WORKITEM_PAYLOAD/_additionalPayload/* $HELIX_CORRELATION_PAYLOAD/{additionalPayloadDestination}/ && ";
+                    }
+                    else
+                    {
+                        string destPath = $"%HELIX_CORRELATION_PAYLOAD%\\{additionalPayloadDestination.Replace('/', '\\')}";
+                        additionalPayloadPreCommand = $"robocopy %HELIX_WORKITEM_PAYLOAD%\\_additionalPayload {destPath} /E /NP /NJH /NJS /NDL >nul & ";
+                    }
+                }
+            }
+
             string assemblyName = Path.GetFileName(targetPath);
 
             string driver = $"{PathToDotnet}";
@@ -193,7 +227,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 // On macOS, ad-hoc sign the test exe with get-task-allow entitlement so createdump can attach via task_for_pid for crash dumps.
                 string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && " : "";
 
-                string command = $"{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                string command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
                           $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {testFilter} {enableDiagLogging} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
