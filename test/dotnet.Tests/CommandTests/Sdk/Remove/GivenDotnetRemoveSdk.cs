@@ -40,6 +40,39 @@ public sealed class GivenDotnetRemoveSdk(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void WhenReferencedSdkIsPassedWithVersionSuffixItGetsRemoved()
+    {
+        const string testAsset = "TestAppSimple";
+        var projectDirectory = TestAssetsManager
+            .CopyTestAsset(testAsset)
+            .WithSource()
+            .Path;
+
+        const string sdkName = "Cake.Sdk";
+        const string sdkVersion = "6.2.0";
+        var projectFilePath = Path.Combine(projectDirectory, $"{testAsset}.csproj");
+        File.WriteAllText(projectFilePath, $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+
+              <Sdk Name="{sdkName}" Version="{sdkVersion}" />
+
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+
+            </Project>
+            """);
+
+        new DotnetCommand(Log)
+            .WithWorkingDirectory(projectDirectory)
+            .Execute("sdk", "remove", $"{sdkName}@{sdkVersion}")
+            .Should().Pass()
+            .And.HaveStdOutContaining($"Removing SDK reference '{sdkName}' from project '{projectFilePath}'");
+
+        File.ReadAllText(projectFilePath).Should().NotContain(sdkName);
+    }
+
+    [Fact]
     public void WhenSdkInSemicolonDelimitedAttributeIsPassedItGetsRemoved()
     {
         const string testAsset = "TestAppSimple";
