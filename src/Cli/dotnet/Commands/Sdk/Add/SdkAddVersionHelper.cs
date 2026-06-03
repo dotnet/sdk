@@ -85,8 +85,8 @@ internal static class SdkAddVersionHelper
                 if (string.Equals(property.Name, sdkName, StringComparison.OrdinalIgnoreCase) &&
                     property.Value.ValueKind == JsonValueKind.String)
                 {
-                    version = property.Value.GetString();
-                    return !string.IsNullOrEmpty(version);
+                    version = property.Value.GetString()?.Trim();
+                    return !string.IsNullOrWhiteSpace(version);
                 }
             }
         }

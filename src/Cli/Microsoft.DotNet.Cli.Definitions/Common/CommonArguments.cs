@@ -81,6 +81,17 @@ namespace Microsoft.DotNet.Cli
                 IsDynamic = true
             };
 
+        public static string GetSdkIdFromIdentityArgument(string sdkIdentity)
+        {
+            SdkReferenceIdentity? identity = ParseSdkReferenceIdentity(sdkIdentity);
+            if (identity is null)
+            {
+                throw new GracefulException(CommandDefinitionStrings.SdkIdentityArgumentIdIsNull);
+            }
+
+            return identity.Value.Id;
+        }
+
         private static SdkReferenceIdentity? ParseSdkReferenceIdentity(string? sdkIdentity, char versionSeparator = '@')
         {
             if (string.IsNullOrEmpty(sdkIdentity))
