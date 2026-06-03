@@ -97,6 +97,11 @@
         <target state="new">Cannot remove the primary SDK '{0}' specified on the project element. Remove additive SDK references using the &lt;Sdk&gt; element instead.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotRemovePrimarySdkReferenceInFile">
+        <source>Cannot remove the primary SDK '{0}' specified by the first '#:sdk' directive.</source>
+        <target state="new">Cannot remove the primary SDK '{0}' specified by the first '#:sdk' directive.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
         <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
@@ -2943,8 +2948,8 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <note>{0} is SDK name. {1} is optional version suffix. {2} is C# file path.</note>
       </trans-unit>
       <trans-unit id="SdkReferenceAddedToProject">
-        <source>SDK reference '{0}'{1} added to file '{2}'.</source>
-        <target state="new">SDK reference '{0}'{1} added to file '{2}'.</target>
+        <source>SDK reference '{0}'{1} added to project '{2}'.</source>
+        <target state="new">SDK reference '{0}'{1} added to project '{2}'.</target>
         <note>{0} is SDK name. {1} is optional version suffix like " version '6.2.0'". {2} is project path.</note>
       </trans-unit>
       <trans-unit id="SdkReferenceNotFoundInProject">
@@ -2968,13 +2973,13 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <note />
       </trans-unit>
       <trans-unit id="SdkReferenceUnchangedInProject">
-        <source>SDK reference '{0}' is already present in file '{1}'.</source>
-        <target state="new">SDK reference '{0}' is already present in file '{1}'.</target>
+        <source>SDK reference '{0}' is already present in project '{1}'.</source>
+        <target state="new">SDK reference '{0}' is already present in project '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkReferenceUpdatedInProject">
-        <source>SDK reference '{0}'{1} updated in file '{2}'.</source>
-        <target state="new">SDK reference '{0}'{1} updated in file '{2}'.</target>
+        <source>SDK reference '{0}'{1} updated in project '{2}'.</source>
+        <target state="new">SDK reference '{0}'{1} updated in project '{2}'.</target>
         <note>{0} is SDK name. {1} is optional version suffix like " version '6.2.0'". {2} is project path.</note>
       </trans-unit>
       <trans-unit id="SdkReferenceUpdatedInFile">
