@@ -3,6 +3,7 @@
 
 extern alias DotNetNativeWrapper;
 
+using System.Security;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -65,7 +66,7 @@ internal static class SdkAddVersionHelper
         {
             document = JsonDocument.Parse(File.ReadAllText(globalJsonPath));
         }
-        catch (Exception ex) when (ex is JsonException or IOException)
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or SecurityException)
         {
             throw new GracefulException(
                 string.Format(CliCommandStrings.GlobalJsonFileParsingFailed, globalJsonPath, ex.Message));
