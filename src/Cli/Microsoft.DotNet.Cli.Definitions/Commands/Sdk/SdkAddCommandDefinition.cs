@@ -17,7 +17,7 @@ internal sealed class SdkAddCommandDefinition() : SdkAddCommandDefinitionBase(Na
 
 internal abstract class SdkAddCommandDefinitionBase : Command
 {
-    public static Option<string> CreateVersionOption() => new Option<string>("--version", "-v")
+    public static Option<string?> CreateVersionOption() => new Option<string?>("--version", "-v")
     {
         Description = CommandDefinitionStrings.CmdVersionDescription,
         HelpName = CommandDefinitionStrings.CmdVersion,
@@ -32,7 +32,7 @@ internal abstract class SdkAddCommandDefinitionBase : Command
     public static Option<bool> CreateInteractiveOption() => CommonOptions.CreateInteractiveOption().ForwardIfEnabled("--interactive");
 
     public readonly Argument<SdkReferenceIdentity> SdkIdArgument = CommonArguments.CreateRequiredSdkReferenceIdentityArgument();
-    public readonly Option<string> VersionOption = CreateVersionOption();
+    public readonly Option<string?> VersionOption = CreateVersionOption();
     public readonly Option<bool> NoRestoreOption = CreateNoRestoreOption();
     public readonly Option<bool> InteractiveOption = CreateInteractiveOption();
     public readonly Option<string?> ProjectOption = PackageCommandDefinition.CreateProjectOption();
