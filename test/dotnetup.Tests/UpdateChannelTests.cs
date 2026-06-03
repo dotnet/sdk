@@ -47,6 +47,13 @@ public class UpdateChannelTests
     [InlineData("11.0.1xx-preview.5-daily", "11.0.204-preview.5.26302.115", false)] // wrong feature band
     [InlineData("10.0.1xx-rc.1-daily", "10.0.100-rc.1.25451.107", true)]
     [InlineData("10.0.1xx-rc1-daily", "10.0.100-rc.1.25451.107", true)]
+    // Runtime-form prerelease-qualified daily channels: users type major.minor
+    // without an SDK feature band; the channel must still match the version's
+    // major.minor + prerelease, since aka.ms maps these to the SDK band internally.
+    [InlineData("11.0-preview.5-daily", "11.0.0-preview.5.26302.115", true)]   // runtime
+    [InlineData("11.0-preview.5-daily", "11.0.100-preview.5.26302.115", true)] // SDK in same band
+    [InlineData("11.0-preview.5-daily", "11.0.0-preview.6.26302.118", false)]  // wrong label
+    [InlineData("11.0-preview.5-daily", "11.0.0", false)]                       // stable
     public void Matches_ReturnsExpectedResult(string channel, string versionString, bool expected)
     {
         var updateChannel = new UpdateChannel(channel);

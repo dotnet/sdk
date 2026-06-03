@@ -138,6 +138,36 @@ public class DailyChannelResolverTests
         version!.ToString().Should().Be("11.0.100-preview.5.26302.115");
     }
 
+    [Theory]
+    [InlineData("11.0-preview.5-daily", InstallComponent.SDK)]
+    [InlineData("11.0-preview.5-daily", InstallComponent.Runtime)]
+    [InlineData("11.0-preview.5-daily", InstallComponent.ASPNETCore)]
+    public void Resolve_MajorMinorPrereleaseDaily_InjectsDefaultFeatureBand(string channelName, InstallComponent component)
+    {
+        // aka.ms only publishes prerelease-qualified daily shortlinks under the SDK
+        // feature-band path (".../11.0.1xx-preview5/daily/...") — even for non-SDK
+        // components. When the user types the more natural runtime form
+        // "11.0-preview.5-daily", DailyChannelResolver must inject the default ".1xx"
+        // band so the URL it queries actually has a target.
+        var archiveUrls = new Dictionary<string, string>
+        {
+            ["https://aka.ms/dotnet/11.0.1xx-preview5/daily/dotnet-sdk-"]
+                = "https://ci.dot.net/public/Sdk/11.0.100-preview.5.26302.115/dotnet-sdk-11.0.100-preview.5.26302.115-win-x64.zip",
+            ["https://aka.ms/dotnet/11.0.1xx-preview5/daily/dotnet-runtime-"]
+                = "https://ci.dot.net/public/Runtime/11.0.0-preview.5.26302.115/dotnet-runtime-11.0.0-preview.5.26302.115-win-x64.zip",
+            ["https://aka.ms/dotnet/11.0.1xx-preview5/daily/aspnetcore-runtime-"]
+                = "https://ci.dot.net/public/aspnetcore/Runtime/11.0.0-preview.5.26302.115/aspnetcore-runtime-11.0.0-preview.5.26302.115-win-x64.zip",
+        };
+        using var handler = new RedirectHandler(archiveUrls);
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel(channelName), InstallArchitecture.x64, component);
+
+        version.Should().NotBeNull();
+        version!.Prerelease.Should().StartWith("preview.5");
+    }
+
     [Fact]
     public void Resolve_AkaMsReturnsNotFound_ReturnsNull()
     {

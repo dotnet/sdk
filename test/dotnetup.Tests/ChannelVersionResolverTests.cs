@@ -113,6 +113,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("11.0-daily")]
         [InlineData("11.0.1xx-preview.5-daily")]
         [InlineData("11.0.1xx-preview5-daily")]
+        [InlineData("11.0-preview.5-daily")]
         public void GetLatestVersionForChannel_Daily_ResolvesAgainstLiveAkaMs(string channelName)
         {
             var resolver = new ChannelVersionResolver();

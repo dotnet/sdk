@@ -87,15 +87,22 @@ internal sealed class DailyChannelResolver : IDisposable
         }
 
         // "<M>-daily" → use "<M>.0" as the aka.ms partial version (aka.ms paths use major.minor).
-        // For prerelease-qualified daily channels ("<band>-preview.5-daily"), translate the
-        // label to aka.ms's dotless form ("preview5") so the URL has the shape aka.ms
-        // expects: ".../<band>-preview5/daily/...".
+        // For prerelease-qualified daily channels ("<band>-preview.5-daily"):
+        //   1. Translate the label to aka.ms's dotless form ("preview5") so the URL has
+        //      the shape aka.ms expects: ".../<band>-preview5/daily/...".
+        //   2. If the band is a bare major.minor (e.g. "11.0-preview.5-daily"), inject
+        //      the default ".1xx" feature band. aka.ms only publishes prerelease-qualified
+        //      daily shortlinks under a feature-band path, so "11.0-preview5" has no
+        //      target; "11.0.1xx-preview5" is the canonical form aka.ms serves and it
+        //      returns the right artifact for any component (SDK, runtime, aspnetcore,
+        //      windowsdesktop).
         string scope = UpdateChannel.StripDailySuffix(channel.Name);
         string partialVersion;
         if (UpdateChannel.TrySplitPartialVersionAndPrereleaseLabel(scope, out var bandPart, out var prereleaseLabel))
         {
             string akaMsLabel = prereleaseLabel.Replace(".", string.Empty, StringComparison.Ordinal);
-            partialVersion = $"{NormalizePartialVersion(bandPart)}-{akaMsLabel}";
+            string normalizedBand = EnsureFeatureBand(NormalizePartialVersion(bandPart));
+            partialVersion = $"{normalizedBand}-{akaMsLabel}";
         }
         else
         {
@@ -103,6 +110,18 @@ internal sealed class DailyChannelResolver : IDisposable
         }
 
         return TryResolvePartialVersion(partialVersion, archivePrefix, rid, extension);
+    }
+
+    /// <summary>
+    /// Ensures a partial version has a feature-band component. <c>"11.0"</c> →
+    /// <c>"11.0.1xx"</c>; <c>"11.0.2xx"</c> passes through unchanged. Used when the
+    /// aka.ms path requires a feature band (prerelease-qualified daily channels) but
+    /// the user supplied only major.minor.
+    /// </summary>
+    private static string EnsureFeatureBand(string partialVersion)
+    {
+        var parts = partialVersion.Split('.');
+        return parts.Length == 2 ? $"{partialVersion}.1xx" : partialVersion;
     }
 
     /// <summary>
