@@ -67,7 +67,16 @@ namespace Microsoft.DotNet.Cli
             new(SdkIdArgumentName)
             {
                 Description = string.Format(CommandDefinitionStrings.SdkIdentityArgumentDescription, exampleSdk, exampleVersion),
-                CustomParser = argumentResult => ParseSdkReferenceIdentity(argumentResult.Tokens[0]?.Value)!.Value,
+                CustomParser = argumentResult =>
+                {
+                    SdkReferenceIdentity? identity = ParseSdkReferenceIdentity(argumentResult.Tokens[0]?.Value);
+                    if (identity is null)
+                    {
+                        throw new GracefulException(CommandDefinitionStrings.SdkIdentityArgumentIdIsNull);
+                    }
+
+                    return identity.Value;
+                },
                 Arity = ArgumentArity.ExactlyOne,
                 IsDynamic = true
             };
