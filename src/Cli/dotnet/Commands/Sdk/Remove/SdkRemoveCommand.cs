@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
@@ -18,7 +19,9 @@ internal sealed class SdkRemoveCommand(ParseResult parseResult) : CommandBase(pa
 
     public override int Execute()
     {
-        var sdkNames = DeduplicateSdkNames(_parseResult.GetValue(_definition.SdkIdArgument) ?? []);
+        var sdkNames = DeduplicateSdkNames(
+            (_parseResult.GetValue(_definition.SdkIdArgument) ?? [])
+                .Select(CommonArguments.GetSdkIdFromIdentityArgument));
 
         var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(
             _definition.FileOption,
