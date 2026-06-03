@@ -13,6 +13,11 @@ public class TerminalTestReporterTests
     /// before the test session was ever started (so the execution id is never registered with the
     /// reporter), AssemblyRunCompleted must not throw KeyNotFoundException — it must surface the
     /// exit as a handshake failure instead.
+    ///
+    /// This is a defensive unit test: under the current TestApplicationHandler routing this branch
+    /// is unreachable, so it cannot be exercised end-to-end. End-to-end coverage of the recap
+    /// behavior triggered when handshake failures are reported lives in
+    /// <c>GivenDotnetTestRunsConsoleAppWithoutHandshake</c>.
     /// </summary>
     [Fact]
     public void AssemblyRunCompleted_WhenExecutionIdUnknown_DoesNotThrowAndReportsHandshakeFailure()
