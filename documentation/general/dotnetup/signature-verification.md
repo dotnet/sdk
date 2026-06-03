@@ -422,3 +422,66 @@ The verifier deliberately does not handle:
   appear multiple times for TSA renewal per RFC 3161 §2.4.2 — see §7).
 - Certificate revocation discovery via AIA fetch of intermediates.
 - Air-gapped / offline verification (see §1 / §6).
+
+## 12. Unsigned-source policy (daily / blob feed)
+
+Daily channels and recent prerelease builds are served from
+`https://ci.dot.net/public` and ship only a `.sha512` hash file — no
+detached CMS signature. Dnup downloads from these URLs are verified by
+SHA-512 only; there is no signed-manifest → hash → archive trust chain
+for them.
+
+When dnup detects an install batch may be served from this blob feed it
+does two things:
+
+1. Emits a one-shot yellow warning
+   (`⚠ Daily builds are not code-signed. Only the SHA-512 hash is verified.`)
+   up-front, before any progress UI is created, so the user sees the integrity
+   caveat before the install starts. Predicate
+   (`UnsignedSourcePolicy.MayDownloadUnsigned`) is purely channel-based —
+   a daily channel name (e.g. `daily`, `10.0-daily`) or a fully-specified
+   prerelease version (e.g. `10.0.100-preview.4.25216.37`) — so it can be
+   evaluated without any HTTP or manifest probe.
+2. Honors an IT-managed opt-out that blocks the fallback entirely with a
+   `UnsignedDownloadBlockedByPolicy` error (defense-in-depth check inside
+   `DotnetArchiveDownloader.ResolveBlobFeedEntry`).
+
+### Enabling the IT opt-out
+
+Administrators that want to disallow unsigned dnup downloads can set
+the policy with the platform-appropriate switch:
+
+- **Windows** — create the registry value
+  `HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup!BlockUnsignedDownloads`
+  as a `REG_DWORD` and set it to a non-zero value. Example (elevated PowerShell):
+
+  ```powershell
+  $key = 'HKLM:\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup'
+  New-Item -Path $key -Force | Out-Null
+  New-ItemProperty -Path $key -Name 'BlockUnsignedDownloads' -PropertyType DWord -Value 1 -Force | Out-Null
+  ```
+
+  Clear the policy by deleting the value (or setting it to `0`).
+
+- **Linux / macOS** — create the sentinel file
+  `/etc/dotnet/dnup-block-unsigned-downloads` (any content; existence is
+  what matters). Example:
+
+  ```bash
+  sudo mkdir -p /etc/dotnet
+  sudo touch /etc/dotnet/dnup-block-unsigned-downloads
+  ```
+
+  Clear the policy by deleting the file.
+
+When the policy is in effect, attempts to install from the daily channel
+(or any version that is not present in the signed releases manifest)
+fail with a clear `UnsignedDownloadBlockedByPolicy` message directing
+the user to choose a released version or escalate to their administrator.
+
+The check is centralized in
+`src/Installer/Microsoft.Dotnet.Installation/Internal/UnsignedSourcePolicy.cs`.
+The warning is emitted from `InstallExecutor.ExecuteInstalls` and
+`UpdateWorkflow.InstallVersion` before any progress UI is created; the policy block check
+runs immediately before any blob-feed probe in
+`DotnetArchiveDownloader.ResolveBlobFeedEntry`.
