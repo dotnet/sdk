@@ -114,6 +114,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>Failed to download the detached CMS signature (.p7s) sibling for a release manifest. Network-related; distinct from <see cref="SignatureVerificationFailed"/> which covers crypto / policy violations.</summary>
     SignatureDownloadFailed,
+
+    /// <summary>An IT-managed policy requires code-signed downloads, so the install was blocked before falling back to the blob feed where only SHA-512 verification is performed.</summary>
+    UnsignedDownloadBlockedByPolicy,
 }
 
 /// <summary>
