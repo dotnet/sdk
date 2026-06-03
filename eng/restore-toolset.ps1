@@ -38,13 +38,10 @@ function Get-ProcessMachineArchitecture {
 
 function Get-DotNetInstallFallbackArchitecture {
   if (-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) {
-    return $env:TARGET_ARCHITECTURE
-  }
-
-  $nativeArch = Get-NativeMachineArchitecture
-  $processArch = Get-ProcessMachineArchitecture
-  if ($nativeArch -ne $processArch) {
-    return $nativeArch
+    $nativeArch = Get-NativeMachineArchitecture
+    if ($env:TARGET_ARCHITECTURE -ne $nativeArch) {
+      return $env:TARGET_ARCHITECTURE
+    }
   }
 
   return ""
@@ -204,6 +201,11 @@ function InstallDotNetSharedFrameworks([string[]]$versions, [string]$architectur
       Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
       $skipDownload = $true
     }
+  }
+
+  if ($skipDownload -and ((Get-NativeMachineArchitecture) -ne (Get-ProcessMachineArchitecture))) {
+    Write-Host "Native architecture differs from process architecture; re-downloading dotnetup for the native architecture." -ForegroundColor DarkGray
+    $skipDownload = $false
   }
 
   if (-not $skipDownload) {

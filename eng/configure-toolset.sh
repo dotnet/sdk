@@ -4,6 +4,24 @@
 
 useInstalledDotNetCli="false"
 
+function GetNativeMachineArchitecture {
+  if [[ "$(uname)" == "Darwin" ]] && [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]]; then
+    echo "arm64"
+    return
+  fi
+  case "$(uname -m)" in
+    arm64|aarch64) echo "arm64" ;;
+    amd64|x86_64) echo "x64" ;;
+    armv*l) echo "arm" ;;
+    i[3-6]86) echo "x86" ;;
+    *) echo "x64" ;;
+  esac
+}
+
+function IsRunningUnderRosettaOnArm64Mac {
+  [[ "$(uname)" == "Darwin" && "$(GetNativeMachineArchitecture)" == "arm64" && "$(uname -m)" == "x86_64" ]]
+}
+
 # Pre-install the bootstrap SDK pinned in global.json using dotnetup into the
 # repo-local .dotnet directory that arcade's InitializeDotNetCli will pick up.
 #
@@ -58,6 +76,11 @@ function InstallBootstrapSdkWithDotnetup {
       echo "dotnetup binary is less than 24 hours old; skipping re-download."
       skip_download=true
     fi
+  fi
+
+  if [[ "$skip_download" == true ]] && IsRunningUnderRosettaOnArm64Mac; then
+    echo "Running under Rosetta 2 on arm64 macOS; re-downloading dotnetup for the native architecture."
+    skip_download=false
   fi
 
   if [[ "$skip_download" != true ]]; then

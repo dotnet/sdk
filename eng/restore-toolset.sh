@@ -44,14 +44,14 @@ function InitializeCustomSDKToolset {
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    local fallback_arch="${TARGET_ARCHITECTURE:-}"
+    local install_script_arch=""
     local native_arch
     native_arch=$(GetNativeMachineArchitecture)
-    if [[ -z "$fallback_arch" && "$native_arch" == "arm64" && "$(uname -m)" == "x86_64" ]]; then
-      fallback_arch="$native_arch"
+    if [[ -n "${TARGET_ARCHITECTURE:-}" && "$TARGET_ARCHITECTURE" != "$native_arch" ]]; then
+      install_script_arch="$TARGET_ARCHITECTURE"
     fi
 
-    InstallDotNetSharedFrameworks "$fallback_arch" "6.0" "7.0" "8.0" "9.0" "10.0"
+    InstallDotNetSharedFrameworks "$install_script_arch" "6.0" "7.0" "8.0" "9.0" "10.0"
   fi
 
   CreateBuildEnvScript
@@ -93,6 +93,11 @@ function InstallDotNetSharedFrameworks {
       echo "dotnetup binary is less than 24 hours old; skipping re-download."
       skip_download=true
     fi
+  fi
+
+  if [[ "$skip_download" == true && "$(uname)" == "Darwin" && "$(GetNativeMachineArchitecture)" == "arm64" && "$(uname -m)" == "x86_64" ]]; then
+    echo "Running under Rosetta 2 on arm64 macOS; re-downloading dotnetup for the native architecture."
+    skip_download=false
   fi
 
   if [[ "$skip_download" != true ]]; then
