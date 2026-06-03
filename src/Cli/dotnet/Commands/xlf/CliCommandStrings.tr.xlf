@@ -92,6 +92,11 @@
         <target state="translated">.NET Oluşturucusu</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotRemovePrimarySdkReference">
+        <source>Cannot remove the primary SDK '{0}' specified on the project element. Remove additive SDK references using the &lt;Sdk&gt; element instead.</source>
+        <target state="new">Cannot remove the primary SDK '{0}' specified on the project element. Remove additive SDK references using the &lt;Sdk&gt; element instead.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
         <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>
@@ -135,6 +140,11 @@
       <trans-unit id="DotnetTestMissingRequiredMessageProperty">
         <source>The required property '{0}' was missing or empty in the message of type '{1}'.</source>
         <target state="new">The required property '{0}' was missing or empty in the message of type '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonFileParsingFailed">
+        <source>Could not parse global.json file '{0}': {1}</source>
+        <target state="new">Could not parse global.json file '{0}': {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="HandshakeFailuresHeader">
@@ -2927,6 +2937,51 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">Bu şablonu çalıştırmak için kullanılabilen başka SDK sürümü/sürümleri yüklü. Bu şablonu çalıştırmak için sisteminizde aşağıdaki SDK’(lar)dan herhangi birine geçiş yapın: '{0}'. Çalıştırılacak SDK sürümünü seçmeyle ilgili ayrıntılar için: https://docs.microsoft.com/dotnet/core/tools/global-json.</target>
         <note>{0} is the list of installed and supported versions.</note>
       </trans-unit>
+      <trans-unit id="SdkReferenceAddedToFile">
+        <source>SDK reference '{0}'{1} added to file '{2}'.</source>
+        <target state="new">SDK reference '{0}'{1} added to file '{2}'.</target>
+        <note>{0} is SDK name. {1} is optional version suffix. {2} is C# file path.</note>
+      </trans-unit>
+      <trans-unit id="SdkReferenceAddedToProject">
+        <source>SDK reference '{0}'{1} added to file '{2}'.</source>
+        <target state="new">SDK reference '{0}'{1} added to file '{2}'.</target>
+        <note>{0} is SDK name. {1} is optional version suffix like " version '6.2.0'". {2} is project path.</note>
+      </trans-unit>
+      <trans-unit id="SdkReferenceNotFoundInProject">
+        <source>SDK reference '{0}' not found in project '{1}'.</source>
+        <target state="new">SDK reference '{0}' not found in project '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkReferenceNotFoundInFile">
+        <source>SDK reference '{0}' not found in file '{1}'.</source>
+        <target state="new">SDK reference '{0}' not found in file '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkReferenceRemovedFromProject">
+        <source>Removing SDK reference '{0}' from project '{1}'.</source>
+        <target state="new">Removing SDK reference '{0}' from project '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkReferenceUnchangedInFile">
+        <source>SDK reference '{0}' is already present in file '{1}'.</source>
+        <target state="new">SDK reference '{0}' is already present in file '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkReferenceUnchangedInProject">
+        <source>SDK reference '{0}' is already present in file '{1}'.</source>
+        <target state="new">SDK reference '{0}' is already present in file '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkReferenceUpdatedInProject">
+        <source>SDK reference '{0}'{1} updated in file '{2}'.</source>
+        <target state="new">SDK reference '{0}'{1} updated in file '{2}'.</target>
+        <note>{0} is SDK name. {1} is optional version suffix like " version '6.2.0'". {2} is project path.</note>
+      </trans-unit>
+      <trans-unit id="SdkReferenceUpdatedInFile">
+        <source>SDK reference '{0}'{1} updated in file '{2}'.</source>
+        <target state="new">SDK reference '{0}'{1} updated in file '{2}'.</target>
+        <note>{0} is SDK name. {1} is optional version suffix. {2} is C# file path.</note>
+      </trans-unit>
       <trans-unit id="SdkSectionHeader">
         <source>.NET SDKs:</source>
         <target state="translated">.NET SDK'ları:</target>
@@ -2936,6 +2991,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <source>The --sdk-version option is no longer supported for this command.</source>
         <target state="translated">--sdk-version seçeneği artık bu komut için desteklenmiyor.</target>
         <note>{Locked="--sdk-version"}</note>
+      </trans-unit>
+      <trans-unit id="SdkVersionResolutionFailed">
+        <source>Could not resolve a NuGet version for SDK '{0}'. Specify a version explicitly. {1}</source>
+        <target state="new">Could not resolve a NuGet version for SDK '{0}'. Specify a version explicitly. {1}</target>
+        <note />
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
