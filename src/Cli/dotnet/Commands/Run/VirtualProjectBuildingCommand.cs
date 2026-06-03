@@ -252,6 +252,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 }
 
                 Debug.Assert(result != 0);
+
+                buildLevel = BuildLevel.All;
+                cache.CurrentEntry.BuildLevel = buildLevel;
+                LastBuild = (buildLevel, cache);
             }
 
             Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
