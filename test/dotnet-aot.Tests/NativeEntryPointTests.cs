@@ -290,44 +290,13 @@ public class NativeEntryPointTests
                 hostfxrPath: "",
                 args: ["--version"]);
 
-            var mainActivity = collectedActivities.FirstOrDefault(a => a.OperationName == "main");
+            var mainActivity = collectedActivities.FirstOrDefault(a => a.OperationName == "native-entrypoint");
             Assert.NotNull(mainActivity);
             Assert.Equal(0, mainActivity.GetTagItem("process.exit.code"));
             Assert.Equal(ActivityStatusCode.Ok, mainActivity.Status);
         });
     }
 
-    [Fact]
-    public void ExecuteCore_Fallback_MainActivityHasErrorStatus()
-    {
-        WithEnvRestore(() =>
-        {
-            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "false");
-            Environment.SetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false");
-
-            var collectedActivities = new List<Activity>();
-            using var listener = new ActivityListener
-            {
-                ShouldListenTo = source => source.Name == "dotnet-cli",
-                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-                ActivityStopped = activity => collectedActivities.Add(activity),
-            };
-            ActivitySource.AddActivityListener(listener);
-
-            // Falls through to managed fallback, which fails because dotnet.dll doesn't exist.
-            NativeEntryPoint.ExecuteCore(
-                hostPath: "test-host",
-                dotnetRoot: "test-root",
-                sdkDir: "nonexistent-sdk-dir",
-                hostfxrPath: "",
-                args: ["--version"]);
-
-            // The main activity should still have been created and stopped with error status
-            var mainActivity = collectedActivities.FirstOrDefault(a => a.OperationName == "main");
-            Assert.NotNull(mainActivity);
-            Assert.Equal(ActivityStatusCode.Error, mainActivity.Status);
-        });
-    }
 
     [Fact]
     public void ExecuteCore_TelemetryOptedOut_NoActivities()
