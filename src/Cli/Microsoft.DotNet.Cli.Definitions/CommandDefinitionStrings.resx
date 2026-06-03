@@ -264,6 +264,15 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="PackageIdentityArgumentDescription" xml:space="preserve">
     <value>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</value>
   </data>
+  <data name="SdkIdentityArgumentDescription" xml:space="preserve">
+    <value>SDK reference in the form of an SDK name like '{0}' or SDK name and version separated by '@' like '{0}@{1}'.</value>
+  </data>
+  <data name="SdkIdentityArgumentIdIsNull" xml:space="preserve">
+    <value>SDK reference name must not be null.</value>
+  </data>
+  <data name="SdkIdentityArgumentVersionIsEmpty" xml:space="preserve">
+    <value>SDK version must not be empty when specified using the '@' separator.</value>
+  </data>
   <data name="PackageIdentityArgumentIdOrVersionIsNull" xml:space="preserve">
     <value>Package reference id and version must not be null.</value>
   </data>
@@ -514,6 +523,9 @@ This is equivalent to deleting project.assets.json.</value>
   </data>
   <data name="CmdPackage" xml:space="preserve">
     <value>PACKAGE_NAME</value>
+  </data>
+  <data name="CmdSdk" xml:space="preserve">
+    <value>SDK_NAME</value>
   </data>
   <data name="CmdPackageDirectory" xml:space="preserve">
     <value>PACKAGE_DIR</value>
@@ -861,6 +873,18 @@ If not specified the file will be generated inside the default 'TestResults' dir
   </data>
   <data name="PackageRemoveAppHelpText" xml:space="preserve">
     <value>The package reference to remove.</value>
+  </data>
+  <data name="SdkAddAppFullName" xml:space="preserve">
+    <value>Add an SDK reference to the project.</value>
+  </data>
+  <data name="SdkAddCmdNoRestoreDescription" xml:space="preserve">
+    <value>Add the SDK reference without running restore.</value>
+  </data>
+  <data name="SdkRemoveAppFullName" xml:space="preserve">
+    <value>Remove an SDK reference from the project.</value>
+  </data>
+  <data name="SdkRemoveAppHelpText" xml:space="preserve">
+    <value>The SDK reference to remove.</value>
   </data>
   <data name="PackageSearchCommandDescription" xml:space="preserve">
     <value>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</value>
