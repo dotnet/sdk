@@ -429,6 +429,20 @@ public class ParserTests
         parseResult.GetValue(CommonOptions.UntrackedOption).Should().BeTrue();
     }
 
+    [Fact]
+    public void Parser_BareDotnetup_BindsInteractiveOption()
+    {
+        // Bare `dotnetup` routes to SdkInstallCommand, but the parse result still belongs
+        // to the root command. Registering InteractiveOption on root ensures GetValue()
+        // binds the option there and runs its DefaultValueFactory instead of returning
+        // the default bool value.
+        var parseResult = Parser.Parse([]);
+
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetResult(CommonOptions.InteractiveOption).Should().NotBeNull(
+            "InteractiveOption must be bound on the root command for bare `dotnetup`");
+    }
+
     #endregion
 
     #region Help Differentiation Tests
