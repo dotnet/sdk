@@ -44,6 +44,105 @@ internal class UpdateChannel
             : channelName;
 
     /// <summary>
+    /// Tries to split a daily-scope string into a partial-version prefix and a
+    /// prerelease label. Accepts both <c>preview5</c> and <c>preview.5</c>
+    /// spellings of the label (e.g. <c>"11.0.1xx-preview.5"</c> →
+    /// <c>("11.0.1xx", "preview.5")</c>; <c>"11.0.1xx-preview5"</c> →
+    /// <c>("11.0.1xx", "preview.5")</c>). The returned <paramref name="prereleaseLabel"/>
+    /// is always normalized to <c>label.N</c> form (i.e. with the dot) so it can
+    /// be compared directly against a <see cref="ReleaseVersion.Prerelease"/>.
+    /// </summary>
+    internal static bool TrySplitPartialVersionAndPrereleaseLabel(
+        string scope,
+        out string partialVersion,
+        out string prereleaseLabel)
+    {
+        partialVersion = string.Empty;
+        prereleaseLabel = string.Empty;
+
+        int dashIndex = scope.IndexOf('-', StringComparison.Ordinal);
+        if (dashIndex <= 0 || dashIndex >= scope.Length - 1)
+        {
+            return false;
+        }
+
+        string left = scope.Substring(0, dashIndex);
+        string right = scope.Substring(dashIndex + 1);
+
+        if (!TryNormalizePrereleaseLabel(right, out string normalized))
+        {
+            return false;
+        }
+
+        partialVersion = left;
+        prereleaseLabel = normalized;
+        return true;
+    }
+
+    /// <summary>
+    /// Normalizes a prerelease label to <c>name.N</c> form (e.g.
+    /// <c>"preview5"</c> and <c>"preview.5"</c> both produce <c>"preview.5"</c>).
+    /// Returns <c>false</c> if the input doesn't match a <c>{letters}{digits}</c>
+    /// or <c>{letters}.{digits}</c> shape.
+    /// </summary>
+    internal static bool TryNormalizePrereleaseLabel(string label, out string normalized)
+    {
+        normalized = string.Empty;
+        if (string.IsNullOrEmpty(label))
+        {
+            return false;
+        }
+
+        string name;
+        string number;
+        int dotIndex = label.IndexOf('.', StringComparison.Ordinal);
+        if (dotIndex >= 0)
+        {
+            name = label.Substring(0, dotIndex);
+            number = label.Substring(dotIndex + 1);
+        }
+        else
+        {
+            // No dot: find the boundary between the alpha name and the digit run.
+            int boundary = 0;
+            while (boundary < label.Length && char.IsLetter(label[boundary]))
+            {
+                boundary++;
+            }
+            if (boundary == 0 || boundary == label.Length)
+            {
+                return false;
+            }
+            name = label.Substring(0, boundary);
+            number = label.Substring(boundary);
+        }
+
+        if (name.Length == 0 || number.Length == 0)
+        {
+            return false;
+        }
+
+        foreach (char c in name)
+        {
+            if (!char.IsLetter(c))
+            {
+                return false;
+            }
+        }
+
+        foreach (char c in number)
+        {
+            if (!char.IsDigit(c))
+            {
+                return false;
+            }
+        }
+
+        normalized = $"{name.ToLowerInvariant()}.{number}";
+        return true;
+    }
+
+    /// <summary>
     /// Checks if the channel string looks like an SDK version or feature band pattern rather than a runtime version.
     /// SDK versions have a third component >= 100 (e.g., "9.0.103", "9.0.304") or use "xx" patterns (e.g., "9.0.1xx").
     /// Runtime versions have a third component &lt; 100 (e.g., "9.0.12", "9.0.0").
@@ -112,11 +211,12 @@ internal class UpdateChannel
             return version.Major == major;
         }
 
-        // Scoped daily channels (e.g. "10.0-daily", "10.0.1xx-daily") match the
-        // same versions their base scope would, but restricted to prerelease
-        // versions. A stable release is not a daily build, even if its version
-        // falls inside the base scope; rejecting it here keeps the channel's
-        // "what satisfies me?" answer coherent for GC and reporting.
+        // Scoped daily channels (e.g. "10.0-daily", "10.0.1xx-daily",
+        // "11.0.1xx-preview.5-daily") match the same versions their base scope
+        // would, but restricted to prerelease versions. A stable release is not
+        // a daily build, even if its version falls inside the base scope;
+        // rejecting it here keeps the channel's "what satisfies me?" answer
+        // coherent for GC and reporting.
         if (IsDaily)
         {
             if (IsStableRelease(version))
@@ -124,7 +224,23 @@ internal class UpdateChannel
                 return false;
             }
 
-            return new UpdateChannel(StripDailySuffix(Name)).Matches(version);
+            string scope = StripDailySuffix(Name);
+
+            // Prerelease-qualified daily channels ("<band>-preview.5-daily") match only
+            // versions whose prerelease starts with the requested label, in addition to the
+            // base scope matching.
+            if (TrySplitPartialVersionAndPrereleaseLabel(scope, out string partialVersion, out string prereleaseLabel))
+            {
+                if (!new UpdateChannel(partialVersion).Matches(version))
+                {
+                    return false;
+                }
+
+                return version.Prerelease.Equals(prereleaseLabel, StringComparison.OrdinalIgnoreCase)
+                    || version.Prerelease.StartsWith(prereleaseLabel + ".", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return new UpdateChannel(scope).Matches(version);
         }
 
         return MatchesMajorMinorOrFeatureBand(version);

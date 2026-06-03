@@ -39,6 +39,14 @@ public class UpdateChannelTests
     [InlineData("10.0.1xx-daily", "10.0.103-preview.1", true)]
     [InlineData("10.0.1xx-daily", "10.0.103", false)]
     [InlineData("10.0.1xx-daily", "10.0.204-preview.1", false)]
+    // Phase-qualified daily channels: the version's prerelease label must also match.
+    [InlineData("11.0.1xx-preview.5-daily", "11.0.100-preview.5.26302.115", true)]
+    [InlineData("11.0.1xx-preview5-daily", "11.0.100-preview.5.26302.115", true)]   // dotless form accepted
+    [InlineData("11.0.1xx-preview.5-daily", "11.0.100-preview.6.26302.118", false)] // wrong phase
+    [InlineData("11.0.1xx-preview.5-daily", "11.0.100", false)]                     // stable
+    [InlineData("11.0.1xx-preview.5-daily", "11.0.204-preview.5.26302.115", false)] // wrong feature band
+    [InlineData("10.0.1xx-rc.1-daily", "10.0.100-rc.1.25451.107", true)]
+    [InlineData("10.0.1xx-rc1-daily", "10.0.100-rc.1.25451.107", true)]
     public void Matches_ReturnsExpectedResult(string channel, string versionString, bool expected)
     {
         var updateChannel = new UpdateChannel(channel);
@@ -54,6 +62,9 @@ public class UpdateChannelTests
     [InlineData("10.0-daily", true)]
     [InlineData("10.0.1xx-daily", true)]
     [InlineData("10.0-DAILY", true)]
+    [InlineData("11.0.1xx-preview.5-daily", true)]
+    [InlineData("11.0.1xx-preview5-daily", true)]
+    [InlineData("10.0.1xx-rc1-daily", true)]
     [InlineData("10.0", false)]
     [InlineData("preview", false)]
     [InlineData("10.0.100-preview.1", false)]

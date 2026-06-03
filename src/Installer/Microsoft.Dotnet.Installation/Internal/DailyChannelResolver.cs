@@ -87,7 +87,21 @@ internal sealed class DailyChannelResolver : IDisposable
         }
 
         // "<M>-daily" → use "<M>.0" as the aka.ms partial version (aka.ms paths use major.minor).
-        string partialVersion = NormalizePartialVersion(UpdateChannel.StripDailySuffix(channel.Name));
+        // For prerelease-qualified daily channels ("<band>-preview.5-daily"), translate the
+        // label to aka.ms's dotless form ("preview5") so the URL has the shape aka.ms
+        // expects: ".../<band>-preview5/daily/...".
+        string scope = UpdateChannel.StripDailySuffix(channel.Name);
+        string partialVersion;
+        if (UpdateChannel.TrySplitPartialVersionAndPrereleaseLabel(scope, out var bandPart, out var prereleaseLabel))
+        {
+            string akaMsLabel = prereleaseLabel.Replace(".", string.Empty, StringComparison.Ordinal);
+            partialVersion = $"{NormalizePartialVersion(bandPart)}-{akaMsLabel}";
+        }
+        else
+        {
+            partialVersion = NormalizePartialVersion(scope);
+        }
+
         return TryResolvePartialVersion(partialVersion, archivePrefix, rid, extension);
     }
 

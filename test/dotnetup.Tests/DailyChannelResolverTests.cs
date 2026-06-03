@@ -115,6 +115,29 @@ public class DailyChannelResolverTests
         version.Should().NotBeNull();
     }
 
+    [Theory]
+    [InlineData("11.0.1xx-preview.5-daily")]
+    [InlineData("11.0.1xx-preview5-daily")]
+    public void Resolve_PhaseQualifiedDaily_UsesDotlessAkaMsPath(string channelName)
+    {
+        // Both "preview.5" and "preview5" forms of the channel must resolve to the
+        // dotless aka.ms path segment ".../11.0.1xx-preview5/daily/..." that the
+        // service actually serves.
+        const string archiveUrl =
+            "https://ci.dot.net/public/Sdk/11.0.100-preview.5.26302.115/dotnet-sdk-11.0.100-preview.5.26302.115-win-x64.zip";
+        using var handler = new RedirectHandler(new Dictionary<string, string>
+        {
+            ["https://aka.ms/dotnet/11.0.1xx-preview5/daily/dotnet-sdk-"] = archiveUrl,
+        });
+        using var httpClient = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(new ReleaseManifest(), httpClient);
+
+        var version = resolver.Resolve(new UpdateChannel(channelName), InstallArchitecture.x64);
+
+        version.Should().NotBeNull();
+        version!.ToString().Should().Be("11.0.100-preview.5.26302.115");
+    }
+
     [Fact]
     public void Resolve_AkaMsReturnsNotFound_ReturnsNull()
     {

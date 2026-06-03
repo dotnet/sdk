@@ -111,6 +111,8 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("daily")]
         [InlineData("10.0-daily")]
         [InlineData("11.0-daily")]
+        [InlineData("11.0.1xx-preview.5-daily")]
+        [InlineData("11.0.1xx-preview5-daily")]
         public void GetLatestVersionForChannel_Daily_ResolvesAgainstLiveAkaMs(string channelName)
         {
             var resolver = new ChannelVersionResolver();
@@ -151,6 +153,9 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("10-daily", true)]
         [InlineData("10.0-daily", true)]
         [InlineData("10.0.1xx-daily", true)]
+        [InlineData("11.0.1xx-preview.5-daily", true)]
+        [InlineData("11.0.1xx-preview5-daily", true)]
+        [InlineData("10.0.1xx-rc.1-daily", true)]
         [InlineData("10.0-DAILY", true)]
         public void IsValidChannelFormat_ValidInputs_ReturnsTrue(string channel, bool expected)
         {
@@ -173,6 +178,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         [InlineData("-daily", false)]  // Empty scope before -daily
         [InlineData("preview-daily", false)]  // Named channels can't take -daily
         [InlineData("100-daily", false)]  // Major outside reasonable range
+        [InlineData("11.0.1xx--daily", false)]  // Empty phase label
+        [InlineData("11.0.1xx-preview-daily", false)]  // Phase label missing number
+        [InlineData("11.0.1xx-5-daily", false)]  // Phase label missing letters
+        [InlineData("11.0.103-preview.5-daily", false)]  // Specific patch + phase still rejected
         public void IsValidChannelFormat_InvalidInputs_ReturnsFalse(string channel, bool expected)
         {
             Assert.Equal(expected, ChannelVersionResolver.IsValidChannelFormat(channel));
