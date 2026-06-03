@@ -45,6 +45,15 @@ namespace Microsoft.NET.Build.Tasks
                 .Select(p => string.IsNullOrEmpty(p) ? p : (string)TaskEnvironment.GetAbsolutePath(p))
                 .ToArray();
 
+            var originalByAbsolute = new Dictionary<string, string>(PackageFolders.Length, StringComparer.Ordinal);
+            for (int i = 0; i < PackageFolders.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(absolutePackageFolders[i]))
+                {
+                    originalByAbsolute[absolutePackageFolders[i]] = PackageFolders[i];
+                }
+            }
+
             var packageResolver = NuGetPackageResolver.CreateResolver(absolutePackageFolders);
 
             int index = 0;
@@ -73,14 +82,11 @@ namespace Microsoft.NET.Build.Tasks
 
                 // Restore the caller's original (possibly relative) folder prefix so the
                 // PackageDirectory metadata is unchanged from before absolutization.
-                if (packageRoot != null)
+                if (packageRoot != null
+                    && originalByAbsolute.TryGetValue(packageRoot, out string originalRoot)
+                    && !string.Equals(originalRoot, packageRoot, StringComparison.Ordinal))
                 {
-                    int folderIndex = Array.IndexOf(absolutePackageFolders, packageRoot);
-                    if (folderIndex >= 0
-                        && !string.Equals(PackageFolders[folderIndex], packageRoot, StringComparison.Ordinal))
-                    {
-                        packageDirectory = PackageFolders[folderIndex] + packageDirectory.Substring(packageRoot.Length);
-                    }
+                    packageDirectory = originalRoot + packageDirectory.Substring(packageRoot.Length);
                 }
 
                 var newItem = new TaskItem(item);
