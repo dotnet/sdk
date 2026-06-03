@@ -494,18 +494,21 @@ public class DotnetupTelemetryTests : IDisposable
         Assert.Equal("InstallFailed", commandActivity.GetTagItem("error.type"));
     }
 
-    [Fact]
-    public void RecordException_ClassifiesByErrorCode()
+    [Theory]
+    [InlineData(DotnetInstallErrorCode.AdminPathBlocked, "user")]
+    [InlineData(DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts, "user")]
+    [InlineData(DotnetInstallErrorCode.ProcessStartFailed, "product")]
+    [InlineData(DotnetInstallErrorCode.ReleaseLookupFailed, "product")]
+    public void RecordException_ClassifiesByErrorCode(DotnetInstallErrorCode errorCode, string expectedCategory)
     {
         using var activity = DotnetupTelemetry.CommandSource.StartActivity(
-            "test-classifier-default", ActivityKind.Internal);
+            $"test-classifier-{errorCode}", ActivityKind.Internal);
         Assert.NotNull(activity);
 
-        // AdminPathBlocked is classified as User by ErrorCategoryClassifier
         SimulateRecordException(activity,
-            new DotnetInstallException(DotnetInstallErrorCode.AdminPathBlocked, "blocked"));
+            new DotnetInstallException(errorCode, "test"));
 
-        Assert.Equal("user", activity.GetTagItem("error.category"));
+        Assert.Equal(expectedCategory, activity.GetTagItem("error.category"));
     }
 
     [Fact]

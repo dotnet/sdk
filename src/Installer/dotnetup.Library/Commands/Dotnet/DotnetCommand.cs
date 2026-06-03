@@ -111,16 +111,27 @@ internal class DotnetCommand : CommandBase
         var currentPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
         startInfo.Environment["PATH"] = dotnetRoot + Path.PathSeparator + currentPath;
 
-        using var process = Process.Start(startInfo);
+        Process? process;
+        try
+        {
+            process = Process.Start(startInfo);
+        }
+        catch (Exception ex)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ProcessStartFailed,
+                Strings.DotnetCommandDotnetStartFailed,
+                ex);
+        }
+
         if (process is null)
         {
-            // Process.Start returning null is a system-level failure we should be
-            // able to act on; classify as a product error via the default mapping.
-            // CommandBase prints the exception Message — don't double-write here.
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.Unknown,
+                DotnetInstallErrorCode.ProcessStartFailed,
                 Strings.DotnetCommandDotnetStartFailed);
         }
+
+        using var _ = process;
 
         process.WaitForExit();
         return process.ExitCode;

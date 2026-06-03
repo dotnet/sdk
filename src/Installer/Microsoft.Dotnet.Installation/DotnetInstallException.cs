@@ -83,6 +83,29 @@ public enum DotnetInstallErrorCode
     /// <summary>The uninstall target (install spec or tracked root) was not found.</summary>
     UninstallTargetNotFound,
 
+    /// <summary>
+    /// The install path already contains a .NET installation that is not tracked in the
+    /// dotnetup manifest. The user can pass <c>--untracked</c>, point at a different path,
+    /// or remove the existing install. Distinct from <see cref="Unknown"/> so the
+    /// telemetry classifier can route this to the User category (it's an expected
+    /// pre-existing-environment condition, not a product failure).
+    /// </summary>
+    InstallPathHasUntrackedArtifacts,
+
+    /// <summary>
+    /// Failed to start a child <c>dotnet</c> process (Process.Start returned null
+    /// or threw). Distinct from <see cref="Unknown"/> so the telemetry classifier
+    /// can route this to the Product category with a stable signal name.
+    /// </summary>
+    ProcessStartFailed,
+
+    /// <summary>
+    /// A release lookup against the releases index failed for an unclassified reason
+    /// (the catch-all fallback after <see cref="ManifestFetchFailed"/> and
+    /// <see cref="ManifestParseFailed"/>). Inner exception carries the underlying
+    /// cause; this code exists so the telemetry signal isn't literally "Unknown".
+    /// </summary>
+    ReleaseLookupFailed,
     /// <summary>The detached CMS signature on a release manifest JSON failed verification.</summary>
     SignatureVerificationFailed,
 

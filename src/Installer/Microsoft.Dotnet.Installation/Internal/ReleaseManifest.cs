@@ -179,7 +179,7 @@ internal class ReleaseManifest
         catch (Exception ex)
         {
             throw new DotnetInstallException(
-                DotnetInstallErrorCode.Unknown,
+                DotnetInstallErrorCode.ReleaseLookupFailed,
                 $"Failed to find an available release for install {installRequest}: {ex.Message}",
                 ex,
                 version: resolvedVersion.ToString(),
