@@ -193,28 +193,6 @@ function InstallDotNetSharedFrameworks([string[]]$versions, [string]$architectur
     return
   }
 
-  if (-not [string]::IsNullOrEmpty($architecture)) {
-    $installScript = GetDotNetInstallScript $dotnetRoot
-    foreach ($version in $versionsToInstall) {
-      $installVersion = Get-DotNetInstallScriptVersion $version
-      $installArgs = @{
-        Version = $installVersion
-        InstallDir = $dotnetRoot
-        Runtime = "dotnet"
-        SkipNonVersionedFiles = $true
-        Architecture = $architecture
-      }
-
-      & $installScript @installArgs
-
-      if ($lastExitCode -ne 0) {
-        throw "Failed to install shared framework $version to '$dotnetRoot' using dotnet install script for architecture '$architecture' (exit code '$lastExitCode')."
-      }
-    }
-
-    return
-  }
-
   $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
   $dotnetupExe = Join-Path $dotnetupDir (GetExecutableFileName "dotnetup")
 
@@ -235,7 +213,9 @@ function InstallDotNetSharedFrameworks([string[]]$versions, [string]$architectur
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
     & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
     if ($lastExitCode -ne 0) {
-      throw "Failed to acquire dotnetup (exit code '$lastExitCode')."
+      Write-Host "Failed to acquire dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
+      InstallDotNetSharedFrameworksWithInstallScript -Versions $versionsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
+      return
     }
   }
 
@@ -243,8 +223,32 @@ function InstallDotNetSharedFrameworks([string[]]$versions, [string]$architectur
   & $dotnetupExe runtime install @versionsToInstall --install-path $dotnetRoot --set-default-install false --untracked --interactive false
 
   if ($lastExitCode -ne 0) {
-    throw "Failed to install shared frameworks ($($versionsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode')."
+    Write-Host "Failed to install shared frameworks ($($versionsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
+    InstallDotNetSharedFrameworksWithInstallScript -Versions $versionsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
+  }
+}
+
+function InstallDotNetSharedFrameworksWithInstallScript([string[]]$versions, [string]$dotNetRoot, [string]$architecture = "") {
+  $installScript = GetDotNetInstallScript $dotNetRoot
+  foreach ($version in $versions) {
+    $installVersion = Get-DotNetInstallScriptVersion $version
+    $installArgs = @{
+      Version = $installVersion
+      InstallDir = $dotNetRoot
+      Runtime = "dotnet"
+      SkipNonVersionedFiles = $true
     }
+    if (-not [string]::IsNullOrEmpty($architecture)) {
+      $installArgs.Architecture = $architecture
+    }
+
+    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+    & $installScript @installArgs
+
+    if ($lastExitCode -ne 0) {
+      throw "Failed to install shared framework $version to '$dotNetRoot' using dotnet install script for architecture '$architecture' (exit code '$lastExitCode')."
+    }
+  }
 }
 
 # Let's clear out the stage-zero folders that map to the current runtime to keep stage 2 clean

@@ -76,30 +76,6 @@ function InstallDotNetSharedFrameworks {
     return
   fi
 
-  if [[ -n "$arch" ]]; then
-    GetDotNetInstallScript "$dotnet_root"
-    local install_script=$_GetDotNetInstallScript
-
-    for version in "${versions_to_install[@]}"; do
-      local install_version="$version"
-      if [[ "$install_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
-        install_version="$install_version.0"
-      fi
-
-      local install_args=(--version "$install_version" --install-dir "$dotnet_root" --runtime "dotnet" --skip-non-versioned-files --architecture "$arch")
-
-      bash "$install_script" "${install_args[@]}"
-      local lastexitcode=$?
-
-      if [[ $lastexitcode != 0 ]]; then
-        echo "Failed to install shared framework $version to '$dotnet_root' using dotnet install script for architecture '$arch' (exit code '$lastexitcode')."
-        ExitWithExitCode $lastexitcode
-      fi
-    done
-
-    return
-  fi
-
   local script_dir
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local dotnetup_dir="$script_dir/dotnetup"
@@ -123,18 +99,56 @@ function InstallDotNetSharedFrameworks {
     # Acquire the latest dotnetup daily build using the in-repo install script.
     # build.sh runs under `set -e`; guard so we can emit a diagnostic.
     if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
-      Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup."
-      ExitWithExitCode 1
+      Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup; falling back to dotnet install script."
+      InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$arch" "${versions_to_install[@]}"
+      return
     fi
   fi
 
+  local restore_errexit=false
+  if [[ $- == *e* ]]; then
+    restore_errexit=true
+    set +e
+  fi
   "$dotnetup_exe" runtime install "${versions_to_install[@]}" --install-path "$dotnet_root" --set-default-install false --untracked --interactive false
   local lastexitcode=$?
+  if [[ "$restore_errexit" == true ]]; then
+    set -e
+  fi
 
   if [[ $lastexitcode != 0 ]]; then
-    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install shared frameworks (${versions_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
-    ExitWithExitCode $lastexitcode
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install shared frameworks (${versions_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode'); falling back to dotnet install script."
+    InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$arch" "${versions_to_install[@]}"
   fi
+}
+
+function InstallDotNetSharedFrameworksWithInstallScript {
+  local dotnet_root=$1
+  local arch=$2
+  shift 2
+
+  GetDotNetInstallScript "$dotnet_root"
+  local install_script=$_GetDotNetInstallScript
+
+  for version in "$@"; do
+    local install_version="$version"
+    if [[ "$install_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+      install_version="$install_version.0"
+    fi
+
+    local install_args=(--version "$install_version" --install-dir "$dotnet_root" --runtime "dotnet" --skip-non-versioned-files)
+    if [[ -n "$arch" ]]; then
+      install_args+=(--architecture "$arch")
+    fi
+
+    bash "$install_script" "${install_args[@]}"
+    local lastexitcode=$?
+
+    if [[ $lastexitcode != 0 ]]; then
+      echo "Failed to install shared framework $version to '$dotnet_root' using dotnet install script for architecture '$arch' (exit code '$lastexitcode')."
+      ExitWithExitCode $lastexitcode
+    fi
+  done
 }
 
 function CreateBuildEnvScript {
