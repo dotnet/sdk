@@ -134,7 +134,7 @@
     <comment>Action verb shown in progress bar after installing a component.</comment>
   </data>
   <data name="UnsignedBlobFeedWarning" xml:space="preserve">
-    <value>⚠ Daily builds are not code-signed. Only the SHA-512 hash is verified.</value>
+    <value>⚠  Daily builds are not code-signed. Only the SHA-512 hash is verified.</value>
     <comment>Warning shown up-front when an install batch may pull from the public blob feed (daily channel or unknown prerelease version) where no detached CMS signature is published.</comment>
   </data>
   <data name="UnsignedDownloadBlockedByPolicy" xml:space="preserve">
