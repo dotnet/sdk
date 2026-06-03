@@ -576,6 +576,11 @@ Belirtilen dizin yoksa oluşturulur.</target>
         <target state="translated">Paketlerin geri yükleneceği hedef çalışma zamanı.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdSdk">
+        <source>SDK_NAME</source>
+        <target state="new">SDK_NAME</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdServiceableDescription">
         <source>Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</source>
         <target state="translated">Pakette serviceable bayrağını ayarlar. Daha fazla bilgi için bkz. https://aka.ms/nupkgservicing.</target>
@@ -1726,6 +1731,16 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
         <target state="translated">Komut şemasını JSON formatında görüntüle.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SdkAddAppFullName">
+        <source>Add an SDK reference to the project.</source>
+        <target state="new">Add an SDK reference to the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkAddCmdNoRestoreDescription">
+        <source>Add the SDK reference without running restore.</source>
+        <target state="new">Add the SDK reference without running restore.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SdkAppFullName">
         <source>.NET SDK Command</source>
         <target state="translated">.NET SDK Komutu</target>
@@ -1734,6 +1749,31 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
       <trans-unit id="SdkCheckAppFullName">
         <source>.NET SDK Check Command</source>
         <target state="translated">.NET SDK Denetim Komutu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkIdentityArgumentDescription">
+        <source>SDK reference in the form of an SDK name like '{0}' or SDK name and version separated by '@' like '{0}@{1}'.</source>
+        <target state="new">SDK reference in the form of an SDK name like '{0}' or SDK name and version separated by '@' like '{0}@{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkIdentityArgumentIdIsNull">
+        <source>SDK reference name must not be null.</source>
+        <target state="new">SDK reference name must not be null.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkIdentityArgumentVersionIsEmpty">
+        <source>SDK version must not be empty when specified using the '@' separator.</source>
+        <target state="new">SDK version must not be empty when specified using the '@' separator.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkRemoveAppFullName">
+        <source>Remove an SDK reference from the project.</source>
+        <target state="new">Remove an SDK reference from the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkRemoveAppHelpText">
+        <source>The SDK reference to remove.</source>
+        <target state="new">The SDK reference to remove.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">

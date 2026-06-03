@@ -94,6 +94,15 @@ internal sealed class FileBasedAppSourceEditor
             return new TextChange(toReplace.Info.Span, newText: directive.ToString() + NewLine);
         }
 
+        // SDK directive order is semantic: the first directive is the primary SDK.
+        // Append new SDKs after the last existing SDK rather than sorting by name.
+        if (directive is CSharpDirective.Sdk &&
+            Directives.OfType<CSharpDirective.Sdk>().LastOrDefault() is { } lastSdk)
+        {
+            var span = new TextSpan(start: lastSdk.Info.Span.End, length: 0);
+            return new TextChange(span, newText: directive.ToString() + NewLine);
+        }
+
         // Find the last directive of the first group of directives of the same kind.
         // If found, we will insert the new directive after it.
         CSharpDirective? addAfter = null;

@@ -58,11 +58,58 @@ namespace Microsoft.DotNet.Cli
 
             return new PackageIdentityWithRange(packageId, versionRange);
         }
+
+        public const string SdkIdArgumentName = "sdkId";
+
+        public static Argument<SdkReferenceIdentity> CreateRequiredSdkReferenceIdentityArgument(
+            string exampleSdk = "Cake.Sdk",
+            string exampleVersion = "6.2.0") =>
+            new(SdkIdArgumentName)
+            {
+                Description = string.Format(CommandDefinitionStrings.SdkIdentityArgumentDescription, exampleSdk, exampleVersion),
+                CustomParser = argumentResult => ParseSdkReferenceIdentity(argumentResult.Tokens[0]?.Value)!.Value,
+                Arity = ArgumentArity.ExactlyOne,
+                IsDynamic = true
+            };
+
+        private static SdkReferenceIdentity? ParseSdkReferenceIdentity(string? sdkIdentity, char versionSeparator = '@')
+        {
+            if (string.IsNullOrEmpty(sdkIdentity))
+            {
+                return null;
+            }
+
+            string[] splitSdkIdentity = sdkIdentity.Split(versionSeparator);
+            var sdkId = splitSdkIdentity.ElementAtOrDefault(0);
+            var version = splitSdkIdentity.ElementAtOrDefault(1);
+
+            if (string.IsNullOrEmpty(sdkId))
+            {
+                throw new GracefulException(CommandDefinitionStrings.SdkIdentityArgumentIdIsNull);
+            }
+
+            if (splitSdkIdentity.Length > 2)
+            {
+                version = string.Join(versionSeparator, splitSdkIdentity.Skip(1));
+            }
+
+            if (sdkIdentity.Contains(versionSeparator) && string.IsNullOrWhiteSpace(version))
+            {
+                throw new GracefulException(CommandDefinitionStrings.SdkIdentityArgumentVersionIsEmpty);
+            }
+
+            return new SdkReferenceIdentity(sdkId, string.IsNullOrEmpty(version) ? null : version);
+        }
     }
 
     public readonly record struct PackageIdentityWithRange(string Id, VersionRange? VersionRange)
     {
         [MemberNotNullWhen(returnValue: true, nameof(VersionRange))]
         public bool HasVersion => VersionRange != null;
+    }
+
+    public readonly record struct SdkReferenceIdentity(string Id, string? Version)
+    {
+        public bool HasVersion => Version != null;
     }
 }
