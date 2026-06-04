@@ -419,9 +419,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 : new[] { "-c", configuration, "-bl" };
 
             // -bl is passed so any future hang produces an MSBuild binlog that the test framework
-            // uploads from the working directory (see https://github.com/dotnet/sdk/issues/54580).
+            // uploads from the working directory. The 5-minute watchdog turns the silent
+            // 60-minute hang seen in https://github.com/dotnet/sdk/issues/54580 into a fast,
+            // actionable test failure instead of letting Helix's blame collector intervene.
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithTimeout(TimeSpan.FromMinutes(5))
                                     .Execute(args);
 
             if (!SdkTestContext.IsLocalized())

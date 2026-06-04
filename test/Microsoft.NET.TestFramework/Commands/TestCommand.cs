@@ -24,6 +24,21 @@ namespace Microsoft.NET.TestFramework.Commands
         /// </summary>
         public bool CreateNewProcessGroup { get; set; }
 
+        /// <summary>
+        /// Optional watchdog timeout for the spawned child process. When set and exceeded,
+        /// the child process tree is killed and the resulting <see cref="CommandResult"/>
+        /// reflects the killed exit code. Use to convert silent hangs (e.g. dotnet/sdk#54580
+        /// where <c>dotnet test</c> hung silently for 60 minutes before the Helix blame
+        /// collector intervened) into actionable, fast test failures.
+        /// </summary>
+        public TimeSpan? Timeout { get; set; }
+
+        public TestCommand WithTimeout(TimeSpan timeout)
+        {
+            Timeout = timeout;
+            return this;
+        }
+
         //  These only work via Execute(), not when using GetProcessStartInfo()
         public Action<string>? CommandOutputHandler { get; set; }
         public Action<Process>? ProcessStartedHandler { get; set; }
@@ -186,8 +201,91 @@ namespace Microsoft.NET.TestFramework.Commands
             var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
 
             Log.WriteLine($"Executing '{display}':");
-            var result = command.Execute(ProcessStartedHandler);
-            Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
+
+            // If a timeout was configured, install a watchdog that kills the spawned process
+            // tree when it fires. Without this, a silent hang inside the child runs until the
+            // outer harness (e.g. Helix blame collector) intervenes, wasting CI minutes and
+            // producing no actionable failure (see https://github.com/dotnet/sdk/issues/54580).
+            Process? spawnedProcess = null;
+            var userProcessStartedHandler = ProcessStartedHandler;
+            Action<Process>? effectiveProcessStartedHandler = userProcessStartedHandler;
+            CancellationTokenSource? watchdogCts = null;
+            Task? watchdogTask = null;
+            var timedOut = false;
+
+            if (Timeout is TimeSpan timeout)
+            {
+                effectiveProcessStartedHandler = process =>
+                {
+                    spawnedProcess = process;
+                    userProcessStartedHandler?.Invoke(process);
+                };
+
+                watchdogCts = new CancellationTokenSource();
+                var token = watchdogCts.Token;
+                watchdogTask = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await Task.Delay(timeout, token).ConfigureAwait(false);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        return;
+                    }
+
+                    var processToKill = spawnedProcess;
+                    if (processToKill is null)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        if (!processToKill.HasExited)
+                        {
+                            Log.WriteLine($"[Timeout] '{display}' exceeded {timeout.TotalMinutes:F0} min - killing process tree (PID {processToKill.Id}) to convert a silent hang into a fast test failure.");
+                            processToKill.Kill(entireProcessTree: true);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteLine($"[Timeout] Failed to kill PID {processToKill.Id}: {ex.GetType().Name}: {ex.Message}");
+                    }
+                }, token);
+            }
+
+            CommandResult result;
+            try
+            {
+                result = command.Execute(effectiveProcessStartedHandler);
+            }
+            finally
+            {
+                if (watchdogCts is not null)
+                {
+                    timedOut = watchdogTask is { IsCompleted: true, IsCanceled: false };
+                    watchdogCts.Cancel();
+                    try
+                    {
+                        watchdogTask?.Wait(TimeSpan.FromSeconds(5));
+                    }
+                    catch
+                    {
+                        // Watchdog cancellation may surface as AggregateException(TaskCanceledException); ignore.
+                    }
+                    watchdogCts.Dispose();
+                }
+            }
+
+            if (timedOut)
+            {
+                Log.WriteLine($"Command '{display}' was killed after exceeding the configured timeout of {Timeout!.Value.TotalMinutes:F0} min. Exit code reported: {result.ExitCode}.");
+            }
+            else
+            {
+                Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
+            }
 
             if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
             {
