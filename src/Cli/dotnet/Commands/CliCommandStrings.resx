@@ -969,12 +969,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is the file path argument. {1} is the project file path.{Locked="dotnet run --file"}{Locked="dotnet run --"}</comment>
   </data>
   <data name="WarningFileArgumentPassedToMSBuild" xml:space="preserve">
-    <value>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</value>
-    <comment>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</comment>
+    <value>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</value>
+    <comment>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish). {2} is the list of unsupported arguments.{Locked="dotnet"}</comment>
   </data>
   <data name="WarningCsFileArgumentPassedToMSBuild" xml:space="preserve">
-    <value>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</value>
-    <comment>{0} is the .cs file path argument.</comment>
+    <value>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</value>
+    <comment>{0} is the .cs file path argument. {1} is the list of unrecognized arguments.</comment>
   </data>
   <data name="RunCommandWarningCsFileArgumentPassedToProject" xml:space="preserve">
     <value>Warning: '{0}' looks like a file-based app but the file was not found, and it was passed as an argument to the project '{1}'. To pass it as an application argument, use 'dotnet run -- {0}' to suppress this warning.</value>

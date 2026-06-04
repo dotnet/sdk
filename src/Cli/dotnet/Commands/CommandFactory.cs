@@ -48,14 +48,21 @@ public static class CommandFactory
                 if (VirtualProjectBuilder.IsValidEntryPointPath(candidate))
                 {
                     Reporter.Error.WriteLine(
-                        string.Format(CliCommandStrings.WarningFileArgumentPassedToMSBuild, candidate, commandDefinition.Name).Yellow());
+                        string.Format(
+                            CliCommandStrings.WarningFileArgumentPassedToMSBuild,
+                            candidate,
+                            commandDefinition.Name,
+                            FormatUnsupportedArguments(nonBinLogArgs, candidate)).Yellow());
                     break;
                 }
 
                 if (candidate.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                 {
                     Reporter.Error.WriteLine(
-                        string.Format(CliCommandStrings.WarningCsFileArgumentPassedToMSBuild, candidate).Yellow());
+                        string.Format(
+                            CliCommandStrings.WarningCsFileArgumentPassedToMSBuild,
+                            candidate,
+                            FormatUnrecognizedArguments(nonBinLogArgs)).Yellow());
                     break;
                 }
             }
@@ -63,6 +70,28 @@ public static class CommandFactory
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], [.. optionsToUseWhenParsingMSBuildFlags]);
             msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
             return createPhysicalCommand(msbuildArgs, msbuildPath);
+        }
+    }
+
+    private static string FormatUnsupportedArguments(IEnumerable<string> args, string supportedArgument) =>
+        FormatArguments(RemoveFirst(args, supportedArgument));
+
+    private static string FormatUnrecognizedArguments(IEnumerable<string> args) => FormatArguments(args);
+
+    private static string FormatArguments(IEnumerable<string> args) => string.Join(", ", args.Select(arg => $"'{arg}'"));
+
+    private static IEnumerable<string> RemoveFirst(IEnumerable<string> args, string value)
+    {
+        var removed = false;
+        foreach (var arg in args)
+        {
+            if (!removed && string.Equals(arg, value, StringComparison.Ordinal))
+            {
+                removed = true;
+                continue;
+            }
+
+            yield return arg;
         }
     }
 }
