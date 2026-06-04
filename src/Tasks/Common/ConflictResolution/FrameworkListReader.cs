@@ -9,6 +9,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
     class FrameworkListReader
     {
+        private static readonly object s_cacheLock = new();
+
         private IBuildEngine4 _buildEngine;
 
         public FrameworkListReader(IBuildEngine4 buildEngine)
@@ -18,6 +20,11 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
         public IEnumerable<ConflictItem> GetConflictItems(AbsolutePath frameworkListPath, Logger log)
         {
+            if (!Path.IsPathRooted(frameworkListPath.OriginalValue))
+            {
+                throw new BuildErrorException(Strings.FrameworkListPathNotRooted, frameworkListPath.OriginalValue);
+            }
+
             //  Need to include assembly name in the key here, since both Microsoft.NET.Build.Tasks and Microsoft.NET.Build.Extensions.Tasks share this code,
             //  but can't share the types of the ConflictItem objects.
             string? assemblyName = typeof(FrameworkListReader).GetTypeInfo().Assembly.FullName;
@@ -26,17 +33,20 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
             IEnumerable<ConflictItem> result;
 
-            object existingConflictItems = _buildEngine.GetRegisteredTaskObject(objectKey, RegisteredTaskObjectLifetime.AppDomain);
-
-            if (existingConflictItems == null)
+            lock (s_cacheLock)
             {
-                result = LoadConflictItems(frameworkListPath, log);
+                object existingConflictItems = _buildEngine.GetRegisteredTaskObject(objectKey, RegisteredTaskObjectLifetime.AppDomain);
 
-                _buildEngine.RegisterTaskObject(objectKey, result, RegisteredTaskObjectLifetime.AppDomain, true);
-            }
-            else
-            {
-                result = (IEnumerable<ConflictItem>)existingConflictItems;
+                if (existingConflictItems == null)
+                {
+                    result = LoadConflictItems(frameworkListPath, log);
+
+                    _buildEngine.RegisterTaskObject(objectKey, result, RegisteredTaskObjectLifetime.AppDomain, true);
+                }
+                else
+                {
+                    result = (IEnumerable<ConflictItem>)existingConflictItems;
+                }
             }
 
             return result;

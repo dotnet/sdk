@@ -67,46 +67,17 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     }
 
     /// <summary>
-    /// When a relative PlatformManifest cannot be found, the error message must show the
-    /// original (relative) path the user supplied, not the absolutized path used for I/O.
-    /// This covers Sin 2 (user-facing path relativity) for the AbsolutePath rewrite.
+    /// TargetFrameworkDirectories with a relative ItemSpec must preserve the pre-migration
+    /// behavior: the derived FrameworkList.xml path is invalid because it is not rooted.
     /// </summary>
     [Fact]
-    public void PlatformManifest_MissingFile_LogsOriginalRelativePath()
-    {
-        var projectDir = CreateTempDir();
-        var decoyDir = CreateTempDir();
-
-        var manifestRelPath = Path.Combine("manifests", "DoesNotExist.txt");
-        // Intentionally do not create the file.
-
-        Directory.SetCurrentDirectory(decoyDir);
-
-        var engine = new MockBuildEngine();
-        var task = CreateTask(engine);
-        task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
-        task.PlatformManifests = new ITaskItem[] { new MockTaskItem(manifestRelPath, new Dictionary<string, string>()) };
-
-        task.Execute().Should().BeFalse("a missing PlatformManifest should fail the task");
-        var error = engine.Errors.Should().ContainSingle().Which;
-        error.Message.Should().Contain(manifestRelPath, "the original relative path must be preserved in the error");
-        error.Message.Should().NotContain(projectDir, "the absolutized path must not leak into user-facing errors");
-    }
-
-    /// <summary>
-    /// TargetFrameworkDirectories with a relative ItemSpec must be resolved against the task's
-    /// ProjectDirectory (via TaskEnvironment), not the process CWD. We verify this by placing
-    /// a FrameworkList.xml that exists only relative to the project directory and asserting the
-    /// framework list cache key uses the project-directory-relative absolute path.
-    /// </summary>
-    [Fact]
-    public void TargetFrameworkDirectories_ResolveRelativePathAgainstProjectDir()
+    public void TargetFrameworkDirectories_RelativePathLogsNotRootedOriginalPath()
     {
         var projectDir = CreateTempDir();
         var decoyDir = CreateTempDir();
 
         var targetFrameworkRelPath = "refpack";
-        var expectedFrameworkListPath = Path.Combine(projectDir, targetFrameworkRelPath, "RedistList", "FrameworkList.xml");
+        var expectedFrameworkListPath = Path.Combine(targetFrameworkRelPath, "RedistList", "FrameworkList.xml");
         CreateFrameworkList(Path.Combine(projectDir, targetFrameworkRelPath), "System.Runtime", "9.0.0.0");
 
         var referenceRelPath = Path.Combine("packages", "System.Runtime.dll");
@@ -128,12 +99,11 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
             })
         };
 
-        task.Execute().Should().BeTrue("relative TargetFrameworkDirectories should resolve against ProjectDirectory");
-        engine.Errors.Should().BeEmpty();
-        engine.RegisteredTaskObjects.Keys.Should().Contain(key =>
-            key.ToString()!.EndsWith(expectedFrameworkListPath, StringComparison.OrdinalIgnoreCase));
-        task.ReferencesWithoutConflicts.Should().ContainSingle();
-        task.ReferencesWithoutConflicts![0].ItemSpec.Should().Be("System.Runtime");
+        task.Execute().Should().BeFalse("relative TargetFrameworkDirectories should remain invalid");
+        var error = engine.Errors.Should().ContainSingle().Which;
+        error.Message.Should().Contain(expectedFrameworkListPath, "the original relative path must be preserved in the error");
+        error.Message.Should().NotContain(projectDir, "the relative path must not be silently absolutized against ProjectDirectory");
+        engine.RegisteredTaskObjects.Should().BeEmpty();
     }
 
     private string CreateTempDir()

@@ -72,8 +72,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
                 compilePlatformItems = TargetFrameworkDirectories.SelectMany(tfd =>
                 {
-                    AbsolutePath tfdPath = TaskEnvironment.GetAbsolutePath(tfd.ItemSpec);
-                    AbsolutePath frameworkListPath = TaskEnvironment.GetAbsolutePath(Path.Combine(tfdPath, "RedistList", "FrameworkList.xml"));
+                    AbsolutePath frameworkListPath = TaskEnvironment.GetAbsolutePath(Path.Combine(tfd.ItemSpec, "RedistList", "FrameworkList.xml"));
                     return frameworkListReader.GetConflictItems(frameworkListPath, log);
                 }).ToArray();
             }

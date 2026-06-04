@@ -13,8 +13,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         {
             if (manifestPath is not AbsolutePath path)
             {
-                log.LogError(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotLoadPlatformManifest, string.Empty));
-                yield break;
+                throw new ArgumentNullException(nameof(manifestPath));
             }
 
             if (!File.Exists(path))
