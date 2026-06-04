@@ -31,6 +31,22 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryClient.cs" Link="TelemetryClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryCommonProperties.cs" Link="TelemetryCommonProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ITelemetryClient.cs" Link="ITelemetryClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryDiskLogger.cs" Link="TelemetryDiskLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\IDockerContainerDetector.cs" Link="Telemetry\IDockerContainerDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\DockerContainerDetectorForTelemetry.cs" Link="Telemetry\DockerContainerDetectorForTelemetry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ILLMEnvironmentDetector.cs" Link="Telemetry\ILLMEnvironmentDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\LLMEnvironmentDetectorForTelemetry.cs" Link="Telemetry\LLMEnvironmentDetectorForTelemetry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\MacAddressGetter.cs" Link="Telemetry\MacAddressGetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\DevDeviceIDGetter.cs" Link="Telemetry\DevDeviceIDGetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ExternalTelemetryProperties.cs" Link="Telemetry\ExternalTelemetryProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ActivityExtensions.cs" Link="ActivityExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ParseResultExtensions.cs" Link="ParseResultExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.TemplateEngine.Cli\SymbolExtensions.cs" Link="SymbolExtensions.cs" />
   </ItemGroup>
 
   <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
@@ -60,7 +76,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnFileFactory.cs" Link="SlnFileFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnfFileHelper.cs" Link="SlnfFileHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\MsbuildProject.cs" Link="MsbuildProject.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.FileBasedPrograms\ProjectLocator.cs" Link="ProjectLocator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionCommandParser.cs" Link="Commands\Solution\SolutionCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionArgumentValidator.cs" Link="Commands\Solution\SolutionArgumentValidator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\List\SolutionListCommand.cs" Link="Commands\Solution\List\SolutionListCommand.cs" />
@@ -70,7 +85,6 @@
 
   <!-- 'dotnet sln' command: command-specific dependencies. -->
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.FileBasedPrograms\FileBasedProgramsResources.resx" Link="FileBasedProgramsResources.resx" GenerateSource="true" Namespace="Microsoft.DotNet.FileBasedPrograms" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
   </ItemGroup>
