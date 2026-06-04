@@ -166,13 +166,25 @@ function InstallDotNetSharedFrameworks {
   fi
 
   if [[ "$skip_download" != true ]]; then
-    # Acquire the latest dotnetup daily build using the in-repo install script.
-    # build.sh runs under `set -e`; guard so we can emit a diagnostic.
-    if ! "$repo_root/scripts/get-dotnetup.sh" --install-dir "$dotnetup_dir"; then
+    # Acquire the latest dotnetup daily build using the public install script
+    # published at aka.ms (https://aka.ms/dotnetup/get-dotnetup.sh). build.sh runs
+    # under `set -e`; guard so we can emit a diagnostic and fall back on failure.
+    local getter_script
+    getter_script="$(mktemp)"
+    local getter_url="https://aka.ms/dotnetup/get-dotnetup.sh"
+    local downloaded=false
+    if command -v curl > /dev/null 2>&1; then
+      if curl -fsSL --retry 3 "$getter_url" -o "$getter_script"; then downloaded=true; fi
+    elif command -v wget > /dev/null 2>&1; then
+      if wget -q -O "$getter_script" "$getter_url"; then downloaded=true; fi
+    fi
+    if [[ "$downloaded" != true ]] || ! bash "$getter_script" --install-dir "$dotnetup_dir"; then
+      rm -f "$getter_script"
       Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup; falling back to dotnet install script."
       InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$arch" "${specs_to_install[@]}"
       return
     fi
+    rm -f "$getter_script"
   fi
 
   local restore_errexit=false

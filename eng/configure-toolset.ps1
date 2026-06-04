@@ -52,13 +52,19 @@ function InstallBootstrapSdkWithDotnetup() {
     }
 
     if (-not $skipDownload) {
-        # Seed $LASTEXITCODE so strict mode can read it if the called script
-        # short-circuits without invoking a native process.
+        # Acquire the latest dotnetup daily build using the public install script
+        # published at aka.ms (https://aka.ms/dotnetup/get-dotnetup.ps1). Seed
+        # $LASTEXITCODE so strict mode can read it if the script short-circuits
+        # without invoking a native process.
         if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-        & (Join-Path $RepoRoot 'scripts\get-dotnetup.ps1') -InstallDir $dotnetupDir
-        if ($LASTEXITCODE -ne 0) {
-            Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup (exit code '$LASTEXITCODE')."
-            ExitWithExitCode $LASTEXITCODE
+        try {
+            $getDotnetupScript = (Invoke-WebRequest -Uri 'https://aka.ms/dotnetup/get-dotnetup.ps1' -UseBasicParsing).Content
+            & ([scriptblock]::Create($getDotnetupScript)) -InstallDir $dotnetupDir
+            if ($LASTEXITCODE -ne 0) { throw "get-dotnetup.ps1 exited with code $LASTEXITCODE." }
+        }
+        catch {
+            Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup: $($_.Exception.Message)"
+            ExitWithExitCode 1
         }
     }
 
