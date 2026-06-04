@@ -38,9 +38,17 @@
     <None Include="**\*.props;**\*.targets" Pack="true" PackagePath="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish">
+  <!-- Publish the task's .NET assets and include them in the package under the tools directory.
+
+      This runs during NuGet's pack walk (_WalkEachTargetPerFramework), which means that TargetFramework
+      is a global property.  So we have to use an MSBuild task to build the Publish target with
+      TargetFramework removed, so that we don't have two different project builds, one with
+      TargetFramework set and one without.  If we just tried to depend on the Publish target directly,
+      we would get two builds and they could encounter race conditions and file in use errors.
+ --> 
+  <Target Name="_AddBuildOutputToPackageCore">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="TargetFramework" />
     <ItemGroup>
-      <!-- Publish .NET assets and include them in the package under tools directory. -->
       <TfmSpecificPackageFile Include="$(PublishDir)**" PackagePath="tools/%(RecursiveDir)%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
