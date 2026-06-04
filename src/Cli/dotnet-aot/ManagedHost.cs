@@ -175,7 +175,7 @@ internal sealed unsafe class ManagedHost : IDisposable
                     }
                 }
 
-                using var _invoke = Activities.Source.StartActivity("aot-coreclr-invocation");
+                using var invoke = Activities.Source.StartActivity("aot-coreclr-invocation");
                 StatusCode appResult = Interop.hostfxr_run_app(handle);
                 return (int)appResult;
             }
