@@ -1,50 +1,52 @@
 # Detect native OS architecture, which may differ from the process architecture
 # (e.g., x64 process running on ARM64 Windows via emulation).
 function Get-NativeMachineArchitecture {
-  try {
-    $osArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-    if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
-      return "arm64"
+    try {
+        $osArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+        if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
+            return "arm64"
+        }
+        if ($osArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
+            return "x86"
+        }
+        if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
+            return "arm"
+        }
     }
-    if ($osArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
-      return "x86"
+    catch {
+        # Fallback for environments where RuntimeInformation is unavailable
     }
-    if ($osArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
-      return "arm"
-    }
-  } catch {
-    # Fallback for environments where RuntimeInformation is unavailable
-  }
-  return "x64"
+    return "x64"
 }
 
 function Get-ProcessMachineArchitecture {
-  try {
-    $processArch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
-    if ($processArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
-      return "arm64"
+    try {
+        $processArch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
+        if ($processArch -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
+            return "arm64"
+        }
+        if ($processArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
+            return "x86"
+        }
+        if ($processArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
+            return "arm"
+        }
     }
-    if ($processArch -eq [System.Runtime.InteropServices.Architecture]::X86) {
-      return "x86"
+    catch {
+        # Fallback for environments where RuntimeInformation is unavailable
     }
-    if ($processArch -eq [System.Runtime.InteropServices.Architecture]::Arm) {
-      return "arm"
-    }
-  } catch {
-    # Fallback for environments where RuntimeInformation is unavailable
-  }
-  return "x64"
+    return "x64"
 }
 
 function Get-DotNetInstallFallbackArchitecture {
-  if (-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) {
-    $nativeArch = Get-NativeMachineArchitecture
-    if ($env:TARGET_ARCHITECTURE -ne $nativeArch) {
-      return $env:TARGET_ARCHITECTURE
+    if (-not [string]::IsNullOrEmpty($env:TARGET_ARCHITECTURE)) {
+        $nativeArch = Get-NativeMachineArchitecture
+        if ($env:TARGET_ARCHITECTURE -ne $nativeArch) {
+            return $env:TARGET_ARCHITECTURE
+        }
     }
-  }
 
-  return ""
+    return ""
 }
 
 function InitializeCustomSDKToolset {
@@ -178,117 +180,129 @@ function CreateVSShortcut() {
 # expected by the dotnet-install script's -Version parameter (e.g. "9.0.0").
 # Full versions (e.g. "9.0.0-preview.5.24306.7") are passed through unchanged.
 function ConvertTo-DotNetInstallScriptVersion([string]$version) {
-  if ($version -match '^\d+\.\d+$') {
-    return "$version.0"
-  }
+    if ($version -match '^\d+\.\d+$') {
+        return "$version.0"
+    }
 
-  return $version
+    return $version
 }
 
 function Get-VersionDetailsProperty([string]$propertyName) {
-  $versionDetails = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot 'eng\Version.Details.props'))
-  $property = $versionDetails.SelectSingleNode("//$propertyName")
-  if ($null -eq $property) {
-    return ""
-  }
+    $versionDetails = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot 'eng\Version.Details.props'))
+    $property = $versionDetails.SelectSingleNode("//$propertyName")
+    if ($null -eq $property) {
+        return ""
+    }
 
-  return $property.InnerText
+    return $property.InnerText
 }
 
 function Get-CurrentRuntimeToolsetSpecs() {
-  $runtimeVersion = Get-VersionDetailsProperty 'MicrosoftNETCoreAppRefPackageVersion'
-  $aspNetCoreVersion = Get-VersionDetailsProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+    $runtimeVersion = Get-VersionDetailsProperty 'MicrosoftNETCoreAppRefPackageVersion'
+    $aspNetCoreVersion = Get-VersionDetailsProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
 
-  $specs = @()
-  if (-not [string]::IsNullOrEmpty($runtimeVersion)) {
-    $specs += $runtimeVersion
-  }
-  if (-not [string]::IsNullOrEmpty($aspNetCoreVersion)) {
-    $specs += "aspnetcore@$aspNetCoreVersion"
-  }
+    $specs = @()
+    if (-not [string]::IsNullOrEmpty($runtimeVersion)) {
+        $specs += $runtimeVersion
+    }
+    if (-not [string]::IsNullOrEmpty($aspNetCoreVersion)) {
+        $specs += "aspnetcore@$aspNetCoreVersion"
+    }
 
-  return $specs
+    return $specs
 }
 
 function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$architecture = "") {
-  $dotnetRoot = $env:DOTNET_INSTALL_DIR
+    $dotnetRoot = $env:DOTNET_INSTALL_DIR
 
-  # Skip if every requested framework is already on disk. Accept either a
-  # dotnet runtime version/channel or a component@version spec such as
-  # aspnetcore@11.0.0-preview.6. Treat major.minor channels as present if any
-  # matching patch (e.g. 6.0.36) exists.
-  $runtimeSpecsToInstall = @($runtimeSpecs | Where-Object {
-      $component, $version = if ($_ -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $_ }
-      $sharedFrameworkName = if ($component -eq 'aspnetcore') { 'Microsoft.AspNetCore.App' } elseif ($component -eq 'windowsdesktop') { 'Microsoft.WindowsDesktop.App' } else { 'Microsoft.NETCore.App' }
-      $fxRoot = Join-Path $dotnetRoot "shared\$sharedFrameworkName"
-      -not (Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
-    })
-  if ($runtimeSpecsToInstall.Count -eq 0) {
-    return
-  }
-
-  $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
-  $dotnetupExe = Join-Path $dotnetupDir (GetExecutableFileName "dotnetup")
-
-  # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
-  $skipDownload = $false
-  if (Test-Path $dotnetupExe) {
-    $age = (Get-Date) - (Get-Item $dotnetupExe).LastWriteTime
-    if ($age.TotalHours -lt 24) {
-      Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
-      $skipDownload = $true
+    # Skip if every requested framework is already on disk. Accept either a
+    # dotnet runtime version/channel or a component@version spec such as
+    # aspnetcore@11.0.0-preview.6. Treat major.minor channels as present if any
+    # matching patch (e.g. 6.0.36) exists.
+    $runtimeSpecsToInstall = @($runtimeSpecs | Where-Object {
+            $component, $version = if ($_ -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $_ }
+            $sharedFrameworkName = if ($component -eq 'aspnetcore') { 'Microsoft.AspNetCore.App' } elseif ($component -eq 'windowsdesktop') { 'Microsoft.WindowsDesktop.App' } else { 'Microsoft.NETCore.App' }
+            $fxRoot = Join-Path $dotnetRoot "shared\$sharedFrameworkName"
+            -not (Test-Path -PathType Container (Join-Path $fxRoot "$version*"))
+        })
+    if ($runtimeSpecsToInstall.Count -eq 0) {
+        return
     }
-  }
 
-  if ($skipDownload -and ((Get-NativeMachineArchitecture) -ne (Get-ProcessMachineArchitecture))) {
-    Write-Host "Native architecture differs from process architecture; re-downloading dotnetup for the native architecture." -ForegroundColor DarkGray
+    # dotnetup installs runtimes for its own process architecture and has no
+    # architecture override (InstallerUtilities.GetDefaultInstallArchitecture uses
+    # RuntimeInformation.ProcessArchitecture). On a cross-build (e.g. an x64 host
+    # producing an arm64 test payload), dotnetup would silently install the host
+    # architecture, so the test runtimes would not match the target Helix queue.
+    # When a specific architecture is requested, use the dotnet-install script
+    # directly since it honors -Architecture.
+    if (-not [string]::IsNullOrEmpty($architecture)) {
+        InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
+        return
+    }
+
+    $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
+    $dotnetupExe = Join-Path $dotnetupDir (GetExecutableFileName "dotnetup")
+
+    # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
     $skipDownload = $false
-  }
-
-  if (-not $skipDownload) {
-    # Acquire the latest dotnetup daily build using the in-repo install script.
-    # get-dotnetup.ps1 may short-circuit without invoking a native process,
-    # leaving $LASTEXITCODE unset; seed it so strict mode can read it.
-    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
-    if ($lastExitCode -ne 0) {
-      Write-Host "Failed to acquire dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
-      InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
-      return
+    if (Test-Path $dotnetupExe) {
+        $age = (Get-Date) - (Get-Item $dotnetupExe).LastWriteTime
+        if ($age.TotalHours -lt 24) {
+            Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
+            $skipDownload = $true
+        }
     }
-  }
 
-  if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-  & $dotnetupExe runtime install @runtimeSpecsToInstall --install-path $dotnetRoot --set-default-install false --untracked --interactive false
+    if ($skipDownload -and ((Get-NativeMachineArchitecture) -ne (Get-ProcessMachineArchitecture))) {
+        Write-Host "Native architecture differs from process architecture; re-downloading dotnetup for the native architecture." -ForegroundColor DarkGray
+        $skipDownload = $false
+    }
 
-  if ($lastExitCode -ne 0) {
-    Write-Host "Failed to install shared frameworks ($($runtimeSpecsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
-    InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
-  }
+    if (-not $skipDownload) {
+        # Acquire the latest dotnetup daily build using the in-repo install script.
+        # get-dotnetup.ps1 may short-circuit without invoking a native process,
+        # leaving $LASTEXITCODE unset; seed it so strict mode can read it.
+        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+        & (Join-Path $RepoRoot "scripts\get-dotnetup.ps1") -InstallDir $dotnetupDir
+        if ($lastExitCode -ne 0) {
+            Write-Host "Failed to acquire dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
+            InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
+            return
+        }
+    }
+
+    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+    & $dotnetupExe runtime install @runtimeSpecsToInstall --install-path $dotnetRoot --set-default-install false --untracked --interactive false
+
+    if ($lastExitCode -ne 0) {
+        Write-Host "Failed to install shared frameworks ($($runtimeSpecsToInstall -join ', ')) to '$dotnetRoot' using dotnetup (exit code '$lastExitCode'); falling back to dotnet install script." -ForegroundColor Yellow
+        InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs $runtimeSpecsToInstall -DotNetRoot $dotnetRoot -Architecture $architecture
+    }
 }
 
 function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs, [string]$dotNetRoot, [string]$architecture = "") {
-  $installScript = GetDotNetInstallScript $dotNetRoot
-  foreach ($spec in $runtimeSpecs) {
-    $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
-    $installVersion = ConvertTo-DotNetInstallScriptVersion $version
-    $installArgs = @{
-      Version = $installVersion
-      InstallDir = $dotNetRoot
-      Runtime = $component
-      SkipNonVersionedFiles = $true
-    }
-    if (-not [string]::IsNullOrEmpty($architecture)) {
-      $installArgs.Architecture = $architecture
-    }
+    $installScript = GetDotNetInstallScript $dotNetRoot
+    foreach ($spec in $runtimeSpecs) {
+        $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
+        $installVersion = ConvertTo-DotNetInstallScriptVersion $version
+        $installArgs = @{
+            Version               = $installVersion
+            InstallDir            = $dotNetRoot
+            Runtime               = $component
+            SkipNonVersionedFiles = $true
+        }
+        if (-not [string]::IsNullOrEmpty($architecture)) {
+            $installArgs.Architecture = $architecture
+        }
 
-    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    & $installScript @installArgs
+        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+        & $installScript @installArgs
 
-    if ($lastExitCode -ne 0) {
-      throw "Failed to install shared framework $version to '$dotNetRoot' using dotnet install script for architecture '$architecture' (exit code '$lastExitCode')."
+        if ($lastExitCode -ne 0) {
+            throw "Failed to install shared framework $version to '$dotNetRoot' using dotnet install script for architecture '$architecture' (exit code '$lastExitCode')."
+        }
     }
-  }
 }
 
 # Let's clear out the stage-zero folders that map to the current runtime to keep stage 2 clean

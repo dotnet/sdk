@@ -112,6 +112,18 @@ function InstallDotNetSharedFrameworks {
     return
   fi
 
+  # dotnetup installs runtimes for its own process architecture and has no
+  # architecture override (InstallerUtilities.GetDefaultInstallArchitecture uses
+  # RuntimeInformation.ProcessArchitecture). On a cross-build (e.g. an x64 host
+  # producing an arm64 test payload), dotnetup would silently install the host
+  # architecture, so the test runtimes would not match the target Helix queue.
+  # When a specific architecture is requested, use the dotnet-install script
+  # directly since it honors --architecture.
+  if [[ -n "$arch" ]]; then
+    InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$arch" "${specs_to_install[@]}"
+    return
+  fi
+
   local script_dir
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local dotnetup_dir="$script_dir/dotnetup"
@@ -131,9 +143,26 @@ function InstallDotNetSharedFrameworks {
     fi
   fi
 
-  if [[ "$skip_download" == true && "$(uname)" == "Darwin" && "$(GetNativeMachineArchitecture)" == "arm64" && "$(uname -m)" == "x86_64" ]]; then
-    echo "Running under Rosetta 2 on arm64 macOS; re-downloading dotnetup for the native architecture."
-    skip_download=false
+  if [[ "$skip_download" == true && -f "$dotnetup_exe" ]]; then
+    # dotnetup installs runtimes for its own process architecture, so a cached
+    # binary of the wrong architecture (e.g. an x64 dotnetup left on a reused
+    # arm64 agent, or one downloaded under Rosetta 2) would install the wrong
+    # runtimes. Verify the cached binary's actual architecture against the native
+    # architecture and re-download on mismatch rather than trusting uname.
+    local native_arch
+    native_arch="$(GetNativeMachineArchitecture)"
+    local cached_arch=""
+    if [[ "$(uname)" == "Darwin" ]]; then
+      if file "$dotnetup_exe" 2>/dev/null | grep -q 'arm64'; then
+        cached_arch="arm64"
+      elif file "$dotnetup_exe" 2>/dev/null | grep -q 'x86_64'; then
+        cached_arch="x64"
+      fi
+    fi
+    if [[ -n "$cached_arch" && "$cached_arch" != "$native_arch" ]]; then
+      echo "Cached dotnetup architecture ($cached_arch) does not match native architecture ($native_arch); re-downloading."
+      skip_download=false
+    fi
   fi
 
   if [[ "$skip_download" != true ]]; then
