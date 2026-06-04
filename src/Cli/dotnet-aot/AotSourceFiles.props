@@ -31,12 +31,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+  </ItemGroup>
 
-    <!-- sdk check command infrastructure -->
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
+  <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
+  </ItemGroup>
+
+  <!-- 'dotnet sdk check' command: command-specific sources and helpers. -->
+  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\PrintableTable.cs" Link="PrintableTable.cs" />
-
-    <!-- sdk check command -->
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\SdkCheckCommand.cs" Link="Commands\Sdk\Check\SdkCheckCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\IProductCollectionProvider.cs" Link="Commands\Sdk\Check\IProductCollectionProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\ProductCollectionProvider.cs" Link="Commands\Sdk\Check\ProductCollectionProvider.cs" />
@@ -45,19 +50,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\RuntimeOutputWriter.cs" Link="Commands\Sdk\Check\RuntimeOutputWriter.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
-  </ItemGroup>
-
+  <!-- 'dotnet sdk check' command: command-specific dependencies. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-  </ItemGroup>
-
-  <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
-  <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
   </ItemGroup>
 
   <!-- 'dotnet sln' command: command-specific sources and helpers. -->

@@ -76,20 +76,8 @@ static unsafe partial class NativeEntryPoint
         if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
         {
             DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
-            try
-            {
-                var parseResult = Parser.Parse(args);
-                if (parseResult.Errors.Count == 0)
-                {
-                    return Parser.Invoke(parseResult);
-                }
-            }
-            catch (Exception e) when (e.ShouldBeDisplayedAsError())
-            {
-                Reporter.Error.WriteLine(e.Message);
-                return 1;
-            }
-            catch (Exception e)
+            var parseResult = Parser.Parse(args);
+            if (parseResult.Errors.Count == 0)
             {
                 try
                 {
