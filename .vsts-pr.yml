@@ -95,5 +95,3 @@ stages:
 
   ############### HELIX JOB MONITOR ###############
   - template: /eng/common/core-templates/job/helix-job-monitor.yml
-    parameters:
-      timeoutInMinutes: 120

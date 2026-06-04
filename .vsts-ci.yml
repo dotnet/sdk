@@ -292,7 +292,6 @@ extends:
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/common/core-templates/job/helix-job-monitor.yml@self
           parameters:
-            timeoutInMinutes: 120
             helixAccessToken: $(HelixApiAccessToken)
 
     ############### PUBLISH STAGE ###############
