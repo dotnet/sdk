@@ -10,6 +10,8 @@ namespace Microsoft.NET.Build.Tasks
 {
     internal class RuntimeGraphCache
     {
+        private static readonly object s_cacheLock = new();
+
         private IBuildEngine4 _buildEngine;
         private Logger _log;
 
@@ -32,20 +34,23 @@ namespace Microsoft.NET.Build.Tasks
 
             string key = GetTaskObjectKey(runtimeJsonPath);
 
-            RuntimeGraph result;
-            object existingRuntimeGraphTaskObject = _buildEngine.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.AppDomain);
-            if (existingRuntimeGraphTaskObject == null)
+            lock (s_cacheLock)
             {
-                result = JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonPath);
+                RuntimeGraph result;
+                object existingRuntimeGraphTaskObject = _buildEngine.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.AppDomain);
+                if (existingRuntimeGraphTaskObject == null)
+                {
+                    result = JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonPath);
 
-                _buildEngine.RegisterTaskObject(key, result, RegisteredTaskObjectLifetime.AppDomain, true);
-            }
-            else
-            {
-                result = (RuntimeGraph)existingRuntimeGraphTaskObject;
-            }
+                    _buildEngine.RegisterTaskObject(key, result, RegisteredTaskObjectLifetime.AppDomain, true);
+                }
+                else
+                {
+                    result = (RuntimeGraph)existingRuntimeGraphTaskObject;
+                }
 
-            return result;
+                return result;
+            }
         }
 
         private static string GetTaskObjectKey(string runtimeJsonPath)

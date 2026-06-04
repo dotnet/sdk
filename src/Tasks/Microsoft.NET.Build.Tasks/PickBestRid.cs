@@ -39,6 +39,12 @@ public sealed class PickBestRid : TaskBase, IMultiThreadableTask
 
     protected override void ExecuteCore()
     {
+        if (string.IsNullOrEmpty(RuntimeGraphPath))
+        {
+            Log.LogError(Strings.RuntimeGraphFileDoesNotExist, RuntimeGraphPath);
+            return;
+        }
+
         AbsolutePath runtimeGraphPath = TaskEnvironment.GetAbsolutePath(RuntimeGraphPath);
         if (!File.Exists(runtimeGraphPath))
         {
