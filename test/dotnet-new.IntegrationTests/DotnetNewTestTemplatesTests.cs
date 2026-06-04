@@ -139,6 +139,53 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
+        [MemberData(nameof(GetTemplateItemsToTest))]
+        public void ItemTemplate_WithNameAndNoOutput_DoesNotCreateUnwantedFolder(string targetFramework, string projectTemplate, string itemTemplate, string language)
+        {
+            // Regression test for https://github.com/dotnet/sdk/issues/49760:
+            // `dotnet new <item-template> -n <name>` from within a project directory
+            // must create `<name>.<ext>` in that directory, not `<name>/<name>.<ext>`.
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+
+            // Create a test project so the item template's project-capability constraints are satisfied.
+            string projectArgs = $"{projectTemplate} -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory}";
+            new DotnetNewCommand(_log, projectArgs)
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            const string itemName = "MyItem";
+
+            // Run the item template with `-n` but *without* `-o`, with the working directory set to the project directory.
+            // This is the exact scenario described in the linked issue.
+            new DotnetNewCommand(_log, $"{itemTemplate} -n {itemName} -lang {language}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(outputDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string extension = language switch
+            {
+                Languages.FSharp => "fs",
+                Languages.VisualBasic => "vb",
+                _ => "cs",
+            };
+
+            File.Exists(Path.Combine(outputDirectory, $"{itemName}.{extension}")).Should().BeTrue(
+                $"item template '{itemTemplate}' should create '{itemName}.{extension}' in the working directory");
+            Directory.Exists(Path.Combine(outputDirectory, itemName)).Should().BeFalse(
+                $"item template '{itemTemplate}' should not create an unwanted '{itemName}' folder");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [Theory]
         [MemberData(nameof(GetTemplateProjectsToTest))]
         public void ProjectTemplate_CanBeInstalledAndTestsArePassing(string targetFramework, string projectTemplate, string language, bool runDotnetTest)
         {
