@@ -197,6 +197,4 @@ function CleanOutStage0ToolsetsAndRuntimes {
 
 InitializeCustomSDKToolset
 
-if ($restore) {
-  CleanOutStage0ToolsetsAndRuntimes
-}
+CleanOutStage0ToolsetsAndRuntimes
