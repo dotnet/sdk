@@ -19,12 +19,18 @@
 <!--#endif-->
 <!--#else-->
     <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
+<!--#if (ExplicitProgramFile)-->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+<!--#endif-->
   </PropertyGroup>
 <!--#endif-->
 
   <ItemGroup>
     <Compile Include="MSTestSettings.fs" />
     <Compile Include="Test1.fs" />
+<!--#if (ExplicitProgramFile && TestRunner == "Microsoft.Testing.Platform")-->
+    <Compile Include="Program.fs" />
+<!--#endif-->
   </ItemGroup>
 
 </Project>
@@ -41,6 +47,9 @@
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
+<!--#if (ExplicitProgramFile)-->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+<!--#endif-->
 <!--#endif-->
   </PropertyGroup>
 
@@ -58,6 +67,9 @@
   <ItemGroup>
     <Compile Include="MSTestSettings.fs" />
     <Compile Include="Test1.fs" />
+<!--#if (ExplicitProgramFile && TestRunner == "Microsoft.Testing.Platform")-->
+    <Compile Include="Program.fs" />
+<!--#endif-->
   </ItemGroup>
 
 </Project>
