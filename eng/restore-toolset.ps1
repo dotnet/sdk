@@ -75,6 +75,8 @@ function InitializeCustomSDKToolset {
         $fallbackArchitecture = Get-DotNetInstallFallbackArchitecture
         $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
         if ([string]::IsNullOrEmpty($fallbackArchitecture)) {
+            # Also install the exact runtime versions that arcade's toolset requires
+            # (from Version.Details.props) so tests can target those specific versions.
             $runtimeSpecs += Get-CurrentRuntimeToolsetSpecs
         }
         InstallDotNetSharedFrameworks -RuntimeSpecs $runtimeSpecs -Architecture $fallbackArchitecture
@@ -172,7 +174,10 @@ function CreateVSShortcut() {
     $shortcut.Save()
 }
 
-function Get-DotNetInstallScriptVersion([string]$version) {
+# Maps a dotnetup channel version (e.g. "9.0") to the specific version
+# expected by the dotnet-install script's -Version parameter (e.g. "9.0.0").
+# Full versions (e.g. "9.0.0-preview.5.24306.7") are passed through unchanged.
+function ConvertTo-DotNetInstallScriptVersion([string]$version) {
   if ($version -match '^\d+\.\d+$') {
     return "$version.0"
   }
@@ -266,7 +271,7 @@ function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs,
   $installScript = GetDotNetInstallScript $dotNetRoot
   foreach ($spec in $runtimeSpecs) {
     $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
-    $installVersion = Get-DotNetInstallScriptVersion $version
+    $installVersion = ConvertTo-DotNetInstallScriptVersion $version
     $installArgs = @{
       Version = $installVersion
       InstallDir = $dotNetRoot

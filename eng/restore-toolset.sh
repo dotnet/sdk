@@ -53,6 +53,8 @@ function InitializeCustomSDKToolset {
 
     local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
     if [[ -z "$install_script_arch" ]]; then
+      # Also install the exact runtime versions that arcade's toolset requires
+      # (from Version.Details.props) so tests can target those specific versions.
       local runtime_version
       runtime_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
       local aspnetcore_version
@@ -176,6 +178,8 @@ function InstallDotNetSharedFrameworksWithInstallScript {
       component="${spec%@*}"
       install_version="${spec#*@}"
     fi
+    # Map dotnetup channel (e.g. "9.0") to the specific version the install
+    # script's --version parameter expects (e.g. "9.0.0").
     if [[ "$install_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
       install_version="$install_version.0"
     fi
