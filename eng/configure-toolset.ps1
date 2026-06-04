@@ -4,14 +4,8 @@
 
 $script:useInstalledDotNetCli = $false
 
-function Test-NativeProcessArchitectureMismatch() {
-    try {
-        return [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
-    }
-    catch {
-        return $false
-    }
-}
+# Shared dotnetup acquisition helpers (architecture detection, cache freshness, download).
+. (Join-Path $PSScriptRoot 'dotnetup-shared.ps1')
 
 # Pre-install the bootstrap SDK pinned in global.json using dotnetup into the
 # repo-local .dotnet directory that arcade's InitializeDotnetCli will pick up.
@@ -36,31 +30,9 @@ function InstallBootstrapSdkWithDotnetup() {
     $dotnetupDir = Join-Path $PSScriptRoot 'dotnetup'
     $dotnetupExe = Join-Path $dotnetupDir (GetExecutableFileName 'dotnetup')
 
-    # Re-download dotnetup at most once every 24 hours to avoid unnecessary network calls.
-    $skipDownload = $false
-    if (Test-Path $dotnetupExe) {
-        $age = (Get-Date) - (Get-Item $dotnetupExe).LastWriteTime
-        if ($age.TotalHours -lt 24) {
-            Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
-            $skipDownload = $true
-        }
-    }
-
-    if ($skipDownload -and (Test-NativeProcessArchitectureMismatch)) {
-        Write-Host "Native architecture differs from process architecture; re-downloading dotnetup for the native architecture." -ForegroundColor DarkGray
-        $skipDownload = $false
-    }
-
-    if (-not $skipDownload) {
-        # Acquire the latest dotnetup daily build using the public install script
-        # published at aka.ms (https://aka.ms/dotnetup/get-dotnetup.ps1). Seed
-        # $LASTEXITCODE so strict mode can read it if the script short-circuits
-        # without invoking a native process.
-        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+    if (-not (Test-ShouldUseCachedDotnetup $dotnetupExe)) {
         try {
-            $getDotnetupScript = (Invoke-WebRequest -Uri 'https://aka.ms/dotnetup/get-dotnetup.ps1' -UseBasicParsing).Content
-            & ([scriptblock]::Create($getDotnetupScript)) -InstallDir $dotnetupDir
-            if ($LASTEXITCODE -ne 0) { throw "get-dotnetup.ps1 exited with code $LASTEXITCODE." }
+            Install-DotnetupFromAkaMs $dotnetupDir
         }
         catch {
             Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup: $($_.Exception.Message)"
