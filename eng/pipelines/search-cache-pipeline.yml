@@ -242,7 +242,7 @@ extends:
             # an array, so both links are updated in a single call. The service connection identity
             # must own the links. The following variables are defined in the pipeline's Variables UI:
             #   AkaMsServiceConnection           - AzureRM service connection whose identity can manage the links
-            #   AkaMsTenantId                    - redirection (AME) tenant GUID
+            #   AkaMsTenantId                    - redirection (AME) tenant identifier (the dotnet tenant is 'ncd', not a GUID)
             #   AkaMsShortUrl                    - 'dotnet/templating/searchcacheurl' (no 'aka.ms/' prefix)
             #   AkaMsNonTemplatePacksShortUrl    - 'dotnet/templating/nontemplatepacksurl' (no 'aka.ms/' prefix)
             #   AkaMsOwners                      - semicolon-delimited owner aliases
