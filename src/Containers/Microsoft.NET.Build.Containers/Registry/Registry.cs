@@ -8,6 +8,7 @@ using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
+using System.Security.Cryptography;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -408,15 +409,35 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
         string localPath = ContentStore.PathForDescriptor(descriptor);
-    
-        if (File.Exists(localPath))
+
+        try
         {
-            // Assume file is up to date and just return it
+            byte[] data = await File.ReadAllBytesAsync(localPath, cancellationToken).ConfigureAwait(false);
+
+            var actualHash = SHA256.HashData(data);
+            var expectedHash = DigestUtils.GetEncodedValue(descriptor.Digest);
+            InvalidDigestException.ThrowIfMismatched(expectedHash, actualHash);
+
             return localPath;
         }
-    
+        catch (DirectoryNotFoundException)
+        {
+            // Cache miss
+        }
+        catch (FileNotFoundException)
+        {
+            // Cache miss
+        }
+        catch (InvalidDigestException exception)
+        {
+            // Incorrect digest
+            _logger.LogTrace(
+                "Digest validation failed for cached blob {1} ({2}), redownloading from registry.",
+                localPath, exception.Message);
+        }
+
         string tempTarballPath = ContentStore.GetTempFile();
-    
+
         int retryCount = 0;
         while (retryCount < MaxDownloadRetries)
         {
@@ -424,12 +445,14 @@ internal sealed class Registry
             {
                 // No local copy, so download one
                 using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
-    
+
                 using (FileStream fs = File.Create(tempTarballPath))
                 {
-                    await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+                    await responseStream
+                        .CopyToAndVerifyAsync(fs, descriptor.Digest, cancellationToken)
+                        .ConfigureAwait(false);
                 }
-    
+
                 // Break the loop if successful
                 break;
             }
@@ -440,16 +463,16 @@ internal sealed class Registry
                 {
                     throw new UnableToDownloadFromRepositoryException(repository);
                 }
-    
+
                 _logger.LogTrace("Download attempt {0}/{1} for repository '{2}' failed. Error: {3}", retryCount, MaxDownloadRetries, repository, ex.ToString());
-    
+
                 // Wait before retrying
                 await Task.Delay(_retryDelayProvider(), cancellationToken).ConfigureAwait(false);
             }
         }
-    
+
         File.Move(tempTarballPath, localPath, overwrite: true);
-    
+
         return localPath;
     }
 
@@ -566,7 +589,7 @@ internal sealed class Registry
             _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
             await _registryAPI.Manifest.PutAsync(destinationImageReference.Repository, tag, multiArchImage.ImageIndex, multiArchImage.ImageIndexMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
-        }          
+        }
     }
 
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
