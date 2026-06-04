@@ -68,8 +68,11 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             //  Detect transitive framework references whose runtime packs were never processed.
-            //  ProcessFrameworkReferences runs before AddTransitiveFrameworkReferences, so transitive
-            //  refs never get RuntimePack or UnavailableRuntimePack items.  We detect them here by
+            //  ProcessFrameworkReferences runs before NuGet restore (as it adds items to download),
+            //  while AddTransitiveFrameworkReferences runs after restore (as transitive references
+            //  may come from NuGet packages).  Because of this ordering, transitive refs never get
+            //  RuntimePack or UnavailableRuntimePack items from ProcessFrameworkReferences.
+            //  We detect them here by
             //  finding FrameworkReferences marked IsTransitiveFrameworkReference=true that:
             //    - are non-profile frameworks (have a RuntimeFramework where FrameworkName == ItemSpec)
             //    - have no ResolvedRuntimePack

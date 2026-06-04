@@ -439,8 +439,7 @@ namespace Microsoft.NET.Build.Tasks
 
                         //  Process primary runtime identifier
                         ProcessRuntimeIdentifier(EffectiveRuntimeIdentifier ?? RuntimeIdentifierForPlatformAgnosticComponents, runtimePackForRuntimeIDProcessing, runtimePackVersion, additionalFrameworkReferencesForRuntimePack,
-                            unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks, packagesToDownload, isTrimmable, useRuntimePackAndDownloadIfNecessary,
-                            wasReferencedDirectly: true);
+                            unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks, packagesToDownload, isTrimmable, useRuntimePackAndDownloadIfNecessary);
 
                         processedPrimaryRuntimeIdentifier = true;
                     }
@@ -465,8 +464,7 @@ namespace Microsoft.NET.Build.Tasks
                             //  Pass in null for the runtimePacks list, as for these runtime identifiers we only want to
                             //  download the runtime packs, but not use the assets from them
                             ProcessRuntimeIdentifier(runtimeIdentifier, runtimePackForRuntimeIDProcessing, runtimePackVersion, additionalFrameworkReferencesForRuntimePack: null,
-                                unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks: null, packagesToDownload, isTrimmable, useRuntimePackAndDownloadIfNecessary,
-                                wasReferencedDirectly: true);
+                                unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks: null, packagesToDownload, isTrimmable, useRuntimePackAndDownloadIfNecessary);
                         }
                     }
                 }
@@ -784,8 +782,7 @@ namespace Microsoft.NET.Build.Tasks
             List<ITaskItem>? runtimePacks,
             List<ITaskItem> packagesToDownload,
             string? isTrimmable,
-            bool addRuntimePackAndDownloadIfNecessary,
-            bool wasReferencedDirectly)
+            bool addRuntimePackAndDownloadIfNecessary)
         {
             var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
             var knownFrameworkReferenceRuntimePackRuntimeIdentifiers = selectedRuntimePack.RuntimePackRuntimeIdentifiers.Split(';');
@@ -803,11 +800,10 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (wasInGraph)
                 {
-                    //  Report this as an error later, if necessary.  This is because we try to download
-                    //  all available runtime packs in case there is a transitive reference to a shared
-                    //  framework we don't directly reference.  But we don't want to immediately error out
-                    //  here if a runtime pack that we might not need to reference isn't available for the
-                    //  targeted RID (e.g. Microsoft.WindowsDesktop.App for a linux RID).
+                    //  Report this as an error later, if necessary.  Not all runtime packs
+                    //  are available for all RIDs (e.g. Microsoft.WindowsDesktop.App for a
+                    //  linux RID), so we defer the error to ResolveRuntimePackAssets where
+                    //  we can check if the pack is actually needed.
                     var unavailableRuntimePack = new TaskItem(selectedRuntimePack.Name);
                     unavailableRuntimePack.SetMetadata(MetadataKeys.RuntimeIdentifier, runtimeIdentifier);
                     unavailableRuntimePacks.Add(unavailableRuntimePack);
@@ -858,8 +854,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
 
                     if (EnableRuntimePackDownload &&
-                        runtimePackPath == null &&
-                        (wasReferencedDirectly || !DisableTransitiveFrameworkReferenceDownloads))
+                        runtimePackPath == null)
                     {
                         TaskItem packageToDownload = new(runtimePackName);
                         packageToDownload.SetMetadata(MetadataKeys.Version, resolvedRuntimePackVersion);
