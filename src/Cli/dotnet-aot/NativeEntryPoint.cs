@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Cli;
@@ -90,8 +91,19 @@ static unsafe partial class NativeEntryPoint
             }
             catch (Exception e)
             {
-                Reporter.Error.WriteLine(e.ToString());
-                return 1;
+                try
+                {
+                    return Parser.Invoke(parseResult);
+                }
+                catch (CommandNotAvailableInAotException)
+                {
+                    // Command requires managed CLI — fall through to managed fallback below.
+                }
+                catch (Utils.GracefulException ex)
+                {
+                    Reporter.Error.WriteLine(ex.Message.Red());
+                    return 1;
+                }
             }
         }
 

@@ -17,17 +17,21 @@ public abstract class CommandBase
     protected CommandBase(ParseResult parseResult)
     {
         _parseResult = parseResult;
+#if !CLI_AOT
         ShowHelpOrErrorIfAppropriate(parseResult);
+#endif
     }
 
     protected CommandBase() { }
 
+#if !CLI_AOT
     protected virtual void ShowHelpOrErrorIfAppropriate(ParseResult parseResult)
     {
 #if !CLI_AOT
         parseResult.ShowHelpOrErrorIfAppropriate();
 #endif
     }
+#endif
 
     public abstract int Execute();
 }

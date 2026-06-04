@@ -64,6 +64,11 @@
     which breaks tests that assert stderr is empty.
 
     Since the AOT CLI does not use any cryptographic APIs, we can safely remove this native library from linking.
+
+    This is a workaround for a NativeAOT issue tracked at https://github.com/dotnet/runtime/issues/128867
+    ("Two CLR-based apps cannot coexist on Apple platforms"). Once that is fixed (e.g. by guarding the
+    NetCoreAppNativeLibrary/DirectPInvoke items on '$(NativeLib)' != 'Shared', or by reusing the
+    already-loaded libSystem.*.Native libraries), this target can be removed.
   -->
   <Target Name="RemoveAppleCryptoFromNativeAotLink" AfterTargets="SetupOSSpecificProps">
     <ItemGroup>

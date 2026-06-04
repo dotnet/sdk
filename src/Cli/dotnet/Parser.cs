@@ -5,7 +5,10 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Sdk.Check;
+using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -15,10 +18,10 @@ public static class Parser
 
     private static RootCommand CreateCommand()
     {
-        var versionOption = new Option<bool>("--version") { Description = "Display .NET SDK version." };
-        var infoOption = new Option<bool>("--info") { Description = "Display .NET information." };
+        var versionOption = new Option<bool>("--version") { Arity = ArgumentArity.Zero };
+        var infoOption = new Option<bool>("--info") { Arity = ArgumentArity.Zero };
 
-        var rootCommand = new RootCommand("The .NET CLI")
+        var rootCommand = new RootCommand("dotnet")
         {
             versionOption,
             infoOption,
@@ -55,7 +58,16 @@ public static class Parser
             return 0;
         });
 
+        ConfigureSolutionCommand(rootCommand);
+
         return rootCommand;
+    }
+
+    private static void ConfigureSolutionCommand(RootCommand rootCommand)
+    {
+        var slnDef = new SolutionCommandDefinition();
+        SolutionCommandParser.ConfigureCommand(slnDef);
+        rootCommand.Subcommands.Add(slnDef);
     }
 
     public static ParseResult Parse(string[] args) => RootCommand.Parse(args);
