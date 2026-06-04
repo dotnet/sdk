@@ -8,16 +8,6 @@ ci=${ci:-false}
 # Build mode
 source_build=${source_build:-false}
 
-# Set to true to use the pipelines logger which will enable Azure logging output.
-# https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
-# This flag is meant as a temporary opt-opt for the feature while validate it across
-# our consumers. It will be deleted in the future.
-if [[ "$ci" == true ]]; then
-  pipelines_log=${pipelines_log:-true}
-else
-  pipelines_log=${pipelines_log:-false}
-fi
-
 # Build configuration. Common values include 'Debug' and 'Release', but the repository may use other names.
 configuration=${configuration:-'Debug'}
 
@@ -129,6 +119,12 @@ function InitializeDotNetCli {
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
   fi
 
+  # Keep repo builds isolated from machine-installed SDK state and workload advertising.
+  # This avoids preview SDK builds picking up mismatched workloads on CI images.
+  export DOTNET_MULTILEVEL_LOOKUP=0
+  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+  export DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE=1
+
   # LTTNG is the logging infrastructure used by Core CLR. Need this variable set
   # so it doesn't output warnings to the console.
   export LTTNG_HOME="$HOME"
@@ -151,7 +147,11 @@ function InitializeDotNetCli {
   if [[ $global_json_has_runtimes == false && -n "${DOTNET_INSTALL_DIR:-}" && -d "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version" ]]; then
     dotnet_root="$DOTNET_INSTALL_DIR"
   else
-    dotnet_root="${repo_root}.dotnet"
+    if [[ -n "${DOTNET_GLOBAL_INSTALL_DIR:-}" ]]; then
+      dotnet_root="$DOTNET_GLOBAL_INSTALL_DIR"
+    else
+      dotnet_root="${repo_root}.dotnet"
+    fi
 
     export DOTNET_INSTALL_DIR="$dotnet_root"
 
@@ -171,6 +171,9 @@ function InitializeDotNetCli {
 
   Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
   Write-PipelineSetVariable -name "DOTNET_NOLOGO" -value "1"
+  Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
+  Write-PipelineSetVariable -name "DOTNET_SKIP_FIRST_TIME_EXPERIENCE" -value "1"
+  Write-PipelineSetVariable -name "DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE" -value "1"
 
   # return value
   _InitializeDotNetCli="$dotnet_root"
@@ -411,15 +414,18 @@ function InitializeToolset {
   ReadGlobalVersion "Microsoft.DotNet.Arcade.Sdk"
 
   local toolset_version=$_ReadGlobalVersion
-  local toolset_location_file="$toolset_dir/$toolset_version.txt"
+  local toolset_tools_dir="$toolset_dir/$toolset_version"
 
-  if [[ -a "$toolset_location_file" ]]; then
-    local path=`cat "$toolset_location_file"`
-    if [[ -a "$path" ]]; then
-      # return value
-      _InitializeToolset="$path"
-      return
-    fi
+  # Check if the toolset has already been extracted
+  local toolset_build_proj=""
+  if [[ -a "$toolset_tools_dir/Build.proj" ]]; then
+    toolset_build_proj="$toolset_tools_dir/Build.proj"
+  fi
+
+  if [[ -n "$toolset_build_proj" ]]; then
+    # return value
+    _InitializeToolset="$toolset_build_proj"
+    return
   fi
 
   if [[ "$restore" != true ]]; then
@@ -427,20 +433,37 @@ function InitializeToolset {
     ExitWithExitCode 2
   fi
 
-  local proj="$toolset_dir/restore.proj"
+  local download_args=("package" "download" "Microsoft.DotNet.Arcade.Sdk@$toolset_version" "--verbosity" "minimal" "--prerelease" "--output" "$_GetNuGetPackageCachePath")
+  local nuget_config="${NUGET_CONFIG:-}"
+  if [[ -z "$nuget_config" ]]; then
+    # Search for any variation of nuget.config in the RepoRoot
+    local found_config
+    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname "nuget.config" -print -quit)
 
-  local bl=""
-  if [[ "$binary_log" == true ]]; then
-    bl="/bl:$log_dir/ToolsetRestore.binlog"
+    if [[ -n "$found_config" ]]; then
+      nuget_config="$found_config"
+    fi
   fi
 
-  echo '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' > "$proj"
-  MSBuild-Core "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file"
+  if [[ -n "$nuget_config" ]]; then
+    download_args+=("--configfile" "$nuget_config")
+  fi
+  DotNet "${download_args[@]}"
 
-  local toolset_build_proj=`cat "$toolset_location_file"`
+  local package_dir="$_GetNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
 
-  if [[ ! -a "$toolset_build_proj" ]]; then
-    Write-PipelineTelemetryError -category 'Build' "Invalid toolset path: $toolset_build_proj"
+  if [[ ! -d "$package_dir/toolset" ]]; then
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Arcade SDK package does not contain a toolset folder: $package_dir"
+    ExitWithExitCode 3
+  fi
+
+  mkdir -p "$toolset_tools_dir"
+  cp -r "$package_dir/toolset/." "$toolset_tools_dir"
+
+  if [[ -a "$toolset_tools_dir/Build.proj" ]]; then
+    toolset_build_proj="$toolset_tools_dir/Build.proj"
+  else
+    Write-PipelineTelemetryError -category 'Build' "Unable to find Build.proj in toolset at: $toolset_tools_dir"
     ExitWithExitCode 3
   fi
 
@@ -462,28 +485,34 @@ function StopProcesses {
   return 0
 }
 
+function DotNet {
+  InitializeDotNetCli $restore
+
+  local dotnet_path="$_InitializeDotNetCli/dotnet"
+
+  export ARCADE_BUILD_TOOL_COMMAND="$dotnet_path $@"
+
+  "$dotnet_path" "$@" || {
+    local exit_code=$?
+    echo "dotnet command failed with exit code $exit_code. Check errors above."
+
+    if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$from_vmr" != true ]]; then
+      Write-PipelineSetResult -result "Failed" -message "dotnet command execution failed."
+      ExitWithExitCode 0
+    else
+      ExitWithExitCode $exit_code
+    fi
+  }
+}
+
 function MSBuild {
   local args=( "$@" )
-  if [[ "$pipelines_log" == true ]]; then
-    InitializeBuildTool
-    InitializeToolset
 
-    if [[ "$ci" == true ]]; then
-      export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
-      export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
-      Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
-      Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
-    fi
-
-    local toolset_dir="${_InitializeToolset%/*}"
-    local selectedPath="$toolset_dir/net/Microsoft.DotNet.ArcadeLogging.dll"
-
-    if [[ -z "$selectedPath" ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Unable to find arcade sdk logger assembly: $selectedPath"
-      ExitWithExitCode 1
-    fi
-
-    args+=( "-logger:$selectedPath" )
+  if [[ "$ci" == true ]]; then
+    export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
+    export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
+    Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
+    Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
   fi
 
   MSBuild-Core "${args[@]}"
@@ -542,7 +571,12 @@ function MSBuild-Core {
     warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=$warn_not_as_error"
   fi
 
-  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
+  local workload_resolver_switch=""
+  if [[ "$ci" == true && -n "${_InitializeBuildToolCommand:-}" ]]; then
+    workload_resolver_switch="/p:MSBuildEnableWorkloadResolver=false"
+  fi
+
+  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch $workload_resolver_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
 
 function GetDarc {
@@ -559,8 +593,17 @@ function GetDarc {
 
 # Returns a full path to an Arcade SDK task project file.
 function GetSdkTaskProject {
-  taskName=$1
-  echo "$(dirname $_InitializeToolset)/SdkTasks/$taskName.proj"
+  local taskName=$1
+  local toolsetDir
+  toolsetDir="$(dirname "$_InitializeToolset")"
+  local proj="$toolsetDir/$taskName.proj"
+  if [[ -a "$proj" ]]; then
+    echo "$proj"
+    return
+  fi
+
+  Write-PipelineTelemetryError -category 'Build' "Unable to find $taskName.proj in toolset at: $toolsetDir"
+  ExitWithExitCode 3
 }
 
 ResolvePath "${BASH_SOURCE[0]}"
@@ -597,6 +640,12 @@ fi
 mkdir -p "$toolset_dir"
 mkdir -p "$temp_dir"
 mkdir -p "$log_dir"
+
+# Direct MSBuild crash diagnostics (MSB4166 failure.txt files) to a known location
+# under artifacts/log so they are captured as build artifacts in CI.
+if [[ -z "${MSBUILDDEBUGPATH:-}" ]]; then
+  export MSBUILDDEBUGPATH="$log_dir/MsbuildDebugLogs"
+fi
 
 Write-PipelineSetVariable -name "Artifacts" -value "$artifacts_dir"
 Write-PipelineSetVariable -name "Artifacts.Toolset" -value "$toolset_dir"

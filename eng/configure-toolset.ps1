@@ -4,6 +4,15 @@
 
 $script:useInstalledDotNetCli = $false
 
+function Test-NativeProcessArchitectureMismatch() {
+    try {
+        return [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
+    }
+    catch {
+        return $false
+    }
+}
+
 # Pre-install the bootstrap SDK pinned in global.json using dotnetup into the
 # repo-local .dotnet directory that arcade's InitializeDotnetCli will pick up.
 #
@@ -35,6 +44,11 @@ function InstallBootstrapSdkWithDotnetup() {
             Write-Host "dotnetup binary is less than 24 hours old; skipping re-download." -ForegroundColor DarkGray
             $skipDownload = $true
         }
+    }
+
+    if ($skipDownload -and (Test-NativeProcessArchitectureMismatch)) {
+        Write-Host "Native architecture differs from process architecture; re-downloading dotnetup for the native architecture." -ForegroundColor DarkGray
+        $skipDownload = $false
     }
 
     if (-not $skipDownload) {

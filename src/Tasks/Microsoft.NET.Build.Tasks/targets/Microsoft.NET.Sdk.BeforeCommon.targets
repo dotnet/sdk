@@ -87,6 +87,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Checks for deprecated Aspire workload usage -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.AspireWorkloadDeprecation.targets" />
 
+  <!-- Checks for SDK vulnerabilities and EOL status (opt-in) -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.SdkVulnerabilityCheck.targets" />
+
   <!-- Check if the Target Framework is coreclr based -->
   <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == ''">
     <_IsNETCoreOrNETStandard Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</_IsNETCoreOrNETStandard>
@@ -234,7 +237,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="GenerateNETCompatibleDefineConstants"
           Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' or '$(TargetFrameworkIdentifier)' == '.NETFramework' or '$(TargetFrameworkIdentifier)' == '.NETStandard')" >
     <ItemGroup>
-      <_SupportedFrameworkVersions Include="@(SupportedNETCoreAppTargetFramework->'%(Identity)'->TrimStart('.NETCoreApp,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' " />
+      <_SupportedFrameworkVersions Include="@(_NETCoreAppVersionsForDefines->'%(Identity)'->TrimStart('.NETCoreApp,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' " />
       <_SupportedFrameworkVersions Include="@(SupportedNETFrameworkTargetFramework->'%(Identity)'->TrimStart('.NETFramework,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " />
       <_SupportedFrameworkVersions Include="@(SupportedNETStandardTargetFramework->'%(Identity)'->TrimStart('.NETStandard,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETStandard' " />
       <_CompatibleFrameworkVersions Include="@(_SupportedFrameworkVersions)" Condition=" $([MSBuild]::VersionLessThanOrEquals(%(Identity), $(TargetFrameworkVersion))) " />

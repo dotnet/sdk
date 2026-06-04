@@ -143,6 +143,7 @@ jobs:
           # SignFiles task fails with "Access token is not available" without
           # this env var.
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
@@ -194,6 +195,7 @@ jobs:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
+            TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### POST ###############
     - ${{ if eq(parameters.publishXunitResults, true) }}:

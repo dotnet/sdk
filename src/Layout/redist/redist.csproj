@@ -69,6 +69,22 @@
     <ProjectReference Include="$(RepoRoot)src\Dotnet.Watch\dotnet-watch\dotnet-watch.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
     <ProjectReference Include="$(RepoRoot)src\Dotnet.Format\dotnet-format\dotnet-format.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
 
+    <!-- The PublishDotnetAot target in GenerateLayout.targets calls <MSBuild Targets="Publish"> on
+         dotnet-aot.csproj. That call passes _IsPublishing=true, which makes it a different
+         BuildManager project instance than the outer build's evaluation of dotnet-aot.csproj.
+         Without an explicit reference, the outer Build (writing to bin\dotnet-aot\...) and the
+         Publish call's internal Build (writing to the same paths) can run concurrently and
+         race over shared bin\ and obj\ directories. This ProjectReference sequences the outer
+         Build to complete before redist's GenerateSdkLayout target runs.
+
+         Conditioned on the same TargetRid prefix check as the PublishDotnetAot target itself;
+         when NativeAOT publish doesn't run (e.g. source-build with TargetRid like centos.10-x64),
+         pulling dotnet-aot.csproj into the restore graph would demand the ILCompiler RID-specific
+         runtime pack, which isn't available from source-built feeds (NU1100). -->
+    <ProjectReference Include="$(RepoRoot)src\Cli\dotnet-aot\dotnet-aot.csproj"
+                      Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))"
+                      ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
 
     <ProjectReference Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\src\Microsoft.CodeAnalysis.NetAnalyzers.Package.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />

@@ -37,6 +37,7 @@
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\NuGetUtils.NuGet.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\SdkVulnerabilityCacheReader.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetOS)' != 'windows'">
@@ -90,17 +91,19 @@
     <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" Condition="'$(TargetOS)' == 'windows'">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
+    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBA. -->
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
-  </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+  </ItemGroup>
+
+  <!-- Azure Monitor dependencies aren't part of source build yet - see file://../../../Directory.Build.props#L85 for details -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">

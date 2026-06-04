@@ -64,15 +64,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <inheritdoc />
         public override int GetHashCode()
         {
-#if NET
             return HashCode.Combine(AssemblyName, AssemblyId, FullPath);
-#else
-            int hashCode = 1447485498;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssemblyName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssemblyId);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(FullPath);
-            return hashCode;
-#endif
         }
 
         /// <inheritdoc />

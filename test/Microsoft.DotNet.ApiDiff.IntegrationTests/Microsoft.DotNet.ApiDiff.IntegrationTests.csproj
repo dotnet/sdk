@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- ApiDiff has no MSBuild task, only a CLI tool, so there is no Runtime="NET" taskhost
+         path that needs to be exercised from desktop MSBuild. Single-target the netcore TFM. -->
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Build-ordering dependency on the tool under test. -->
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiDiff\Microsoft.DotNet.ApiDiff.Tool\Microsoft.DotNet.ApiDiff.Tool.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  </ItemGroup>
+
+  <!-- Stage the apidiff CLI binary closure under tools\Microsoft.DotNet.ApiDiff.Tool\ so the
+       test can invoke 'dotnet exec' against it both locally and on Helix. ToolPaths reads the
+       DLL relative to AppContext.BaseDirectory; the CopyToOutputDirectory/CopyToPublishDirectory
+       metadata makes the tools tree ride along into both the local bin output (used by 'dotnet
+       test' with the no-build flag) and the Helix work item payload (which is built from
+       PublishDir). -->
+  <Target Name="_StageToolsUnderTest" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <_ApiDiffToolFile Include="$(ArtifactsBinDir)Microsoft.DotNet.ApiDiff.Tool\$(Configuration)\$(NetMinimum)\**\*" />
+      <Content Include="@(_ApiDiffToolFile)"
+               Link="tools\Microsoft.DotNet.ApiDiff.Tool\%(_ApiDiffToolFile.RecursiveDir)%(_ApiDiffToolFile.Filename)%(_ApiDiffToolFile.Extension)"
+               CopyToOutputDirectory="PreserveNewest"
+               CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+
+</Project>

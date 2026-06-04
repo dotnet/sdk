@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <!-- This package doesn't contain any lib or ref assemblies because it's a tooling package.-->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore;_AddBuildOutputToPackageDesktop</TargetsForTfmSpecificContentInPackage>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore</TargetsForTfmSpecificContentInPackage>
     <PackageDescription>MSBuild tasks and targets to emit Roslyn based source code from input assemblies.</PackageDescription>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <!-- SDK's task infrastructure -->
@@ -33,21 +34,31 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="**\*.props;**\*.targets" Pack="true" PackagePath="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+  <Target Name="_AddBuildOutputToPackageCore" DependsOnTargets="Publish">
     <ItemGroup>
-      <!-- Publish .NET Core assets and include them in the package under tools directory. -->
-      <TfmSpecificPackageFile Include="$(PublishDir)**" PackagePath="tools/net/%(RecursiveDir)%(FileName)%(Extension)" />
+      <!-- Publish .NET assets and include them in the package under tools directory. -->
+      <TfmSpecificPackageFile Include="$(PublishDir)**" PackagePath="tools/%(RecursiveDir)%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="_AddBuildOutputToPackageDesktop" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
-    <ItemGroup>
-      <!-- Include .NET Framework build outputs in the package under tools directory. -->
-      <TfmSpecificPackageFile Include="$(OutputPath)**" PackagePath="tools/netframework/%(RecursiveDir)%(FileName)%(Extension)" />
-    </ItemGroup>
+  <!-- Copy the nupkg to TestPackagesDir so the Compatibility integration tests can consume it.
+       This replaces the BuildTestPackages.targets entry that re-packed this project with different
+       global properties, which caused a parallel-build race condition on referenced projects' obj/
+       output DLLs (e.g. Microsoft.DotNet.ApiCompatibility.resources.dll). This project is single-TFM,
+       so the TargetFrameworks=='' guard ensures the copy runs once. -->
+  <Target Name="CopyPackageToTestPackagesDir" AfterTargets="Pack"
+          Condition="'$(TestLayoutDir)' != '' and '$(DotNetBuild)' != 'true' and ('$(IsCrossTargetingBuild)' == 'true' or '$(TargetFrameworks)' == '')">
+    <PropertyGroup>
+      <_TestPackagesDir>$(TestLayoutDir)testpackages/</_TestPackagesDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(_TestPackagesDir)" Condition="!Exists('$(_TestPackagesDir)')" />
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg"
+          DestinationFolder="$(_TestPackagesDir)"
+          SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

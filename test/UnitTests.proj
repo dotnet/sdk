@@ -31,23 +31,33 @@
     <!-- dotnet-format unit tests are run under the DOTNET_FORMAT pipeline section. -->
     <SDKCustomXUnitProject Remove="dotnet-format.UnitTests\dotnet-format.UnitTests.csproj" />
 
-    <!-- ApiCompat integration tests are only run with TestFullMSBuild=true (see below). -->
-    <SDKCustomXUnitProject Remove="Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj" />
-
     <!-- Filter out .NET Framework only test projects and add them manually. -->
     <SDKCustomXUnitProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- Run the compatibility-tooling integration tests under desktop MSBuild whenever the
+       FullFramework leg runs (it's part of every PR build, so the Runtime="NET" taskhost path
+       is exercised on every PR). The default *IntegrationTests glob above already adds these
+       projects under .NETCoreApp on every leg; this entry only adds the additional
+       net472/desktop-MSBuild row. ApiDiff has no MSBuild task so it runs only under .NETCoreApp.
+
+       This row is conditioned on TestFullMSBuild=true because:
+       - net472 binaries can't be loaded on Linux/macOS, so scheduling a net472 work item
+         to those queues fails at chmod+x time on the missing native exe.
+       - The FullFramework leg sets TestFullMSBuild=true and uses a Windows queue. -->
+  <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
+    <SDKCustomXUnitProject Include="
+      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
+      Microsoft.DotNet.GenAPI.IntegrationTests\Microsoft.DotNet.GenAPI.IntegrationTests.csproj"
+                           TargetFramework="net472"
+                           RuntimeTargetFramework="net472" />
   </ItemGroup>
 
   <!-- When TestFullMSBuild=true, include the .NET Framework tests. .NETCoreApp tests are also executed
        as that validates running tests with desktop msbuild. -->
   <ItemGroup Condition="'$(TestFullMSBuild)' == 'true'">
     <SDKCustomXUnitProject Include="
-      Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj;
-      Microsoft.DotNet.ApiCompat.Tests\Microsoft.DotNet.ApiCompat.Tests.csproj;
-      Microsoft.DotNet.ApiCompatibility.Tests\Microsoft.DotNet.ApiCompatibility.Tests.csproj;
-      Microsoft.DotNet.ApiSymbolExtensions.Tests\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;
       Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj;
-      Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj;
       Microsoft.DotNet.TemplateLocator.Tests\Microsoft.DotNet.TemplateLocator.Tests.csproj;
       Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj;
       Microsoft.NET.Sdk.WorkloadManifestReader.Tests\Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj;
@@ -59,6 +69,39 @@
   <ItemGroup Condition="'$(RunAoTTests)' == 'true'">
     <SDKCustomXUnitProject Remove="@(SDKCustomXUnitProject)" />
     <SDKCustomXUnitProject Include="**\*.AoT.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- Helix work-item partitioning configuration.
+       effective limit = BaseMethodLimit × MethodLimitMultiplier (per-project).
+       Targeting ~5 minutes per work item across all platforms. -->
+  <PropertyGroup>
+    <BaseMethodLimit Condition="'$(TestFullMSBuild)' == 'true'">64</BaseMethodLimit>
+    <BaseMethodLimit Condition="'$(TargetOS)' == 'osx' and '$(TargetArchitecture)' == 'arm64'">128</BaseMethodLimit>
+    <BaseMethodLimit Condition="'$(BaseMethodLimit)' == ''">32</BaseMethodLimit>
+  </PropertyGroup>
+
+  <!-- Consolidate Helix shards for assemblies with very short test durations.
+       MethodLimitMultiplier increases the methods-per-shard threshold, producing
+       fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
+  <ItemGroup>
+    <SDKCustomXUnitProject Update="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj">
+      <MethodLimitMultiplier>10</MethodLimitMultiplier>
+    </SDKCustomXUnitProject>
+    <SDKCustomXUnitProject Update="TemplateEngine\**\*.csproj;**\Microsoft.TemplateEngine.Cli.UnitTests.csproj">
+      <MethodLimitMultiplier>20</MethodLimitMultiplier>
+    </SDKCustomXUnitProject>
+    <SDKCustomXUnitProject Update="**\Microsoft.DotNet.ApiCompatibility.Tests.csproj;**\Microsoft.DotNet.ApiDiff.Tests.csproj;**\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;**\Microsoft.DotNet.GenAPI.Tests.csproj">
+      <MethodLimitMultiplier>10</MethodLimitMultiplier>
+    </SDKCustomXUnitProject>
+    <!-- EndToEnd.Tests needs installer archives which are excluded from the shared
+         correlation payload to reduce download/unpack overhead for all other work items.
+         AdditionalPayloadDir: directory whose files are included in the per-item payload.
+         AdditionalPayloadDestination: relative path under the correlation payload root
+         where files are copied at runtime so the test's expected paths resolve correctly. -->
+    <SDKCustomXUnitProject Update="EndToEnd.Tests\EndToEnd.Tests.csproj">
+      <AdditionalPayloadDir>$(RepoRoot)artifacts\tmp\HelixInstallerArchives</AdditionalPayloadDir>
+      <AdditionalPayloadDestination>d/.nuget</AdditionalPayloadDestination>
+    </SDKCustomXUnitProject>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(CustomHelixTargetQueue)' != '' ">
@@ -121,7 +164,24 @@
 
     <PropertyGroup>
       <HelixPayloadOnHost>$(RepoRoot)artifacts\tmp\Helixpayload</HelixPayloadOnHost>
+      <HelixNuGetPayload>$(RepoRoot)artifacts\tmp\HelixNuGetPayload</HelixNuGetPayload>
+      <HelixInstallerArchives>$(RepoRoot)artifacts\tmp\HelixInstallerArchives</HelixInstallerArchives>
     </PropertyGroup>
+
+    <!-- Stage nupkgs (excluding installer archives) for the shared correlation payload.
+         This avoids downloading large SDK archives on every work item. -->
+    <ItemGroup>
+      <_ShippingNuGetPackages Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.nupkg" />
+      <_InstallerArchives Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.zip;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.tar.gz;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.rpm;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.deb;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.exe;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.pkg" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_ShippingNuGetPackages)" DestinationFiles="@(_ShippingNuGetPackages->'$(HelixNuGetPayload)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_InstallerArchives)" DestinationFiles="@(_InstallerArchives->'$(HelixInstallerArchives)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(HelixPayloadOnHost)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
@@ -150,7 +210,6 @@
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
       <MicrosoftNETBuildExtensions>$(RepoRoot)artifacts\bin\$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MicrosoftNETBuildExtensions>
-      <ArtifactsShippingPackages>$(RepoRoot)artifacts\packages\$(Configuration)\Shipping</ArtifactsShippingPackages>
     </PropertyGroup>
 
     <TarGzFileCreateFromDirectory
@@ -180,7 +239,7 @@
         <Destination>r</Destination>
       </HelixCorrelationPayload>
 
-      <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
+      <HelixCorrelationPayload Include="$(HelixNuGetPayload)">
         <Destination>d/.nuget</Destination>
       </HelixCorrelationPayload>
     </ItemGroup>

@@ -22,7 +22,9 @@ pr:
     - '*.yml'
     - '*.props'
     - '*.targets'
+    - global.json
     exclude:
+    - .github/ISSUE_TEMPLATE/*
     - documentation/*
     - README.md
     - CODEOWNERS
@@ -68,7 +70,7 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        demands: ImageOverride -equals build.azurelinux.3.amd64.open
         os: linux
       helixTargetQueue: ubuntu.2204.amd64.open
 
