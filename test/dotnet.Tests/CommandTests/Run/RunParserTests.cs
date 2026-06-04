@@ -20,10 +20,11 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var tam = new TestAssetsManager(output);
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
-
-            Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = Path.Combine(newWorkingDir, "HelloWorld.csproj");
-                
+
+            // An absolute --project path is passed, so resolution does not depend on the process-wide
+            // current directory. Avoid Directory.SetCurrentDirectory so this test does not leak CWD
+            // state onto other tests running in parallel.
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath, "--", "foo" });
             runCommand.ApplicationArgs.Single().Should().Be("foo");
         }
@@ -34,12 +35,23 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var tam = new TestAssetsManager(output);
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
-
-            Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = @".\HelloWorld.csproj";
-            // Should not throw on Windows
-            var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
-            runCommand.ProjectFileFullPath.Should().NotBeNull();
+
+            // This scenario resolves a relative --project path against the process-wide current
+            // directory, so it must be changed. Restore it in a finally so the change does not leak
+            // onto other parallel tests (see AddReferenceHasDefaultArgumentSetToCurrentDirectory).
+            var originalWorkingDir = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(newWorkingDir);
+                // Should not throw on Windows
+                var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
+                runCommand.ProjectFileFullPath.Should().NotBeNull();
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalWorkingDir);
+            }
         }
 
         [UnixOnlyFact]
@@ -48,12 +60,23 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var tam = new TestAssetsManager(output);
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
-
-            Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = @".\HelloWorld.csproj";
-            // Should not throw on Linux with backslash separators
-            var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
-            runCommand.ProjectFileFullPath.Should().NotBeNull();
+
+            // This scenario resolves a relative --project path against the process-wide current
+            // directory, so it must be changed. Restore it in a finally so the change does not leak
+            // onto other parallel tests (see AddReferenceHasDefaultArgumentSetToCurrentDirectory).
+            var originalWorkingDir = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(newWorkingDir);
+                // Should not throw on Linux with backslash separators
+                var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
+                runCommand.ProjectFileFullPath.Should().NotBeNull();
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalWorkingDir);
+            }
         }
     }
 }

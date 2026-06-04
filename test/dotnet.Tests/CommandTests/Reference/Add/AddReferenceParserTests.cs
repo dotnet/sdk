@@ -4,7 +4,6 @@
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
-using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -25,10 +24,14 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var command = Assert.IsType<AddReferenceCommandDefinition>(result.CommandResult.Command);
 
+            // Compare against the same cached value the argument's default factory uses
+            // (CommonOptions.NormalizedCurrentDirectory) rather than a fresh
+            // Directory.GetCurrentDirectory(). The current directory is process-global mutable
+            // state, and other tests in this assembly call Directory.SetCurrentDirectory while
+            // running in parallel, so re-deriving it here races and makes this test flaky.
             result.GetValue(command.Parent.ProjectOrFileArgument)
                 .Should()
-                .BeEquivalentTo(
-                    PathUtilities.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
+                .BeEquivalentTo(CommonOptions.NormalizedCurrentDirectory.Value);
         }
 
         [Fact]
