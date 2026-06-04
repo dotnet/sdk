@@ -4,6 +4,7 @@
 using NuGet.Packaging;
 using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
@@ -408,13 +409,33 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
         string localPath = ContentStore.PathForDescriptor(descriptor);
-    
-        if (File.Exists(localPath))
+
+        try
         {
-            // Assume file is up to date and just return it
+            byte[] data = await File.ReadAllBytesAsync(localPath, cancellationToken).ConfigureAwait(false);
+
+            var actualHash = SHA256.HashData(data);
+            var expectedHash = DigestUtils.GetEncodedValue(descriptor.Digest);
+            InvalidDigestException.ThrowIfMismatched(expectedHash, actualHash);
+
             return localPath;
         }
-    
+        catch (DirectoryNotFoundException)
+        {
+            // Cache miss
+        }
+        catch (FileNotFoundException)
+        {
+            // Cache miss
+        }
+        catch (InvalidDigestException exception)
+        {
+            // Incorrect digest
+            _logger.LogTrace(
+                "Digest validation failed for cached blob {1} ({2}), redownloading from registry.",
+                localPath, exception.Message);
+        }
+
         string tempTarballPath = ContentStore.GetTempFile();
     
         int retryCount = 0;
@@ -427,7 +448,9 @@ internal sealed class Registry
     
                 using (FileStream fs = File.Create(tempTarballPath))
                 {
-                    await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+                    await responseStream
+                        .CopyToAndVerifyAsync(fs, descriptor.Digest, cancellationToken)
+                        .ConfigureAwait(false);
                 }
     
                 // Break the loop if successful
