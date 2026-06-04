@@ -6,8 +6,8 @@
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
     <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <ImplicitUsings Condition="'$(csharpFeature_ImplicitUsings)' == 'true'">enable</ImplicitUsings>
+    <Nullable Condition="'$(csharpFeature_Nullable)' == 'true'">enable</Nullable>
 <!--#if (TestRunner == "VSTest")-->
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
@@ -31,8 +31,8 @@
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
     <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <ImplicitUsings Condition="'$(csharpFeature_ImplicitUsings)' == 'true'">enable</ImplicitUsings>
+    <Nullable Condition="'$(csharpFeature_Nullable)' == 'true'">enable</Nullable>
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
@@ -46,9 +46,11 @@
     <PackageReference Include="MSTest" Version="4.0.2" />
   </ItemGroup>
 
+<!--#if (csharpFeature_ImplicitUsings)-->
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
+<!--#endif-->
 
 </Project>
 <!--#endif-->

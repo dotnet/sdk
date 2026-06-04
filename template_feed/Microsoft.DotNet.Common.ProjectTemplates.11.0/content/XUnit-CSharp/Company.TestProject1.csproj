@@ -4,8 +4,9 @@
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net11.0</TargetFramework>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+    <ImplicitUsings Condition="'$(csharpFeature_ImplicitUsings)' == 'true'">enable</ImplicitUsings>
+    <Nullable Condition="'$(csharpFeature_Nullable)' == 'true'">enable</Nullable>
     <IsPackable Condition="'$(EnablePack)' == 'true'">true</IsPackable>
     <IsPackable Condition="'$(EnablePack)' != 'true'">false</IsPackable>
   </PropertyGroup>
@@ -17,8 +18,10 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 
+<!--#if (csharpFeature_ImplicitUsings)-->
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
+<!--#endif-->
 
 </Project>
