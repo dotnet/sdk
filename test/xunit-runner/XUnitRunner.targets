@@ -41,12 +41,10 @@
 
   <Target Name="RestoreSDKCustomXUnitProjects"
           Condition="'@(SDKCustomXUnitProject)' != ''"
-          BeforeTargets="Restore"
-          Outputs="%(SDKCustomXUnitProject.Identity)%(SDKCustomXUnitProject.TargetFramework)%(SDKCustomXUnitProject.RuntimeTargetFramework)%(SDKCustomXUnitProject.AdditionalProperties)">
-    <MSBuild Projects="%(SDKCustomXUnitProject.Identity)"
-             Targets="Restore"
-             Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);RuntimeIdentifiers=$(TargetRid);%(SDKCustomXUnitProject.AdditionalProperties)">
-    </MSBuild>
+          BeforeTargets="Restore">
+    <!-- Intentionally empty: the per-project RID restore is done inside
+         BuildSDKCustomXUnitProjects before each publish. Keeping this target
+         defined (but empty) avoids breaking any existing target dependencies. -->
   </Target>
 
   <Target Name="BuildSDKCustomXUnitProjects"

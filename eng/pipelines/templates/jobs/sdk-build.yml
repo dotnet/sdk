@@ -135,18 +135,27 @@ jobs:
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
 
-      # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
+      # Queue tests directly via MSBuild on UnitTests.proj, bypassing Arcade's
+      # build.ps1 Restore/Build pipeline overhead. The build step already compiled
+      # all projects; BuildSDKCustomXUnitProjects (BeforeTargets=CoreBuild) handles
+      # per-project RID-specific publish before queuing to Helix.
       - ${{ if eq(parameters.pool.os, 'windows') }}:
-        - powershell: eng/common/build.ps1
-            -restore -test -ci -prepareMachine -nativeToolsOnMachine
-            -configuration $(buildConfiguration)
-            /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
-            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
-            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-            ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-            /p:EnableHelixJobMonitor=true
-            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
+        - powershell: |
+            $env:NativeToolsOnMachine = 'true'
+            & $env:BUILD_SOURCESDIRECTORY\.dotnet\dotnet msbuild "${{ parameters.testProjects }}" `
+              /t:Build /t:Test `
+              /p:Configuration=$(buildConfiguration) `
+              /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}" `
+              /p:TargetArchitecture=${{ parameters.targetArchitecture }} `
+              ${{ parameters.runtimeSourceProperties }} `
+              /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }} `
+              /p:EnableHelixJobMonitor=true `
+              /p:ContinuousIntegrationBuild=true `
+              /p:MSBuildEnableWorkloadResolver=false `
+              /nr:false `
+              /m `
+              /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
@@ -156,21 +165,24 @@ jobs:
             TestFullMSBuild: ${{ parameters.testFullMSBuild }}
 
       - ${{ else }}:
-        # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
-        # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
+        # For the /p:CustomHelixTargetQueue syntax: <queue-name>@<container-url>
         # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
-        - script: eng/common/build.sh
-            -restore -test -ci -prepareMachine
-            -configuration $(buildConfiguration)
-            '/p:Projects="${{ parameters.testProjects }}"'
-            /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}"
-            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-            /p:TargetRid=${{ parameters.runtimeIdentifier }}
-            ${{ parameters.osProperties }}
-            ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
-            /p:EnableHelixJobMonitor=true
-            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
+        - script: |
+            "$BUILD_SOURCESDIRECTORY/.dotnet/dotnet" msbuild "${{ parameters.testProjects }}" \
+              /t:Build /t:Test \
+              /p:Configuration=$(buildConfiguration) \
+              /p:TestRunnerAdditionalArguments="${{ parameters.testRunnerAdditionalArguments }}" \
+              /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
+              /p:TargetRid=${{ parameters.runtimeIdentifier }} \
+              ${{ parameters.osProperties }} \
+              ${{ parameters.runtimeSourceProperties }} \
+              /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }} \
+              /p:EnableHelixJobMonitor=true \
+              /p:ContinuousIntegrationBuild=true \
+              /p:MSBuildEnableWorkloadResolver=false \
+              /nr:false \
+              /m \
+              /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
