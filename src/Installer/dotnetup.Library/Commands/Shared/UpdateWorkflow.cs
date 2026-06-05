@@ -253,12 +253,14 @@ internal class UpdateWorkflow
 
         var resolvedRequest = new ResolvedInstallRequest(installRequest, latestVersion);
 
-        if (UnsignedSourcePolicy.MayDownloadUnsigned(installRequest))
-        {
-            AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
-        }
+        UnsignedDownloadWarning.WarnIfPredicted(installRequest);
 
         InstallerOrchestratorSingleton.Instance.Install(resolvedRequest, noProgress);
+
+        // Backstop: if the downloader fell back to the unsigned blob feed for a channel that did
+        // not predict it, show the warning once now (after the install completes).
+        UnsignedDownloadWarning.WarnIfFallbackUsed();
+
         AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {spec.VersionOrChannel} to {latestVersion}."));
         return true;
     }

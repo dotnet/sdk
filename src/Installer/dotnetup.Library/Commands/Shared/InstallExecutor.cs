@@ -41,10 +41,7 @@ internal class InstallExecutor
         SpectreAnsiConsole.MarkupLine(
             $"Installing {string.Join(", ", descriptions)} to {DotnetupTheme.Accent(escapedPath)}...");
 
-        if (requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r.Request)))
-        {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
-        }
+        UnsignedDownloadWarning.WarnIfPredicted(requests.Select(r => r.Request));
 
         InstallBatchResult batchResult;
         {
@@ -52,6 +49,11 @@ internal class InstallExecutor
             using var sharedReporter = new LazyProgressReporter(progressTarget);
             batchResult = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         }
+
+        // Backstop: if the downloader fell back to the unsigned blob feed for a request whose
+        // channel did not predict it (e.g. a roll-forward band that resolved to a preview), the
+        // up-front warning above was skipped. Show it once now.
+        UnsignedDownloadWarning.WarnIfFallbackUsed();
 
         DisplayBatchResults(batchResult);
         return batchResult;

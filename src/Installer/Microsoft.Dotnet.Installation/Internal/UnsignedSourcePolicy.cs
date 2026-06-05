@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using System.Threading;
 using Microsoft.Deployment.DotNet.Releases;
 #if NET
 using Microsoft.Win32;
@@ -43,6 +44,41 @@ internal static class UnsignedSourcePolicy
     /// production code is not supported.
     /// </summary>
     internal static Func<bool>? OverrideForTesting { get; set; }
+
+    // Process-wide state used to surface the "unsigned download" warning exactly once, even when
+    // the up-front (channel-based) prediction misses a case that only reveals itself when the
+    // downloader actually falls back to the blob feed (e.g. a roll-forward band channel like
+    // "11.0.1xx" that resolves to a blob-feed-only preview). 0 = not yet, 1 = done.
+    private static int s_unsignedWarningShown;
+    private static int s_unsignedFallbackUsed;
+
+    /// <summary>
+    /// Atomically claims the right to show the unsigned-download warning. Returns true exactly
+    /// once per process; subsequent callers get false so the warning is never shown twice.
+    /// </summary>
+    public static bool TryClaimUnsignedWarning()
+        => Interlocked.CompareExchange(ref s_unsignedWarningShown, 1, 0) == 0;
+
+    /// <summary>
+    /// Records that the downloader actually served a request from the unsigned blob feed. Called
+    /// from the download path (which cannot write to the console) so a higher layer can show the
+    /// warning afterward if it was not already shown up-front.
+    /// </summary>
+    public static void MarkUnsignedFallbackUsed() => Interlocked.Exchange(ref s_unsignedFallbackUsed, 1);
+
+    /// <summary>
+    /// True when at least one request has been served from the unsigned blob feed in this process.
+    /// </summary>
+    public static bool UnsignedFallbackUsed => Volatile.Read(ref s_unsignedFallbackUsed) != 0;
+
+    /// <summary>
+    /// Resets the process-wide warning state. Intended for tests only.
+    /// </summary>
+    internal static void ResetWarningStateForTesting()
+    {
+        Interlocked.Exchange(ref s_unsignedWarningShown, 0);
+        Interlocked.Exchange(ref s_unsignedFallbackUsed, 0);
+    }
 
     /// <summary>
     /// Returns true when the given install request will (or may) be served from a source
