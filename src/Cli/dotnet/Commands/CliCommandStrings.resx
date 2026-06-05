@@ -492,7 +492,7 @@ This is equivalent to deleting project.assets.json.</value>
     <value>NUMBER</value>
   </data>
   <data name="CmdOptionCannotBeUsedWithTestModulesDescription" xml:space="preserve">
-    <value>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</value>
+    <value>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</value>
   </data>
   <data name="CmdOutdatedDescription" xml:space="preserve">
     <value>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</value>
@@ -2696,6 +2696,10 @@ Proceed?</value>
   </data>
   <data name="DurationColon" xml:space="preserve">
     <value>duration:</value>
+  </data>
+  <data name="HandshakeFailuresHeader" xml:space="preserve">
+    <value>Handshake failures:</value>
+    <comment>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</comment>
   </data>
   <data name="WorkloadSetHasMissingManifests" xml:space="preserve">
     <value>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</value>

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -49,11 +49,45 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" GlobalPropertiesToRemove="PublishDir" />
-    <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\..\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" GlobalPropertiesToRemove="PublishDir">
+      <Aliases>global,NativeWrapper</Aliases>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
   </ItemGroup>
+
+  <!-- Azure Monitor dependencies aren't part of source build yet - see file://../../../Directory.Build.props#L85 for details -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+  </ItemGroup>
+
+  <!--
+    On Apple platforms, NativeAOT unconditionally statically links libSystem.Security.Cryptography.Native.Apple.a
+    into every output, including NativeLib=Shared (dylib). This static archive contains Swift binding classes
+    (HashBox, X25519KeyBox) that register with the ObjC runtime. When the host process also has these classes
+    (from the shared framework's copy of the same library), macOS emits duplicate class warnings to stderr,
+    which breaks tests that assert stderr is empty.
+
+    Since the AOT CLI does not use any cryptographic APIs, we can safely remove this native library from linking.
+
+    This is a workaround for a NativeAOT issue tracked at https://github.com/dotnet/runtime/issues/128867
+    ("Two CLR-based apps cannot coexist on Apple platforms"). Once that is fixed (e.g. by guarding the
+    NetCoreAppNativeLibrary/DirectPInvoke items on '$(NativeLib)' != 'Shared', or by reusing the
+    already-loaded libSystem.*.Native libraries), this target can be removed.
+  -->
+  <Target Name="RemoveAppleCryptoFromNativeAotLink" AfterTargets="SetupOSSpecificProps">
+    <ItemGroup>
+      <NativeLibrary Remove="$(IlcFrameworkNativePath)libSystem.Security.Cryptography.Native.Apple.a" />
+      <DirectPInvoke Remove="System.Security.Cryptography.Native.Apple" />
+    </ItemGroup>
+  </Target>
 
 </Project>

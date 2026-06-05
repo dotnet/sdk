@@ -309,6 +309,39 @@ public class DiffTypeTests : DiffBaseTests
 
     #endregion
 
+    #region Internal compiler types
+
+    // GenAPI emits a curated set of internal compiler attributes (e.g. IsExternalInit) by default so that the
+    // generated reference source keeps compiling. ApiDiff shares the GenAPI backend but builds its own filters
+    // without that inclusion, so such internal types must not surface as API differences.
+    [Fact]
+    public Task InternalCompilerTypeAddNotShown() => RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                namespace System.Runtime.CompilerServices
+                {
+                    internal static class IsExternalInit
+                    {
+                    }
+                }
+                """,
+                expectedCode: ""); // The added internal compiler type is not shown
+
+    #endregion
+
     #region Other
 
     [Fact]

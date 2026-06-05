@@ -30,10 +30,12 @@ parameters:
   ### MACOS ###
   macOSJobParameterSets:
   - categoryName: TestBuild
-    runtimeIdentifier: osx-x64
+    targetArchitecture: arm64
+    runtimeIdentifier: osx-arm64
   - categoryName: AoT
     runAoTTests: true
-    runtimeIdentifier: osx-x64
+    targetArchitecture: arm64
+    runtimeIdentifier: osx-arm64
 
 jobs:
 ### ONELOCBUILD ###

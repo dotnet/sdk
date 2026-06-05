@@ -3,4 +3,8 @@
 # Licensed to the .NET Foundation under one or more agreements.
 # The .NET Foundation licenses this file to you under the MIT license.
 
-"$(dirname "$0")/dotnet" dnx "$@"
+DOTNET="$(dirname "$0")/dotnet"
+SDK_VERSION=$("$DOTNET" --list-sdks | tail -1 | cut -d' ' -f1)
+SDK_PATH="$(dirname "$0")/sdk/$SDK_VERSION/dotnet.dll"
+
+"$DOTNET" exec "$SDK_PATH" dnx "$@"

@@ -45,4 +45,20 @@
     </ItemGroup>
   </Target>
 
+  <!-- Copy the nupkg to TestPackagesDir so the Compatibility integration tests can consume it.
+       This replaces the BuildTestPackages.targets entry that re-packed this project with different
+       global properties, which caused a parallel-build race condition on referenced projects' obj/
+       output DLLs (e.g. Microsoft.DotNet.ApiCompatibility.resources.dll). This project is single-TFM,
+       so the TargetFrameworks=='' guard ensures the copy runs once. -->
+  <Target Name="CopyPackageToTestPackagesDir" AfterTargets="Pack"
+          Condition="'$(TestLayoutDir)' != '' and '$(DotNetBuild)' != 'true' and ('$(IsCrossTargetingBuild)' == 'true' or '$(TargetFrameworks)' == '')">
+    <PropertyGroup>
+      <_TestPackagesDir>$(TestLayoutDir)testpackages/</_TestPackagesDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(_TestPackagesDir)" Condition="!Exists('$(_TestPackagesDir)')" />
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg"
+          DestinationFolder="$(_TestPackagesDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>
