@@ -68,14 +68,18 @@ internal static class InitWorkflowDefaults
         InstallCommand command,
         List<ResolvedInstallRequest>? requests)
     {
-        if (requests is not null)
-        {
-            return requests;
-        }
+        return requests ?? GenerateSdkInstallRequests(command, channel: null);
+    }
 
+    /// <summary>
+    /// Generates a single SDK install request for the given channel (or the default channel when
+    /// null), resolving the path, global.json, version, and validation through the install workflow.
+    /// </summary>
+    public static List<ResolvedInstallRequest> GenerateSdkInstallRequests(InstallCommand command, string? channel)
+    {
         var workflow = new InstallWorkflow(command);
         return workflow.GenerateInstallRequests(
-            [new MinimalInstallSpec(InstallComponent.SDK, null)]);
+            [new MinimalInstallSpec(InstallComponent.SDK, channel)]);
     }
 
     /// <summary>

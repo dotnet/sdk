@@ -13,6 +13,12 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// </summary>
 internal static class MigrationWorkflow
 {
+    /// <summary>
+    /// The number of migration candidates shown before the list is truncated or scrolled — used by
+    /// both the summary preview ("… and N more") and the interactive migration prompt's scroll window.
+    /// </summary>
+    internal const int MigrationPreviewCount = 3;
+
     internal sealed record MigrationSelection(
         InstallComponent Component,
         UpdateChannel Channel,

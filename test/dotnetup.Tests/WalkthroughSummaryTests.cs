@@ -9,42 +9,50 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 public class WalkthroughSummaryTests
 {
-    [Theory]
-    [InlineData(0, WalkthroughDecision.Proceed)]
-    [InlineData(1, WalkthroughDecision.Customize)]
-    [InlineData(2, WalkthroughDecision.Exit)]
-    internal void EvaluateSummaryDecision_MapsIndexToDecision(int index, WalkthroughDecision expected)
+    [Fact]
+    internal void BuildSummaryChoices_OrdersProceedCustomizeExit()
     {
-        WalkthroughSummary.EvaluateSummaryDecision(index).Should().Be(expected);
+        var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: false);
+
+        choices.Should().HaveCount(3);
+        choices[0].Decision.Should().Be(WalkthroughDecision.Proceed);
+        choices[1].Decision.Should().Be(WalkthroughDecision.Customize);
+        choices[2].Decision.Should().Be(WalkthroughDecision.Exit);
     }
 
     [Fact]
-    public void EvaluateSummaryDecision_TreatsUnknownIndexAsExit()
+    internal void BuildSummaryChoices_Unconfigured_FirstChoiceProceeds()
     {
-        WalkthroughSummary.EvaluateSummaryDecision(99).Should().Be(WalkthroughDecision.Exit);
+        var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: false);
+
+        choices[0].Option.Title.Should().Contain("proceed");
     }
 
     [Fact]
-    public void BuildSummaryOptions_Unconfigured_DefaultsToProceed()
+    internal void BuildSummaryChoices_Configured_FirstChoiceOffersOverride()
     {
-        var (options, defaultIndex) = WalkthroughSummary.BuildSummaryOptions(isConfigured: false);
+        var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: true);
 
-        defaultIndex.Should().Be(0);
-        options.Should().HaveCount(3);
-        options[0].Title.Should().Contain("proceed");
-        options[1].Title.Should().Contain("customize");
-        options[2].Title.Should().Contain("Exit");
+        choices[0].Option.Title.Should().Contain("override");
     }
 
     [Fact]
-    public void BuildSummaryOptions_Configured_DefaultsToCustomizeAndOffersOverride()
+    internal void GetDefaultChoiceIndex_Unconfigured_DefaultsToProceed()
     {
-        var (options, defaultIndex) = WalkthroughSummary.BuildSummaryOptions(isConfigured: true);
+        var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: false);
 
-        defaultIndex.Should().Be(1);
-        options.Should().HaveCount(3);
-        options[0].Title.Should().Contain("override");
-        options[1].Title.Should().Contain("customize");
-        options[2].Title.Should().Contain("Exit");
+        int index = WalkthroughSummary.GetDefaultChoiceIndex(choices, isConfigured: false);
+
+        choices[index].Decision.Should().Be(WalkthroughDecision.Proceed);
+    }
+
+    [Fact]
+    internal void GetDefaultChoiceIndex_Configured_DefaultsToCustomize()
+    {
+        var choices = WalkthroughSummary.BuildSummaryChoices(isConfigured: true);
+
+        int index = WalkthroughSummary.GetDefaultChoiceIndex(choices, isConfigured: true);
+
+        choices[index].Decision.Should().Be(WalkthroughDecision.Customize);
     }
 }

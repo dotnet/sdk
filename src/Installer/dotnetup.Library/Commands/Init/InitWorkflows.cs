@@ -122,8 +122,8 @@ internal class InitWorkflows
         List<MigrationWorkflow.MigrationSelection> toMigrate = PromptInstallsToMigrateIfDesired(
             _dotnetEnvironment,
             pathPreference,
-            effectiveRequests.Count > 0 ? effectiveRequests[0].Request.InstallRoot : plan.InstallRoot,
-            effectiveRequests.Count > 0 ? effectiveRequests[0].Request.Options.ManifestPath : null,
+            GetInstallRootOrDefault(effectiveRequests, plan.InstallRoot),
+            GetManifestPath(effectiveRequests),
             effectiveRequests,
             command.Interactive);
 
@@ -149,11 +149,8 @@ internal class InitWorkflows
             ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(effectiveRequests[0])
             : null;
 
-        // Use the first request's root if available, otherwise fall back to the default path.
-        DotnetInstallRoot installRoot = effectiveRequests.Count > 0
-            ? effectiveRequests[0].Request.InstallRoot
-            : defaultInstallRoot;
-        string? manifestPath = effectiveRequests.Count > 0 ? effectiveRequests[0].Request.Options.ManifestPath : null;
+        DotnetInstallRoot installRoot = GetInstallRootOrDefault(effectiveRequests, defaultInstallRoot);
+        string? manifestPath = GetManifestPath(effectiveRequests);
 
         if (selection.Migrations.Count > 0)
         {
@@ -198,10 +195,22 @@ internal class InitWorkflows
         }
 
         // Generate the install request via the workflow (handles path resolution, global.json, validation)
-        var workflow = new InstallWorkflow(command);
-        return workflow.GenerateInstallRequests(
-            [new MinimalInstallSpec(InstallComponent.SDK, selectedChannel)]);
+        return InitWorkflowDefaults.GenerateSdkInstallRequests(command, selectedChannel);
     }
+
+    /// <summary>
+    /// Returns the first request's install root when any requests exist, otherwise the fallback.
+    /// </summary>
+    private static DotnetInstallRoot GetInstallRootOrDefault(
+        List<ResolvedInstallRequest> requests,
+        DotnetInstallRoot fallback)
+        => requests.Count > 0 ? requests[0].Request.InstallRoot : fallback;
+
+    /// <summary>
+    /// Returns the manifest path carried by the first request, or null when there are no requests.
+    /// </summary>
+    private static string? GetManifestPath(List<ResolvedInstallRequest> requests)
+        => requests.Count > 0 ? requests[0].Request.Options.ManifestPath : null;
 
     /// <summary>
     /// Two-phase install used by the init walkthrough when migrations were selected.
@@ -446,7 +455,7 @@ internal class InitWorkflows
 
         var confirmResult = SpectreDisplayHelpers.RenderScrollableListWithConfirm(
             displayItems,
-            visibleCount: 3,
+            visibleCount: MigrationWorkflow.MigrationPreviewCount,
             "Do you want dotnetup to install matching versions in its managed directory?");
 
         HandleMigrationConfirmResult(confirmResult);

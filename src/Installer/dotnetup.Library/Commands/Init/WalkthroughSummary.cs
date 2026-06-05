@@ -29,22 +29,23 @@ internal static class WalkthroughSummary
         RenderSummaryBlock(plan, configuredPreference);
 
         bool isConfigured = configuredPreference is not null;
-        var (options, defaultIndex) = BuildSummaryOptions(isConfigured);
+        IReadOnlyList<SummaryChoice> choices = BuildSummaryChoices(isConfigured);
+        int defaultIndex = GetDefaultChoiceIndex(choices, isConfigured);
 
         int selected = InteractiveOptionSelector.Show(
             "Would you like to install .NET with the recommended settings?",
-            options,
+            [.. choices.Select(choice => choice.Option)],
             defaultIndex);
 
-        return EvaluateSummaryDecision(selected);
+        return choices[selected].Decision;
     }
 
     /// <summary>
-    /// Builds the selector options and the default highlighted index for the summary.
-    /// The option order is always [proceed/override, customize, exit]; only the first
-    /// option's wording and the default index differ between configured and unconfigured.
+    /// Builds the ordered selector choices, pairing each option with the decision it produces.
+    /// The order is always [proceed/override, customize, exit]; only the first option's wording
+    /// differs between configured and unconfigured.
     /// </summary>
-    internal static (IReadOnlyList<SelectableOption> Options, int DefaultIndex) BuildSummaryOptions(bool isConfigured)
+    internal static IReadOnlyList<SummaryChoice> BuildSummaryChoices(bool isConfigured)
     {
         string proceedTitle = isConfigured
             ? "Yes, override settings with defaults"
@@ -53,28 +54,38 @@ internal static class WalkthroughSummary
             ? "Replace your current settings with the recommended ones above."
             : "Install with the recommended settings shown above.";
 
-        var options = new List<SelectableOption>
-        {
-            new("y", proceedTitle, proceedDescription, string.Empty),
-            new("c", "No, customize setup", "Choose the channel, mode, and migrations yourself.", string.Empty),
-            new("x", "Exit without changes", "Make no changes and quit.", string.Empty),
-        };
-
-        // Unconfigured users are nudged toward proceeding; already-configured users default
-        // to customizing so they do not accidentally overwrite their saved settings.
-        var defaultIndex = isConfigured ? 1 : 0;
-        return (options, defaultIndex);
+        return
+        [
+            new SummaryChoice(
+                new SelectableOption("y", proceedTitle, proceedDescription, string.Empty),
+                WalkthroughDecision.Proceed),
+            new SummaryChoice(
+                new SelectableOption("c", "No, customize setup", "Choose the channel, mode, and migrations yourself.", string.Empty),
+                WalkthroughDecision.Customize),
+            new SummaryChoice(
+                new SelectableOption("x", "Exit without changes", "Make no changes and quit.", string.Empty),
+                WalkthroughDecision.Exit),
+        ];
     }
 
     /// <summary>
-    /// Maps the selected option index to a <see cref="WalkthroughDecision"/>.
+    /// Returns the index of the choice to highlight by default. Unconfigured users are nudged toward
+    /// proceeding; already-configured users default to customizing so they do not accidentally
+    /// overwrite their saved settings.
     /// </summary>
-    internal static WalkthroughDecision EvaluateSummaryDecision(int selectedIndex) => selectedIndex switch
+    internal static int GetDefaultChoiceIndex(IReadOnlyList<SummaryChoice> choices, bool isConfigured)
     {
-        0 => WalkthroughDecision.Proceed,
-        1 => WalkthroughDecision.Customize,
-        _ => WalkthroughDecision.Exit,
-    };
+        WalkthroughDecision defaultDecision = isConfigured ? WalkthroughDecision.Customize : WalkthroughDecision.Proceed;
+        for (int i = 0; i < choices.Count; i++)
+        {
+            if (choices[i].Decision == defaultDecision)
+            {
+                return i;
+            }
+        }
+
+        return 0;
+    }
 
     private static void RenderSummaryBlock(WalkthroughPlan plan, PathPreference? configuredPreference)
     {
@@ -154,7 +165,7 @@ internal static class WalkthroughSummary
         SpectreAnsiConsole.MarkupLine("System installs to migrate:");
 
         var items = InitWorkflows.FormatMigrationDisplayItems(migrations);
-        int shown = Math.Min(3, items.Count);
+        int shown = Math.Min(MigrationWorkflow.MigrationPreviewCount, items.Count);
         for (int i = 0; i < shown; i++)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(
