@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// <summary>
 /// Renders the first-run / init summary block and the three-option selector that lets the
 /// user proceed with the recommended defaults, customize the setup, or exit. The summary
-/// only displays values that have already been resolved into a <see cref="WalkthroughDefaults"/>;
+/// only displays values that have already been resolved into a <see cref="WalkthroughPlan"/>;
 /// it does not resolve or apply any setup itself.
 /// </summary>
 internal static class WalkthroughSummary
@@ -24,7 +24,7 @@ internal static class WalkthroughSummary
     /// </summary>
     /// <param name="defaults">The recommended defaults to display.</param>
     /// <param name="configuredPreference">The currently configured path preference, or null when unconfigured.</param>
-    public static WalkthroughDecision Show(WalkthroughDefaults defaults, PathPreference? configuredPreference)
+    public static WalkthroughDecision Show(WalkthroughPlan defaults, PathPreference? configuredPreference)
     {
         RenderSummaryBlock(defaults, configuredPreference);
 
@@ -76,7 +76,7 @@ internal static class WalkthroughSummary
         _ => WalkthroughDecision.Exit,
     };
 
-    private static void RenderSummaryBlock(WalkthroughDefaults defaults, PathPreference? configuredPreference)
+    private static void RenderSummaryBlock(WalkthroughPlan defaults, PathPreference? configuredPreference)
     {
         string brand = DotnetupTheme.Current.Brand;
         string dim = DotnetupTheme.Current.Dim;
@@ -86,7 +86,7 @@ internal static class WalkthroughSummary
         SpectreAnsiConsole.WriteLine();
 
         RenderChannelLine(defaults.ChannelDisplay, brand, dim);
-        RenderModeLine(defaults.PathPreference, configuredPreference, brand, configured, dim);
+        RenderModeLine(defaults.PathPreference, configuredPreference, brand, configured);
         RenderMigrationSummary(defaults.Migrations, dim);
 
         SpectreAnsiConsole.WriteLine();
@@ -121,8 +121,7 @@ internal static class WalkthroughSummary
         PathPreference recommended,
         PathPreference? configuredPreference,
         string brand,
-        string configured,
-        string dim)
+        string configured)
     {
         string label = "Mode:".PadRight(LabelWidth);
         string recommendedName = PathPreferenceDisplay.GetName(recommended);

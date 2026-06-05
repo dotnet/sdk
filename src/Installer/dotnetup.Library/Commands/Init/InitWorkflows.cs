@@ -65,16 +65,16 @@ internal class InitWorkflows
         // Resolve the recommended defaults once. The summary displays them and the
         // "proceed" branch reuses the exact same values, so the displayed defaults and
         // the applied defaults can never diverge.
-        WalkthroughDefaults defaults = ResolveWalkthroughDefaults(command, requests);
+        WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughDefaults(command, requests, _dotnetEnvironment);
 
         // Fire off background predownload while the user reads the summary / answers prompts.
-        Task? predownloadTask = defaults.Requests.Count > 0
-            ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(defaults.Requests[0])
+        Task? predownloadTask = plan.Requests.Count > 0
+            ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(plan.Requests[0])
             : null;
 
         PathPreference? previousPreference = DotnetupConfig.ReadPathPreference();
 
-        WalkthroughSelection? selection = ResolveWalkthroughSelection(command, requests, defaults, previousPreference);
+        WalkthroughSelection? selection = ResolveWalkthroughSelection(command, requests, plan, previousPreference);
         if (selection is null)
         {
             return []; // User chose to exit without changes.
@@ -83,9 +83,9 @@ internal class InitWorkflows
         // The eager predownload was started for the default requests; only keep waiting on it
         // when the selection actually uses those requests (avoids blocking a customized install
         // on a download for a channel the user changed).
-        Task? effectivePredownload = ReferenceEquals(selection.Requests, defaults.Requests) ? predownloadTask : null;
+        Task? effectivePredownload = ReferenceEquals(selection.Requests, plan.Requests) ? predownloadTask : null;
 
-        return ExecuteWalkthroughSelection(command, selection, defaults.InstallRoot, previousPreference, effectivePredownload);
+        return ExecuteWalkthroughSelection(command, selection, plan.InstallRoot, previousPreference, effectivePredownload);
     }
 
     /// <summary>
@@ -97,21 +97,21 @@ internal class InitWorkflows
     private WalkthroughSelection? ResolveWalkthroughSelection(
         InstallCommand command,
         List<ResolvedInstallRequest>? requests,
-        WalkthroughDefaults defaults,
+        WalkthroughPlan plan,
         PathPreference? previousPreference)
     {
         bool interactiveSummary = command.Interactive && !Console.IsInputRedirected;
         if (!interactiveSummary)
         {
-            return new WalkthroughSelection(defaults.Requests, defaults.PathPreference, []);
+            return new WalkthroughSelection(plan.Requests, plan.PathPreference, []);
         }
 
-        WalkthroughDecision decision = WalkthroughSummary.Show(defaults, previousPreference);
+        WalkthroughDecision decision = WalkthroughSummary.Show(plan, previousPreference);
         return decision switch
         {
             WalkthroughDecision.Exit => null,
-            WalkthroughDecision.Proceed => new WalkthroughSelection(defaults.Requests, defaults.PathPreference, defaults.Migrations),
-            _ => ResolveCustomizedSelection(command, requests, defaults),
+            WalkthroughDecision.Proceed => new WalkthroughSelection(plan.Requests, plan.PathPreference, plan.Migrations),
+            _ => ResolveCustomizedSelection(command, requests, plan),
         };
     }
 
@@ -121,14 +121,14 @@ internal class InitWorkflows
     private WalkthroughSelection ResolveCustomizedSelection(
         InstallCommand command,
         List<ResolvedInstallRequest>? requests,
-        WalkthroughDefaults defaults)
+        WalkthroughPlan plan)
     {
         List<ResolvedInstallRequest> effectiveRequests = ResolveWalkthroughRequests(command, requests);
         PathPreference pathPreference = GetInitPathPreference(command.Interactive, command.ShellProvider);
         List<MigrationWorkflow.MigrationSelection> toMigrate = PromptInstallsToMigrateIfDesired(
             _dotnetEnvironment,
             pathPreference,
-            effectiveRequests.Count > 0 ? effectiveRequests[0].Request.InstallRoot : defaults.InstallRoot,
+            effectiveRequests.Count > 0 ? effectiveRequests[0].Request.InstallRoot : plan.InstallRoot,
             effectiveRequests.Count > 0 ? effectiveRequests[0].Request.Options.ManifestPath : null,
             effectiveRequests,
             command.Interactive);
@@ -180,83 +180,6 @@ internal class InitWorkflows
         }
 
         return effectiveRequests;
-    }
-
-    /// <summary>
-    /// Resolves the recommended default setup (install requests, install root, path preference,
-    /// migration candidates, and channel display) without prompting the user. Both the summary
-    /// renderer and the "proceed with defaults" branch consume this so the displayed and applied
-    /// defaults stay in sync.
-    /// </summary>
-    internal WalkthroughDefaults ResolveWalkthroughDefaults(
-        InstallCommand command,
-        List<ResolvedInstallRequest>? requests)
-    {
-        List<ResolvedInstallRequest> defaultRequests = ResolveDefaultRequests(command, requests);
-
-        DotnetInstallRoot installRoot = defaultRequests.Count > 0
-            ? defaultRequests[0].Request.InstallRoot
-            : new DotnetInstallRoot(
-                _dotnetEnvironment.GetDefaultDotnetInstallPath(),
-                InstallerUtilities.GetDefaultInstallArchitecture());
-
-        PathPreference pathPreference = GetDefaultPathPreference(command.ShellProvider);
-        string? manifestPath = defaultRequests.Count > 0 ? defaultRequests[0].Request.Options.ManifestPath : null;
-
-        List<MigrationWorkflow.MigrationSelection> migrations = ResolveDefaultMigrations(
-            _dotnetEnvironment, pathPreference, installRoot, manifestPath, defaultRequests);
-
-        return new WalkthroughDefaults(
-            defaultRequests, installRoot, pathPreference, migrations, ResolveChannelDisplay(defaultRequests));
-    }
-
-    /// <summary>
-    /// Resolves the default install requests without prompting. Uses the pre-resolved requests
-    /// when supplied; otherwise resolves the default SDK channel (from global.json or "latest").
-    /// </summary>
-    private static List<ResolvedInstallRequest> ResolveDefaultRequests(
-        InstallCommand command,
-        List<ResolvedInstallRequest>? requests)
-    {
-        if (requests is not null)
-        {
-            return requests;
-        }
-
-        var workflow = new InstallWorkflow(command);
-        return workflow.GenerateInstallRequests(
-            [new MinimalInstallSpec(InstallComponent.SDK, null)]);
-    }
-
-    /// <summary>
-    /// Builds the deduplicated migration candidates for the recommended mode without prompting.
-    /// Returns an empty list when the mode does not migrate system installs.
-    /// </summary>
-    internal static List<MigrationWorkflow.MigrationSelection> ResolveDefaultMigrations(
-        IDotnetEnvironmentManager dotnetEnvironment,
-        PathPreference pathPreference,
-        DotnetInstallRoot installRoot,
-        string? manifestPath,
-        IReadOnlyCollection<ResolvedInstallRequest>? existingRequests)
-    {
-        if (!ShouldPromptToConvertSystemInstalls(pathPreference))
-        {
-            return [];
-        }
-
-        var systemInstalls = MigrationWorkflow.GetMigrationCandidates(dotnetEnvironment);
-        return MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, manifestPath, existingRequests);
-    }
-
-    private static DefaultChannelDisplay ResolveChannelDisplay(List<ResolvedInstallRequest> requests)
-    {
-        if (requests.Count == 0)
-        {
-            return new DefaultChannelDisplay(null, null);
-        }
-
-        var first = requests[0];
-        return new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath);
     }
 
     private List<ResolvedInstallRequest> ResolveWalkthroughRequests(
@@ -334,7 +257,7 @@ internal class InitWorkflows
     {
         if (!interactive)
         {
-            return GetDefaultPathPreference(shellProvider);
+            return InitWorkflowDefaults.GetDefaultPathPreference(shellProvider);
         }
 
         if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
@@ -345,21 +268,6 @@ internal class InitWorkflows
         }
 
         return ValidatePathPreference(PromptPathPreference());
-    }
-
-    /// <summary>
-    /// Returns the recommended path preference without prompting: terminal-profile mode when a
-    /// supported shell is available, otherwise isolation mode. This is the value shown in the
-    /// summary and used by the "proceed with defaults" branch.
-    /// </summary>
-    internal static PathPreference GetDefaultPathPreference(IEnvShellProvider? shellProvider = null)
-    {
-        if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
-        {
-            return PathPreference.DotnetupDotnet;
-        }
-
-        return PathPreference.ShellProfile;
     }
 
     private static PathPreference ValidatePathPreference(PathPreference preference)
@@ -491,7 +399,7 @@ internal class InitWorkflows
             return [];
         }
 
-        var migrationSelections = ResolveDefaultMigrations(
+        var migrationSelections = InitWorkflowDefaults.ResolveDefaultMigrations(
             dotnetEnvironment, pathPreference, installRoot, manifestPath, existingRequests);
         if (migrationSelections.Count == 0)
         {

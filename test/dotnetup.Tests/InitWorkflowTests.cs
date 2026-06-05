@@ -200,7 +200,7 @@ public class InitWorkflowTests : IDisposable
     [Fact]
     public void GetDefaultPathPreference_ReturnsShellProfile_WhenShellProviderIsAvailable()
     {
-        InitWorkflows.GetDefaultPathPreference(new BashEnvShellProvider())
+        InitWorkflowDefaults.GetDefaultPathPreference(new BashEnvShellProvider())
             .Should().Be(PathPreference.ShellProfile);
     }
 
@@ -215,7 +215,7 @@ public class InitWorkflowTests : IDisposable
         }
 
         // A null shell provider with no detectable shell falls back to isolation mode.
-        InitWorkflows.GetDefaultPathPreference(shellProvider: null)
+        InitWorkflowDefaults.GetDefaultPathPreference(shellProvider: null)
             .Should().BeOneOf(PathPreference.DotnetupDotnet, PathPreference.ShellProfile);
     }
 
@@ -233,7 +233,7 @@ public class InitWorkflowTests : IDisposable
                 new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
             ]);
 
-        var result = InitWorkflows.ResolveDefaultMigrations(
+        var result = InitWorkflowDefaults.ResolveDefaultMigrations(
             mock, PathPreference.DotnetupDotnet, installRoot, manifestPath: null, existingRequests: null);
 
         result.Should().BeEmpty();
@@ -253,7 +253,7 @@ public class InitWorkflowTests : IDisposable
                 new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
             ]);
 
-        var result = InitWorkflows.ResolveDefaultMigrations(
+        var result = InitWorkflowDefaults.ResolveDefaultMigrations(
             mock, PathPreference.ShellProfile, installRoot, manifestPath: null, existingRequests: null);
 
         result.Should().NotBeEmpty();
