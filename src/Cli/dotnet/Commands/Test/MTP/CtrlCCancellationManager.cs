@@ -100,11 +100,15 @@ internal sealed class CtrlCCancellationManager : IDisposable
         // First press: Idle -> Cancelling. Signal the token, invoke the UI callback.
         if (Interlocked.CompareExchange(ref _state, StateCancelling, StateIdle) == StateIdle)
         {
+            // CancellationTokenSource.Cancel() can throw an AggregateException if any registered
+            // callback throws, or an ObjectDisposedException if Dispose races with a Ctrl+C press
+            // (e.g. user presses Ctrl+C while we're tearing down). Swallow both — we still want the
+            // state machine to advance and the UI callback to run.
             try
             {
                 _cancellationTokenSource.Cancel();
             }
-            catch (AggregateException ex)
+            catch (Exception ex) when (ex is AggregateException or ObjectDisposedException)
             {
                 Logger.LogTrace($"Exception during CtrlCCancellationManager cancel:\n{ex}");
             }

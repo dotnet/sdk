@@ -4,6 +4,10 @@
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Test;
 
+// Disambiguate from Microsoft.NET.TestFramework.ExitCode which is brought in by the test
+// framework's global usings (FluentAssertions/Xunit/Microsoft.NET.TestFramework).
+using ExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
+
 namespace dotnet.Tests.CommandTests.Test;
 
 public class CtrlCCancellationManagerTests
@@ -200,10 +204,29 @@ public class CtrlCCancellationManagerTests
         exitCount.Should().Be(1, "the state machine must still advance to Forcing on the second press even if the first-press callback threw");
     }
 
+    [Fact]
+    public void FirstCtrlC_AfterDispose_DoesNotThrowFromDisposedTokenSource()
+    {
+        // Race window: the user presses Ctrl+C between the manager being disposed (which unsubscribes
+        // from Console.CancelKeyPress but cannot remove an already-in-flight handler invocation) and
+        // the handler reaching Cancel() on the disposed CancellationTokenSource. SimulateCtrlC drives
+        // that path directly.
+        var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => { },
+            exitAction: _ => { },
+            subscribeToConsole: false);
+
+        manager.Dispose();
+
+        Action act = () => manager.SimulateCtrlC();
+        act.Should().NotThrow("a Ctrl+C arriving after Dispose must not surface as an unhandled exception");
+    }
+
     private static Process StartLongRunningProcess()
     {
-        // A small dotnet host that just sleeps for a long time so we have a real process to kill.
-        // We use the muxer that's resolvable from PATH; on the test machine 'dotnet' is always on PATH.
+        // Spawn a platform-appropriate "sleep" process (cmd.exe + timeout on Windows, /bin/sh +
+        // sleep on Unix) so we have a real OS process to register/kill in tests. The actual program
+        // is irrelevant — we only need a process tree the manager can target with Process.Kill.
         var psi = new ProcessStartInfo
         {
             FileName = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh",
