@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Tools.Run.LaunchSettings
                     {
                         if (TryGetStringValue(environmentVariable.Value, out var environmentVariableValue))
                         {
-                            config.EnvironmentVariables[environmentVariable.Name] = environmentVariableValue;
+                            config.EnvironmentVariables[environmentVariable.Name] = environmentVariableValue!;
                         }
                     }
                 }

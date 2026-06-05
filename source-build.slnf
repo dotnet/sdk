@@ -8,7 +8,6 @@
       "src\\BuiltInTools\\DotNetDeltaApplier\\Microsoft.Extensions.DotNetDeltaApplier.csproj",
       "src\\BuiltInTools\\DotNetWatchTasks\\DotNetWatchTasks.csproj",
       "src\\BuiltInTools\\dotnet-watch\\dotnet-watch.csproj",
-      "src\\Cli\\Microsoft.DotNet.Cli.Sln.Internal\\Microsoft.DotNet.Cli.Sln.Internal.csproj",
       "src\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
       "src\\Cli\\Microsoft.DotNet.Configurer\\Microsoft.DotNet.Configurer.csproj",
       "src\\Cli\\Microsoft.DotNet.InternalAbstractions\\Microsoft.DotNet.InternalAbstractions.csproj",

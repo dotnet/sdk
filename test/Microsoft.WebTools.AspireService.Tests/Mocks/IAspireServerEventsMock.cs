@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-using Microsoft.WebTools.AspireServer.Contracts;
 using Moq;
+using Moq.Language.Flow;
 
-namespace Microsoft.WebTools.AspireServer.UnitTests;
+namespace Aspire.Tools.Service.UnitTests;
 
 internal class IAspireServerEventsMock : MockFactory<IAspireServerEvents>
 {
@@ -12,19 +12,28 @@ internal class IAspireServerEventsMock : MockFactory<IAspireServerEvents>
     {
     }
 
-    public IAspireServerEventsMock ImplementStartProjectAsync(string dcpId, string sessionId, Exception? ex = null)
+    public IAspireServerEventsMock ImplementStartProjectAsync(string dcpId, string sessionId, Exception? ex = null, bool requireNullArguments = false)
     {
-        MockObject.Setup(x => x.StartProjectAsync(dcpId, It.IsAny<ProjectLaunchRequest>(), It.IsAny<CancellationToken>()))
-                  .Returns(() =>
-                  {
-                        if (ex is not null)
-                        {
-                            throw ex;
-                        }
+        ISetup<IAspireServerEvents, ValueTask<string>> setup;
+        if (requireNullArguments)
+        {
+            setup = MockObject.Setup(x => x.StartProjectAsync(dcpId, It.Is<ProjectLaunchRequest>(plr => plr.Arguments == null), It.IsAny<CancellationToken>()));
+        }
+        else
+        {
+            setup = MockObject.Setup(x => x.StartProjectAsync(dcpId, It.IsAny<ProjectLaunchRequest>(), It.IsAny<CancellationToken>()));
+        }
 
-                        return new ValueTask<string>(sessionId);
-                  })
-                  .Verifiable();
+        setup.Returns(() =>
+        {
+            if (ex is not null)
+            {
+                throw ex;
+            }
+             
+            return new ValueTask<string>(sessionId);
+        }).Verifiable();
+
         return this;
     }
 
