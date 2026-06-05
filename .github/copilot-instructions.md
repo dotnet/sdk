@@ -29,6 +29,10 @@ Testing:
   - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
   - The dogfood script sets up PATH and environment to use the newly built SDK
 
+Investigating PRs and CI failures:
+- When asked to look at, investigate, or diagnose a pull request or build, first read the PR itself — its state, checks, and the conversation/comments — before deep analysis. Maintainers often post the root cause or the decided fix in the discussion, and a linked PR or issue may already carry it.
+- If a PR's CI checks are failing, prefer the `ci-analysis` skill (`.claude/skills/ci-analysis`) for the deep dive — Azure DevOps/Helix failures, known-issue matching, and retry guidance — rather than ad-hoc investigation.
+
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.
 
