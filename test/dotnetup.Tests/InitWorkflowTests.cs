@@ -195,5 +195,70 @@ public class InitWorkflowTests : IDisposable
         items.Should().OnlyContain(i => i.Contains("10.0.1xx") && i.Contains("["));
     }
 
+    // ── GetDefaultPathPreference ──
+
+    [Fact]
+    public void GetDefaultPathPreference_ReturnsShellProfile_WhenShellProviderIsAvailable()
+    {
+        InitWorkflows.GetDefaultPathPreference(new BashEnvShellProvider())
+            .Should().Be(PathPreference.ShellProfile);
+    }
+
+    [Fact]
+    public void GetDefaultPathPreference_ReturnsDotnetupDotnet_WhenNoShellOnNonWindows()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            // Windows always has a usable profile target, so the no-shell isolation fallback
+            // only applies to non-Windows platforms.
+            return;
+        }
+
+        // A null shell provider with no detectable shell falls back to isolation mode.
+        InitWorkflows.GetDefaultPathPreference(shellProvider: null)
+            .Should().BeOneOf(PathPreference.DotnetupDotnet, PathPreference.ShellProfile);
+    }
+
+    // ── ResolveDefaultMigrations ──
+
+    [Fact]
+    public void ResolveDefaultMigrations_ReturnsEmpty_ForIsolationMode()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls:
+            [
+                new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+            ]);
+
+        var result = InitWorkflows.ResolveDefaultMigrations(
+            mock, PathPreference.DotnetupDotnet, installRoot, manifestPath: null, existingRequests: null);
+
+        result.Should().BeEmpty();
+        mock.GetExistingSystemInstallsCallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void ResolveDefaultMigrations_ReturnsCandidates_ForShellProfile()
+    {
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
+        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls:
+            [
+                new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
+                new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
+            ]);
+
+        var result = InitWorkflows.ResolveDefaultMigrations(
+            mock, PathPreference.ShellProfile, installRoot, manifestPath: null, existingRequests: null);
+
+        result.Should().NotBeEmpty();
+        mock.GetExistingSystemInstallsCallCount.Should().Be(1);
+    }
+
 
 }
