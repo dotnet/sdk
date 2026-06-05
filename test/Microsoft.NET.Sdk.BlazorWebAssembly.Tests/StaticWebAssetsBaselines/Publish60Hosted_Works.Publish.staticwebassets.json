@@ -10649,6 +10649,40 @@
       ]
     },
     {
+      "Route": "{**fallback:nonfile}",
+      "AssetFile": "${ProjectPath}\\Client\\wwwroot\\index.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ],
+      "Order": "2147483647"
+    },
+    {
       "Route": "index.icy9c37a77.html",
       "AssetFile": "${ProjectPath}\\Client\\wwwroot\\index.html",
       "Selectors": [],

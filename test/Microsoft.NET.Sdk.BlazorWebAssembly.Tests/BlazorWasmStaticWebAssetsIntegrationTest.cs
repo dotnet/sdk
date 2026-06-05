@@ -40,6 +40,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
+            AssertSpaFallbackEndpoint(manifest);
 
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
             var finalPath = Path.Combine(outputPath, "blazorwasm-minimal.staticwebassets.runtime.json");
@@ -81,6 +82,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
+            AssertSpaFallbackEndpoint(manifest);
 
             AssertPublishAssets(
                 manifest,
@@ -306,6 +308,21 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 manifest,
                 publishPath,
                 intermediateOutputPath);
+        }
+
+        private static void AssertSpaFallbackEndpoint(StaticWebAssetsManifest manifest)
+        {
+            var fallbackEndpoints = manifest.Endpoints.Where(e => e.Route == "{**fallback:nonfile}").ToArray();
+            fallbackEndpoints.Should().NotBeEmpty();
+            fallbackEndpoints.Should().OnlyContain(e => e.Order == "2147483647");
+
+            var indexEndpoints = manifest.Endpoints.Where(e => e.Route == "index.html").ToArray();
+            indexEndpoints.Should().NotBeEmpty();
+
+            foreach (var fallbackEndpoint in fallbackEndpoints)
+            {
+                indexEndpoints.Should().Contain(e => e.AssetFile == fallbackEndpoint.AssetFile);
+            }
         }
     }
 }
