@@ -25,6 +25,10 @@ parameters:
 variables:
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
+# EngKeyVault-backed group (dnceng/internal). Provides the secret $(akams-app-id) -- the onboarded
+# aka.ms client app id used to authenticate to the Redirection API. The pipeline must be granted
+# access to this variable group. Same source dotnet/arcade uses in eng/publishing/v3/publish.yml.
+- group: Publish-Build-Assets
 
 resources:
   repositories:
@@ -237,21 +241,23 @@ extends:
               env:
                 ESRP_RELEASE_DETAILS: $(ESRP_RELEASE_DETAILS)
 
-            # Repoint the aka.ms links at the new ESRP URLs using the corp Redirection Management
-            # API (same endpoint/scope as dotnet/arcade's AkaMSLinkManager). The /bulk endpoint
-            # accepts an array, so both links are updated in a single call.
+            # Repoint the aka.ms links at the new ESRP URLs. We authenticate to the corp Redirection
+            # Management API the same way dotnet/arcade does: as the onboarded aka.ms client app
+            # ($(akams-app-id), from the EngKeyVault-backed Publish-Build-Assets variable group) using
+            # a client certificate pulled from EngKeyVault. The /bulk endpoint accepts an array, so
+            # both links are updated in a single PUT.
             #
-            # AUTH (read before configuring): the Redirection API only accepts tokens from an AAD
-            # app that has been registered and onboarded as an aka.ms client. AkaMsServiceConnection
-            # MUST therefore be an AzureRM (workload-identity / federated) service connection whose
-            # backing identity is that onboarded app -- a generic pipeline connection will get 401/403.
-            # Ask dnceng for the service-connection name (and have them confirm the identity is
-            # authorized on the Redirection API). The token authority tenant is fixed to the corp
-            # tenant (72f988bf-86f1-41af-91ab-2d7cd011db47), which is the service connection's own
-            # tenant; we do not supply it.
+            # Prerequisites (dnceng-owned; the pipeline must be granted access):
+            #   - The 'Publish-Build-Assets' variable group is linked (provides secret $(akams-app-id)).
+            #   - AkaMsCertServiceConnection can read the cert secret from the key vault.
+            #   - The app/cert is allowed to manage the 'dotnet/templating/*' links in the 'ncd' tenant.
             #
-            # Variables defined in the pipeline's Variables UI:
-            #   AkaMsServiceConnection           - federated AzureRM service connection (identity onboarded to the Redirection API)
+            # Variables (pipeline Variables UI unless noted):
+            #   akams-app-id                     - aka.ms client app id (secret, from the Publish-Build-Assets KV group)
+            #   AkaMsCertServiceConnection       - AzureRM service connection that can read the key vault (e.g. DotNet-Engineering-Services_KeyVault)
+            #   AkaMsCertVaultName               - key vault holding the cert (e.g. EngKeyVault)
+            #   AkaMsCertSecretName              - cert secret name (e.g. Redirection-UST-Client-NetCoreDeployment)
+            #   AkaMsAuthorityTenantId           - AAD tenant to authenticate the app against (corp 72f988bf-86f1-41af-91ab-2d7cd011db47)
             #   AkaMsTenantId                    - aka.ms redirection tenant in the /api/aka/1/{tenant} path (the dotnet tenant is 'ncd', NOT the AAD tenant GUID)
             #   AkaMsShortUrl                    - 'dotnet/templating/searchcacheurl' (no 'aka.ms/' prefix)
             #   AkaMsNonTemplatePacksShortUrl    - 'dotnet/templating/nontemplatepacksurl' (no 'aka.ms/' prefix)
@@ -260,30 +266,93 @@ extends:
             # Only repoint the production links from main; manual/test runs on other branches
             # should not move them (point the short-url vars at test links to validate this step).
             - task: AzureCLI@2
-              displayName: Update aka.ms search cache links
+              displayName: Fetch aka.ms client certificate
               condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
               inputs:
-                azureSubscription: $(AkaMsServiceConnection)
+                azureSubscription: $(AkaMsCertServiceConnection)
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
                   $ErrorActionPreference = 'Stop'
-                  $searchCacheUrl      = $env:SEARCH_CACHE_URL
-                  $nonTemplatePacksUrl = $env:NON_TEMPLATE_PACKS_URL
-                  $shortUrl            = $env:AKAMS_SHORT_URL
-                  $nonShortUrl         = $env:AKAMS_NONTEMPLATEPACKS_SHORT_URL
-                  $tenant              = $env:AKAMS_TENANT_ID
-                  $owners              = $env:AKAMS_OWNERS
-                  $groupOwner          = $env:AKAMS_GROUP_OWNER
+                  $value = az keyvault secret show --vault-name $env:AKAMS_CERT_VAULT --name $env:AKAMS_CERT_SECRET --query value -o tsv
+                  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($value)) { Write-Error 'Failed to read the aka.ms certificate secret from the key vault.'; exit 1 }
+                  $path = Join-Path $env:AGENT_TEMPDIRECTORY 'akamscert.b64'
+                  Set-Content -Path $path -Value $value -NoNewline
+                  Write-Host "Wrote certificate material to $path"
+              env:
+                AKAMS_CERT_VAULT: $(AkaMsCertVaultName)
+                AKAMS_CERT_SECRET: $(AkaMsCertSecretName)
 
-                  foreach ($required in @{ SEARCH_CACHE_URL = $searchCacheUrl; NON_TEMPLATE_PACKS_URL = $nonTemplatePacksUrl; AKAMS_SHORT_URL = $shortUrl; AKAMS_NONTEMPLATEPACKS_SHORT_URL = $nonShortUrl; AKAMS_TENANT_ID = $tenant; AKAMS_OWNERS = $owners }.GetEnumerator()) {
-                    if ([string]::IsNullOrWhiteSpace($required.Value)) { Write-Error "Required value '$($required.Key)' is empty."; exit 1 }
+            # Authenticate as the aka.ms client app with the certificate and PUT both links. Run as a
+            # plain pwsh step (not AzureCLI@2) so our 'az login --service-principal' owns the az context;
+            # it is reverted in the finally block.
+            - pwsh: |
+                $ErrorActionPreference = 'Stop'
+                $searchCacheUrl      = $env:SEARCH_CACHE_URL
+                $nonTemplatePacksUrl = $env:NON_TEMPLATE_PACKS_URL
+                $appId               = $env:AKAMS_APP_ID
+                $authorityTenant     = $env:AKAMS_AUTHORITY_TENANT
+                $shortUrl            = $env:AKAMS_SHORT_URL
+                $nonShortUrl         = $env:AKAMS_NONTEMPLATEPACKS_SHORT_URL
+                $tenant              = $env:AKAMS_TENANT_ID
+                $owners              = $env:AKAMS_OWNERS
+                $groupOwner          = $env:AKAMS_GROUP_OWNER
+
+                foreach ($required in @{ SEARCH_CACHE_URL = $searchCacheUrl; NON_TEMPLATE_PACKS_URL = $nonTemplatePacksUrl; AKAMS_APP_ID = $appId; AKAMS_AUTHORITY_TENANT = $authorityTenant; AKAMS_SHORT_URL = $shortUrl; AKAMS_NONTEMPLATEPACKS_SHORT_URL = $nonShortUrl; AKAMS_TENANT_ID = $tenant; AKAMS_OWNERS = $owners }.GetEnumerator()) {
+                  if ([string]::IsNullOrWhiteSpace($required.Value)) { Write-Error "Required value '$($required.Key)' is empty."; exit 1 }
+                }
+
+                # The key vault certificate secret is a base64-encoded PKCS#12 (PFX). Decode it, load
+                # it, and re-emit it as a PEM (private key + certificate) for 'az login --certificate'.
+                $b64Path = Join-Path $env:AGENT_TEMPDIRECTORY 'akamscert.b64'
+                if (-not (Test-Path $b64Path)) { Write-Error "Certificate material '$b64Path' is missing; the fetch step did not run."; exit 1 }
+                $raw = (Get-Content -Raw $b64Path) -replace '\s', ''
+                $storageFlags = `
+                  [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable -bor `
+                  [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet
+                try {
+                  if ($raw -match '-----BEGIN') {
+                    Write-Error 'The certificate secret is stored as PEM, but this step expects a base64 PFX. Adjust the secret or this step.'
+                    exit 1
                   }
+                  $pfxBytes = [Convert]::FromBase64String($raw)
+                  $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($pfxBytes, '', $storageFlags)
+                } catch {
+                  Write-Error "Could not load the certificate secret as a base64 PFX. Details: $($_.Exception.Message)"
+                  exit 1
+                }
+                if (-not $cert.HasPrivateKey) { Write-Error 'The certificate does not contain a private key.'; exit 1 }
+                $rsa = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($cert)
+                if ($null -eq $rsa) { Write-Error 'The certificate does not contain an exportable RSA private key.'; exit 1 }
+
+                function Format-Pem([byte[]] $bytes, [string] $label) {
+                  $text = [Convert]::ToBase64String($bytes)
+                  $sb = [System.Text.StringBuilder]::new()
+                  [void]$sb.AppendLine("-----BEGIN $label-----")
+                  for ($i = 0; $i -lt $text.Length; $i += 64) {
+                    [void]$sb.AppendLine($text.Substring($i, [Math]::Min(64, $text.Length - $i)))
+                  }
+                  [void]$sb.AppendLine("-----END $label-----")
+                  $sb.ToString()
+                }
+                $pemPath = Join-Path $env:AGENT_TEMPDIRECTORY 'akamscert.pem'
+                (Format-Pem $rsa.ExportPkcs8PrivateKey() 'PRIVATE KEY') + (Format-Pem $cert.RawData 'CERTIFICATE') |
+                  Set-Content -Path $pemPath -NoNewline
+
+                try {
+                  $azConfigDir = Join-Path $env:AGENT_TEMPDIRECTORY 'az-akams'
+                  New-Item -ItemType Directory -Force -Path $azConfigDir | Out-Null
+                  $env:AZURE_CONFIG_DIR = $azConfigDir
+
+                  az login --service-principal --username $appId --tenant $authorityTenant `
+                    --certificate $pemPath --use-cert-sn-issuer --allow-no-subscriptions 1>$null
+                  if ($LASTEXITCODE -ne 0) { Write-Error 'az login with the aka.ms client certificate failed.'; exit 1 }
 
                   $token = az account get-access-token `
                     --scope 'https://msazurecloud.onmicrosoft.com/RedirectionMgmtApi-Prod/.default' `
                     --query accessToken -o tsv
-                  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($token)) { Write-Error 'Failed to acquire redirection API token.'; exit 1 }
+                  if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($token)) { Write-Error 'Failed to acquire the redirection API token.'; exit 1 }
+                  Write-Host "##vso[task.setsecret]$token"
 
                   $lastModifiedBy = $owners.Split(';')[0].Trim()
                   function New-Link($short, $target, $description) {
@@ -298,7 +367,7 @@ extends:
                       isAllowParam   = $true
                     }
                   }
-                  $body = ConvertTo-Json @(
+                  $body = ConvertTo-Json -Depth 5 -AsArray @(
                     (New-Link $shortUrl    $searchCacheUrl      'dotnet templating search cache (published via ESRP)'),
                     (New-Link $nonShortUrl $nonTemplatePacksUrl 'dotnet templating non-template packs (published via ESRP)')
                   )
@@ -311,9 +380,19 @@ extends:
                     -Headers @{ Authorization = "Bearer $token" } `
                     -ContentType 'application/json' -Body $body
                   Write-Host "Redirection API status: $($resp.StatusCode)"
+                }
+                finally {
+                  az logout 2>$null | Out-Null
+                  Remove-Item -Force -Recurse -ErrorAction SilentlyContinue `
+                    $pemPath, $b64Path, $azConfigDir
+                }
+              displayName: Update aka.ms search cache links
+              condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
               env:
                 SEARCH_CACHE_URL: $(capture.SearchCacheDownloadUrl)
                 NON_TEMPLATE_PACKS_URL: $(capture.NonTemplatePacksDownloadUrl)
+                AKAMS_APP_ID: $(akams-app-id)
+                AKAMS_AUTHORITY_TENANT: $(AkaMsAuthorityTenantId)
                 AKAMS_SHORT_URL: $(AkaMsShortUrl)
                 AKAMS_NONTEMPLATEPACKS_SHORT_URL: $(AkaMsNonTemplatePacksShortUrl)
                 AKAMS_TENANT_ID: $(AkaMsTenantId)
