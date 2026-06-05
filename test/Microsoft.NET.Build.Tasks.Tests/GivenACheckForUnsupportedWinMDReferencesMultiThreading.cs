@@ -36,7 +36,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeFalse("the .winmd reference should still log an unsupported reference error");
 
             var engine = (MockBuildEngine)task.BuildEngine;
-            engine.Errors.Should().ContainSingle();
+            engine.Errors.Should().ContainSingle()
+                .Which.Code.Should().Be("NETSDK1130", "the error should be the WinMD reference error, not a FileNotFound/IO error caused by resolving the managed reference against the wrong directory");
         }
     }
 }
