@@ -108,7 +108,7 @@ internal static class InitWorkflowDefaults
         string? manifestPath,
         IReadOnlyCollection<ResolvedInstallRequest>? existingRequests)
     {
-        if (!InitWorkflows.ShouldPromptToConvertSystemInstalls(pathPreference))
+        if (!PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(pathPreference))
         {
             return [];
         }

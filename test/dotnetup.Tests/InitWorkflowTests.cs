@@ -38,7 +38,7 @@ public class InitWorkflowTests : IDisposable
     [Fact]
     public void ShouldReplaceSystemConfiguration_ReturnsFalse_ForDotnetupDotnet()
     {
-        InitWorkflows.ShouldReplaceSystemConfiguration(PathPreference.DotnetupDotnet)
+        PathPreferencePolicy.ShouldReplaceSystemConfiguration(PathPreference.DotnetupDotnet)
             .Should().BeFalse();
     }
 
@@ -46,14 +46,14 @@ public class InitWorkflowTests : IDisposable
     [InlineData(PathPreference.FullPathReplacement)]
     internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(PathPreference preference)
     {
-        InitWorkflows.ShouldReplaceSystemConfiguration(preference)
+        PathPreferencePolicy.ShouldReplaceSystemConfiguration(preference)
             .Should().BeTrue();
     }
 
     [Fact]
     public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_ForDotnetupDotnet()
     {
-        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.DotnetupDotnet)
+        PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(PathPreference.DotnetupDotnet)
             .Should().BeFalse();
     }
 
@@ -62,7 +62,7 @@ public class InitWorkflowTests : IDisposable
     [InlineData(PathPreference.FullPathReplacement)]
     internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(PathPreference preference)
     {
-        InitWorkflows.ShouldPromptToConvertSystemInstalls(preference)
+        PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(preference)
             .Should().BeTrue();
     }
 

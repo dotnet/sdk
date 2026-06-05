@@ -89,27 +89,24 @@ internal static class WalkthroughSummary
 
     private static void RenderSummaryBlock(WalkthroughPlan plan, PathPreference? configuredPreference)
     {
-        string brand = DotnetupTheme.Current.Brand;
-        string dim = DotnetupTheme.Current.Dim;
-        string configured = DotnetupTheme.Current.Warning;
-
-        SpectreAnsiConsole.MarkupLine($"Welcome to [{brand} bold]dotnetup[/]!");
+        SpectreAnsiConsole.MarkupLine($"Welcome to [{DotnetupTheme.Current.Brand} bold]dotnetup[/]!");
         SpectreAnsiConsole.WriteLine();
 
-        RenderChannelLine(plan.ChannelDisplay, brand, dim);
-        RenderModeLine(plan.PathPreference, configuredPreference, brand, configured);
-        RenderMigrationSummary(plan.Migrations, dim);
+        RenderChannelLine(plan.ChannelDisplay);
+        RenderModeLine(plan.PathPreference, configuredPreference);
+        RenderMigrationSummary(plan.Migrations);
 
         SpectreAnsiConsole.WriteLine();
     }
 
-    private static void RenderChannelLine(DefaultChannelDisplay channel, string brand, string dim)
+    private static void RenderChannelLine(DefaultChannelDisplay channel)
     {
         if (channel.ChannelLabel is null)
         {
             return;
         }
 
+        string dim = DotnetupTheme.Current.Dim;
         string label = "SDK Channel:".PadRight(LabelWidth);
         string suffix = channel.GlobalJsonPath is not null
             ? string.Format(
@@ -123,16 +120,14 @@ internal static class WalkthroughSummary
             CultureInfo.InvariantCulture,
             "{0}[{1}]{2}[/]{3}",
             label,
-            brand,
+            DotnetupTheme.Current.Brand,
             channel.ChannelLabel.EscapeMarkup(),
             suffix));
     }
 
     private static void RenderModeLine(
         PathPreference recommended,
-        PathPreference? configuredPreference,
-        string brand,
-        string configured)
+        PathPreference? configuredPreference)
     {
         string label = "Mode:".PadRight(LabelWidth);
         string recommendedName = PathPreferenceDisplay.GetName(recommended);
@@ -141,7 +136,7 @@ internal static class WalkthroughSummary
             ? string.Format(
                 CultureInfo.InvariantCulture,
                 "  [{0}](current: {1})[/]",
-                configured,
+                DotnetupTheme.Current.Warning,
                 PathPreferenceDisplay.GetName(pref).EscapeMarkup())
             : string.Empty;
 
@@ -149,18 +144,19 @@ internal static class WalkthroughSummary
             CultureInfo.InvariantCulture,
             "{0}[{1}]{2}[/]{3}",
             label,
-            brand,
+            DotnetupTheme.Current.Brand,
             recommendedName.EscapeMarkup(),
             current));
     }
 
-    private static void RenderMigrationSummary(List<MigrationWorkflow.MigrationSelection> migrations, string dim)
+    private static void RenderMigrationSummary(List<MigrationWorkflow.MigrationSelection> migrations)
     {
         if (migrations.Count == 0)
         {
             return;
         }
 
+        string dim = DotnetupTheme.Current.Dim;
         SpectreAnsiConsole.WriteLine();
         SpectreAnsiConsole.MarkupLine("System installs to migrate:");
 

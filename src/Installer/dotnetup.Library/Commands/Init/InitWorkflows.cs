@@ -31,22 +31,6 @@ internal class InitWorkflows
         _channelVersionResolver = channelVersionResolver;
     }
 
-    /// <summary>
-    /// Returns true when the given <see cref="PathPreference"/> implies we should
-    /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
-    /// </summary>
-    public static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
-        preference is PathPreference.FullPathReplacement;
-
-    /// <summary>
-    /// Returns true when the user chose a mode that shadows the system PATH and should therefore
-    /// be offered migration of existing system-level .NET installs into dotnetup-managed installs.
-    /// </summary>
-    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference)
-    {
-        return preference != PathPreference.DotnetupDotnet;
-    }
-
     // ── Init Flow Orchestrators ──
 
     /// <summary>
@@ -170,7 +154,7 @@ internal class InitWorkflows
             _dotnetEnvironment.ApplyTerminalProfileModifications(installRoot.Path, shellProvider: command.ShellProvider);
         }
 
-        if (ShouldReplaceSystemConfiguration(pathPreference))
+        if (PathPreferencePolicy.ShouldReplaceSystemConfiguration(pathPreference))
         {
             _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
         }
@@ -395,7 +379,7 @@ internal class InitWorkflows
         IReadOnlyCollection<ResolvedInstallRequest>? existingRequests = null,
         bool interactive = true)
     {
-        if (!ShouldPromptToConvertSystemInstalls(pathPreference))
+        if (!PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(pathPreference))
         {
             return [];
         }
