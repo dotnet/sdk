@@ -169,6 +169,56 @@ public class TestApplicationHandlerTests
     }
 
     /// <summary>
+    /// Every protocol-level rejection inside <c>OnHandshakeReceived</c> (not just ExecutionMode
+    /// mismatch) opts out of the legacy "swallow handshake failures when SDK is in help mode"
+    /// workaround. Missing-required-property is one such rejection — covered here. The workaround
+    /// is intentionally scoped to <c>OnTestProcessExited</c> calling <c>HandshakeFailure</c>
+    /// without ever having received a real handshake (older MTP behavior on <c>--help</c>).
+    /// </summary>
+    [Fact]
+    public void OnHandshakeReceived_WhenSdkInHelpModeAndRequiredPropertyMissing_StillReportsFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: true, isDiscovery: false);
+
+        // Build a handshake that's missing the required ExecutionId property.
+        var handshake = BuildHandshake(executionMode: null);
+        var properties = handshake.Properties.Where(kvp => kvp.Key != HandshakeMessagePropertyNames.ExecutionId).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        var incompleteHandshake = new HandshakeMessage(properties);
+
+        bool accepted = handler.OnHandshakeReceived(incompleteHandshake, gotSupportedVersion: true);
+
+        accepted.Should().BeFalse();
+        reporter.HasHandshakeFailure.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// When the protocol version itself is unsupported, that failure is reported and we exit early
+    /// — we don't also report an ExecutionMode mismatch on the same handshake, since the version
+    /// rejection makes any subsequent property validation moot (and it would be confusing to
+    /// surface two distinct failures for one handshake).
+    /// </summary>
+    [Fact]
+    public void OnHandshakeReceived_WhenUnsupportedProtocolVersion_DoesNotAlsoReportExecutionModeMismatch()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        // ExecutionMode is "help" which would mismatch (SDK expects "run") if we got that far.
+        var handshake = BuildHandshake(HandshakeMessageExecutionModes.Help);
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: false);
+
+        accepted.Should().BeFalse();
+        reporter.HasHandshakeFailure.Should().BeTrue();
+
+        // The version-related failure IS reported and the ExecutionMode-related one is NOT —
+        // both sides of the assertion matter: it should catch a regression that produces no
+        // failure at all (no version error) as well as one that produces both.
+        string rendered = console.GetOutput();
+        rendered.Should().Contain("protocol version", "the unsupported-protocol-version failure is expected to be reported");
+        rendered.Should().NotContain("execution mode", "the ExecutionMode validation should be skipped when the protocol version itself was rejected");
+    }
+
+    /// <summary>
     /// Forward-compat guard: a future testing-platform release that ships a new ExecutionMode value
     /// without bumping the protocol version is not silently accepted; we reject so we don't try to
     /// interpret a message stream we don't understand.

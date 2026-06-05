@@ -96,12 +96,14 @@ internal sealed class TestApplicationHandler
         //
         // Older Microsoft.Testing.Platform versions don't send the ExecutionMode property at all
         // (see https://github.com/microsoft/testfx/pull/8794). In that case we keep today's
-        // behavior and don't perform any validation here.
+        // behavior and don't perform any validation here. A present-but-empty/whitespace value is
+        // also treated as "absent" rather than as a protocol violation — that's the conservative
+        // choice if some intermediate MTP version ever happens to serialize an empty string here.
         if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionMode, out string? executionMode) &&
             !string.IsNullOrWhiteSpace(executionMode) &&
             !IsExpectedExecutionMode(executionMode, out string expectedExecutionMode))
         {
-            ReportExecutionModeFailure(executionMode, expectedExecutionMode);
+            ReportHandshakeFailure(string.Format(CliCommandStrings.MismatchingHandshakeExecutionMode, executionMode, expectedExecutionMode));
             return false;
         }
 
@@ -123,28 +125,22 @@ internal sealed class TestApplicationHandler
         return reportedMode == expectedMode;
     }
 
-    private void ReportExecutionModeFailure(string reportedMode, string expectedMode)
-    {
-        // Always surface the protocol-level mismatch — bypass the legacy "ignore handshake
-        // failures when SDK is in help mode" workaround in TerminalTestReporter, which exists
-        // only to keep compatibility with older Microsoft.Testing.Platform versions that don't
-        // handshake on the --help path.
-        _output.HandshakeFailure(
-            _module.TargetPath,
-            string.Empty,
-            ExitCode.GenericFailure,
-            string.Format(CliCommandStrings.MismatchingHandshakeExecutionMode, reportedMode, expectedMode),
-            string.Empty,
-            reportEvenWhenHelp: true);
-    }
-
+    // Every caller of this helper has just decided to reject the handshake at the protocol level
+    // (the caller immediately returns false from OnHandshakeReceived). We always opt out of the
+    // legacy "swallow handshake failures when SDK is in help mode" workaround in
+    // TerminalTestReporter.HandshakeFailure — that workaround is meant for older Microsoft.Testing.Platform
+    // versions that don't handshake at all on --help and so OnTestProcessExited ends up calling
+    // HandshakeFailure with no actionable context. Explicit programmatic rejections here (unsupported
+    // protocol version, missing required property, mismatching handshake info, mismatching execution
+    // mode) are real protocol failures and must still be surfaced even when the SDK is in help mode.
     private void ReportHandshakeFailure(string failureMessage) =>
         _output.HandshakeFailure(
             _module.TargetPath,
             string.Empty,
             ExitCode.GenericFailure,
             failureMessage,
-            string.Empty);
+            string.Empty,
+            reportEvenWhenHelp: true);
 
     private static bool TryGetRequiredHandshakeProperty(HandshakeMessage handshakeMessage, byte propertyId, out string? value, out string? failureMessage)
     {
