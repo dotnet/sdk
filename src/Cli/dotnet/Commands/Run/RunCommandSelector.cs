@@ -29,6 +29,7 @@ internal sealed class RunCommandSelector : IDisposable
     private readonly bool _isInteractive;
     private readonly MSBuildArgs _msbuildArgs;
     private readonly IReadOnlyDictionary<string, string> _environmentVariables;
+    private readonly string _commandName;
     
     private ProjectCollection? _collection;
     private Microsoft.Build.Evaluation.Project? _project;
@@ -82,12 +83,14 @@ internal sealed class RunCommandSelector : IDisposable
     /// <param name="isInteractive">Whether to prompt the user for selections</param>
     /// <param name="msbuildArgs">MSBuild arguments containing properties and verbosity settings</param>
     /// <param name="environmentVariables">Environment variables to pass to MSBuild targets as items</param>
+    /// <param name="commandName">The command name used when rendering example messages, e.g. "dotnet run" or "dotnet test".</param>
     /// <param name="binaryLogger">Optional binary logger for MSBuild operations. The logger will not be disposed by this class.</param>
     public RunCommandSelector(
         string projectFilePath,
         bool isInteractive,
         MSBuildArgs msbuildArgs,
         IReadOnlyDictionary<string, string> environmentVariables,
+        string commandName,
         FacadeLogger? binaryLogger = null)
     {
         _projectFilePath = projectFilePath;
@@ -95,6 +98,7 @@ internal sealed class RunCommandSelector : IDisposable
         _isInteractive = isInteractive;
         _msbuildArgs = msbuildArgs;
         _environmentVariables = environmentVariables;
+        _commandName = commandName;
         _binaryLogger = binaryLogger;
     }
 
@@ -132,7 +136,7 @@ internal sealed class RunCommandSelector : IDisposable
         // users may have added for formatting reasons.
         var frameworks = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        return TrySelectTargetFramework(frameworks, _isInteractive, out selectedFramework);
+        return TrySelectTargetFramework(frameworks, _isInteractive, _commandName, out selectedFramework);
     }
 
     /// <summary>
@@ -249,7 +253,7 @@ internal sealed class RunCommandSelector : IDisposable
     /// <param name="isInteractive">Whether we're running in interactive mode (can prompt user)</param>
     /// <param name="selectedFramework">The selected target framework, or null if selection was cancelled</param>
     /// <returns>True if we should continue, false if we should exit with error</returns>
-    public static bool TrySelectTargetFramework(string[] frameworks, bool isInteractive, out string? selectedFramework)
+    public static bool TrySelectTargetFramework(string[] frameworks, bool isInteractive, string commandName, out string? selectedFramework)
     {
         // If there's only one framework in the TargetFrameworks, we do need to pick it to force the subsequent builds/evaluations
         // to act against the correct 'view' of the project
@@ -277,7 +281,7 @@ internal sealed class RunCommandSelector : IDisposable
             }
 
             Reporter.Error.WriteLine();
-            Reporter.Error.WriteLine($"{CliCommandStrings.RunCommandExampleText}: dotnet run --framework {frameworks[0]}");
+            Reporter.Error.WriteLine($"{CliCommandStrings.RunCommandExampleText}: {commandName} --framework {frameworks[0]}");
             Reporter.Error.WriteLine();
             selectedFramework = null;
             return false;
@@ -469,7 +473,7 @@ internal sealed class RunCommandSelector : IDisposable
             }
 
             Reporter.Output.WriteLine();
-            Reporter.Output.WriteLine($"{CliCommandStrings.RunCommandExampleText}: dotnet run --device {ArgumentEscaper.EscapeSingleArg(devices[0].Id)}");
+            Reporter.Output.WriteLine($"{CliCommandStrings.RunCommandExampleText}: {_commandName} --device {ArgumentEscaper.EscapeSingleArg(devices[0].Id)}");
             Reporter.Output.WriteLine();
             return true;
         }
@@ -515,7 +519,7 @@ internal sealed class RunCommandSelector : IDisposable
             }
 
             Reporter.Error.WriteLine();
-            Reporter.Error.WriteLine($"{CliCommandStrings.RunCommandExampleText}: dotnet run --device {ArgumentEscaper.EscapeSingleArg(devices[0].Id)}");
+            Reporter.Error.WriteLine($"{CliCommandStrings.RunCommandExampleText}: {_commandName} --device {ArgumentEscaper.EscapeSingleArg(devices[0].Id)}");
             Reporter.Error.WriteLine();
             return false;
         }

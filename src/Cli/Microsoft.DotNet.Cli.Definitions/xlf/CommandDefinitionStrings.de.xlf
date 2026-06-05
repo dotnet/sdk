@@ -748,6 +748,11 @@ Beispiele:
         <target state="translated">Der Gerätebezeichner, der zum Ausführen der Anwendung verwendet werden soll.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescriptionForTest">
+        <source>The device identifier to use for running tests.</source>
+        <target state="new">The device identifier to use for running tests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
         <target state="translated">GERÄT</target>
@@ -776,6 +781,11 @@ Beispiele:
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
         <target state="translated">Listet die verfügbaren Geräte zum Ausführen der Anwendung auf.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescriptionForTest">
+        <source>List available devices for running tests.</source>
+        <target state="new">List available devices for running tests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">

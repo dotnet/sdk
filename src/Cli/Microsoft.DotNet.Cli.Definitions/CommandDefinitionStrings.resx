@@ -684,6 +684,12 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="CommandOptionListDevicesDescription" xml:space="preserve">
     <value>List available devices for running the application.</value>
   </data>
+  <data name="CommandOptionListDevicesDescriptionForTest" xml:space="preserve">
+    <value>List available devices for running tests.</value>
+  </data>
+  <data name="CommandOptionDeviceDescriptionForTest" xml:space="preserve">
+    <value>The device identifier to use for running tests.</value>
+  </data>
   <data name="CommandOptionProjectHelpName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>

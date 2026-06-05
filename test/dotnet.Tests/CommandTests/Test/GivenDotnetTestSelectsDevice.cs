@@ -26,7 +26,10 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             .Execute("--framework", ToolsetInfo.CurrentTargetFramework);
 
         result.Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            // The example hint in the error output should reference 'dotnet test' (not 'dotnet run').
+            .And.HaveStdErrContaining("dotnet test --device")
+            .And.NotHaveStdErrContaining("dotnet run --device");
     }
 
     [Theory]
@@ -189,5 +192,157 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         result.Should().Fail();
         result.StdErr.Should().NotContain(
             string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+    }
+
+    [Fact]
+    public void ItListsDevicesAndExits()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "--list-devices");
+
+        result.Should().Pass();
+        result.StdOut.Should().Contain("test-device-1");
+        result.StdOut.Should().Contain("test-device-2");
+        // Friendly example using "dotnet test --device ..." rather than "dotnet run --device ..."
+        result.StdOut.Should().Contain("dotnet test --device");
+    }
+
+    [Fact]
+    public void ItListsDevicesForSingleDeviceProject()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:SingleDevice=true", "--list-devices");
+
+        result.Should().Pass();
+        result.StdOut.Should().Contain("single-device");
+    }
+
+    [Fact]
+    public void ItExitsCleanlyForListDevicesWhenMultipleTargetFrameworks_InNonInteractiveMode()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--list-devices");
+
+        // Multi-targeted project requires a target framework prompt; non-interactive
+        // mode prints guidance to stderr and exits 0 (matching `dotnet run --list-devices`,
+        // which treats `--list-devices` itself as not a build failure). The example in the
+        // guidance references 'dotnet test' (not 'dotnet run').
+        result.Should().Pass()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"))
+            .And.HaveStdErrContaining("dotnet test --framework")
+            .And.NotHaveStdErrContaining("dotnet run --framework");
+    }
+
+    [Fact]
+    public void ItListsNothingForProjectWithoutComputeAvailableDevicesTarget()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--list-devices");
+
+        // When the project has no ComputeAvailableDevices target, --list-devices
+        // exits silently with success (matches `dotnet run --list-devices`).
+        result.Should().Pass();
+    }
+
+    [Fact]
+    public void ItErrorsWhenListingDevicesForSolution()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "ListDevicesSolution")
+            .WithSource();
+
+        // Build a solution containing the project (mirrors ItRunsDeviceProjectsInSolution layout).
+        var projectDir = Path.Combine(testInstance.Path, "Project1");
+        Directory.CreateDirectory(projectDir);
+        File.Copy(Path.Combine(testInstance.Path, "Program.cs"), Path.Combine(projectDir, "Program.cs"));
+        File.Copy(
+            Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"),
+            Path.Combine(projectDir, "Project1.csproj"));
+        File.Delete(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"));
+        File.Delete(Path.Combine(testInstance.Path, "Program.cs"));
+
+        File.WriteAllText(Path.Combine(testInstance.Path, "TestSolution.slnx"),
+            """
+            <Solution>
+              <Project Path="Project1\Project1.csproj" />
+            </Solution>
+            """);
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--solution", "TestSolution.slnx", "--list-devices");
+
+        // Listing devices across a solution is ambiguous: instruct the user to use --project.
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.TestCommandUseProject);
+    }
+
+    [Fact]
+    public void ItErrorsWhenListDevicesAndListTestsAreCombined()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "ListDevicesWithListTests")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--list-devices", "--list-tests", "-f", "net11.0-android");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.CmdListDevicesAndListTestsMutuallyExclusive);
+    }
+
+    [Fact]
+    public void ItListsDevicesForExplicitFrameworkOnMultiTargetedProject()
+    {
+        // DotnetTestDevices targets both net9.0 and $(CurrentTargetFramework) with different
+        // devices per TFM. Passing an explicit -f should bypass the non-interactive multi-TFM
+        // prompt and list devices for just the chosen TFM.
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "ListDevicesMultiTfmExplicit")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--list-devices", "--framework", "net9.0");
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining("test-device-downlevel-1")
+            .And.HaveStdOutContaining("test-device-downlevel-2")
+            .And.NotHaveStdOutContaining("test-device-1")
+            .And.NotHaveStdOutContaining("test-device-2");
+    }
+
+    [Fact]
+    public void ItErrorsWhenListDevicesIsCombinedWithTestModules()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "ListDevicesWithTestModules")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--list-devices", "--test-modules", "**/*.dll");
+
+        // --test-modules bypasses project evaluation, so listing devices doesn't make sense.
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.CmdDeviceOptionsRequireProject);
     }
 }
