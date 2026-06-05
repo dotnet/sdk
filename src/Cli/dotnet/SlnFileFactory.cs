@@ -5,6 +5,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -94,7 +95,11 @@ public static class SlnFileFactory
                 AllowTrailingCommas = true,
                 CommentHandling = JsonCommentHandling.Skip
             };
-            JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath), options).RootElement;
+            string fileContent = File.ReadAllText(filteredSolutionPath);
+            // Fix unescaped backslashes for backward compatibility with .slnf files that contain
+            // Windows-style path separators without proper JSON escaping (e.g. "..\foo" instead of "..\\foo" or "../foo").
+            fileContent = FixInvalidJsonBackslashes(fileContent);
+            JsonElement root = JsonDocument.Parse(fileContent, options).RootElement;
             originalSolutionPath = Uri.UnescapeDataString(root.GetProperty("solution").GetProperty("path").GetString());
             // Normalize path separators to OS-specific for cross-platform compatibility
             originalSolutionPath = SlnfFileHelper.NormalizePathSeparatorsToOS(originalSolutionPath);
@@ -140,5 +145,19 @@ public static class SlnFileFactory
         }
 
         return filteredSolution;
+    }
+
+    /// <summary>
+    /// Replaces unescaped backslashes in a JSON string with forward slashes, for backward compatibility
+    /// with .slnf files that were generated with Windows-style path separators without proper JSON escaping.
+    /// </summary>
+    private static string FixInvalidJsonBackslashes(string json)
+    {
+        // Replace any backslash that is NOT part of a valid JSON escape sequence with a forward slash.
+        // Valid JSON escape sequences: \" \\ \/ \b \f \n \r \t \uXXXX
+        // We first match \\ (valid double-backslash) to skip it, then match any other backslash
+        // that isn't followed by a valid escape character.
+        return Regex.Replace(json, @"\\\\|\\(?![""\\\/bfnrt]|u[0-9a-fA-F]{4})", match =>
+            match.Value.Length == 2 ? match.Value : "/");
     }
 }
