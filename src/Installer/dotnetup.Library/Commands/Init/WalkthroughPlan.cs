@@ -7,11 +7,12 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
-/// The recommended default setup resolved before the walkthrough summary is shown.
-/// The summary renders these values and the "proceed with defaults" branch reuses the
-/// exact same values, so the displayed defaults and the applied defaults can never diverge.
+/// The recommended setup the walkthrough plans to apply, resolved before the summary is shown.
+/// The summary renders this plan and the "proceed with defaults" branch reuses the exact same
+/// values, so the displayed plan and the applied setup can never diverge. Choosing "customize"
+/// discards this plan and re-resolves each value through the step-by-step prompts.
 /// </summary>
-/// <param name="Requests">The default install requests (resolved SDK channel).</param>
+/// <param name="Requests">The recommended install requests (resolved SDK channel).</param>
 /// <param name="InstallRoot">The install root the environment is configured against.</param>
 /// <param name="PathPreference">The recommended path preference (mode).</param>
 /// <param name="Migrations">The system installs eligible for migration under the recommended mode.</param>

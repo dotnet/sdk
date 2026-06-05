@@ -52,9 +52,10 @@ internal class InitWorkflows
     /// <summary>
     /// Interactive onboarding flow used both by the explicit <c>dotnetup init</c> command
     /// and by the first interactive install when dotnetup has not yet been configured.
-    /// When <paramref name="requests"/> is not supplied, the user is asked to pick a starter
-    /// channel. When it is supplied, the walkthrough reuses the already-resolved install
-    /// requests and skips the extra channel prompt.
+    /// Resolves the recommended setup, shows the summary selector, and then either applies
+    /// that recommended setup (proceed), runs the step-by-step prompts (customize), or exits.
+    /// When <paramref name="requests"/> is supplied, those already-resolved install requests are
+    /// reused as the recommended requests instead of resolving the default SDK channel.
     /// </summary>
     public List<ResolvedInstallRequest> InitWalkthrough(
         InstallCommand command,
@@ -62,9 +63,9 @@ internal class InitWorkflows
     {
         ShowBanner();
 
-        // Resolve the recommended defaults once. The summary displays them and the
-        // "proceed" branch reuses the exact same values, so the displayed defaults and
-        // the applied defaults can never diverge.
+        // Resolve the recommended setup once. The summary displays this plan and the
+        // "proceed" branch reuses the exact same values, so the displayed plan and
+        // the applied setup can never diverge.
         WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughDefaults(command, requests, _dotnetEnvironment);
 
         // Fire off background predownload while the user reads the summary / answers prompts.

@@ -22,11 +22,11 @@ internal static class WalkthroughSummary
     /// Renders the summary block and runs the selector, returning the user's decision.
     /// Assumes the banner has already been written by the caller.
     /// </summary>
-    /// <param name="defaults">The recommended defaults to display.</param>
+    /// <param name="plan">The recommended setup to display.</param>
     /// <param name="configuredPreference">The currently configured path preference, or null when unconfigured.</param>
-    public static WalkthroughDecision Show(WalkthroughPlan defaults, PathPreference? configuredPreference)
+    public static WalkthroughDecision Show(WalkthroughPlan plan, PathPreference? configuredPreference)
     {
-        RenderSummaryBlock(defaults, configuredPreference);
+        RenderSummaryBlock(plan, configuredPreference);
 
         bool isConfigured = configuredPreference is not null;
         var (options, defaultIndex) = BuildSummaryOptions(isConfigured);
@@ -76,7 +76,7 @@ internal static class WalkthroughSummary
         _ => WalkthroughDecision.Exit,
     };
 
-    private static void RenderSummaryBlock(WalkthroughPlan defaults, PathPreference? configuredPreference)
+    private static void RenderSummaryBlock(WalkthroughPlan plan, PathPreference? configuredPreference)
     {
         string brand = DotnetupTheme.Current.Brand;
         string dim = DotnetupTheme.Current.Dim;
@@ -85,9 +85,9 @@ internal static class WalkthroughSummary
         SpectreAnsiConsole.MarkupLine($"Welcome to [{brand} bold]dotnetup[/]!");
         SpectreAnsiConsole.WriteLine();
 
-        RenderChannelLine(defaults.ChannelDisplay, brand, dim);
-        RenderModeLine(defaults.PathPreference, configuredPreference, brand, configured);
-        RenderMigrationSummary(defaults.Migrations, dim);
+        RenderChannelLine(plan.ChannelDisplay, brand, dim);
+        RenderModeLine(plan.PathPreference, configuredPreference, brand, configured);
+        RenderMigrationSummary(plan.Migrations, dim);
 
         SpectreAnsiConsole.WriteLine();
     }
