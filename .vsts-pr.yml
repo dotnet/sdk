@@ -50,6 +50,9 @@ stages:
 - stage: build
   displayName: Build
   jobs:
+  ############### HELIX JOB MONITOR ###############
+  - template: /eng/common/core-templates/job/helix-job-monitor.yml
+
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
     parameters:
@@ -92,6 +95,3 @@ stages:
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml
-
-  ############### HELIX JOB MONITOR ###############
-  - template: /eng/common/core-templates/job/helix-job-monitor.yml
