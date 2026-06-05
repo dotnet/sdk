@@ -63,15 +63,10 @@ internal class InitWorkflows
     {
         ShowBanner();
 
-        // Resolve the recommended setup once. The summary displays this plan and the
-        // "proceed" branch reuses the exact same values, so the displayed plan and
-        // the applied setup can never diverge.
-        WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughDefaults(command, requests, _dotnetEnvironment);
-
-        // Fire off background predownload while the user reads the summary / answers prompts.
-        Task? predownloadTask = plan.Requests.Count > 0
-            ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(plan.Requests[0])
-            : null;
+        // Resolve the recommended setup for the summary. This is side-effect-free: it performs no
+        // version resolution, writes no output, and does not throw on an unresolvable channel, so
+        // simply viewing the summary or choosing to exit never triggers an install or a download.
+        WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughPlan(command, requests, _dotnetEnvironment);
 
         PathPreference? previousPreference = DotnetupConfig.ReadPathPreference();
 
@@ -81,19 +76,15 @@ internal class InitWorkflows
             return []; // User chose to exit without changes.
         }
 
-        // The eager predownload was started for the default requests; only keep waiting on it
-        // when the selection actually uses those requests (avoids blocking a customized install
-        // on a download for a channel the user changed).
-        Task? effectivePredownload = ReferenceEquals(selection.Requests, plan.Requests) ? predownloadTask : null;
-
-        return ExecuteWalkthroughSelection(command, selection, plan.InstallRoot, previousPreference, effectivePredownload);
+        return ExecuteWalkthroughSelection(command, selection, plan.InstallRoot, previousPreference);
     }
 
     /// <summary>
     /// Shows the summary selector (when interactive) and resolves the user's choice into a
-    /// <see cref="WalkthroughSelection"/>. Returns null when the user chooses to exit. In
-    /// non-interactive sessions the historical behavior is preserved: the defaults are applied
-    /// silently and nothing is migrated.
+    /// <see cref="WalkthroughSelection"/>, resolving the concrete install requests only for the
+    /// branches that actually install. Returns null when the user chooses to exit. In
+    /// non-interactive sessions the historical behavior is preserved: the recommended setup is
+    /// applied silently and nothing is migrated.
     /// </summary>
     private WalkthroughSelection? ResolveWalkthroughSelection(
         InstallCommand command,
@@ -104,14 +95,16 @@ internal class InitWorkflows
         bool interactiveSummary = command.Interactive && !Console.IsInputRedirected;
         if (!interactiveSummary)
         {
-            return new WalkthroughSelection(plan.Requests, plan.PathPreference, []);
+            return new WalkthroughSelection(
+                InitWorkflowDefaults.ResolveDefaultRequests(command, requests), plan.PathPreference, []);
         }
 
         WalkthroughDecision decision = WalkthroughSummary.Show(plan, previousPreference);
         return decision switch
         {
             WalkthroughDecision.Exit => null,
-            WalkthroughDecision.Proceed => new WalkthroughSelection(plan.Requests, plan.PathPreference, plan.Migrations),
+            WalkthroughDecision.Proceed => new WalkthroughSelection(
+                InitWorkflowDefaults.ResolveDefaultRequests(command, requests), plan.PathPreference, plan.Migrations),
             _ => ResolveCustomizedSelection(command, requests, plan),
         };
     }
@@ -145,11 +138,16 @@ internal class InitWorkflows
         InstallCommand command,
         WalkthroughSelection selection,
         DotnetInstallRoot defaultInstallRoot,
-        PathPreference? previousPreference,
-        Task? predownloadTask)
+        PathPreference? previousPreference)
     {
         List<ResolvedInstallRequest> effectiveRequests = selection.Requests;
         PathPreference pathPreference = selection.PathPreference;
+
+        // Start the predownload now that the install requests are known, so the cache populates
+        // while the config is written.
+        Task? predownloadTask = effectiveRequests.Count > 0
+            ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(effectiveRequests[0])
+            : null;
 
         // Use the first request's root if available, otherwise fall back to the default path.
         DotnetInstallRoot installRoot = effectiveRequests.Count > 0
@@ -295,9 +293,7 @@ internal class InitWorkflows
         string brand = DotnetupTheme.Current.Brand;
         string dim = DotnetupTheme.Current.Dim;
 
-        SpectreAnsiConsole.MarkupLine($"Welcome to [{brand} bold]dotnetup[/]!");
-        SpectreAnsiConsole.WriteLine();
-
+        // The summary screen already greeted the user before reaching this customize prompt.
         SpectreAnsiConsole.MarkupLine(string.Format(
             CultureInfo.InvariantCulture,
             "dotnetup updates and groups installations using [{0} bold]dotnetup channels[/].",

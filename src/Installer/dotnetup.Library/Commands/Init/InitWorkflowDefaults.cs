@@ -8,42 +8,61 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
-/// Resolves the recommended init defaults (install requests, path preference, and migrations)
-/// without prompting the user. The walkthrough summary renders these values and the
-/// "proceed with defaults" branch reuses them, so the displayed and applied defaults stay in sync.
+/// Resolves the recommended init setup (path preference, install root, channel display, and
+/// migration candidates) for the walkthrough summary. Resolution here is side-effect-free: it
+/// performs no network calls, writes no console output, and does not throw on an unresolvable
+/// channel. The actual install requests are resolved separately (and only once the user commits
+/// to installing) via <see cref="ResolveDefaultRequests"/>, so simply viewing the summary or
+/// choosing to exit never triggers version resolution.
 /// </summary>
 internal static class InitWorkflowDefaults
 {
     /// <summary>
-    /// Resolves the recommended default setup (install requests, install root, path preference,
-    /// migration candidates, and channel display) without prompting the user.
+    /// Resolves the recommended setup to display in the summary (install root, path preference,
+    /// migration candidates, and channel display) without prompting, resolving versions, or
+    /// emitting output. When <paramref name="preResolvedRequests"/> is supplied, its already-resolved
+    /// root/channel/manifest are reused instead of being re-derived.
     /// </summary>
-    public static WalkthroughPlan ResolveWalkthroughDefaults(
+    public static WalkthroughPlan ResolveWalkthroughPlan(
         InstallCommand command,
-        List<ResolvedInstallRequest>? requests,
+        List<ResolvedInstallRequest>? preResolvedRequests,
         IDotnetEnvironmentManager dotnetEnvironment)
     {
-        List<ResolvedInstallRequest> defaultRequests = ResolveDefaultRequests(command, requests);
-
-        DotnetInstallRoot installRoot = defaultRequests.Count > 0
-            ? defaultRequests[0].Request.InstallRoot
-            : new DotnetInstallRoot(
-                dotnetEnvironment.GetDefaultDotnetInstallPath(),
-                InstallerUtilities.GetDefaultInstallArchitecture());
-
         PathPreference pathPreference = GetDefaultPathPreference(command.ShellProvider);
-        string? manifestPath = defaultRequests.Count > 0 ? defaultRequests[0].Request.Options.ManifestPath : null;
 
-        List<MigrationWorkflow.MigrationSelection> migrations = ResolveDefaultMigrations(
-            dotnetEnvironment, pathPreference, installRoot, manifestPath, defaultRequests);
+        if (preResolvedRequests is { Count: > 0 })
+        {
+            var first = preResolvedRequests[0];
+            DotnetInstallRoot resolvedRoot = first.Request.InstallRoot;
+            var resolvedMigrations = ResolveDefaultMigrations(
+                dotnetEnvironment, pathPreference, resolvedRoot, first.Request.Options.ManifestPath, preResolvedRequests);
 
-        return new WalkthroughPlan(
-            defaultRequests, installRoot, pathPreference, migrations, ResolveChannelDisplay(defaultRequests));
+            return new WalkthroughPlan(
+                resolvedRoot,
+                pathPreference,
+                resolvedMigrations,
+                new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath));
+        }
+
+        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        var currentInstallRoot = dotnetEnvironment.GetCurrentPathConfiguration();
+        var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
+            command.InstallPath, globalJson, currentInstallRoot);
+        var installRoot = new DotnetInstallRoot(
+            pathResolution.ResolvedInstallPath,
+            InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var migrations = ResolveDefaultMigrations(
+            dotnetEnvironment, pathPreference, installRoot, command.ManifestPath, existingRequests: null);
+
+        return new WalkthroughPlan(installRoot, pathPreference, migrations, ResolveChannelDisplay(globalJson));
     }
 
     /// <summary>
-    /// Resolves the default install requests without prompting. Uses the pre-resolved requests
-    /// when supplied; otherwise resolves the default SDK channel (from global.json or "latest").
+    /// Resolves the default install requests. Uses the pre-resolved requests when supplied;
+    /// otherwise resolves the default SDK channel (from global.json or "latest"). This performs
+    /// version resolution and may print global.json messaging, so it is only called once the user
+    /// has committed to installing.
     /// </summary>
     public static List<ResolvedInstallRequest> ResolveDefaultRequests(
         InstallCommand command,
@@ -94,14 +113,19 @@ internal static class InitWorkflowDefaults
         return MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, manifestPath, existingRequests);
     }
 
-    private static DefaultChannelDisplay ResolveChannelDisplay(List<ResolvedInstallRequest> requests)
+    /// <summary>
+    /// Resolves the channel label to display in the summary directly from global.json (or "latest")
+    /// without resolving a concrete version, so the summary never triggers a network call.
+    /// </summary>
+    private static DefaultChannelDisplay ResolveChannelDisplay(GlobalJsonInfo globalJson)
     {
-        if (requests.Count == 0)
+        if (globalJson.GlobalJsonPath is not null
+            && GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath) is { } channel)
         {
-            return new DefaultChannelDisplay(null, null);
+            return new DefaultChannelDisplay(channel, globalJson.GlobalJsonPath);
         }
 
-        var first = requests[0];
-        return new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath);
+        return new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, null);
     }
 }
+
