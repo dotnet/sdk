@@ -379,16 +379,13 @@ internal class InitWorkflows
         IReadOnlyCollection<ResolvedInstallRequest>? existingRequests = null,
         bool interactive = true)
     {
-        if (!PathPreferencePolicy.ShouldPromptToConvertSystemInstalls(pathPreference))
-        {
-            return [];
-        }
-
         if (!interactive)
         {
             return [];
         }
 
+        // ResolveDefaultMigrations already returns an empty list for modes that do not migrate
+        // system installs, so no separate ShouldPromptToConvertSystemInstalls guard is needed here.
         var migrationSelections = InitWorkflowDefaults.ResolveDefaultMigrations(
             dotnetEnvironment, pathPreference, installRoot, manifestPath, existingRequests);
         if (migrationSelections.Count == 0)
