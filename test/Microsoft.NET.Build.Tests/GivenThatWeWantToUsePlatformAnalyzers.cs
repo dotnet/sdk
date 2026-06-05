@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analyzerConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analyzerConsoleApp");
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("AnalysisLevel", "4");
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analyzerConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analyzerConsoleApp");
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -135,7 +135,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("AnalysisLevel", "5");
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analyzerConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analyzerConsoleApp");
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("EnableNETAnalyzers", "false");
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analyzerConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analyzerConsoleApp");
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -227,7 +227,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("EnableNETAnalyzers", "true");
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analyzerConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analyzerConsoleApp");
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -274,7 +274,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("CodeAnalysisTreatWarningsAsErrors", "false");
             testProject.AdditionalProperties.Add("TreatWarningsAsErrors", "true");
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analyzerConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analyzerConsoleApp");
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             buildCommand.Execute().Should().Pass();
@@ -312,7 +312,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("AnalysisLevel", "none");
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analyzerConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analyzerConsoleApp");
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -358,7 +358,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("AnalysisLevel", "latest");
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analyzerConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analyzerConsoleApp");
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -404,7 +404,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("AnalysisLevel", "latest");
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analyzerConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analyzerConsoleApp");
 
             var buildCommand = new GetValuesCommand(
                 Log,

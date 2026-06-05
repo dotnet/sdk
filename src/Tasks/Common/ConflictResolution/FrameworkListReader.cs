@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
             //  Need to include assembly name in the key here, since both Microsoft.NET.Build.Tasks and Microsoft.NET.Build.Extensions.Tasks share this code,
             //  but can't share the types of the ConflictItem objects.
-            string assemblyName = typeof(FrameworkListReader).GetTypeInfo().Assembly.FullName;
+            string? assemblyName = typeof(FrameworkListReader).GetTypeInfo().Assembly.FullName;
 
             string objectKey = $"{assemblyName}:{nameof(FrameworkListReader)}:{frameworkListPath}";
 
@@ -64,7 +64,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
             var frameworkList = XDocument.Load(frameworkListPath);
             var ret = new List<ConflictItem>();
-            foreach (var file in frameworkList.Root.Elements("File"))
+            foreach (var file in frameworkList.Root?.Elements("File") ?? [])
             {
                 var type = file.Attribute("Type")?.Value;
 
@@ -86,7 +86,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     return Enumerable.Empty<ConflictItem>();
                 }
 
-                Version assemblyVersion;
+                Version? assemblyVersion;
                 if (string.IsNullOrEmpty(assemblyVersionString) || !Version.TryParse(assemblyVersionString, out assemblyVersion))
                 {
                     string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.ErrorParsingFrameworkListInvalidValue,

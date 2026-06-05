@@ -1,11 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+#nullable disable
+
 using Microsoft.DotNet.MsiInstallerTests.Framework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -76,7 +73,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             SetupWorkloadSetInGlobalJson(out var originalRollback);
 
-            string[] args = command.Equals("install") ? ["dotnet", "workload", "install", "aspire"] : ["dotnet", "workload", command];
+            string[] args = command.Equals("install") ? ["dotnet", "workload", "install", "wasm-tools"] : ["dotnet", "workload", command];
             VM.CreateRunCommand(args).WithWorkingDirectory(SdkTestingDirectory).Execute().Should().PassWithoutWarning();
             GetRollback(SdkTestingDirectory).Should().NotBe(originalRollback);
         }
@@ -86,7 +83,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             SetupWorkloadSetInGlobalJson(out var originalRollback);
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--skip-manifest-update")
+            VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update")
                 .WithWorkingDirectory(SdkTestingDirectory)
                 .Execute().Should().Fail()
                 .And.HaveStdErrContaining("--skip-manifest-update")
@@ -98,7 +95,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             InstallSdk();
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--skip-manifest-update", "--version", WorkloadSetVersion1)
+            VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update", "--version", WorkloadSetVersion1)
                 .Execute().Should().Fail()
                 .And.HaveStdErrContaining("--skip-manifest-update")
                 .And.HaveStdErrContaining("--sdk-version");
@@ -119,7 +116,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion1);
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "aspire", "--version", WorkloadSetVersion2)
+            VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools", "--version", WorkloadSetVersion2)
                 .Execute().Should().PassWithoutWarning();
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
@@ -140,7 +137,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion1);
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "aspire")
+            VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools")
                 .WithWorkingDirectory(SdkTestingDirectory)
                 .Execute().Should().PassWithoutWarning();
 
@@ -156,7 +153,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallSdk();
 
             //  Install a workload before setting up global.json.  Commands like "dotnet workload --info" were previously crashing if global.json specified a workload set that wasn't installed
-            InstallWorkload("aspire", skipManifestUpdate: true);
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
 
             SetupWorkloadSetInGlobalJson(out _);
         }
@@ -193,7 +190,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 RemoveWorkloadSetFromLocalSource(WorkloadSetVersion2);
             }
 
-            InstallWorkload("aspire", skipManifestUpdate: false)
+            InstallWorkload("wasm-tools", skipManifestUpdate: false)
                 .Should().NotHaveStdOutContaining("Installing workload version")
                 .And.NotHaveStdOutContaining("microsoft.net.workloads.");
 

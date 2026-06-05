@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "sdk.sln",
+    "path": "sdk.slnx",
     "projects": [
       "src\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
       "src\\Cli\\Microsoft.DotNet.InternalAbstractions\\Microsoft.DotNet.InternalAbstractions.csproj",

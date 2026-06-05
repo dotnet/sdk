@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.NugetSearch
+#nullable disable
+
+namespace Microsoft.DotNet.Cli.NugetSearch;
+
+internal interface INugetToolSearchApiRequest
 {
-    internal interface INugetToolSearchApiRequest
-    {
-        Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter);
-    }
+    Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter);
 }

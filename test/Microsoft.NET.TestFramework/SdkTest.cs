@@ -7,7 +7,7 @@ namespace Microsoft.NET.TestFramework
     {
         protected TestAssetsManager _testAssetsManager;
 
-        protected bool UsingFullFrameworkMSBuild => TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild;
+        protected bool? UsingFullFrameworkMSBuild => TestContext.Current.ToolsetUnderTest?.ShouldUseFullFrameworkMSBuild;
 
         protected ITestOutputHelper Log { get; }
 
