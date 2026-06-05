@@ -40,11 +40,13 @@
   </ItemGroup>
 
   <!-- 'dotnet sln' command: command-specific sources and helpers. -->
+  <!-- Note: ProjectLocator.cs and FileBasedProgramsResources.resx are NOT listed here because they are
+       already compiled into Microsoft.DotNet.ProjectTools (via the shared .projitems), which is referenced
+       as a ProjectReference by dotnet-aot.csproj. Including them here would cause CS0436 type conflicts. -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnFileFactory.cs" Link="SlnFileFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnfFileHelper.cs" Link="SlnfFileHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\MsbuildProject.cs" Link="MsbuildProject.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.FileBasedPrograms\ProjectLocator.cs" Link="ProjectLocator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionCommandParser.cs" Link="Commands\Solution\SolutionCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionArgumentValidator.cs" Link="Commands\Solution\SolutionArgumentValidator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\List\SolutionListCommand.cs" Link="Commands\Solution\List\SolutionListCommand.cs" />
@@ -54,8 +56,6 @@
 
   <!-- 'dotnet sln' command: command-specific dependencies. -->
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.FileBasedPrograms\FileBasedProgramsResources.resx" Link="FileBasedProgramsResources.resx" GenerateSource="true" Namespace="Microsoft.DotNet.FileBasedPrograms" />
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
   </ItemGroup>
 
