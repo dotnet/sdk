@@ -5,21 +5,8 @@
 # This file only defines functions; it has no top-level side effects so it is
 # safe to source multiple times.
 
-# Detect native machine architecture, handling macOS Rosetta 2
-# where uname -m may report x86_64 on arm64 hardware.
-function GetNativeMachineArchitecture {
-  if [[ "$(uname)" == "Darwin" ]] && [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]]; then
-    echo "arm64"
-    return
-  fi
-  case "$(uname -m)" in
-    arm64|aarch64) echo "arm64" ;;
-    amd64|x86_64) echo "x64" ;;
-    armv*l) echo "arm" ;;
-    i[3-6]86) echo "x86" ;;
-    *) echo "x64" ;;
-  esac
-}
+# General SDK build helpers (GetNativeMachineArchitecture, etc.).
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/sdk-tools.sh"
 
 # Returns success (0) when an already-downloaded dotnetup binary at $1 is recent
 # enough (<24h old) and architecturally compatible with the native machine, so the

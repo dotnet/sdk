@@ -3,40 +3,8 @@
 # (test runtime install). This file only defines functions; it has no top-level
 # side effects so it is safe to dot-source multiple times.
 
-# Maps a System.Runtime.InteropServices.Architecture enum value to the lowercase
-# dotnet RID architecture token (e.g. "x64", "arm64"). Unknown values map to "x64".
-function ConvertTo-RidArchitecture([System.Runtime.InteropServices.Architecture]$Architecture) {
-    switch ($Architecture) {
-        ([System.Runtime.InteropServices.Architecture]::Arm64) { return "arm64" }
-        ([System.Runtime.InteropServices.Architecture]::X86) { return "x86" }
-        ([System.Runtime.InteropServices.Architecture]::Arm) { return "arm" }
-        default { return "x64" }
-    }
-}
-
-# Detect native OS architecture, which may differ from the process architecture
-# (e.g., x64 process running on ARM64 Windows via emulation).
-function Get-NativeMachineArchitecture {
-    try {
-        return ConvertTo-RidArchitecture ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)
-    }
-    catch {
-        # Fallback for environments where RuntimeInformation is unavailable
-        return "x64"
-    }
-}
-
-# Detect the current process architecture, which may differ from the native OS
-# architecture when running under emulation (e.g., an x64 process on ARM64).
-function Get-ProcessMachineArchitecture {
-    try {
-        return ConvertTo-RidArchitecture ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)
-    }
-    catch {
-        # Fallback for environments where RuntimeInformation is unavailable
-        return "x64"
-    }
-}
+# General SDK build helpers (Get-NativeMachineArchitecture, etc.).
+. (Join-Path $PSScriptRoot 'sdk-tools.ps1')
 
 # Returns $true when an already-downloaded dotnetup binary at $DotnetupExe is
 # recent enough (<24h old) and its architecture matches the native machine, so the
