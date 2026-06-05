@@ -29,6 +29,19 @@ variables:
 # aka.ms client app id used to authenticate to the Redirection API. The pipeline must be granted
 # access to this variable group. Same source dotnet/arcade uses in eng/publishing/v3/publish.yml.
 - group: Publish-Build-Assets
+# Static aka.ms constants (source-of-truth in this repo; not in the Variables UI). These rarely
+# change and are derived from our own code (short URLs) or are well-known fixed values (tenants).
+# The dnceng-owned, drift-prone values (AkaMsCert*, AkaMsOwners) stay as pipeline Variables.
+- name: AkaMsTenantId                 # aka.ms redirection tenant in the /api/aka/1/{tenant} path (NOT an AAD GUID)
+  value: ncd
+- name: AkaMsAuthorityTenantId        # corp AAD tenant the app authenticates against (arcade hardcodes this too)
+  value: 72f988bf-86f1-41af-91ab-2d7cd011db47
+- name: AkaMsShortUrl                  # consumed by NuGetPackSourceCheckerFactory.cs (no 'aka.ms/' prefix)
+  value: dotnet/templating/searchcacheurl
+- name: AkaMsNonTemplatePacksShortUrl  # consumed by NuGetPackSourceCheckerFactory.cs (no 'aka.ms/' prefix)
+  value: dotnet/templating/nontemplatepacksurl
+- name: AkaMsGroupOwner               # owning security-group alias; empty unless the team has one
+  value: ''
 
 resources:
   repositories:
@@ -252,17 +265,15 @@ extends:
             #   - AkaMsCertServiceConnection can read the cert secret from the key vault.
             #   - The app/cert is allowed to manage the 'dotnet/templating/*' links in the 'ncd' tenant.
             #
-            # Variables (pipeline Variables UI unless noted):
-            #   akams-app-id                     - aka.ms client app id (secret, from the Publish-Build-Assets KV group)
+            # Pipeline Variables (set in the Variables UI; the rest are static in this YAML's
+            # 'variables:' block or come from the linked Publish-Build-Assets group):
+            #   akams-app-id                     - aka.ms client app id (secret, auto-supplied by the Publish-Build-Assets KV group)
             #   AkaMsCertServiceConnection       - AzureRM service connection that can read the key vault (e.g. DotNet-Engineering-Services_KeyVault)
             #   AkaMsCertVaultName               - key vault holding the cert (e.g. EngKeyVault)
             #   AkaMsCertSecretName              - cert secret name (e.g. Redirection-UST-Client-NetCoreDeployment)
-            #   AkaMsAuthorityTenantId           - AAD tenant to authenticate the app against (corp 72f988bf-86f1-41af-91ab-2d7cd011db47)
-            #   AkaMsTenantId                    - aka.ms redirection tenant in the /api/aka/1/{tenant} path (the dotnet tenant is 'ncd', NOT the AAD tenant GUID)
-            #   AkaMsShortUrl                    - 'dotnet/templating/searchcacheurl' (no 'aka.ms/' prefix)
-            #   AkaMsNonTemplatePacksShortUrl    - 'dotnet/templating/nontemplatepacksurl' (no 'aka.ms/' prefix)
-            #   AkaMsOwners                      - semicolon-delimited owner aliases
-            #   AkaMsGroupOwner                  - owning security-group alias (may be empty)
+            #   AkaMsOwners                      - semicolon-delimited owner aliases (first is used as lastModifiedBy)
+            # Static in YAML (see the 'variables:' block): AkaMsTenantId, AkaMsAuthorityTenantId,
+            # AkaMsShortUrl, AkaMsNonTemplatePacksShortUrl, AkaMsGroupOwner.
             # Only repoint the production links from main; manual/test runs on other branches
             # should not move them (point the short-url vars at test links to validate this step).
             - task: AzureCLI@2
