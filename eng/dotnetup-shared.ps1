@@ -36,11 +36,38 @@ function Test-ShouldUseCachedDotnetup([string]$DotnetupExe) {
 # (https://aka.ms/dotnetup/get-dotnetup.ps1) and runs it to install dotnetup into
 # $DotnetupDir. Throws on failure so callers can choose how to react.
 function Install-DotnetupFromAkaMs([string]$DotnetupDir) {
-    # Seed $LASTEXITCODE so strict mode can read it if the script short-circuits
-    # without invoking a native process.
-    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+    $getterUrl = 'https://aka.ms/dotnetup/get-dotnetup.ps1'
+    $getterScript = Join-Path ([System.IO.Path]::GetTempPath()) ("get-dotnetup-{0}.ps1" -f [System.IO.Path]::GetRandomFileName())
 
-    $getDotnetupScript = (Invoke-WebRequest -Uri 'https://aka.ms/dotnetup/get-dotnetup.ps1' -UseBasicParsing).Content
-    & ([scriptblock]::Create($getDotnetupScript)) -InstallDir $DotnetupDir
-    if ($LASTEXITCODE -ne 0) { throw "get-dotnetup.ps1 exited with code $LASTEXITCODE." }
+    # Download the installer with retry/backoff. Invoke-WebRequest's built-in
+    # -MaximumRetryCount is unavailable on Windows PowerShell 5.1, so retry manually.
+    $maxAttempts = 3
+    for ($attempt = 1; $true; $attempt++) {
+        try {
+            Invoke-WebRequest -Uri $getterUrl -OutFile $getterScript -UseBasicParsing
+            break
+        }
+        catch {
+            if ($attempt -ge $maxAttempts) {
+                throw "Failed to download dotnetup installer from $getterUrl after $maxAttempts attempts: $($_.Exception.Message)"
+            }
+            $delaySeconds = [Math]::Pow(2, $attempt)
+            Write-Host "Download of dotnetup installer failed (attempt $attempt of $maxAttempts): $($_.Exception.Message). Retrying in $delaySeconds seconds..." -ForegroundColor Yellow
+            Start-Sleep -Seconds $delaySeconds
+        }
+    }
+
+    try {
+        # Run the downloaded installer in a SEPARATE PowerShell process so that an
+        # 'exit' inside it cannot terminate this build host and bypass the caller's
+        # try/catch. Use the current host's own executable to keep pwsh / Windows
+        # PowerShell 5.1 parity.
+        $psExe = (Get-Process -Id $PID).Path
+        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+        & $psExe -NoProfile -ExecutionPolicy Bypass -File $getterScript -InstallDir $DotnetupDir
+        if ($LASTEXITCODE -ne 0) { throw "get-dotnetup.ps1 exited with code $LASTEXITCODE." }
+    }
+    finally {
+        Remove-Item $getterScript -Force -ErrorAction SilentlyContinue
+    }
 }

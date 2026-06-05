@@ -55,13 +55,17 @@ function AcquireDotnetup {
   local dotnetup_dir=$1
   local getter_url="https://aka.ms/dotnetup/get-dotnetup.sh"
   local getter_script
-  getter_script="$(mktemp)"
+  # Use an explicit template: bare `mktemp` is not portable because BSD/macOS
+  # mktemp requires a template (or -t prefix) and errors without one.
+  getter_script="$(mktemp "${TMPDIR:-/tmp}/get-dotnetup.XXXXXX")"
 
   local downloaded=false
   if command -v curl > /dev/null 2>&1; then
     if curl -fsSL --retry 3 "$getter_url" -o "$getter_script"; then downloaded=true; fi
   elif command -v wget > /dev/null 2>&1; then
-    if wget -q -O "$getter_script" "$getter_url"; then downloaded=true; fi
+    if wget -q --tries=3 -O "$getter_script" "$getter_url"; then downloaded=true; fi
+  else
+    echo "Cannot download dotnetup: neither 'curl' nor 'wget' is available on PATH. Install one of them to acquire dotnetup." >&2
   fi
 
   local result=0
