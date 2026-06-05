@@ -90,7 +90,52 @@ internal sealed class TestApplicationHandler
             _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId!);
         }
 
+        // Validate the optional ExecutionMode property last (after AssemblyRunStarted) so that any
+        // diagnostic about a mismatched run/help/discover mode is associated with this assembly
+        // in the terminal output.
+        //
+        // Older Microsoft.Testing.Platform versions don't send the ExecutionMode property at all
+        // (see https://github.com/microsoft/testfx/pull/8794). In that case we keep today's
+        // behavior and don't perform any validation here.
+        if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionMode, out string? executionMode) &&
+            !string.IsNullOrWhiteSpace(executionMode) &&
+            !IsExpectedExecutionMode(executionMode, out string expectedExecutionMode))
+        {
+            ReportExecutionModeFailure(executionMode, expectedExecutionMode);
+            return false;
+        }
+
         return true;
+    }
+
+    private bool IsExpectedExecutionMode(string reportedMode, out string expectedMode)
+    {
+        expectedMode = _options.IsHelp
+            ? HandshakeMessageExecutionModes.Help
+            : _options.IsDiscovery
+                ? HandshakeMessageExecutionModes.Discover
+                : HandshakeMessageExecutionModes.Run;
+
+        // If the reported mode is one of the known values, it must equal the SDK's expected mode.
+        // An unknown value (e.g. a future mode added by a newer testing platform without bumping
+        // the protocol version) is also rejected so we don't silently accept a message stream we
+        // can't interpret.
+        return reportedMode == expectedMode;
+    }
+
+    private void ReportExecutionModeFailure(string reportedMode, string expectedMode)
+    {
+        // Always surface the protocol-level mismatch — bypass the legacy "ignore handshake
+        // failures when SDK is in help mode" workaround in TerminalTestReporter, which exists
+        // only to keep compatibility with older Microsoft.Testing.Platform versions that don't
+        // handshake on the --help path.
+        _output.HandshakeFailure(
+            _module.TargetPath,
+            string.Empty,
+            ExitCode.GenericFailure,
+            string.Format(CliCommandStrings.MismatchingHandshakeExecutionMode, reportedMode, expectedMode),
+            string.Empty,
+            reportEvenWhenHelp: true);
     }
 
     private void ReportHandshakeFailure(string failureMessage) =>
@@ -141,6 +186,8 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.ModulePath => nameof(HandshakeMessagePropertyNames.ModulePath),
             HandshakeMessagePropertyNames.ExecutionId => nameof(HandshakeMessagePropertyNames.ExecutionId),
             HandshakeMessagePropertyNames.InstanceId => nameof(HandshakeMessagePropertyNames.InstanceId),
+            HandshakeMessagePropertyNames.IsIDE => nameof(HandshakeMessagePropertyNames.IsIDE),
+            HandshakeMessagePropertyNames.ExecutionMode => nameof(HandshakeMessagePropertyNames.ExecutionMode),
             _ => string.Empty,
         };
 

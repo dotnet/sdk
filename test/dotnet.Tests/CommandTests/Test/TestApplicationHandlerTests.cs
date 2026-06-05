@@ -81,4 +81,210 @@ public class TestApplicationHandlerTests
         rendered.Should().Contain("stdout-line");
         rendered.Should().Contain("stderr-line");
     }
+
+    /// <summary>
+    /// Backward-compat regression test. Older Microsoft.Testing.Platform versions don't include the
+    /// optional <see cref="HandshakeMessagePropertyNames.ExecutionMode"/> property at all (added in
+    /// https://github.com/microsoft/testfx/pull/8794). When the property is absent the SDK must keep
+    /// today's behavior and not perform any execution-mode validation.
+    /// </summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void OnHandshakeReceived_WhenExecutionModePropertyIsAbsent_AcceptsHandshakeAndDoesNotReportFailure(bool isHelp, bool isDiscovery)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(isHelp: isHelp, isDiscovery: isDiscovery);
+
+        var handshake = BuildHandshake(executionMode: null);
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
+
+        accepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        console.GetOutput().Should().NotContain("MismatchingHandshakeExecutionMode");
+    }
+
+    [Theory]
+    [InlineData(false, false, HandshakeMessageExecutionModes.Run)]
+    [InlineData(true, false, HandshakeMessageExecutionModes.Help)]
+    [InlineData(false, true, HandshakeMessageExecutionModes.Discover)]
+    public void OnHandshakeReceived_WhenExecutionModeMatchesSdkExpectation_AcceptsHandshake(bool isHelp, bool isDiscovery, string executionMode)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: isHelp, isDiscovery: isDiscovery);
+
+        var handshake = BuildHandshake(executionMode);
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
+
+        accepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Drives the new validation added in this change: if the host reports an execution mode that
+    /// doesn't match what <c>dotnet test</c> intended (e.g. <c>RunArguments</c> or
+    /// <c>launchSettings.json</c> injected a <c>--help</c> or <c>--list-tests</c> option), the SDK
+    /// must reject the handshake at the protocol level and report the mismatch.
+    /// </summary>
+    [Theory]
+    [InlineData(false, false, HandshakeMessageExecutionModes.Help, HandshakeMessageExecutionModes.Run)]
+    [InlineData(false, false, HandshakeMessageExecutionModes.Discover, HandshakeMessageExecutionModes.Run)]
+    [InlineData(true, false, HandshakeMessageExecutionModes.Run, HandshakeMessageExecutionModes.Help)]
+    [InlineData(false, true, HandshakeMessageExecutionModes.Run, HandshakeMessageExecutionModes.Discover)]
+    public void OnHandshakeReceived_WhenExecutionModeMismatch_RejectsHandshakeAndReportsFailure(
+        bool isHelp, bool isDiscovery, string reportedMode, string expectedMode)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(isHelp: isHelp, isDiscovery: isDiscovery);
+
+        var handshake = BuildHandshake(reportedMode);
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
+
+        accepted.Should().BeFalse();
+        reporter.HasHandshakeFailure.Should().BeTrue();
+
+        string rendered = console.GetOutput();
+        rendered.Should().Contain(reportedMode);
+        rendered.Should().Contain(expectedMode);
+    }
+
+    /// <summary>
+    /// Even when the SDK itself was invoked in help mode, an explicit ExecutionMode mismatch reported
+    /// by the test host is a protocol-level rejection and must still be surfaced. This pins down the
+    /// <c>reportEvenWhenHelp: true</c> opt-out around the legacy "swallow handshake failures in help
+    /// mode" workaround in <see cref="TerminalTestReporter.HandshakeFailure"/>.
+    /// </summary>
+    [Fact]
+    public void OnHandshakeReceived_WhenSdkInHelpModeAndExecutionModeMismatch_StillReportsFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: true, isDiscovery: false);
+
+        var handshake = BuildHandshake(HandshakeMessageExecutionModes.Run);
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
+
+        accepted.Should().BeFalse();
+        reporter.HasHandshakeFailure.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Forward-compat guard: a future testing-platform release that ships a new ExecutionMode value
+    /// without bumping the protocol version is not silently accepted; we reject so we don't try to
+    /// interpret a message stream we don't understand.
+    /// </summary>
+    [Fact]
+    public void OnHandshakeReceived_WhenExecutionModeIsUnknown_RejectsHandshake()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        var handshake = BuildHandshake(executionMode: "future-mode");
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
+
+        accepted.Should().BeFalse();
+        reporter.HasHandshakeFailure.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// A controller-host handshake (no <c>AssemblyRunStarted</c> bookkeeping) with a mismatched
+    /// ExecutionMode must still be rejected — the validation lives in <c>OnHandshakeReceived</c>,
+    /// not in a code path gated on <c>HostType == "TestHost"</c>.
+    /// </summary>
+    [Fact]
+    public void OnHandshakeReceived_WhenControllerHostReportsMismatchedExecutionMode_RejectsHandshake()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        var handshake = BuildHandshake(
+            executionMode: HandshakeMessageExecutionModes.Help,
+            hostType: "TestHostController",
+            includeInstanceId: false);
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
+
+        accepted.Should().BeFalse();
+        reporter.HasHandshakeFailure.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Old-MTP help path: the test host exits without performing a handshake at all because older
+    /// Microsoft.Testing.Platform versions don't handshake on <c>--help</c>. The SDK's existing
+    /// workaround in <see cref="TerminalTestReporter.HandshakeFailure"/> must keep swallowing that
+    /// case so we don't print a spurious failure for the legacy host. The new
+    /// <c>reportEvenWhenHelp</c> opt-out must not break this — only the explicit protocol-level
+    /// mismatch path opts in.
+    /// </summary>
+    [Fact]
+    public void OnTestProcessExited_WhenSdkInHelpModeAndNoHandshakeReceived_DoesNotReportFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: true, isDiscovery: false);
+
+        Action act = () => handler.OnTestProcessExited(exitCode: 0, outputData: "help text", errorData: string.Empty);
+        act.Should().NotThrow();
+
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    private const string TargetPath = "/repo/bin/Debug/net9.0/MyTest.dll";
+    private const string ProjectPath = "/repo/MyTest.csproj";
+    private const string TargetFramework = "net9.0";
+
+    private static (TestApplicationHandler Handler, TerminalTestReporter Reporter, CapturingConsole Console) CreateHandler(bool isHelp, bool isDiscovery)
+    {
+        var capturingConsole = new CapturingConsole();
+
+        var reporterOptions = new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+        };
+
+        var reporter = new TerminalTestReporter(capturingConsole, reporterOptions);
+
+        // Mirror the test options on the reporter — TerminalTestReporter._isHelp / _isDiscovery are set
+        // here, not in the constructor. The reporter's _isHelp flag drives the legacy "swallow handshake
+        // failures when in help mode" path that the new reportEvenWhenHelp opt-out is meant to bypass.
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: isDiscovery, isHelp: isHelp, isRetry: false);
+
+        var module = new TestModule(
+            RunProperties: new RunProperties("dotnet", TargetPath, "/repo"),
+            ProjectFullPath: ProjectPath,
+            TargetFramework: TargetFramework,
+            IsTestingPlatformApplication: true,
+            LaunchSettings: null,
+            TargetPath: TargetPath,
+            DotnetRootArchVariableName: null);
+
+        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: isDiscovery, EnvironmentVariables: new Dictionary<string, string>());
+
+        return (new TestApplicationHandler(reporter, module, testOptions), reporter, capturingConsole);
+    }
+
+    private static HandshakeMessage BuildHandshake(string? executionMode, string hostType = "TestHost", bool includeInstanceId = true)
+    {
+        var properties = new Dictionary<byte, string>
+        {
+            [HandshakeMessagePropertyNames.PID] = "1234",
+            [HandshakeMessagePropertyNames.Architecture] = "x64",
+            [HandshakeMessagePropertyNames.Framework] = ".NETCoreApp,Version=v9.0",
+            [HandshakeMessagePropertyNames.OS] = "Windows",
+            [HandshakeMessagePropertyNames.SupportedProtocolVersions] = ProtocolConstants.SupportedVersions,
+            [HandshakeMessagePropertyNames.HostType] = hostType,
+            [HandshakeMessagePropertyNames.ModulePath] = TargetPath,
+            [HandshakeMessagePropertyNames.ExecutionId] = "exec-1",
+        };
+
+        if (includeInstanceId)
+        {
+            properties[HandshakeMessagePropertyNames.InstanceId] = "inst-1";
+        }
+
+        if (executionMode is not null)
+        {
+            properties[HandshakeMessagePropertyNames.ExecutionMode] = executionMode;
+        }
+
+        return new HandshakeMessage(properties);
+    }
 }
