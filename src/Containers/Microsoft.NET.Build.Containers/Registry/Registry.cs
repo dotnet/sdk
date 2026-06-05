@@ -412,9 +412,9 @@ internal sealed class Registry
 
         try
         {
-            byte[] data = await File.ReadAllBytesAsync(localPath, cancellationToken).ConfigureAwait(false);
+            var fileStream = File.OpenRead(localPath);
 
-            var actualHash = SHA256.HashData(data);
+            var actualHash = SHA256.HashData(fileStream);
             var expectedHash = DigestUtils.GetEncodedValue(descriptor.Digest);
             InvalidDigestException.ThrowIfMismatched(expectedHash, actualHash);
 
@@ -437,7 +437,7 @@ internal sealed class Registry
         }
 
         string tempTarballPath = ContentStore.GetTempFile();
-    
+
         int retryCount = 0;
         while (retryCount < MaxDownloadRetries)
         {
@@ -445,14 +445,14 @@ internal sealed class Registry
             {
                 // No local copy, so download one
                 using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
-    
+
                 using (FileStream fs = File.Create(tempTarballPath))
                 {
                     await responseStream
                         .CopyToAndVerifyAsync(fs, descriptor.Digest, cancellationToken)
                         .ConfigureAwait(false);
                 }
-    
+
                 // Break the loop if successful
                 break;
             }
@@ -463,16 +463,16 @@ internal sealed class Registry
                 {
                     throw new UnableToDownloadFromRepositoryException(repository);
                 }
-    
+
                 _logger.LogTrace("Download attempt {0}/{1} for repository '{2}' failed. Error: {3}", retryCount, MaxDownloadRetries, repository, ex.ToString());
-    
+
                 // Wait before retrying
                 await Task.Delay(_retryDelayProvider(), cancellationToken).ConfigureAwait(false);
             }
         }
-    
+
         File.Move(tempTarballPath, localPath, overwrite: true);
-    
+
         return localPath;
     }
 
@@ -589,7 +589,7 @@ internal sealed class Registry
             _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
             await _registryAPI.Manifest.PutAsync(destinationImageReference.Repository, tag, multiArchImage.ImageIndex, multiArchImage.ImageIndexMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
-        }          
+        }
     }
 
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
