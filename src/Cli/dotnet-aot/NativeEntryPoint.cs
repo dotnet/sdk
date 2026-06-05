@@ -68,31 +68,21 @@ static unsafe partial class NativeEntryPoint
             }
         }
 
-            // Fall back to the fully managed dotnet CLI by hosting .NET
-            string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
-            string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
+        // Fall back to the fully managed dotnet CLI by hosting .NET
+        string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
+        string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
 
-            if (File.Exists(dotnetDll) && File.Exists(runtimeConfig))
-            {
-                // Use the command-line hosting path to run dotnet.dll
-                string[] appArgs = new string[args.Length + 1];
-                appArgs[0] = dotnetDll;
-                Array.Copy(args, 0, appArgs, 1, args.Length);
-                exitCode = ManagedHost.RunApp(hostPath, dotnetRoot, hostfxrPath, appArgs);
-                success = true;
-                return exitCode;
-            }
-
-            // No managed fallback available
-            Console.Error.WriteLine($"The managed fallback could not be located. Expected '{dotnetDll}' and '{runtimeConfig}'.");
-            return exitCode;
-        }
-        finally
+        if (File.Exists(dotnetDll) && File.Exists(runtimeConfig))
         {
-            mainActivity?.AddTag("process.exit.code", exitCode);
-            mainActivity?.SetStatus(success ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-            mainActivity?.Stop();
-            TelemetryClient.FlushProviders();
+            // Use the command-line hosting path to run dotnet.dll
+            string[] appArgs = new string[args.Length + 1];
+            appArgs[0] = dotnetDll;
+            Array.Copy(args, 0, appArgs, 1, args.Length);
+            return ManagedHost.RunApp(hostPath, dotnetRoot, hostfxrPath, appArgs);
         }
+
+        // No managed fallback available
+        Console.Error.WriteLine($"The managed fallback could not be located. Expected '{dotnetDll}' and '{runtimeConfig}'.");
+        return 1;
     }
 }
