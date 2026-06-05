@@ -136,14 +136,25 @@ internal class InitWorkflows
         DotnetInstallRoot installRoot = GetInstallRootOrDefault(effectiveRequests, defaultInstallRoot);
         string? manifestPath = GetManifestPath(effectiveRequests);
 
-        if (selection.Migrations.Count > 0)
+        try
         {
-            effectiveRequests = RunInstallsWithMigration(
-                command, effectiveRequests, selection.Migrations, installRoot, manifestPath, predownloadTask);
+            if (selection.Migrations.Count > 0)
+            {
+                effectiveRequests = RunInstallsWithMigration(
+                    command, effectiveRequests, selection.Migrations, installRoot, manifestPath, predownloadTask);
+            }
+            else
+            {
+                RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress, command);
+            }
         }
-        else
+        catch
         {
-            RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress, command);
+            // Persist the user's configuration choice even when an install fails, so the next
+            // run doesn't re-prompt as if setup never happened. The install failure still
+            // surfaces to the caller below.
+            SaveConfig(pathPreference);
+            throw;
         }
 
         // Save config and apply configuration(s).
@@ -567,14 +578,16 @@ internal class InitWorkflows
             resolved);
     }
 
+    /// <summary>
+    /// Writes the dotnetup config capturing the user's path preference. Safe to call on the
+    /// failure path so the choice persists even when an install did not complete.
+    /// </summary>
+    private static void SaveConfig(PathPreference pathPreference)
+        => DotnetupConfig.Write(new DotnetupConfigData { PathPreference = pathPreference });
+
     private static void SaveConfigAndDisplayResult(PathPreference pathPreference, PathPreference? previousPreference)
     {
-        var config = new DotnetupConfigData
-        {
-            PathPreference = pathPreference,
-        };
-
-        DotnetupConfig.Write(config);
+        SaveConfig(pathPreference);
 
         // Only show guidance when the preference actually changed (or first-time setup).
         if (previousPreference != pathPreference)
