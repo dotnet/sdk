@@ -222,7 +222,7 @@ function InstallDotNetSharedFrameworksWithInstallScript {
     local lastexitcode=$?
 
     if [[ $lastexitcode != 0 ]]; then
-      echo "Failed to install shared framework spec '$spec' to '$dotnet_root' using dotnet install script for architecture '$arch' (exit code '$lastexitcode')."
+      echo "Failed to install shared framework $version to '$dotnet_root' using dotnet install script for architecture '$arch' (exit code '$lastexitcode')."
       ExitWithExitCode $lastexitcode
     fi
   done

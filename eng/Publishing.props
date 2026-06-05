@@ -64,6 +64,33 @@
     </MSBuild>
   </Target>
 
+  <Target Name="GetDotnetupVersion">
+    <!-- Retrieve dotnetup's SemVer (e.g. 0.1.3-preview.4.26263.3) for the dotnetup blob path. -->
+    <MSBuild Projects="$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj"
+             Targets="ReturnDotnetupVersion">
+      <Output TaskParameter="TargetOutputs" PropertyName="DotnetupVersion" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    Set RelativeBlobPath on the dotnetup AOT binary and on its .sha512 sidecar.
+    Arcade's GenerateChecksumsFromArtifacts strips RelativeBlobPath from the parent
+    metadata, so we have to set it explicitly here. Without this override, Arcade's
+    AddRelativeBlobPathToBlobArtifacts would assign the default Sdk/<version>/ prefix
+    to both files.
+  -->
+  <Target Name="SetDotnetupBlobPaths"
+          DependsOnTargets="GetDotnetupVersion"
+          AfterTargets="GenerateChecksumsFromArtifacts"
+          BeforeTargets="AddRelativeBlobPathToBlobArtifacts;PublishToAzureDevOpsArtifacts">
+    <ItemGroup>
+      <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup-$(TargetRid)$(_DotnetupNativeExt)'"
+                RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
+      <Artifact Condition="'%(Filename)%(Extension)' == 'dotnetup-$(TargetRid)$(_DotnetupNativeExt).sha512'"
+                RelativeBlobPath="dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt).sha512" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="AddRelativeBlobPathToBlobArtifacts"
           DependsOnTargets="GetNonStableProductVersion"
           BeforeTargets="PublishToAzureDevOpsArtifacts"

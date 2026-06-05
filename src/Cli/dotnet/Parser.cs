@@ -53,10 +53,7 @@ public static class Parser
         rootCommand.Subcommands.Add(slnDef);
     }
 
-    public static Command? GetBuiltInCommand(string commandName) =>
-        RootCommand.Subcommands.FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
-
-    public static ParseResult Parse(string[] args) => RootCommand.Parse(args, ParserConfiguration);
+    public static ParseResult Parse(string[] args) => RootCommand.Parse(args);
 
     public static int Invoke(ParseResult parseResult) => parseResult.Invoke(InvocationConfiguration);
 

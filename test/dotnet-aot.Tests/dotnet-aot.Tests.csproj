@@ -5,7 +5,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
     <RootNamespace>Microsoft.DotNet.Cli.Tests</RootNamespace>
-    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <!-- Strong naming deprecated on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
@@ -48,22 +47,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
-    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
-    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
-  </ItemGroup>
-
-  <!-- Azure Monitor dependencies aren't part of source build yet - see file://../../../Directory.Build.props#L85 for details -->
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
   </ItemGroup>
 
   <!-- When publishing AOT, exclude the reflection-mode xUnit packages

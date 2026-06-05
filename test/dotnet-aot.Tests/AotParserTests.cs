@@ -133,13 +133,8 @@ public class AotParserTests
             Reporter.SetError(bufferedError);
             Console.SetOut(stdoutWriter);
             Console.SetError(stderrWriter);
-            InvocationConfiguration invocationConfiguration = new()
-            {
-                EnableDefaultExceptionHandler = false, // parity with Parser.InvocationConfiguration
-                Output = stdoutWriter,
-                Error = stderrWriter
-            };
-            int exitCode = parseResult.Invoke(invocationConfiguration);
+
+            int exitCode = Parser.Invoke(parseResult);
 
             // Combine Reporter output and direct Console.Out output
             string reporterOut = string.Join(Environment.NewLine, bufferedOutput.Lines);

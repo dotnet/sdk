@@ -30,8 +30,12 @@ parameters:
   runtimeSourceProperties: ''
   officialBuildProperties: ''
   downloadManifestMsiPackages: false
+  # Lets a build be scoped to a specific project or solution, for example by setting
+  # this to `/p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf`
+  projectsArgument: ''
   ### ARCADE ###
   preSteps: []
+  enableMicrobuildForMacAndLinux: false
 
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
@@ -48,6 +52,7 @@ jobs:
     helixRepo: dotnet/sdk
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     enableMicrobuild: true
+    enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
@@ -97,6 +102,7 @@ jobs:
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
+          ${{ parameters.projectsArgument }}
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
@@ -121,6 +127,7 @@ jobs:
           /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
           /p:TargetRid=${{ parameters.runtimeIdentifier }} \
+          ${{ parameters.projectsArgument }} \
           ${{ parameters.osProperties }} \
           ${{ parameters.runtimeSourceProperties }} \
           ${{ parameters.officialBuildProperties }} \
@@ -130,6 +137,12 @@ jobs:
           BuildConfig: $(buildConfiguration)
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
           MSBUILDALWAYSRETRY: true
+          # Required by the MicroBuild signing plugin to acquire a federated
+          # token for ESRP. AzDO exposes System.AccessToken automatically to
+          # script processes on Windows agents but not on Linux/macOS, so the
+          # SignFiles task fails with "Access token is not available" without
+          # this env var.
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### TESTING ###############

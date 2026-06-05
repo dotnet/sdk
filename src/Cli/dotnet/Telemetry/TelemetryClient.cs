@@ -47,7 +47,7 @@ public class TelemetryClient : ITelemetryClient
     private static readonly bool s_enableOtlpExporter =
         Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER)
         || (!Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.OTEL_SDK_DISABLED) && IsOtlpExporterConfiguredByStandardEnvVars());
-    private static readonly int s_flushTimeoutMs = 10;
+    private static readonly int s_flushTimeoutMs = 200;
 
     /// <summary>
     /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables

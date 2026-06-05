@@ -1,0 +1,179 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Text.Json;
+using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
+
+public class ListCommandTests
+{
+    [Theory]
+    [InlineData(new[] { "list" }, OutputFormat.Text, false)]
+    [InlineData(new[] { "list", "--format", "json" }, OutputFormat.Json, false)]
+    [InlineData(new[] { "list", "--no-verify" }, OutputFormat.Text, true)]
+    [InlineData(new[] { "list", "--format", "json", "--no-verify" }, OutputFormat.Json, true)]
+    public void Parser_ShouldParseListCommand(string[] args, OutputFormat expectedFormat, bool expectedNoVerify)
+    {
+        // Act
+        var parseResult = Parser.Parse(args);
+
+        // Assert
+        parseResult.Should().NotBeNull();
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.GetValue(CommonOptions.FormatOption).Should().Be(expectedFormat);
+        parseResult.GetValue(ListCommandParser.NoVerifyOption).Should().Be(expectedNoVerify);
+    }
+
+    [Fact]
+    public void InstallationLister_GetInstallations_ShouldReturnList()
+    {
+        // Use an isolated temp manifest to avoid reading a stale/legacy manifest on CI
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        try
+        {
+            string manifestPath = Path.Combine(tempDir.FullName, "dotnetup", "manifest.json");
+
+            // Act
+            var listData = InstallationLister.GetListData(verify: false, manifestPath: manifestPath);
+
+            // Assert
+            listData.Installations.Should().NotBeNull();
+            listData.Installations.Should().BeOfType<List<InstallationInfo>>();
+        }
+        finally
+        {
+            tempDir.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void InstallationLister_WriteHumanReadable_ShouldOutputHeader()
+    {
+        // Arrange
+        var listData = new ListData();
+        using var sw = new StringWriter();
+
+        // Act
+        InstallationLister.WriteHumanReadable(sw, listData);
+        var output = sw.ToString();
+
+        // Assert
+        output.Should().Contain("Installations");
+        output.Should().Contain("managed by dotnetup");
+        output.Should().Contain("Total: 0");
+    }
+
+    [Fact]
+    public void InstallationLister_WriteHumanReadable_WithInstallations_ShouldShowDetails()
+    {
+        // Arrange - use secure temp subdirectory
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        try
+        {
+            var testInstallRoot = Path.Combine(tempDir.FullName, ".dotnet");
+            var listData = new ListData
+            {
+                Installations = new List<InstallationInfo>
+                {
+                    new() { Component = InstallComponent.SDK, Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = InstallArchitecture.x64 },
+                    new() { Component = InstallComponent.Runtime, Version = "9.0.0", InstallRoot = testInstallRoot, Architecture = InstallArchitecture.x64 }
+                }
+            };
+            using var sw = new StringWriter();
+
+            // Act
+            InstallationLister.WriteHumanReadable(sw, listData);
+            var output = sw.ToString();
+
+            // Assert - should use shorter, punchier display names per @baronfel's suggestion
+            output.Should().Contain(".NET SDK");
+            output.Should().Contain("9.0.100");
+            output.Should().Contain("dotnet (runtime)");
+            output.Should().Contain("9.0.0");
+            output.Should().Contain(testInstallRoot);
+            output.Should().Contain("Total: 2");
+        }
+        finally
+        {
+            tempDir.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void InstallationLister_WriteJson_ShouldOutputValidJson()
+    {
+        // Arrange
+        var listData = new ListData();
+        using var sw = new StringWriter();
+
+        // Act
+        InstallationLister.WriteJson(sw, listData);
+        var output = sw.ToString();
+
+        // Assert
+        var jsonAction = () => JsonDocument.Parse(output);
+        jsonAction.Should().NotThrow();
+    }
+
+    [Fact]
+    public void InstallationLister_WriteJson_ShouldContainExpectedStructure()
+    {
+        // Arrange - use secure temp subdirectory
+        var tempDir = Directory.CreateTempSubdirectory("dotnetup-test");
+        try
+        {
+            var testInstallRoot = tempDir.FullName;
+            var listData = new ListData
+            {
+                Installations = new List<InstallationInfo>
+                {
+                    new() { Component = InstallComponent.SDK, Version = "9.0.100", InstallRoot = testInstallRoot, Architecture = InstallArchitecture.x64 }
+                }
+            };
+            using var sw = new StringWriter();
+
+            // Act
+            InstallationLister.WriteJson(sw, listData);
+            var output = sw.ToString();
+
+            // Assert
+            using var doc = JsonDocument.Parse(output);
+            var root = doc.RootElement;
+
+            root.TryGetProperty("installations", out var installationsArray).Should().BeTrue();
+            installationsArray.GetArrayLength().Should().Be(1);
+
+            var firstInstall = installationsArray[0];
+            firstInstall.GetProperty("component").GetString().Should().Be("SDK");
+            firstInstall.GetProperty("version").GetString().Should().Be("9.0.100");
+            firstInstall.GetProperty("installRoot").GetString().Should().Be(testInstallRoot);
+            firstInstall.GetProperty("architecture").GetString().Should().Be("x64");
+        }
+        finally
+        {
+            tempDir.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void InstallationLister_WriteJson_EmptyList_ShouldHaveEmptyInstallations()
+    {
+        // Arrange
+        var listData = new ListData();
+        using var sw = new StringWriter();
+
+        // Act
+        InstallationLister.WriteJson(sw, listData);
+        var output = sw.ToString();
+
+        // Assert
+        using var doc = JsonDocument.Parse(output);
+        var root = doc.RootElement;
+
+        root.GetProperty("installations").GetArrayLength().Should().Be(0);
+    }
+}

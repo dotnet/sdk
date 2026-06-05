@@ -1,0 +1,109 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    NativeAOT entry-point Exe for dotnetup. We want to compile dotnetup into a NativeAOT
+    executable, but also reference it from tests.  So the code for dotnetup lives in the
+    dotnetup.Library project, which is what tests reference.  This project is published
+    as a NativeAOT executable and simply has an entry point that forwards to the one in
+    the library.
+    
+    We set _IsPublishing=true and have a PublishOnBuild target so that the AOT publish
+    runs as part of the normal build.
+
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <ControlFlowGuard>Guard</ControlFlowGuard>
+    <RootNamespace>Microsoft.DotNet.Tools.Bootstrapper</RootNamespace>
+
+    <!-- Default RuntimeIdentifier to TargetRid (which we set in pipelines or
+         Directory.Build.props) instead of letting SDK targets default it to the host
+         RID, which may be different. -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(TargetRid)' != ''">$(TargetRid)</RuntimeIdentifier>
+
+    <!-- This entry-point Exe is shipped as a standalone binary, not a NuGet package. -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::ValueOrDefault('$(RuntimeIdentifier)', '').StartsWith('osx'))">
+    <!-- Suppress macOS NativeAOT debug-info generation to avoid .pcm module-cache errors.
+         The runtime's static archives (libSystem.Native.a, etc.) embed clang module-debug
+         references to .pcm files in /var/folders/... that only exist on the runtime's build
+         machine. When the linker runs with -g, ld traverses those refs and errors out; the
+         post-link dsymutil invocation does the same. Both surface as MSBuild EXEC errors
+         that Arcade promotes to build failures, e.g.:
+
+           EXEC : error : .../ModuleCache/.../Foundation-...pcm: No such file or directory
+           note: Linking a static library that was built with -gmodules, but the module
+           cache was not found.
+
+         We don't ship a .dSYM bundle for dotnetup, so dropping native debug info on Mac
+         (and the strip/dsymutil post-link pipeline) is harmless. Other RIDs keep their
+         default debug-symbol behavior. -->
+    <NativeDebugSymbols>false</NativeDebugSymbols>
+    <StripSymbols>false</StripSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\dotnetup.Library\dotnetup.Library.csproj" />
+  </ItemGroup>
+
+    <!-- We want to always create a NativeAOT executable when this project is built or published.
+    
+        So we set _IsPublishing=true and add a target to run Publish after Build.  But in order to 
+        avoid a target cycle error when publish is invoked directly, we first check whether
+        _IsPublishing was already set, and if so let the normal publish flow run instead. -->
+  <PropertyGroup>
+    <_PublishWasInvokedDirectly Condition="'$(_IsPublishing)' == 'true'">true</_PublishWasInvokedDirectly>
+    <_IsPublishing>true</_IsPublishing>
+
+    <!-- Skip the implicit AOT Publish-on-Build when cross-compiling on Linux without a cross-toolchain.
+         On Linux, the AOT linker invokes the host's clang/ld.bfd, which can't link for a different
+         architecture without a SysRoot + lld toolchain (e.g. ld.bfd: unrecognised emulation mode:
+         aarch64linux). The main SDK CI's TestBuild cross-RID legs build the whole repo with
+         /p:RuntimeIdentifier set to a non-host RID but don't supply a cross-toolchain, so we skip
+         the implicit publish there. The dedicated dotnetup pipeline's Linux cross legs pass
+         /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld and so still run publish here. Windows (link.exe)
+         and macOS (clang + ld64) handle cross-arch linking natively, so cross-arch legs there are
+         unaffected and still produce the AOT binary. -->
+    <_DotnetupSkipPublishOnBuild Condition="'$(HostOS)' == 'linux' and '$(TargetArchitecture)' != '$(BuildArchitecture)' and '$(SysRoot)' == ''">true</_DotnetupSkipPublishOnBuild>
+  </PropertyGroup>
+
+  <Target Name="PublishOnBuild"
+          AfterTargets="Build"
+          DependsOnTargets="Publish"
+          Condition="'$(_PublishWasInvokedDirectly)' != 'true' and '$(_DotnetupSkipPublishOnBuild)' != 'true'" />
+
+  <!--
+    Make a RID-suffixed copy of the published binary next to the original. The download
+    surfaces (aka.ms shortlinks, ci.dot.net blobs) ship dotnetup-<rid>[.exe] so each
+    RID's standalone binary has a unique filename in the same blob container, but at
+    runtime dotnetup is invoked by the simple name (dotnetup[.exe]). Scripts that
+    download the RID-suffixed file are expected to rename it back to dotnetup.
+  -->
+  <PropertyGroup>
+    <_DotnetupNativeBinaryExt Condition="'$(RuntimeIdentifier)' != '' and $(RuntimeIdentifier.StartsWith('win'))">.exe</_DotnetupNativeBinaryExt>
+  </PropertyGroup>
+  <Target Name="CreateRidSuffixedDotnetupCopy"
+          AfterTargets="Publish"
+          Condition="'$(RuntimeIdentifier)' != ''"
+          Inputs="$(PublishDir)$(TargetName)$(_DotnetupNativeBinaryExt)"
+          Outputs="$(PublishDir)dotnetup-$(RuntimeIdentifier)$(_DotnetupNativeBinaryExt)">
+    <Copy SourceFiles="$(PublishDir)$(TargetName)$(_DotnetupNativeBinaryExt)"
+          DestinationFiles="$(PublishDir)dotnetup-$(RuntimeIdentifier)$(_DotnetupNativeBinaryExt)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <!--
+    Lets eng/Publishing.props query the dotnetup SemVer (e.g. 0.1.3-preview.<buildid>) to
+    use as the blob-path prefix when registering the NativeAOT binary as a Blob artifact
+    for Arcade publishing. Mirrors the ReturnProductVersion pattern on
+    src/Layout/redist/redist.csproj.
+  -->
+  <Target Name="ReturnDotnetupVersion" Returns="$(Version)" />
+
+</Project>

@@ -36,9 +36,9 @@ if ($test) { $arguments += " -test" }
 if ($pack) {
   $arguments += " -pack"
   if (-not $skipCrossgen) { $arguments += " /p:SkipUsingCrossgen=false" }
-  if (-not $skipInstallers) { $arguments += " /p:SkipBuildingInstallers=false /p:SkipBuildingArchives=false" }
+  if (-not $skipInstallers) { $arguments += " /p:SkipBuildingInstallers=false" }
 } else {
-  $arguments += " /p:SkipUsingCrossgen=true /p:SkipBuildingInstallers=true /p:SkipBuildingArchives=true "
+  $arguments += " /p:SkipUsingCrossgen=true /p:SkipBuildingInstallers=true"
 }
 
 if ($properties) { $arguments += " " + ($properties -join " ") }
