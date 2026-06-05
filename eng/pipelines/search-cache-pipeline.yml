@@ -238,11 +238,21 @@ extends:
                 ESRP_RELEASE_DETAILS: $(ESRP_RELEASE_DETAILS)
 
             # Repoint the aka.ms links at the new ESRP URLs using the corp Redirection Management
-            # API (same contract as dotnet/arcade's AkaMSLinkManager). The /bulk endpoint accepts
-            # an array, so both links are updated in a single call. The service connection identity
-            # must own the links. The following variables are defined in the pipeline's Variables UI:
-            #   AkaMsServiceConnection           - AzureRM service connection whose identity can manage the links
-            #   AkaMsTenantId                    - redirection (AME) tenant identifier (the dotnet tenant is 'ncd', not a GUID)
+            # API (same endpoint/scope as dotnet/arcade's AkaMSLinkManager). The /bulk endpoint
+            # accepts an array, so both links are updated in a single call.
+            #
+            # AUTH (read before configuring): the Redirection API only accepts tokens from an AAD
+            # app that has been registered and onboarded as an aka.ms client. AkaMsServiceConnection
+            # MUST therefore be an AzureRM (workload-identity / federated) service connection whose
+            # backing identity is that onboarded app -- a generic pipeline connection will get 401/403.
+            # Ask dnceng for the service-connection name (and have them confirm the identity is
+            # authorized on the Redirection API). The token authority tenant is fixed to the corp
+            # tenant (72f988bf-86f1-41af-91ab-2d7cd011db47), which is the service connection's own
+            # tenant; we do not supply it.
+            #
+            # Variables defined in the pipeline's Variables UI:
+            #   AkaMsServiceConnection           - federated AzureRM service connection (identity onboarded to the Redirection API)
+            #   AkaMsTenantId                    - aka.ms redirection tenant in the /api/aka/1/{tenant} path (the dotnet tenant is 'ncd', NOT the AAD tenant GUID)
             #   AkaMsShortUrl                    - 'dotnet/templating/searchcacheurl' (no 'aka.ms/' prefix)
             #   AkaMsNonTemplatePacksShortUrl    - 'dotnet/templating/nontemplatepacksurl' (no 'aka.ms/' prefix)
             #   AkaMsOwners                      - semicolon-delimited owner aliases
