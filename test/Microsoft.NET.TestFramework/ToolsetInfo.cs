@@ -203,6 +203,14 @@ namespace Microsoft.NET.TestFramework
                     }
                 }
 
+                //  Override APPDATA so that full-framework MSBuild's NuGet targets
+                //  don't load a potentially corrupted user-level NuGet.Config.
+                //  Fall back to DOTNET_CLI_HOME (set by Helix scripts) when CliHomePath is unavailable.
+                var appDataOverride = CliHomePath ?? Environment.GetEnvironmentVariable("DOTNET_CLI_HOME");
+                if (!string.IsNullOrEmpty(appDataOverride))
+                {
+                    environment["APPDATA"] = appDataOverride;
+                }
             }
 
             if (Environment.Is64BitProcess)
