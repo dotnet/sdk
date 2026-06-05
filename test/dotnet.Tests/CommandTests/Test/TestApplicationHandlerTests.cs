@@ -8,8 +8,21 @@ using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 namespace dotnet.Tests.CommandTests.Test;
 
-public class TestApplicationHandlerTests
+public class TestApplicationHandlerTests : IDisposable
 {
+    // TerminalTestReporter is IDisposable and starts progress tracking via TestExecutionStarted
+    // inside CreateHandler. xUnit instantiates the test class per test, so disposing this list in
+    // Dispose() releases every reporter built for the current test.
+    private readonly List<IDisposable> _disposables = new();
+
+    public void Dispose()
+    {
+        foreach (var disposable in _disposables)
+        {
+            disposable.Dispose();
+        }
+    }
+
     /// <summary>
     /// Regression test for the handler-level routing fix in https://github.com/dotnet/sdk/pull/52308
     /// (linked to https://github.com/dotnet/sdk/issues/51608). When the test host process exits
@@ -280,7 +293,7 @@ public class TestApplicationHandlerTests
     private const string ProjectPath = "/repo/MyTest.csproj";
     private const string TargetFramework = "net9.0";
 
-    private static (TestApplicationHandler Handler, TerminalTestReporter Reporter, CapturingConsole Console) CreateHandler(bool isHelp, bool isDiscovery)
+    private (TestApplicationHandler Handler, TerminalTestReporter Reporter, CapturingConsole Console) CreateHandler(bool isHelp, bool isDiscovery)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -291,6 +304,7 @@ public class TestApplicationHandlerTests
         };
 
         var reporter = new TerminalTestReporter(capturingConsole, reporterOptions);
+        _disposables.Add(reporter);
 
         // Mirror the test options on the reporter — TerminalTestReporter._isHelp / _isDiscovery are set
         // here, not in the constructor. The reporter's _isHelp flag drives the legacy "swallow handshake
