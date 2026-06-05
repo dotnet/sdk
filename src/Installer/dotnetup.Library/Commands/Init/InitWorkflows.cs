@@ -520,6 +520,9 @@ internal class InitWorkflows
             new(NoneChannel, "I'll tell you what to install later.", null),
             new(ChannelVersionResolver.LtsChannel, "Long Term Support", ltsVersion),
             new(ChannelVersionResolver.PreviewChannel, "Latest preview", previewVersion),
+            // Daily resolves against the blob feed, so we don't pre-resolve a version here to avoid
+            // a slow/failing network call during the prompt; it is shown without a resolved version.
+            new(ChannelVersionResolver.DailyChannel, "Latest unsigned daily build", null),
         };
 
         if (latestResolved is not null)
@@ -538,7 +541,9 @@ internal class InitWorkflows
 
     private static string FormatChannelExample(ChannelExample ex, string brand, string dim)
     {
-        if (ex.Channel == NoneChannel)
+        // The "none" sentinel and the daily channel carry no pre-resolved version, so they render
+        // as channel + description without a "→ version" (or "no version available") suffix.
+        if (ex.Channel is NoneChannel or ChannelVersionResolver.DailyChannel)
         {
             return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]  [{2}]{3}[/]",
                 brand,
