@@ -67,12 +67,12 @@ public class StaticWebAssetsGeneratePackagePropsFile : Task, IMultiThreadableTas
 
         if (!fileExists)
         {
-            Log.LogMessage(MessageImportance.Low, $"Creating file '{buildTargetPath}' because it does not exist.");
+            Log.LogMessage(MessageImportance.Low, $"Creating file '{BuildTargetPath}' because it does not exist.");
             File.WriteAllBytes(buildTargetPath, data);
         }
         else if (!string.Equals(dataHash, existingFileHash, StringComparison.Ordinal))
         {
-            Log.LogMessage(MessageImportance.Low, $"Updating '{buildTargetPath}' file because the hash '{dataHash}' is different from existing file hash '{existingFileHash}'.");
+            Log.LogMessage(MessageImportance.Low, $"Updating '{BuildTargetPath}' file because the hash '{dataHash}' is different from existing file hash '{existingFileHash}'.");
             File.WriteAllBytes(buildTargetPath, data);
         }
         else
