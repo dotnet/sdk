@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
-using System.Threading;
 using Microsoft.Deployment.DotNet.Releases;
 #if NET
 using Microsoft.Win32;

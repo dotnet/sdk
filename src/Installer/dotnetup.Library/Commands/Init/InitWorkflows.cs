@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -136,6 +137,12 @@ internal class InitWorkflows
         DotnetInstallRoot installRoot = GetInstallRootOrDefault(effectiveRequests, defaultInstallRoot);
         string? manifestPath = GetManifestPath(effectiveRequests);
 
+        // A failed install (e.g. one unavailable runtime version) must not prevent us from
+        // configuring the environment for the installs that DID succeed. The install step is
+        // already best-effort — it installs every available request and then throws for the
+        // failures — so we capture that failure, finish applying configuration below, and
+        // rethrow at the end so the error still surfaces to the caller (and telemetry).
+        ExceptionDispatchInfo? installFailure = null;
         try
         {
             if (selection.Migrations.Count > 0)
@@ -148,17 +155,14 @@ internal class InitWorkflows
                 RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress, command);
             }
         }
-        catch
+        catch (DotnetInstallException ex)
         {
-            // Persist the user's configuration choice even when an install fails, so the next
-            // run doesn't re-prompt as if setup never happened. The install failure still
-            // surfaces to the caller below.
-            SaveConfig(pathPreference);
-            throw;
+            installFailure = ExceptionDispatchInfo.Capture(ex);
         }
 
-        // Save config and apply configuration(s).
-        SaveConfigAndDisplayResult(pathPreference, previousPreference);
+        // Save config and apply configuration(s) regardless of partial install failure, so the
+        // user's choice persists and the successful installs are usable (PATH / shell profile).
+        SaveConfig(pathPreference);
 
         if (pathPreference is PathPreference.ShellProfile)
         {
@@ -169,6 +173,11 @@ internal class InitWorkflows
         {
             _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
         }
+
+        // One or more installs failed; surface the error after configuration was applied.
+        installFailure?.Throw();
+
+        DisplaySetupResult(pathPreference, previousPreference);
 
         return effectiveRequests;
     }
@@ -585,10 +594,8 @@ internal class InitWorkflows
     private static void SaveConfig(PathPreference pathPreference)
         => DotnetupConfig.Write(new DotnetupConfigData { PathPreference = pathPreference });
 
-    private static void SaveConfigAndDisplayResult(PathPreference pathPreference, PathPreference? previousPreference)
+    private static void DisplaySetupResult(PathPreference pathPreference, PathPreference? previousPreference)
     {
-        SaveConfig(pathPreference);
-
         // Only show guidance when the preference actually changed (or first-time setup).
         if (previousPreference != pathPreference)
         {
