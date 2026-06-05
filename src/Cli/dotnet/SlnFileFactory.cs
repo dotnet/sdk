@@ -147,6 +147,9 @@ public static class SlnFileFactory
         return filteredSolution;
     }
 
+    private static readonly Regex s_invalidJsonBackslashRegex =
+        new(@"\\\\|\\(?![""\\\/bfnrt]|u[0-9a-fA-F]{4})", RegexOptions.Compiled);
+
     /// <summary>
     /// Replaces unescaped backslashes in a JSON string with forward slashes, for backward compatibility
     /// with .slnf files that were generated with Windows-style path separators without proper JSON escaping.
@@ -157,7 +160,7 @@ public static class SlnFileFactory
         // Valid JSON escape sequences: \" \\ \/ \b \f \n \r \t \uXXXX
         // We first match \\ (valid double-backslash) to skip it, then match any other backslash
         // that isn't followed by a valid escape character.
-        return Regex.Replace(json, @"\\\\|\\(?![""\\\/bfnrt]|u[0-9a-fA-F]{4})", match =>
+        return s_invalidJsonBackslashRegex.Replace(json, match =>
             match.Value.Length == 2 ? match.Value : "/");
     }
 }

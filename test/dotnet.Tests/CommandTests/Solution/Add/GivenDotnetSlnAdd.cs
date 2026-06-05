@@ -1406,7 +1406,7 @@ Options:
         [Theory]
         [InlineData("sln")]
         [InlineData("solution")]
-        public void WhenSlnfHasUnescapedBackslashesInPathItCanStillBeUsed(string solutionCommand)
+        public void WhenAddingProjectToSlnfWithUnescapedBackslashesInPathItSucceeds(string solutionCommand)
         {
             var projectDirectory = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnfFiles", identifier: $"GivenDotnetSlnAdd-SlnfUnescapedBackslash-{solutionCommand}")
