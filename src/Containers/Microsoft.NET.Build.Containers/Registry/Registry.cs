@@ -414,9 +414,9 @@ internal sealed class Registry
 
         try
         {
-            byte[] data = await File.ReadAllBytesAsync(localPath, cancellationToken).ConfigureAwait(false);
+            var fileStream = File.OpenRead(localPath);
 
-            var actualHash = SHA256.HashData(data);
+            var actualHash = SHA256.HashData(fileStream);
             var expectedHash = DigestUtils.GetEncodedValue(descriptor.Digest);
             InvalidDigestException.ThrowIfMismatched(expectedHash, actualHash);
 
