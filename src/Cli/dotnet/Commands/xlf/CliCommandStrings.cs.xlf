@@ -689,8 +689,8 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
-        <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
-        <target state="translated">Architekturu parametrů, konfiguraci, architekturu, operační systém a modul runtime nejde použít s parametrem --test-modules.</target>
+        <source>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</source>
+        <target state="needs-review-translation">Architekturu parametrů, konfiguraci, architekturu, operační systém a modul runtime nejde použít s parametrem --test-modules.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">

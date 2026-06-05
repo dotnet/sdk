@@ -94,5 +94,32 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdErr.Should().Contain("Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.");
             }
         }
+
+        [Theory]
+        [InlineData("--use-current-runtime")]
+        [InlineData("--ucr")]
+        public void TestCommandShouldRejectUseCurrentRuntimeWhenCombinedWithTestModules(string useCurrentRuntimeAlias)
+        {
+            var testDir = TestAssetsManager.CreateTestDirectory();
+            File.WriteAllText(Path.Combine(testDir.Path, "global.json"),
+                """
+                {
+                    "test": {
+                        "runner": "Microsoft.Testing.Platform"
+                    }
+                }
+                """);
+
+            var result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("--test-modules", "**/*.dll", useCurrentRuntimeAlias);
+
+            result.ExitCode.Should().NotBe(0);
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain("use current runtime")
+                    .And.Contain("--test-modules");
+            }
+        }
     }
 }
