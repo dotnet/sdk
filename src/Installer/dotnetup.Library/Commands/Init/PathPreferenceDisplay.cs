@@ -18,4 +18,16 @@ internal static class PathPreferenceDisplay
         PathPreference.FullPathReplacement => Strings.PathPreferenceFullReplacement,
         _ => preference.ToString(),
     };
+
+    /// <summary>
+    /// Returns the display name without any trailing parenthetical recommendation hint
+    /// (e.g. drops the "(Suggested)" from "Terminal Mode (Suggested)"). Used when showing a
+    /// preference the user has already chosen, where a recommendation hint would be misleading.
+    /// </summary>
+    public static string GetNameWithoutHint(PathPreference preference)
+    {
+        string name = GetName(preference);
+        int hintIndex = name.IndexOf(" (", System.StringComparison.Ordinal);
+        return hintIndex >= 0 ? name[..hintIndex] : name;
+    }
 }

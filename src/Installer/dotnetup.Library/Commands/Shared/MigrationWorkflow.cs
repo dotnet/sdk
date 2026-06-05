@@ -113,7 +113,7 @@ internal static class MigrationWorkflow
             runner(phase2);
         }
 
-        return [..phase1, ..phase2];
+        return [.. phase1, .. phase2];
     }
 
     /// <summary>

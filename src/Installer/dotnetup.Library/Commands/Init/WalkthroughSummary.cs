@@ -137,7 +137,7 @@ internal static class WalkthroughSummary
                 CultureInfo.InvariantCulture,
                 "  [{0}](current: {1})[/]",
                 DotnetupTheme.Current.Warning,
-                PathPreferenceDisplay.GetName(pref).EscapeMarkup())
+                PathPreferenceDisplay.GetNameWithoutHint(pref).EscapeMarkup())
             : string.Empty;
 
         SpectreAnsiConsole.MarkupLine(string.Format(
