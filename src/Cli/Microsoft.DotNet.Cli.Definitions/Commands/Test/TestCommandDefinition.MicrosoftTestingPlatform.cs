@@ -133,8 +133,14 @@ internal abstract partial class TestCommandDefinition
 
         public readonly Option<string> DeviceOption = new("--device")
         {
-            Description = CommandDefinitionStrings.CommandOptionDeviceDescription,
+            Description = CommandDefinitionStrings.CommandOptionDeviceDescriptionForTest,
             HelpName = CommandDefinitionStrings.CommandOptionDeviceHelpName
+        };
+
+        public readonly Option<bool> ListDevicesOption = new("--list-devices")
+        {
+            Description = CommandDefinitionStrings.CommandOptionListDevicesDescriptionForTest,
+            Arity = ArgumentArity.Zero
         };
 
         public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
@@ -174,6 +180,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(NoLaunchProfileOption);
             Options.Add(NoLaunchProfileArgumentsOption);
             Options.Add(DeviceOption);
+            Options.Add(ListDevicesOption);
             Options.Add(MTPTargetOption);
         }
 
