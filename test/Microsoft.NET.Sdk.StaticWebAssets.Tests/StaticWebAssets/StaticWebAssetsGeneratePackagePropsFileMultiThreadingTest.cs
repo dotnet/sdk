@@ -9,7 +9,10 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-[Collection("StaticWebAssetsGeneratePackagePropsFileMultiThreading")]
+// Test parallelization is disabled assembly-wide via
+// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
+// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
+// process-CWD mutation this test performs.
 public class StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest
 {
     [Fact]
@@ -54,9 +57,4 @@ public class StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest
             }
         }
     }
-}
-
-[CollectionDefinition("StaticWebAssetsGeneratePackagePropsFileMultiThreading", DisableParallelization = true)]
-public class StaticWebAssetsGeneratePackagePropsFileMultiThreadingCollection
-{
 }

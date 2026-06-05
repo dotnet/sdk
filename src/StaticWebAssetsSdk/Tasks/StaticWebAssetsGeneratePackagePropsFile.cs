@@ -67,7 +67,7 @@ public class StaticWebAssetsGeneratePackagePropsFile : Task, IMultiThreadableTas
 
         if (!fileExists)
         {
-            Log.LogMessage(MessageImportance.Low, $"Creating file '{buildTargetPath}' does not exist.");
+            Log.LogMessage(MessageImportance.Low, $"Creating file '{buildTargetPath}' because it does not exist.");
             File.WriteAllBytes(buildTargetPath, data);
         }
         else if (!string.Equals(dataHash, existingFileHash, StringComparison.Ordinal))
