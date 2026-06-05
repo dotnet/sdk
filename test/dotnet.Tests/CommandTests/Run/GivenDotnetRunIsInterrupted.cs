@@ -6,6 +6,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Win32.SafeHandles;
 using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
@@ -134,10 +135,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     // will inherit the current process group from the `dotnet test` process that is running this test.
                     // We would need to fork(), setpgid(), and then execve() to break out of the current group and that is
                     // too complex for a simple unit test.
-                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGINT).Should().Be(0); // dotnet run
+                    testProcess.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue(); // dotnet run
                     try
                     {
-                        NativeMethods.Posix.kill(Convert.ToInt32(line), NativeMethods.Posix.SIGINT).Should().Be(0);   // TestAppThatWaits
+                        new SafeProcessHandle(Convert.ToInt32(line), true).Signal(PosixSignal.SIGINT).Should().BeTrue();   // TestAppThatWaits
                     }
                     catch (Exception e)
                     {
@@ -199,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                         Log.WriteLine($"Error while  getting child process Id: {e}");
                         Assert.Fail($"Failed to get to child process Id: {line}");
                     }
-                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGTERM).Should().Be(0);
+                    testProcess.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
                     killed = true;
                 }
                 else
