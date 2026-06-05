@@ -1,0 +1,222 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics;
+using Microsoft.DotNet.Cli.Commands.Test;
+
+namespace dotnet.Tests.CommandTests.Test;
+
+public class CtrlCCancellationManagerTests
+{
+    [Fact]
+    public void FirstCtrlC_CancelsTokenAndInvokesUiCallbackExactlyOnce()
+    {
+        int callbackCount = 0;
+        int exitCount = 0;
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => Interlocked.Increment(ref callbackCount),
+            exitAction: _ => Interlocked.Increment(ref exitCount),
+            subscribeToConsole: false);
+
+        manager.Token.IsCancellationRequested.Should().BeFalse("the token should be alive before any Ctrl+C");
+
+        manager.SimulateCtrlC();
+
+        manager.Token.IsCancellationRequested.Should().BeTrue("the first Ctrl+C should cancel the cooperative token");
+        callbackCount.Should().Be(1);
+        exitCount.Should().Be(0, "the first Ctrl+C must not force-exit");
+    }
+
+    [Fact]
+    public void SecondCtrlC_InvokesExitActionWithTestSessionAborted()
+    {
+        int callbackCount = 0;
+        int? receivedExitCode = null;
+        int exitCount = 0;
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => Interlocked.Increment(ref callbackCount),
+            exitAction: code => { Interlocked.Increment(ref exitCount); receivedExitCode = code; },
+            subscribeToConsole: false);
+
+        manager.SimulateCtrlC();
+        manager.SimulateCtrlC();
+
+        callbackCount.Should().Be(1, "the UI callback fires only on the first press");
+        exitCount.Should().Be(1, "the exit action fires on the second press");
+        receivedExitCode.Should().Be(ExitCode.TestSessionAborted);
+    }
+
+    [Fact]
+    public void ThirdAndSubsequentCtrlC_AreNoOps()
+    {
+        int callbackCount = 0;
+        int exitCount = 0;
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => Interlocked.Increment(ref callbackCount),
+            exitAction: _ => Interlocked.Increment(ref exitCount),
+            subscribeToConsole: false);
+
+        manager.SimulateCtrlC();
+        manager.SimulateCtrlC();
+        manager.SimulateCtrlC();
+        manager.SimulateCtrlC();
+
+        callbackCount.Should().Be(1);
+        exitCount.Should().Be(1, "presses after force-exit must not re-trigger the exit action");
+    }
+
+    [Fact]
+    public void Register_AfterForcing_KillsTheProcessImmediately()
+    {
+        int exitCount = 0;
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => { },
+            exitAction: _ => Interlocked.Increment(ref exitCount),
+            subscribeToConsole: false);
+
+        manager.SimulateCtrlC();
+        manager.SimulateCtrlC();
+        exitCount.Should().Be(1);
+
+        using var process = StartLongRunningProcess();
+        try
+        {
+            manager.Register(process);
+
+            // The manager should have killed the process immediately because we are in the Forcing state.
+            process.WaitForExit(TimeSpan.FromSeconds(10)).Should().BeTrue("Register after Forcing must kill the registered process");
+            process.HasExited.Should().BeTrue();
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+            }
+        }
+    }
+
+    [Fact]
+    public void Register_BeforeForcing_KillsTheProcessOnSecondCtrlC()
+    {
+        int exitCount = 0;
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => { },
+            exitAction: _ => Interlocked.Increment(ref exitCount),
+            subscribeToConsole: false);
+
+        using var process = StartLongRunningProcess();
+        try
+        {
+            manager.Register(process);
+
+            manager.SimulateCtrlC();
+            process.HasExited.Should().BeFalse("first Ctrl+C must not kill registered processes");
+
+            manager.SimulateCtrlC();
+            process.WaitForExit(TimeSpan.FromSeconds(10)).Should().BeTrue("second Ctrl+C must kill registered processes");
+            exitCount.Should().Be(1);
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+            }
+        }
+    }
+
+    [Fact]
+    public void Unregister_RemovesProcessFromForceKillSet()
+    {
+        int exitCount = 0;
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => { },
+            exitAction: _ => Interlocked.Increment(ref exitCount),
+            subscribeToConsole: false);
+
+        using var process = StartLongRunningProcess();
+        try
+        {
+            manager.Register(process);
+            manager.Unregister(process);
+
+            manager.SimulateCtrlC();
+            manager.SimulateCtrlC();
+
+            // After unregister, the manager should not have killed the process.
+            // Give it a moment in case the kill is asynchronous, then check.
+            Thread.Sleep(200);
+            process.HasExited.Should().BeFalse("unregistered processes must not be killed by force-exit");
+            exitCount.Should().Be(1);
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+            }
+        }
+    }
+
+    [Fact]
+    public void Dispose_IsIdempotent()
+    {
+        var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => { },
+            exitAction: _ => { },
+            subscribeToConsole: false);
+
+        Action act = () => { manager.Dispose(); manager.Dispose(); };
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Token_DoesNotCancel_WithoutAnyPress()
+    {
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => { },
+            exitAction: _ => { },
+            subscribeToConsole: false);
+
+        manager.Token.IsCancellationRequested.Should().BeFalse();
+    }
+
+    [Fact]
+    public void FirstCtrlC_CallbackThrowing_DoesNotAffectStateTransition()
+    {
+        int exitCount = 0;
+        using var manager = new CtrlCCancellationManager(
+            onFirstCtrlC: () => throw new InvalidOperationException("ui boom"),
+            exitAction: _ => Interlocked.Increment(ref exitCount),
+            subscribeToConsole: false);
+
+        Action firstPress = () => manager.SimulateCtrlC();
+        firstPress.Should().NotThrow("an exception from the UI callback must not propagate out of the handler");
+
+        manager.Token.IsCancellationRequested.Should().BeTrue("token cancellation must happen before the UI callback");
+
+        manager.SimulateCtrlC();
+        exitCount.Should().Be(1, "the state machine must still advance to Forcing on the second press even if the first-press callback threw");
+    }
+
+    private static Process StartLongRunningProcess()
+    {
+        // A small dotnet host that just sleeps for a long time so we have a real process to kill.
+        // We use the muxer that's resolvable from PATH; on the test machine 'dotnet' is always on PATH.
+        var psi = new ProcessStartInfo
+        {
+            FileName = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh",
+            Arguments = OperatingSystem.IsWindows()
+                ? "/c \"timeout /t 600 > nul\""
+                : "-c \"sleep 600\"",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+        };
+
+        var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start long-running helper process");
+        return process;
+    }
+}

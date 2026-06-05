@@ -17,14 +17,14 @@ internal class TestApplicationActionQueue
 
     private readonly Lock _lock = new();
 
-    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
+    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested));
+            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested, ctrlC));
         }
     }
 
@@ -48,19 +48,33 @@ internal class TestApplicationActionQueue
         return _aggregateExitCode ?? ExitCode.ZeroTests;
     }
 
-    private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
+    private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested, CtrlCCancellationManager ctrlC)
     {
         await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync())
         {
+            // Stop scheduling new test apps once the user has pressed Ctrl+C the first time.
+            // Already-running test apps are left alone so they can gracefully cancel themselves
+            // (and report final session state via IPC); a second Ctrl+C is what force-kills them
+            // via the CtrlCCancellationManager.
+            if (ctrlC.Token.IsCancellationRequested)
+            {
+                break;
+            }
+
             foreach (var module in nonParallelizedGroup)
             {
+                if (ctrlC.Token.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 int result = ExitCode.GenericFailure;
                 var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested);
                 try
                 {
                     using (testApp)
                     {
-                        result = await testApp.RunAsync();
+                        result = await testApp.RunAsync(ctrlC);
                     }
                 }
                 catch (Exception ex)
