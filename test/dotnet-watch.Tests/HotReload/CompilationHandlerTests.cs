@@ -28,32 +28,17 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
 
         var processOutputReporter = new TestProcessOutputReporter();
 
-        var context = new DotNetWatchContext()
-        {
-            ProcessOutputReporter = processOutputReporter,
-            Logger = NullLogger.Instance,
-            BuildLogger = NullLogger.Instance,
-            LoggerFactory = NullLoggerFactory.Instance,
-            ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
-            Options = new(),
-            MainProjectOptions = TestOptions.ProjectOptions,
-            RootProjects = [hostProjectRepr],
-            BuildArguments = [],
-            EnvironmentOptions = environmentOptions,
-            BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
-            BrowserRefreshServerFactory = new BrowserRefreshServerFactory()
-        };
+        var handler = new RunningProjectsManager(new ProcessRunner(processCleanupTimeout: TimeSpan.Zero), NullLogger.Instance);
+        var workspace = new ManagedCodeWorkspace(NullLogger.Instance, handler);
 
-        var handler = new CompilationHandler(context);
-
-        await handler.UpdateProjectGraphAsync(projectGraph.Graph, CancellationToken.None);
+        var solution = await workspace.UpdateProjectGraphAsync(projectGraph.Graph, CancellationToken.None);
 
         // all projects are present
-        AssertEx.SequenceEqual(["Host", "Lib2", "Lib", "A", "B"], handler.Workspace.CurrentSolution.Projects.Select(p => p.Name));
+        AssertEx.SequenceEqual(["Host", "Lib2", "Lib", "A", "B"], solution.Projects.Select(p => p.Name));
 
         // Host does not have project reference to A, B:
         AssertEx.SequenceEqual(["Lib2"],
-            handler.Workspace.CurrentSolution.Projects.Single(p => p.Name == "Host").ProjectReferences
-                .Select(r => handler.Workspace.CurrentSolution.GetProject(r.ProjectId)!.Name));
+            solution.Projects.Single(p => p.Name == "Host").ProjectReferences
+                .Select(r => solution.GetProject(r.ProjectId)!.Name));
     }
 }
