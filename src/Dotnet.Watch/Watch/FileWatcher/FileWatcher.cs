@@ -77,6 +77,14 @@ internal class FileWatcher(ILogger logger, EnvironmentOptions environmentOptions
             into g
             select (g.Key, containingDirectories ? [] : g.Select(Path.GetFileName).ToImmutableHashSet(PathUtilities.OSSpecificPathComparer));
 
+        // Consolidate sibling directories to reduce the number of FileSystemWatcher instances.
+        if (containingDirectories && includeSubdirectories && OperatingSystem.IsMacOS())
+        {
+            var directories = filesByDirectory.Select(d => d.Key).ToList();
+            var consolidated = ConsolidateDirectories(directories);
+            filesByDirectory = consolidated.Select(d => (d, ImmutableHashSet<string>.Empty)).ToList();
+        }
+
         foreach (var (directory, fileNames) in filesByDirectory)
         {
             // the directory is watched by active directory watcher:
@@ -149,6 +157,103 @@ internal class FileWatcher(ILogger logger, EnvironmentOptions environmentOptions
                 _directoryWatchers.Add(directory, newWatcher);
             }
         }
+    }
+
+    /// <summary>
+    /// Reduces the number of watched directories by finding the longest common path prefix
+    /// and grouping by immediate children under that ancestor. If the ancestor has few children
+    /// (≤ <see cref="MaxChildWatchers"/>), we create one watcher per child to avoid watching
+    /// unrelated sibling directories (e.g. artifacts/, .packages/). Otherwise, we fall back
+    /// to a single watcher on the ancestor.
+    /// </summary>
+    internal const int MaxChildWatchers = 5;
+
+    internal static List<string> ConsolidateDirectories(List<string> directories)
+    {
+        if (directories.Count <= 1)
+        {
+            return directories;
+        }
+
+        var commonRoot = GetLongestCommonPath(directories);
+        if (commonRoot == null)
+        {
+            return directories;
+        }
+
+        // Group directories by their immediate child under the common ancestor.
+        var children = new HashSet<string>(PathUtilities.OSSpecificPathComparer);
+        foreach (var dir in directories)
+        {
+            var relative = dir.Substring(commonRoot.Length).TrimEnd(Path.DirectorySeparatorChar);
+            if (relative.Length == 0)
+            {
+                // One of the directories IS the common ancestor - just watch it.
+                return [commonRoot];
+            }
+
+            var separatorIndex = relative.IndexOf(Path.DirectorySeparatorChar);
+            var immediateChild = separatorIndex >= 0 ? relative.Substring(0, separatorIndex) : relative;
+            children.Add(PathUtilities.EnsureTrailingSlash(Path.Join(commonRoot, immediateChild)));
+        }
+
+        if (children.Count <= MaxChildWatchers)
+        {
+            return children.ToList();
+        }
+
+        return [commonRoot];
+    }
+
+    internal static string? GetLongestCommonPath(List<string> paths)
+    {
+        if (paths.Count == 0)
+        {
+            return null;
+        }
+
+        // Split first path into segments as reference.
+        var referencePath = paths[0].TrimEnd(Path.DirectorySeparatorChar);
+        var segments = referencePath.Split(Path.DirectorySeparatorChar);
+
+        var commonLength = segments.Length;
+
+        for (var i = 1; i < paths.Count; i++)
+        {
+            var other = paths[i].TrimEnd(Path.DirectorySeparatorChar);
+            var otherSegments = other.Split(Path.DirectorySeparatorChar);
+            var limit = Math.Min(commonLength, otherSegments.Length);
+            var matched = 0;
+
+            for (var j = 0; j < limit; j++)
+            {
+                if (string.Equals(segments[j], otherSegments[j], PathUtilities.OSSpecificPathComparison))
+                {
+                    matched++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            commonLength = matched;
+
+            if (commonLength == 0)
+            {
+                return null;
+            }
+        }
+
+        var common = string.Join(Path.DirectorySeparatorChar, segments, 0, commonLength);
+
+        // On Unix, splitting an absolute path produces an empty first segment (e.g. "/a/b" -> ["", "a", "b"]). If only the empty root segment matched, there's no meaningful common path.
+        if (common.Length == 0)
+        {
+            return null;
+        }
+
+        return PathUtilities.EnsureTrailingSlash(common);
     }
 
     private void WatcherErrorHandler(object? sender, Exception error)
