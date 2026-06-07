@@ -96,11 +96,9 @@ internal sealed class TestApplicationHandler
         //
         // Older Microsoft.Testing.Platform versions don't send the ExecutionMode property at all
         // (see https://github.com/microsoft/testfx/pull/8794). In that case we keep today's
-        // behavior and don't perform any validation here. A present-but-empty/whitespace value is
-        // also treated as "absent" rather than as a protocol violation — that's the conservative
-        // choice if some intermediate MTP version ever happens to serialize an empty string here.
+        // behavior and don't perform any validation here. If the property is present, validate it
+        // even when it is empty/whitespace so protocol bugs are surfaced instead of silently accepted.
         if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionMode, out string? executionMode) &&
-            !string.IsNullOrWhiteSpace(executionMode) &&
             !IsExpectedExecutionMode(executionMode, out string expectedExecutionMode))
         {
             ReportHandshakeFailure(string.Format(CliCommandStrings.MismatchingHandshakeExecutionMode, executionMode, expectedExecutionMode));

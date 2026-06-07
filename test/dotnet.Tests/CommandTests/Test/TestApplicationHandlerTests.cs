@@ -232,16 +232,19 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     /// <summary>
-    /// Forward-compat guard: a future testing-platform release that ships a new ExecutionMode value
-    /// without bumping the protocol version is not silently accepted; we reject so we don't try to
-    /// interpret a message stream we don't understand.
+    /// Forward-compat/protocol guard: a future testing-platform release that ships a new ExecutionMode
+    /// value without bumping the protocol version, or a host that sends an empty value, is not silently
+    /// accepted; we reject so we don't try to interpret a message stream we don't understand.
     /// </summary>
-    [Fact]
-    public void OnHandshakeReceived_WhenExecutionModeIsUnknown_RejectsHandshake()
+    [Theory]
+    [InlineData("future-mode")]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void OnHandshakeReceived_WhenExecutionModeIsUnknownOrEmpty_RejectsHandshake(string executionMode)
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(isHelp: false, isDiscovery: false);
 
-        var handshake = BuildHandshake(executionMode: "future-mode");
+        var handshake = BuildHandshake(executionMode: executionMode);
 
         bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
 
