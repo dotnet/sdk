@@ -82,9 +82,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             trxFiles.Should().HaveCount(2, $"both modules should produce their own TRX. Actual: {string.Join(", ", trxFiles)}");
 
             string tfm = ToolsetInfo.CurrentTargetFramework;
-            // <asm>_<tfm>_<yyyy-MM-dd>_<HH>_<mm>_<ss>.trx
-            string testProjectPattern = $@"^TestProject_{Regex.Escape(tfm)}_\d{{4}}-\d{{2}}-\d{{2}}_\d{{2}}_\d{{2}}_\d{{2}}\.trx$";
-            string otherProjectPattern = $@"^OtherTestProject_{Regex.Escape(tfm)}_\d{{4}}-\d{{2}}-\d{{2}}_\d{{2}}_\d{{2}}_\d{{2}}\.trx$";
+            // <asm>_<tfm>_<yyyy-MM-dd>_<HH-mm-ss.fffffff>.trx
+            string testProjectPattern = $@"^TestProject_{Regex.Escape(tfm)}_\d{{4}}-\d{{2}}-\d{{2}}_\d{{2}}-\d{{2}}-\d{{2}}\.\d{{7}}\.trx$";
+            string otherProjectPattern = $@"^OtherTestProject_{Regex.Escape(tfm)}_\d{{4}}-\d{{2}}-\d{{2}}_\d{{2}}-\d{{2}}-\d{{2}}\.\d{{7}}\.trx$";
 
             var fileNames = trxFiles.Select(f => Path.GetFileName(f)!).ToArray();
             fileNames.Should().Contain(f => Regex.IsMatch(f, testProjectPattern),
@@ -98,6 +98,40 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 // appear: each injected filename is unique because it includes the module name and a timestamp.
                 result.StdOut.Should().NotContain("will be overwritten");
             }
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void SingleTestModuleWithExplicitTrxFilename_KeepsFilenameVerbatim(string configuration)
+        {
+            // Regression guard: when only one test module is being run, the SDK must NOT rewrite
+            // the explicit `--report-trx-filename` value. The user gets exactly the file they asked for.
+            TestAsset testInstance = TestAssetsManager
+                .CopyTestAsset("MultiTestProjectSolutionWithTrxReport", Guid.NewGuid().ToString())
+                .WithSource();
+
+            string resultsDirectory = Path.Combine(testInstance.Path, "trx-out");
+            Directory.CreateDirectory(resultsDirectory);
+
+            string testProjectPath = Path.Combine("TestProject", "TestProject.csproj");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--project", testProjectPath,
+                    "-c", configuration,
+                    "--report-trx",
+                    "--report-trx-filename", "results.trx",
+                    "--results-directory", resultsDirectory);
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            string[] trxFiles = Directory.GetFiles(resultsDirectory, "*.trx", SearchOption.AllDirectories);
+            trxFiles.Should().HaveCount(1, $"single-module runs should produce exactly one TRX file. Actual: {string.Join(", ", trxFiles)}");
+
+            var fileNames = trxFiles.Select(f => Path.GetFileName(f)!).ToArray();
+            fileNames.Should().ContainSingle().Which.Should().Be("results.trx",
+                "single-module runs must keep the user-supplied filename verbatim - no `_<asm>_<tfm>` suffix.");
         }
     }
 }

@@ -55,7 +55,11 @@ internal class TestApplicationActionQueue
             foreach (var module in nonParallelizedGroup)
             {
                 int result = ExitCode.GenericFailure;
-                var testApp = new TestApplication(module, isMultiTestModule, buildOptions, testOptions, output, onHelpRequested);
+                BuildOptions buildOptionsForModule = buildOptions with
+                {
+                    TestApplicationArguments = TrxReportArgumentsRewriter.RewriteIfNeeded(buildOptions.TestApplicationArguments, module, isMultiTestModule)
+                };
+                var testApp = new TestApplication(module, buildOptionsForModule, testOptions, output, onHelpRequested);
                 try
                 {
                     using (testApp)

@@ -18,7 +18,6 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal sealed class TestApplication(
     TestModule module,
-    bool isMultiTestModule,
     BuildOptions buildOptions,
     TestOptions testOptions,
     TerminalTestReporter output,
@@ -26,7 +25,6 @@ internal sealed class TestApplication(
 {
     private readonly Lock _requestLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
-    private readonly bool _isMultiTestModule = isMultiTestModule;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
 
@@ -211,7 +209,7 @@ internal sealed class TestApplication(
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
         }
 
-        foreach (var arg in TrxReportArgumentsRewriter.RewriteIfNeeded(_buildOptions.TestApplicationArguments, Module, _isMultiTestModule))
+        foreach (var arg in _buildOptions.TestApplicationArguments)
         {
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }

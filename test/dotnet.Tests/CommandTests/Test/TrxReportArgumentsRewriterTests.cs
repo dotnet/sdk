@@ -66,7 +66,7 @@ public class TrxReportArgumentsRewriterTests
 
         var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true, utcNow: now);
 
-        result.Should().Equal("--report-trx", "--report-trx-filename", "MyTest_net9.0_2024-06-02_14_07_06.trx");
+        result.Should().Equal("--report-trx", "--report-trx-filename", "MyTest_net9.0_2024-06-02_14-07-06.0000000.trx");
     }
 
     [Fact]
@@ -95,29 +95,29 @@ public class TrxReportArgumentsRewriterTests
         result.Should().Equal("--report-trx-filename", "test_results_MyTest_net9.0.trx");
     }
 
-    [Theory]
-    [InlineData("{asm}")]
-    [InlineData("{pname}")]
-    [InlineData("{pid}")]
-    public void RewriteIfNeeded_FilenameContainsUniquePlaceholder_DoesNotRewrite(string placeholder)
+    [Fact]
+    public void RewriteIfNeeded_MissingExplicitFilenameValue_DoesNotRewrite()
     {
-        var fileName = $"test_{placeholder}.trx";
-        var args = new List<string> { "--report-trx", "--report-trx-filename", fileName };
+        var args = new List<string> { "--report-trx", "--report-trx-filename" };
 
         var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
 
         result.Should().Equal(args);
     }
 
-    [Fact]
-    public void RewriteIfNeeded_FilenameContainsOnlyTfmPlaceholder_StillRewrites()
+    [Theory]
+    [InlineData("{asm}")]
+    [InlineData("{pname}")]
+    [InlineData("{pid}")]
+    [InlineData("{tfm}")]
+    public void RewriteIfNeeded_FilenameContainsPlaceholder_AppendsAsmAndTfm(string placeholder)
     {
-        // {tfm} alone is NOT a unique-per-module placeholder (two modules can share a TFM).
-        var args = new List<string> { "--report-trx", "--report-trx-filename", "test_{tfm}.trx" };
+        var fileName = $"test_{placeholder}.trx";
+        var args = new List<string> { "--report-trx", "--report-trx-filename", fileName };
 
         var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
 
-        result.Should().Equal("--report-trx", "--report-trx-filename", "test_{tfm}_MyTest_net9.0.trx");
+        result.Should().Equal("--report-trx", "--report-trx-filename", $"test_{placeholder}_MyTest_net9.0.trx");
     }
 
     [Fact]

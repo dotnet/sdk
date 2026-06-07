@@ -11,22 +11,15 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 /// orchestrating multiple test modules in parallel, so each module writes to its own file.
 /// Single-module runs are left untouched.
 /// </summary>
-/// <remarks>
-/// The TRX report extension introduced filename placeholders (e.g. <c>{asm}</c>, <c>{tfm}</c>, <c>{pname}</c>,
-/// <c>{pid}</c>, <c>{time}</c>) only in Microsoft.Testing.Platform 2.3.0-preview.26274.1
-/// (microsoft/testfx#8223). To stay compatible with older versions of the platform that may be referenced by
-/// user test projects, the SDK substitutes the values itself rather than forwarding placeholder tokens.
-/// </remarks>
 internal static class TrxReportArgumentsRewriter
 {
     private const string ReportTrxOption = "--report-trx";
     private const string ReportTrxFilenameOption = "--report-trx-filename";
     private const string TrxExtension = ".trx";
 
-    // Placeholders that are guaranteed unique per test module process. If a user already includes one of
-    // these in their --report-trx-filename value we don't rewrite the filename ourselves.
-    // Notably {tfm} is NOT in this list because two modules can share the same TFM (the original bug).
-    private static readonly string[] UniquePerModulePlaceholders = ["{asm}", "{pname}", "{pid}"];
+    // We treat these names as belonging to Microsoft.Testing.Platform's TRX report extension.
+    // MTP options are globally registered per process, so a third-party extension cannot
+    // legitimately reuse them without an option-name conflict.
 
     /// <summary>
     /// Returns a possibly-rewritten copy of <paramref name="arguments"/> with a unique
@@ -47,6 +40,7 @@ internal static class TrxReportArgumentsRewriter
         int trxFilenameIndex = -1;
         string? trxFilenameValue = null;
         bool trxFilenameUsesEqualsForm = false;
+        bool hasMalformedTrxFilenameOption = false;
 
         for (int i = 0; i < arguments.Count; i++)
         {
@@ -60,7 +54,14 @@ internal static class TrxReportArgumentsRewriter
             {
                 trxFilenameIndex = i;
                 trxFilenameUsesEqualsForm = false;
-                trxFilenameValue = i + 1 < arguments.Count ? arguments[i + 1] : null;
+                if (i + 1 < arguments.Count)
+                {
+                    trxFilenameValue = arguments[i + 1];
+                }
+                else
+                {
+                    hasMalformedTrxFilenameOption = true;
+                }
             }
             else if (arg.StartsWith(ReportTrxFilenameOption + "=", StringComparison.Ordinal))
             {
@@ -70,14 +71,14 @@ internal static class TrxReportArgumentsRewriter
             }
         }
 
-        // TRX reporting was not requested at all - nothing to do.
+        // Neither --report-trx nor --report-trx-filename was specified, so TRX reporting is not enabled.
         if (trxFlagIndex < 0 && trxFilenameIndex < 0)
         {
             return [.. arguments];
         }
 
-        // User opted into per-process placeholders that already disambiguate the file name.
-        if (trxFilenameValue is not null && ContainsUniquePlaceholder(trxFilenameValue))
+        // Preserve invalid argument shapes so Microsoft.Testing.Platform can report the option error.
+        if (hasMalformedTrxFilenameOption)
         {
             return [.. arguments];
         }
@@ -102,9 +103,9 @@ internal static class TrxReportArgumentsRewriter
         }
         else
         {
-            // Only --report-trx was provided (no filename). Inject one so each module gets a unique file
-            // instead of relying on MTP's default <user>_<machine>_<time>.trx which collides under parallel runs.
-            // Include a timestamp so re-running `dotnet test` doesn't trip MTP's
+            // Only --report-trx was provided. Inject one so each module gets a unique file name
+            // instead of relying on the platform default, which can collide under parallel runs.
+            // Include a timestamp so re-running `dotnet test` doesn't trip the
             // "Trx file '...' already exists and will be overwritten" warning on every module.
             string injectedName = BuildInjectedFileName(assemblyName, targetFramework, utcNow ?? DateTimeOffset.UtcNow);
             rewritten.Add(ReportTrxFilenameOption);
@@ -112,19 +113,6 @@ internal static class TrxReportArgumentsRewriter
         }
 
         return rewritten;
-    }
-
-    private static bool ContainsUniquePlaceholder(string value)
-    {
-        foreach (string placeholder in UniquePerModulePlaceholders)
-        {
-            if (value.Contains(placeholder, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static string AppendUniquenessSuffix(string originalFileName, string assemblyName, string? targetFramework)
@@ -146,9 +134,9 @@ internal static class TrxReportArgumentsRewriter
 
     private static string BuildInjectedFileName(string assemblyName, string? targetFramework, DateTimeOffset utcNow)
     {
-        // Filename-safe, sortable, second precision. Sufficient to distinguish back-to-back
+        // Filename-safe, sortable, high-precision timestamp to distinguish back-to-back
         // `dotnet test` invocations and avoid MTP's "file already exists" warning on re-runs.
-        string timestamp = utcNow.ToString("yyyy-MM-dd_HH_mm_ss", DateTimeFormatInfo.InvariantInfo);
+        string timestamp = utcNow.ToString("yyyy-MM-dd_HH-mm-ss.fffffff", DateTimeFormatInfo.InvariantInfo);
         return string.IsNullOrEmpty(targetFramework)
             ? assemblyName + "_" + timestamp + TrxExtension
             : assemblyName + "_" + targetFramework + "_" + timestamp + TrxExtension;
@@ -166,7 +154,7 @@ internal static class TrxReportArgumentsRewriter
             return module.TargetFramework;
         }
 
-        // --test-modules path: TargetFramework isn't known, try to infer from the target path
+        // --test-modules path: TargetFramework isn't populated, so try to infer from the target path
         // (e.g. bin/Debug/net9.0/Foo.dll → "net9.0", bin/Debug/net8.0/win-x64/Foo.dll → "net8.0").
         if (string.IsNullOrEmpty(module.TargetPath))
         {
