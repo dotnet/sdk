@@ -251,6 +251,121 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(depsPath).Should().BeTrue();
         }
 
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void NativeAot_consumes_pgo_mibc_by_default_when_PublishAot_is_enabled(string targetFramework)
+        {
+            // The SDK should enable IlcPgoOptimize by default whenever PublishAot=true so that AOT
+            // apps consume the BCL profile-guided optimization data (.mibc files) shipped in the
+            // NativeAOT runtime pack. Without this, --mibc: would only appear in the ILC response
+            // file when the user explicitly set OptimizationPreference=Speed or IlcPgoOptimize=true.
+            var projectName = "NativeAotPgoMibcDefault";
+
+            var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier", "IlcPgoOptimize");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute("/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
+            buildProperties["IlcPgoOptimize"].Should().Be("true");
+
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var intermediateNativeDir = Path.Combine(
+                publishCommand.GetIntermediateDirectory(targetFramework, runtimeIdentifier: rid).FullName,
+                "native");
+            var responseFile = Path.Combine(intermediateNativeDir, $"{projectName}.ilc.rsp");
+            File.Exists(responseFile).Should().BeTrue($"Expected ILC response file at {responseFile}");
+
+            // The MibcFile item population (and therefore the resulting --mibc: ILC arg) is wired
+            // by Microsoft.NETCore.Native.targets from $(IlcMibcPath)*.mibc, which defaults to
+            // <RuntimePackPath>/mibc/. Only assert the --mibc: arg appears when the runtime pack
+            // actually ships .mibc files there, so this test reflects pure SDK behavior today and
+            // lights up the end-to-end assertion automatically once the runtime starts shipping
+            // PGO data in the NativeAOT runtime pack.
+            var runtimePackMibcDir = GetNativeAotRuntimePackMibcDir(responseFile);
+            if (runtimePackMibcDir is not null && Directory.EnumerateFiles(runtimePackMibcDir, "*.mibc").Any())
+            {
+                var responseFileContents = File.ReadAllLines(responseFile);
+                responseFileContents.Should()
+                    .Contain(line => line.StartsWith("--mibc:", StringComparison.Ordinal),
+                        $"ILC response file should reference the PGO (.mibc) data shipped at {runtimePackMibcDir}");
+            }
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void NativeAot_does_not_override_explicit_IlcPgoOptimize_false(string targetFramework)
+        {
+            // Users must still be able to opt out of PGO consumption by setting IlcPgoOptimize=false.
+            var projectName = "NativeAotPgoMibcOptOut";
+
+            var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier", "IlcPgoOptimize");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["IlcPgoOptimize"] = "false";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute("/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
+            buildProperties["IlcPgoOptimize"].Should().Be("false");
+
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var intermediateNativeDir = Path.Combine(
+                publishCommand.GetIntermediateDirectory(targetFramework, runtimeIdentifier: rid).FullName,
+                "native");
+            var responseFile = Path.Combine(intermediateNativeDir, $"{projectName}.ilc.rsp");
+            File.Exists(responseFile).Should().BeTrue($"Expected ILC response file at {responseFile}");
+
+            var responseFileContents = File.ReadAllLines(responseFile);
+            responseFileContents.Should()
+                .NotContain(line => line.StartsWith("--mibc:", StringComparison.Ordinal),
+                    "ILC response file should not reference any .mibc files when IlcPgoOptimize=false");
+        }
+
+        // Walks an ILC response file looking for a referenced framework assembly so we can locate
+        // the resolved NativeAOT runtime pack root and probe whether it ships .mibc PGO data.
+        private static string GetNativeAotRuntimePackMibcDir(string responseFile)
+        {
+            foreach (var line in File.ReadAllLines(responseFile))
+            {
+                if (!line.StartsWith("-r:", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var referencedAssembly = line.Substring("-r:".Length);
+                var libDir = Path.GetDirectoryName(referencedAssembly);  // .../runtimes/<rid>/lib/<tfm>
+                if (libDir is null)
+                {
+                    continue;
+                }
+
+                // .../runtimes/<rid>/lib/<tfm> -> .../runtimes/<rid>
+                var ridDir = Path.GetDirectoryName(Path.GetDirectoryName(libDir));
+                if (ridDir is null)
+                {
+                    continue;
+                }
+
+                var mibcDir = Path.Combine(ridDir, "mibc");
+                if (Directory.Exists(mibcDir))
+                {
+                    return mibcDir;
+                }
+            }
+
+            return null;
+        }
+
         private const string Net7ExplicitPackageVersion = "7.0.0";
 
         [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/51361")]

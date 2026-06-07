@@ -21,6 +21,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
     <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
+    <!-- Always consume the PGO (.mibc) data shipped in the NativeAOT runtime pack so that AOT apps
+         benefit from the BCL profile-guided optimization data by default. Users can opt out by
+         explicitly setting IlcPgoOptimize=false. Must be set before the ILCompiler targets are
+         imported (see Microsoft.NET.Sdk.targets) so it wins over the targets' default of only
+         enabling PGO when OptimizationPreference is 'Speed'. -->
+    <IlcPgoOptimize Condition="'$(IlcPgoOptimize)' == '' And '$(PublishAot)' == 'true'">true</IlcPgoOptimize>
     <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(IsAotCompatible)' == 'true'">true</IsTrimmable>
 
     <_FirstTargetFrameworkToSupportTrimming>net6.0</_FirstTargetFrameworkToSupportTrimming>
