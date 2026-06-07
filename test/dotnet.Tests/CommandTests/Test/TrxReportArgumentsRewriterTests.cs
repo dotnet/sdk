@@ -39,23 +39,48 @@ public class TrxReportArgumentsRewriterTests
     }
 
     [Fact]
-    public void RewriteIfNeeded_MultiModuleWithExplicitFilename_AppendsAsmAndTfm()
+    public void RewriteIfNeeded_MultiModuleWithExplicitFilename_DoesNotRewrite()
     {
+        // User specified the file name → respect it. MTP is responsible for whatever happens next
+        // (including its own overwrite warning when modules collide on the same file).
         var args = new List<string> { "--report-trx", "--report-trx-filename", "test_results.trx" };
 
         var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
 
-        result.Should().Equal("--report-trx", "--report-trx-filename", "test_results_MyTest_net9.0.trx");
+        result.Should().Equal(args);
     }
 
     [Fact]
-    public void RewriteIfNeeded_MultiModuleWithExplicitFilename_EqualsForm_AppendsAsmAndTfm()
+    public void RewriteIfNeeded_MultiModuleWithExplicitFilename_EqualsForm_DoesNotRewrite()
     {
         var args = new List<string> { "--report-trx", "--report-trx-filename=test_results.trx" };
 
         var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
 
-        result.Should().Equal("--report-trx", "--report-trx-filename=test_results_MyTest_net9.0.trx");
+        result.Should().Equal(args);
+    }
+
+    [Fact]
+    public void RewriteIfNeeded_MultiModuleWithExplicitFilenameOnly_DoesNotRewrite()
+    {
+        // --report-trx-filename alone (without --report-trx) is enough to enable TRX reporting in MTP,
+        // and the user has named the file → SDK does nothing.
+        var args = new List<string> { "--report-trx-filename", "test_results.trx" };
+
+        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
+
+        result.Should().Equal(args);
+    }
+
+    [Fact]
+    public void RewriteIfNeeded_MultiModuleWithMalformedFilename_DoesNotRewrite()
+    {
+        // --report-trx-filename with no value is a user error; let MTP report it.
+        var args = new List<string> { "--report-trx", "--report-trx-filename" };
+
+        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
+
+        result.Should().Equal(args);
     }
 
     [Fact]
@@ -85,104 +110,37 @@ public class TrxReportArgumentsRewriterTests
     }
 
     [Fact]
-    public void RewriteIfNeeded_MultiModuleOnlyTrxFilename_AppendsAsmAndTfm()
+    public void RewriteIfNeeded_MultiModuleOnlyTrxFlag_TargetFrameworkNull_UsesPathHashAsDisambiguator()
     {
-        // --report-trx-filename alone is enough to enable TRX reporting in MTP.
-        var args = new List<string> { "--report-trx-filename", "test_results.trx" };
+        // --test-modules path: TargetFramework isn't populated. The injected name still has to be
+        // unique across modules even if two modules share an assembly name across TFM folders. We
+        // disambiguate with a short stable hash of the TargetPath rather than inferring the TFM.
+        var args = new List<string> { "--report-trx" };
+        var now = new DateTimeOffset(2024, 6, 2, 14, 7, 6, TimeSpan.Zero);
 
-        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
+        var net8 = CreateModule(targetPath: "/repo/bin/Debug/net8.0/MyTest.dll", targetFramework: null);
+        var net9 = CreateModule(targetPath: "/repo/bin/Debug/net9.0/MyTest.dll", targetFramework: null);
 
-        result.Should().Equal("--report-trx-filename", "test_results_MyTest_net9.0.trx");
+        var net8Result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, net8, isMultiTestModule: true, utcNow: now);
+        var net9Result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, net9, isMultiTestModule: true, utcNow: now);
+
+        net8Result[2].Should().StartWith("MyTest_").And.EndWith("_2024-06-02_14-07-06.0000000.trx");
+        net9Result[2].Should().StartWith("MyTest_").And.EndWith("_2024-06-02_14-07-06.0000000.trx");
+        net8Result[2].Should().NotBe(net9Result[2]);
     }
 
     [Fact]
-    public void RewriteIfNeeded_MissingExplicitFilenameValue_DoesNotRewrite()
+    public void RewriteIfNeeded_LeavesUnrelatedArgsUntouched_WhenInjecting()
     {
-        var args = new List<string> { "--report-trx", "--report-trx-filename" };
+        var args = new List<string> { "--filter", "MyTest", "--report-trx", "--other", "value" };
+        var now = new DateTimeOffset(2024, 6, 2, 14, 7, 6, TimeSpan.Zero);
 
-        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
+        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true, utcNow: now);
 
-        result.Should().Equal(args);
-    }
-
-    [Theory]
-    [InlineData("{asm}")]
-    [InlineData("{pname}")]
-    [InlineData("{pid}")]
-    [InlineData("{tfm}")]
-    public void RewriteIfNeeded_FilenameContainsPlaceholder_AppendsAsmAndTfm(string placeholder)
-    {
-        var fileName = $"test_{placeholder}.trx";
-        var args = new List<string> { "--report-trx", "--report-trx-filename", fileName };
-
-        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
-
-        result.Should().Equal("--report-trx", "--report-trx-filename", $"test_{placeholder}_MyTest_net9.0.trx");
-    }
-
-    [Fact]
-    public void RewriteIfNeeded_FilenameWithDirectoryComponent_PreservesDirectory()
-    {
-        var args = new List<string> { "--report-trx-filename", Path.Combine("subdir", "results.trx") };
-
-        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
-
-        result.Should().Equal("--report-trx-filename", Path.Combine("subdir", "results_MyTest_net9.0.trx"));
-    }
-
-    [Fact]
-    public void RewriteIfNeeded_TargetFrameworkNull_InfersFromTargetPath()
-    {
-        var module = CreateModule(targetPath: "/repo/bin/Debug/net9.0/MyTest.dll", targetFramework: null);
-
-        var args = new List<string> { "--report-trx-filename", "results.trx" };
-
-        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, module, isMultiTestModule: true);
-
-        result.Should().Equal("--report-trx-filename", "results_MyTest_net9.0.trx");
-    }
-
-    [Fact]
-    public void RewriteIfNeeded_TargetFrameworkNullWithRidPath_InfersTfmFromParentSegment()
-    {
-        var module = CreateModule(targetPath: "/repo/bin/Debug/net8.0/win-x64/MyTest.dll", targetFramework: null);
-
-        var args = new List<string> { "--report-trx-filename", "results.trx" };
-
-        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, module, isMultiTestModule: true);
-
-        result.Should().Equal("--report-trx-filename", "results_MyTest_net8.0.trx");
-    }
-
-    [Fact]
-    public void RewriteIfNeeded_TargetFrameworkNullAndNoTfmInPath_OmitsTfm()
-    {
-        var module = CreateModule(targetPath: "/repo/somewhere/MyTest.exe", targetFramework: null);
-
-        var args = new List<string> { "--report-trx-filename", "results.trx" };
-
-        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, module, isMultiTestModule: true);
-
-        result.Should().Equal("--report-trx-filename", "results_MyTest.trx");
-    }
-
-    [Fact]
-    public void RewriteIfNeeded_FilenameWithoutExtension_AddsTrxExtension()
-    {
-        var args = new List<string> { "--report-trx-filename", "results" };
-
-        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
-
-        result.Should().Equal("--report-trx-filename", "results_MyTest_net9.0.trx");
-    }
-
-    [Fact]
-    public void RewriteIfNeeded_LeavesUnrelatedArgsUntouched()
-    {
-        var args = new List<string> { "--filter", "MyTest", "--report-trx", "--report-trx-filename", "foo.trx", "--other", "value" };
-
-        var result = TrxReportArgumentsRewriter.RewriteIfNeeded(args, CreateModule(), isMultiTestModule: true);
-
-        result.Should().Equal("--filter", "MyTest", "--report-trx", "--report-trx-filename", "foo_MyTest_net9.0.trx", "--other", "value");
+        result.Should().Equal(
+            "--filter", "MyTest",
+            "--report-trx",
+            "--other", "value",
+            "--report-trx-filename", "MyTest_net9.0_2024-06-02_14-07-06.0000000.trx");
     }
 }
