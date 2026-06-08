@@ -55,6 +55,52 @@
       "description": "If specified, skips the automatic restore of the project on create.",
       "displayName": "Skip restore",
       "defaultValue": "false"
+    },
+    "langVersion": {
+      "type": "parameter",
+      "datatype": "text",
+      "description": "Sets the LangVersion property in the created project file",
+      "defaultValue": "",
+      "replaces": "$(ProjectLanguageVersion)",
+      "displayName": "Language version"
+    },
+    "csharp9orOlder": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(ISO-1|ISO-2|[1-7]|[8-9]|[8-9]\\.0|7\\.[0-3])$",
+        "source": "langVersion"
+      }
+    },
+    "csharp7orOlder": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(ISO-1|ISO-2|[1-7]|7\\.[0-3])$",
+        "source": "langVersion"
+      }
+    },
+    "csharp10orLater": {
+      "type": "computed",
+      "value": "!csharp9orOlder"
+    },
+    "csharp8orLater": {
+      "type": "computed",
+      "value": "!csharp7orOlder"
+    },
+    "csharpFeature_ImplicitUsings": {
+      "type": "computed",
+      "value": "csharp10orLater == \"true\""
+    },
+    "csharpFeature_Nullable": {
+      "type": "computed",
+      "value": "csharp8orLater == \"true\""
+    },
+    "csharpFeature_FileScopedNamespaces": {
+      "type": "computed",
+      "value": "csharp10orLater == \"true\""
     }
   },
   "primaryOutputs": [
