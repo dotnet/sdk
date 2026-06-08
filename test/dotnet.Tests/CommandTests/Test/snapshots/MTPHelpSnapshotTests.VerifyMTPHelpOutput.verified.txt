@@ -16,10 +16,10 @@ Options:
                                                   If not specified the file will be generated inside the default 'TestResults' directory.
   --max-parallel-test-modules <NUMBER>            The max number of test modules that can run in parallel.
   --minimum-expected-tests <NUMBER>               Specifies the minimum number of tests that are expected to run.
-  -e, --environment <NAME="VALUE">                Sets the value of an environment variable. 
-                                                  Creates the variable if it does not exist, overrides if it does. 
+  -e, --environment <NAME="VALUE">                Sets the value of an environment variable.
+                                                  Creates the variable if it does not exist, overrides if it does.
                                                   This argument can be specified multiple times to provide multiple variables.
-  
+
                                                   Examples:
                                                   -e VARIABLE=abc
                                                   -e VARIABLE="value with spaces"
@@ -67,9 +67,9 @@ Platform Options:
                                   (e.g. '--ignore-exit-code 8;9' ignore exit code 8 and 9 and will return 0 in these case)
   --info                          Display .NET test application information.
   --show-stderr                   Determines when to show captured error output of a test.
-                                  Valid values are 'All', 'Failed', 'None'. Default is 'All'.
+                                  Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).
   --show-stdout                   Determines when to show captured standard output of a test.
-                                  Valid values are 'All', 'Failed', 'None'. Default is 'All'.
+                                  Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).
   --timeout                       A global test execution timeout.
                                   Takes one argument as a time value with an explicit unit suffix. Accepted suffixes are 'ms'/'mil(s)'/'millisecond(s)', 's'/'sec(s)'/'second(s)', 'm'/'min(s)'/'minute(s)', 'h'/'hour(s)', and 'd'/'day(s)', e.g. '500ms', '5400s', '90m', '1.5h', '1d'.
 

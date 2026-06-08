@@ -517,7 +517,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                    at Microsoft.DotNet.Cli.Commands.Test.TestApplicationActionQueue.Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action`1 onHelpRequested) in C:\Users\ygerges\Desktop\sdk\src\Cli\dotnet\Commands\Test\MTP\TestApplicationActionQueue.cs:line 68
                  */
                 result.StdErr.Should().MatchRegex("""
-                    The following exception occurred when running the test module with RunCommand '.+?TestProject1(\..+?)?' and RunArguments ' ':
+                    The following exception occurred when running the test module with RunCommand '.+?TestProject1(\..+?)?' and RunArguments '.*?':
                     """);
 
                 result.StdErr.Should().Contain("System.InvalidOperationException: A test session start event was received without a corresponding test session end.");
