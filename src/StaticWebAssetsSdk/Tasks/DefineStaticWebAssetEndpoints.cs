@@ -8,6 +8,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[MSBuildMultiThreadableTask]
 public class DefineStaticWebAssetEndpoints : Task
 {
     [Required]
