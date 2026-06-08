@@ -28,6 +28,38 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.ApplicationArgs.Single().Should().Be("foo");
         }
 
+        [Fact]
+        public void RunParserCanSeparateInterleavedLoggerArguments()
+        {
+            var tam = new TestAssetsManager(output);
+            var testDirectory = tam.CreateTestDirectory();
+            File.WriteAllText(Path.Join(testDirectory.Path, "Program.cs"), "Console.WriteLine();");
+
+            Directory.SetCurrentDirectory(testDirectory.Path);
+
+            var runCommand = RunCommand.FromArgs(["Program.cs", "argX", "--no-build", "argY", "-tl:off"]);
+
+            runCommand.NoBuild.Should().BeTrue();
+            runCommand.ApplicationArgs.Should().Equal("argX", "argY");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().Contain("-tl:off");
+        }
+
+        [Fact]
+        public void RunParserPreservesInterleavedLoggerArgumentsAfterDoubleDash()
+        {
+            var tam = new TestAssetsManager(output);
+            var testDirectory = tam.CreateTestDirectory();
+            File.WriteAllText(Path.Join(testDirectory.Path, "Program.cs"), "Console.WriteLine();");
+
+            Directory.SetCurrentDirectory(testDirectory.Path);
+
+            var runCommand = RunCommand.FromArgs(["Program.cs", "argX", "--no-build", "argY", "--", "-tl:off"]);
+
+            runCommand.NoBuild.Should().BeTrue();
+            runCommand.ApplicationArgs.Should().Equal("argX", "argY", "-tl:off");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("-tl:off");
+        }
+
         [WindowsOnlyFact]
         public void RunParserAcceptsWindowsPathSeparatorsOnWindows()
         {

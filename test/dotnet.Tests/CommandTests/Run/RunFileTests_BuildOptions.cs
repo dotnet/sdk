@@ -774,6 +774,22 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
                 """);
     }
 
+    [Fact]
+    public void LoggerArgument_Run_DoubleDashPreservesApplicationArguments()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "--", "-tl:off", "-clp:NoSummary")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:-tl:off;-clp:NoSummary
+                Hello from Program
+                """);
+    }
+
     [Theory, CombinatorialData]
     public void LoggerArgument_Build(
         [CombinatorialValues("restore", "build")] string command,

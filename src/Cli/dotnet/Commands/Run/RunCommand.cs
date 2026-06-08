@@ -819,9 +819,9 @@ public class RunCommand
         // If the application arguments contain any logger args then we need to remove them from the application arguments and apply
         // them to the restore args. This is because we can't model the logger command structure in MSBuild in the System.CommandLine
         // parser, but we need logger information to synchronize the restore and build logger configurations.
-        var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList();
+        var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList() ?? [];
 
-        LoggerUtility.SeparateLoggerArguments(applicationArguments, out var loggerArgs, out var nonLoggerArgs);
+        SeparateApplicationLoggerArguments(parseResult, applicationArguments, out var loggerArgs, out var nonLoggerArgs);
 
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(definition).ToList();
         if (loggerArgs.Count > 0)
@@ -945,6 +945,51 @@ public class RunCommand
         );
 
         return command;
+
+        static void SeparateApplicationLoggerArguments(
+            ParseResult parseResult,
+            IReadOnlyList<string> applicationArguments,
+            out List<string> loggerArgs,
+            out List<string> nonLoggerArgs)
+        {
+            var applicationArgumentsAfterDoubleDash = GetApplicationArgumentsAfterDoubleDash(parseResult);
+            var countBeforeDoubleDash = applicationArgumentsAfterDoubleDash is null
+                ? applicationArguments.Count
+                : CountApplicationArgumentsBeforeDoubleDash(applicationArguments, applicationArgumentsAfterDoubleDash);
+
+            LoggerUtility.SeparateLoggerArguments(applicationArguments.Take(countBeforeDoubleDash), out loggerArgs, out var nonLoggerArgsBeforeDoubleDash);
+            nonLoggerArgs = [.. nonLoggerArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash ?? applicationArguments.Skip(countBeforeDoubleDash)];
+        }
+
+        static List<string>? GetApplicationArgumentsAfterDoubleDash(ParseResult parseResult)
+        {
+            for (var i = 0; i < parseResult.Tokens.Count; i++)
+            {
+                if (parseResult.Tokens[i].Type == TokenType.DoubleDash)
+                {
+                    return parseResult.Tokens.Skip(i + 1).Select(static token => token.Value).ToList();
+                }
+            }
+
+            return null;
+        }
+
+        static int CountApplicationArgumentsBeforeDoubleDash(
+            IReadOnlyList<string> applicationArguments,
+            IReadOnlyList<string> applicationArgumentsAfterDoubleDash)
+        {
+            var count = applicationArguments.Count;
+
+            for (var i = applicationArgumentsAfterDoubleDash.Count - 1; i >= 0 && count > 0; i--)
+            {
+                if (string.Equals(applicationArguments[count - 1], applicationArgumentsAfterDoubleDash[i], StringComparison.Ordinal))
+                {
+                    count--;
+                }
+            }
+
+            return count;
+        }
 
         bool UsingRunCommandShorthandProjectOption(ParseResult parseResult)
         {
