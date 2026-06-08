@@ -344,10 +344,21 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp($"9_{verbosity}");
 
+            // At diagnostic verbosity 'dotnet test -v diag' emits a huge volume of MSBuild output.
+            // Echoing every line to the xUnit ITestOutputHelper makes the test host flush hundreds of
+            // megabytes over its single IPC channel when the test completes, which can starve the blame
+            // hang-dump collector's inactivity timer and trigger a spurious 15-minute timeout. The
+            // assertions below only inspect the captured StdOut, so for the diag case forward just a
+            // bounded head and tail of the output to the log instead of the whole firehose.
+            var diagOutputLimiter = verbosity == "diag" ? new TruncatingTestOutputHelper(Log) : null;
+            ITestOutputHelper commandLog = diagOutputLimiter ?? Log;
+
             // Call test
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
+            CommandResult result = new DotnetTestCommand(commandLog, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute("-v", verbosity);
+
+            diagOutputLimiter?.WriteBufferedTail();
 
             // Verify
             if (!TestContext.IsLocalized())
