@@ -204,20 +204,9 @@ public class InitWorkflowTests : IDisposable
             .Should().Be(PathPreference.ShellProfile);
     }
 
-    [Fact]
-    public void GetDefaultPathPreference_ReturnsDotnetupDotnet_WhenNoShellOnNonWindows()
-    {
-        if (OperatingSystem.IsWindows())
-        {
-            // Windows always has a usable profile target, so the no-shell isolation fallback
-            // only applies to non-Windows platforms.
-            return;
-        }
-
-        // A null shell provider with no detectable shell falls back to isolation mode.
-        InitWorkflowDefaults.GetDefaultPathPreference(shellProvider: null)
-            .Should().BeOneOf(PathPreference.DotnetupDotnet, PathPreference.ShellProfile);
-    }
+    // The no-shell isolation fallback (which reads the SHELL environment variable) is covered
+    // deterministically by InitWorkflowShellFallbackTests, which mutates SHELL and therefore runs
+    // in a serialized collection.
 
     // ── ResolveDefaultMigrations ──
 
