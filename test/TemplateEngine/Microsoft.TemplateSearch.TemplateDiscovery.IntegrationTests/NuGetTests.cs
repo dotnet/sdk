@@ -16,7 +16,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string nuGetOrgFeed = "https://api.nuget.org/v3/index.json";
             var repository = Repository.Factory.GetCoreV3(nuGetOrgFeed);
-            ServiceIndexResourceV3 indexResource = repository.GetResource<ServiceIndexResourceV3>(TestContext.Current.CancellationToken);
+            ServiceIndexResourceV3? indexResource = repository.GetResource<ServiceIndexResourceV3>(TestContext.Current.CancellationToken);
+            if (indexResource is null)
+            {
+                Assert.Fail("Unable to load NuGet service index resource.");
+                return;
+            }
+
             IReadOnlyList<ServiceIndexEntry> searchResources = indexResource.GetServiceEntries("SearchQueryService");
             string queryString = $"{searchResources[0].Uri}?q=Microsoft.DotNet.Common.ProjectTemplates.5.0&skip=0&take=10&prerelease=true&semVerLevel=2.0.0";
             Uri queryUri = new Uri(queryString);
