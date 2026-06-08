@@ -56,6 +56,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- A flag that NuGet packages containing multi-targeted analyzers can check to see if the NuGet package needs to do
          its own multi-targeting logic, or if the current SDK targets will pick the assets correctly. -->
     <SupportsRoslynComponentVersioning>true</SupportsRoslynComponentVersioning>
+
+    <!--
+      RestoreEnableAnalyzerAssets opts a project in to NuGet emitting an "analyzers" group (with codeLanguage /
+      compilerApiVersion metadata) into project.assets.json, which the SDK consumes in ResolvePackageAssets to
+      select analyzers from that metadata instead of scanning the package's files. The feature is opt-in and is
+      gated to .NET 11 or greater during restore by NuGet's targets.
+
+      The build only acts on the value restore persisted into the assets file (RestoreMetadata.RestoreEnableAnalyzerAssets),
+      so this property is defined here purely so that it is a recognized, defaulted SDK property. Defaulting it off keeps
+      restore's gating authoritative; enabling it by default for .NET 11+ is a later, restore-side rollout step. -->
+    <RestoreEnableAnalyzerAssets Condition="'$(RestoreEnableAnalyzerAssets)' == ''">false</RestoreEnableAnalyzerAssets>
   </PropertyGroup>
 
   <!-- Target Moniker + RID-->
@@ -269,6 +280,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ProjectPath="$(MSBuildProjectFullPath)"
       ProjectLanguage="$(Language)"
       CompilerApiVersion="$(CompilerApiVersion)"
+      RestoreEnableAnalyzerAssets="$(RestoreEnableAnalyzerAssets)"
       EmitAssetsLogMessages="$(EmitAssetsLogMessages)"
       TargetFramework="$(TargetFramework)"
       RuntimeIdentifier="$(RuntimeIdentifier)"
