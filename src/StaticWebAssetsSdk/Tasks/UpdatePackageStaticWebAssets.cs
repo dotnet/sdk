@@ -8,6 +8,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+[MSBuildMultiThreadableTask]
 public class UpdatePackageStaticWebAssets : Task
 {
     [Required]
