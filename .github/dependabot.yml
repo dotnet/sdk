@@ -9,6 +9,10 @@ updates:
     labels:
       - "dependencies"
       - "dependabot: main"
+    ignore:
+      # arcade and helix are updated by the automated codeflow process
+      - dependency-name: "Microsoft.DotNet.Arcade.Sdk"
+      - dependency-name: "Microsoft.DotNet.Helix.Sdk"
 
   # - package-ecosystem: "nuget"
   #   directory: "/eng/dependabot"
