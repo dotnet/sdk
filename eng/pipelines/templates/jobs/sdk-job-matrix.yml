@@ -2,7 +2,6 @@ parameters:
   oneESCompat:
     templateFolderName: templates
   locBranch: ''
-  publishBuiltAssets: false
   ### WINDOWS ###
   windowsJobParameterSets:
   - categoryName: TestBuild
