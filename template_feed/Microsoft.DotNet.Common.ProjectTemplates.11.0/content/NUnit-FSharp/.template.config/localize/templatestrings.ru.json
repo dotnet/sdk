@@ -9,11 +9,17 @@
   "symbols/Framework/choices/net11.0/description": "Целевая платформа .NET 10.0",
   "symbols/EnablePack/description": "Следует ли включить упаковку (через \"dotnet pack\") для проекта.",
   "symbols/EnablePack/displayName": "Включить пакет",
+  "symbols/TestRunner/description": "Select the runner/platform.",
+  "symbols/TestRunner/displayName": "Test runner",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information.",
+  "symbols/TestRunner/choices/VSTest/description": "Use VSTest platform",
   "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",
   "symbols/skipRestore/displayName": "Пропустить восстановление",
   "symbols/langVersion/description": "Задает свойство LangVersion в создаваемом файле проекта.",
   "symbols/langVersion/displayName": "Версия языка",
   "postActions/restoreNugetPackages/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "Выполнить команду \"dotnet restore\"",
+  "postActions/addJsonProperty/description": "Create or update 'global.json' file required by Microsoft.Testing.Platform.",
+  "postActions/addJsonProperty/manualInstructions/default/text": "Manually update or create 'global.json' file setting the test runner to Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "Открывает UnitTest1.fs в редакторе"
 }
