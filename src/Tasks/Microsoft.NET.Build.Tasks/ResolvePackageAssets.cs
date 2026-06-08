@@ -144,6 +144,11 @@ namespace Microsoft.NET.Build.Tasks
         public string CompilerApiVersion { get; set; }
 
         /// <summary>
+        /// Consume analyzer assets from project.assets.json instead of scanning package files.
+        /// </summary>
+        public bool RestoreEnableAnalyzerAssets { get; set; }
+
+        /// <summary>
         /// Check that there is at least one package dependency in the RID graph that is not in the RID-agnostic graph.
         /// Used as a heuristic to detect invalid RIDs.
         /// </summary>
@@ -496,6 +501,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     writer.Write(ProjectLanguage ?? "");
                     writer.Write(CompilerApiVersion ?? "");
+                    writer.Write(RestoreEnableAnalyzerAssets);
                     writer.Write(ProjectPath);
                     // we want to ensure uniqueness of results, so even though `any` is No RID for purposes of Task logic,
                     // we continue to treat it distinctly for hashing
@@ -936,6 +942,146 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             private void WriteAnalyzers()
+            {
+                // Honor the feature-flag decision that restore actually made (and persisted into the assets file),
+                // not the raw MSBuild property. The restore-time value already reflects the TFM gate from
+                // NuGet.targets, which is not imported during build; trusting the raw property here would run the
+                // metadata path for a project whose assets file has no analyzer group, silently dropping analyzers.
+                if (_lockFile.PackageSpec?.RestoreMetadata?.RestoreEnableAnalyzerAssets == true)
+                {
+                    WriteAnalyzerAssets();
+                    return;
+                }
+
+                WriteAnalyzerPackageFiles();
+            }
+
+            private void WriteAnalyzerAssets()
+            {
+                // The "analyzers" group lists every analyzer assembly in the package (all languages and compiler
+                // versions), with Include/Exclude/PrivateAssets already applied by restore. Each asset carries
+                // "codeLanguage" and (when applicable) "compilerApiVersion" metadata, mirroring content files, so
+                // the SDK selects the applicable analyzers directly from that metadata rather than parsing paths.
+                string projectCodeLanguage = NuGetUtils.GetLockFileLanguageName(_task.ProjectLanguage);
+                bool hasProjectCompilerVersion = TryGetCompilerVersion(_task.CompilerApiVersion, out Version projectCompilerVersion);
+
+                foreach (LockFileTargetLibrary library in _compileTimeTarget.Libraries)
+                {
+                    if (!library.IsPackage() || library.AnalyzerAssets.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    Version maxApplicableVersion = null;
+                    List<(string Path, Version Version)> compilerVersionSpecificAssets = null;
+
+                    foreach (LockFileItem asset in library.AnalyzerAssets)
+                    {
+                        if (asset.IsPlaceholderFile())
+                        {
+                            continue;
+                        }
+
+                        if (!IsApplicableAnalyzerLanguage(asset, projectCodeLanguage))
+                        {
+                            _task.Log.LogMessage(MessageImportance.Low, $"Excluding analyzer '{asset.Path}' from package '{library.Name}' because its code language does not apply to the project language '{projectCodeLanguage}'.");
+                            continue;
+                        }
+
+                        if (hasProjectCompilerVersion
+                            && asset.Properties.TryGetValue(LockFileItem.CompilerApiVersionProperty, out string assetCompilerApiVersion)
+                            && TryGetCompilerVersion(assetCompilerApiVersion, out Version assetCompilerVersion))
+                        {
+                            if (assetCompilerVersion > projectCompilerVersion)
+                            {
+                                // The analyzer targets a newer compiler than the current one; skip it.
+                                _task.Log.LogMessage(MessageImportance.Low, $"Excluding analyzer '{asset.Path}' from package '{library.Name}' because its compiler version '{assetCompilerApiVersion}' is newer than the project compiler version '{_task.CompilerApiVersion}'.");
+                                continue;
+                            }
+
+                            compilerVersionSpecificAssets ??= new List<(string, Version)>();
+                            compilerVersionSpecificAssets.Add((asset.Path, assetCompilerVersion));
+
+                            if (maxApplicableVersion == null || assetCompilerVersion > maxApplicableVersion)
+                            {
+                                maxApplicableVersion = assetCompilerVersion;
+                            }
+                        }
+                        else
+                        {
+                            // Either the analyzer is compiler-version-agnostic, or the project compiler version is
+                            // unknown (in which case every analyzer variant is treated as version-agnostic). Always apply.
+                            _task.Log.LogMessage(MessageImportance.Low, $"Including analyzer '{asset.Path}' from package '{library.Name}'.");
+                            WriteItem(_packageResolver.ResolvePackageAssetPath(library, asset.Path), library);
+                        }
+                    }
+
+                    if (compilerVersionSpecificAssets != null)
+                    {
+                        // Among the compiler-version-specific analyzers, only the highest applicable version is used.
+                        foreach ((string path, Version version) in compilerVersionSpecificAssets)
+                        {
+                            if (version.Equals(maxApplicableVersion))
+                            {
+                                _task.Log.LogMessage(MessageImportance.Low, $"Including analyzer '{path}' from package '{library.Name}' for compiler version '{maxApplicableVersion}'.");
+                                WriteItem(_packageResolver.ResolvePackageAssetPath(library, path), library);
+                            }
+                            else
+                            {
+                                _task.Log.LogMessage(MessageImportance.Low, $"Excluding analyzer '{path}' from package '{library.Name}' because a higher applicable compiler version '{maxApplicableVersion}' is available.");
+                            }
+                        }
+                    }
+                }
+            }
+
+            private static bool IsApplicableAnalyzerLanguage(LockFileItem asset, string projectCodeLanguage)
+            {
+                // Language-agnostic analyzers (no language segment) apply to every project. Otherwise the analyzer
+                // applies only when its code language matches the project's language.
+                if (!asset.Properties.TryGetValue(LockFileContentFile.CodeLanguageProperty, out string codeLanguage)
+                    || string.IsNullOrEmpty(codeLanguage)
+                    || string.Equals(codeLanguage, "any", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                return projectCodeLanguage != null
+                    && string.Equals(codeLanguage, projectCodeLanguage, StringComparison.OrdinalIgnoreCase);
+            }
+
+            private static bool TryGetCompilerVersion(string compilerApiVersion, out Version version)
+            {
+                version = null;
+
+                if (string.IsNullOrEmpty(compilerApiVersion))
+                {
+                    return false;
+                }
+
+                int versionStart = -1;
+                for (int i = 0; i < compilerApiVersion.Length; i++)
+                {
+                    if (char.IsDigit(compilerApiVersion[i]))
+                    {
+                        versionStart = i;
+                        break;
+                    }
+                }
+
+                if (versionStart < 0)
+                {
+                    return false;
+                }
+
+#if NET
+                return Version.TryParse(compilerApiVersion.AsSpan(versionStart), out version);
+#else
+                return Version.TryParse(compilerApiVersion.Substring(versionStart), out version);
+#endif
+            }
+
+            private void WriteAnalyzerPackageFiles()
             {
                 AnalyzerResolver resolver = new(this);
 
