@@ -1,5 +1,5 @@
 <!--#if (UseMSTestSdk)-->
-<Project Sdk="MSTest.Sdk/4.0.2">
+<Project Sdk="MSTest.Sdk/4.2.3">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net11.0</TargetFramework>
@@ -19,13 +19,31 @@
 <!--#endif-->
 <!--#else-->
     <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
+<!--#if (ExplicitProgramFile)-->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+<!--#endif-->
   </PropertyGroup>
 <!--#endif-->
 
   <ItemGroup>
     <Compile Include="MSTestSettings.fs" />
     <Compile Include="Test1.fs" />
+<!--#if (ExplicitProgramFile && TestRunner == "Microsoft.Testing.Platform")-->
+    <Compile Include="Program.fs" />
+<!--#endif-->
   </ItemGroup>
+
+<!--#if (ExplicitProgramFile && TestRunner == "Microsoft.Testing.Platform")-->
+  <!-- F# requires the [<EntryPoint>] function to be in the last file of the
+       compilation. Re-order Program.fs to come after any files injected by the
+       MSTest source generator (for example, SelfRegisteredExtensions.fs). -->
+  <Target Name="_EnsureProgramFsIsLast" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Remove="Program.fs" />
+      <Compile Include="Program.fs" />
+    </ItemGroup>
+  </Target>
+<!--#endif-->
 
 </Project>
 <!--#else-->
@@ -41,6 +59,9 @@
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
+<!--#if (ExplicitProgramFile)-->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+<!--#endif-->
 <!--#endif-->
   </PropertyGroup>
 
@@ -48,7 +69,7 @@
 <!--#if (CoverageTool == "coverlet")-->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
 <!--#endif-->
-    <PackageReference Include="MSTest" Version="4.0.2" />
+    <PackageReference Include="MSTest" Version="4.2.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,7 +79,22 @@
   <ItemGroup>
     <Compile Include="MSTestSettings.fs" />
     <Compile Include="Test1.fs" />
+<!--#if (ExplicitProgramFile && TestRunner == "Microsoft.Testing.Platform")-->
+    <Compile Include="Program.fs" />
+<!--#endif-->
   </ItemGroup>
+
+<!--#if (ExplicitProgramFile && TestRunner == "Microsoft.Testing.Platform")-->
+  <!-- F# requires the [<EntryPoint>] function to be in the last file of the
+       compilation. Re-order Program.fs to come after any files injected by the
+       MSTest source generator (for example, SelfRegisteredExtensions.fs). -->
+  <Target Name="_EnsureProgramFsIsLast" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Remove="Program.fs" />
+      <Compile Include="Program.fs" />
+    </ItemGroup>
+  </Target>
+<!--#endif-->
 
 </Project>
 <!--#endif-->

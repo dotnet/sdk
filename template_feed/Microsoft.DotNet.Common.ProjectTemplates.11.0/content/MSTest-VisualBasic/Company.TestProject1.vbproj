@@ -1,5 +1,5 @@
 ﻿<!--#if (UseMSTestSdk)-->
-<Project Sdk="MSTest.Sdk/4.0.2">
+<Project Sdk="MSTest.Sdk/4.2.3">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net11.0</TargetFramework>
@@ -19,6 +19,9 @@
 <!--#endif-->
 <!--#else-->
     <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
+<!--#if (ExplicitProgramFile)-->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+<!--#endif-->
   </PropertyGroup>
 <!--#endif-->
 
@@ -36,6 +39,9 @@
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
+<!--#if (ExplicitProgramFile)-->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+<!--#endif-->
 <!--#endif-->
   </PropertyGroup>
 
@@ -43,7 +49,7 @@
 <!--#if (CoverageTool == "coverlet")-->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
 <!--#endif-->
-    <PackageReference Include="MSTest" Version="4.0.2" />
+    <PackageReference Include="MSTest" Version="4.2.3" />
   </ItemGroup>
 
   <ItemGroup>
