@@ -28,30 +28,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRunContainerFormat Condition="'$(PublishReadyToRunContainerFormat)' == '' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 11.0))">pe</PublishReadyToRunContainerFormat>
     <PublishReadyToRunCreateSharedLibrary Condition="'$(PublishReadyToRunCreateSharedLibrary)' == ''">true</PublishReadyToRunCreateSharedLibrary>
 
-    <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('ios-'))">false</PublishReadyToRunEmitSymbols>
-    <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('tvos-'))">false</PublishReadyToRunEmitSymbols>
-    <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('iossimulator-'))">false</PublishReadyToRunEmitSymbols>
-    <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">false</PublishReadyToRunEmitSymbols>
-    <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">false</PublishReadyToRunEmitSymbols>
+    <_IsIOSLikeRid Condition="$(RuntimeIdentifier.StartsWith('ios-')) or $(RuntimeIdentifier.StartsWith('tvos-')) or $(RuntimeIdentifier.StartsWith('iossimulator-')) or $(RuntimeIdentifier.StartsWith('tvossimulator-')) or $(RuntimeIdentifier.StartsWith('maccatalyst-'))">true</_IsIOSLikeRid>
+
+    <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and '$(_IsIOSLikeRid)' == 'true'">false</PublishReadyToRunEmitSymbols>
     <PublishReadyToRunEmitSymbols Condition="'$(PublishReadyToRunEmitSymbols)' == '' and $(RuntimeIdentifier.StartsWith('osx-'))">false</PublishReadyToRunEmitSymbols>
 
-    <PublishReadyToRunStripInliningInfo Condition="'$(PublishReadyToRunStripInliningInfo)' == '' and $(RuntimeIdentifier.StartsWith('ios-'))">true</PublishReadyToRunStripInliningInfo>
-    <PublishReadyToRunStripInliningInfo Condition="'$(PublishReadyToRunStripInliningInfo)' == '' and $(RuntimeIdentifier.StartsWith('tvos-'))">true</PublishReadyToRunStripInliningInfo>
-    <PublishReadyToRunStripInliningInfo Condition="'$(PublishReadyToRunStripInliningInfo)' == '' and $(RuntimeIdentifier.StartsWith('iossimulator-'))">true</PublishReadyToRunStripInliningInfo>
-    <PublishReadyToRunStripInliningInfo Condition="'$(PublishReadyToRunStripInliningInfo)' == '' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">true</PublishReadyToRunStripInliningInfo>
-    <PublishReadyToRunStripInliningInfo Condition="'$(PublishReadyToRunStripInliningInfo)' == '' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">true</PublishReadyToRunStripInliningInfo>
+    <PublishReadyToRunStripInliningInfo Condition="'$(PublishReadyToRunStripInliningInfo)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and '$(_IsIOSLikeRid)' == 'true'">true</PublishReadyToRunStripInliningInfo>
 
-    <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and $(RuntimeIdentifier.StartsWith('ios-'))">true</PublishReadyToRunStripDebugInfo>
-    <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and $(RuntimeIdentifier.StartsWith('tvos-'))">true</PublishReadyToRunStripDebugInfo>
-    <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and $(RuntimeIdentifier.StartsWith('iossimulator-'))">true</PublishReadyToRunStripDebugInfo>
-    <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">true</PublishReadyToRunStripDebugInfo>
-    <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">true</PublishReadyToRunStripDebugInfo>
+    <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and '$(_IsIOSLikeRid)' == 'true'">true</PublishReadyToRunStripDebugInfo>
 
-    <PublishReadyToRunStripILBodies Condition="'$(PublishReadyToRunStripILBodies)' == '' and $(RuntimeIdentifier.StartsWith('ios-'))">true</PublishReadyToRunStripILBodies>
-    <PublishReadyToRunStripILBodies Condition="'$(PublishReadyToRunStripILBodies)' == '' and $(RuntimeIdentifier.StartsWith('tvos-'))">true</PublishReadyToRunStripILBodies>
-    <PublishReadyToRunStripILBodies Condition="'$(PublishReadyToRunStripILBodies)' == '' and $(RuntimeIdentifier.StartsWith('iossimulator-'))">true</PublishReadyToRunStripILBodies>
-    <PublishReadyToRunStripILBodies Condition="'$(PublishReadyToRunStripILBodies)' == '' and $(RuntimeIdentifier.StartsWith('tvossimulator-'))">true</PublishReadyToRunStripILBodies>
-    <PublishReadyToRunStripILBodies Condition="'$(PublishReadyToRunStripILBodies)' == '' and $(RuntimeIdentifier.StartsWith('maccatalyst-'))">true</PublishReadyToRunStripILBodies>
+    <PublishReadyToRunStripILBodies Condition="'$(PublishReadyToRunStripILBodies)' == '' and '$(_IsIOSLikeRid)' == 'true'">true</PublishReadyToRunStripILBodies>
 
     <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripInliningInfo)' == 'true'">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-inlining-info</PublishReadyToRunCrossgen2ExtraArgs>
     <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripDebugInfo)' == 'true'">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-debug-info</PublishReadyToRunCrossgen2ExtraArgs>

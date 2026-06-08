@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Usage.CSharpMissingShebangInFileBasedProgram,
@@ -16,7 +17,33 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         [Fact]
         public async Task EntryPointWithoutShebang_MultipleFiles_WarningAsync()
         {
-            // Entry point file without shebang, multiple files - warning expected.
+            // Entry point file without shebang and a #:include file - warning expected.
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """
+                            #:include Util.cs
+                            class Program { static void Main() { } }
+                            """),
+                        ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
+                    },
+                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
+                    ExpectedDiagnostics =
+                    {
+                        new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
+                    },
+                },
+                SolutionTransforms = { EnableFileBasedProgramFeature },
+            }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        [Fact]
+        public async Task ExtraCompileFileNotFromIncludeDirective_NoDiagnosticAsync()
+        {
+            // A second Compile item from other MSBuild code does not require a shebang.
             await new VerifyCS.Test
             {
                 TestState =
@@ -27,10 +54,6 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
-                    ExpectedDiagnostics =
-                    {
-                        new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
-                    },
                 },
             }.RunAsync(TestContext.Current.CancellationToken);
         }
@@ -74,7 +97,10 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 {
                     Sources =
                     {
-                        ("Test0.cs", """class Program { static void Main() { } }"""),
+                        ("Test0.cs", """
+                            #:include Util.cs
+                            class Program { static void Main() { } }
+                            """),
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
@@ -89,23 +115,14 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     {
                         ("Test0.cs", """
                             #!/usr/bin/env dotnet
+                            #:include Util.cs
                             class Program { static void Main() { } }
                             """),
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
                     },
                 },
                 CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                        // Enable #! shebang support in the parser.
-                        var parseOptions = (CSharpParseOptions)solution.GetProject(projectId)!.ParseOptions!;
-                        return solution.WithProjectParseOptions(projectId,
-                            parseOptions.WithFeatures(parseOptions.Features.Concat(
-                                [new KeyValuePair<string, string>("FileBasedProgram", "true")])));
-                    },
-                },
+                SolutionTransforms = { EnableFileBasedProgramFeature },
             }.RunAsync(TestContext.Current.CancellationToken);
         }
 
@@ -121,22 +138,14 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     {
                         ("Test0.cs", """
                             #!/usr/bin/env dotnet
+                            #:include Util.cs
                             class Program { static void Main() { } }
                             """),
                         ("Util.cs", """class Util { public static string Greet() => "hello"; }"""),
                     },
                     AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                        var parseOptions = (CSharpParseOptions)solution.GetProject(projectId)!.ParseOptions!;
-                        return solution.WithProjectParseOptions(projectId,
-                            parseOptions.WithFeatures(parseOptions.Features.Concat(
-                                [new KeyValuePair<string, string>("FileBasedProgram", "true")])));
-                    },
-                },
+                SolutionTransforms = { EnableFileBasedProgramFeature },
             }.RunAsync(TestContext.Current.CancellationToken);
         }
 
@@ -161,8 +170,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         [Fact]
         public async Task GeneratedCodeFile_NoDiagnosticAsync()
         {
-            // Entry point file without shebang, but the second file is generated code (.g.cs),
-            // so there is effectively only one non-generated file - no diagnostic.
+            // Entry point file without shebang, but no #:include directive - no diagnostic.
             await new VerifyCS.Test
             {
                 TestState =
@@ -180,8 +188,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         [Fact]
         public async Task AutoGeneratedComment_NoDiagnosticAsync()
         {
-            // Entry point file without shebang, but the second file has an <auto-generated> comment,
-            // so there is effectively only one non-generated file - no diagnostic.
+            // Entry point file without shebang, but no #:include directive - no diagnostic.
             await new VerifyCS.Test
             {
                 TestState =
@@ -203,15 +210,17 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         [Fact]
         public async Task GeneratedCodePlusRealFile_WarningAsync()
         {
-            // Entry point file without shebang, a real second file, and a generated file.
-            // Two non-generated files exist, so a warning is expected.
+            // Entry point file without shebang and a #:include directive - warning expected.
             await new VerifyCS.Test
             {
                 TestState =
                 {
                     Sources =
                     {
-                        ("Test0.cs", """class Program { static void Main() { } }"""),
+                        ("Test0.cs", """
+                            #:include Util.cs
+                            class Program { static void Main() { } }
+                            """),
                         ("Util.cs", """class Util { }"""),
                         ("Test1.g.cs", """class Generated { }"""),
                     },
@@ -221,6 +230,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
                     },
                 },
+                SolutionTransforms = { EnableFileBasedProgramFeature },
             }.RunAsync(TestContext.Current.CancellationToken);
         }
 
@@ -236,6 +246,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     Sources =
                     {
                         ("Test0.cs", """
+                            #:include Util.cs
                             class Foo { }
                             #!/usr/bin/env dotnet
                             class Program { static void Main() { } }
@@ -246,21 +257,20 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     ExpectedDiagnostics =
                     {
                         new DiagnosticResult(MissingShebangInFileBasedProgram.Rule).WithLocation("Test0.cs", 1, 1),
-                        // Preprocessor directives must appear as the first non-whitespace character on a line
-                        DiagnosticResult.CompilerError("CS1040").WithSpan("Test0.cs", 2, 1, 2, 2),
+                        // Test0.cs(2,1): error CS9378: '#!' must be the first characters on the first line of the file
+                        DiagnosticResult.CompilerError("CS9378").WithSpan("Test0.cs", 3, 1, 3, 2),
                     },
                 },
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                        var parseOptions = (CSharpParseOptions)solution.GetProject(projectId)!.ParseOptions!;
-                        return solution.WithProjectParseOptions(projectId,
-                            parseOptions.WithFeatures(parseOptions.Features.Concat(
-                                [new KeyValuePair<string, string>("FileBasedProgram", "true")])));
-                    },
-                },
+                SolutionTransforms = { EnableFileBasedProgramFeature },
             }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
+        private static Solution EnableFileBasedProgramFeature(Solution solution, ProjectId projectId)
+        {
+            var parseOptions = (CSharpParseOptions)solution.GetProject(projectId)!.ParseOptions!;
+            return solution.WithProjectParseOptions(projectId,
+                parseOptions.WithFeatures(parseOptions.Features.Concat(
+                    [new KeyValuePair<string, string>("FileBasedProgram", "true")])));
         }
     }
 }

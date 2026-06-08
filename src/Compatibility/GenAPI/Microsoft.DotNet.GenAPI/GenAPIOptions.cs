@@ -51,6 +51,19 @@ public sealed class GenAPIOptions
     public string[]? ExcludeAttributesFiles { get; set; }
 
     /// <summary>
+    /// The path to one or more api inclusion files with types in DocId format. APIs listed in these files are
+    /// emitted even if they would otherwise be filtered out (e.g. internal types).
+    /// </summary>
+    public string[]? IncludeApiFiles { get; set; }
+
+    /// <summary>
+    /// By default, GenAPI emits a curated set of internal compiler attributes (e.g. <c>IsExternalInit</c>,
+    /// <c>RequiredMemberAttribute</c>) when they are defined in the assembly, since these enable out-of-band language
+    /// features. Set this to <see langword="true"/> to opt out of that behavior.
+    /// </summary>
+    public bool ExcludeInternalCompilerAttributes { get; set; }
+
+    /// <summary>
     /// If true, includes both internal and public API.
     /// </summary>
     public bool RespectInternals { get; set; }
