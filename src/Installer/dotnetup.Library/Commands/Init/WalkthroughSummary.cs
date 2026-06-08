@@ -33,7 +33,7 @@ internal static class WalkthroughSummary
         int defaultIndex = GetDefaultChoiceIndex(choices, isConfigured);
 
         int selected = InteractiveOptionSelector.Show(
-            "Would you like to install .NET with the recommended settings?",
+            Strings.SummaryPrompt,
             [.. choices.Select(choice => choice.Option)],
             defaultIndex);
 
@@ -48,11 +48,11 @@ internal static class WalkthroughSummary
     internal static IReadOnlyList<SummaryChoice> BuildSummaryChoices(bool isConfigured)
     {
         string proceedTitle = isConfigured
-            ? "Yes, override settings with defaults"
-            : "Yes, proceed with defaults and install";
+            ? Strings.SummaryProceedTitleConfigured
+            : Strings.SummaryProceedTitleUnconfigured;
         string proceedDescription = isConfigured
-            ? "Replace your current settings with the recommended ones above."
-            : "Install with the recommended settings shown above.";
+            ? Strings.SummaryProceedDescriptionConfigured
+            : Strings.SummaryProceedDescriptionUnconfigured;
 
         return
         [
@@ -60,10 +60,10 @@ internal static class WalkthroughSummary
                 new SelectableOption("y", proceedTitle, proceedDescription, string.Empty),
                 WalkthroughDecision.Proceed),
             new SummaryChoice(
-                new SelectableOption("c", "No, customize setup", "Choose the channel, mode, and migrations yourself.", string.Empty),
+                new SelectableOption("c", Strings.SummaryCustomizeTitle, Strings.SummaryCustomizeDescription, string.Empty),
                 WalkthroughDecision.Customize),
             new SummaryChoice(
-                new SelectableOption("x", "Exit without changes", "Make no changes and quit.", string.Empty),
+                new SelectableOption("x", Strings.SummaryExitTitle, Strings.SummaryExitDescription, string.Empty),
                 WalkthroughDecision.Exit),
         ];
     }
@@ -89,7 +89,10 @@ internal static class WalkthroughSummary
 
     private static void RenderSummaryBlock(WalkthroughPlan plan, PathPreference? configuredPreference)
     {
-        SpectreAnsiConsole.MarkupLine($"Welcome to [{DotnetupTheme.Current.Brand} bold]dotnetup[/]!");
+        SpectreAnsiConsole.MarkupLine(string.Format(
+            CultureInfo.InvariantCulture,
+            Strings.SummaryWelcome,
+            $"[{DotnetupTheme.Current.Brand} bold]dotnetup[/]"));
         SpectreAnsiConsole.WriteLine();
 
         RenderChannelLine(plan.ChannelDisplay);
@@ -107,13 +110,16 @@ internal static class WalkthroughSummary
         }
 
         string dim = DotnetupTheme.Current.Dim;
-        string label = "SDK Channel:".PadRight(LabelWidth);
+        string label = Strings.SummaryChannelLabel.PadRight(LabelWidth);
         string suffix = channel.GlobalJsonPath is not null
             ? string.Format(
                 CultureInfo.InvariantCulture,
-                " [{0}](determined from global.json at {1})[/]",
+                " [{0}]({1})[/]",
                 dim,
-                channel.GlobalJsonPath.EscapeMarkup())
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    Strings.SummaryChannelGlobalJsonSuffix,
+                    channel.GlobalJsonPath.EscapeMarkup()))
             : string.Empty;
 
         SpectreAnsiConsole.MarkupLine(string.Format(
@@ -129,15 +135,18 @@ internal static class WalkthroughSummary
         PathPreference recommended,
         PathPreference? configuredPreference)
     {
-        string label = "Mode:".PadRight(LabelWidth);
+        string label = Strings.SummaryModeLabel.PadRight(LabelWidth);
         string recommendedName = PathPreferenceDisplay.GetName(recommended);
 
         string current = configuredPreference is { } pref
             ? string.Format(
                 CultureInfo.InvariantCulture,
-                "  [{0}](current: {1})[/]",
+                "  [{0}]({1})[/]",
                 DotnetupTheme.Current.Warning,
-                PathPreferenceDisplay.GetNameWithoutHint(pref).EscapeMarkup())
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    Strings.SummaryModeCurrent,
+                    PathPreferenceDisplay.GetNameWithoutHint(pref).EscapeMarkup()))
             : string.Empty;
 
         SpectreAnsiConsole.MarkupLine(string.Format(
@@ -158,7 +167,7 @@ internal static class WalkthroughSummary
 
         string dim = DotnetupTheme.Current.Dim;
         SpectreAnsiConsole.WriteLine();
-        SpectreAnsiConsole.MarkupLine("System installs to migrate:");
+        SpectreAnsiConsole.MarkupLine(Strings.SummaryMigrateHeader);
 
         var items = InitWorkflows.FormatMigrationDisplayItems(migrations);
         int shown = Math.Min(MigrationWorkflow.MigrationPreviewCount, items.Count);
@@ -176,9 +185,9 @@ internal static class WalkthroughSummary
         {
             SpectreAnsiConsole.MarkupLine(string.Format(
                 CultureInfo.InvariantCulture,
-                "  [{0}]... and {1} more[/]",
+                "  [{0}]{1}[/]",
                 dim,
-                items.Count - shown));
+                string.Format(CultureInfo.InvariantCulture, Strings.SummaryMigrateMore, items.Count - shown)));
         }
     }
 }

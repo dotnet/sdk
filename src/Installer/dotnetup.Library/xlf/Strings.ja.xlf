@@ -207,6 +207,86 @@
         <target state="new">.NET toolchain manager for user level installs.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SummaryChannelGlobalJsonSuffix">
+        <source>determined from global.json at {0}</source>
+        <target state="new">determined from global.json at {0}</target>
+        <note>{0} is a file path. Shown in parentheses after the channel name.</note>
+      </trans-unit>
+      <trans-unit id="SummaryChannelLabel">
+        <source>SDK Channel:</source>
+        <target state="new">SDK Channel:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryCustomizeDescription">
+        <source>Choose the channel, mode, and migrations yourself.</source>
+        <target state="new">Choose the channel, mode, and migrations yourself.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryCustomizeTitle">
+        <source>No, customize setup</source>
+        <target state="new">No, customize setup</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryExitDescription">
+        <source>Make no changes and quit.</source>
+        <target state="new">Make no changes and quit.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryExitTitle">
+        <source>Exit without changes</source>
+        <target state="new">Exit without changes</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryMigrateHeader">
+        <source>System installs to migrate:</source>
+        <target state="new">System installs to migrate:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryMigrateMore">
+        <source>... and {0} more</source>
+        <target state="new">... and {0} more</target>
+        <note>{0} is the count of additional migration candidates not individually listed.</note>
+      </trans-unit>
+      <trans-unit id="SummaryModeCurrent">
+        <source>current: {0}</source>
+        <target state="new">current: {0}</target>
+        <note>{0} is the user's currently configured mode name. Shown in parentheses after the recommended mode.</note>
+      </trans-unit>
+      <trans-unit id="SummaryModeLabel">
+        <source>Mode:</source>
+        <target state="new">Mode:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryProceedDescriptionConfigured">
+        <source>Replace your current settings with the recommended ones above.</source>
+        <target state="new">Replace your current settings with the recommended ones above.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryProceedDescriptionUnconfigured">
+        <source>Install with the recommended settings shown above.</source>
+        <target state="new">Install with the recommended settings shown above.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryProceedTitleConfigured">
+        <source>Yes, override settings with defaults</source>
+        <target state="new">Yes, override settings with defaults</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryProceedTitleUnconfigured">
+        <source>Yes, proceed with defaults and install</source>
+        <target state="new">Yes, proceed with defaults and install</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryPrompt">
+        <source>Would you like to install .NET with the recommended settings?</source>
+        <target state="new">Would you like to install .NET with the recommended settings?</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryWelcome">
+        <source>Welcome to {0}!</source>
+        <target state="new">Welcome to {0}!</target>
+        <note>{0} is the styled "dotnetup" product name.</note>
+      </trans-unit>
       <trans-unit id="TelemetryNotice">
         <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>
         <target state="new">dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</target>

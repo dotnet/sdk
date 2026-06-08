@@ -222,6 +222,58 @@
   <data name="PathReplacementModeUnixError" xml:space="preserve">
     <value>Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</value>
   </data>
+  <data name="SummaryWelcome" xml:space="preserve">
+    <value>Welcome to {0}!</value>
+    <comment>{0} is the styled "dotnetup" product name.</comment>
+  </data>
+  <data name="SummaryChannelLabel" xml:space="preserve">
+    <value>SDK Channel:</value>
+  </data>
+  <data name="SummaryChannelGlobalJsonSuffix" xml:space="preserve">
+    <value>determined from global.json at {0}</value>
+    <comment>{0} is a file path. Shown in parentheses after the channel name.</comment>
+  </data>
+  <data name="SummaryModeLabel" xml:space="preserve">
+    <value>Mode:</value>
+  </data>
+  <data name="SummaryModeCurrent" xml:space="preserve">
+    <value>current: {0}</value>
+    <comment>{0} is the user's currently configured mode name. Shown in parentheses after the recommended mode.</comment>
+  </data>
+  <data name="SummaryMigrateHeader" xml:space="preserve">
+    <value>System installs to migrate:</value>
+  </data>
+  <data name="SummaryMigrateMore" xml:space="preserve">
+    <value>... and {0} more</value>
+    <comment>{0} is the count of additional migration candidates not individually listed.</comment>
+  </data>
+  <data name="SummaryPrompt" xml:space="preserve">
+    <value>Would you like to install .NET with the recommended settings?</value>
+  </data>
+  <data name="SummaryProceedTitleConfigured" xml:space="preserve">
+    <value>Yes, override settings with defaults</value>
+  </data>
+  <data name="SummaryProceedTitleUnconfigured" xml:space="preserve">
+    <value>Yes, proceed with defaults and install</value>
+  </data>
+  <data name="SummaryProceedDescriptionConfigured" xml:space="preserve">
+    <value>Replace your current settings with the recommended ones above.</value>
+  </data>
+  <data name="SummaryProceedDescriptionUnconfigured" xml:space="preserve">
+    <value>Install with the recommended settings shown above.</value>
+  </data>
+  <data name="SummaryCustomizeTitle" xml:space="preserve">
+    <value>No, customize setup</value>
+  </data>
+  <data name="SummaryCustomizeDescription" xml:space="preserve">
+    <value>Choose the channel, mode, and migrations yourself.</value>
+  </data>
+  <data name="SummaryExitTitle" xml:space="preserve">
+    <value>Exit without changes</value>
+  </data>
+  <data name="SummaryExitDescription" xml:space="preserve">
+    <value>Make no changes and quit.</value>
+  </data>
   <data name="HelpOptionsTitle" xml:space="preserve">
     <value>Options:</value>
   </data>
