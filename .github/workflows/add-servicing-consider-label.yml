@@ -1,0 +1,75 @@
+name: Add Servicing-consider Label to PRs
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+    branches:
+      - 'release/8.*'
+      - 'release/9.*'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  add-servicing-label:
+    runs-on: ubuntu-latest
+    # Only run on the main repository, not forks
+    if: github.repository == 'dotnet/sdk'
+
+    steps:
+      - name: Add Servicing-consider label if needed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const prNumber = pr.number;
+
+            // Skip if the PR already has the Servicing-consider or Servicing-approved label
+            const labels = pr.labels.map(l => l.name);
+            if (labels.includes('Servicing-consider') || labels.includes('Servicing-approved')) {
+              console.log('PR already has a servicing label, skipping.');
+              return;
+            }
+
+            // Skip codeflow PRs: PRs authored by bots (inter-branch merge flow, darc, etc.)
+            const author = pr.user;
+            if (author.type === 'Bot') {
+              console.log(`Skipping codeflow PR authored by bot: ${author.login}`);
+              return;
+            }
+
+            // Fetch all changed files in the PR (paginated to handle large PRs)
+            let files = [];
+            let page = 1;
+            while (true) {
+              const { data: pageFiles } = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100,
+                page: page
+              });
+              files = files.concat(pageFiles);
+              if (pageFiles.length < 100) break;
+              page++;
+            }
+
+            // Skip test-only PRs: all changed files are under test/ directories
+            const isTestOnly = files.length > 0 && files.every(file =>
+              file.filename.startsWith('test/')
+            );
+
+            if (isTestOnly) {
+              console.log('PR only contains test changes, skipping.');
+              return;
+            }
+
+            // Add the Servicing-consider label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['Servicing-consider']
+            });
+            console.log(`Added Servicing-consider label to PR #${prNumber}.`);
