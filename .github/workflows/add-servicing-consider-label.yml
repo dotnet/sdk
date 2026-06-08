@@ -34,9 +34,11 @@ jobs:
               return;
             }
 
-            // Skip codeflow PRs: PRs authored by bots (inter-branch merge flow, darc, etc.)
+            // Skip codeflow PRs: inter-branch merge flow and darc subscription PRs authored by bots.
+            // Exception: backport PRs are also bot-authored but should still receive the label.
             const author = pr.user;
-            if (author.type === 'Bot') {
+            const isBackport = labels.includes('backport');
+            if (author.type === 'Bot' && !isBackport) {
               console.log(`Skipping codeflow PR authored by bot: ${author.login}`);
               return;
             }

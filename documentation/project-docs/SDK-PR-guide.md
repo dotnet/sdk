@@ -40,7 +40,9 @@ The .NET 8 and .NET 9 servicing branches are locked from the time of code comple
 ### Tactics approval
 Even releases that are in lockdown can still take changes as long as they are approved and the final build isn't complete. To bring a change through tactics, mark it with the label `servicing-consider` and update the description to include 5 sections (Description, Customer Impact, Regression?, Risk, Testing). See previously approved bugs for examples by looking for the [servicing-approved](https://github.com/dotnet/sdk/pulls?q=is%3Apr+label%3AServicing-approved+is%3Aclosed) label.
 
-Any PR that targets a servicing branch (release/8.*, release/9.*) and is not a codeflow PR or a test-only change will automatically have the `Servicing-consider` label applied by the [add-servicing-consider-label](https://github.com/dotnet/sdk/blob/main/.github/workflows/add-servicing-consider-label.yml) workflow. This prevents accidental merging of new features without tactics approval. PRs from automated bots (inter-branch merge flow, darc) and PRs that only modify files in the `test/` directory are exempt from this automatic labeling.
+Any PR that targets a servicing branch (release/8.*, release/9.*, release/10.*, release/11.*) and is not a codeflow PR or a test-only change will automatically have the `Servicing-consider` label applied by the [add-servicing-consider-label](https://github.com/dotnet/sdk/blob/main/.github/workflows/add-servicing-consider-label.yml) workflow. This prevents accidental merging of new features without tactics approval. The following PR types are exempt from automatic labeling:
+- PRs from automated codeflow bots (inter-branch merge flow, darc subscriptions) — but **not** backport PRs, which are also bot-authored and do require servicing approval.
+- PRs that only modify files in the `test/` directory.
 
 For servicing changes to other repos like MSBuild and NuGet, we recommend getting approval from tactics before the PR is merged. For codeflow, we do not gate codeflow on approvals as many codeflows are just infra work that doesn't require approval. Separating those out would add additional complexity we want to avoid.
 
