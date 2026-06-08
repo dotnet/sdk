@@ -9,17 +9,11 @@
   "symbols/Framework/choices/net11.0/description": "대상 net11.0",
   "symbols/EnablePack/description": "프로젝트에 대해 패키징(\"dotnet pack\"을 통해)을 활성화할지 여부",
   "symbols/EnablePack/displayName": "팩 사용",
-  "symbols/TestRunner/description": "Select the runner/platform.",
-  "symbols/TestRunner/displayName": "Test runner",
-  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information.",
-  "symbols/TestRunner/choices/VSTest/description": "Use VSTest platform",
   "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
   "symbols/skipRestore/displayName": "복원 건너뛰기",
   "symbols/langVersion/description": "만든 프로젝트 파일에 LangVersion 속성을 설정합니다",
   "symbols/langVersion/displayName": "언어 버전",
   "postActions/restoreNugetPackages/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "'dotnet restore' 실행",
-  "postActions/addJsonProperty/description": "Create or update 'global.json' file required by Microsoft.Testing.Platform.",
-  "postActions/addJsonProperty/manualInstructions/default/text": "Manually update or create 'global.json' file setting the test runner to Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "편집기에서 UnitTest1.vb 열기"
 }
