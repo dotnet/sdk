@@ -8,8 +8,11 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class ResolveRuntimePackAssets : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolveRuntimePackAssets : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         public ITaskItem[] ResolvedRuntimePacks { get; set; }
 
         public ITaskItem[] FrameworkReferences { get; set; } = Array.Empty<ITaskItem>();
@@ -113,7 +116,9 @@ namespace Microsoft.NET.Build.Tasks
 
                 string runtimePackRoot = runtimePack.GetMetadata(MetadataKeys.PackageDirectory);
 
-                if (string.IsNullOrEmpty(runtimePackRoot) || !Directory.Exists(runtimePackRoot))
+                //  Absolutize relative to the project directory before any file system access.
+                //  Short-circuit keeps the null/empty case from reaching GetAbsolutePath, which throws on empty input.
+                if (string.IsNullOrEmpty(runtimePackRoot) || !Directory.Exists(TaskEnvironment.GetAbsolutePath(runtimePackRoot)))
                 {
                     if (!DesignTimeBuild)
                     {
@@ -143,7 +148,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 var runtimeListPath = Path.Combine(runtimePackRoot, "data", "RuntimeList.xml");
 
-                if (File.Exists(runtimeListPath))
+                if (File.Exists(TaskEnvironment.GetAbsolutePath(runtimeListPath)))
                 {
                     var runtimePackAlwaysCopyLocal = runtimePack.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 
@@ -163,7 +168,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             var assetSubPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            XDocument frameworkListDoc = XDocument.Load(runtimeListPath);
+            XDocument frameworkListDoc = XDocument.Load(TaskEnvironment.GetAbsolutePath(runtimeListPath));
             // profile feature is only supported in net9.0 and later. We would ignore it for previous versions.
             bool profileSupported = false;
             string targetFrameworkVersion = frameworkListDoc.Root.Attribute("TargetFrameworkVersion")?.Value;
@@ -195,8 +200,8 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
-                //  Call GetFullPath to normalize slashes
-                string assetPath = Path.GetFullPath(Path.Combine(runtimePackRoot, fileElement.Attribute("Path").Value));
+                //  Absolutize relative to the project directory, then GetFullPath to canonicalize (resolve "..") and normalize slashes.
+                string assetPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(Path.Combine(runtimePackRoot, fileElement.Attribute("Path").Value)));
 
                 string typeAttributeValue = fileElement.Attribute("Type").Value;
                 string assetType;
