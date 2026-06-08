@@ -1073,29 +1073,36 @@ internal sealed class HotReloadDotNetWatcher
                 }
             }
 
-            // Select device if needed:
-            if (needsDeviceSelection
-                && rootProject.Targets.ContainsKey(TargetNames.ComputeAvailableDevices))
+            // Select device if needed.
+            // Check the TFM-specific inner project node for ComputeAvailableDevices, since workload
+            // targets (e.g., MAUI) may only be imported when TargetFramework is set.
+            if (needsDeviceSelection)
             {
                 Debug.Assert(deviceSelector != null);
+                Debug.Assert(projectGraph != null);
 
-                var deviceInfo = await TrySelectDeviceAsync(projectGraph, rootProject, targetFramework, deviceSelector, cancellationToken);
-                if (deviceInfo == null)
+                var projectNodeForDeviceCheck = projectGraph.TryGetProjectNode(rootProject.FullPath, targetFramework);
+                if (projectNodeForDeviceCheck != null
+                    && projectNodeForDeviceCheck.ProjectInstance.Targets.ContainsKey(TargetNames.ComputeAvailableDevices))
                 {
-                    return false;
-                }
-
-                selectedDevice = deviceInfo.Id;
-                selectedDeviceRuntimeIdentifier = deviceInfo.RuntimeIdentifier;
-                _context.Logger.LogDebug("Selected device: {DeviceId}", selectedDevice);
-
-                // If the device provides a RuntimeIdentifier, re-restore so the assets file
-                // includes the RID target. This mirrors the dotnet-run behavior.
-                if (!string.IsNullOrEmpty(selectedDeviceRuntimeIdentifier))
-                {
-                    if (!await BuildAsync(BuildAction.RestoreOnly, targetFramework, deviceInfo))
+                    var deviceInfo = await TrySelectDeviceAsync(projectGraph, rootProject, targetFramework, deviceSelector, cancellationToken);
+                    if (deviceInfo == null)
                     {
                         return false;
+                    }
+
+                    selectedDevice = deviceInfo.Id;
+                    selectedDeviceRuntimeIdentifier = deviceInfo.RuntimeIdentifier;
+                    _context.Logger.LogDebug("Selected device: {DeviceId}", selectedDevice);
+
+                    // If the device provides a RuntimeIdentifier, re-restore so the assets file
+                    // includes the RID target. This mirrors the dotnet-run behavior.
+                    if (!string.IsNullOrEmpty(selectedDeviceRuntimeIdentifier))
+                    {
+                        if (!await BuildAsync(BuildAction.RestoreOnly, targetFramework, deviceInfo))
+                        {
+                            return false;
+                        }
                     }
                 }
             }
