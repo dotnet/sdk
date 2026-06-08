@@ -19,11 +19,13 @@
   <ItemGroup>
 <!--#if (TestRunner != "Microsoft.Testing.Platform")-->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
-<!--#endif-->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+<!--#endif-->
     <PackageReference Include="NUnit" Version="4.6.1" />
     <PackageReference Include="NUnit.Analyzers" Version="4.14.0" />
+<!--#if (TestRunner != "Microsoft.Testing.Platform")-->
     <PackageReference Include="NUnit3TestAdapter" Version="6.2.0" />
+<!--#endif-->
   </ItemGroup>
 
   <ItemGroup>
