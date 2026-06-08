@@ -23,11 +23,11 @@ public static class CommandFactory
         Func<MSBuildArgs, MSBuildArgs>? transformer = null)
     {
         var args = parseResult.GetValue(catchAllUserInputArgument) ?? [];
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
+        LoggerUtility.SeparateLoggerArguments(args, out var loggerArgs, out var nonLoggerArgs);
         var forwardedArgs = parseResult.OptionValuesToBeForwarded(commandDefinition);
-        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
+        if (nonLoggerArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
         {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. loggerArgs],
             [
                 .. optionsToUseWhenParsingMSBuildFlags,
                 CommonOptions.CreateGetPropertyOption(),
@@ -43,7 +43,7 @@ public static class CommandFactory
             // Warn if any argument looks like a file-based program entry point but we're falling back to MSBuild.
             // This can happen when extra positional arguments prevent the single-arg file-based path from being taken,
             // or when a .cs file doesn't exist (so IsValidEntryPointPath returns false).
-            foreach (var candidate in nonBinLogArgs)
+            foreach (var candidate in nonLoggerArgs)
             {
                 if (VirtualProjectBuilder.IsValidEntryPointPath(candidate))
                 {
@@ -52,7 +52,7 @@ public static class CommandFactory
                             CliCommandStrings.WarningFileArgumentPassedToMSBuild,
                             candidate,
                             commandDefinition.Name,
-                            FormatUnsupportedArguments(nonBinLogArgs, candidate)).Yellow());
+                            FormatUnsupportedArguments(nonLoggerArgs, candidate)).Yellow());
                     break;
                 }
 
@@ -62,7 +62,7 @@ public static class CommandFactory
                         string.Format(
                             CliCommandStrings.WarningCsFileArgumentPassedToMSBuild,
                             candidate,
-                            FormatUnrecognizedArguments(nonBinLogArgs)).Yellow());
+                            FormatUnrecognizedArguments(nonLoggerArgs)).Yellow());
                     break;
                 }
             }

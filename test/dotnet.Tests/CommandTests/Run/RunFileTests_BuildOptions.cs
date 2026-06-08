@@ -717,6 +717,82 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
         new FileInfo(binaryLogPath).Should().NotExist();
     }
 
+    [Theory]
+    [InlineData("-tl")]
+    [InlineData("-tl:off")]
+    [InlineData("-TL:off")]
+    [InlineData("/tl:off")]
+    [InlineData("--terminalLogger:off")]
+    [InlineData("-tlp:verbosity=quiet")]
+    [InlineData("/tlp:DISABLENODEDISPLAY")]
+    [InlineData("--terminalLoggerParameters:verbosity=quiet")]
+    [InlineData("-clp:NoSummary")]
+    [InlineData("--consoleLoggerParameters:NoSummary")]
+    public void LoggerArgument_Run_ArgumentForms(string arg)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs", arg)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Hello from Program")
+            .And.NotHaveStdOutContaining("echo args:");
+    }
+
+    [Theory, CombinatorialData]
+    public void LoggerArgument_Run(bool beforeFile)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        string[] args = beforeFile
+            ? ["-tl:off", "Program.cs"]
+            : ["Program.cs", "-tl:off"];
+
+        new DotnetCommand(Log, ["run", "--no-cache", .. args])
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+    }
+
+    [Fact]
+    public void LoggerArgument_Run_PreservesApplicationArguments()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "--no-cache", "Program.cs", "-tl:off", "appArg")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:appArg
+                Hello from Program
+                """);
+    }
+
+    [Theory, CombinatorialData]
+    public void LoggerArgument_Build(
+        [CombinatorialValues("restore", "build")] string command,
+        [CombinatorialValues("-tl:off", "-tlp:verbosity=quiet", "-clp:NoSummary")] string loggerArg,
+        bool beforeFile)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        string[] args = beforeFile
+            ? [command, loggerArg, "Program.cs"]
+            : [command, "Program.cs", loggerArg];
+
+        new DotnetCommand(Log, args)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+    }
+
     [Theory, CombinatorialData]
     public void TerminalLogger(bool on)
     {
