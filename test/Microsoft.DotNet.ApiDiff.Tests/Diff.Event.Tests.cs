@@ -138,4 +138,41 @@ public class DiffEventTests : DiffBaseTests
               }
           }
         """);
+
+    [Fact]
+    public Task ExplicitInterfaceEventAdd() => RunTestAsync(
+        beforeCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public interface IMyInterface
+            {
+                event EventHandler MyEvent;
+            }
+        }
+        """,
+        afterCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public interface IMyInterface
+            {
+                event EventHandler MyEvent;
+            }
+            public class MyClass : IMyInterface
+            {
+                event EventHandler IMyInterface.MyEvent { add { } remove { } }
+            }
+        }
+        """,
+        expectedCode: """
+          namespace MyNamespace
+          {
+        +     public class MyClass : MyNamespace.IMyInterface
+        +     {
+        +         event System.EventHandler MyNamespace.IMyInterface.MyEvent { add; remove; }
+        +         public MyClass();
+        +     }
+          }
+        """);
 }

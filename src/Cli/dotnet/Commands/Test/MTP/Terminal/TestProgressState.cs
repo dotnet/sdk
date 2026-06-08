@@ -44,7 +44,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public long Version { get; internal set; }
 
-    public List<(string? DisplayName, string? UID)> DiscoveredTestNames { get; internal set; } = [];
+    public List<(string? DisplayName, string? UID, string? FilePath, int? LineNumber)> DiscoveredTestNames { get; internal set; } = [];
 
     public bool Success { get; internal set; }
 
@@ -124,10 +124,10 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         }, static @this => @this.FailedTests++);
     }
 
-    public void DiscoverTest(string? displayName, string? uid)
+    public void DiscoverTest(string? displayName, string? uid, string? filePath, int? lineNumber)
     {
         DiscoveredTests++;
-        DiscoveredTestNames.Add(new(displayName, uid));
+        DiscoveredTestNames.Add(new(displayName, uid, filePath, lineNumber));
     }
 
     internal void NotifyHandshake(string instanceId)

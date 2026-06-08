@@ -45,11 +45,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        // Linux and macOS are being skipped. See: https://github.com/dotnet/sdk/issues/52029
-        [WindowsOnlyTheory]
-        public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeGenericFailure(string configuration)
+        [InlineData(TestingConstants.Debug, false)]
+        [InlineData(TestingConstants.Release, false)]
+        // When IncludeTestAssembly is true, the test process crashes with BadImageFormatException.
+        // See: https://github.com/dotnet/sdk/issues/52029
+        [InlineData(TestingConstants.Debug, true, Skip = "https://github.com/dotnet/sdk/issues/52029")]
+        [InlineData(TestingConstants.Release, true, Skip = "https://github.com/dotnet/sdk/issues/52029")]
+        [Theory]
+        public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration, bool includeTestAssembly)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
 
@@ -59,9 +62,21 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string msTestVersion = testInstance.ReadMSTestPackageVersionFromProps(versionsPropsPath);
             testInstance.UpdateProjectFileWithMSTestPackageVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
+            // Explicitly configure IncludeTestAssembly so the test behavior does not depend on
+            // changes to the Microsoft.CodeCoverage default value.
+            string coverageSettingsPath = Path.Combine(testInstance.Path, "coverage.config");
+            File.WriteAllText(coverageSettingsPath, $"""
+                <?xml version="1.0" encoding="utf-8"?>
+                <Configuration>
+                    <CodeCoverage>
+                        <IncludeTestAssembly>{includeTestAssembly}</IncludeTestAssembly>
+                    </CodeCoverage>
+                </Configuration>
+                """);
+
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("--coverage", "-c", configuration);
+                                    .Execute("--coverage", "--coverage-settings", coverageSettingsPath, "-c", configuration);
 
             if (!SdkTestContext.IsLocalized())
             {

@@ -71,18 +71,36 @@
     <SDKCustomXUnitProject Include="**\*.AoT.Tests.csproj" />
   </ItemGroup>
 
+  <!-- Helix work-item partitioning configuration.
+       effective limit = BaseMethodLimit × MethodLimitMultiplier (per-project).
+       Targeting ~5 minutes per work item across all platforms. -->
+  <PropertyGroup>
+    <BaseMethodLimit Condition="'$(TestFullMSBuild)' == 'true'">64</BaseMethodLimit>
+    <BaseMethodLimit Condition="'$(TargetOS)' == 'osx' and '$(TargetArchitecture)' == 'arm64'">128</BaseMethodLimit>
+    <BaseMethodLimit Condition="'$(BaseMethodLimit)' == ''">32</BaseMethodLimit>
+  </PropertyGroup>
+
   <!-- Consolidate Helix shards for assemblies with very short test durations.
        MethodLimitMultiplier increases the methods-per-shard threshold, producing
        fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
   <ItemGroup>
     <SDKCustomXUnitProject Update="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj">
-      <MethodLimitMultiplier>5</MethodLimitMultiplier>
+      <MethodLimitMultiplier>10</MethodLimitMultiplier>
     </SDKCustomXUnitProject>
     <SDKCustomXUnitProject Update="TemplateEngine\**\*.csproj;**\Microsoft.TemplateEngine.Cli.UnitTests.csproj">
       <MethodLimitMultiplier>20</MethodLimitMultiplier>
     </SDKCustomXUnitProject>
     <SDKCustomXUnitProject Update="**\Microsoft.DotNet.ApiCompatibility.Tests.csproj;**\Microsoft.DotNet.ApiDiff.Tests.csproj;**\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj;**\Microsoft.DotNet.GenAPI.Tests.csproj">
       <MethodLimitMultiplier>10</MethodLimitMultiplier>
+    </SDKCustomXUnitProject>
+    <!-- EndToEnd.Tests needs installer archives which are excluded from the shared
+         correlation payload to reduce download/unpack overhead for all other work items.
+         AdditionalPayloadDir: directory whose files are included in the per-item payload.
+         AdditionalPayloadDestination: relative path under the correlation payload root
+         where files are copied at runtime so the test's expected paths resolve correctly. -->
+    <SDKCustomXUnitProject Update="EndToEnd.Tests\EndToEnd.Tests.csproj">
+      <AdditionalPayloadDir>$(RepoRoot)artifacts\tmp\HelixInstallerArchives</AdditionalPayloadDir>
+      <AdditionalPayloadDestination>d/.nuget</AdditionalPayloadDestination>
     </SDKCustomXUnitProject>
   </ItemGroup>
 
@@ -146,7 +164,24 @@
 
     <PropertyGroup>
       <HelixPayloadOnHost>$(RepoRoot)artifacts\tmp\Helixpayload</HelixPayloadOnHost>
+      <HelixNuGetPayload>$(RepoRoot)artifacts\tmp\HelixNuGetPayload</HelixNuGetPayload>
+      <HelixInstallerArchives>$(RepoRoot)artifacts\tmp\HelixInstallerArchives</HelixInstallerArchives>
     </PropertyGroup>
+
+    <!-- Stage nupkgs (excluding installer archives) for the shared correlation payload.
+         This avoids downloading large SDK archives on every work item. -->
+    <ItemGroup>
+      <_ShippingNuGetPackages Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.nupkg" />
+      <_InstallerArchives Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.zip;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.tar.gz;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.rpm;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.deb;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.exe;
+                                   $(RepoRoot)artifacts\packages\$(Configuration)\Shipping\**\*.pkg" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_ShippingNuGetPackages)" DestinationFiles="@(_ShippingNuGetPackages->'$(HelixNuGetPayload)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_InstallerArchives)" DestinationFiles="@(_InstallerArchives->'$(HelixInstallerArchives)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(Engfolder)" DestinationFiles="@(Engfolder->'$(HelixPayloadOnHost)\eng\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(GlobalJson)" DestinationFiles="@(GlobalJson->'$(HelixPayloadOnHost)\%(RecursiveDir)%(Filename)%(Extension)')" />
@@ -168,6 +203,12 @@
     <PropertyGroup>
       <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
       <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
+      <!-- Install wasm-tools workload on Helix for AoT tests (see: https://github.com/dotnet/sdk/issues/22655).
+           This must happen on Helix (not the build machine) because cross-arch builds produce a dotnet binary
+           that cannot execute on the build machine's architecture.
+           Point to the test NuGet.config so the workload packs can be resolved from the configured feeds. -->
+      <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and !$(IsPosixShell)">$(HelixPreCommands);%DOTNET_ROOT%\dotnet workload install wasm-tools --skip-manifest-update --configfile %TestExecutionDirectory%\NuGet.config</HelixPreCommands>
+      <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and $(IsPosixShell)">$(HelixPreCommands);$DOTNET_ROOT/dotnet workload install wasm-tools --skip-manifest-update --configfile $TestExecutionDirectory/NuGet.config</HelixPreCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -print0 | xargs -0 -I@ cp @ "$HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
@@ -175,7 +216,6 @@
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
       <MicrosoftNETBuildExtensions>$(RepoRoot)artifacts\bin\$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MicrosoftNETBuildExtensions>
-      <ArtifactsShippingPackages>$(RepoRoot)artifacts\packages\$(Configuration)\Shipping</ArtifactsShippingPackages>
     </PropertyGroup>
 
     <TarGzFileCreateFromDirectory
@@ -205,7 +245,7 @@
         <Destination>r</Destination>
       </HelixCorrelationPayload>
 
-      <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
+      <HelixCorrelationPayload Include="$(HelixNuGetPayload)">
         <Destination>d/.nuget</Destination>
       </HelixCorrelationPayload>
     </ItemGroup>

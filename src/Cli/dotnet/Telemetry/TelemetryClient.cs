@@ -36,8 +36,25 @@ public class TelemetryClient : ITelemetryClient
 #endif
     private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
     private static readonly bool s_disableTraceExport = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
-    private static readonly bool s_enableOtlpExporter = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER);
-    private static readonly int s_flushTimeoutMs = 200;
+    // The OTLP exporter is enabled when:
+    //   1. The SDK-specific DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER env var is true, or
+    //   2. Any of the standard OpenTelemetry OTLP exporter env vars are set (per
+    //      https://opentelemetry.io/docs/specs/otel/protocol/exporter/), signaling that
+    //      the user has configured an OTLP endpoint/protocol/headers and intends to export.
+    // When enabled, AddOtlpExporter() is called without an inline configuration callback,
+    // which lets the OpenTelemetry SDK's OtlpExporterOptions read the standard env vars
+    // itself to determine endpoint, protocol, headers, timeout, etc.
+    private static readonly bool s_enableOtlpExporter =
+        Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER)
+        || (!Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.OTEL_SDK_DISABLED) && IsOtlpExporterConfiguredByStandardEnvVars());
+    private static readonly int s_flushTimeoutMs = 10;
+
+    /// <summary>
+    /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
+    /// are set, signaling that the user has configured the OTLP exporter and expects it to be used.
+    /// See https://opentelemetry.io/docs/specs/otel/protocol/exporter/.
+    /// </summary>
+    private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 
     public static string? CurrentSessionId { get; private set; } = null;
     public static bool DisabledForTests
@@ -136,18 +153,36 @@ public class TelemetryClient : ITelemetryClient
     }
 
     /// <summary>
-    /// Uses the OpenTelemetry SDK's Propagation API to derive the parent activity context from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
+    /// Derives the parent activity context. Checks runtime properties first (set by the AOT
+    /// bridge via <c>hostfxr_set_runtime_property_value</c>), then falls back to the
+    /// <c>TRACEPARENT</c> / <c>TRACESTATE</c> environment variables.
     /// </summary>
     private static ActivityContext? GetParentActivityContext()
     {
-        var traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        // Runtime properties take precedence — they are set by the AOT bridge when it
+        // falls back to the managed CLI so that the managed spans become children of the
+        // AOT-side main activity.
+        var traceParent = AppContext.GetData(Activities.TRACEPARENT) as string;
+
+        // Fall back to environment variables for external callers.
+        if (string.IsNullOrEmpty(traceParent))
+        {
+            traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        }
+
         if (string.IsNullOrEmpty(traceParent))
         {
             return null;
         }
 
         var carrierMap = new Dictionary<string, IEnumerable<string>?> { { "traceparent", [traceParent] } };
-        var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
+
+        var traceState = AppContext.GetData(Activities.TRACESTATE) as string;
+        if (string.IsNullOrEmpty(traceState))
+        {
+            traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
+        }
+
         if (!string.IsNullOrEmpty(traceState))
         {
             carrierMap.Add("tracestate", [traceState]);

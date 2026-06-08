@@ -1821,7 +1821,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var libDllProjectPath = Path.Join("Lib", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll");
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $$"""
-            #:property FileBasedProgramsItemMapping=.dll=Reference
             #:include {{libDllDirectivePath}}
             Console.WriteLine(Lib.LibClass.GetMessage());
             """);
@@ -1851,7 +1850,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <PublishAot>true</PublishAot>
                     <PackAsTool>true</PackAsTool>
                     <UserSecretsId>Program-*</UserSecretsId>
-                    <FileBasedProgramsItemMapping>.dll=Reference</FileBasedProgramsItemMapping>
                   </PropertyGroup>
 
                   <ItemGroup>
@@ -1908,7 +1906,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             Path.Join(testInstance.Path, "Lib.dll"));
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:property FileBasedProgramsItemMapping=.dll=Reference
             #:include *.dll
             Console.WriteLine(Lib.LibClass.GetMessage());
             """);
@@ -1976,6 +1973,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.WriteAllText(Path.Join(srcDir, "Directory.Build.props"), $"""
             <Project>
+              <PropertyGroup>
+                <{CSharpDirective.IncludeOrExclude.MappingPropertyName}></{CSharpDirective.IncludeOrExclude.MappingPropertyName}>
+              </PropertyGroup>
               <ItemGroup>
                 <Reference Include="$(MSBuildThisFileDirectory){libDllPropsPath}" />
               </ItemGroup>
@@ -2050,9 +2050,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.WriteAllText(Path.Join(srcDir, "Directory.Build.props"), $"""
             <Project>
-              <PropertyGroup>
-                <FileBasedProgramsItemMapping>.dll=Reference</FileBasedProgramsItemMapping>
-              </PropertyGroup>
               <ItemGroup>
                 <Reference Include="$(MSBuildThisFileDirectory){libDllPropsPath}" />
               </ItemGroup>
@@ -2121,7 +2118,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var libDllProjectPath = Path.Join("Lib", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Lib.dll");
 
         File.WriteAllText(Path.Join(testInstance.Path, "extra.cs"), $$"""
-            #:property FileBasedProgramsItemMapping=.dll=Reference
             #:include {{libDllDirectivePath}}
             """);
 
@@ -2201,7 +2197,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.WriteAllText(Path.Join(libDir, "lib.cs"), $$"""
             #:property OutputType=Library
-            #:property FileBasedProgramsItemMapping=.dll=Reference
             #:include {{dependencyDllDirectivePath}}
             namespace MyLib;
             public static class Wrapper
@@ -2767,6 +2762,117 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void Directives_IdenticalDuplicate()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:sdk Microsoft.NET.Sdk
+                #:sdk Microsoft.NET.Sdk
+                #:package Package@1.0
+                #:package Package@1.0
+                #:property Prop=1
+                #:property Prop=1
+                Console.Write();
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <Prop>1</Prop>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Package" Version="1.0" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.Write();
+                """,
+            evaluateDirectives: true);
+    }
+
+    [Fact]
+    public void Directives_Duplicate_UsesUnevaluatedValues()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:property A=a
+                #:property B=b
+                #:property B=b
+                #:property C=a
+                #:property C=$(A)
+                #:property D=$(A)
+                #:property D=$(A)
+                Console.Write();
+                """,
+            expectedProject: null,
+            expectedCSharp: """
+                Console.Write();
+                """,
+            expectedErrors:
+            [
+                (5, string.Format(FileBasedProgramsResources.DuplicateDirective, "#:property C")),
+            ],
+            evaluateDirectives: true);
+    }
+
+    [Fact]
+    public void Directives_Duplicate_EvaluatedProjectDirectivesAreAllowed()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Lib.csproj"), """
+            <Project Sdk="Microsoft.NET.Sdk" />
+            """);
+
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:property LibraryProject=Lib.csproj
+                #:project Lib.csproj
+                #:project $(LibraryProject)
+                Console.Write();
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <LibraryProject>Lib.csproj</LibraryProject>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <ProjectReference Include="Lib.csproj" />
+                    <ProjectReference Include="Lib.csproj" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.Write();
+                """,
+            evaluateDirectives: true);
+    }
+
+    [Fact]
     public void Directives_Duplicate()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2787,6 +2893,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #:sdk Name
                 #:sdk Name@X
+                #:sdk Name@Y
                 #:sdk Name
                 #:sdk Name2
                 """,
@@ -2802,6 +2909,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #:package Name
                 #:package Name@X
+                #:package Name@Y
                 #:package Name
                 #:package Name2
                 """,

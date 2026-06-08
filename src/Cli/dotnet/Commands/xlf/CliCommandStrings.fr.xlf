@@ -112,6 +112,26 @@
         <target state="new">List available devices for running the application.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DotnetTestDuplicateHandshakeOnConnection">
+        <source>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</source>
+        <target state="new">Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMissingHandshakeProtocolVersions">
+        <source>The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</source>
+        <target state="new">The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMissingRequiredMessageProperty">
+        <source>The required property '{0}' was missing or empty in the message of type '{1}'.</source>
+        <target state="new">The required property '{0}' was missing or empty in the message of type '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HandshakeFailuresHeader">
+        <source>Handshake failures:</source>
+        <target state="new">Handshake failures:</target>
+        <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
+      </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
@@ -669,8 +689,8 @@ Cela équivaut à supprimer project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
-        <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
-        <target state="translated">L’architecture, la configuration, le framework, le système d’exploitation et le runtime des options ne peuvent pas être utilisés avec l’option « --test-modules ».</target>
+        <source>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</source>
+        <target state="needs-review-translation">L’architecture, la configuration, le framework, le système d’exploitation et le runtime des options ne peuvent pas être utilisés avec l’option « --test-modules ».</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">
@@ -696,11 +716,6 @@ Cela équivaut à supprimer project.assets.json.</target>
       <trans-unit id="CmdPackage">
         <source>PACKAGE_NAME</source>
         <target state="translated">PACKAGE_NAME</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="translated">Référence du package à ajouter. Il peut s’agir uniquement de l’identificateur de package, par exemple « Newtonsoft.Json », ou d’un identificateur de package et d’une version séparés par « @ », par exemple « Newtonsoft.Json@13.0.3 »</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackageDirectory">
@@ -1036,16 +1051,6 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <target state="translated">La console est déjà en mode de traitement par lot.</target>
         <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">Impossible de convertir la valeur de la propriété '{0}' en valeur booléenne.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">Impossible de convertir la valeur de la propriété '{0}' en chaîne.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">Il n'existe aucun projet. Vérifiez qu'il existe un projet dans {0} ou passez le chemin au projet via {1}.</target>
@@ -1307,16 +1312,6 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <target state="translated">a échoué avec {0} erreur(s)</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedWithErrorsAndWarnings">
-        <source>failed with {0} error(s) and {1} warning(s)</source>
-        <target state="translated">a échoué avec {0} erreur(s) et {1} avertissement(s)</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedWithWarnings">
-        <source>failed with {0} warning(s)</source>
-        <target state="translated">a échoué avec {0} avertissement(s)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ForTest">
         <source>For test</source>
         <target state="translated">Pour le test</target>
@@ -1571,11 +1566,6 @@ Pour découvrir plus d’informations, consultez https://aka.ms/dotnet-test/mtp.
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
         <target state="translated">Impossible de spécifier l’option « {0} » lorsque vous utilisez également '-' pour lire le fichier à partir de l’entrée standard.</target>
         <note>{0} is an option name like '--no-build'.</note>
-      </trans-unit>
-      <trans-unit id="InvalidSemVerVersionString">
-        <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="translated">Échec de l’analyse de « {0} » en tant que version sémantique.</target>
-        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
@@ -2451,16 +2441,6 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <target state="translated">Simulation : supprimerait le fichier source : {0}</target>
         <note>{0} is the source file path.</note>
       </trans-unit>
-      <trans-unit id="ProjectConvertWouldDeleteFile">
-        <source>Dry run: would delete file: {0}</source>
-        <target state="translated">Test à blanc : supprimerait le fichier : {0}</target>
-        <note>{0} is the file full path.</note>
-      </trans-unit>
-      <trans-unit id="ProjectConvertWouldMoveFile">
-        <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="translated">Test à blanc : déplacerait le fichier « {0} » vers « {1} ».</target>
-        <note>{0} and {1} are file full paths.</note>
-      </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
         <target state="translated">PROJECT_MANIFEST</target>
@@ -2672,6 +2652,11 @@ La valeur par défaut est de publier une application dépendante du framework.</
         <source>.NET Run Command</source>
         <target state="translated">Commande d'exécution .NET</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunAsyncCalledMoreThanOnce">
+        <source>'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</source>
+        <target state="new">'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</target>
+        <note>{Locked="TestApplication.RunAsync"}</note>
       </trans-unit>
       <trans-unit id="RunCommandAvailableDevices">
         <source>Available devices:</source>
@@ -3336,16 +3321,6 @@ L'outil '{1}' (version '{2}') a été installé correctement.</target>
         <target state="translated">Le fichier config NuGet '{0}' n'existe pas.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">ID de package NuGet de l'outil à installer.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
         <target state="new">A package ID was not specified for tool installation.</target>
@@ -3578,16 +3553,6 @@ et les ID de package correspondants aux outils installés, utilisez la commande
         <target state="translated">Met à jour un outil global ou local.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to update.</source>
-        <target state="translated">ID de package NuGet de l'outil à mettre à jour.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUpdatePackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
         <source>Tool '{0}' has multiple versions installed and cannot be updated.</source>
         <target state="translated">Dans la mesure où plusieurs versions de l'outil '{0}' sont installées, il ne peut pas être mis à jour.</target>
@@ -3623,6 +3588,11 @@ et les ID de package correspondants aux outils installés, utilisez la commande
         <target state="translated">Un message de type « {0} » a été reçu avant tout établissement d’une liaison, ce qui est inattendu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutTestHostHandshake">
+        <source>Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</source>
+        <target state="new">Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
         <target state="translated">Un événement de fin de session de test a été reçu sans démarrage d’une session de test correspondante.</target>
@@ -3641,6 +3611,11 @@ et les ID de package correspondants aux outils installés, utilisez la commande
       <trans-unit id="UnknownRecordsInformationalMessage">
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
         <target state="translated">Les lignes avec des modifications non enregistrées représentent les modifications des actions autres que les commandes de charge de travail CLI .NET. Il s’agit généralement d’une mise à jour du Kit de développement logiciel (SDK) .NET ou de Visual Studio.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownSessionEventType">
+        <source>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</source>
+        <target state="new">Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
@@ -3747,21 +3722,6 @@ et les ID de package correspondants aux outils installés, utilisez la commande
         <source>Cannot specify --version when the package argument already contains a version.</source>
         <target state="translated">Impossible de spécifier --version lorsque l’argument de package contient déjà une version.</target>
         <note>{Locked="--version"}</note>
-      </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">La propriété '{0}' doit être un objet, si elle est spécifiée.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbRun">
-        <source>run</source>
-        <target state="new">run</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbTest">
-        <source>test</source>
-        <target state="new">test</target>
-        <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
