@@ -5,6 +5,8 @@ public class UnitTest1
     [Fact]
     public void Test1()
     {
-
+#if (XUnitVersion == "v3")
+        Assert.True(true);
+#endif
     }
 }
