@@ -17,7 +17,7 @@ namespace Microsoft.NET.TestFramework
     /// megabytes over the test host's single IPC channel when the test completes, which is enough to
     /// starve the blame hang-dump collector's inactivity timer and trigger a spurious timeout.
     /// </remarks>
-    public sealed class TruncatingTestOutputHelper : ITestOutputHelper
+    public sealed class TruncatingTestOutputHelper : ITestOutputHelper, IDisposable
     {
         private const int DefaultHeadCharacters = 50_000;
         private const int DefaultTailCharacters = 50_000;
@@ -50,33 +50,69 @@ namespace Microsoft.NET.TestFramework
             {
                 if (!_headFull)
                 {
-                    // Still within the head budget: forward immediately so the start of the output is
-                    // preserved even if the test later throws before the tail is flushed.
-                    _inner.WriteLine(message);
-                    _headCharactersWritten += message.Length;
-                    if (_headCharactersWritten >= _maxHeadCharacters)
+                    int remainingHead = _maxHeadCharacters - _headCharactersWritten;
+                    if (message.Length <= remainingHead)
                     {
-                        _headFull = true;
+                        // Still within the head budget: forward immediately so the start of the output
+                        // is preserved even if the test later throws before the tail is flushed.
+                        _inner.WriteLine(message);
+                        _headCharactersWritten += message.Length;
+                        if (_headCharactersWritten >= _maxHeadCharacters)
+                        {
+                            _headFull = true;
+                        }
+
+                        return;
                     }
 
-                    return;
+                    // This single message crosses the head budget. Forward only the part that fits in
+                    // the head so one very large WriteLine (e.g. an entire captured StdOut written at
+                    // once) cannot push the whole payload through immediately, then buffer the rest as
+                    // tail below.
+                    if (remainingHead > 0)
+                    {
+                        _inner.WriteLine(message.Substring(0, remainingHead));
+                        message = message.Substring(remainingHead);
+                    }
+
+                    _headFull = true;
                 }
 
-                // Past the head budget: keep only the most recent lines within the tail budget.
-                _tail.Enqueue(message);
-                _tailCharacters += message.Length;
+                // Past the head budget: keep only the most recent characters within the tail budget.
+                EnqueueTail(message);
+            }
+        }
 
-                while (_tailCharacters > _maxTailCharacters && _tail.Count > 1)
-                {
-                    string dropped = _tail.Dequeue();
-                    _tailCharacters -= dropped.Length;
-                    _omittedCharacters += dropped.Length;
-                    _omittedLines++;
-                }
+        private void EnqueueTail(string message)
+        {
+            // If a single message is on its own larger than the entire tail budget, keep only its
+            // final portion so the buffered tail can never exceed the bound.
+            if (_maxTailCharacters > 0 && message.Length > _maxTailCharacters)
+            {
+                _omittedCharacters += message.Length - _maxTailCharacters;
+                message = message.Substring(message.Length - _maxTailCharacters);
+            }
+
+            _tail.Enqueue(message);
+            _tailCharacters += message.Length;
+
+            while (_tailCharacters > _maxTailCharacters && _tail.Count > 1)
+            {
+                string dropped = _tail.Dequeue();
+                _tailCharacters -= dropped.Length;
+                _omittedCharacters += dropped.Length;
+                _omittedLines++;
             }
         }
 
         public void WriteLine(string format, params object[] args) => WriteLine(string.Format(format, args));
+
+        /// <summary>
+        /// Emits the buffered tail (see <see cref="WriteBufferedTail"/>). Disposing in a <c>using</c>
+        /// block guarantees the tail is flushed even if the logged command (or a later assertion)
+        /// throws, without needing an explicit <c>try/finally</c>.
+        /// </summary>
+        public void Dispose() => WriteBufferedTail();
 
         /// <summary>
         /// Emits the buffered tail (preceded by a note describing any omitted output) to the inner

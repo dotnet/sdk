@@ -350,15 +350,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // hang-dump collector's inactivity timer and trigger a spurious 15-minute timeout. The
             // assertions below only inspect the captured StdOut, so for the diag case forward just a
             // bounded head and tail of the output to the log instead of the whole firehose.
-            var diagOutputLimiter = verbosity == "diag" ? new TruncatingTestOutputHelper(Log) : null;
+            using var diagOutputLimiter = verbosity == "diag" ? new TruncatingTestOutputHelper(Log) : null;
             ITestOutputHelper commandLog = diagOutputLimiter ?? Log;
 
             // Call test
             CommandResult result = new DotnetTestCommand(commandLog, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute("-v", verbosity);
-
-            diagOutputLimiter?.WriteBufferedTail();
 
             // Verify
             if (!TestContext.IsLocalized())
