@@ -19,6 +19,9 @@
 <!--#endif-->
 <!--#else-->
     <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
+<!--#if (ExplicitProgramFile)-->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+<!--#endif-->
   </PropertyGroup>
 <!--#endif-->
 
@@ -36,6 +39,9 @@
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
+<!--#if (ExplicitProgramFile)-->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+<!--#endif-->
 <!--#endif-->
   </PropertyGroup>
 
