@@ -5,8 +5,6 @@ onboarding/init flow after migrating it from a sequence of unconditional prompts
 to a **summary-first** design, the decisions behind that design, and the UX
 branches a customer can reach.
 
-Tracking issue: [dotnetup: Migrate walkthrough to summary-based approach](https://github.com/dotnet/sdk/issues/53837).
-
 ## Goals
 
 - Show the user a concise **summary of the defaults** first, then let them
@@ -106,8 +104,7 @@ Lines:
 - **Banner** — Reuses `DotnetBotBanner.BuildPanel()`. The version string comes
   from `Parser.Version` (commit hash trimmed).
 - **SDK Channel** — The resolved default channel. Append
-  `(determined from global.json at <path>)` when the channel was implied by a
-  `global.json`, or `(latest)` when falling back to the default channel.
+  `(determined from global.json at <path>)` when the channel was implied by a `global.json`, otherwise omit the parenthetical.
 - **Mode** — The recommended `PathPreference` display name plus a short
   parenthetical, e.g. `Terminal Profile (recommended)`.
 - **System installs to migrate** — Up to 3 candidates in an indented bullet
