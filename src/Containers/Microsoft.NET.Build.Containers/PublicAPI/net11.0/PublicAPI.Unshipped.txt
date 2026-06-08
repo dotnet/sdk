@@ -339,3 +339,4 @@ override Microsoft.NET.Build.Containers.ImageIndexV1.GetHashCode() -> int
 ~override Microsoft.NET.Build.Containers.ImageIndexV1.Equals(object obj) -> bool
 Microsoft.NET.Build.Containers.ImageIndexV1.Equals(Microsoft.NET.Build.Containers.ImageIndexV1 other) -> bool
 Microsoft.NET.Build.Containers.ImageIndexV1.Deconstruct(out int schemaVersion, out string! mediaType, out Microsoft.NET.Build.Containers.PlatformSpecificOciManifest[]! manifests) -> void
+const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Container = "Container" -> string!

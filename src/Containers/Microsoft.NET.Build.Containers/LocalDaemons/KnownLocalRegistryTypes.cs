@@ -8,10 +8,11 @@ namespace Microsoft.NET.Build.Containers;
 
 public static class KnownLocalRegistryTypes
 {
+    public const string Container = nameof(Container);
     public const string Docker = nameof(Docker);
     public const string Podman = nameof(Podman);
 
-    public static readonly string[] SupportedLocalRegistryTypes = new[] { Docker, Podman };
+    public static readonly string[] SupportedLocalRegistryTypes = new[] { Docker, Podman, Container };
 
     internal static ILocalRegistry CreateLocalRegistry(string? type, ILoggerFactory loggerFactory)
     {
@@ -22,6 +23,7 @@ public static class KnownLocalRegistryTypes
 
         return type switch
         {
+            Container => new DockerCli(DockerCli.ContainerCommand, loggerFactory),
             Podman => new DockerCli(DockerCli.PodmanCommand, loggerFactory),
             Docker => new DockerCli(DockerCli.DockerCommand, loggerFactory),
             _ => throw new NotSupportedException(

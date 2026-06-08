@@ -21,10 +21,11 @@ internal sealed class DockerCli
 : ILocalRegistry
 #endif
 {
+    public const string ContainerCommand = "container";
     public const string DockerCommand = "docker";
     public const string PodmanCommand = "podman";
 
-    private const string Commands = $"{DockerCommand}/{PodmanCommand}";
+    private const string AllCommands = $"{DockerCommand}/{PodmanCommand}/{ContainerCommand}";
 
     private readonly ILogger _logger;
     private string? _command;
@@ -38,6 +39,7 @@ internal sealed class DockerCli
     public DockerCli(string? command, ILoggerFactory loggerFactory)
     {
         if (!(command == null ||
+              command == ContainerCommand ||
               command == PodmanCommand ||
               command == DockerCommand))
         {
@@ -76,7 +78,7 @@ internal sealed class DockerCli
         string? command = await GetCommandAsync(cancellationToken);
         if (command is null)
         {
-            throw new NotImplementedException(Resource.FormatString(Strings.ContainerRuntimeProcessCreationFailed, Commands));
+            throw new NotImplementedException(Resource.FormatString(Strings.ContainerRuntimeProcessCreationFailed, GetCommandsForCurrentPlatform()));
         }
 
         _fullCommandPath = FindFullPathFromPath(command);
@@ -85,6 +87,23 @@ internal sealed class DockerCli
     }
 
     private async Task LoadAsync<T>(
+        T image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc,
+        CancellationToken cancellationToken)
+    {
+        string? command = await GetCommandAsync(cancellationToken).ConfigureAwait(false);
+        if (command == ContainerCommand)
+        {
+            await LoadWithContainerAsync(image, sourceReference, destinationReference, writeStreamFunc, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        await LoadFromStreamAsync(image, sourceReference, destinationReference, writeStreamFunc, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task LoadFromStreamAsync<T>(
         T image,
         SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
@@ -124,9 +143,51 @@ internal sealed class DockerCli
         }
     }
 
+    private async Task LoadWithContainerAsync<T>(
+        T image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string commandPath = await FindFullCommandPath(cancellationToken).ConfigureAwait(false);
+        string imageArchivePath = Path.GetTempFileName();
+
+        try
+        {
+            await using (FileStream imageArchive = File.Create(imageArchivePath))
+            {
+                await writeStreamFunc(image, sourceReference, destinationReference, imageArchive, cancellationToken).ConfigureAwait(false);
+            }
+
+            string arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(["image", "load", "--input", imageArchivePath]);
+            (int exitCode, string standardError) = await RunProcessAsync(commandPath, arguments, cancellationToken).ConfigureAwait(false);
+
+            if (exitCode != 0)
+            {
+                throw new DockerLoadException(Resource.FormatString(nameof(Strings.ImageLoadFailed), standardError));
+            }
+        }
+        finally
+        {
+            File.Delete(imageArchivePath);
+        }
+    }
+ 
     public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
-        // For loading to the local registry, we use the Docker format. Two reasons: one - compatibility with previous behavior before oci formatted publishing was available, two - Podman cannot load multi tag oci image tarball.
-        => await LoadAsync(image, sourceReference, destinationReference, WriteDockerImageToStreamAsync, cancellationToken);
+    {
+        string? command = await GetCommandAsync(cancellationToken).ConfigureAwait(false);
+        Func<BuiltImage, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc =
+            command == ContainerCommand
+                ? WriteOciImageToStreamAsync
+                // For loading to the local registry, we use the Docker format for Docker and Podman.
+                // This preserves previous behavior and avoids Podman's single-arch OCI tarball tagging limitations.
+                : WriteDockerImageToStreamAsync;
+
+        await LoadAsync(image, sourceReference, destinationReference, writeStreamFunc, cancellationToken).ConfigureAwait(false);
+    }
 
     public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
     {
@@ -136,6 +197,10 @@ internal sealed class DockerCli
             // Podman's 'load' only keeps the image matching the host architecture from a multi-arch OCI tarball.
             // Instead, we load each arch separately and assemble them using 'podman manifest'.
             await LoadMultiArchImageWithPodmanAsync(multiArchImage, sourceReference, destinationReference, cancellationToken);
+        }
+        else if (command == ContainerCommand)
+        {
+            await LoadAsync(multiArchImage, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -234,7 +299,7 @@ internal sealed class DockerCli
         string? command = await GetCommandAsync(cancellationToken);
         if (command is null)
         {
-            _logger.LogError($"Cannot find {Commands} executable.");
+            _logger.LogError($"Cannot find {GetCommandsForCurrentPlatform()} executable.");
             return false;
         }
 
@@ -242,6 +307,8 @@ internal sealed class DockerCli
         {
             switch (command)
             {
+                case ContainerCommand:
+                    return await TryRunCommandAsync(ContainerCommand, "system status", cancellationToken);
                 case DockerCommand:
                     {
                         JsonDocument config = GetDockerConfig();
@@ -674,27 +741,54 @@ internal sealed class DockerCli
         // if it is actually podman.
         var podmanCommand = TryRunVersionCommandAsync(PodmanCommand, cancellationToken);
         var dockerCommand = TryRunVersionCommandAsync(DockerCommand, cancellationToken);
+        var containerCommand = ShouldProbeContainer()
+            ? TryRunVersionCommandAsync(ContainerCommand, cancellationToken)
+            : Task.FromResult(false);
 
         await Task.WhenAll(
             podmanCommand,
-            dockerCommand
+            dockerCommand,
+            containerCommand
         ).ConfigureAwait(false);
 
-        // be explicit with this check so that we don't do the link target check unless it might actually be a solution.
-        if (dockerCommand.Result && podmanCommand.Result && IsPodmanAlias())
-        {
-            _command = PodmanCommand;
-        }
-        else if (dockerCommand.Result)
-        {
-            _command = DockerCommand;
-        }
-        else if (podmanCommand.Result)
-        {
-            _command = PodmanCommand;
-        }
+        _command = SelectLocalCommand(
+            dockerCommand.Result,
+            podmanCommand.Result,
+            containerCommand.Result,
+            dockerCommand.Result && podmanCommand.Result && IsPodmanAlias());
 
         return _command;
+    }
+
+    private static string GetCommandsForCurrentPlatform()
+        => ShouldProbeContainer() ? AllCommands : $"{DockerCommand}/{PodmanCommand}";
+
+    private static bool ShouldProbeContainer()
+        => OperatingSystem.IsMacOS();
+
+    internal static string? SelectLocalCommand(bool dockerAvailable, bool podmanAvailable, bool containerAvailable, bool dockerIsPodmanAlias)
+    {
+        if (dockerAvailable && podmanAvailable && dockerIsPodmanAlias)
+        {
+            return PodmanCommand;
+        }
+
+        if (dockerAvailable)
+        {
+            return DockerCommand;
+        }
+
+        if (podmanAvailable)
+        {
+            return PodmanCommand;
+        }
+
+        if (containerAvailable)
+        {
+            return ContainerCommand;
+        }
+
+        return null;
     }
 
     private static bool IsPodmanAlias()
@@ -748,10 +842,16 @@ internal sealed class DockerCli
     }
 
     private static async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)
+        => await TryRunCommandAsync(
+            command,
+            command == ContainerCommand ? "--version" : "version",
+            cancellationToken).ConfigureAwait(false);
+
+    private static async Task<bool> TryRunCommandAsync(string command, string arguments, CancellationToken cancellationToken)
     {
         try
         {
-            (int ExitCode, string StandardError) = await RunProcessAsync(command, "version", cancellationToken);
+            (int ExitCode, string StandardError) = await RunProcessAsync(command, arguments, cancellationToken);
             return ExitCode == 0;
         }
         catch (OperationCanceledException)

@@ -106,14 +106,7 @@ internal static class ContainerBuilder
         logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
 
-        // forcibly change the media type if required
-        imageBuilder.ManifestMediaType = imageFormat switch
-        {
-            null => imageBuilder.ManifestMediaType,
-            KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-            KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
-            _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
-        };
+        imageBuilder.ManifestMediaType = GetManifestMediaType(imageBuilder.ManifestMediaType, imageFormat, destinationImageReference);
         var userId = imageBuilder.IsWindows ? null : TryParseUserId(containerUser);
         Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, userId);
         imageBuilder.AddLayer(newLayer);
@@ -217,6 +210,25 @@ internal static class ContainerBuilder
         // TODO: on Linux we could _potentially_ try to map the user name to a UID
         return null;
     }
+
+    internal static string GetManifestMediaType(string defaultManifestMediaType, KnownImageFormats? imageFormat, DestinationImageReference destinationImageReference)
+    {
+        if (ShouldForceOciImageFormat(destinationImageReference))
+        {
+            return SchemaTypes.OciManifestV1;
+        }
+
+        return imageFormat switch
+        {
+            null => defaultManifestMediaType,
+            KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+            KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+            _ => defaultManifestMediaType
+        };
+    }
+
+    internal static bool ShouldForceOciImageFormat(DestinationImageReference destinationImageReference)
+        => destinationImageReference.LocalRegistry is DockerCli dockerCli && dockerCli.GetCommand() == DockerCli.ContainerCommand;
 
     private static async Task<int> PushToLocalRegistryAsync(ILogger logger, BuiltImage builtImage, SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,

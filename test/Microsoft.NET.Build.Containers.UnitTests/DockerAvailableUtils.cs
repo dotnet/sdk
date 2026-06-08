@@ -20,7 +20,7 @@ public class DockerAvailableTheoryAttribute : TheoryAttribute
             base.Skip = "Skipping test because Docker is not available on this host.";
         }
 
-        if (skipPodman && DockerCliStatus.Command == DockerCli.PodmanCommand)
+        if (skipPodman && DockerCliStatus.Command != DockerCli.DockerCommand)
         {
             base.Skip = $"Skipping test with {DockerCliStatus.Command} cli.";
         }
@@ -42,11 +42,11 @@ public class DockerAvailableFactAttribute : FactAttribute
         {
             base.Skip = "Skipping test because Docker is not available on this host.";
         }
-        else if (checkContainerdStoreAvailability && DockerCliStatus.Command != DockerCli.PodmanCommand && !DockerCli.IsContainerdStoreEnabledForDocker())
+        else if (checkContainerdStoreAvailability && DockerCliStatus.Command == DockerCli.DockerCommand && !DockerCli.IsContainerdStoreEnabledForDocker())
         {
             base.Skip = "Skipping test because Docker daemon is not using containerd as the storage driver.";
         }
-        else if (skipPodman && DockerCliStatus.Command == DockerCli.PodmanCommand)
+        else if (skipPodman && DockerCliStatus.Command != DockerCli.DockerCommand)
         {
             base.Skip = $"Skipping test with {DockerCliStatus.Command} cli.";
         }
@@ -60,8 +60,12 @@ static file class DockerCliStatus
     public static readonly bool IsAvailable;
     public static readonly string? Command;
     public static string LocalRegistry
-        => Command == DockerCli.PodmanCommand ? KnownLocalRegistryTypes.Podman
-                                              : KnownLocalRegistryTypes.Docker;
+        => Command switch
+        {
+            DockerCli.ContainerCommand => KnownLocalRegistryTypes.Container,
+            DockerCli.PodmanCommand => KnownLocalRegistryTypes.Podman,
+            _ => KnownLocalRegistryTypes.Docker
+        };
 
     static DockerCliStatus()
     {
