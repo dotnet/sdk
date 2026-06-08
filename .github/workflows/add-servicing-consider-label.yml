@@ -14,7 +14,7 @@ permissions:
 jobs:
   add-servicing-label:
     runs-on: ubuntu-latest
-    # Only run on the main repository, not forks
+    # Only run in the dotnet/sdk repository
     if: github.repository == 'dotnet/sdk'
 
     steps:
@@ -32,12 +32,15 @@ jobs:
               return;
             }
 
-            // Skip codeflow PRs: inter-branch merge flow and darc subscription PRs authored by bots.
-            // Exception: backport PRs are also bot-authored but should still receive the label.
-            const author = pr.user;
+            // Skip codeflow PRs: inter-branch merge flow and darc subscription PRs.
+            // Only skip known codeflow bot accounts; other bots (e.g. Dependabot) should
+            // still receive the label. Backport PRs carry the 'backport' label and are
+            // also exempt from this skip.
+            const author = pr.user.login;
+            const codeflowBots = ['dotnet-maestro[bot]', 'github-actions[bot]', 'dotnet-maestro'];
             const isBackport = labels.includes('backport');
-            if (author.type === 'Bot' && !isBackport) {
-              console.log(`Skipping codeflow PR authored by bot: ${author.login}`);
+            if (codeflowBots.includes(author) && !isBackport) {
+              console.log(`Skipping codeflow PR authored by bot: ${author}`);
               return;
             }
 
