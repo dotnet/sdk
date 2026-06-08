@@ -140,8 +140,9 @@ internal class InitWorkflows
         // A failed install (e.g. one unavailable runtime version) must not prevent us from
         // configuring the environment for the installs that DID succeed. The install step is
         // already best-effort — it installs every available request and then throws for the
-        // failures — so we capture that failure, finish applying configuration below, and
-        // rethrow at the end so the error still surfaces to the caller (and telemetry).
+        // failures — so we capture that failure, finish applying configuration below, and then
+        // rethrow (before printing "Setup complete!") so the error still surfaces to the caller
+        // (and telemetry).
         ExceptionDispatchInfo? installFailure = null;
         try
         {
