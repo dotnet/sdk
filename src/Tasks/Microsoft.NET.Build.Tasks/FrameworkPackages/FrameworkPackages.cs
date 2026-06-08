@@ -126,24 +126,24 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
         if (!string.IsNullOrEmpty(targetingPackRoot.Value))
         {
             var packsFolder = Path.Combine(targetingPackRoot, frameworkName + ".Ref");
-            var packsFolderForLog = Path.Combine(targetingPackRoot.OriginalValue, frameworkName + ".Ref");
-            log.LogMessage("Looking for targeting packs in {0}", packsFolderForLog);
+            var originalPacksFolder = Path.Combine(targetingPackRoot.OriginalValue, frameworkName + ".Ref");
+            log.LogMessage("Looking for targeting packs in {0}", originalPacksFolder);
             if (Directory.Exists(packsFolder))
             {
                 var packVersionPattern = $"{framework.Version.Major}.{framework.Version.Minor}.*";
                 var packDirectories = Directory.GetDirectories(packsFolder, packVersionPattern);
-                log.LogMessage("Pack directories found: {0}", string.Join(Environment.NewLine, packDirectories));
-                var packageOverridesFile = packDirectories
-                                                .Select(d => (Overrides: Path.Combine(d, "data", "PackageOverrides.txt"), Version: ParseVersion(Path.GetFileName(d))))
+                log.LogMessage("Pack directories found: {0}", string.Join(Environment.NewLine, packDirectories.Select(d => Path.Combine(originalPacksFolder, Path.GetFileName(d)))));
+                var packageOverrides = packDirectories
+                                                .Select(d => (Overrides: Path.Combine(d, "data", "PackageOverrides.txt"), OriginalOverrides: Path.Combine(originalPacksFolder, Path.GetFileName(d), "data", "PackageOverrides.txt"), Version: ParseVersion(Path.GetFileName(d))))
                                                 .Where(d => File.Exists(d.Overrides))
                                                 .OrderByDescending(d => d.Version)
-                                                .FirstOrDefault().Overrides;
+                                                .FirstOrDefault();
 
-                if (packageOverridesFile is not null)
+                if (packageOverrides.Overrides is not null)
                 {
-                    log.LogMessage("Found package overrides file {0}", packageOverridesFile);
+                    log.LogMessage("Found package overrides file {0}", packageOverrides.OriginalOverrides);
                     // Adapted from https://github.com/dotnet/sdk/blob/c3a8f72c3a5491c693ff8e49e7406136a12c3040/src/Tasks/Common/ConflictResolution/PackageOverride.cs#L52-L68
-                    var packageOverrideLines = File.ReadAllLines(packageOverridesFile);
+                    var packageOverrideLines = File.ReadAllLines(packageOverrides.Overrides);
 
                     var frameworkPackages = new FrameworkPackages(framework, frameworkName);
                     foreach (var packageOverride in PackageOverride.CreateOverriddenPackages(packageOverrideLines))
@@ -155,12 +155,12 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
                 }
                 else
                 {
-                    log.LogMessage("No package overrides found in {0}", packsFolderForLog);
+                    log.LogMessage("No package overrides found in {0}", originalPacksFolder);
                 }
             }
             else
             {
-                log.LogMessage("Targeting pack folder {0} does not exist", packsFolderForLog);
+                log.LogMessage("Targeting pack folder {0} does not exist", originalPacksFolder);
             }
         }
 

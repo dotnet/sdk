@@ -63,12 +63,14 @@ namespace Microsoft.NET.Build.Tasks
             public string TargetFrameworkVersion { get; set; }
             public HashSet<string> FrameworkReferences { get; set; }
             public bool LoadPrunePackageDataFromNearestFramework { get; set; }
+            public bool AllowMissingPrunePackageData { get; set; }
 
             //  The resolved (absolutized) prune package data root and targeting pack roots are part of the cache key.
             //  Otherwise two projects with the same framework values but different resolved roots (for example, the same
             //  project-relative path under different TaskEnvironment.ProjectDirectory values) could incorrectly reuse the
             //  first project's package data from the build-wide cache.
             public string PrunePackageDataRoot { get; set; }
+            //  Targeting pack roots are a search path, so their order can affect which pack is loaded.
             public string[] TargetingPackRoots { get; set; }
 
             public override bool Equals(object obj) => obj is CacheKey key &&
@@ -76,6 +78,7 @@ namespace Microsoft.NET.Build.Tasks
                 TargetFrameworkVersion == key.TargetFrameworkVersion &&
                 FrameworkReferences.SetEquals(key.FrameworkReferences) &&
                 LoadPrunePackageDataFromNearestFramework == key.LoadPrunePackageDataFromNearestFramework &&
+                AllowMissingPrunePackageData == key.AllowMissingPrunePackageData &&
                 PrunePackageDataRoot == key.PrunePackageDataRoot &&
                 TargetingPackRoots.SequenceEqual(key.TargetingPackRoots);
             public override int GetHashCode()
@@ -84,11 +87,12 @@ namespace Microsoft.NET.Build.Tasks
                 var hashCode = new HashCode();
                 hashCode.Add(TargetFrameworkIdentifier);
                 hashCode.Add(TargetFrameworkVersion);
-                foreach (var frameworkReference in FrameworkReferences)
+                foreach (var frameworkReference in FrameworkReferences.OrderBy(r => r, StringComparer.Ordinal))
                 {
                     hashCode.Add(frameworkReference);
                 }
                 hashCode.Add(LoadPrunePackageDataFromNearestFramework);
+                hashCode.Add(AllowMissingPrunePackageData);
                 hashCode.Add(PrunePackageDataRoot);
                 foreach (var targetingPackRoot in TargetingPackRoots)
                 {
@@ -100,11 +104,12 @@ namespace Microsoft.NET.Build.Tasks
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TargetFrameworkIdentifier);
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TargetFrameworkVersion);
 
-                foreach (var frameworkReference in FrameworkReferences)
+                foreach (var frameworkReference in FrameworkReferences.OrderBy(r => r, StringComparer.Ordinal))
                 {
                     hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(frameworkReference);
                 }
                 hashCode = hashCode * -1521134295 + LoadPrunePackageDataFromNearestFramework.GetHashCode();
+                hashCode = hashCode * -1521134295 + AllowMissingPrunePackageData.GetHashCode();
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(PrunePackageDataRoot);
                 foreach (var targetingPackRoot in TargetingPackRoots)
                 {
@@ -153,11 +158,16 @@ namespace Microsoft.NET.Build.Tasks
                 TargetFrameworkVersion = TargetFrameworkVersion,
                 FrameworkReferences = runtimeFrameworks.ToHashSet(),
                 LoadPrunePackageDataFromNearestFramework = LoadPrunePackageDataFromNearestFramework,
+                AllowMissingPrunePackageData = AllowMissingPrunePackageData,
                 PrunePackageDataRoot = prunePackageDataRoot.Value,
                 TargetingPackRoots = targetingPackRoots.Select(r => r.Value).ToArray()
             };
 
-            //  Cache framework package values per build
+            //  Cache framework package values per build.  Under multithreaded execution two instances can pass this
+            //  check and compute concurrently for the same key, but that race is benign: the task object registry is
+            //  thread-safe (last writer wins) and the result is deterministic for a given key, so racing instances
+            //  produce equivalent PackagesToPrune regardless of which registration wins.  The only cost is the
+            //  occasional redundant computation, which we accept rather than serialize all instances on a shared lock.
             var existingResult = BuildEngine4.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.Build);
             if (existingResult != null)
             {
