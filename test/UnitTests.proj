@@ -203,6 +203,12 @@
     <PropertyGroup>
       <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
       <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
+      <!-- Install wasm-tools workload on Helix for AoT tests (see: https://github.com/dotnet/sdk/issues/22655).
+           This must happen on Helix (not the build machine) because cross-arch builds produce a dotnet binary
+           that cannot execute on the build machine's architecture.
+           Point to the test NuGet.config so the workload packs can be resolved from the configured feeds. -->
+      <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and !$(IsPosixShell)">$(HelixPreCommands);%DOTNET_ROOT%\dotnet workload install wasm-tools --skip-manifest-update --configfile %TestExecutionDirectory%\NuGet.config</HelixPreCommands>
+      <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and $(IsPosixShell)">$(HelixPreCommands);$DOTNET_ROOT/dotnet workload install wasm-tools --skip-manifest-update --configfile $TestExecutionDirectory/NuGet.config</HelixPreCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -print0 | xargs -0 -I@ cp @ "$HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
