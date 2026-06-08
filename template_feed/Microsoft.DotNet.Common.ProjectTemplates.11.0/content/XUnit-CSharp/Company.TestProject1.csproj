@@ -18,7 +18,7 @@
 
 <!--#if (XUnitVersion == "v3")-->
   <ItemGroup>
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="IfDifferent" />
   </ItemGroup>
 
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->

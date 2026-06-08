@@ -17,7 +17,7 @@
   <ItemGroup>
     <Compile Include="Tests.fs" />
 <!--#if (XUnitVersion == "v3")-->
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="IfDifferent" />
 <!--#endif-->
   </ItemGroup>
 
