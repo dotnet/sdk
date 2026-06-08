@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks
                 foreach (var referencePath in ReferencePaths)
                 {
                     if (!Path.GetExtension(referencePath.ItemSpec).Equals(".winmd", StringComparison.OrdinalIgnoreCase) &&
-                        AssemblyHasWindowsRuntimeReference(TaskEnvironment.GetAbsolutePath(referencePath.ItemSpec).Value))
+                        AssemblyHasWindowsRuntimeReference(TaskEnvironment.GetAbsolutePath(referencePath.ItemSpec)))
                     {
                         //  Ignore System.Runtime.WindowsRuntime.dll, as it has windowsruntime metadata references, but is a dependency of
                         //  the Microsoft.Windows.Sdk.Contracts package, so generating an error about it isn't helpful
@@ -79,9 +79,9 @@ namespace Microsoft.NET.Build.Tasks
 
         }
 
-        private static bool AssemblyHasWindowsRuntimeReference(string sourcePath)
+        private static bool AssemblyHasWindowsRuntimeReference(AbsolutePath sourcePath)
         {
-            using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
+            using (var assemblyStream = new FileStream(sourcePath.Value, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
             {
                 try
                 {
