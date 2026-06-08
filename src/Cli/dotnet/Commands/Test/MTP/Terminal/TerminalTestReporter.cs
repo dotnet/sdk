@@ -826,14 +826,19 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string outputData, string errorData)
+    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string outputData, string errorData, bool reportEvenWhenHelp = false)
     {
-        if (_isHelp)
+        if (_isHelp && !reportEvenWhenHelp)
         {
-            // Ignore handshake failures for help for now.
-            // So far, MTP doesn't handshake on help.
-            // MTP should be updated for that, however, but this workaround will likely need to stay
-            // here for a bit to keep compatibility with older MTP versions. It doesn't have to stay for too long though.
+            // Backward-compat workaround: older Microsoft.Testing.Platform versions don't perform
+            // a handshake on the --help path (the host just prints help and exits). In that case
+            // OnTestProcessExited routes here with the "process exited without a usable handshake"
+            // payload, which is expected and should not be reported as a failure.
+            //
+            // Newer MTP versions (microsoft/testfx#8794) always handshake — including on --help —
+            // so this workaround is only needed while older MTP versions are still in use. Explicit
+            // protocol-level rejections (e.g. ExecutionMode mismatch) pass reportEvenWhenHelp=true
+            // and are still surfaced.
             return;
         }
 
