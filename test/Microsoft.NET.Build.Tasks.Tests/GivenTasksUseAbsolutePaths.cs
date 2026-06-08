@@ -309,6 +309,17 @@ public class GivenTasksUseAbsolutePaths : IDisposable
             TargetRuntimeIdentifier = "linux-x64",
             Items = new ITaskItem[] { item },
             RuntimeIdentifierGraphPath = "obj/runtime.json"
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue("task should resolve relative paths via TaskEnvironment");
+        task.SelectedItems.Should().HaveCount(1);
+        task.SelectedItems[0].ItemSpec.Should().Be("Item1");
+    }
+
+    #endregion
+
     #region ResolveOverlappingItemGroupConflicts
 
     [Fact]
@@ -365,9 +376,6 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
         var result = task.Execute();
 
-        result.Should().BeTrue("task should resolve relative paths via TaskEnvironment");
-        task.SelectedItems.Should().HaveCount(1);
-        task.SelectedItems[0].ItemSpec.Should().Be("Item1");
         result.Should().BeTrue("absolutization should be a no-op when HintPaths are already rooted");
         task.RemovedItemGroup1.Should().BeEmpty();
         task.RemovedItemGroup2.Should().ContainSingle().Which.Should().BeSameAs(loser);
