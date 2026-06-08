@@ -146,9 +146,9 @@ jobs:
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /p:EnableHelixJobMonitor=true
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Run ${{ parameters.categoryName }} Tests
-          condition: succeeded()
+          displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -170,9 +170,9 @@ jobs:
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+            /p:EnableHelixJobMonitor=true
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Run ${{ parameters.categoryName }} Tests
-          condition: succeeded()
+          displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
