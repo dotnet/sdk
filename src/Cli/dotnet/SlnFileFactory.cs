@@ -148,7 +148,7 @@ public static partial class SlnFileFactory
     }
 
     [GeneratedRegex(@"\\\\|\\(?![""\\\/bfnrt]|u[0-9a-fA-F]{4})")]
-    private static partial Regex InvalidJsonBackslashRegex();
+    private static partial Regex GetInvalidJsonBackslashRegex();
 
     /// <summary>
     /// Replaces unescaped backslashes in a JSON string with forward slashes, for backward compatibility
@@ -160,7 +160,7 @@ public static partial class SlnFileFactory
         // Valid JSON escape sequences: \" \\ \/ \b \f \n \r \t \uXXXX
         // We first match \\ (valid double-backslash) to skip it, then match any other backslash
         // that isn't followed by a valid escape character.
-        return InvalidJsonBackslashRegex().Replace(json, match =>
+        return GetInvalidJsonBackslashRegex().Replace(json, match =>
             match.Value.Length == 2 ? match.Value : "/");
     }
 }
