@@ -51,8 +51,26 @@ function ShouldUseCachedDotnetup {
 # (https://aka.ms/dotnetup/get-dotnetup.sh) and runs it to install dotnetup into
 # the directory given by $1. Returns non-zero on failure. Callers run under
 # `set -e`, so invoke via `if ! AcquireDotnetup ...; then` to handle failure.
+#
+# If a local get-dotnetup.sh script exists in the repo (scripts/get-dotnetup.sh),
+# it is used directly instead of downloading from aka.ms. This supports branches
+# (e.g. release/dnup) that carry the script locally and avoids merge conflicts
+# when code flows between branches with and without the local script.
 function AcquireDotnetup {
   local dotnetup_dir=$1
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local repo_root
+  repo_root="$(cd "$script_dir/.." && pwd)"
+  local local_getter="$repo_root/scripts/get-dotnetup.sh"
+
+  # Prefer the repo-local script when available (e.g. on release/dnup).
+  if [[ -f "$local_getter" ]]; then
+    echo "Using local get-dotnetup.sh from '$local_getter'."
+    bash "$local_getter" --install-dir "$dotnetup_dir"
+    return $?
+  fi
+
   local getter_url="https://aka.ms/dotnetup/get-dotnetup.sh"
   local getter_script
   # Use an explicit template: bare `mktemp` is not portable because BSD/macOS
