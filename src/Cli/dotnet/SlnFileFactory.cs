@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli;
 
-public static class SlnFileFactory
+public static partial class SlnFileFactory
 {
     public static readonly string[] DefaultPlatforms = new[] { "Any CPU", "x64", "x86" };
     public static readonly string[] DefaultBuildTypes = new[] { "Debug", "Release" };
@@ -147,8 +147,8 @@ public static class SlnFileFactory
         return filteredSolution;
     }
 
-    private static readonly Regex s_invalidJsonBackslashRegex =
-        new(@"\\\\|\\(?![""\\\/bfnrt]|u[0-9a-fA-F]{4})", RegexOptions.Compiled);
+    [GeneratedRegex(@"\\\\|\\(?![""\\\/bfnrt]|u[0-9a-fA-F]{4})")]
+    private static partial Regex InvalidJsonBackslashRegex();
 
     /// <summary>
     /// Replaces unescaped backslashes in a JSON string with forward slashes, for backward compatibility
@@ -160,7 +160,7 @@ public static class SlnFileFactory
         // Valid JSON escape sequences: \" \\ \/ \b \f \n \r \t \uXXXX
         // We first match \\ (valid double-backslash) to skip it, then match any other backslash
         // that isn't followed by a valid escape character.
-        return s_invalidJsonBackslashRegex.Replace(json, match =>
+        return InvalidJsonBackslashRegex().Replace(json, match =>
             match.Value.Length == 2 ? match.Value : "/");
     }
 }
