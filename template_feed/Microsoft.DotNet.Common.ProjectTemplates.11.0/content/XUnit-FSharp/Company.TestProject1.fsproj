@@ -6,8 +6,10 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
     <IsPackable Condition="'$(EnablePack)' == 'true'">true</IsPackable>
     <IsPackable Condition="'$(EnablePack)' != 'true'">false</IsPackable>
-<!--#if (XUnitVersion == "v3" && TestRunner == "Microsoft.Testing.Platform")-->
+<!--#if (XUnitVersion == "v3")-->
     <OutputType>Exe</OutputType>
+<!--#endif-->
+<!--#if (XUnitVersion == "v3" && TestRunner == "Microsoft.Testing.Platform")-->
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
 <!--#endif-->
   </PropertyGroup>

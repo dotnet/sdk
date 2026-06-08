@@ -8,8 +8,10 @@
     <Nullable>enable</Nullable>
     <IsPackable Condition="'$(EnablePack)' == 'true'">true</IsPackable>
     <IsPackable Condition="'$(EnablePack)' != 'true'">false</IsPackable>
-<!--#if (XUnitVersion == "v3" && TestRunner == "Microsoft.Testing.Platform")-->
+<!--#if (XUnitVersion == "v3")-->
     <OutputType>Exe</OutputType>
+<!--#endif-->
+<!--#if (XUnitVersion == "v3" && TestRunner == "Microsoft.Testing.Platform")-->
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
 <!--#endif-->
   </PropertyGroup>
