@@ -8,15 +8,24 @@
     <IsPackable Condition="'$(EnablePack)' == 'true'">true</IsPackable>
     <IsPackable Condition="'$(EnablePack)' != 'true'">false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <OutputType>Exe</OutputType>
+<!--#endif-->
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="UnitTest1.fs"/>
+<!--#if (TestRunner != "Microsoft.Testing.Platform")-->
     <Compile Include="Program.fs"/>
+<!--#endif-->
   </ItemGroup>
 
   <ItemGroup>
+<!--#if (TestRunner != "Microsoft.Testing.Platform")-->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
+<!--#endif-->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
     <PackageReference Include="NUnit" Version="4.6.1" />
     <PackageReference Include="NUnit.Analyzers" Version="4.14.0" />
