@@ -931,7 +931,7 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [Fact]
     public void MissingShebangWarning_NonCsFile()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "file.json"), "{}");
 
