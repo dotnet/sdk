@@ -163,11 +163,7 @@ namespace Microsoft.NET.Build.Tasks
                 TargetingPackRoots = targetingPackRoots.Select(r => r.Value).ToArray()
             };
 
-            //  Cache framework package values per build.  Under multithreaded execution two instances can pass this
-            //  check and compute concurrently for the same key, but that race is benign: the task object registry is
-            //  thread-safe (last writer wins) and the result is deterministic for a given key, so racing instances
-            //  produce equivalent PackagesToPrune regardless of which registration wins.  The only cost is the
-            //  occasional redundant computation, which we accept rather than serialize all instances on a shared lock.
+            //  Cache framework package values per build.
             var existingResult = BuildEngine4.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.Build);
             if (existingResult != null)
             {
