@@ -153,7 +153,7 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string commandPath = await FindFullCommandPath(cancellationToken).ConfigureAwait(false);
-        string imageArchivePath = Path.GetTempFileName();
+        string imageArchivePath = Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}.tar");
 
         try
         {
