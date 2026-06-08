@@ -281,6 +281,44 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #endregion
 
+    #region SelectRuntimeIdentifierSpecificItems
+
+    [Fact]
+    public void SelectRuntimeIdentifierSpecificItems_WithRelativePaths_ShouldResolveFromProjectDirectory()
+    {
+        var runtimeGraphContent = @"{
+            ""runtimes"": {
+                ""linux"": {},
+                ""linux-x64"": { ""#import"": [""linux""] }
+            }
+        }";
+        _env.CreateProjectDirectory("obj");
+        _env.CreateProjectFile("obj/runtime.json", runtimeGraphContent);
+
+        File.Exists(_env.GetProjectPath("obj/runtime.json")).Should().BeTrue("file should exist in project directory");
+        File.Exists("obj/runtime.json").Should().BeFalse("file should NOT exist relative to CWD");
+
+        var item = new MockTaskItem { ItemSpec = "Item1" };
+        item.SetMetadata("RuntimeIdentifier", "linux-x64");
+
+        var task = new SelectRuntimeIdentifierSpecificItems
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            TargetRuntimeIdentifier = "linux-x64",
+            Items = new ITaskItem[] { item },
+            RuntimeIdentifierGraphPath = "obj/runtime.json"
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue("task should resolve relative paths via TaskEnvironment");
+        task.SelectedItems.Should().HaveCount(1);
+        task.SelectedItems[0].ItemSpec.Should().Be("Item1");
+    }
+
+    #endregion
+
     #region Demonstration: Absolute vs Relative Paths
 
     [Fact]
