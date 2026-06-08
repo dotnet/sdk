@@ -54,5 +54,93 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string expectedResource = Path.Combine("runtimes", "de", "a.resources.dll");
             task.RuntimePackAssets.FirstOrDefault().ItemSpec.Should().Contain(expectedResource);
         }
+
+        [Fact]
+        public void It_detects_transitive_framework_reference_with_no_runtime_pack()
+        {
+            // Scenario: AddTransitiveFrameworkReferences added a transitive reference after
+            // ProcessFrameworkReferences ran, so there's no RuntimePack or UnavailableRuntimePack
+            // for it.  ResolveRuntimePackAssets should detect this and produce NETSDK1235.
+
+            var buildEngine = new MockBuildEngine();
+
+            var task = new ResolveRuntimePackAssets()
+            {
+                BuildEngine = buildEngine,
+                RuntimeIdentifier = "linux-x64",
+                FrameworkReferences = new TaskItem[]
+                {
+                    new TaskItem("Microsoft.NETCore.App"),
+                    new TaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string>
+                    {
+                        ["IsTransitiveFrameworkReference"] = "true"
+                    })
+                },
+                // Only NETCore.App has a resolved runtime pack — AspNetCore does not
+                ResolvedRuntimePacks = Array.Empty<TaskItem>(),
+                UnavailableRuntimePacks = Array.Empty<TaskItem>(),
+                // RuntimeFrameworks produced by PFR for all KnownFrameworkReferences.
+                // Non-profile frameworks have FrameworkName == ItemSpec.
+                RuntimeFrameworks = new TaskItem[]
+                {
+                    new TaskItem("Microsoft.NETCore.App", new Dictionary<string, string>
+                    {
+                        [MetadataKeys.FrameworkName] = "Microsoft.NETCore.App"
+                    }),
+                    new TaskItem("Microsoft.AspNetCore.App", new Dictionary<string, string>
+                    {
+                        [MetadataKeys.FrameworkName] = "Microsoft.AspNetCore.App"
+                    })
+                }
+            };
+
+            task.Execute().Should().BeFalse("should fail due to missing transitive runtime pack");
+
+            buildEngine.Errors.Should().ContainSingle(e =>
+                e.Code == "NETSDK1235" && e.Message.Contains("Microsoft.AspNetCore.App"),
+                "should report NETSDK1235 for the transitive AspNetCore framework reference");
+        }
+
+        [Fact]
+        public void It_does_not_flag_profile_framework_references_as_missing()
+        {
+            // Profile framework references (e.g. Microsoft.WindowsDesktop.App.WindowsForms)
+            // share their parent's runtime pack and should not be flagged as missing.
+
+            var buildEngine = new MockBuildEngine();
+
+            var task = new ResolveRuntimePackAssets()
+            {
+                BuildEngine = buildEngine,
+                RuntimeIdentifier = "win-x64",
+                FrameworkReferences = new TaskItem[]
+                {
+                    new TaskItem("Microsoft.NETCore.App"),
+                    new TaskItem("Microsoft.WindowsDesktop.App.WindowsForms", new Dictionary<string, string>
+                    {
+                        ["IsTransitiveFrameworkReference"] = "true"
+                    })
+                },
+                ResolvedRuntimePacks = Array.Empty<TaskItem>(),
+                UnavailableRuntimePacks = Array.Empty<TaskItem>(),
+                RuntimeFrameworks = new TaskItem[]
+                {
+                    new TaskItem("Microsoft.NETCore.App", new Dictionary<string, string>
+                    {
+                        [MetadataKeys.FrameworkName] = "Microsoft.NETCore.App"
+                    }),
+                    // Profile: FrameworkName != ItemSpec
+                    new TaskItem("Microsoft.WindowsDesktop.App", new Dictionary<string, string>
+                    {
+                        [MetadataKeys.FrameworkName] = "Microsoft.WindowsDesktop.App.WindowsForms"
+                    })
+                }
+            };
+
+            task.Execute().Should().BeTrue("profile framework references should not produce errors");
+
+            buildEngine.Errors.Should().BeEmpty(
+                "WindowsForms is a profile — it shares WindowsDesktop.App's runtime pack");
+        }
     }
 }
