@@ -47,7 +47,7 @@ public class TelemetryClient : ITelemetryClient
     private static readonly bool s_enableOtlpExporter =
         Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER)
         || (!Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.OTEL_SDK_DISABLED) && IsOtlpExporterConfiguredByStandardEnvVars());
-    private static readonly int s_flushTimeoutMs = 200;
+    private static readonly int s_flushTimeoutMs = 10;
 
     /// <summary>
     /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
@@ -153,18 +153,36 @@ public class TelemetryClient : ITelemetryClient
     }
 
     /// <summary>
-    /// Uses the OpenTelemetry SDK's Propagation API to derive the parent activity context from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
+    /// Derives the parent activity context. Checks runtime properties first (set by the AOT
+    /// bridge via <c>hostfxr_set_runtime_property_value</c>), then falls back to the
+    /// <c>TRACEPARENT</c> / <c>TRACESTATE</c> environment variables.
     /// </summary>
     private static ActivityContext? GetParentActivityContext()
     {
-        var traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        // Runtime properties take precedence — they are set by the AOT bridge when it
+        // falls back to the managed CLI so that the managed spans become children of the
+        // AOT-side main activity.
+        var traceParent = AppContext.GetData(Activities.TRACEPARENT) as string;
+
+        // Fall back to environment variables for external callers.
+        if (string.IsNullOrEmpty(traceParent))
+        {
+            traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        }
+
         if (string.IsNullOrEmpty(traceParent))
         {
             return null;
         }
 
         var carrierMap = new Dictionary<string, IEnumerable<string>?> { { "traceparent", [traceParent] } };
-        var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
+
+        var traceState = AppContext.GetData(Activities.TRACESTATE) as string;
+        if (string.IsNullOrEmpty(traceState))
+        {
+            traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
+        }
+
         if (!string.IsNullOrEmpty(traceState))
         {
             carrierMap.Add("tracestate", [traceState]);
