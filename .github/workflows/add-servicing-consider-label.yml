@@ -6,6 +6,8 @@ on:
     branches:
       - 'release/8.*'
       - 'release/9.*'
+      - 'release/10.*'
+      - 'release/11.*'
 
 permissions:
   contents: read
