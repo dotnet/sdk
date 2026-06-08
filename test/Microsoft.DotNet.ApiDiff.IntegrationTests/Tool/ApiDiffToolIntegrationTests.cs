@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
         {
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [Fact] 
         public void ApiDiffTool_NoChanges_ProducesNoMemberDiffs()
         {
             string assembly = BuildAssembly("MyLib", "public class Greeter { public string Hello(string name) => name; }", nameof(ApiDiffTool_NoChanges_ProducesNoMemberDiffs) + "_before");
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
             File.Exists(toc).Should().BeTrue($"the table-of-contents file should be written to {toc}");
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [Fact] 
         public void ApiDiffTool_AddedMember_ProducesDiff()
         {
             const string sharedSource =
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
                 "the added member should appear in the diff for MyLib");
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [Fact] 
         public void ApiDiffTool_TableOfContentsTitle_ControlsOutputFileName()
         {
             string assembly = BuildAssembly("MyLib", "public class Greeter { public string Hello(string name) => name; }",
@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.ApiDiff.IntegrationTests.Tool
             File.Exists(toc).Should().BeTrue($"the table-of-contents file should honour --tableOfContentsTitle and be written to {toc}");
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [Fact] 
         public void ApiDiffTool_MissingRequiredOption_FailsWithHelpfulError()
         {
             // Omit --output and verify System.CommandLine reports the missing required option

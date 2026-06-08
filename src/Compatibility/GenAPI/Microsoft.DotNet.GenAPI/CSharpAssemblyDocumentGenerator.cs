@@ -16,6 +16,7 @@ using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI;
 
@@ -63,18 +64,13 @@ public sealed class CSharpAssemblyDocumentGenerator
 
         IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_options.SymbolFilter.Include);
 
-        List<SyntaxNode> namespaceSyntaxNodes = [];
+        List<SyntaxNode> declarationSyntaxNodes = [];
         foreach (INamespaceSymbol namespaceSymbol in namespaceSymbols.Order())
         {
-            SyntaxNode? syntaxNode = Visit(namespaceSymbol);
-
-            if (syntaxNode is not null)
-            {
-                namespaceSyntaxNodes.Add(syntaxNode);
-            }
+            declarationSyntaxNodes.AddRange(Visit(namespaceSymbol));
         }
 
-        SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes);
+        SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(declarationSyntaxNodes);
 
         if (_options.AdditionalAnnotations.Any())
         {
@@ -106,33 +102,51 @@ public sealed class CSharpAssemblyDocumentGenerator
         if (_options.ShouldFormat)
         {
             document = await Formatter.FormatAsync(document, DefineFormattingOptions()).ConfigureAwait(false);
+            SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
+            root = root.Rewrite(SingleLineStatementCSharpSyntaxRewriter.Singleton);
+            document = document.WithSyntaxRoot(root.Rewrite(MemberSpacingCSharpSyntaxRewriter.Singleton));
         }
 
         return document;
     }
 
-    private SyntaxNode? Visit(INamespaceSymbol namespaceSymbol)
+    private IEnumerable<SyntaxNode> Visit(INamespaceSymbol namespaceSymbol)
     {
+        IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers()
+            .Where(_options.SymbolFilter.Include)
+            .Order();
+
+        if (namespaceSymbol.IsGlobalNamespace)
+        {
+            foreach (INamedTypeSymbol typeMember in typeMembers)
+            {
+                yield return CreateTypeDeclaration(typeMember);
+            }
+
+            yield break;
+        }
+
         SyntaxNode namespaceNode = _syntaxGenerator.NamespaceDeclaration(namespaceSymbol.ToDisplayString());
-
-        IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers().Where(_options.SymbolFilter.Include);
-        if (!typeMembers.Any())
+        bool hasTypeMembers = false;
+        foreach (INamedTypeSymbol typeMember in typeMembers)
         {
-            return null;
+            namespaceNode = _syntaxGenerator.AddMembers(namespaceNode, CreateTypeDeclaration(typeMember));
+            hasTypeMembers = true;
         }
 
-        foreach (INamedTypeSymbol typeMember in typeMembers.Order())
+        if (hasTypeMembers)
         {
-            SyntaxNode typeDeclaration = _syntaxGenerator
-                .DeclarationExt(typeMember, _options.SymbolFilter)
-                .AddMemberAttributes(_syntaxGenerator, typeMember, _options.AttributeSymbolFilter);
-
-            typeDeclaration = Visit(typeDeclaration, typeMember);
-
-            namespaceNode = _syntaxGenerator.AddMembers(namespaceNode, typeDeclaration);
+            yield return namespaceNode;
         }
+    }
 
-        return namespaceNode;
+    private SyntaxNode CreateTypeDeclaration(INamedTypeSymbol typeMember)
+    {
+        SyntaxNode typeDeclaration = _syntaxGenerator
+            .DeclarationExt(typeMember, _options.SymbolFilter)
+            .AddMemberAttributes(_syntaxGenerator, typeMember, _options.AttributeSymbolFilter);
+
+        return Visit(typeDeclaration, typeMember);
     }
 
     // Name hiding through inheritance occurs when classes or structs redeclare names that were inherited from base classes. This type of name hiding takes one of the following forms:
@@ -213,9 +227,20 @@ public sealed class CSharpAssemblyDocumentGenerator
                 }
             }
 
-            // If the property is derived from an interface that was filtered out, we must not filter it out either.
+            // If the property is derived from an interface that was filtered out, we must filter it out as well.
             if (member is IPropertySymbol property && !property.ExplicitInterfaceImplementations.IsEmpty &&
-                property.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol)))
+                property.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol) ||
+                // if explicit interface implementation property has inaccessible type argument
+                m.ContainingType.HasInaccessibleTypeArgument(_options.SymbolFilter)))
+            {
+                continue;
+            }
+
+            // If the event is derived from an interface that was filtered out, we must filter it out as well.
+            if (member is IEventSymbol @event && !@event.ExplicitInterfaceImplementations.IsEmpty &&
+                @event.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol) ||
+                // if explicit interface implementation event has inaccessible type argument
+                m.ContainingType.HasInaccessibleTypeArgument(_options.SymbolFilter)))
             {
                 continue;
             }

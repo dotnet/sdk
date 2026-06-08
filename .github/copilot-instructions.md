@@ -29,6 +29,10 @@ Testing:
   - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
   - The dogfood script sets up PATH and environment to use the newly built SDK
 
+Investigating PR validation failures:
+1. Read the PR and its comments/reviews. Check for references to other PRs or issues where the problem might have already been solved.
+2. Use the `ci-analysis` skill (if available) to diagnose build failures.
+
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.
 

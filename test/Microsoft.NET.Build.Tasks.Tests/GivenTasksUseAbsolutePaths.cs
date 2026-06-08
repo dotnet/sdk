@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Tasks;
+using Microsoft.NET.Build.Tasks.ConflictResolution;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests;
 
@@ -308,6 +309,58 @@ public class GivenTasksUseAbsolutePaths : IDisposable
             TargetRuntimeIdentifier = "linux-x64",
             Items = new ITaskItem[] { item },
             RuntimeIdentifierGraphPath = "obj/runtime.json"
+    #region ResolveOverlappingItemGroupConflicts
+
+    [Fact]
+    public void ResolveOverlappingItemGroupConflicts_WithRelativeHintPaths_ShouldResolveFromProjectDirectory()
+    {
+        const string winnerPath = "libs/winner.dll";
+        const string loserPath = "libs/loser.dll";
+
+        _env.CreateProjectFile(winnerPath, string.Empty);
+        _env.CreateProjectFile(loserPath, string.Empty);
+
+        File.Exists(winnerPath).Should().BeFalse("file should NOT exist relative to CWD");
+        File.Exists(loserPath).Should().BeFalse("file should NOT exist relative to CWD");
+
+        var winner = CreateCopyLocalConflictItem(winnerPath, "2.0.0.0");
+        var loser = CreateCopyLocalConflictItem(loserPath, "1.0.0.0");
+
+        var task = new ResolveOverlappingItemGroupConflicts
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            ItemGroup1 = new ITaskItem[] { winner },
+            ItemGroup2 = new ITaskItem[] { loser }
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue("task should resolve relative HintPath metadata via TaskEnvironment");
+        task.RemovedItemGroup1.Should().BeEmpty();
+        task.RemovedItemGroup2.Should().ContainSingle().Which.Should().BeSameAs(loser);
+        task.RemovedItemGroup2[0]!.ItemSpec.Should().Be(loserPath, "outputs should preserve original item specs");
+        task.RemovedItemGroup2[0]!.GetMetadata("HintPath").Should().Be(loserPath, "outputs should preserve original metadata");
+    }
+
+    [Fact]
+    public void AbsoluteHintPaths_AreLeftUnchanged()
+    {
+        var winnerPath = _env.CreateProjectFile("libs/winner.dll", string.Empty);
+        var loserPath = _env.CreateProjectFile("libs/loser.dll", string.Empty);
+
+        Path.IsPathRooted(winnerPath).Should().BeTrue();
+        Path.IsPathRooted(loserPath).Should().BeTrue();
+
+        var winner = CreateCopyLocalConflictItem(winnerPath, "2.0.0.0");
+        var loser = CreateCopyLocalConflictItem(loserPath, "1.0.0.0");
+
+        var task = new ResolveOverlappingItemGroupConflicts
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            ItemGroup1 = new ITaskItem[] { winner },
+            ItemGroup2 = new ITaskItem[] { loser }
         };
 
         var result = task.Execute();
@@ -315,6 +368,39 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         result.Should().BeTrue("task should resolve relative paths via TaskEnvironment");
         task.SelectedItems.Should().HaveCount(1);
         task.SelectedItems[0].ItemSpec.Should().Be("Item1");
+        result.Should().BeTrue("absolutization should be a no-op when HintPaths are already rooted");
+        task.RemovedItemGroup1.Should().BeEmpty();
+        task.RemovedItemGroup2.Should().ContainSingle().Which.Should().BeSameAs(loser);
+        task.RemovedItemGroup2[0]!.ItemSpec.Should().Be(loserPath, "outputs should preserve original (absolute) item specs");
+        task.RemovedItemGroup2[0]!.GetMetadata("HintPath").Should().Be(loserPath, "outputs should preserve original (absolute) metadata");
+    }
+
+    [Fact]
+    public void ConflictItem_WithoutTaskEnvironment_ShouldKeepExistingRelativePathBehavior()
+    {
+        const string existingPath = "libs/existing.dll";
+
+        _env.CreateProjectFile(existingPath, string.Empty);
+
+        File.Exists(existingPath).Should().BeFalse("file should NOT exist relative to CWD");
+
+        var item = CreateCopyLocalConflictItem(existingPath, "1.0.0.0");
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal);
+
+        conflictItem.Exists.Should().BeFalse("existing callers that do not opt into TaskEnvironment should keep previous relative path behavior");
+        conflictItem.SourcePath.Should().Be(existingPath, "SourcePath should remain the original value");
+        conflictItem.DisplayName.Should().Be($"CopyLocal:{existingPath}", "display strings should not be absolutized");
+    }
+
+    private static ITaskItem CreateCopyLocalConflictItem(string relativeHintPath, string assemblyVersion)
+    {
+        return new MockTaskItem(relativeHintPath, new Dictionary<string, string>
+        {
+            ["HintPath"] = relativeHintPath,
+            ["TargetPath"] = "shared.dll",
+            ["AssemblyVersion"] = assemblyVersion,
+            ["NuGetPackageId"] = Path.GetFileNameWithoutExtension(relativeHintPath) ?? string.Empty,
+        });
     }
 
     #endregion

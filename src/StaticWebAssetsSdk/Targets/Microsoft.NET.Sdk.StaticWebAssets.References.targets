@@ -133,6 +133,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         Endpoints="@(_ReferencedProjectBuildStaticWebAssetEndpointsUpdateCandidates)"
         FingerprintInferenceExpressions="@(StaticWebAssetFingerprintInferenceExpression)"
         StaticWebAssetGroups="@(StaticWebAssetGroup)"
+        IntermediateOutputPath="$(_StaticWebAssetsIntermediateOutputPath)"
+        ProjectPackageId="$(PackageId)"
+        ProjectBasePath="$(StaticWebAssetBasePath)"
       >
         <Output TaskParameter="UpdatedAssets" ItemName="_ResolvedReferencedProjectBuildStaticWebAssets" />
         <Output TaskParameter="UpdatedEndpoints" ItemName="_ResolvedReferencedProjectBuildStaticWebAssetEndpoints" />
@@ -184,6 +187,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         AssetKind="Build"
         MakeReferencedAssetOriginalItemSpecAbsolute="$(StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute)"
         Source="$(PackageId)"
+        FrameworkPattern="$(StaticWebAssetFrameworkPattern)"
       >
         <Output TaskParameter="StaticWebAssets" ItemName="_CachedBuildReferencedStaticWebAsset" />
         <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedBuildReferencedStaticWebAssetDiscoveryPatterns" />

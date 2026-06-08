@@ -36,7 +36,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly TestProgressStateAwareTerminal _terminalWithProgress;
 
+    /// <summary>
+    /// Whether to track and render currently running tests. Gated on both the caller-requested
+    /// <see cref="TerminalTestReporterOptions.ShowActiveTests"/> and the effective progress
+    /// capability of the console: if progress cannot actually be rendered (e.g. redirected stdout,
+    /// non-TTY, or ANSI not supported) there is no point allocating per-test running-state.
+    /// </summary>
+    private readonly bool _showActiveTests;
+
     private int _handshakeFailuresCount;
+
+    private readonly object _handshakeFailuresLock = new();
+    private readonly List<HandshakeFailureRecord> _handshakeFailures = new();
 
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
@@ -94,6 +105,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _terminalWithProgress = new TestProgressStateAwareTerminal(terminal, showProgress);
+        _showActiveTests = _options.ShowActiveTests && showProgress;
     }
 
     public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
@@ -166,6 +178,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
+        lock (_handshakeFailuresLock)
+        {
+            _handshakeFailures.Clear();
+        }
+        _handshakeFailuresCount = 0;
         _buildErrorsCount = 0;
         _testExecutionStartTime = null;
         _testExecutionEndTime = null;
@@ -226,11 +243,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
         }
+        else if (anyTestFailed || HasHandshakeFailure)
+        {
+            // Handshake failures take precedence over "Zero tests ran": when an assembly failed to
+            // hand-shake we want the headline to reflect that the run failed, not that no tests ran
+            // (which would imply a benign empty run). We intentionally do NOT escalate the broader
+            // anyAssemblyFailed here, because a project that legitimately contains zero tests exits
+            // with ExitCodes.ZeroTests (non-zero) and would otherwise be misclassified as a failure.
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
+        }
         else if (allTestsWereSkipped)
         {
             terminal.Append(CliCommandStrings.ZeroTestsRan);
         }
-        else if (anyTestFailed || anyAssemblyFailed)
+        else if (anyAssemblyFailed)
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
         }
@@ -347,6 +373,39 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.AppendLine();
 
         AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
+
+        AppendHandshakeFailureRecap(terminal);
+    }
+
+    private void AppendHandshakeFailureRecap(ITerminal terminal)
+    {
+        // Re-print handshake failures captured during the run so that — even when there is a lot of
+        // diagnostic output before the summary — the user sees the actionable failure context
+        // (assembly, exit code, stdout, stderr) at the end of the run rather than having to scroll
+        // back. See https://github.com/dotnet/sdk/issues/51608.
+        HandshakeFailureRecord[] failures;
+        lock (_handshakeFailuresLock)
+        {
+            if (_handshakeFailures.Count == 0)
+            {
+                return;
+            }
+
+            failures = _handshakeFailures.ToArray();
+        }
+
+        terminal.AppendLine();
+        terminal.SetColor(TerminalColor.DarkRed);
+        terminal.AppendLine(CliCommandStrings.HandshakeFailuresHeader);
+        terminal.ResetColor();
+
+        foreach (HandshakeFailureRecord failure in failures)
+        {
+            terminal.Append(SingleIndentation);
+            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, failure.AssemblyPath, failure.TargetFramework, architecture: null);
+            terminal.AppendLine();
+            AppendExecutableSummary(terminal, failure.ExitCode, failure.OutputData, failure.ErrorData);
+        }
     }
 
     private static void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
@@ -407,9 +466,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
         var attempt = asm.TryCount;
 
-        if (_options.ShowActiveTests)
+        if (_showActiveTests)
         {
-            asm.TestNodeResultsState?.RemoveRunningTestNode(testNodeUid);
+            asm.TestNodeResultsState?.RemoveRunningTestNode(instanceId, testNodeUid);
         }
 
         switch (outcome)
@@ -731,7 +790,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
         int exitCode, string? outputData, string? errorData)
     {
-        TestProgressState assemblyRun = _assemblies[executionId];
+        // Defense in depth: under the current TestApplicationHandler routing this branch is
+        // unreachable in normal operation. OnTestProcessExited only calls AssemblyRunCompleted
+        // when the TestHost handshake was received (which in turn caused AssemblyRunStarted to
+        // register the executionId via GetOrAddAssemblyRun); controller-only handshakes go to
+        // HandshakeFailure directly. The fallback below exists only to keep stray completions
+        // (e.g. one that arrives after TestExecutionCompleted's _assemblies.Clear()) or a future
+        // routing regression from surfacing as a KeyNotFoundException that would bury the real
+        // exit cause.
+        if (!_assemblies.TryGetValue(executionId, out TestProgressState? assemblyRun))
+        {
+            HandshakeFailure(assemblyPath: string.Empty, targetFramework: null, exitCode, outputData ?? string.Empty, errorData ?? string.Empty);
+            return;
+        }
+
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
@@ -754,18 +826,28 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string outputData, string errorData)
+    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string outputData, string errorData, bool reportEvenWhenHelp = false)
     {
-        if (_isHelp)
+        if (_isHelp && !reportEvenWhenHelp)
         {
-            // Ignore handshake failures for help for now.
-            // So far, MTP doesn't handshake on help.
-            // MTP should be updated for that, however, but this workaround will likely need to stay
-            // here for a bit to keep compatibility with older MTP versions. It doesn't have to stay for too long though.
+            // Backward-compat workaround: older Microsoft.Testing.Platform versions don't perform
+            // a handshake on the --help path (the host just prints help and exits). In that case
+            // OnTestProcessExited routes here with the "process exited without a usable handshake"
+            // payload, which is expected and should not be reported as a failure.
+            //
+            // Newer MTP versions (microsoft/testfx#8794) always handshake — including on --help —
+            // so this workaround is only needed while older MTP versions are still in use. Explicit
+            // protocol-level rejections (e.g. ExecutionMode mismatch) pass reportEvenWhenHelp=true
+            // and are still surfaced.
             return;
         }
 
         Interlocked.Increment(ref _handshakeFailuresCount);
+        lock (_handshakeFailuresLock)
+        {
+            _handshakeFailures.Add(new HandshakeFailureRecord(assemblyPath, targetFramework, exitCode, outputData, errorData));
+        }
+
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
             terminal.ResetColor();
@@ -858,7 +940,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
     internal void TestDiscovered(
         string executionId,
         string? displayName,
-        string? uid)
+        string? uid,
+        string? filePath,
+        int? lineNumber)
     {
         if (!_isDiscovery)
         {
@@ -871,7 +955,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[executionId];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
-        asm.DiscoverTest(displayName, uid);
+        asm.DiscoverTest(displayName, uid, filePath, lineNumber);
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
@@ -890,12 +974,26 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
-            foreach ((string? displayName, string? uid) in assembly.DiscoveredTestNames)
+            foreach ((string? displayName, string? uid, string? filePath, int? lineNumber) in assembly.DiscoveredTestNames)
             {
                 if (displayName is not null)
                 {
                     terminal.Append(SingleIndentation);
-                    terminal.AppendLine(displayName);
+                    terminal.Append(displayName);
+                    if (!string.IsNullOrEmpty(filePath))
+                    {
+                        terminal.Append(" [");
+                        terminal.Append(filePath);
+                        if (lineNumber is > 0)
+                        {
+                            terminal.Append(':');
+                            terminal.Append(lineNumber.Value.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                        terminal.Append(']');
+                    }
+
+                    terminal.AppendLine();
                 }
             }
 
@@ -950,19 +1048,30 @@ internal sealed partial class TerminalTestReporter : IDisposable
         };
 
     public void TestInProgress(
+        string assembly,
+        string? targetFramework,
+        string? architecture,
+        string executionId,
+        string instanceId,
         string testNodeUid,
-        string displayName,
-        string executionId)
+        string displayName)
     {
         TestProgressState asm = _assemblies[executionId];
 
-        if (_options.ShowActiveTests)
+        if (_showActiveTests)
         {
             asm.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
             asm.TestNodeResultsState.AddRunningTestNode(
-                Interlocked.Increment(ref _counter), testNodeUid, displayName, CreateStopwatch());
+                Interlocked.Increment(ref _counter), instanceId, testNodeUid, displayName, CreateStopwatch());
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
+
+    private readonly record struct HandshakeFailureRecord(
+        string AssemblyPath,
+        string? TargetFramework,
+        int ExitCode,
+        string OutputData,
+        string ErrorData);
 }

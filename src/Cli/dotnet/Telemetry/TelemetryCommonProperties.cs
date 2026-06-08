@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Frozen;
+using System.Net.NetworkInformation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Utilities;
@@ -79,7 +80,17 @@ internal class TelemetryCommonProperties(
         { SessionId,        currentSessionId }
     }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
-    private string GetMachineId() => _getMACAddress() is { } macAddress ? _hasher(macAddress) : Guid.NewGuid().ToString();
+    private string GetMachineId()
+    {
+        try
+        {
+            return _getMACAddress() is { } macAddress ? _hasher(macAddress) : Guid.NewGuid().ToString();
+        }
+        catch (NetworkInformationException)
+        {
+            return Guid.NewGuid().ToString();
+        }
+    }
 
     /// <summary>
     /// Returns a string identifying the OS kernel.
