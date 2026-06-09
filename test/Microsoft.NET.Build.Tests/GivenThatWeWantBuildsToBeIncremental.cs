@@ -32,6 +32,54 @@ namespace Microsoft.NET.Build.Tests
             runtimeConfigDevJsonSecondModifiedTime.Should().Be(runtimeConfigDevJsonFirstModifiedTime);
         }
 
+        [Fact]
+        public void RuntimeConfigInputCache_changes_when_GenerateProbingPathsToRuntimeConfigDevFile_changes()
+        {
+            var testAsset = TestAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: "ProbingPathsCacheTest")
+                .WithSource()
+                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            var intermediateDirectory = buildCommand.GetIntermediateDirectory(ToolsetInfo.CurrentTargetFramework).FullName;
+            var cacheFilePath = Path.Combine(intermediateDirectory, "HelloWorld.genruntimeconfig.cache");
+
+            // Build with default (probing paths disabled for net6.0+)
+            buildCommand.Execute().Should().Pass();
+            var hash1 = File.ReadAllText(cacheFilePath).Trim();
+
+            // Build with probing paths explicitly enabled
+            buildCommand.Execute("/p:GenerateProbingPathsToRuntimeConfigDevFile=true").Should().Pass();
+            var hash2 = File.ReadAllText(cacheFilePath).Trim();
+
+            hash2.Should().NotBe(hash1,
+                "changing GenerateProbingPathsToRuntimeConfigDevFile should change the input cache hash");
+        }
+
+        [Fact]
+        public void RuntimeConfigInputCache_changes_when_GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile_changes()
+        {
+            var testAsset = TestAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: "HotReloadCacheTest")
+                .WithSource()
+                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            var intermediateDirectory = buildCommand.GetIntermediateDirectory(ToolsetInfo.CurrentTargetFramework).FullName;
+            var cacheFilePath = Path.Combine(intermediateDirectory, "HelloWorld.genruntimeconfig.cache");
+
+            // Build with hot reload disabled
+            buildCommand.Execute("/p:GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile=false").Should().Pass();
+            var hash1 = File.ReadAllText(cacheFilePath).Trim();
+
+            // Build with hot reload enabled
+            buildCommand.Execute("/p:GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile=true").Should().Pass();
+            var hash2 = File.ReadAllText(cacheFilePath).Trim();
+
+            hash2.Should().NotBe(hash1,
+                "changing GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile should change the input cache hash");
+        }
+
         [Theory]
         [InlineData("netcoreapp1.1")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
