@@ -275,6 +275,54 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             DeleteDirectoryWithRetry(workingDirectory);
         }
 
+        [Theory]
+        [MemberData(nameof(GetNUnitTestRunnerCombinations))]
+        public void NUnitProjectTemplate_WithTestRunner_CanBeInstalledAndTestsArePassing(
+            string targetFramework,
+            string language,
+            string testRunner)
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents up to our own solution root, which would affect other tests.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            // Create new test project: dotnet new nunit -n <testProjectName> -f <targetFramework> -lang <language> --test-runner <testRunner>
+            string args = $"nunit -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory} --test-runner {testRunner}";
+            new DotnetNewCommand(_log, args)
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var isMTP = testRunner == "Microsoft.Testing.Platform";
+            if (isMTP)
+            {
+                File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeTrue();
+            }
+
+            var result = new DotnetTestCommand(_log, false)
+                .WithWorkingDirectory(outputDirectory)
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
+                .Execute(isMTP ? ["--project", outputDirectory] : [outputDirectory]);
+#pragma warning restore SA1010 // Opening square brackets should be spaced correctly
+
+            result.Should().Pass();
+
+            result.StdOut.Should().Contain("Passed!");
+            result.StdOut.Should().MatchRegex(isMTP ? "succeeded: 1" : @"Passed:\s*1");
+
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
         private void AddItemToFsproj(string itemName, string outputDirectory, string projectName)
         {
             var fsproj = Path.Combine(outputDirectory, $"{projectName}.fsproj");
@@ -522,6 +570,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     foreach (var testRunner in testRunners)
                     {
                         yield return new object[] { "mstest-playwright", targetFramework, Languages.CSharp, coverageTool, testRunner, false };
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> GetNUnitTestRunnerCombinations()
+        {
+            var testRunners = new[] { "VSTest", "Microsoft.Testing.Platform" };
+            foreach (var targetFramework in SupportedTargetFrameworks)
+            {
+                foreach (var language in Languages.All)
+                {
+                    foreach (var testRunner in testRunners)
+                    {
+                        yield return new object[] { targetFramework, language, testRunner };
                     }
                 }
             }
