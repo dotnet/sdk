@@ -127,12 +127,7 @@ internal class LLMProcessTreeDetector : ILLMProcessTreeDetector
 
     private static int GetParentProcessIdWindows(int pid)
     {
-#if NET
-        if (!OperatingSystem.IsWindows())
-        {
-            return -1;
-        }
-#endif
+#if TARGET_WINDOWS
         try
         {
             using var process = Process.GetProcessById(pid);
@@ -142,6 +137,9 @@ internal class LLMProcessTreeDetector : ILLMProcessTreeDetector
         {
             return -1;
         }
+#else
+        return -1;
+#endif
     }
 
     private static int GetParentProcessIdLinux(int pid)
