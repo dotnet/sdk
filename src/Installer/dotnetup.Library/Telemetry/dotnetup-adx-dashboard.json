@@ -1113,6 +1113,56 @@
       }
     },
     {
+      "id": "b2d5f801-3c7e-4a92-8d4b-6f9e0c1a2b34",
+      "title": "Daily Active Users",
+      "visualType": "line",
+      "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
+      "layout": {
+        "x": 0,
+        "y": 7,
+        "width": 8,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "a1c4e7f0-2b6d-4f81-9c3a-7e5d8b0a1f23"
+      },
+      "visualOptions": {
+        "hideLegend": false,
+        "xColumn": "Day",
+        "yColumns": [
+          "UniqueUsers"
+        ]
+      }
+    },
+    {
+      "id": "d4f7b023-5e90-4bc4-af6d-8b1a2e3c4d56",
+      "title": "Daily Unique Users by Version",
+      "visualType": "stackedcolumn",
+      "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
+      "layout": {
+        "x": 8,
+        "y": 7,
+        "width": 8,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "c3e6a912-4d8f-4ab3-9e5c-7a0f1d2b3c45"
+      },
+      "visualOptions": {
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumn": "Day",
+        "yColumns": [
+          "UniqueUsers"
+        ],
+        "seriesColumns": [
+          "version"
+        ]
+      }
+    },
+    {
       "id": "c7c2b254-517b-4a15-9e8e-a88b1ff330f9",
       "title": "Command Usage",
       "visualType": "markdownCard",
@@ -1703,8 +1753,9 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend session_id = tostring(Properties[\"session.id\"])\n| summarize\n    UniqueSessions = dcount(session_id),\n    TotalCommands = count()\n| project UniqueSessions, TotalCommands, AvgCommandsPerSession = round(1.0 * TotalCommands / UniqueSessions, 1)",
+      "text": "// Unique users = distinct device.id (the SDK's DeviceIdGetter stable\n// per-machine hash \u2014 our closest proxy for a person/machine). Sessions =\n// distinct session.id (one dotnetup invocation). data-x's per-Message\n// property classification strips both ids from dotnetup/command rows, so\n// they are only reliable on dotnetup/root. Command totals still come from\n// the command rows.\nlet users = toscalar(_dotnetupRoot\n    | summarize dcount(tostring(Properties[\"device.id\"])));\nlet sessions = toscalar(_dotnetupRoot\n    | summarize dcount(tostring(Properties[\"session.id\"])));\nlet totalCommands = toscalar(_dotnetupCommands | count);\nprint\n    UniqueUsers = users,\n    UniqueSessions = sessions,\n    TotalCommands = totalCommands,\n    AvgSessionsPerUser = round(1.0 * sessions / users, 1),\n    AvgCommandsPerSession = round(1.0 * totalCommands / sessions, 1)",
       "usedVariables": [
+        "_dotnetupRoot",
         "_dotnetupCommands"
       ]
     },
@@ -1714,9 +1765,9 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend session_id = tostring(Properties[\"session.id\"])\n| where isnotempty(version)\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
+      "text": "// session.id is stripped from dotnetup/command rows by data-x's per-Message\n// classification; dotnetup/root carries it (one row per invocation = one session).\n_dotnetupRoot\n| extend session_id = tostring(Properties[\"session.id\"])\n| where isnotempty(version)\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
       "usedVariables": [
-        "_dotnetupCommands"
+        "_dotnetupRoot"
       ]
     },
     {
@@ -1725,9 +1776,31 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| extend session_id = tostring(Properties[\"session.id\"])\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d)",
+      "text": "// session.id is stripped from dotnetup/command rows by data-x's per-Message\n// classification; dotnetup/root carries it (one row per invocation = one session).\n_dotnetupRoot\n| extend session_id = tostring(Properties[\"session.id\"])\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d)",
       "usedVariables": [
-        "_dotnetupCommands"
+        "_dotnetupRoot"
+      ]
+    },
+    {
+      "id": "a1c4e7f0-2b6d-4f81-9c3a-7e5d8b0a1f23",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
+      "text": "// Unique users = distinct device.id (SDK DeviceIdGetter stable per-machine\n// hash). device.id is stripped from dotnetup/command rows by data-x's\n// per-Message classification; dotnetup/root carries it (one row per invocation).\n_dotnetupRoot\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(device_id)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d)",
+      "usedVariables": [
+        "_dotnetupRoot"
+      ]
+    },
+    {
+      "id": "c3e6a912-4d8f-4ab3-9e5c-7a0f1d2b3c45",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
+      "text": "// Unique users (distinct device.id) per day, split by version. device.id is\n// stripped from dotnetup/command rows by data-x's per-Message classification;\n// dotnetup/root carries it.\n_dotnetupRoot\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(device_id) and isnotempty(version)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
+      "usedVariables": [
+        "_dotnetupRoot"
       ]
     },
     {
