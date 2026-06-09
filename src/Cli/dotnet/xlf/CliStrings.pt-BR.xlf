@@ -987,10 +987,8 @@ setx PATH "%PATH%;{0}"
         <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
-        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Publique o tempo de execução do .NET junto com sua aplicação para que o tempo de execução não precise ser instalado na máquina de destino.
-O padrão é 'false.' No entanto, ao direcionar para .NET 7 ou inferior, o padrão é 'true' se um identificador de tempo de execução for especificado.</target>
+        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.</source>
+        <target state="translated">Publique o tempo de execução do .NET junto com sua aplicação para que o tempo de execução não precise ser instalado na máquina de destino.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShellShimConflict">
