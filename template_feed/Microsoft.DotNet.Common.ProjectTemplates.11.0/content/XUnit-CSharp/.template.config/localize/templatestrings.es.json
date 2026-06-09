@@ -11,6 +11,8 @@
   "symbols/EnablePack/displayName": "Habilitar paquete",
   "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",
   "symbols/skipRestore/displayName": "Omitir restauración",
+  "symbols/langVersion/description": "Sets the LangVersion property in the created project file",
+  "symbols/langVersion/displayName": "Language version",
   "postActions/restoreNugetPackages/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "Ejecutar \"dotnet restore\"",
   "postActions/openInEditor/description": "Abrir Class1.cs en el editor"

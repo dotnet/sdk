@@ -11,6 +11,8 @@
   "symbols/EnablePack/displayName": "啟用壓縮",
   "symbols/skipRestore/description": "如果指定，則會在建立時跳過專案的自動還原。",
   "symbols/skipRestore/displayName": "跳過還原",
+  "symbols/langVersion/description": "Sets the LangVersion property in the created project file",
+  "symbols/langVersion/displayName": "Language version",
   "postActions/restoreNugetPackages/description": "還原此專案所需的 NuGet 套件。",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "執行 'dotnet restore'",
   "postActions/openInEditor/description": "在編輯器中開啟 Class1.cs"
