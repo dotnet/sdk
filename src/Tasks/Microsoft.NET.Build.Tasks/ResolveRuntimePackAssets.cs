@@ -116,9 +116,11 @@ namespace Microsoft.NET.Build.Tasks
 
                 string runtimePackRoot = runtimePack.GetMetadata(MetadataKeys.PackageDirectory);
 
-                //  Absolutize relative to the project directory before any file system access.
-                //  Short-circuit keeps the null/empty case from reaching GetAbsolutePath, which throws on empty input.
-                if (string.IsNullOrEmpty(runtimePackRoot) || !Directory.Exists(TaskEnvironment.GetAbsolutePath(runtimePackRoot)))
+                AbsolutePath absoluteRuntimePackRoot = string.IsNullOrEmpty(runtimePackRoot)
+                    ? default
+                    : TaskEnvironment.GetAbsolutePath(runtimePackRoot);
+
+                if (string.IsNullOrEmpty(runtimePackRoot) || !Directory.Exists(absoluteRuntimePackRoot))
                 {
                     if (!DesignTimeBuild)
                     {
@@ -146,29 +148,29 @@ namespace Microsoft.NET.Build.Tasks
                     continue;
                 }
 
-                var runtimeListPath = Path.Combine(runtimePackRoot, "data", "RuntimeList.xml");
+                AbsolutePath absoluteRuntimeListPath = TaskEnvironment.GetAbsolutePath(Path.Combine(runtimePackRoot, "data", "RuntimeList.xml"));
 
-                if (File.Exists(TaskEnvironment.GetAbsolutePath(runtimeListPath)))
+                if (File.Exists(absoluteRuntimeListPath))
                 {
                     var runtimePackAlwaysCopyLocal = runtimePack.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 
-                    AddRuntimePackAssetsFromManifest(runtimePackAssets, runtimePackRoot, runtimeListPath, runtimePack, runtimePackAlwaysCopyLocal, profiles);
+                    AddRuntimePackAssetsFromManifest(runtimePackAssets, absoluteRuntimePackRoot, absoluteRuntimeListPath, runtimePack, runtimePackAlwaysCopyLocal, profiles);
                 }
                 else
                 {
-                    throw new BuildErrorException(string.Format(Strings.RuntimeListNotFound, runtimeListPath));
+                    throw new BuildErrorException(string.Format(Strings.RuntimeListNotFound, absoluteRuntimeListPath.OriginalValue));
                 }
             }
 
             RuntimePackAssets = runtimePackAssets.ToArray();
         }
 
-        private void AddRuntimePackAssetsFromManifest(List<ITaskItem> runtimePackAssets, string runtimePackRoot,
-            string runtimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal, HashSet<string> profiles)
+        private void AddRuntimePackAssetsFromManifest(List<ITaskItem> runtimePackAssets, AbsolutePath runtimePackRoot,
+            AbsolutePath runtimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal, HashSet<string> profiles)
         {
             var assetSubPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            XDocument frameworkListDoc = XDocument.Load(TaskEnvironment.GetAbsolutePath(runtimeListPath));
+            XDocument frameworkListDoc = XDocument.Load(runtimeListPath);
             // profile feature is only supported in net9.0 and later. We would ignore it for previous versions.
             bool profileSupported = false;
             string targetFrameworkVersion = frameworkListDoc.Root.Attribute("TargetFrameworkVersion")?.Value;
@@ -200,8 +202,8 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
-                //  Absolutize relative to the project directory, then GetFullPath to canonicalize (resolve "..") and normalize slashes.
-                string assetPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(Path.Combine(runtimePackRoot, fileElement.Attribute("Path").Value)));
+                //  Path is already absolute, so GetFullPath only canonicalizes/normalizes separators.
+                string assetPath = Path.GetFullPath(new AbsolutePath(fileElement.Attribute("Path").Value, runtimePackRoot));
 
                 string typeAttributeValue = fileElement.Attribute("Type").Value;
                 string assetType;
@@ -234,7 +236,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else
                 {
-                    throw new BuildErrorException($"Unrecognized file type '{typeAttributeValue}' in {runtimeListPath}");
+                    throw new BuildErrorException($"Unrecognized file type '{typeAttributeValue}' in {runtimeListPath.OriginalValue}");
                 }
 
                 var assetItem = CreateAssetItem(assetPath, assetType, runtimePack, culture);
