@@ -45,7 +45,7 @@
       TargetFramework removed, so that we don't have two different project builds, one with
       TargetFramework set and one without.  If we just tried to depend on the Publish target directly,
       we would get two builds and they could encounter race conditions and file in use errors.
- --> 
+  -->
   <Target Name="_AddBuildOutputToPackageCore">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="TargetFramework" />
     <ItemGroup>
