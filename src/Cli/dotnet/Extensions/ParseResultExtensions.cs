@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.ProjectTools;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Extensions;
@@ -20,6 +21,22 @@ public static class ParseResultExtensions
 
     public static bool IsTopLevelDotnetCommand(this ParseResult parseResult) =>
         parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+
+    /// <summary>
+    /// Detects whether this parse result looks like an implicit file-based app invocation
+    /// (e.g. <c>dotnet app.cs ...</c>), where the only unmatched token is a first argument that
+    /// resolves to a valid C# entry-point path. Returns the matching token, or <see langword="null"/>.
+    /// </summary>
+    /// <remarks>
+    /// This detection is shared between the managed CLI - which re-dispatches these invocations as
+    /// <c>dotnet run --file app.cs</c> (see <c>Program.TryRunFileBasedApp</c>) - and the NativeAOT
+    /// entry point, which cannot run file-based apps itself and so defers them to the managed CLI.
+    /// </remarks>
+    public static Token? GetFileBasedAppEntryPointToken(this ParseResult parseResult) =>
+        parseResult.GetResult(Parser.RootCommand.DotnetSubCommand) is { Tokens: [{ Type: TokenType.Argument, Value: { } } unmatchedCommandOrFile] }
+            && VirtualProjectBuilder.IsValidEntryPointPath(unmatchedCommandOrFile.Value)
+            ? unmatchedCommandOrFile
+            : null;
 
     private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
     {

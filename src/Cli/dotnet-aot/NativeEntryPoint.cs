@@ -110,7 +110,12 @@ static unsafe partial class NativeEntryPoint
                     }
                 }
 
-                if (parseResult is not null && parseResult.Errors.Count == 0)
+                if (parseResult is not null
+                    && parseResult.Errors.Count == 0
+                    // An implicit file-based app invocation (e.g. `dotnet app.cs`) is run by the managed
+                    // CLI's run pipeline. The shared parser only sees the path as an unmatched root
+                    // argument, so defer to the managed fallback below instead of printing root usage.
+                    && parseResult.GetFileBasedAppEntryPointToken() is null)
                 {
                     using var invoke = Activities.Source.StartActivity("aot-invocation");
                     try

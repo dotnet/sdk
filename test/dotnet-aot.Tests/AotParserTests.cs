@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Utilities;
 using Xunit;
@@ -46,6 +47,42 @@ public class AotParserTests
         // parse cleanly (they no longer surface as unknown). Execution still falls back.
         var result = Parser.Parse(["build"]);
         Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void DetectFileBasedApp_WhenFirstArgIsCSharpFile()
+    {
+        // `dotnet app.cs` is an implicit file-based app invocation. The AOT parser only sees the
+        // path as an unmatched root argument, so the shared detection (reused from the managed CLI)
+        // identifies it so NativeEntryPoint can defer to the managed run pipeline.
+        var csFile = Path.Combine(Path.GetTempPath(), $"aot-filebased-{Guid.NewGuid():N}.cs");
+        File.WriteAllText(csFile, "Console.WriteLine(\"hi\");");
+        try
+        {
+            var result = Parser.Parse([csFile]);
+            Assert.Empty(result.Errors);
+            Assert.NotNull(result.GetFileBasedAppEntryPointToken());
+        }
+        finally
+        {
+            File.Delete(csFile);
+        }
+    }
+
+    [Fact]
+    public void DoesNotDetectFileBasedApp_ForBuiltInCommand()
+    {
+        var result = Parser.Parse(["build"]);
+        Assert.Null(result.GetFileBasedAppEntryPointToken());
+    }
+
+    [Fact]
+    public void DoesNotDetectFileBasedApp_ForNonExistentFile()
+    {
+        // IsValidEntryPointPath requires the file to exist, so a bogus *.cs argument is not
+        // treated as a file-based app (it would resolve as an external `dotnet-<name>` command).
+        var result = Parser.Parse([$"does-not-exist-{Guid.NewGuid():N}.cs"]);
+        Assert.Null(result.GetFileBasedAppEntryPointToken());
     }
 
     [Fact]
@@ -117,8 +154,11 @@ public class AotParserTests
         var (exitCode, stdout, _) = InvokeWithCapture(["--cli-schema"]);
 
         Assert.Equal(0, exitCode);
-        Assert.Contains("\"name\": \"dotnet\"", stdout);
+        // The root command name reflects the host executable, so assert on stable content instead:
+        // the SDK version, the subcommands collection, and a representative built-in subcommand.
+        Assert.Contains($"\"version\": \"{Product.Version}\"", stdout);
         Assert.Contains("\"subcommands\"", stdout);
+        Assert.Contains("\"build\"", stdout);
     }
 
     [Fact]
