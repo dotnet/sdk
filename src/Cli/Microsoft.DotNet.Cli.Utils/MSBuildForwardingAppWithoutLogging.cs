@@ -73,7 +73,8 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     public bool ExecuteMSBuildOutOfProc => _forwardingApp != null;
 
     /// <summary>
-    ///
+    /// The set of environment variables that must be set on the MSBuild process (or the current
+    /// process when executing in-proc) for the build to behave correctly.
     /// </summary>
     private readonly Dictionary<string, string?> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
@@ -185,7 +186,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     }
 
     /// <summary>
-    /// Directly execute's MSBuild's <see cref="Build.CommandLine.MSBuildApp.Main"/> method in the current process.
+    /// Directly executes MSBuild's <see cref="Build.CommandLine.MSBuildApp.Main"/> method in the current process.
     /// Sets up the local environment with required MSBuild environment variables before handing off execution entirely to MSBuild.
     /// After execution, the original environment variables are restored for any remaining cleanup work the dotnet CLI needs to perform.
     /// </summary>

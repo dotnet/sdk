@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 #if !CLI_AOT
 using System.Reflection;
@@ -44,7 +43,7 @@ public class MSBuildForwardingApp : CommandBase
                 Type forwardingLoggerType = typeof(MSBuildForwardingLogger);
                 string loggerTypeFullName = loggerType.FullName!; // not-null because these are part of the same assembly
                 string forwardingLoggerTypeFullName = forwardingLoggerType.FullName!; // not-null because these are part of the same assembly
-// these come from the dotnet assembly that we are currently in!
+                // The logger assembly locations come from the dotnet assembly we are currently executing in.
 #pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
                 string loggerTypeLocation = loggerType.GetTypeInfo().Assembly.Location;
                 string forwardingLoggerTypeLocation = forwardingLoggerType.GetTypeInfo().Assembly.Location;

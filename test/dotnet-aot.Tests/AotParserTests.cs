@@ -85,6 +85,31 @@ public class AotParserTests
         Assert.Null(result.GetFileBasedAppEntryPointToken());
     }
 
+    [Theory]
+    [InlineData("ef")]                                  // external command: dotnet-ef
+    [InlineData("does-not-exist-command")]              // unknown external command
+    public void DetectExternalCommand_RequiresManagedResolution(string command)
+    {
+        // `dotnet <external>` doesn't match a built-in command, so it lands on the root's hidden
+        // subcommand argument and must be deferred to the managed CLI's external command resolution
+        // rather than executed by the AOT root usage action.
+        var result = Parser.Parse([command]);
+        Assert.Empty(result.Errors);
+        Assert.True(result.RequiresManagedCommandResolution());
+    }
+
+    [Theory]
+    [InlineData("")]                                    // `dotnet` (usage)
+    [InlineData("--version")]
+    [InlineData("--info")]
+    public void RootInvocations_DoNotRequireManagedResolution(string arg)
+    {
+        // Bare `dotnet`, `--version`, `--info`, etc. are handled entirely in AOT.
+        string[] args = arg.Length == 0 ? [] : [arg];
+        var result = Parser.Parse(args);
+        Assert.False(result.RequiresManagedCommandResolution());
+    }
+
     [Fact]
     public void ParseHostHandledOption_HasNoErrors()
     {

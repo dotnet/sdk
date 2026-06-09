@@ -23,6 +23,21 @@ public static class ParseResultExtensions
         parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
 
     /// <summary>
+    /// Returns true when the parse result is an unrecognized top-level token that did not match a
+    /// built-in command and so landed on the root's hidden subcommand argument - e.g. an external
+    /// command (<c>dotnet ef</c>) or an implicit file-based app (<c>dotnet app.cs</c>).
+    /// </summary>
+    /// <remarks>
+    /// The managed CLI resolves these via external command resolution or its file-based run pipeline
+    /// (see <c>Program.ExecuteExternalCommand</c>/<c>TryRunFileBasedApp</c>). The NativeAOT entry
+    /// point cannot do either, so it uses this to defer such invocations to the managed CLI rather
+    /// than running the root command's usage action.
+    /// </remarks>
+    public static bool RequiresManagedCommandResolution(this ParseResult parseResult) =>
+        parseResult.CommandResult.Command.Equals(Parser.RootCommand)
+        && !string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand));
+
+    /// <summary>
     /// Detects whether this parse result looks like an implicit file-based app invocation
     /// (e.g. <c>dotnet app.cs ...</c>), where the only unmatched token is a first argument that
     /// resolves to a valid C# entry-point path. Returns the matching token, or <see langword="null"/>.

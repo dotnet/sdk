@@ -112,10 +112,12 @@ static unsafe partial class NativeEntryPoint
 
                 if (parseResult is not null
                     && parseResult.Errors.Count == 0
-                    // An implicit file-based app invocation (e.g. `dotnet app.cs`) is run by the managed
-                    // CLI's run pipeline. The shared parser only sees the path as an unmatched root
-                    // argument, so defer to the managed fallback below instead of printing root usage.
-                    && parseResult.GetFileBasedAppEntryPointToken() is null)
+                    // An unrecognized top-level token - an external command (`dotnet ef`) or an implicit
+                    // file-based app (`dotnet app.cs`) - is resolved by the managed CLI's external command
+                    // resolution / run pipeline. The shared parser only sees it as the root's hidden
+                    // subcommand argument, so defer to the managed fallback below instead of running the
+                    // root command's usage action.
+                    && !parseResult.RequiresManagedCommandResolution())
                 {
                     using var invoke = Activities.Source.StartActivity("aot-invocation");
                     try
