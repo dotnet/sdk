@@ -26,6 +26,7 @@
   <!-- Common AOT scaffolding: shared by every AOT command. Reuse, do not duplicate. -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliUsage.cs" Link="CliUsage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliSchema.cs" Link="CliSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ParserOptionActions.cs" Link="ParserOptionActions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />

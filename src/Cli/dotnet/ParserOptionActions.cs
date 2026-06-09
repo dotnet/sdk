@@ -188,21 +188,23 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
 #endif
 }
 
-#if !CLI_AOT
 internal class PrintCliSchemaAction(Option<bool> option) : InvocableOptionAction(option)
 {
     public override bool Terminating => true;
 
     public override int Invoke(ParseResult parseResult)
     {
-        if (!parseResult.HasOption(Option) || !parseResult.GetValue(option))
+        if (parseResult.GetResult(Option) is not { Implicit: false } || !parseResult.GetValue(option))
         {
             return 0;
         }
 
+#if CLI_AOT
+        CliSchema.PrintCliSchema(parseResult, parseResult.InvocationConfiguration.Output, telemetryClient: null);
+#else
         CliSchema.PrintCliSchema(parseResult, parseResult.InvocationConfiguration.Output, Program.TelemetryInstance);
+#endif
 
         return 0;
     }
 }
-#endif

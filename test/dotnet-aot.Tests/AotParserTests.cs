@@ -110,6 +110,18 @@ public class AotParserTests
     }
 
     [Fact]
+    public void InvokeCliSchema_RendersSchemaJsonFromAot()
+    {
+        // --cli-schema serializes the command tree via a source-generated JsonSerializerContext,
+        // so it runs entirely in AOT (no managed fallback) and emits the command surface as JSON.
+        var (exitCode, stdout, _) = InvokeWithCapture(["--cli-schema"]);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("\"name\": \"dotnet\"", stdout);
+        Assert.Contains("\"subcommands\"", stdout);
+    }
+
+    [Fact]
     public void ParseVersionWithExtraArgs_IsHandledGracefully()
     {
         // System.CommandLine may or may not error on extra tokens after --version.

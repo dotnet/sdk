@@ -37,6 +37,8 @@ static unsafe partial class NativeEntryPoint
         return ExecuteCore(hostPath, dotnetRoot, sdkDir, hostfxrPath, args);
     }
 
+    public static ITelemetryClient? TelemetryClient { get; private set; }
+
     /// <summary>
     ///  Core execution logic, separated from native marshalling for testability.
     /// </summary>
@@ -52,10 +54,11 @@ static unsafe partial class NativeEntryPoint
         try
         {
             DateTime preTelemetry = DateTime.UtcNow;
-            // Initialize OTel telemetry (mirrors managed Program.cs setup).
-            var telemetryClient = new TelemetryClient(sessionId: null);
+            // Initialize OTel telemetry (mirrors managed Program.cs setup). The client is stored in
+            // the TelemetryClient property so AOT command actions (e.g. --cli-schema) can reuse it.
+            TelemetryClient = new Telemetry.TelemetryClient(sessionId: null);
             DateTime postTelemetry = DateTime.UtcNow;
-            mainActivity = Activities.Source.StartActivity("native-entrypoint", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
+            mainActivity = Activities.Source.StartActivity("native-entrypoint", Telemetry.TelemetryClient.ActivityKind, Telemetry.TelemetryClient.ParentActivityContext);
 
             // Backdate the activity start to process start time for accurate timing.
             if (mainActivity is not null)
@@ -155,7 +158,7 @@ static unsafe partial class NativeEntryPoint
             mainActivity?.AddTag("process.exit.code", exitCode);
             mainActivity?.SetStatus(success ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             mainActivity?.Stop();
-            TelemetryClient.FlushProviders();
+            Telemetry.TelemetryClient.FlushProviders();
         }
     }
 }

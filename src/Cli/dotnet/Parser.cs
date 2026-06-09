@@ -194,12 +194,9 @@ public static class Parser
         // for `sln list`/`migrate`/`remove` and falls back for `sln` and `sln add`.
         SolutionCommandParser.ConfigureCommand(rootCommand.SolutionCommand);
 
-        // --version and --info are served by the same actions as the managed CLI; those actions
-        // omit the not-yet-AOT-able workload/MSBuild details under #if CLI_AOT. --cli-schema needs
-        // the managed CLI.
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);
-        rootCommand.CliSchemaOption.Action = new AotFallbackOptionAction(rootCommand.CliSchemaOption);
+        rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction(rootCommand.CliSchemaOption);
 
         // --list-sdks / --list-runtimes are resolved by the host before the SDK is invoked. If they
         // still reach the AOT bridge, defer to the managed CLI rather than printing root usage.
