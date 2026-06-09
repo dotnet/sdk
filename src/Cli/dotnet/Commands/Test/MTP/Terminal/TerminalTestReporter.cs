@@ -826,14 +826,19 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string outputData, string errorData)
+    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string outputData, string errorData, bool reportEvenWhenHelp = false)
     {
-        if (_isHelp)
+        if (_isHelp && !reportEvenWhenHelp)
         {
-            // Ignore handshake failures for help for now.
-            // So far, MTP doesn't handshake on help.
-            // MTP should be updated for that, however, but this workaround will likely need to stay
-            // here for a bit to keep compatibility with older MTP versions. It doesn't have to stay for too long though.
+            // Backward-compat workaround: older Microsoft.Testing.Platform versions don't perform
+            // a handshake on the --help path (the host just prints help and exits). In that case
+            // OnTestProcessExited routes here with the "process exited without a usable handshake"
+            // payload, which is expected and should not be reported as a failure.
+            //
+            // Newer MTP versions (microsoft/testfx#8794) always handshake — including on --help —
+            // so this workaround is only needed while older MTP versions are still in use. Explicit
+            // protocol-level rejections (e.g. ExecutionMode mismatch) pass reportEvenWhenHelp=true
+            // and are still surfaced.
             return;
         }
 
@@ -886,8 +891,53 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.Append(' ');
         AppendAssemblyResult(terminal, assemblyRun);
         terminal.Append(' ');
+        AppendAssemblyTestCounts(terminal, assemblyRun);
+        terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
         terminal.AppendLine();
+    }
+
+    /// <summary>
+    /// Renders a compact, per-assembly counts block that mirrors the in-progress indicator.
+    /// Full-ANSI terminals get "[✓P/xF/↓S]" (with optional "/rR"); simple terminals
+    /// (NoAnsi / SimpleAnsi / CI) get the ASCII "[+P/xF/?S]" form so logs stay font- and
+    /// encoding-friendly. Glyphs and colors are intentionally kept in sync with the rendering in
+    /// <see cref="AnsiTerminalTestProgressFrame"/> and <see cref="SimpleTerminal.RenderProgress"/>.
+    /// </summary>
+    private static void AppendAssemblyTestCounts(ITerminal terminal, TestProgressState assemblyRun)
+    {
+        int failed = assemblyRun.FailedTests;
+        int passed = assemblyRun.PassedTests;
+        int skipped = assemblyRun.SkippedTests;
+        int retried = assemblyRun.RetriedFailedTests;
+
+        bool unicode = terminal is AnsiTerminal;
+        char passedGlyph = unicode ? '✓' : '+';
+        char skippedGlyph = unicode ? '↓' : '?';
+
+        terminal.Append('[');
+
+        AppendGlyphCount(terminal, passedGlyph, passed, TerminalColor.DarkGreen);
+        terminal.Append('/');
+        AppendGlyphCount(terminal, 'x', failed, TerminalColor.DarkRed);
+        terminal.Append('/');
+        AppendGlyphCount(terminal, skippedGlyph, skipped, TerminalColor.DarkYellow);
+
+        if (retried > 0)
+        {
+            terminal.Append('/');
+            AppendGlyphCount(terminal, 'r', retried, TerminalColor.Gray);
+        }
+
+        terminal.Append(']');
+    }
+
+    private static void AppendGlyphCount(ITerminal terminal, char glyph, int count, TerminalColor color)
+    {
+        terminal.SetColor(color);
+        terminal.Append(glyph);
+        terminal.Append(count.ToString(CultureInfo.CurrentCulture));
+        terminal.ResetColor();
     }
 
     /// <summary>

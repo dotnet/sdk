@@ -521,6 +521,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6ca055abbe0f7c50651e7768c3f466ef07907dc8</Sha>
     </Dependency>
+    <Dependency Name="microsoft.dotnet.helix.jobmonitor" Version="11.0.0-beta.26277.111">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>6ca055abbe0f7c50651e7768c3f466ef07907dc8</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.SignTool" Version="11.0.0-beta.26277.111">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6ca055abbe0f7c50651e7768c3f466ef07907dc8</Sha>
@@ -537,13 +541,13 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6ca055abbe0f7c50651e7768c3f466ef07907dc8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.3.0-preview.26274.1">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.3.0-preview.26307.5">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>372c5f14ebcf0b553e203d42c6c786be6d8c2e8b</Sha>
+      <Sha>1bc655fcf8929af69d33d0d4142ccf4f019158ac</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.3.0-preview.26274.1">
+    <Dependency Name="MSTest" Version="4.3.0-preview.26307.5">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>372c5f14ebcf0b553e203d42c6c786be6d8c2e8b</Sha>
+      <Sha>1bc655fcf8929af69d33d0d4142ccf4f019158ac</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="11.0.0-preview.6.26277.111">
       <Uri>https://github.com/dotnet/dotnet</Uri>
