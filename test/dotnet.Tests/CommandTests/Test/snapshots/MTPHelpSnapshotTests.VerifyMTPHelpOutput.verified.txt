@@ -16,10 +16,10 @@ Options:
                                                   If not specified the file will be generated inside the default 'TestResults' directory.
   --max-parallel-test-modules <NUMBER>            The max number of test modules that can run in parallel.
   --minimum-expected-tests <NUMBER>               Specifies the minimum number of tests that are expected to run.
-  -e, --environment <NAME="VALUE">                Sets the value of an environment variable.
-                                                  Creates the variable if it does not exist, overrides if it does.
+  -e, --environment <NAME="VALUE">                Sets the value of an environment variable. 
+                                                  Creates the variable if it does not exist, overrides if it does. 
                                                   This argument can be specified multiple times to provide multiple variables.
-
+  
                                                   Examples:
                                                   -e VARIABLE=abc
                                                   -e VARIABLE="value with spaces"
