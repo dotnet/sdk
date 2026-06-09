@@ -198,9 +198,14 @@ extends:
           # download.visualstudio.microsoft.com. This replaces the retired,
           # DDFUN-managed 'dotnettemplating' blob storage account.
           # The ESRP connected service, key vault, and signing cert are baked into the
-          # template. $(ESRPOwners)/$(ESRPApprovers) are comma-separated aliases defined
-          # in the pipeline's Variables UI; both must be PME-account holders.
-          - template: azure-pipelines/MicroBuild.Publish.ReleaseStudio.yml@MicroBuildTemplates
+          # template. $(ESRPOwners)/$(ESRPApprovers) are semicolon-separated full email
+          # addresses defined in the pipeline's Variables UI; both must be PME-account holders.
+          # NOTE: no 'azure-pipelines/' path prefix here (unlike the top-level 'extends').
+          # The 1ES.Official.Publish.yml extends template lives in the MicroBuildTemplate
+          # repo's azure-pipelines/ folder and re-resolves @MicroBuildTemplates references in
+          # injected steps relative to its own directory, so a prefix would double it
+          # (azure-pipelines/azure-pipelines/...).
+          - template: MicroBuild.Publish.ReleaseStudio.yml@MicroBuildTemplates
             parameters:
               intent: 'filedownloadlinkgeneration'
               contentType: 'Binaries'
