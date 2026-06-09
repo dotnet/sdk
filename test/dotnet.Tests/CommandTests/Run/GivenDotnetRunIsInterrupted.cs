@@ -6,6 +6,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Win32.SafeHandles;
 using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
@@ -21,11 +22,15 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [WindowsOnlyFact]
         public void ItTerminatesWinExeAppWithCloseMainWindow()
         {
-            var asset = _testAssetsManager.CopyTestAsset("WinExeApp")
+            var asset = TestAssetsManager.CopyTestAsset("WinExeApp")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(asset.Path);
+
+            // Launch dotnet run in a new process group so that GenerateConsoleCtrlEvent
+            // targets only the child group and does not propagate to the test host.
+            command.CreateNewProcessGroup = true;
 
             bool signaled = false;
             bool sawClosingGracefully = false;
@@ -101,7 +106,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItIgnoresSIGINT()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run", "-v:q")
@@ -130,10 +135,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     // will inherit the current process group from the `dotnet test` process that is running this test.
                     // We would need to fork(), setpgid(), and then execve() to break out of the current group and that is
                     // too complex for a simple unit test.
-                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGINT).Should().Be(0); // dotnet run
+                    testProcess.SafeHandle.Signal(PosixSignal.SIGINT).Should().BeTrue(); // dotnet run
                     try
                     {
-                        NativeMethods.Posix.kill(Convert.ToInt32(line), NativeMethods.Posix.SIGINT).Should().Be(0);   // TestAppThatWaits
+                        new SafeProcessHandle(Convert.ToInt32(line), true).Signal(PosixSignal.SIGINT).Should().BeTrue();   // TestAppThatWaits
                     }
                     catch (Exception e)
                     {
@@ -162,7 +167,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [UnixOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
         public void ItPassesSIGTERMToChild()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")
@@ -195,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                         Log.WriteLine($"Error while  getting child process Id: {e}");
                         Assert.Fail($"Failed to get to child process Id: {line}");
                     }
-                    NativeMethods.Posix.kill(testProcess.Id, NativeMethods.Posix.SIGTERM).Should().Be(0);
+                    testProcess.SafeHandle.Signal(PosixSignal.SIGTERM).Should().BeTrue();
                     killed = true;
                 }
                 else
@@ -223,7 +228,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [WindowsOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/38268")]
         public void ItTerminatesTheChildWhenKilled()
         {
-            var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
+            var asset = TestAssetsManager.CopyTestAsset("TestAppThatWaits")
                 .WithSource();
 
             var command = new DotnetCommand(Log, "run")

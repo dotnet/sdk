@@ -44,7 +44,7 @@ namespace FrameworkReferenceTest
 
             testProject.SourceFiles.Add("Program.cs", FrameworkReferenceEmptyProgramSource);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -98,7 +98,7 @@ namespace FrameworkReferenceTest
 
             testProject.SourceFiles.Add("Program.cs", FrameworkReferenceEmptyProgramSource);
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: tfm)
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: tfm)
                 .Restore(Log, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -135,7 +135,7 @@ namespace FrameworkReferenceTest
             testProject.SourceFiles.Add("Program.cs", FrameworkReferenceEmptyProgramSource);
             testProject.AdditionalProperties.Add("GenerateRuntimeConfigurationFiles", "true");
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject)
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .Restore(Log, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -165,7 +165,7 @@ namespace FrameworkReferenceTest
 
             testProject.SourceFiles.Add("Program.cs", FrameworkReferenceEmptyProgramSource);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -192,7 +192,7 @@ namespace FrameworkReferenceTest
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -231,7 +231,7 @@ namespace FrameworkReferenceTest
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -271,7 +271,7 @@ namespace FrameworkReferenceTest
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -319,7 +319,7 @@ namespace FrameworkReferenceTest
             //  root, we need to allow it to succeed even if it can't find that data.
             testProject.AdditionalProperties["AllowMissingPrunePackageData"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             string nugetPackagesFolder = Path.Combine(testAsset.TestRoot, "packages");
 
@@ -356,7 +356,7 @@ namespace FrameworkReferenceTest
 
             testProject.AdditionalProperties["RollForward"] = rollForwardValue;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: rollForwardValue + tfm);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: rollForwardValue + tfm);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -405,7 +405,7 @@ namespace FrameworkReferenceTest
 
             testProject.AdditionalProperties["RollForward"] = rollForwardValue;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: rollForwardValue.GetHashCode().ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: rollForwardValue.GetHashCode().ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -439,7 +439,7 @@ namespace FrameworkReferenceTest
                 SelfContained = "true"
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -477,7 +477,7 @@ namespace FrameworkReferenceTest
                 SelfContained = "true"
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var restoreCommand = new RestoreCommand(testAsset);
 
@@ -507,7 +507,7 @@ namespace FrameworkReferenceTest
 
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var restoreCommand = new RestoreCommand(testAsset);
 
@@ -705,7 +705,7 @@ namespace FrameworkReferenceTest
 
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -734,7 +734,7 @@ namespace FrameworkReferenceTest
             };
             referencedPackage.FrameworkReferences.Add("Microsoft.ASPNETCORE.App");
 
-            var packageAsset = _testAssetsManager.CreateTestProject(referencedPackage);
+            var packageAsset = TestAssetsManager.CreateTestProject(referencedPackage);
 
             var packCommand = new PackCommand(packageAsset);
 
@@ -756,7 +756,7 @@ namespace FrameworkReferenceTest
                                      "$(RestoreAdditionalProjectSources);" + nupkgFolder);
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             string nugetPackagesFolder = Path.Combine(testAsset.TestRoot, "packages");
 
             var buildCommand = (BuildCommand)new BuildCommand(testAsset)
@@ -837,7 +837,7 @@ namespace FrameworkReferenceTest
             testProject.FrameworkReferences.Add("Microsoft.AspNetCore.App");
             testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App");
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
 
@@ -952,7 +952,7 @@ namespace FrameworkReferenceTest
                 IsSdkProject = true
             };
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Authentication.JwtBearer", "5.0.0"));
-            var testAsset = _testAssetsManager.CreateTestProject(testProject).WithProjectChanges((project) =>
+            var testAsset = TestAssetsManager.CreateTestProject(testProject).WithProjectChanges((project) =>
             {
                 var ns = project.Root.Name.Namespace;
                 var target = XElement.Parse(@"  <Target Name=""GetFrameworkRefResults"" AfterTargets=""Build"" DependsOnTargets=""CollectFrameworkReferences"" >
@@ -994,7 +994,7 @@ namespace FrameworkReferenceTest
 
             string identifier = selfContained ? "_selfcontained" : string.Empty;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
 
             string projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
 
@@ -1076,7 +1076,7 @@ namespace FrameworkReferenceTest
             testProject.AdditionalProperties["DisableImplicitFrameworkReferences"] = "true";
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod, identifier)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -1151,7 +1151,7 @@ namespace FrameworkReferenceTest
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
             testProject.SelfContained = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
             if (projectChanges != null)
             {
                 testAsset = testAsset.WithProjectChanges(projectChanges);

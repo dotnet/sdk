@@ -1,7 +1,5 @@
 using System;
 using System.IO;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
 {

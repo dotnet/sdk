@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -950,7 +951,7 @@ public class {|#0:C|} : IDictionary
 ") },
                     ExpectedDiagnostics = { GetCA1010MultipleCSharpResultAt(0, "C", "ICollection", "ICollection<T>", "IReadOnlyCollection<T>") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1052,7 +1053,7 @@ End Class"
 ") },
                     ExpectedDiagnostics = { GetCA1010MultipleBasicResultAt(0, "C", "ICollection", "ICollection(Of T)", "IReadOnlyCollection(Of T)") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1490, "https://github.com/dotnet/roslyn-analyzers/issues/1490")]
@@ -1109,7 +1110,7 @@ public class {|#0:C|} : IDictionary
 ") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(0, "C", "IDictionary", "IDictionary<TKey, TValue>") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1211,7 +1212,7 @@ End Class"
 ") },
                     ExpectedDiagnostics = { GetCA1010BasicResultAt(0, "C", "IDictionary", "IDictionary(Of TKey, TValue)") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1237,7 +1238,7 @@ public class {|#0:TestClass|} : CollectionBase { }"
 ") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(0, "TestClass", "IList", "IDictionary<TKey, TValue>") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -1260,7 +1261,7 @@ End Class
 ") },
                     ExpectedDiagnostics = { GetCA1010BasicResultAt(0, "TestClass", "IList", "IDictionary(Of TKey, TValue)") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

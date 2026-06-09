@@ -23,7 +23,7 @@ Options:
                                                   Examples:
                                                   -e VARIABLE=abc
                                                   -e VARIABLE="value with spaces"
-                                                  -e VARIABLE="value;seperated with;semicolons"
+                                                  -e VARIABLE="value;separated with;semicolons"
                                                   -e VAR1=abc -e VAR2=def -e VAR3=ghi
   -c, --configuration <CONFIGURATION>             The configuration to use for running tests. The default for most projects is 'Debug'.
   -f, --framework <FRAMEWORK>                     The target framework to run tests for. The target framework must also be specified in the project file.
@@ -33,13 +33,16 @@ Options:
   -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
   --no-restore                                    Do not restore the project before building. [default: False]
   --no-build                                      Do not build the project before testing. Implies --no-restore. [default: False]
+  --no-dependencies                               Do not build project-to-project references and only build the specified project. [default: False]
   --artifacts-path <ARTIFACTS_DIR>                The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.
+  --ucr, --use-current-runtime                    Use current runtime as the target runtime. [default: False]
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
   --output <Detailed|Normal>                      Verbosity of test output.
   --list-tests <list-tests>                       List the discovered tests instead of running the tests.
   --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application. [default: False]
   --no-launch-profile-arguments                   Do not use arguments specified in launch profile to run the application. [default: False]
+  --device <DEVICE>                               The device identifier to use for running the application.
   -?, -h, --help                                  Show command line help.
 
 Waiting for options and extensions...
@@ -63,5 +66,15 @@ Platform Options:
                                   Takes one argument as string in the format <value>[h|m|s] where 'value' is float.
 
 Extension Options:
+  --ansi                 Control whether ANSI escape characters are emitted.
+                         Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
+                         'on' forces ANSI escape codes (including cursor movement) even when stdout is redirected; pair it with --no-progress if you only want colors.
+                         When both --ansi and --no-ansi are provided, --ansi wins.
   --report-trx           Enable generating TRX report
-  --report-trx-filename  The name of the generated TRX report
+  --report-trx-filename  The name of the generated TRX report. May include a relative or absolute path; relative paths are resolved against the test results directory and missing directories are created.
+                         Supports the following placeholders: {pname} (test application name), {pid} (process ID), {asm} (entry assembly name), {tfm} (target framework moniker), {time} (timestamp).
+                         Example: MyReport_{tfm}.trx
+  --show-stderr          Determines when to show captured error output of a test.
+                         Valid values are 'All', 'Failed', 'None'. Default is 'All'.
+  --show-stdout          Determines when to show captured standard output of a test.
+                         Valid values are 'All', 'Failed', 'None'. Default is 'All'.

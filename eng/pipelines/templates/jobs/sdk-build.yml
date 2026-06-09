@@ -23,7 +23,6 @@ parameters:
   targetArchitecture: x64
   publishArgument: ''
   signArgument: ''
-  runTestsAsTool: false
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -97,7 +96,6 @@ jobs:
           ${{ parameters.signArgument }}
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
@@ -106,6 +104,7 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+          MSBUILDALWAYSRETRY: true
 
     - ${{ else }}:
       - script: |
@@ -120,7 +119,6 @@ jobs:
           ${{ parameters.signArgument }} \
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
           /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
-          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
           /p:TargetRid=${{ parameters.runtimeIdentifier }} \
           ${{ parameters.osProperties }} \
@@ -131,14 +129,11 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+          MSBUILDALWAYSRETRY: true
+          TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
-      - ${{ if eq(parameters.runAoTTests, true) }}:
-        # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
-        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
-          workingDirectory: $(Build.SourcesDirectory)/artifacts/bin
-          displayName: 🟣 Install wasm-tools Workload
 
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -150,9 +145,9 @@ jobs:
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /p:EnableHelixJobMonitor=true
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Run ${{ parameters.categoryName }} Tests
-          condition: succeeded()
+          displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -174,14 +169,15 @@ jobs:
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+            /p:EnableHelixJobMonitor=true
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Run ${{ parameters.categoryName }} Tests
-          condition: succeeded()
+          displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
+            TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### POST ###############
     - ${{ if eq(parameters.publishXunitResults, true) }}:

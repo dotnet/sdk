@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ public class C
                 FixedState = { Sources = { fixedCode(configureAwait: false) } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyCS.Test
             {
@@ -64,7 +65,7 @@ public class C
                 FixedState = { Sources = { fixedCode(configureAwait: true) } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -177,7 +178,7 @@ public class C
                 LanguageVersion = LanguageVersion.CSharp8,
                 TestCode = code,
                 FixedCode = fixedCode,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -215,7 +216,7 @@ End Class
                 FixedState = { Sources = { fixedCode(configureAwait: false) } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -223,7 +224,7 @@ End Class
                 FixedState = { Sources = { fixedCode(configureAwait: true) } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue),
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -603,7 +604,7 @@ public class C
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
@@ -659,7 +660,7 @@ public class C
                 {
                     Sources = { fixedCode },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
@@ -702,7 +703,7 @@ public class C
                 csharpTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithLocation(0));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(2393, "https://github.com/dotnet/roslyn-analyzers/issues/2393")]
@@ -774,7 +775,7 @@ public class C
 	}
 }",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
@@ -798,7 +799,7 @@ public class C
 	}}
 }}",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
@@ -820,7 +821,7 @@ public class C
 	}
 }",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

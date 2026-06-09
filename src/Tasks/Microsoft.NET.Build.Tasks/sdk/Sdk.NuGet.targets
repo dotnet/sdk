@@ -11,6 +11,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project>
 
+  <!-- This file is imported by Microsoft.DesktopBridge.targets -->
+
+  <Import Project="..\targets\Microsoft.NET.Sdk.BeforeCommon.props" />
   <Import Project="..\targets\Microsoft.NET.Sdk.DefaultItems.props" />
   
   <Import Project="..\targets\Microsoft.NET.Sdk.Common.targets" />

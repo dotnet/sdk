@@ -6,13 +6,11 @@
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IsPackable>false</IsPackable>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Verify.DiffPlex" />
   </ItemGroup>
 

@@ -28,7 +28,6 @@ public class CapturingLogger : ILogger
         eventSource.ErrorRaised += (o, e) => _errors.Add(e);
     }
 
-
     public void Shutdown()
     {
     }

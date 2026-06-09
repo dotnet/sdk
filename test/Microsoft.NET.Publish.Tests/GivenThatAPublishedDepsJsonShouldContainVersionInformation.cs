@@ -5,7 +5,6 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -38,7 +37,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var testProject = GetTestProject();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -120,7 +119,7 @@ static class Program
             }
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: callingMethod);
 
             var publishCommand = new PublishCommand(testAsset);
 
@@ -141,7 +140,18 @@ static class Program
 
             var exePath = Path.Combine(publishDirectory.FullName, testProject.Name + ".dll");
 
-            string rollForwardVersion = "8.0.0";
+            //  Find the actual installed 8.0.x runtime version.  With dotnetup, only the latest patch
+            //  (e.g. 8.0.22) may be installed rather than 8.0.0, so we need to discover it dynamically.
+            string dotnetRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
+            string sharedFxDir = Path.Combine(dotnetRoot, "shared", "Microsoft.NETCore.App");
+            string rollForwardVersion = Directory.Exists(sharedFxDir)
+                ? Directory.GetDirectories(sharedFxDir, "8.0.*")
+                    .Select(Path.GetFileName)
+                    .Where(v => !string.IsNullOrEmpty(v) && Version.TryParse(v, out _))
+                    .OrderByDescending(v => Version.Parse(v))
+                    .FirstOrDefault()
+                : null
+                ?? "8.0.0";
 
             var runAppCommand = new DotnetCommand(Log, "exec", "--fx-version", rollForwardVersion, exePath);
 
@@ -210,7 +220,7 @@ static class Program
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod);
 
             MSBuildCommand command;
             if (build)

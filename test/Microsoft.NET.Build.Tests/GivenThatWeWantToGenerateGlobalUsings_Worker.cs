@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tests
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -39,6 +39,7 @@ global using System.Collections.Generic;
 global using System.IO;
 global using System.Linq;
 global using System.Net.Http;
+global using System.Net.Http.Json;
 global using System.Threading;
 global using System.Threading.Tasks;
 ");
@@ -50,7 +51,7 @@ global using System.Threading.Tasks;
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "disable";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g..cs";
 
             var buildCommand = new BuildCommand(testAsset);

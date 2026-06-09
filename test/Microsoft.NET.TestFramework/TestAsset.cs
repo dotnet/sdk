@@ -27,13 +27,13 @@ namespace Microsoft.NET.TestFramework
         //  The TestProject from which this asset was created, if any
         public TestProject? TestProject { get; set; }
 
-        internal TestAsset(string testDestination, string? sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
+        internal TestAsset(string testDestination, ITestOutputHelper log) : base(testDestination)
         {
             Log = log;
             Name = new DirectoryInfo(testDestination).Name;
         }
 
-        internal TestAsset(string testAssetRoot, string testDestination, string? sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
+        internal TestAsset(string testAssetRoot, string testDestination, ITestOutputHelper log) : base(testDestination)
         {
             if (string.IsNullOrEmpty(testAssetRoot))
             {

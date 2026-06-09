@@ -57,9 +57,10 @@ public class GenerateStaticWebAssetsManifest : Task
             Log.LogMessage(MessageImportance.Low, "Generating manifest for '{0}' assets and '{1}' endpoints", assets.Length, endpoints.Length);
 
             var assetsByTargetPath = GroupAssetsByTargetPath(assets);
+            var groupSet = new HashSet<string>(StringComparer.Ordinal);
             foreach (var group in assetsByTargetPath)
             {
-                if (!StaticWebAsset.ValidateAssetGroup(group.Key, group.Value, out var reason))
+                if (!StaticWebAsset.ValidateAssetGroup(group.Key, group.Value, out var reason, groupSet))
                 {
                     Log.LogError(reason);
                     return false;
@@ -158,7 +159,7 @@ public class GenerateStaticWebAssetsManifest : Task
 
         foreach (var asset in assets)
         {
-            var targetPath = asset.ComputeTargetPath("", '/');
+            var targetPath = asset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
 
             if (result.TryGetValue(targetPath, out var existing))
             {

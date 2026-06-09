@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -41,6 +42,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
         private static readonly string s_suppressorProjectPath = Path.Combine("for_code_formatter", "suppressor_project");
         private static readonly string s_suppressorProjectFilePath = Path.Combine(s_suppressorProjectPath, "suppressor_project.csproj");
+
+        private static readonly string s_suppressorFixProjectPath = Path.Combine("for_code_formatter", "suppressor_fix_project");
 
         private static string[] EmptyFilesList => Array.Empty<string>();
 
@@ -645,6 +648,38 @@ Greeter.Greeter() -> void";
                 fixCategory: FixCategory.CodeStyle);
         }
 
+        [MSBuildFact]
+        public async Task SuppressedDiagnosticsAreNotFixed()
+        {
+            var projectPath = CopyToTempFolder(s_suppressorFixProjectPath);
+
+            try
+            {
+                await TestFormatWorkspaceAsync(
+                    Path.Combine(projectPath, "suppressor_fix_project.csproj"),
+                    include: EmptyFilesList,
+                    exclude: EmptyFilesList,
+                    includeGenerated: false,
+                    expectedExitCode: 0,
+                    expectedFilesFormatted: 1,
+                    expectedFileCount: 4,
+                    codeStyleSeverity: DiagnosticSeverity.Warning,
+                    fixCategory: FixCategory.CodeStyle,
+                    saveFormattedFiles: true);
+
+                bool FileChanged(string fileName) =>
+                    File.ReadAllText(Path.Combine(TestProjectsPathHelper.GetProjectsDirectory(), s_suppressorFixProjectPath, fileName)) !=
+                    File.ReadAllText(Path.Combine(projectPath, fileName));
+
+                Assert.True(!FileChanged("Program.cs"), "Program.cs was changed");
+                Assert.True(FileChanged("Program2.cs"), "Program2.cs was not changed");
+            }
+            finally
+            {
+                Directory.Delete(projectPath, true);
+            }
+        }
+
         internal async Task<string> TestFormatWorkspaceAsync(
             string workspaceFilePath,
             string[] include,
@@ -695,7 +730,8 @@ Greeter.Greeter() -> void";
                 fileMatcher,
                 ReportPath: string.Empty,
                 IncludeGeneratedFiles: includeGenerated,
-                BinaryLogPath: null);
+                BinaryLogPath: null,
+                TargetFramework: null);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
             Environment.CurrentDirectory = currentDirectory;
 

@@ -1,7 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Operations;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
@@ -30,7 +32,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var theoryData = new TheoryData<BinaryOperatorKind, int, bool>();
             foreach (var withPredicate in new[] { false, true })
             {
-                foreach (var fixerData in LeftCount_NoDiagnostic_TheoryData)
+                foreach (var fixerData in LeftCount_NoDiagnostic_TheoryData.Select(r => ((ITheoryDataRow)r).GetData()))
                 {
                     theoryData.Add((BinaryOperatorKind)fixerData[0], (int)fixerData[1], withPredicate);
                 }
@@ -62,7 +64,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var theoryData = new TheoryData<int, BinaryOperatorKind, bool>();
             foreach (var withPredicate in new[] { false, true })
             {
-                foreach (var fixerData in RightCount_NoDiagnostic_TheoryData)
+                foreach (var fixerData in RightCount_NoDiagnostic_TheoryData.Select(r => ((ITheoryDataRow)r).GetData()))
                 {
                     theoryData.Add((int)fixerData[0], (BinaryOperatorKind)fixerData[1], withPredicate);
                 }
@@ -88,7 +90,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var theoryData = new TheoryData<BinaryOperatorKind, int, bool, bool>();
             foreach (var withPredicate in new[] { false, true })
             {
-                foreach (var fixerData in LeftCount_Fixer_TheoryData)
+                foreach (var fixerData in LeftCount_Fixer_TheoryData.Select(r => ((ITheoryDataRow)r).GetData()))
                 {
                     theoryData.Add((BinaryOperatorKind)fixerData[0], (int)fixerData[1], withPredicate, (bool)fixerData[2]);
                 }
@@ -102,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         private static TheoryData<BinaryOperatorKind, int> Build_LeftCount_Diagnostic_TheoryData()
         {
             var theoryData = new TheoryData<BinaryOperatorKind, int>();
-            foreach (var fixerData in LeftCount_Fixer_TheoryData)
+            foreach (var fixerData in LeftCount_Fixer_TheoryData.Select(r => ((ITheoryDataRow)r).GetData()))
             {
                 theoryData.Add((BinaryOperatorKind)fixerData[0], (int)fixerData[1]);
             }
@@ -127,7 +129,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var theoryData = new TheoryData<int, BinaryOperatorKind, bool, bool>();
             foreach (var withPredicate in new[] { false, true })
             {
-                foreach (var fixerData in RightCount_Fixer_TheoryData)
+                foreach (var fixerData in RightCount_Fixer_TheoryData.Select(r => ((ITheoryDataRow)r).GetData()))
                 {
                     theoryData.Add((int)fixerData[0], (BinaryOperatorKind)fixerData[1], withPredicate, (bool)fixerData[2]);
                 }
@@ -141,7 +143,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         private static TheoryData<int, BinaryOperatorKind> Build_RightCount_Diagnostic_TheoryData()
         {
             var theoryData = new TheoryData<int, BinaryOperatorKind>();
-            foreach (var fixerData in RightCount_Fixer_TheoryData)
+            foreach (var fixerData in RightCount_Fixer_TheoryData.Select(r => ((ITheoryDataRow)r).GetData()))
             {
                 theoryData.Add((int)fixerData[0], (BinaryOperatorKind)fixerData[1]);
             }

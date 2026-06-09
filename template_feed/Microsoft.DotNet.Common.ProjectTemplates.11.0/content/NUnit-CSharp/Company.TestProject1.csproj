@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net11.0</TargetFramework>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
+    <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+    <ImplicitUsings Condition="'$(csharpFeature_ImplicitUsings)' == 'true'">enable</ImplicitUsings>
+    <Nullable Condition="'$(csharpFeature_Nullable)' == 'true'">enable</Nullable>
+    <IsPackable Condition="'$(EnablePack)' == 'true'">true</IsPackable>
+    <IsPackable Condition="'$(EnablePack)' != 'true'">false</IsPackable>
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <OutputType>Exe</OutputType>
+<!--#endif-->
+  </PropertyGroup>
+
+  <ItemGroup>
+<!--#if (TestRunner != "Microsoft.Testing.Platform")-->
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+<!--#endif-->
+    <PackageReference Include="NUnit" Version="4.6.1" />
+    <PackageReference Include="NUnit.Analyzers" Version="4.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.2.0" />
+  </ItemGroup>
+
+<!--#if (csharpFeature_ImplicitUsings)-->
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+<!--#endif-->
+
+</Project>
