@@ -160,10 +160,68 @@ detect_rid() {
     echo "${os}-${arch}"
 }
 
+# Check whether ICU shared libraries (required by the .NET runtime) are present on the system
+check_icu_present() {
+    # Method 1: ldconfig cache (works on most glibc-based systems)
+    if command -v ldconfig &>/dev/null; then
+        if ldconfig -p 2>/dev/null | grep -q "libicuuc\.so"; then
+            return 0
+        fi
+    fi
+
+    # Method 2: filesystem search in common library paths (fallback for musl/Alpine and others)
+    local arch dirs dir
+    arch="$(uname -m)"
+    dirs="/usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /lib /lib64"
+    case "$arch" in
+        x86_64)  dirs="$dirs /usr/lib/x86_64-linux-gnu /lib/x86_64-linux-gnu" ;;
+        aarch64) dirs="$dirs /usr/lib/aarch64-linux-gnu /lib/aarch64-linux-gnu" ;;
+    esac
+
+    for dir in $dirs; do
+        for f in "$dir"/libicuuc.so.*; do
+            [ -e "$f" ] && return 0
+        done
+    done
+
+    return 1
+}
+
 # --- Main ---
 
 RID=$(detect_rid)
 info "Detected runtime: $RID"
+
+# --- Check ICU libraries (Linux only) ---
+# The .NET runtime requires ICU for globalization support. Check that the libraries
+# are present before downloading dotnetup to give a clear, actionable error message.
+if [[ "$RID" == linux* ]]; then
+    if ! check_icu_present; then
+        err "ICU libraries are required to run dotnetup but were not found on this system."
+        err ""
+        err "Please install ICU using your package manager and re-run this script:"
+        if command -v apt-get &>/dev/null; then
+            err "  sudo apt-get install -y libicu-dev"
+        elif command -v dnf &>/dev/null; then
+            err "  sudo dnf install -y libicu"
+        elif command -v yum &>/dev/null; then
+            err "  sudo yum install -y libicu"
+        elif command -v apk &>/dev/null; then
+            err "  sudo apk add icu-libs"
+        elif command -v zypper &>/dev/null; then
+            err "  sudo zypper install -y libicu"
+        elif command -v pacman &>/dev/null; then
+            err "  sudo pacman -S icu"
+        else
+            err "  Debian/Ubuntu:  sudo apt-get install -y libicu-dev"
+            err "  Fedora/RHEL:    sudo dnf install -y libicu"
+            err "  Alpine Linux:   sudo apk add icu-libs"
+        fi
+        err ""
+        err "For more information, see: https://aka.ms/dotnet-missing-libicu"
+        exit 1
+    fi
+fi
 
 FILE_NAME="dotnetup-${RID}"
 DOWNLOAD_URL="${BASE_URL}/${FILE_NAME}"

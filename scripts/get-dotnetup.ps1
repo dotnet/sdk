@@ -97,10 +97,77 @@ function Get-RuntimeId {
     return "$os-$archStr"
 }
 
+function Test-IcuPresent {
+    # ICU is only required on Linux; Windows and macOS include it natively
+    if (-not [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::Linux)) {
+        return $true
+    }
+
+    # Method 1: ldconfig cache (glibc-based systems)
+    try {
+        $ldconfigOutput = & ldconfig -p 2>&1 | Out-String
+        if ($ldconfigOutput -match "libicuuc\.so") {
+            return $true
+        }
+    }
+    catch { }
+
+    # Method 2: filesystem search in common library directories (fallback for musl/Alpine)
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+    $archSuffix = switch ($arch) {
+        "X64"   { "x86_64-linux-gnu" }
+        "Arm64" { "aarch64-linux-gnu" }
+        default { $null }
+    }
+    $searchDirs = [System.Collections.Generic.List[string]]@(
+        "/usr/lib", "/usr/lib64", "/usr/local/lib", "/usr/local/lib64", "/lib", "/lib64"
+    )
+    if ($archSuffix) {
+        $searchDirs.Add("/usr/lib/$archSuffix")
+        $searchDirs.Add("/lib/$archSuffix")
+    }
+
+    foreach ($dir in $searchDirs) {
+        if (Test-Path $dir) {
+            if (Get-ChildItem -Path $dir -Filter "libicuuc.so.*" -ErrorAction SilentlyContinue) {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
 # --- Main ---
 
 $rid = Get-RuntimeId
 Write-Host "Detected runtime: $rid" -ForegroundColor Cyan
+
+# Check ICU libraries (Linux only).
+# The .NET runtime requires ICU for globalization support. Check that the libraries
+# are present before downloading dotnetup to give a clear, actionable error message.
+if ($rid -like "linux*") {
+    if (-not (Test-IcuPresent)) {
+        Write-Host "Error: ICU libraries are required to run dotnetup but were not found on this system." -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Please install ICU using your package manager and re-run this script:" -ForegroundColor Red
+        if (Get-Command apt-get -ErrorAction SilentlyContinue) {
+            Write-Host "  sudo apt-get install -y libicu-dev" -ForegroundColor Red
+        } elseif (Get-Command dnf -ErrorAction SilentlyContinue) {
+            Write-Host "  sudo dnf install -y libicu" -ForegroundColor Red
+        } elseif (Get-Command apk -ErrorAction SilentlyContinue) {
+            Write-Host "  sudo apk add icu-libs" -ForegroundColor Red
+        } else {
+            Write-Host "  Debian/Ubuntu:  sudo apt-get install -y libicu-dev" -ForegroundColor Red
+            Write-Host "  Fedora/RHEL:    sudo dnf install -y libicu" -ForegroundColor Red
+            Write-Host "  Alpine Linux:   sudo apk add icu-libs" -ForegroundColor Red
+        }
+        Write-Host ""
+        Write-Host "For more information, see: https://aka.ms/dotnet-missing-libicu" -ForegroundColor Red
+        exit 1
+    }
+}
 
 $binaryName = if ($rid -like "win-*") { "dotnetup.exe" } else { "dotnetup" }
 $fileName = if ($rid -like "win-*") { "dotnetup-$rid.exe" } else { "dotnetup-$rid" }
