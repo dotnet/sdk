@@ -224,14 +224,20 @@ public class CtrlCCancellationManagerTests
 
     private static Process StartLongRunningProcess()
     {
-        // Spawn a platform-appropriate "sleep" process (cmd.exe + timeout on Windows, /bin/sh +
-        // sleep on Unix) so we have a real OS process to register/kill in tests. The actual program
-        // is irrelevant — we only need a process tree the manager can target with Process.Kill.
+        // Spawn a platform-appropriate long-running process so we have a real OS process to
+        // register/kill in tests. The actual program is irrelevant — we only need a process tree
+        // the manager can target with Process.Kill.
+        //
+        // On Windows we deliberately avoid `cmd /c "timeout /t N"` because `timeout` requires an
+        // interactive console (it exits immediately with "ERROR: Input redirection is not supported"
+        // when stdin is not a console, which is the case on Helix and other headless CI agents).
+        // `ping -n N 127.0.0.1` waits ~1 second between echoes and does not depend on a console,
+        // so it stays alive reliably across local dev and CI.
         var psi = new ProcessStartInfo
         {
-            FileName = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh",
+            FileName = OperatingSystem.IsWindows() ? "ping.exe" : "/bin/sh",
             Arguments = OperatingSystem.IsWindows()
-                ? "/c \"timeout /t 600 > nul\""
+                ? "-n 600 -w 1000 127.0.0.1"
                 : "-c \"sleep 600\"",
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -240,6 +246,18 @@ public class CtrlCCancellationManagerTests
         };
 
         var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start long-running helper process");
+
+        // Sanity-check that the helper is actually alive before handing it back. If it exited
+        // immediately the assertions on HasExited downstream would silently produce false failures
+        // (as happened on Helix with `timeout` — see comment above).
+        Thread.Sleep(100);
+        if (process.HasExited)
+        {
+            var stderr = process.StandardError.ReadToEnd();
+            throw new InvalidOperationException(
+                $"Long-running helper process exited immediately with code {process.ExitCode}. Stderr: {stderr}");
+        }
+
         return process;
     }
 }
