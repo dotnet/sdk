@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -134,9 +135,13 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 var platformItems = PlatformManifests?.SelectMany(pm =>
                 {
-                    AbsolutePath? manifestPath = string.IsNullOrEmpty(pm.ItemSpec)
-                        ? null
-                        : TaskEnvironment.GetAbsolutePath(pm.ItemSpec);
+                    if (string.IsNullOrEmpty(pm.ItemSpec))
+                    {
+                        log.LogError(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotLoadPlatformManifest, pm.ItemSpec));
+                        return Enumerable.Empty<ConflictItem>();
+                    }
+
+                    AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(pm.ItemSpec);
                     return PlatformManifestReader.LoadConflictItems(manifestPath, log);
                 }) ?? Enumerable.Empty<ConflictItem>();
 

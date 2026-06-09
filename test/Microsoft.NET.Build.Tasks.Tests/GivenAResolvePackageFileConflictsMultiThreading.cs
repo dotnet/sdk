@@ -66,6 +66,21 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         conflict.GetMetadata(nameof(ConflictItemType)).Should().Be(ConflictItemType.CopyLocal.ToString());
     }
 
+    [Fact]
+    public void PlatformManifest_EmptyPathLogsAndSkips()
+    {
+        var projectDir = CreateTempDir();
+
+        var engine = new MockBuildEngine();
+        var task = CreateTask(engine);
+        task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+        task.PlatformManifests = new ITaskItem[] { new MockTaskItem(string.Empty, new Dictionary<string, string>()) };
+
+        task.Execute().Should().BeFalse("empty PlatformManifests should log and skip without throwing");
+        var error = engine.Errors.Should().ContainSingle().Which;
+        error.Message.Should().NotContain(projectDir, "the original empty path must not be absolutized");
+    }
+
     /// <summary>
     /// TargetFrameworkDirectories with a relative ItemSpec must preserve the pre-migration
     /// behavior: the derived FrameworkList.xml path is invalid because it is not rooted.
