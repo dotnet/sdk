@@ -117,9 +117,56 @@
       "type": "parameter",
       "datatype": "text",
       "description": "Sets the LangVersion property in the created project file",
-      "defaultValue": "latest",
+      "defaultValue": "",
       "replaces": "$(ProjectLanguageVersion)",
       "displayName": "Language version"
+    },
+    "netFramework": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^net4\\d",
+        "source": "Framework"
+      }
+    },
+    "csharp9orOlder": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(ISO-1|ISO-2|[1-7]|[8-9]|[8-9]\\.0|7\\.[0-3])$",
+        "source": "langVersion"
+      }
+    },
+    "csharp7orOlder": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(ISO-1|ISO-2|[1-7]|7\\.[0-3])$",
+        "source": "langVersion"
+      }
+    },
+    "csharp10orLater": {
+      "type": "computed",
+      "value": "!csharp9orOlder"
+    },
+    "csharp8orLater": {
+      "type": "computed",
+      "value": "!csharp7orOlder"
+    },
+    "csharpFeature_ImplicitUsings": {
+      "type": "computed",
+      "value": "(netFramework != \"true\" || langVersion != \"\") && csharp10orLater == \"true\""
+    },
+    "csharpFeature_Nullable": {
+      "type": "computed",
+      "value": "(netFramework != \"true\" || langVersion != \"\") && csharp8orLater == \"true\""
+    },
+    "csharpFeature_FileScopedNamespaces": {
+      "type": "computed",
+      "value": "(netFramework != \"true\" || langVersion != \"\") && csharp10orLater == \"true\""
     },
     "UseMSTestSdk": {
       "type": "parameter",
