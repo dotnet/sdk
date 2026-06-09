@@ -16,7 +16,7 @@ internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNod
     // passed via `dotnet run -e` as @(RuntimeEnvironmentVariable) items.
     public override async ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
     {
-        ImmutableArray<(HotReloadClient client, string name)> clients;
+        ImmutableArray<HotReloadClient> clients;
         if (IsManagedAgentSupported(project, clientLogger))
         {
             var transport = await WebSocketClientTransport.CreateAsync(
@@ -24,7 +24,7 @@ internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNod
                 clientLogger,
                 cancellationToken);
 
-            clients = [(new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), handlesStaticAssetUpdates: true, transport), "")];
+            clients = [new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), handlesStaticAssetUpdates: true, transport)];
         }
         else
         {
