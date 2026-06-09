@@ -97,46 +97,142 @@ function Get-RuntimeId {
     return "$os-$archStr"
 }
 
+function Get-IcuInstallInfo {
+    # Returns a hashtable with PackageName and InstallCommand for the current Linux distro.
+    # Package names and install commands are derived from:
+    # https://github.com/dotnet/core/blob/main/release-notes/8.0/os-packages.json
+    $result = @{ PackageName = ""; InstallCommand = "" }
+
+    if (-not (Test-Path /etc/os-release)) { return $result }
+
+    $distroId      = (Select-String -Path /etc/os-release -Pattern '^ID='       | Select-Object -First 1).Line -replace '^ID=',''      -replace '"',''
+    $distroVersion = (Select-String -Path /etc/os-release -Pattern '^VERSION_ID=' | Select-Object -First 1).Line -replace '^VERSION_ID=','' -replace '"',''
+    $distroIdLike  = (Select-String -Path /etc/os-release -Pattern '^ID_LIKE='  | Select-Object -First 1).Line -replace '^ID_LIKE=','' -replace '"',''
+
+    switch -Wildcard ($distroId) {
+        "ubuntu" {
+            $pkg = switch -Wildcard ($distroVersion) {
+                "26.*" { "libicu78" }
+                "25.*" { "libicu76" }
+                "24.*" { "libicu74" }
+                "22.*" { "libicu70" }
+                "20.*" { "libicu66" }
+                default { "libicu-dev" }
+            }
+            $result.PackageName   = $pkg
+            $result.InstallCommand = "sudo apt-get update && sudo apt-get install -y $pkg"
+        }
+        "debian" {
+            $pkg = switch ($distroVersion) {
+                { $_ -in "13","sid" } { "libicu76" }
+                "12"                  { "libicu72" }
+                "11"                  { "libicu67" }
+                default               { "libicu-dev" }
+            }
+            $result.PackageName   = $pkg
+            $result.InstallCommand = "sudo apt-get update && sudo apt-get install -y $pkg"
+        }
+        { $_ -in "fedora","rhel","centos","centos-stream","almalinux","rocky","ol" } {
+            $result.PackageName   = "libicu"
+            $result.InstallCommand = "sudo dnf install -y libicu"
+        }
+        "alpine" {
+            $result.PackageName   = "icu-libs"
+            $result.InstallCommand = "sudo apk add icu-libs"
+        }
+        { $_ -in "opensuse-leap","opensuse-tumbleweed","sles" } {
+            $result.PackageName   = "libicu"
+            $result.InstallCommand = "sudo zypper install -y libicu"
+        }
+        { $_ -in "mariner","azurelinux" } {
+            $result.PackageName   = "icu"
+            $result.InstallCommand = "sudo tdnf install -y icu"
+        }
+        default {
+            # Probe ID_LIKE for derivative distros
+            if ($distroIdLike -match '\b(ubuntu|debian)\b') {
+                $result.PackageName   = "libicu-dev"
+                $result.InstallCommand = "sudo apt-get update && sudo apt-get install -y libicu-dev"
+            } elseif ($distroIdLike -match '\b(rhel|fedora|centos)\b') {
+                $result.PackageName   = "libicu"
+                $result.InstallCommand = "sudo dnf install -y libicu"
+            } elseif ($distroIdLike -match '\bsuse\b') {
+                $result.PackageName   = "libicu"
+                $result.InstallCommand = "sudo zypper install -y libicu"
+            }
+        }
+    }
+
+    return $result
+}
+
 function Test-IcuPresent {
-    # ICU is only required on Linux; Windows and macOS include it natively
+    # ICU is only required on Linux; Windows and macOS include it natively.
     if (-not [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
             [System.Runtime.InteropServices.OSPlatform]::Linux)) {
         return $true
     }
 
-    # Method 1: ldconfig cache (glibc-based systems)
-    try {
-        $ldconfigOutput = & ldconfig -p 2>&1 | Out-String
-        if ($ldconfigOutput -match "libicuuc\.so") {
-            return $true
+    if (-not (Test-Path /etc/os-release)) { return $false }
+
+    $distroId     = (Select-String -Path /etc/os-release -Pattern '^ID='       | Select-Object -First 1).Line -replace '^ID=',''     -replace '"',''
+    $distroIdLike = (Select-String -Path /etc/os-release -Pattern '^ID_LIKE='  | Select-Object -First 1).Line -replace '^ID_LIKE=','' -replace '"',''
+
+    # Use the native package-manager query for known distros.
+    # Package names derived from:
+    # https://github.com/dotnet/core/blob/main/release-notes/8.0/os-packages.json
+    switch -Wildcard ($distroId) {
+        { $_ -in "ubuntu","debian" } {
+            $output = & dpkg -l 'libicu[0-9]*' 2>&1 | Out-String
+            return $output -match '(?m)^ii\s+libicu\d'
         }
-    }
-    catch { }
-
-    # Method 2: filesystem search in common library directories (fallback for musl/Alpine)
-    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-    $archSuffix = switch ($arch) {
-        "X64"   { "x86_64-linux-gnu" }
-        "Arm64" { "aarch64-linux-gnu" }
-        default { $null }
-    }
-    $searchDirs = [System.Collections.Generic.List[string]]@(
-        "/usr/lib", "/usr/lib64", "/usr/local/lib", "/usr/local/lib64", "/lib", "/lib64"
-    )
-    if ($archSuffix) {
-        $searchDirs.Add("/usr/lib/$archSuffix")
-        $searchDirs.Add("/lib/$archSuffix")
-    }
-
-    foreach ($dir in $searchDirs) {
-        if (Test-Path $dir) {
-            if (Get-ChildItem -Path $dir -Filter "libicuuc.so.*" -ErrorAction SilentlyContinue) {
-                return $true
+        { $_ -in "fedora","rhel","centos","centos-stream","almalinux","rocky","ol" } {
+            $ec = (Start-Process rpm -ArgumentList '-q','libicu' -Wait -PassThru -NoNewWindow).ExitCode
+            return $ec -eq 0
+        }
+        "alpine" {
+            $ec = (Start-Process apk -ArgumentList 'info','-e','icu-libs' -Wait -PassThru -NoNewWindow).ExitCode
+            return $ec -eq 0
+        }
+        { $_ -in "opensuse-leap","opensuse-tumbleweed","sles" } {
+            $ec = (Start-Process rpm -ArgumentList '-q','libicu' -Wait -PassThru -NoNewWindow).ExitCode
+            return $ec -eq 0
+        }
+        { $_ -in "mariner","azurelinux" } {
+            $ec = (Start-Process rpm -ArgumentList '-q','icu' -Wait -PassThru -NoNewWindow).ExitCode
+            return $ec -eq 0
+        }
+        default {
+            # Try ID_LIKE for derivative distros
+            if ($distroIdLike -match '\b(ubuntu|debian)\b') {
+                $output = & dpkg -l 'libicu[0-9]*' 2>&1 | Out-String
+                return $output -match '(?m)^ii\s+libicu\d'
             }
+            if ($distroIdLike -match '\b(rhel|fedora|centos)\b') {
+                $ec = (Start-Process rpm -ArgumentList '-q','libicu' -Wait -PassThru -NoNewWindow).ExitCode
+                return $ec -eq 0
+            }
+            if ($distroIdLike -match '\bsuse\b') {
+                $ec = (Start-Process rpm -ArgumentList '-q','libicu' -Wait -PassThru -NoNewWindow).ExitCode
+                return $ec -eq 0
+            }
+            # Fallback: ldconfig cache
+            try {
+                $ldconfigOutput = & ldconfig -p 2>&1 | Out-String
+                if ($ldconfigOutput -match "libicuuc\.so") { return $true }
+            } catch { }
+            # Fallback: filesystem search
+            $searchDirs = @("/usr/lib","/usr/lib64","/usr/local/lib","/usr/local/lib64","/lib","/lib64")
+            foreach ($dir in $searchDirs) {
+                if (Test-Path $dir) {
+                    if (Get-ChildItem -Path $dir -Filter "libicuuc.so.*" -ErrorAction SilentlyContinue) {
+                        return $true
+                    }
+                }
+            }
+            return $false
         }
     }
-
-    return $false
 }
 
 # --- Main ---
@@ -148,18 +244,15 @@ Write-Host "Detected runtime: $rid" -ForegroundColor Cyan
 # The .NET runtime requires ICU for globalization support. Check that the libraries
 # are present before downloading dotnetup to give a clear, actionable error message.
 if ($rid -like "linux*") {
+    $icuInfo = Get-IcuInstallInfo
     if (-not (Test-IcuPresent)) {
         Write-Host "Error: ICU libraries are required to run dotnetup but were not found on this system." -ForegroundColor Red
         Write-Host ""
         Write-Host "Please install ICU using your package manager and re-run this script:" -ForegroundColor Red
-        if (Get-Command apt-get -ErrorAction SilentlyContinue) {
-            Write-Host "  sudo apt-get install -y libicu-dev" -ForegroundColor Red
-        } elseif (Get-Command dnf -ErrorAction SilentlyContinue) {
-            Write-Host "  sudo dnf install -y libicu" -ForegroundColor Red
-        } elseif (Get-Command apk -ErrorAction SilentlyContinue) {
-            Write-Host "  sudo apk add icu-libs" -ForegroundColor Red
+        if ($icuInfo.InstallCommand) {
+            Write-Host "  $($icuInfo.InstallCommand)" -ForegroundColor Red
         } else {
-            Write-Host "  Debian/Ubuntu:  sudo apt-get install -y libicu-dev" -ForegroundColor Red
+            Write-Host "  Debian/Ubuntu:  sudo apt-get update && sudo apt-get install -y libicu-dev" -ForegroundColor Red
             Write-Host "  Fedora/RHEL:    sudo dnf install -y libicu" -ForegroundColor Red
             Write-Host "  Alpine Linux:   sudo apk add icu-libs" -ForegroundColor Red
         }

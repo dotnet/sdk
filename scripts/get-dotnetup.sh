@@ -160,31 +160,136 @@ detect_rid() {
     echo "${os}-${arch}"
 }
 
-# Check whether ICU shared libraries (required by the .NET runtime) are present on the system
-check_icu_present() {
-    # Method 1: ldconfig cache (works on most glibc-based systems)
-    if command -v ldconfig &>/dev/null; then
-        if ldconfig -p 2>/dev/null | grep -q "libicuuc\.so"; then
-            return 0
-        fi
+# Returns the ICU package name and install command for the current Linux distro.
+# Package names and install commands are derived from:
+# https://github.com/dotnet/core/blob/main/release-notes/8.0/os-packages.json
+# Sets DISTRO_ICU_PKG and DISTRO_ICU_INSTALL_CMD (empty = unknown distro).
+detect_icu_install_info() {
+    DISTRO_ICU_PKG=""
+    DISTRO_ICU_INSTALL_CMD=""
+    local distro_id="" distro_version="" distro_id_like=""
+    if [ -f /etc/os-release ]; then
+        distro_id=$(grep -E '^ID=' /etc/os-release | sed 's/^ID=//;s/"//g')
+        distro_version=$(grep -E '^VERSION_ID=' /etc/os-release | sed 's/^VERSION_ID=//;s/"//g')
+        distro_id_like=$(grep -E '^ID_LIKE=' /etc/os-release | sed 's/^ID_LIKE=//;s/"//g')
     fi
 
-    # Method 2: filesystem search in common library paths (fallback for musl/Alpine and others)
-    local arch dirs dir
-    arch="$(uname -m)"
-    dirs="/usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /lib /lib64"
-    case "$arch" in
-        x86_64)  dirs="$dirs /usr/lib/x86_64-linux-gnu /lib/x86_64-linux-gnu" ;;
-        aarch64) dirs="$dirs /usr/lib/aarch64-linux-gnu /lib/aarch64-linux-gnu" ;;
+    case "$distro_id" in
+        ubuntu)
+            case "$distro_version" in
+                26.*) DISTRO_ICU_PKG="libicu78" ;;
+                25.*) DISTRO_ICU_PKG="libicu76" ;;
+                24.*) DISTRO_ICU_PKG="libicu74" ;;
+                22.*) DISTRO_ICU_PKG="libicu70" ;;
+                20.*) DISTRO_ICU_PKG="libicu66" ;;
+                *)    DISTRO_ICU_PKG="libicu-dev" ;;
+            esac
+            DISTRO_ICU_INSTALL_CMD="sudo apt-get update && sudo apt-get install -y ${DISTRO_ICU_PKG}"
+            ;;
+        debian)
+            case "$distro_version" in
+                13|sid) DISTRO_ICU_PKG="libicu76" ;;
+                12)     DISTRO_ICU_PKG="libicu72" ;;
+                11)     DISTRO_ICU_PKG="libicu67" ;;
+                *)      DISTRO_ICU_PKG="libicu-dev" ;;
+            esac
+            DISTRO_ICU_INSTALL_CMD="sudo apt-get update && sudo apt-get install -y ${DISTRO_ICU_PKG}"
+            ;;
+        fedora|rhel|centos|centos-stream|almalinux|rocky|ol)
+            DISTRO_ICU_PKG="libicu"
+            DISTRO_ICU_INSTALL_CMD="sudo dnf install -y libicu"
+            ;;
+        alpine)
+            DISTRO_ICU_PKG="icu-libs"
+            DISTRO_ICU_INSTALL_CMD="sudo apk add icu-libs"
+            ;;
+        opensuse-leap|opensuse-tumbleweed|sles)
+            DISTRO_ICU_PKG="libicu"
+            DISTRO_ICU_INSTALL_CMD="sudo zypper install -y libicu"
+            ;;
+        mariner|azurelinux)
+            DISTRO_ICU_PKG="icu"
+            DISTRO_ICU_INSTALL_CMD="sudo tdnf install -y icu"
+            ;;
+        *)
+            case " ${distro_id_like} " in
+                *" ubuntu "*|*" debian "*)
+                    DISTRO_ICU_PKG="libicu-dev"
+                    DISTRO_ICU_INSTALL_CMD="sudo apt-get update && sudo apt-get install -y libicu-dev"
+                    ;;
+                *" rhel "*|*" fedora "*|*" centos "*)
+                    DISTRO_ICU_PKG="libicu"
+                    DISTRO_ICU_INSTALL_CMD="sudo dnf install -y libicu"
+                    ;;
+                *" suse "*)
+                    DISTRO_ICU_PKG="libicu"
+                    DISTRO_ICU_INSTALL_CMD="sudo zypper install -y libicu"
+                    ;;
+            esac
+            ;;
     esac
+}
 
-    for dir in $dirs; do
-        for f in "$dir"/libicuuc.so.*; do
-            [ -e "$f" ] && return 0
-        done
-    done
+# Checks whether the ICU package is installed on the current distro.
+# Uses the native package-manager query for known distros; falls back to
+# ldconfig and a filesystem scan for unknown distributions.
+# Package names derived from:
+# https://github.com/dotnet/core/blob/main/release-notes/8.0/os-packages.json
+check_icu_present() {
+    local distro_id="" distro_id_like=""
+    if [ -f /etc/os-release ]; then
+        distro_id=$(grep -E '^ID=' /etc/os-release | sed 's/^ID=//;s/"//g')
+        distro_id_like=$(grep -E '^ID_LIKE=' /etc/os-release | sed 's/^ID_LIKE=//;s/"//g')
+    fi
 
-    return 1
+    case "$distro_id" in
+        ubuntu|debian)
+            dpkg -l 'libicu[0-9]*' 2>/dev/null | grep -q '^ii' && return 0
+            return 1
+            ;;
+        fedora|rhel|centos|centos-stream|almalinux|rocky|ol)
+            rpm -q libicu &>/dev/null && return 0
+            return 1
+            ;;
+        alpine)
+            apk info -e icu-libs &>/dev/null && return 0
+            return 1
+            ;;
+        opensuse-leap|opensuse-tumbleweed|sles)
+            rpm -q libicu &>/dev/null && return 0
+            return 1
+            ;;
+        mariner|azurelinux)
+            rpm -q icu &>/dev/null && return 0
+            return 1
+            ;;
+        *)
+            # Try ID_LIKE for derivative distros
+            case " ${distro_id_like} " in
+                *" ubuntu "*|*" debian "*)
+                    dpkg -l 'libicu[0-9]*' 2>/dev/null | grep -q '^ii' && return 0
+                    return 1
+                    ;;
+                *" rhel "*|*" fedora "*|*" centos "*)
+                    rpm -q libicu &>/dev/null && return 0
+                    return 1
+                    ;;
+                *" suse "*)
+                    rpm -q libicu &>/dev/null && return 0
+                    return 1
+                    ;;
+            esac
+            # Fallback: ldconfig cache
+            if command -v ldconfig &>/dev/null && ldconfig -p 2>/dev/null | grep -q "libicuuc\.so"; then
+                return 0
+            fi
+            # Fallback: filesystem search
+            for f in /usr/lib/libicuuc.so.* /usr/lib64/libicuuc.so.* /usr/local/lib/libicuuc.so.*; do
+                [ -e "$f" ] && return 0
+            done
+            return 1
+            ;;
+    esac
 }
 
 # --- Main ---
@@ -196,24 +301,15 @@ info "Detected runtime: $RID"
 # The .NET runtime requires ICU for globalization support. Check that the libraries
 # are present before downloading dotnetup to give a clear, actionable error message.
 if [[ "$RID" == linux* ]]; then
+    detect_icu_install_info
     if ! check_icu_present; then
         err "ICU libraries are required to run dotnetup but were not found on this system."
         err ""
         err "Please install ICU using your package manager and re-run this script:"
-        if command -v apt-get &>/dev/null; then
-            err "  sudo apt-get install -y libicu-dev"
-        elif command -v dnf &>/dev/null; then
-            err "  sudo dnf install -y libicu"
-        elif command -v yum &>/dev/null; then
-            err "  sudo yum install -y libicu"
-        elif command -v apk &>/dev/null; then
-            err "  sudo apk add icu-libs"
-        elif command -v zypper &>/dev/null; then
-            err "  sudo zypper install -y libicu"
-        elif command -v pacman &>/dev/null; then
-            err "  sudo pacman -S icu"
+        if [ -n "$DISTRO_ICU_INSTALL_CMD" ]; then
+            err "  $DISTRO_ICU_INSTALL_CMD"
         else
-            err "  Debian/Ubuntu:  sudo apt-get install -y libicu-dev"
+            err "  Debian/Ubuntu:  sudo apt-get update && sudo apt-get install -y libicu-dev"
             err "  Fedora/RHEL:    sudo dnf install -y libicu"
             err "  Alpine Linux:   sudo apk add icu-libs"
         fi
