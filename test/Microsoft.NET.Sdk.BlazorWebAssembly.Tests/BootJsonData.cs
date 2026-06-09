@@ -342,6 +342,7 @@ public class WasmAsset
 {
     public string name { get; set; }
     public string integrity { get; set; }
+    public string hash { get; set; }
     public string resolvedUrl { get; set; }
 }
 
@@ -351,6 +352,7 @@ public class GeneralAsset
     public string virtualPath { get; set; }
     public string name { get; set; }
     public string integrity { get; set; }
+    public string hash { get; set; }
     public string resolvedUrl { get; set; }
 }
 
@@ -360,6 +362,7 @@ public class VfsAsset
     public string virtualPath { get; set; }
     public string name { get; set; }
     public string integrity { get; set; }
+    public string hash { get; set; }
     public string resolvedUrl { get; set; }
 }
 
@@ -426,7 +429,7 @@ public class BootJsonDataLoader
 
             var result = new Dictionary<string, ResourceHashesByNameDictionary>();
             foreach (var kvp in satelliteResources)
-                result[kvp.Key] = kvp.Value.ToDictionary(a => a.name, a => a.integrity);
+                result[kvp.Key] = kvp.Value.ToDictionary(a => a.name, a => a.hash ?? a.integrity);
 
             return result;
         }
@@ -435,7 +438,7 @@ public class BootJsonDataLoader
         {
             return vfsAssets?.ToDictionary(a => a.virtualPath, a => new ResourceHashesByNameDictionary
             {
-                { a.name, a.integrity }
+                { a.name, a.hash ?? a.integrity }
             });
         }
 
@@ -446,15 +449,15 @@ public class BootJsonDataLoader
             jsModuleDiagnostics = assets.jsModuleDiagnostics?.ToDictionary(a => a.name, a => (string)null),
             jsModuleNative = assets.jsModuleNative?.ToDictionary(a => a.name, a => (string)null),
             jsModuleRuntime = assets.jsModuleRuntime?.ToDictionary(a => a.name, a => (string)null),
-            wasmNative = assets.wasmNative?.ToDictionary(a => a.name, a => a.integrity),
+            wasmNative = assets.wasmNative?.ToDictionary(a => a.name, a => a.hash ?? a.integrity),
             wasmSymbols = assets.wasmSymbols?.ToDictionary(a => a.name, a => (string)null),
-            icu = assets.icu?.ToDictionary(a => a.name, a => a.integrity),
-            coreAssembly = assets.coreAssembly?.ToDictionary(a => a.name, a => a.integrity),
-            assembly = assets.assembly?.ToDictionary(a => a.name, a => a.integrity),
-            corePdb = assets.corePdb?.ToDictionary(a => a.name, a => a.integrity),
-            pdb = assets.pdb?.ToDictionary(a => a.name, a => a.integrity),
+            icu = assets.icu?.ToDictionary(a => a.name, a => a.hash ?? a.integrity),
+            coreAssembly = assets.coreAssembly?.ToDictionary(a => a.name, a => a.hash ?? a.integrity),
+            assembly = assets.assembly?.ToDictionary(a => a.name, a => a.hash ?? a.integrity),
+            corePdb = assets.corePdb?.ToDictionary(a => a.name, a => a.hash ?? a.integrity),
+            pdb = assets.pdb?.ToDictionary(a => a.name, a => a.hash ?? a.integrity),
             satelliteResources = ConvertSatelliteResources(assets.satelliteResources),
-            lazyAssembly = assets.lazyAssembly?.ToDictionary(a => a.name, a => a.integrity),
+            lazyAssembly = assets.lazyAssembly?.ToDictionary(a => a.name, a => a.hash ?? a.integrity),
             libraryInitializers = assets.libraryInitializers?.ToDictionary(a => a.name, a => (string)null),
             modulesAfterConfigLoaded = assets.modulesAfterConfigLoaded?.ToDictionary(a => a.name, a => (string)null),
             modulesAfterRuntimeReady = assets.modulesAfterRuntimeReady?.ToDictionary(a => a.name, a => (string)null),

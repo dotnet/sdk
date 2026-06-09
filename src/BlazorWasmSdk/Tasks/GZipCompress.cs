@@ -20,6 +20,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         [Required]
         public string OutputDirectory { get; set; }
 
+        // Retry count for transient file I/O errors (e.g., antivirus locks on CI machines).
+        private const int MaxRetries = 3;
+        private const int RetryDelayMs = 200;
+
         public override bool Execute()
         {
             CompressedFiles = new ITaskItem[FilesToCompress.Length];
@@ -56,18 +60,31 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     Log.LogMessage(MessageImportance.Low, "Compressing '{0}' because file is newer than '{1}'.", inputFullPath, outputRelativePath);
                 }
 
-                try
+                // Retry on IOException to handle transient file locks from antivirus, file
+                // indexing, or parallel MSBuild nodes on CI machines (see dotnet/sdk#53424).
+                for (int attempt = 1; attempt <= MaxRetries; attempt++)
                 {
-                    using var sourceStream = File.OpenRead(file.ItemSpec);
-                    using var fileStream = File.Create(outputRelativePath);
-                    using var stream = new GZipStream(fileStream, CompressionLevel.Optimal);
+                    try
+                    {
+                        using var sourceStream = File.OpenRead(file.ItemSpec);
+                        using var fileStream = File.Create(outputRelativePath);
+                        using var stream = new GZipStream(fileStream, CompressionLevel.Optimal);
 
-                    sourceStream.CopyTo(stream);
-                }
-                catch (Exception e)
-                {
-                    Log.LogErrorFromException(e);
-                    return;
+                        sourceStream.CopyTo(stream);
+                        return; // Success
+                    }
+                    catch (IOException) when (attempt < MaxRetries)
+                    {
+                        Log.LogMessage(MessageImportance.Low,
+                            "Retrying compression of '{0}' (attempt {1}/{2}) due to transient I/O error.",
+                            file.ItemSpec, attempt, MaxRetries);
+                        Thread.Sleep(RetryDelayMs * attempt);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.LogErrorFromException(e);
+                        return;
+                    }
                 }
             });
 

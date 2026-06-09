@@ -1587,7 +1587,7 @@ public sealed class RunFileTests_Directives(ITestOutputHelper log) : RunFileTest
 
         var evaluatedDirectives = evaluatedBuilder.DrainToImmutable();
 
-        var projectWriter = new System.IO.StringWriter();
+        using var projectWriter = new StringWriter();
         VirtualProjectBuilder.WriteProjectFile(
             projectWriter,
             evaluatedDirectives,
