@@ -156,7 +156,7 @@ the appropriate implementation:
 
 <Compile Include="..\dotnet\Program.cs" Link="Program.cs" />
 <Compile Include="..\dotnet\Parser.cs" Link="Parser.cs" />
-<Compile Include="..\dotnet\InvocableOptionActions.cs" Link="InvocableOptionActions.cs" />
+<Compile Include="..\dotnet\ParserOptionActions.cs" Link="ParserOptionActions.cs" />
 ```
 
 In the shared files:
@@ -173,10 +173,10 @@ In the shared files:
 - **`Program.cs`** — Under `#if CLI_AOT`, provides a simple `Main` that
   delegates to the AOT parser. Under `#else`, provides the full CLI entry point
   with telemetry, signal handlers, and workload checks.
-- **`InvocableOptionActions.cs`** — The shared `--help`/`--version`/`--info`
-  option actions. `PrintInfoAction` uses `#if CLI_AOT` to omit the workload and
-  MSBuild details that aren't AOT-compatible yet, while the rest of the output
-  is shared with the managed CLI.
+- **`ParserOptionActions.cs`** — The shared `--help`/`--version`/`--info` option
+  actions. `PrintInfoAction` uses `#if !CLI_AOT` to omit the workload and MSBuild
+  details that aren't AOT-compatible yet; the diagnostics and `--cli-schema`
+  actions are `#if !CLI_AOT` (the AOT build defers those to the managed CLI).
 
 ```mermaid
 graph LR

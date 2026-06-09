@@ -6,8 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 
 #if !CLI_AOT
 using System.Reflection;
-using Microsoft.DotNet.Cli.Commands.Run;
 #endif
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -90,15 +90,14 @@ public class MSBuildForwardingApp : CommandBase
     {
         var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(ConcatTelemetryLogger(msBuildArgs));
 #if CLI_AOT
-        _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
-            msBuildArgs,
-            msbuildPath: msbuildPath,
-            forceOutOfProc: true);
+        const bool forceOutOfProc = true;
 #else
+        const bool forceOutOfProc = false;
+#endif
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
             modifiedMSBuildArgs,
-            msbuildPath: msbuildPath);
-#endif
+            msbuildPath: msbuildPath,
+            forceOutOfProc: forceOutOfProc);
         InitializeRequiredEnvironmentVariables();
     }
 

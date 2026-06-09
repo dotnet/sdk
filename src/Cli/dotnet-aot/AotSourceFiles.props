@@ -27,7 +27,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliUsage.cs" Link="CliUsage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\InvocableOptionActions.cs" Link="InvocableOptionActions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ParserOptionActions.cs" Link="ParserOptionActions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
@@ -87,6 +87,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NuGetSignatureVerificationEnabler.cs" Link="NuGetSignatureVerificationEnabler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\NuGet\NuGetCommand.cs" Link="Commands\NuGet\NuGetCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildForwardingApp.cs" Link="Commands\MSBuild\MSBuildForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\CommonRunHelpers.cs" Link="Commands\Run\CommonRunHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Fsi\FsiForwardingApp.cs" Link="Commands\Fsi\FsiForwardingApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Format\FormatForwardingApp.cs" Link="Commands\Format\FormatForwardingApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestForwardingApp.cs" Link="Commands\Test\VSTest\VSTestForwardingApp.cs" />

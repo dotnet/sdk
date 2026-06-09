@@ -61,6 +61,7 @@ internal sealed class DotNetCommandDefinition : Command
     public readonly Option<bool> HelpOption = new("--help", "-h", "/h")
     {
         Arity = ArgumentArity.Zero,
+        Recursive = true
     };
 
     public readonly Option<bool> CliSchemaOption = new("--cli-schema")
@@ -126,6 +127,7 @@ internal sealed class DotNetCommandDefinition : Command
         Options.Add(DiagOption);
         Options.Add(VersionOption);
         Options.Add(InfoOption);
+        Options.Add(HelpOption);
         Options.Add(CliSchemaOption);
 
         // Host-handled options. Only defined to be shown in help.
