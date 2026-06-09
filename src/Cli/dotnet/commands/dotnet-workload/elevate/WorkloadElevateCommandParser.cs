@@ -9,6 +9,11 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadElevateCommandParser
     {
+        public static readonly CliOption<string> ClientTempOption = new("--client-temp")
+        {
+            Hidden = true
+        };
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -22,6 +27,8 @@ namespace Microsoft.DotNet.Cli
             {
                 Hidden = true
             };
+
+            command.Options.Add(ClientTempOption);
 
             command.SetAction((parseResult) => new WorkloadElevateCommand(parseResult).Execute());
 
