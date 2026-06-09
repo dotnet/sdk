@@ -9,23 +9,52 @@ namespace Microsoft.DotNet.Cli.Utils;
 
 internal sealed class MSBuildForwardingAppWithoutLogging
 {
+    /// <summary>
+    /// An override flag that determines whether to always execute MSBuild out-of-process. By default the managed dotnet CLI
+    /// prefers to execute MSBuild in-process to prevent needing to spawn another process' central/worker node,
+    /// but this flag can be used to force out-of-process execution.
+    /// </summary>
     private static readonly bool AlwaysExecuteMSBuildOutOfProc = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_RUN_MSBUILD_OUTOFPROC");
+
+    /// <summary>
+    /// An override flag that determines whether to use the MSBuild server - a persistent central node that can serve
+    /// as a place to cache data and prevent re-doing CoreCLR startup/JITting for small builds.
+    /// By default, the MSBuild server is disabled due to stability/correctness concerns with some 1P tasks that keep static state around,
+    /// but it can be used by users that are confident they will not encounter those issues.
+    /// </summary>
     private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
+
+    /// <summary>
+    /// What the SDK's opinion is on the default terminal logger. The SDK defaults to '<c>auto</c>' which will use the terminal logger if the output is going to a terminal, otherwise it will use the console logger.
+    /// Some users prefer to always use the legacy console logger, so this gives them a way to consistently do so.
+    /// </summary>
     private static readonly string? TerminalLoggerDefault = Env.GetEnvironmentVariable("DOTNET_CLI_CONFIGURE_MSBUILD_TERMINAL_LOGGER");
 
     public static string MSBuildVersion
     {
         get => Build.Evaluation.ProjectCollection.DisplayVersion;
     }
+
     private const string MSBuildExeName = "MSBuild.dll";
 
     private const string SdksDirectoryName = "Sdks";
 
+    /// <summary>
+    /// The SDK's default MSBuild verbosity level - we choose <see cref="VerbosityOptions.Minimal"/> as a good balance between information and terminal noise.
+    /// </summary>
     internal const VerbosityOptions DefaultVerbosity = VerbosityOptions.m;
 
-    // Null if we're running MSBuild in-proc.
+    /// <summary>
+    /// The forwarding app implementation for executing MSBuild out-of-process.
+    /// </summary>
+    /// <remarks>
+    /// This is null if we're running MSBuild in-process.
+    /// </remarks>
     private ForwardingAppImplementation? _forwardingApp;
 
+    /// <summary>
+    /// A test-only hook for the MSBuildExtensionsPath, which is a key location that MSBuild logic is read from by the MSBuild Common Targets.
+    /// </summary>
     internal static string? MSBuildExtensionsPathTestHook = null;
 
     /// <summary>
@@ -33,17 +62,24 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// </summary>
     private MSBuildArgs _msbuildArgs;
 
-    // Path to the MSBuild binary to use.
+    /// <summary>
+    /// Path to the MSBuild binary to use - this is set by constructor parameter or looked up via <see cref="GetMSBuildExePath"/>.
+    /// </summary>
     public string MSBuildPath { get; }
 
-    // True if, given current state of the class, MSBuild would be executed in its own process.
+    /// <summary>
+    /// True if, given current state of the class, MSBuild would be executed in its own process.
+    /// </summary>
     public bool ExecuteMSBuildOutOfProc => _forwardingApp != null;
 
+    /// <summary>
+    ///
+    /// </summary>
     private readonly Dictionary<string, string?> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
     private readonly List<string> _msbuildRequiredParameters = ["-maxcpucount", $"--verbosity:{DefaultVerbosity}"];
 
-    public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null)
+    public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null, bool forceOutOfProc = false)
     {
         string defaultMSBuildPath = GetMSBuildExePath();
         _msbuildArgs = msbuildArgs;
@@ -63,8 +99,9 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
         EnvironmentVariable("MSBUILDUSESERVER", UseMSBuildServer ? "1" : "0");
 
-        // If DOTNET_CLI_RUN_MSBUILD_OUTOFPROC is set or we're asked to execute a non-default binary, call MSBuild out-of-proc.
-        if (AlwaysExecuteMSBuildOutOfProc || !string.Equals(MSBuildPath, defaultMSBuildPath, StringComparison.OrdinalIgnoreCase))
+        // If DOTNET_CLI_RUN_MSBUILD_OUTOFPROC is set, the caller requires it (e.g. the AOT CLI, which
+        // cannot host MSBuild in-process), or we're asked to execute a non-default binary, call MSBuild out-of-proc.
+        if (AlwaysExecuteMSBuildOutOfProc || forceOutOfProc || !string.Equals(MSBuildPath, defaultMSBuildPath, StringComparison.OrdinalIgnoreCase))
         {
             InitializeForOutOfProcForwarding();
         }
@@ -106,6 +143,9 @@ internal sealed class MSBuildForwardingAppWithoutLogging
             : $"--{label}:{property.Key}={property.Value}";
     }
 
+    /// <summary>
+    /// Add an environment variable to the state that will be passed to MSBuild when it is run.
+    /// </summary>
     public void EnvironmentVariable(string name, string? value)
     {
         if (_forwardingApp != null)
@@ -129,6 +169,9 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         }
     }
 
+    /// <summary>
+    /// Run the MSBuild arguments that have been previously specified.
+    /// </summary>
     public int Execute()
     {
         if (_forwardingApp != null)
@@ -141,6 +184,11 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         }
     }
 
+    /// <summary>
+    /// Directly execute's MSBuild's <see cref="Build.CommandLine.MSBuildApp.Main"/> method in the current process.
+    /// Sets up the local environment with required MSBuild environment variables before handing off execution entirely to MSBuild.
+    /// After execution, the original environment variables are restored for any remaining cleanup work the dotnet CLI needs to perform.
+    /// </summary>
     public int ExecuteInProc(string[] arguments)
     {
         // Save current environment variables before overwriting them.
@@ -186,6 +234,10 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     private static string Escape(string propertyValue) =>
         propertyValue.Replace(";", "%3B").Replace("://", ":%2F%2F");
 
+    /// <summary>
+    /// Gets the path to the MSBuild executable. By default, this will be the 'MSBuild.dll' file in the same location as the `dotnet.dll` binary.
+    /// </summary>
+    /// <returns></returns>
     private static string GetMSBuildExePath()
     {
         return Path.Combine(
@@ -193,6 +245,11 @@ internal sealed class MSBuildForwardingAppWithoutLogging
             MSBuildExeName);
     }
 
+    /// <summary>
+    /// Gets the path to the MSBuild SDKs directory - where the SDKs will be loaded from by the default, local-path-based SDK resolver.
+    /// By default, this will be the 'SDKs' directory in the same location as the `dotnet.dll` binary, but it can be overridden by the `MSBuildSDKsPath` environment variable.
+    /// </summary>
+    /// <returns></returns>
     public static string GetMSBuildSDKsPath()
     {
         var envMSBuildSDKsPath = Environment.GetEnvironmentVariable("MSBuildSDKsPath");
@@ -207,11 +264,17 @@ internal sealed class MSBuildForwardingAppWithoutLogging
             SdksDirectoryName);
     }
 
-    private static string GetDotnetPath()
-    {
-        return new Muxer().MuxerPath;
-    }
+    private static string GetDotnetPath() => new Muxer().MuxerPath;
 
+    /// <summary>
+    /// Gets the required environment variables for MSBuild.
+    /// The Common Targets require specific environment variables to be set in order to function correctly:
+    /// <list type="bullet">
+    /// <item><term>MSBuildExtensionsPath</term><description>The path to the 'MSBuild extensions' - where the Common Targets themselves will be loaded from. Also where SDK Resolvers will be loaded from.</description></item>
+    /// <item><term>MSBuildSDKsPath</term><description>The path to the 'MSBuild SDKs' - where the SDKs will be loaded from by the default resolver. </description></item>
+    /// <item><term>DOTNET_HOST_PATH</term><description>The path to the .NET SDK host - used to execute .NET applications by targets in the Common Targets that need to run managed .NET binaries that are not shipped with apphosts.</description></item>
+    /// </list>
+    /// </summary>
     internal static Dictionary<string, string?> GetMSBuildRequiredEnvironmentVariables()
     {
         return new()

@@ -14,8 +14,20 @@ namespace Microsoft.DotNet.Cli.Extensions;
 
 public static class ParseResultExtensions
 {
+    public static string RootSubCommandResult(this ParseResult parseResult) => parseResult.RootCommandResult.Children?
+        .Select(child => parseResult.GetSymbolResultValue(child))
+        .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
 
-#if !CLI_AOT
+    public static bool IsTopLevelDotnetCommand(this ParseResult parseResult) =>
+        parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+
+    private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
+    {
+        CommandResult commandResult => commandResult.Command.Name,
+        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
+        _ => parseResult.GetResult(Parser.RootCommand.DotnetSubCommand)?.GetValueOrDefault<string>()
+    };
+
     /// <summary>
     /// Finds the command of the parse result and invokes help for that command.
     /// If no command is specified, invokes help for the application.
@@ -38,6 +50,31 @@ public static class ParseResultExtensions
             .Select(t => t.Value);
         Parser.Parse([.. filteredTokenValues, "-h"]).Invoke();
     }
+
+    public static string[] GetArguments(this ParseResult parseResult) =>
+        parseResult.Tokens.Select(t => t.Value).ToArray().GetSubArguments();
+
+    public static string[] GetSubArguments(this string[] args)
+    {
+        var subargs = args.ToList();
+
+        // Don't remove any arguments that are being passed to the app in dotnet run
+        var dashDashIndex = subargs.IndexOf("--");
+
+        var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : [];
+        subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
+
+        // Remove top level command (ex build or publish).
+        var subargsFiltered = subargs
+            .SkipWhile(arg => Parser.RootCommand.DiagOption.Name.Equals(arg)
+                || Parser.RootCommand.DiagOption.Aliases.Contains(arg)
+                || arg.Equals("dotnet"))
+            .Skip(1);
+
+        return [.. subargsFiltered, .. runArgs];
+    }
+
+#if !CLI_AOT
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
     {
@@ -87,16 +124,9 @@ public static class ParseResultExtensions
         }
     }
 
-    public static string RootSubCommandResult(this ParseResult parseResult) => parseResult.RootCommandResult.Children?
-        .Select(child => parseResult.GetSymbolResultValue(child))
-        .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
-
     public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
         string.IsNullOrEmpty(parseResult.RootSubCommandResult())
         || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
-
-    public static bool IsTopLevelDotnetCommand(this ParseResult parseResult) =>
-        parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
 
     public static bool CanBeInvoked(this ParseResult parseResult) =>
         Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
@@ -109,36 +139,6 @@ public static class ParseResultExtensions
         parseResult.ShowHelp();
         return 1;
     }
-
-    public static string[] GetArguments(this ParseResult parseResult) =>
-        parseResult.Tokens.Select(t => t.Value).ToArray().GetSubArguments();
-
-    public static string[] GetSubArguments(this string[] args)
-    {
-        var subargs = args.ToList();
-
-        // Don't remove any arguments that are being passed to the app in dotnet run
-        var dashDashIndex = subargs.IndexOf("--");
-
-        var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : [];
-        subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
-
-        // Remove top level command (ex build or publish).
-        var subargsFiltered = subargs
-            .SkipWhile(arg => Parser.RootCommand.DiagOption.Name.Equals(arg)
-                || Parser.RootCommand.DiagOption.Aliases.Contains(arg)
-                || arg.Equals("dotnet"))
-            .Skip(1);
-
-        return [.. subargsFiltered, .. runArgs];
-    }
-
-    private static string? GetSymbolResultValue(this ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
-    {
-        CommandResult commandResult => commandResult.Command.Name,
-        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
-        _ => parseResult.GetResult(Parser.RootCommand.DotnetSubCommand)?.GetValueOrDefault<string>()
-    };
 
     public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult) =>
         parseResult.GetRunPropertyOptions(true)?.Where(property => !property.Contains("="));

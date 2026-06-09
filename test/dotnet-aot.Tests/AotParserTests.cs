@@ -11,8 +11,10 @@ namespace Microsoft.DotNet.Cli.Tests;
 
 /// <summary>
 ///  Tests for the AOT-compiled CLI parser (the #if CLI_AOT path in Parser.cs).
-///  Validates that --version, --info, and default usage work correctly,
-///  and that unsupported commands produce parse errors.
+///  Validates that --version, --info, --help, and default usage are served entirely
+///  from AOT, that the full command surface now parses (matching the managed CLI),
+///  and that commands which require the managed CLI report this via
+///  <see cref="CommandNotAvailableInAotException"/> so the bridge can fall back.
 /// </summary>
 public class AotParserTests
 {
@@ -38,17 +40,73 @@ public class AotParserTests
     }
 
     [Fact]
-    public void ParseUnrecognizedCommand_HasErrors()
+    public void ParseKnownCommand_HasNoErrors()
     {
+        // The AOT parser now builds the full command tree, so real commands like `build`
+        // parse cleanly (they no longer surface as unknown). Execution still falls back.
         var result = Parser.Parse(["build"]);
-        Assert.NotEmpty(result.Errors);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
-    public void ParseUnrecognizedOption_HasErrors()
+    public void ParseHostHandledOption_HasNoErrors()
     {
-        var result = Parser.Parse(["--list-sdks"]);
-        Assert.NotEmpty(result.Errors);
+        // --list-sdks / --list-runtimes are host-handled options defined on the root command
+        // so they appear in help and parse without error. The host resolves them before AOT.
+        Assert.Empty(Parser.Parse(["--list-sdks"]).Errors);
+        Assert.Empty(Parser.Parse(["--list-runtimes"]).Errors);
+    }
+
+    [Fact]
+    public void ParseUnknownToken_IsToleratedForExternalCommandForwarding()
+    {
+        // The dotnet root command is intentionally tolerant of unknown tokens so that
+        // `dotnet foo` can be forwarded to an external `dotnet-foo` command. Unknown tokens
+        // therefore do not produce parse errors; they are resolved by the managed CLI on fallback.
+        var result = Parser.Parse(["--this-option-does-not-exist"]);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void InvokeKnownCommand_FallsBackToManaged()
+    {
+        // Commands that cannot run in AOT must signal a managed fallback rather than execute.
+        var result = Parser.Parse(["build"]);
+        Assert.Empty(result.Errors);
+        Assert.Throws<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [Fact]
+    public void InvokeRootHelp_RendersUsageFromAot()
+    {
+        var (exitCode, stdout, _) = InvokeWithCapture(["--help"]);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("dotnet", stdout);
+        Assert.Contains("build", stdout);
+    }
+
+    [Fact]
+    public void InvokeCommandHelp_RendersFromAotWithoutFallback()
+    {
+        // Help for a definition-backed command (one that does not shell out to an external
+        // tool) renders entirely from AOT and must not request a managed fallback.
+        var result = Parser.Parse(["build", "--help"]);
+        var exception = Record.Exception(() => Parser.Invoke(result));
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void InvokeExternalToolHelp_RendersFromAotWithoutFallback()
+    {
+        // Help for the external-tool commands (msbuild/nuget/vstest/format/fsi) now shells out to the
+        // underlying tool from AOT instead of falling back to the managed CLI. The forwarded process
+        // may fail in the test environment, but help must never request a managed fallback.
+        var result = Parser.Parse(["msbuild", "--help"]);
+        var exception = Record.Exception(() => Parser.Invoke(result));
+
+        Assert.IsNotType<CommandNotAvailableInAotException>(exception);
     }
 
     [Fact]

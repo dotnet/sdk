@@ -15,6 +15,9 @@ internal static class EnvironmentVariableNames
     public static readonly string DISABLE_PUBLISH_AND_PACK_RELEASE = "DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE";
     public static readonly string DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS = nameof(DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS);
     public static readonly string DOTNET_CLI_FORCE_UTF8_ENCODING = nameof(DOTNET_CLI_FORCE_UTF8_ENCODING);
+    /// <summary>
+    /// The <c>DOTNET_CLI_TELEMETRY_OPTOUT</c> environment variable.
+    /// </summary>
     public static readonly string TELEMETRY_OPTOUT = "DOTNET_CLI_TELEMETRY_OPTOUT";
     public static readonly string DOTNET_ROOT = nameof(DOTNET_ROOT);
     public static readonly string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);
