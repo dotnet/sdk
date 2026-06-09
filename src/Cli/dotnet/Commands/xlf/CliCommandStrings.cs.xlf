@@ -2245,6 +2245,11 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Možnosti --prerelease a --version v jednom příkazu se nepodporují.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PressCtrlCAgainToForceExit">
+        <source>Press Ctrl+C again to force exit.</source>
+        <target state="new">Press Ctrl+C again to force exit.</target>
+        <note>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</note>
+      </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
         <source>Only print the list of links to download without downloading.</source>
         <target state="translated">Vytiskne pouze seznam odkazů, které se mají stáhnout, aniž by se tento seznam stahoval.</target>

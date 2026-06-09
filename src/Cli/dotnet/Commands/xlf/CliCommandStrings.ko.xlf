@@ -2245,6 +2245,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">--prerelease 및 --version 옵션은 같은 명령에서 지원되지 않습니다</target>
         <note />
       </trans-unit>
+      <trans-unit id="PressCtrlCAgainToForceExit">
+        <source>Press Ctrl+C again to force exit.</source>
+        <target state="new">Press Ctrl+C again to force exit.</target>
+        <note>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</note>
+      </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
         <source>Only print the list of links to download without downloading.</source>
         <target state="translated">다운로드할 링크 목록을 다운로드하지 않고 인쇄만 합니다.</target>

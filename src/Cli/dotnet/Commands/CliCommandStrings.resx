@@ -205,6 +205,10 @@
   <data name="CancellingTestSession" xml:space="preserve">
     <value>Canceling the test session...</value>
   </data>
+  <data name="PressCtrlCAgainToForceExit" xml:space="preserve">
+    <value>Press Ctrl+C again to force exit.</value>
+    <comment>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</comment>
+  </data>
   <data name="CannotAnalyzeVSWorkloadBand" xml:space="preserve">
     <value>Workloads managed by Visual Studio must be uninstalled using the Visual Studio Installer. For the version of Visual Studio managing the SDK '{0}', we could not display workloads to uninstall. This is likely because '{0}' uses a different dotnet root path or custom user profile directory from the current running SDK.
 Paths searched: '{1}', '{2}'.</value>
