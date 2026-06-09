@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.IO;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.Workloads.Workload.Install;
 
 namespace Microsoft.DotNet.Workloads.Workload.Elevate
@@ -21,6 +24,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Elevate
             {
                 try
                 {
+                    string clientTemp = _parseResult.GetValue(WorkloadElevateCommandParser.ClientTempOption);
+                    if (!string.IsNullOrWhiteSpace(clientTemp))
+                    {
+                        try
+                        {
+                            InstallerBase.TrustedClientTempDirectory = Path.GetFullPath(clientTemp);
+                        }
+                        catch
+                        {
+                            // Ignore malformed values.
+                        }
+                    }
+
                     _server = NetSdkMsiInstallerServer.Create(VerifySignatures);
                     _server.Run();
                 }
