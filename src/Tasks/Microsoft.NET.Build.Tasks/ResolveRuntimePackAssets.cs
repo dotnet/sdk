@@ -120,7 +120,7 @@ namespace Microsoft.NET.Build.Tasks
                     ? default
                     : TaskEnvironment.GetAbsolutePath(runtimePackRoot);
 
-                if (string.IsNullOrEmpty(runtimePackRoot) || !Directory.Exists(absoluteRuntimePackRoot))
+                if (absoluteRuntimePackRoot == default || !Directory.Exists(absoluteRuntimePackRoot))
                 {
                     if (!DesignTimeBuild)
                     {
@@ -148,7 +148,8 @@ namespace Microsoft.NET.Build.Tasks
                     continue;
                 }
 
-                AbsolutePath absoluteRuntimeListPath = TaskEnvironment.GetAbsolutePath(Path.Combine(runtimePackRoot, "data", "RuntimeList.xml"));
+                string runtimeListPath = Path.Combine(runtimePackRoot, "data", "RuntimeList.xml");
+                AbsolutePath absoluteRuntimeListPath = new(Path.Combine("data", "RuntimeList.xml"), absoluteRuntimePackRoot);
 
                 if (File.Exists(absoluteRuntimeListPath))
                 {
@@ -158,7 +159,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else
                 {
-                    throw new BuildErrorException(string.Format(Strings.RuntimeListNotFound, absoluteRuntimeListPath.OriginalValue));
+                    throw new BuildErrorException(string.Format(Strings.RuntimeListNotFound, runtimeListPath));
                 }
             }
 
@@ -202,7 +203,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
-                //  Path is already absolute, so GetFullPath only canonicalizes/normalizes separators.
+                //  Call GetFullPath to normalize slashes
                 string assetPath = Path.GetFullPath(new AbsolutePath(fileElement.Attribute("Path").Value, runtimePackRoot));
 
                 string typeAttributeValue = fileElement.Attribute("Type").Value;
@@ -236,7 +237,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else
                 {
-                    throw new BuildErrorException($"Unrecognized file type '{typeAttributeValue}' in {runtimeListPath.OriginalValue}");
+                    throw new BuildErrorException($"Unrecognized file type '{typeAttributeValue}' in {Path.Combine(runtimePackRoot.OriginalValue, runtimeListPath.OriginalValue)}");
                 }
 
                 var assetItem = CreateAssetItem(assetPath, assetType, runtimePack, culture);
