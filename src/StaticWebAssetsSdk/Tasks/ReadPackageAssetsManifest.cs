@@ -46,7 +46,6 @@ public class ReadPackageAssetsManifest : Task
         foreach (var manifestItem in PackageManifests)
         {
             var manifestPath = manifestItem.ItemSpec;
-            var sourceId = manifestItem.GetMetadata("SourceId");
             var packageRoot = manifestItem.GetMetadata("PackageRoot");
             var contentRoot = manifestItem.GetMetadata("ContentRoot");
 
@@ -83,7 +82,7 @@ public class ReadPackageAssetsManifest : Task
             var endpointGroups = StaticWebAssetEndpointGroup.CreateEndpointGroups(manifest.Endpoints ?? []);
             var (_, includedEndpoints) = StaticWebAssetEndpointGroup.ComputeFilteredEndpoints(endpointGroups, excludedPaths);
 
-            if (!ResolveAssetsAndEndpoints(includedAssets, includedEndpoints, sourceId, packageRoot, contentRoot))
+            if (!ResolveAssetsAndEndpoints(includedAssets, includedEndpoints, packageRoot, contentRoot))
             {
                 return false;
             }
@@ -105,11 +104,9 @@ public class ReadPackageAssetsManifest : Task
     private bool ResolveAssetsAndEndpoints(
         List<StaticWebAsset> assets,
         List<StaticWebAssetEndpoint> endpoints,
-        string sourceId,
         string packageRoot,
         string contentRoot)
     {
-        var fxDir = Path.Combine(IntermediateOutputPath, "fx", sourceId);
         var frameworkPaths = new Dictionary<string, string>(OSPath.PathComparer);
         var normalizedContentRoot = StaticWebAsset.NormalizeContentRootPath(contentRoot);
 
@@ -117,14 +114,19 @@ public class ReadPackageAssetsManifest : Task
         {
             if (StaticWebAsset.SourceTypes.IsFramework(asset.SourceType))
             {
-                var resolvedRelativePath = StaticWebAssetPathPattern.PathWithoutTokens(asset.RelativePath);
-                var destPath = Path.GetFullPath(Path.Combine(fxDir, resolvedRelativePath));
-                frameworkPaths[asset.Identity] = destPath;
-                MaterializeFrameworkAsset(asset, packageRoot, fxDir, destPath);
-                if (Log.HasLoggedErrors)
+                // Materialize framework assets into the fx intermediate folder using the shared
+                // routine so they are transformed identically across all consumption paths
+                // (package manifest, P2P, and project). This clears AssetGroups so endpoint
+                // generation does not skip the materialized asset, and normalizes it.
+                var originalIdentity = asset.Identity;
+                asset.Identity = ResolvePath(packageRoot, asset.Identity);
+                var (materialized, _, _) = StaticWebAsset.MaterializeFrameworkAsset(
+                    asset, IntermediateOutputPath, ProjectPackageId, ProjectBasePath, Log);
+                if (materialized is null || Log.HasLoggedErrors)
                 {
                     return false;
                 }
+                frameworkPaths[originalIdentity] = materialized.Identity;
             }
             else
             {
@@ -185,36 +187,6 @@ public class ReadPackageAssetsManifest : Task
         }
 
         return manifest;
-    }
-
-    private void MaterializeFrameworkAsset(
-        StaticWebAsset asset,
-        string packageRoot,
-        string fxDir,
-        string destPath)
-    {
-        var sourcePath = ResolvePath(packageRoot, asset.Identity);
-
-        if (!File.Exists(sourcePath))
-        {
-            Log.LogError("Source file '{0}' does not exist for framework asset materialization.", sourcePath);
-            return;
-        }
-
-        Directory.CreateDirectory(Path.GetDirectoryName(destPath));
-
-        if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(sourcePath) > File.GetLastWriteTimeUtc(destPath))
-        {
-            File.Copy(sourcePath, destPath, overwrite: true);
-        }
-
-        asset.Identity = destPath;
-        asset.OriginalItemSpec = destPath;
-        asset.SourceType = StaticWebAsset.SourceTypes.Discovered;
-        asset.SourceId = ProjectPackageId;
-        asset.ContentRoot = StaticWebAsset.NormalizeContentRootPath(fxDir);
-        asset.BasePath = ProjectBasePath;
-        asset.AssetMode = StaticWebAsset.AssetModes.CurrentProject;
     }
 
     private static string ResolvePath(string packageRoot, string relativePath)
