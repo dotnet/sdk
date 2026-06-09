@@ -276,6 +276,65 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
+        [MemberData(nameof(GetXUnitV3TestRunnerCombinations))]
+        public void XUnitV3ProjectTemplate_WithTestRunner_CanBeInstalledAndTestsArePassing(
+            string targetFramework,
+            string language,
+            string testRunner)
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents up to our own solution root, which would affect other tests.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            // Create new test project: dotnet new xunit -n <testProjectName> -f <targetFramework> -lang <language> --xunit-version v3 --test-runner <testRunner>
+            string args = $"xunit -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory} --xunit-version v3 --test-runner {testRunner}";
+            new DotnetNewCommand(_log, args)
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var isMTP = testRunner == "Microsoft.Testing.Platform";
+            if (isMTP)
+            {
+                File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeTrue();
+            }
+            else
+            {
+                File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeFalse();
+            }
+
+            var result = new DotnetTestCommand(_log, false)
+                .WithWorkingDirectory(outputDirectory)
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
+                .Execute(isMTP ? ["--project", outputDirectory] : [outputDirectory]);
+#pragma warning restore SA1010 // Opening square brackets should be spaced correctly
+
+            result.Should().Pass();
+
+            if (isMTP)
+            {
+                result.StdOut.Should().MatchRegex("succeeded: 1");
+            }
+            else
+            {
+                result.StdOut.Should().Contain("Passed!");
+                result.StdOut.Should().MatchRegex(@"Passed:\s*1");
+            }
+
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [Theory]
         [MemberData(nameof(GetNUnitTestRunnerCombinations))]
         public void NUnitProjectTemplate_WithTestRunner_CanBeInstalledAndTestsArePassing(
             string targetFramework,
@@ -570,6 +629,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     foreach (var testRunner in testRunners)
                     {
                         yield return new object[] { "mstest-playwright", targetFramework, Languages.CSharp, coverageTool, testRunner, false };
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> GetXUnitV3TestRunnerCombinations()
+        {
+            var testRunners = new[] { "VSTest", "Microsoft.Testing.Platform" };
+            foreach (var targetFramework in SupportedTargetFrameworks)
+            {
+                foreach (var language in Languages.All)
+                {
+                    foreach (var testRunner in testRunners)
+                    {
+                        yield return new object[] { targetFramework, language, testRunner };
                     }
                 }
             }
