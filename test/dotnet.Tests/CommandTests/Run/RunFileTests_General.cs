@@ -656,6 +656,26 @@ public sealed class RunFileTests_General(ITestOutputHelper log) : RunFileTestBas
             .And.HaveStdOut("Hello from Program");
     }
 
+    [Fact]
+    public void ProjectInCurrentDirectory_RunFromStdin()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardInput("""
+                Console.WriteLine("Hello from stdin");
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:-
+                Hello from App
+                """);
+    }
+
     /// <summary>
     /// <c>dotnet run --project App.csproj Program.cs</c> does not warn
     /// because <c>--project</c> was explicitly specified.

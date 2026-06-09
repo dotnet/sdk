@@ -721,12 +721,15 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     [InlineData("-tl")]
     [InlineData("-tl:off")]
     [InlineData("-TL:off")]
+    [InlineData("-tL:OFF")]
     [InlineData("/tl:off")]
     [InlineData("--terminalLogger:off")]
     [InlineData("-tlp:verbosity=quiet")]
+    [InlineData("-TLP:verbosity=quiet")]
     [InlineData("/tlp:DISABLENODEDISPLAY")]
     [InlineData("--terminalLoggerParameters:verbosity=quiet")]
     [InlineData("-clp:NoSummary")]
+    [InlineData("-cLp:NoSummary")]
     [InlineData("--consoleLoggerParameters:NoSummary")]
     public void LoggerArgument_Run_ArgumentForms(string arg)
     {
