@@ -48,20 +48,6 @@ jobs:
     steps:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: |
-          # Diagnostic: confirm which CI-detection environment variables are
-          # visible to processes in this job. dotnetup's telemetry CI flag
-          # (ci.detected) is driven by CIEnvironmentDetectorForTelemetry, which
-          # only checks TF_BUILD / GITHUB_ACTIONS / CI / TRAVIS / CIRCLECI /
-          # APPVEYOR and a few combos. Print just those so we can see whether a
-          # child process (e.g. a nested dotnetup invocation) would inherit them.
-          Write-Host "TF_BUILD=$env:TF_BUILD"
-          Write-Host "GITHUB_ACTIONS=$env:GITHUB_ACTIONS"
-          Write-Host "CI=$env:CI"
-          Write-Host "TRAVIS=$env:TRAVIS"
-          Write-Host "CIRCLECI=$env:CIRCLECI"
-          Write-Host "APPVEYOR=$env:APPVEYOR"
-        displayName: 🔬 Diagnostic - dump CI env vars (Windows)
-      - powershell: |
           & .\restore.cmd -projects dotnetup.slnf
         displayName: 🍱 Bootstrap toolset (Windows)
         timeoutInMinutes: 10
@@ -102,17 +88,6 @@ jobs:
           & .\.dotnet\dotnet $testAssembly -noLogo -result-trx "$(Build.SourcesDirectory)\artifacts\dotnetupTestResults\dotnetup-tests.trx"
         displayName: 🔍 Test Windows
     - ${{ if ne(parameters.pool.os, 'windows') }}:
-      - script: |
-          # Diagnostic: confirm which CI-detection environment variables are
-          # visible to processes in this job (see the Windows step for the
-          # full rationale). Print just the CI-detector vars.
-          echo "TF_BUILD=$TF_BUILD"
-          echo "GITHUB_ACTIONS=$GITHUB_ACTIONS"
-          echo "CI=$CI"
-          echo "TRAVIS=$TRAVIS"
-          echo "CIRCLECI=$CIRCLECI"
-          echo "APPVEYOR=$APPVEYOR"
-        displayName: 🔬 Diagnostic - dump CI env vars (Unix)
       - script: |
           ./restore.sh -projects $(Build.SourcesDirectory)/dotnetup.slnf
         displayName: 🍱 Bootstrap toolset (Unix)
