@@ -8,9 +8,10 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
 {
-    // All rules are presence-based: a variable being set (non-empty) is enough to trip detection.
+    // Most rules are presence-based (a variable being set/non-empty is enough); a few use exact-value
+    // matching (e.g. OR_APP_NAME, which several tools share). All matching rules contribute to the result.
     private static readonly EnvironmentDetectionRuleWithResult<string>[] _detectionRules = [
-        // Cowork (Claude Code cowork mode) - placed before Claude so the more specific variable wins ordering
+        // Cowork (Claude Code cowork mode) - placed before Claude so the more specific variable is listed first
         new EnvironmentDetectionRuleWithResult<string>("cowork", new AnyPresentEnvironmentRule("CLAUDE_CODE_IS_COWORK")),
         // Claude Code
         new EnvironmentDetectionRuleWithResult<string>("claude", new AnyPresentEnvironmentRule("CLAUDECODE", "CLAUDE_CODE", "CLAUDE_CODE_ENTRYPOINT")),
@@ -18,8 +19,9 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         new EnvironmentDetectionRuleWithResult<string>("cursor", new AnyPresentEnvironmentRule("CURSOR_EDITOR", "CURSOR_AI", "CURSOR_TRACE_ID", "CURSOR_AGENT")),
         // Gemini
         new EnvironmentDetectionRuleWithResult<string>("gemini", new AnyPresentEnvironmentRule("GEMINI_CLI")),
-        // GitHub Copilot (legacy gh extension: GITHUB_COPILOT_CLI_MODE; new Copilot CLI: GH_COPILOT_WORKING_DIRECTORY, COPILOT_CLI, COPILOT_AGENT, COPILOT_MODEL, COPILOT_ALLOW_ALL, or COPILOT_GITHUB_TOKEN is set)
-        new EnvironmentDetectionRuleWithResult<string>("copilot", new AnyPresentEnvironmentRule(
+        // GitHub Copilot CLI (legacy gh extension: GITHUB_COPILOT_CLI_MODE; new Copilot CLI: GH_COPILOT_WORKING_DIRECTORY, COPILOT_CLI, COPILOT_AGENT, COPILOT_MODEL, COPILOT_ALLOW_ALL, or COPILOT_GITHUB_TOKEN is set).
+        // These variables are set only by the Copilot CLI; GitHub Copilot in VS/VS Code does not set environment variables, so those experiences are not detected here.
+        new EnvironmentDetectionRuleWithResult<string>("copilot-cli", new AnyPresentEnvironmentRule(
             "GITHUB_COPILOT_CLI_MODE", "GH_COPILOT_WORKING_DIRECTORY", "COPILOT_CLI", "COPILOT_AGENT", "COPILOT_MODEL", "COPILOT_ALLOW_ALL", "COPILOT_GITHUB_TOKEN")),
         // Codex CLI
         new EnvironmentDetectionRuleWithResult<string>("codex", new AnyPresentEnvironmentRule("CODEX_CLI", "CODEX_SANDBOX", "CODEX_CI", "CODEX_THREAD_ID")),
