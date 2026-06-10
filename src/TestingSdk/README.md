@@ -75,7 +75,7 @@ Framework × platform validity:
 | NUnit     | ✅   | ✅      | MTP                  |
 | XUnit (v3)| ✅   | ✅      | MTP                  |
 | TUnit     | ✅   | ❌      | MTP                  |
-| Expecto   | ✅   | ❌      | MTP                  |
+| Expecto   | ✅   | ✅      | MTP                  |
 
 Invalid pairs error at evaluation.
 

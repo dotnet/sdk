@@ -28,7 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       NUnit   -> MTP (also supports VSTest)
       XUnit   -> MTP (also supports VSTest); always means xUnit v3 in this SDK
       TUnit   -> MTP only
-      Expecto -> MTP only
+      Expecto -> MTP (also supports VSTest via YoloDev.Expecto.TestSdk)
   -->
   <PropertyGroup Condition="'$(TestPlatform)' == ''">
     <TestPlatform Condition="'$(_TestFramework)' == 'MSTest'">MicrosoftTestingPlatform</TestPlatform>
