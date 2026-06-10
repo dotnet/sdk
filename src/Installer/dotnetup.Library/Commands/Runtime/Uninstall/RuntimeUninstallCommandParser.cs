@@ -17,13 +17,6 @@ internal static class RuntimeUninstallCommandParser
         return s_runtimeUninstallCommand;
     }
 
-    private static readonly Command s_rootUninstallCommand = ConstructCommand();
-
-    public static Command GetRootUninstallCommand()
-    {
-        return s_rootUninstallCommand;
-    }
-
     private static Command ConstructCommand()
     {
         Command command = new("uninstall", "Removes a .NET Runtime Installation.");
