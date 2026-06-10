@@ -65,7 +65,10 @@ internal sealed class CompilationHandler : IDisposable
         _context = context;
         Workspace = new HotReloadMSBuildWorkspace(context.Logger, projectFile => (instances: _projectInstances.GetValueOrDefault(projectFile, []), project: null));
         _hotReloadService = new HotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
-        _fsharpHotReloadService = new FSharpHotReloadService(context.Logger);
+
+        // Forward the same aggregate runtime capabilities to the F# hot reload session so its
+        // edit classification can distinguish runtime-unsupported edits from rude edits.
+        _fsharpHotReloadService = new FSharpHotReloadService(context.Logger, GetAggregateCapabilities);
     }
 
     public void Dispose()

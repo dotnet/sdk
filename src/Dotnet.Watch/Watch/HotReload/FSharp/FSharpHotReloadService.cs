@@ -36,6 +36,13 @@ internal sealed class FSharpHotReloadService
     private readonly ILogger _logger;
     private readonly bool _trace;
 
+    /// <summary>
+    /// Provides the aggregate runtime edit-and-continue capabilities of the running processes,
+    /// matching the capabilities the Roslyn hot reload service receives. Evaluated lazily at
+    /// session start so newly launched processes are taken into account.
+    /// </summary>
+    private readonly Func<ImmutableArray<string>>? _getCapabilities;
+
     private ImmutableDictionary<ProjectInstanceId, FSharpProjectInfo> _projects = ImmutableDictionary<ProjectInstanceId, FSharpProjectInfo>.Empty;
     private ImmutableDictionary<ProjectInstanceId, object> _cachedProjectInputs = ImmutableDictionary<ProjectInstanceId, object>.Empty;
     private ImmutableDictionary<ProjectInstanceId, Guid> _runtimeModuleIds = ImmutableDictionary<ProjectInstanceId, Guid>.Empty;
@@ -43,10 +50,28 @@ internal sealed class FSharpHotReloadService
     private ProjectInstanceId? _activeProject;
     private object? _activeProjectInput;
 
-    public FSharpHotReloadService(ILogger logger)
+    public FSharpHotReloadService(ILogger logger, Func<ImmutableArray<string>>? getCapabilities = null)
     {
         _logger = logger;
         _trace = IsTraceEnabled();
+        _getCapabilities = getCapabilities;
+    }
+
+    private ImmutableArray<string> GetRuntimeCapabilities()
+    {
+        try
+        {
+            return _getCapabilities?.Invoke() ?? [];
+        }
+        catch (Exception ex)
+        {
+            if (_trace)
+            {
+                _logger.LogDebug("Failed to query runtime hot reload capabilities: {Message}", ex.Message);
+            }
+
+            return [];
+        }
     }
 
     public void UpdateProjects(ProjectGraph projectGraph)
@@ -679,7 +704,7 @@ internal sealed class FSharpHotReloadService
             return false;
         }
 
-        var start = host.StartSession(projectInput!, CancellationToken.None);
+        var start = host.StartSession(projectInput!, GetRuntimeCapabilities(), CancellationToken.None);
         if (!start.IsSuccess)
         {
             status = MapErrorStatus(start.ErrorCase);
@@ -1370,8 +1395,44 @@ internal sealed class FSharpHotReloadService
             return TryCreateProjectOptionsInput(projectInfo, out refreshedProjectInput, out error);
         }
 
-        public FSharpInvocationResult StartSession(object projectInput, CancellationToken cancellationToken)
-            => InvokeResult(_startSession, [projectInput, null], cancellationToken);
+        public FSharpInvocationResult StartSession(object projectInput, ImmutableArray<string> capabilities, CancellationToken cancellationToken)
+            => InvokeResult(_startSession, CreateStartSessionArguments(_startSession.GetParameters(), projectInput, capabilities), cancellationToken);
+
+        /// <summary>
+        /// Builds the StartHotReloadSession argument list against whatever FCS surface is loaded.
+        /// Recent FCS builds expose an optional <c>capabilities: string seq</c> parameter
+        /// (surfaced via reflection as <c>FSharpOption&lt;IEnumerable&lt;string&gt;&gt;</c>); when present the
+        /// aggregate runtime capabilities are forwarded, otherwise they are gracefully omitted so the
+        /// host keeps working against older FCS builds. Unrecognized optional parameters are passed
+        /// <c>null</c> (None), matching the existing userOpName handling.
+        /// </summary>
+        private static object?[] CreateStartSessionArguments(ParameterInfo[] parameters, object projectInput, ImmutableArray<string> capabilities)
+        {
+            var arguments = new object?[parameters.Length];
+
+            if (parameters.Length > 0)
+            {
+                arguments[0] = projectInput;
+            }
+
+            if (capabilities.IsDefaultOrEmpty)
+            {
+                return arguments;
+            }
+
+            for (var i = 1; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+
+                if (string.Equals(parameter.Name, "capabilities", StringComparison.Ordinal) &&
+                    IsFSharpOptionOfStringSequence(parameter.ParameterType))
+                {
+                    arguments[i] = CreateFSharpOptionSomeStringSequence(parameter.ParameterType, [.. capabilities]);
+                }
+            }
+
+            return arguments;
+        }
 
         public void InvalidateConfiguration(object projectInput, string projectPath)
         {
@@ -1754,6 +1815,17 @@ internal sealed class FSharpHotReloadService
 
         private static object? CreateFSharpOptionSomeBoolean(Type optionType, bool value)
             => optionType.GetMethod("Some", BindingFlags.Public | BindingFlags.Static, [typeof(bool)])?.Invoke(null, [value]);
+
+        private static bool IsFSharpOptionOfStringSequence(Type parameterType)
+            => parameterType.IsGenericType &&
+               string.Equals(parameterType.GetGenericTypeDefinition().FullName, "Microsoft.FSharp.Core.FSharpOption`1", StringComparison.Ordinal) &&
+               parameterType.GetGenericArguments() is [var argumentType] &&
+               argumentType.IsAssignableFrom(typeof(string[]));
+
+        private static object? CreateFSharpOptionSomeStringSequence(Type optionType, string[] value)
+            => optionType.GetGenericArguments() is [var argumentType]
+                ? optionType.GetMethod("Some", BindingFlags.Public | BindingFlags.Static, [argumentType])?.Invoke(null, [value])
+                : null;
 
         internal readonly record struct FSharpInvocationResult(bool IsSuccess, object? Value, string? ErrorCase, string? ErrorText);
     }
