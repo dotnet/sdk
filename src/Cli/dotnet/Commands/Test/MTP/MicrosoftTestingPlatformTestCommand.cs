@@ -3,10 +3,15 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
+using Microsoft.Build.Definition;
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -18,6 +23,13 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult, buildOptions.PathOptions);
+
+        // When --device is specified, force single target framework selection because
+        // a device is platform-specific and we need to know which TFM was intended.
+        if (!string.IsNullOrWhiteSpace(buildOptions.Device))
+        {
+            buildOptions = HandleDeviceWithTargetFrameworkSelection(buildOptions);
+        }
 
         ITestHandler testHandler = buildOptions.PathOptions.TestModules is { } testModules
             ? new TestModulesFilterHandler(testModules, parseResult)
@@ -36,10 +48,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+        using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
         int? exitCode = null;
         try
         {
-            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested);
+            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested, ctrlC);
             exitCode = testHandler.RunTestApplications(actionQueue);
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
@@ -94,16 +107,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
         {
             ShowPassedTests = showPassedTests,
             ShowProgress = !noProgress,
+            ShowActiveTests = !noProgress && ansiMode == AnsiMode.AnsiIfPossible,
             AnsiMode = ansiMode,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
         });
 
-        Console.CancelKeyPress += (s, e) =>
-        {
-            output.StartCancelling();
-        };
+        // Ctrl+C handling is wired in Run() through CtrlCCancellationManager so that
+        // a second press can force-kill running test app child processes and exit with
+        // ExitCode.TestSessionAborted (see issue https://github.com/dotnet/sdk/issues/50732).
 
         // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
         var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
@@ -120,5 +133,78 @@ internal partial class MicrosoftTestingPlatformTestCommand
         if (degreeOfParallelism <= 0)
             degreeOfParallelism = Environment.ProcessorCount;
         return degreeOfParallelism;
+    }
+
+    /// <summary>
+    /// When --device is specified, we need to ensure a single target framework is selected
+    /// because a device is platform-specific. If -f/--framework wasn't provided, this method
+    /// evaluates the project to get TargetFrameworks and prompts for selection.
+    /// The selected device is also added to MSBuild args so the build sees it.
+    /// </summary>
+    private static BuildOptions HandleDeviceWithTargetFrameworkSelection(BuildOptions buildOptions)
+    {
+        var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
+
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
+
+        // Check if TargetFramework is already specified via -f/--framework or -p:TargetFramework=
+        if (!globalProperties.ContainsKey(ProjectProperties.TargetFramework))
+        {
+            // Need to resolve the project to get TargetFrameworks
+            if (!ValidationUtility.ValidateBuildPathOptions(buildOptions.PathOptions, out var projectPath, out bool isSolution))
+            {
+                throw new GracefulException(CliCommandStrings.CmdTestNoTestProjectsFound);
+            }
+
+            if (isSolution)
+            {
+                // Device selection with solutions requires specifying a project and framework
+                throw new GracefulException(
+                    string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+            }
+
+            // Evaluate the project to get TargetFrameworks
+            using var collection = new ProjectCollection(globalProperties);
+            var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
+            {
+                GlobalProperties = globalProperties,
+                ProjectCollection = collection,
+            });
+
+            var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
+            var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+
+            // Only prompt if multi-targeted (no single TargetFramework set)
+            if (string.IsNullOrEmpty(targetFramework) && !string.IsNullOrEmpty(targetFrameworks))
+            {
+                var frameworks = targetFrameworks
+                    .Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(f => f.Trim())
+                    .Where(f => !string.IsNullOrEmpty(f))
+                    .ToArray();
+
+                bool isInteractive = !Console.IsOutputRedirected && !new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+                if (!RunCommandSelector.TrySelectTargetFramework(frameworks, isInteractive, out string? selectedFramework))
+                {
+                    // Error already written to stderr by TrySelectTargetFramework
+                    throw new GracefulException(
+                        string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+                }
+
+                if (selectedFramework is not null)
+                {
+                    buildOptions = buildOptions with
+                    {
+                        MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:{ProjectProperties.TargetFramework}={selectedFramework}"]
+                    };
+                }
+            }
+        }
+
+        // Add Device to MSBuild args so the build and evaluation see it
+        return buildOptions with
+        {
+            MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:Device={buildOptions.Device}"]
+        };
     }
 }

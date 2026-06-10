@@ -19,8 +19,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// - [Required] TargetPath: the output dll path
         /// - [Required] RuntimeTargetFramework: the target framework to run tests on
         /// - [Optional] Arguments: a string of arguments to be passed to the XUnit console runner
-        /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to the base method limit
-        ///   used for partitioning tests into Helix shards (base is 16, or 32 for FullFramework)
+        /// - [Optional] MethodLimitMultiplier: a positive integer multiplier applied to BaseMethodLimit
+        ///   used for partitioning tests into Helix shards
         /// The two required parameters will be automatically created if XUnitProject.Identity is set to the path of the XUnit csproj file
         /// </summary>
         [Required]
@@ -42,6 +42,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// The runtime identifier of the target Helix queue (e.g. osx-arm64, linux-x64).
         /// </summary>
         public string TargetRid { get; set; } = "";
+
+        /// <summary>
+        /// Base number of test methods per Helix work item shard.
+        /// Per-project MethodLimitMultiplier scales this value.
+        /// Defaults to 32.
+        /// </summary>
+        public int BaseMethodLimit { get; set; } = 32;
 
         /// <summary>
         /// Optional timeout for all created workitems
@@ -125,6 +132,40 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 }
             }
 
+            // Handle additional payload files that should be included in this project's work items.
+            // Files are copied into the publish directory and a pre-command copies them to the
+            // correlation payload destination at runtime.
+            string additionalPayloadPreCommand = "";
+            xunitProject.TryGetMetadata("AdditionalPayloadDir", out string additionalPayloadDir);
+            xunitProject.TryGetMetadata("AdditionalPayloadDestination", out string additionalPayloadDestination);
+
+            if (!string.IsNullOrEmpty(additionalPayloadDir) && Directory.Exists(additionalPayloadDir))
+            {
+                string payloadSubdir = Path.Combine(publishDirectory, "_additionalPayload");
+                Directory.CreateDirectory(payloadSubdir);
+
+                foreach (string sourceFile in Directory.GetFiles(additionalPayloadDir, "*", SearchOption.AllDirectories))
+                {
+                    string relativePath = sourceFile.Substring(additionalPayloadDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length + 1);
+                    string destFile = Path.Combine(payloadSubdir, relativePath);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destFile)!);
+                    File.Copy(sourceFile, destFile, overwrite: true);
+                }
+
+                if (!string.IsNullOrEmpty(additionalPayloadDestination))
+                {
+                    if (IsPosixShell)
+                    {
+                        additionalPayloadPreCommand = $"cp -r $HELIX_WORKITEM_PAYLOAD/_additionalPayload/* $HELIX_CORRELATION_PAYLOAD/{additionalPayloadDestination}/ && ";
+                    }
+                    else
+                    {
+                        string destPath = $"%HELIX_CORRELATION_PAYLOAD%\\{additionalPayloadDestination.Replace('/', '\\')}";
+                        additionalPayloadPreCommand = $"robocopy %HELIX_WORKITEM_PAYLOAD%\\_additionalPayload {destPath} /E /NP /NJH /NJS /NDL >nul & ";
+                    }
+                }
+            }
+
             string assemblyName = Path.GetFileName(targetPath);
 
             string driver = $"{PathToDotnet}";
@@ -154,20 +195,20 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 msbuildAdditionalSdkResolverFolder = "";
             }
 
-            var isFullMSBuild = string.Equals(Environment.GetEnvironmentVariable("TestFullMSBuild"), "true", StringComparison.OrdinalIgnoreCase);
-            var baseMethodLimit = isFullMSBuild ? 32 : 16;
+            var methodLimit = BaseMethodLimit;
             if (xunitProject.TryGetMetadata("MethodLimitMultiplier", out string multiplierStr))
             {
                 if (int.TryParse(multiplierStr, out int multiplier) && multiplier > 0)
                 {
-                    baseMethodLimit *= multiplier;
+                    methodLimit *= multiplier;
                 }
                 else
                 {
                     Log.LogWarning($"Invalid MethodLimitMultiplier \"{multiplierStr}\" for {assemblyName}; must be a positive integer. Using default method limit.");
                 }
             }
-            var scheduler = new AssemblyScheduler(methodLimit: baseMethodLimit);
+
+            var scheduler = new AssemblyScheduler(methodLimit: methodLimit);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
@@ -186,7 +227,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 // On macOS, ad-hoc sign the test exe with get-task-allow entitlement so createdump can attach via task_for_pid for crash dumps.
                 string codesignPrefix = IsPosixShell && TargetRid.StartsWith("osx") ? $"codesign -s - -f --entitlements $HELIX_CORRELATION_PAYLOAD/t/helix-debug-entitlements.plist {exeName} && " : "";
 
-                string command = $"{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                string command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
                           $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {testFilter} {enableDiagLogging} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");

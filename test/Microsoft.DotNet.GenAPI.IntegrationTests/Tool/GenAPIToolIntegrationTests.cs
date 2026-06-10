@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
         {
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [Fact] 
         public void GenAPITool_GeneratesSourceForAssembly()
         {
             (string assembly, string outputDirectory) = BuildAndPrepareOutput(nameof(GenAPITool_GeneratesSourceForAssembly));
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
                 .And.NotContain("InternalMultiply");
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [Fact] 
         public void GenAPITool_HeaderFile_IsPrependedToOutput()
         {
             (string assembly, string outputDirectory) = BuildAndPrepareOutput(nameof(GenAPITool_HeaderFile_IsPrependedToOutput));
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.GenAPI.IntegrationTests.Tool
             File.ReadAllText(generated).Should().StartWith(headerLine);
         }
 
-        [PlatformSpecificFact(skipPlatforms: TestPlatforms.OSX, skipArchitecture: Architecture.Arm64, skipReason: "https://github.com/dotnet/sdk/issues/54248")]
+        [Fact] 
         public void GenAPITool_RespectInternals_IncludesInternalMembers()
         {
             (string assembly, string outputDirectory) = BuildAndPrepareOutput(nameof(GenAPITool_RespectInternals_IncludesInternalMembers));

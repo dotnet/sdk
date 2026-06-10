@@ -182,7 +182,7 @@ namespace Microsoft.NET.Publish.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
+        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901", Skip = "https://github.com/dotnet/wpf/issues/11651")]
         public void It_publishes_and_runs_wpf_app_with_no_winforms()
         {
             // It_publishes_and_runs_self_contained_wpf_app also tests a Wpf app run successfully. This test also checks that the right files are present.

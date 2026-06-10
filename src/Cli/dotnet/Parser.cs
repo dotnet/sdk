@@ -3,7 +3,10 @@
 
 #if CLI_AOT
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -13,10 +16,10 @@ public static class Parser
 
     private static RootCommand CreateCommand()
     {
-        var versionOption = new Option<bool>("--version") { Description = "Display .NET SDK version." };
-        var infoOption = new Option<bool>("--info") { Description = "Display .NET information." };
+        var versionOption = new Option<bool>("--version") { Arity = ArgumentArity.Zero };
+        var infoOption = new Option<bool>("--info") { Arity = ArgumentArity.Zero };
 
-        var rootCommand = new RootCommand("The .NET CLI")
+        var rootCommand = new RootCommand("dotnet")
         {
             versionOption,
             infoOption,
@@ -38,12 +41,65 @@ public static class Parser
             return 0;
         });
 
+        ConfigureSolutionCommand(rootCommand);
+
         return rootCommand;
     }
 
-    public static ParseResult Parse(string[] args) => RootCommand.Parse(args);
+    private static void ConfigureSolutionCommand(RootCommand rootCommand)
+    {
+        var slnDef = new SolutionCommandDefinition();
+        SolutionCommandParser.ConfigureCommand(slnDef);
+        rootCommand.Subcommands.Add(slnDef);
+    }
 
-    public static int Invoke(ParseResult parseResult) => parseResult.Invoke();
+    public static Command? GetBuiltInCommand(string commandName) =>
+        RootCommand.Subcommands.FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
+
+    public static ParseResult Parse(string[] args) => RootCommand.Parse(args, ParserConfiguration);
+
+    public static int Invoke(ParseResult parseResult) => parseResult.Invoke(InvocationConfiguration);
+
+        /// <summary>
+    /// Implements token-per-line response file handling for the CLI. We use this instead of the built-in S.CL handling
+    /// to ensure backwards-compatibility with MSBuild.
+    /// </summary>
+    public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string>? replacementTokens, out string? errorMessage)
+    {
+        var filePath = Path.GetFullPath(tokenToReplace);
+        if (File.Exists(filePath))
+        {
+            var lines = File.ReadAllLines(filePath);
+            var trimmedLines =
+                lines
+                    // Remove content in the lines that start with # after trimmer leading whitespace
+                    .Select(line => line.TrimStart().StartsWith('#') ? string.Empty : line)
+                    // trim leading/trailing whitespace to not pass along dead spaces
+                    .Select(x => x.Trim())
+                    // Remove empty lines
+                    .Where(line => line.Length > 0);
+            replacementTokens = [.. trimmedLines];
+            errorMessage = null;
+            return true;
+        }
+        else
+        {
+            replacementTokens = null;
+            errorMessage = string.Format(CliStrings.ResponseFileNotFound, tokenToReplace);
+            return false;
+        }
+    }
+
+    public static ParserConfiguration ParserConfiguration { get; } = new()
+    {
+        EnablePosixBundling = false,
+        ResponseFileTokenReplacer = TokenPerLine
+    };
+
+    public static InvocationConfiguration InvocationConfiguration { get; } = new()
+    {
+        EnableDefaultExceptionHandler = false,
+    };
 }
 
 #else
