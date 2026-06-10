@@ -29,6 +29,17 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <!-- Globalization: only Linux lacks a guaranteed libicu, so build invariant there to avoid a
+       startup crash ("Couldn't find a valid ICU package"). Windows and macOS ship globalization
+       in-box (and NativeAOT uses the OS ICU there rather than bundling data), so they run
+       non-invariant and the runtime initializes the UI culture from the OS automatically.
+       PredefinedCulturesOnly is relaxed in invariant mode so DotnetupUILanguage can create the
+       detected culture by name for localized resource lookup. -->
+  <PropertyGroup>
+    <InvariantGlobalization Condition="$([MSBuild]::ValueOrDefault('$(RuntimeIdentifier)', '').StartsWith('linux'))">true</InvariantGlobalization>
+    <PredefinedCulturesOnly Condition="'$(InvariantGlobalization)' == 'true'">false</PredefinedCulturesOnly>
+  </PropertyGroup>
+
   <PropertyGroup Condition="$([MSBuild]::ValueOrDefault('$(RuntimeIdentifier)', '').StartsWith('osx'))">
     <!-- Suppress macOS NativeAOT debug-info generation to avoid .pcm module-cache errors.
          The runtime's static archives (libSystem.Native.a, etc.) embed clang module-debug
