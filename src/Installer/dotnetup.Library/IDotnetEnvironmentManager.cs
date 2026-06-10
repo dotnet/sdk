@@ -66,8 +66,8 @@ public class GlobalJsonInfo
 
             // "$host$" is a sentinel value meaning "fall back to the default host location".
             // See: https://github.com/dotnet/runtime/blob/7f49565b668b93492181b98572be79c54448cd68/src/native/corehost/fxr/sdk_resolver.cpp#L123-L126
-            // Skip any entries with this value; return null if all entries are sentinel.
-            var firstRealPath = Array.Find(paths, p => !string.Equals(p, "$host$", StringComparison.OrdinalIgnoreCase));
+            // Skip any entries with this value (and any null/whitespace entries); return null if no real path remains.
+            var firstRealPath = Array.Find(paths, p => !string.IsNullOrWhiteSpace(p) && !string.Equals(p, "$host$", StringComparison.OrdinalIgnoreCase));
             if (firstRealPath is null)
             {
                 return null;

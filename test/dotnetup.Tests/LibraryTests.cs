@@ -349,4 +349,25 @@ public class LibraryTests
 
         globalJsonInfo.SdkPath.Should().Be(Path.Combine(repoDir, ".dotnet"));
     }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ReturnsNullWhenOnlySentinelAndEmptyEntries()
+    {
+        // Null/empty/whitespace entries (possible via JSON) must be skipped along with
+        // the $host$ sentinel, so resolution safely falls back to null instead of throwing.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new string[] { "$host$", null!, "", "   " }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
+    }
 }
