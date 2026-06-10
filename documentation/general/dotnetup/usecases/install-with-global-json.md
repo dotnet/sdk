@@ -152,6 +152,36 @@ dotnetup searches for `global.json` by walking up from the current directory tow
 
 dotnetup uses the first `global.json` found while walking upward. If that file contains an SDK version, dotnetup derives the channel from it.
 
+## Choosing the Install Location with `sdk.paths`
+
+In addition to the SDK version, a `global.json` may contain an [`sdk.paths`](https://learn.microsoft.com/dotnet/core/tools/global-json#paths) array. This is an ordered list of locations the .NET host probes when resolving an SDK. dotnetup honors the **first meaningful entry** in `sdk.paths` to decide *where* to install:
+
+| First meaningful `sdk.paths` entry | Where dotnetup installs |
+|------------------------------------|-------------------------|
+| A relative or absolute path (e.g. `.dotnet`) | That path, resolved relative to the directory containing `global.json` |
+| `$host$` | The default dotnetup install location (e.g. `~/.dotnet`) |
+| *(no usable entry — empty, or only null/whitespace)* | Falls through to the normal precedence (existing user install, then default) |
+
+### The `$host$` sentinel
+
+`$host$` is **not** a literal directory. It is a sentinel the .NET host resolver understands to mean "use the default host location." dotnetup treats it the same way:
+
+- **`$host$` is the first meaningful entry** (e.g. `["$host$", ".dotnet"]`): dotnetup installs to the **default host location** and ignores later entries. Because `sdk.paths` is ordered, the first entry wins — putting `$host$` first is an explicit request for the default location.
+- **A real path precedes `$host$`** (e.g. `[".dotnet", "$host$"]`): dotnetup uses the real path (`.dotnet`).
+- **Only `$host$` entries** (e.g. `["$host$"]`): dotnetup installs to the default host location.
+
+Empty, null, or whitespace entries are skipped while finding the first meaningful entry, so a malformed list never causes path resolution to fail.
+
+### Install-location precedence
+
+When deciding where to install, dotnetup applies the following precedence (highest first):
+
+1. An explicit `--install-path` on the command line
+2. A literal path from `global.json`'s `sdk.paths`
+3. `global.json`'s `$host$` sentinel → the default host install location
+4. An existing user-level installation
+5. The default install location
+
 ## Next Steps
 
 - [Update SDK and Runtime Installations](./update-installations.md) — Keep your channels up to date
