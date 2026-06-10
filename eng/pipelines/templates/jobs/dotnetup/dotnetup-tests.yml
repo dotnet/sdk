@@ -61,25 +61,6 @@ jobs:
           & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -p:EnforceCodeStyleInBuild=false
         displayName: 🔨 Publish dotnetup AOT (Windows)
       - powershell: |
-          # Diagnostic: run the freshly published dotnetup with the telemetry
-          # console exporter on (DOTNETUP_TELEMETRY_DEBUG=1) and network export
-          # off (DISABLE_TRACE_EXPORT=1). This prints the dotnetup/root LogRecord
-          # — including the computed ci.detected and output.redirected — so we
-          # can compare what the in-process CIEnvironmentDetectorForTelemetry
-          # actually sees against the raw TF_BUILD value dumped above. Nothing
-          # is sent to the telemetry backend.
-          $env:DOTNET_CLI_TELEMETRY_OPTOUT = "0"
-          $env:DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT = "1"
-          $env:DOTNETUP_TELEMETRY_DEBUG = "1"
-          $published = Get-ChildItem -Path "artifacts\bin\dotnetup\Release" -Recurse -Filter "dotnetup.exe" |
-              Where-Object { $_.FullName -like "*\publish\*" } |
-              Select-Object -First 1 -ExpandProperty FullName
-          if (-not $published) { Write-Host "Published dotnetup.exe not found; skipping diagnostic."; exit 0 }
-          Write-Host "Running $published --version with telemetry console exporter"
-          & $published --version
-        displayName: 🔬 Diagnostic - print computed ci.detected (Windows)
-        continueOnError: true
-      - powershell: |
           New-Item -Path "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults" -ItemType Directory -Force
         displayName: 📁 Create test results directory (Windows)
       - powershell: |
@@ -101,23 +82,6 @@ jobs:
       - script: |
           ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -p:EnforceCodeStyleInBuild=false
         displayName: 🔨 Publish dotnetup AOT (Unix)
-      - script: |
-          # Diagnostic: run the freshly published dotnetup with the telemetry
-          # console exporter on (DOTNETUP_TELEMETRY_DEBUG=1) and network export
-          # off (DISABLE_TRACE_EXPORT=1). This prints the dotnetup/root LogRecord
-          # — including the computed ci.detected and output.redirected — so we
-          # can compare what the in-process CIEnvironmentDetectorForTelemetry
-          # actually sees against the raw TF_BUILD value dumped above. Nothing
-          # is sent to the telemetry backend.
-          export DOTNET_CLI_TELEMETRY_OPTOUT=0
-          export DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT=1
-          export DOTNETUP_TELEMETRY_DEBUG=1
-          published="$(find artifacts/bin/dotnetup/Release -path '*/publish/dotnetup' -type f -print -quit)"
-          if [ -z "$published" ]; then echo "Published dotnetup not found; skipping diagnostic."; exit 0; fi
-          echo "Running $published --version with telemetry console exporter"
-          "$published" --version
-        displayName: 🔬 Diagnostic - print computed ci.detected (Unix)
-        continueOnError: true
       - script: |
           mkdir -p "$(Build.SourcesDirectory)/artifacts/dotnetupTestResults"
         displayName: 📁 Create test results directory (Unix)
