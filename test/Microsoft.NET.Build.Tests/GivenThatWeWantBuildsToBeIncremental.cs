@@ -57,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void RuntimeConfigInputCache_changes_when_GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile_changes()
+        public void RuntimeConfigInputCache_changes_when_EnableHotReloadInRuntimeConfigDevFile_changes()
         {
             var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: "HotReloadCacheTest")
@@ -69,15 +69,15 @@ namespace Microsoft.NET.Build.Tests
             var cacheFilePath = Path.Combine(intermediateDirectory, "HelloWorld.genruntimeconfig.cache");
 
             // Build with hot reload disabled
-            buildCommand.Execute("/p:GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile=false").Should().Pass();
+            buildCommand.Execute("/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
             var hash1 = File.ReadAllText(cacheFilePath).Trim();
 
             // Build with hot reload enabled
-            buildCommand.Execute("/p:GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile=true").Should().Pass();
+            buildCommand.Execute("/p:EnableHotReloadInRuntimeConfigDevFile=true").Should().Pass();
             var hash2 = File.ReadAllText(cacheFilePath).Trim();
 
             hash2.Should().NotBe(hash1,
-                "changing GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile should change the input cache hash");
+                "changing EnableHotReloadInRuntimeConfigDevFile should change the input cache hash");
         }
 
         [Theory]

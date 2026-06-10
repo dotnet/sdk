@@ -83,9 +83,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Post-net6.0, stop generating *.runtimeconfig.dev.json files to reduce probing paths. -->
     <!-- https://github.com/dotnet/sdk/issues/16818 -->
     <GenerateProbingPathsToRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '6.0')))">true</GenerateProbingPathsToRuntimeConfigDevFile>
-    <GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile Condition="'$(GenerateHotReloadSettingsToRuntimeConfigDevFile)' == '' and '$(Configuration)' == 'Debug'">true</GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile>
+    <EnableHotReloadInRuntimeConfigDevFile Condition="'$(EnableHotReloadInRuntimeConfigDevFile)' == '' and '$(Configuration)' == 'Debug'">true</EnableHotReloadInRuntimeConfigDevFile>
 
-    <GenerateRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == 'true' or '$(GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile)' == 'true'">true</GenerateRuntimeConfigDevFile>
+    <GenerateRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == 'true' or '$(EnableHotReloadInRuntimeConfigDevFile)' == 'true'">true</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -362,7 +362,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(TargetFramework)"/>
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(UserRuntimeConfig)"/>
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(GenerateProbingPathsToRuntimeConfigDevFile)"/>
-      <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile)"/>      
+      <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(EnableHotReloadInRuntimeConfigDevFile)"/>
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(_WriteIncludedFrameworks)"/>
     </ItemGroup>
 
@@ -425,7 +425,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                        IsSelfContained="$(SelfContained)"
                                        WriteIncludedFrameworks="$(_WriteIncludedFrameworks)"
                                        GenerateProbingPathsToRuntimeConfigDevFile="$(GenerateProbingPathsToRuntimeConfigDevFile)"
-                                       GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile="$(GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile)"
+                                       GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile="$(EnableHotReloadInRuntimeConfigDevFile)"
                                        AlwaysIncludeCoreFramework="$(AlwaysIncludeCoreFrameworkInRuntimeConfig)">
 
     </GenerateRuntimeConfigurationFiles>

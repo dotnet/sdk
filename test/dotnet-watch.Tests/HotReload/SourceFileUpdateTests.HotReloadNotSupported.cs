@@ -12,22 +12,14 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
     [InlineData("PublishTrimmed", "True")]
     [InlineData("StartupHookSupport", "False")]
     [InlineData("Optimize", "True")]
-    [InlineData("MetadataUpdaterSupport", "False")]
-    public async Task ChangeFileInAotProject(string propertyName, string propertyValue)
+    public async Task ChangeFileInAotProject_PriorNet11(string propertyName, string propertyValue)
     {
-        var tfvParsed = Version.Parse(ToolsetInfo.CurrentTargetFrameworkVersion);
-        var isNet11OrNewer = tfvParsed.Major >= 11;
-
-        // Optimize check only applies to < .NET 11; MetadataUpdaterSupport only to >= .NET 11.
-        if (propertyName == "Optimize" && isNet11OrNewer)
-            return;
-        if (propertyName == "MetadataUpdaterSupport" && !isNet11OrNewer)
-            return;
-
-        var projectDisplay = $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})";
+        var tfm = "net9.0";
+        var projectDisplay = $"WatchHotReloadApp ({tfm})";
 
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: $"{propertyName};{propertyValue}")
             .WithSource()
+            .WithTargetFramework(tfm)
             .WithProjectChanges(project =>
             {
                 project.Root.Descendants()
@@ -43,7 +35,6 @@ public class SourceFileUpdateTests_HotReloadNotSupported(ITestOutputHelper logge
         var (suggestedProperty, suggestedValue) = propertyName switch
         {
             "Optimize" => (PropertyNames.Optimize, "False"),
-            "MetadataUpdaterSupport" => (PropertyNames.MetadataUpdaterSupport, "True"),
             _ => (PropertyNames.StartupHookSupport, "True"),
         };
         var message = MessageDescriptor.ProjectDoesNotSupportHotReload_Property.GetMessage((propertyName, propertyValue, suggestedProperty, suggestedValue));
