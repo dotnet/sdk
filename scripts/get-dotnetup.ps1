@@ -87,7 +87,35 @@ function Get-RuntimeId {
     }
 
     # Detect architecture
-    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+    # Wrap in try/catch: on Windows PowerShell 5.1 with older .NET Framework,
+    # OSArchitecture may throw PropertyNotFoundException under Set-StrictMode.
+    $arch = $null
+    try {
+        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+    }
+    catch { }
+
+    if (-not $arch) {
+        # Fallback: use environment variable on Windows, uname -m elsewhere
+        if ($os -like "win*") {
+            $procArch = $env:PROCESSOR_ARCHITECTURE
+            $arch = switch ($procArch) {
+                "AMD64" { "X64" }
+                "ARM64" { "Arm64" }
+                default { $procArch }
+            }
+        }
+        else {
+            $uname = & uname -m 2>/dev/null
+            $arch = switch ($uname) {
+                "x86_64"          { "X64" }
+                "aarch64"         { "Arm64" }
+                "arm64"           { "Arm64" }
+                default           { $uname }
+            }
+        }
+    }
+
     $archStr = switch ($arch) {
         "X64" { "x64" }
         "Arm64" { "arm64" }
