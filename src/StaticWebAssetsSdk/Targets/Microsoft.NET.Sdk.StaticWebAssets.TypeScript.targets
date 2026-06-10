@@ -30,12 +30,19 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <_TypeScriptWwwrootAssets Include="@(GeneratedJavascript)"
-        Condition="$([System.String]::new('%(Identity)').Contains('wwwroot')) And Exists('%(Identity)')" />
+        Condition="$([System.String]::new('%(Identity)').Contains('wwwroot')) And Exists('%(Identity)')">
+        <!--
+          Project-relative identity so RemoveTypeScriptFromContentBeforeSwaDiscovery
+          can match against the wwwroot\** Content items added by the Razor SDK
+          (whose Identity is project-relative, e.g. wwwroot\app.js).
+        -->
+        <_RelativeIdentity>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '%(Identity)'))</_RelativeIdentity>
+      </_TypeScriptWwwrootAssets>
     </ItemGroup>
 
     <WriteLinesToFile
       File="$(_TypeScriptSwaManifestPath)"
-      Lines="@(_TypeScriptWwwrootAssets)"
+      Lines="@(_TypeScriptWwwrootAssets->'%(_RelativeIdentity)')"
       Overwrite="true"
       WriteOnlyWhenDifferent="true"
       Condition="'@(_TypeScriptWwwrootAssets)' != ''" />
