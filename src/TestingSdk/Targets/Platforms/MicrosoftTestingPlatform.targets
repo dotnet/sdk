@@ -9,9 +9,6 @@
 
   <PropertyGroup>
     <TestingExtensionsProfile Condition="'$(TestingExtensionsProfile)' == ''">Default</TestingExtensionsProfile>
-
-    <!-- Common version that per-extension <Name>Version properties fall back to. -->
-    <MicrosoftTestingExtensionsCommonVersion Condition="'$(MicrosoftTestingExtensionsCommonVersion)' == ''">$(MicrosoftTestingPlatformVersion)</MicrosoftTestingExtensionsCommonVersion>
   </PropertyGroup>
 
   <Target Name="_ValidateTestingExtensionsProfile" BeforeTargets="CollectPackageReferences;BeforeBuild">

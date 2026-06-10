@@ -44,8 +44,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!--
+    Centralized default package versions. Imported BEFORE the per-framework dispatch
+    so that framework props see populated <Framework>Version properties. Users can
+    override any of these in their csproj, including with floating values like '*'.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)_DefaultPackageVersions.props" />
+
+  <!--
     Dispatch to the per-framework props file. Each framework file is responsible for:
-      - Validating its <Framework>Version property is set.
       - Validating that TestPlatform is supported by that framework.
       - Emitting the PackageReference(s) (metapackage for tests, lower-level packages for utilities).
       - Setting framework-specific MSBuild properties (EnableMSTestRunner, UseMicrosoftTestingPlatformRunner, etc.).

@@ -15,7 +15,18 @@ framework-specific is shipped in-band.
 
 ## What a consuming project looks like
 
-xUnit v3 on MTP (most common case):
+xUnit v3 on MTP (most common case) — uses the SDK's pinned default version, no version property required:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Testing">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <TestFramework>XUnit</TestFramework>
+  </PropertyGroup>
+</Project>
+```
+
+Same thing, pinning to a specific xUnit version (recommended for libraries that want hermetic builds):
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Testing">
@@ -23,6 +34,18 @@ xUnit v3 on MTP (most common case):
     <TargetFramework>net10.0</TargetFramework>
     <TestFramework>XUnit</TestFramework>
     <XUnitVersion>3.0.0</XUnitVersion>
+  </PropertyGroup>
+</Project>
+```
+
+Opt into floating to always pick up the latest stable xUnit on each restore (non-deterministic; use only with a NuGet lock file if you care about reproducibility):
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Testing">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <TestFramework>XUnit</TestFramework>
+    <XUnitVersion>*</XUnitVersion>
   </PropertyGroup>
 </Project>
 ```
@@ -34,10 +57,7 @@ NUnit on VSTest (explicit platform opt-out of the MTP default):
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <TestFramework>NUnit</TestFramework>
-    <NUnitVersion>4.3.0</NUnitVersion>
     <TestPlatform>VSTest</TestPlatform>
-    <MicrosoftNETTestSdkVersion>17.12.0</MicrosoftNETTestSdkVersion>
-    <NUnit3TestAdapterVersion>4.6.0</NUnit3TestAdapterVersion>
   </PropertyGroup>
 </Project>
 ```
@@ -49,7 +69,6 @@ xUnit test-helpers library (no Exe, lower-level packages):
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <TestFramework>XUnit</TestFramework>
-    <XUnitVersion>3.0.0</XUnitVersion>
     <IsTestUtilityProject>true</IsTestUtilityProject>
   </PropertyGroup>
 </Project>
@@ -59,13 +78,14 @@ xUnit test-helpers library (no Exe, lower-level packages):
 
 Required:
 - `TestFramework` — `MSTest` | `NUnit` | `XUnit` | `TUnit` | `Expecto`. `XUnit` always means xUnit v3.
-- `<Framework>Version` — e.g. `XUnitVersion`, `MSTestVersion`, etc. **Mandatory in this prototype** to avoid silent test-framework upgrades on SDK bumps.
 
 Optional:
+- `<Framework>Version` (e.g. `XUnitVersion`, `MSTestVersion`, `NUnitVersion`, `TUnitVersion`, `ExpectoVersion`) — defaults to a value pinned by this SDK (see `Targets/_DefaultPackageVersions.props`). Override with a fixed version to lock the test framework, or with `*` (or `*-*`) to float to the latest stable (or latest including prerelease). Floating restores are not reproducible without a NuGet lock file.
 - `TestPlatform` — `MicrosoftTestingPlatform` (alias `MTP`) | `VSTest`. Defaults from framework.
 - `IsTestUtilityProject` — defaults `false`. When `true`: no `Exe` output, no `Microsoft.NET.Test.Sdk` reference, framework metapackage swapped for the assert/extensibility packages.
 - `TestingExtensionsProfile` — MTP-only. `Default` | `AllMicrosoft` | `None`. Mirrors `MSTest.Sdk`.
 - `EnableMicrosoftTestingExtensions<Name>` and `MicrosoftTestingExtensions<Name>Version` — per-extension toggles and version overrides; mirror `MSTest.Sdk`.
+- Companion-package versions (`XUnitRunnerVisualStudioVersion`, `NUnit3TestAdapterVersion`, `NUnitAnalyzersVersion`, `YoloDevExpectoTestSdkVersion`, `MicrosoftNETTestSdkVersion`, `MicrosoftTestingPlatformVersion`) — all have pinned defaults; override the same way as the framework version.
 
 Framework × platform validity:
 
@@ -91,6 +111,7 @@ src/TestingSdk/
 ├── Targets/
 │   ├── Microsoft.NET.Sdk.Testing.props      # Dispatch + validation
 │   ├── Microsoft.NET.Sdk.Testing.targets
+│   ├── _DefaultPackageVersions.props        # Centralized pinned defaults (user-overridable)
 │   ├── Frameworks/                          # One file pair per framework
 │   │   ├── {MSTest,NUnit,XUnit,TUnit,Expecto}.{props,targets}
 │   └── Platforms/
