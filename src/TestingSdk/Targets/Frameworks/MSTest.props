@@ -14,11 +14,19 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(MSTestVersion)' != ''">
-    <PackageReference Include="MSTest" Version="$(MSTestVersion)" />
+    <PackageReference Include="MSTest">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(MSTestVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="MSTest" Version="$(MSTestVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(MSTestVersion)' != ''">
-    <PackageReference Include="MSTest.TestFramework" Version="$(MSTestVersion)" />
+    <PackageReference Include="MSTest.TestFramework">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(MSTestVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="MSTest.TestFramework" Version="$(MSTestVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
   </ItemGroup>
 
 </Project>

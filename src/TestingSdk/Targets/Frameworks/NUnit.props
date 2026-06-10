@@ -8,14 +8,31 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(NUnitVersion)' != ''">
-    <PackageReference Include="NUnit" Version="$(NUnitVersion)" />
-    <!-- MTP path: pull in NUnit3TestAdapter built atop MTP via TestingPlatformAdapter, plus the MTP entry point. -->
-    <PackageReference Include="NUnit.Analyzers" Version="$(NUnitAnalyzersVersion)" Condition="'$(NUnitAnalyzersVersion)' != ''" />
-    <PackageReference Include="NUnit3TestAdapter" Version="$(NUnit3TestAdapterVersion)" Condition="'$(NUnit3TestAdapterVersion)' != ''" />
+    <PackageReference Include="NUnit">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(NUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="NUnit" Version="$(NUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+
+    <PackageReference Include="NUnit.Analyzers" Condition="'$(NUnitAnalyzersVersion)' != ''">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(NUnitAnalyzersVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="NUnit.Analyzers" Version="$(NUnitAnalyzersVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(NUnitAnalyzersVersion)' != '' " />
+
+    <PackageReference Include="NUnit3TestAdapter" Condition="'$(NUnit3TestAdapterVersion)' != ''">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(NUnit3TestAdapterVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="NUnit3TestAdapter" Version="$(NUnit3TestAdapterVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(NUnit3TestAdapterVersion)' != '' " />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(NUnitVersion)' != ''">
-    <PackageReference Include="NUnit" Version="$(NUnitVersion)" />
+    <PackageReference Include="NUnit">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(NUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="NUnit" Version="$(NUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
   </ItemGroup>
 
 </Project>

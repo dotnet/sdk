@@ -87,6 +87,17 @@ Optional:
 - `EnableMicrosoftTestingExtensions<Name>` and `MicrosoftTestingExtensions<Name>Version` — per-extension toggles and version overrides; mirror `MSTest.Sdk`.
 - Companion-package versions (`XUnitRunnerVisualStudioVersion`, `NUnit3TestAdapterVersion`, `NUnitAnalyzersVersion`, `YoloDevExpectoTestSdkVersion`, `MicrosoftNETTestSdkVersion`, `MicrosoftTestingPlatformVersion`) — all have pinned defaults; override the same way as the framework version.
 
+## Central Package Management (CPM)
+
+`ManagePackageVersionsCentrally=true` is fully supported. The SDK uses the pattern documented in `MSTest.Sdk`:
+
+- When CPM is **off**, the `<Version>` metadata is set directly on each `<PackageReference>` the SDK adds.
+- When CPM is **on**, the `<PackageReference>` is emitted without a version, and a matching `<PackageVersion Include="..." Version="..." />` item is added so the CPM resolver picks up the SDK-supplied default.
+
+This pattern works regardless of `CentralPackageVersionOverrideEnabled` (no use of `VersionOverride`, so `NU1013` is not a concern), and does not produce `NU1009` "implicit reference" warnings.
+
+To override the SDK default while staying in CPM, the simplest path is to set the corresponding MSBuild property (e.g. `<XUnitVersion>3.0.1</XUnitVersion>`) in your csproj or in a `Directory.Build.props`. That value flows into the `PackageVersion` the SDK emits, so the resolved version matches what you asked for.
+
 Framework × platform validity:
 
 | Framework | MTP | VSTest | Default when omitted |

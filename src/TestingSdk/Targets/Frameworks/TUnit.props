@@ -9,12 +9,25 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(TUnitVersion)' != ''">
-    <PackageReference Include="TUnit" Version="$(TUnitVersion)" />
+    <PackageReference Include="TUnit">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(TUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="TUnit" Version="$(TUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(TUnitVersion)' != ''">
-    <PackageReference Include="TUnit.Core" Version="$(TUnitVersion)" />
-    <PackageReference Include="TUnit.Assertions" Version="$(TUnitVersion)" />
+    <PackageReference Include="TUnit.Core">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(TUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="TUnit.Core" Version="$(TUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+
+    <PackageReference Include="TUnit.Assertions">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(TUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="TUnit.Assertions" Version="$(TUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
   </ItemGroup>
 
 </Project>

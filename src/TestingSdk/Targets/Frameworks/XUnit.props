@@ -9,14 +9,32 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(XUnitVersion)' != ''">
-    <PackageReference Include="xunit.v3" Version="$(XUnitVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)"
-                      Condition="'$(TestPlatform)' == 'VSTest' and '$(XUnitRunnerVisualStudioVersion)' != ''" />
+    <PackageReference Include="xunit.v3">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(XUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="xunit.v3" Version="$(XUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+
+    <PackageReference Include="xunit.runner.visualstudio"
+                      Condition="'$(TestPlatform)' == 'VSTest' and '$(XUnitRunnerVisualStudioVersion)' != ''">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(XUnitRunnerVisualStudioVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(TestPlatform)' == 'VSTest' and '$(XUnitRunnerVisualStudioVersion)' != '' " />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(XUnitVersion)' != ''">
-    <PackageReference Include="xunit.v3.extensibility.core" Version="$(XUnitVersion)" />
-    <PackageReference Include="xunit.v3.assert"             Version="$(XUnitVersion)" />
+    <PackageReference Include="xunit.v3.extensibility.core">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(XUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+
+    <PackageReference Include="xunit.v3.assert">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(XUnitVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="xunit.v3.assert" Version="$(XUnitVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
   </ItemGroup>
 
 </Project>
