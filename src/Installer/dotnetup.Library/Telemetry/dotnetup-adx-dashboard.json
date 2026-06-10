@@ -143,6 +143,32 @@
       "showOnPages": {
         "kind": "all"
       }
+    },
+    {
+      "kind": "bool",
+      "id": "94bd27de-6894-47af-86d5-c6f4ec9aab0f",
+      "displayName": "LLM Agent",
+      "description": "Filter runs by whether dotnetup detected an LLM or agentic environment via the llm.agent telemetry tag.",
+      "variableName": "_llmAgent",
+      "selectionType": "scalar",
+      "includeAllOption": true,
+      "defaultValue": {
+        "kind": "all"
+      },
+      "dataSource": {
+        "kind": "static",
+        "values": [
+          {
+            "value": true
+          },
+          {
+            "value": false
+          }
+        ]
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
     }
   ],
   "baseQueries": [
@@ -1207,7 +1233,7 @@
     {
       "id": "c7c2b254-517b-4a15-9e8e-a88b1ff330f9",
       "title": "Command Usage",
-      "description": "_dotnetupEvents applies the shared time, version, dev build, CI, and output redirected filters. _dotnetupCommands then accepts both stable dotnetup/command rows and legacy dotnetup/command/<sub> rows, falls back from command.name to the legacy Message suffix, and treats a command as successful only when exit.code is 0 and no error is attached.",
+      "description": "_dotnetupEvents applies the shared time, version, dev build, CI, output redirected, and LLM agent filters. _dotnetupCommands then accepts both stable dotnetup/command rows and legacy dotnetup/command/<sub> rows, falls back from command.name to the legacy Message suffix, and treats a command as successful only when exit.code is 0 and no error is attached.",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1222,7 +1248,7 @@
     {
       "id": "953713fa-1a29-4ffc-a242-f83a7f35da28",
       "title": "Platform & Environment",
-      "description": "_dotnetupAll includes all dotnetup/* events after the shared _dotnetupEvents filters are applied. CI is derived solely from ci.detected using null-safe tostring(); output.redirected is a separate filter.",
+      "description": "_dotnetupAll includes all dotnetup/* events after the shared _dotnetupEvents filters are applied. CI is derived solely from ci.detected using null-safe tostring(); output.redirected and llm.agent are separate filters.",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1424,14 +1450,15 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend os_platform = tostring(Properties[\"os.platform\"])\n| extend os_type = tostring(Properties[\"os.type\"])\n| extend process_arch = tostring(Properties[\"process.arch\"])\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| extend llm_agent = tostring(Properties[\"llm.agent\"])\n| extend is_llm_agent = isnotempty(llm_agent)\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend os_platform = tostring(Properties[\"os.platform\"])\n| extend os_type = tostring(Properties[\"os.type\"])\n| extend process_arch = tostring(Properties[\"process.arch\"])\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| where (isempty(['_llmAgent']) or is_llm_agent == tobool(['_llmAgent']))\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
         "_versionFilter",
         "_devBuild",
         "_ci",
-        "_outputRedirected"
+        "_outputRedirected",
+        "_llmAgent"
       ]
     },
     {
@@ -1462,7 +1489,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupEvents\n| where Message == \"dotnetup/root\"\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n| extend is_outside_command_failure = not(is_success) and isempty(command_name)",
+      "text": "_dotnetupEvents\n| where Message == \"dotnetup/root\"\n| extend device_id = tostring(Properties[\"device.id\"])\n| extend session_id = tostring(Properties[\"session.id\"])\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n| extend is_outside_command_failure = not(is_success) and isempty(command_name)",
       "usedVariables": [
         "_dotnetupEvents"
       ]
@@ -1804,7 +1831,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "let users = toscalar(_dotnetupRoot\n    | summarize dcount(tostring(Properties[\"device.id\"])));\nlet sessions = toscalar(_dotnetupRoot\n    | summarize dcount(tostring(Properties[\"session.id\"])));\nlet totalCommands = toscalar(_dotnetupCommands | count);\nprint\n    UniqueUsers = users,\n    UniqueSessions = sessions,\n    TotalCommands = totalCommands,\n    AvgSessionsPerUser = round(1.0 * sessions / users, 1),\n    AvgCommandsPerSession = round(1.0 * totalCommands / sessions, 1)",
+      "text": "let users = toscalar(_dotnetupRoot\n    | where isnotempty(device_id)\n    | summarize dcount(device_id));\nlet sessions = toscalar(_dotnetupRoot\n    | where isnotempty(session_id)\n    | summarize dcount(session_id));\nlet totalCommands = toscalar(_dotnetupCommands | count);\nprint\n    UniqueUsers = users,\n    UniqueSessions = sessions,\n    TotalCommands = totalCommands,\n    AvgSessionsPerUser = iif(users > 0, round(1.0 * sessions / users, 1), real(null)),\n    AvgCommandsPerSession = iif(sessions > 0, round(1.0 * totalCommands / sessions, 1), real(null))",
       "usedVariables": [
         "_dotnetupRoot",
         "_dotnetupCommands"
@@ -1816,7 +1843,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupRoot\n| extend session_id = tostring(Properties[\"session.id\"])\n| where isnotempty(version)\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
+      "text": "_dotnetupRoot\n| where isnotempty(session_id) and isnotempty(version)\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1827,7 +1854,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupRoot\n| extend session_id = tostring(Properties[\"session.id\"])\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d)",
+      "text": "_dotnetupRoot\n| where isnotempty(session_id)\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d)",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1838,7 +1865,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupRoot\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(device_id)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d)",
+      "text": "_dotnetupRoot\n| where isnotempty(device_id)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d)",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1849,7 +1876,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupRoot\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(device_id) and isnotempty(version)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
+      "text": "_dotnetupRoot\n| where isnotempty(device_id) and isnotempty(version)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
       "usedVariables": [
         "_dotnetupRoot"
       ]
