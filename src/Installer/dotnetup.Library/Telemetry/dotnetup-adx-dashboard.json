@@ -147,6 +147,11 @@
   ],
   "baseQueries": [
     {
+      "id": "c61cb354-1e4b-4e0e-812c-890e1fd01d13",
+      "queryId": "13ff8bc9-f73d-48d5-a9e3-00f399f1d630",
+      "variableName": "_dotnetupEvents"
+    },
+    {
       "id": "340d3c6f-9303-47f7-af67-02b42d2c1acd",
       "queryId": "aef03f17-b73d-4625-8879-31fc030a514c",
       "variableName": "_dotnetupCommands"
@@ -1202,7 +1207,7 @@
     {
       "id": "c7c2b254-517b-4a15-9e8e-a88b1ff330f9",
       "title": "Command Usage",
-      "description": "_dotnetupCommands uses telemetry after 2026-04-30, accepts both stable dotnetup/command rows and legacy dotnetup/command/<sub> rows, gets CI solely from ci.detected, falls back from command.name to the legacy Message suffix, and treats a command as successful only when exit.code is 0 and no error is attached.",
+      "description": "_dotnetupEvents applies the shared time, version, dev build, CI, and output redirected filters. _dotnetupCommands then accepts both stable dotnetup/command rows and legacy dotnetup/command/<sub> rows, falls back from command.name to the legacy Message suffix, and treats a command as successful only when exit.code is 0 and no error is attached.",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1217,7 +1222,7 @@
     {
       "id": "953713fa-1a29-4ffc-a242-f83a7f35da28",
       "title": "Platform & Environment",
-      "description": "_dotnetupAll includes all dotnetup/* events after 2026-04-30 and derives CI solely from ci.detected using null-safe tostring().",
+      "description": "_dotnetupAll includes all dotnetup/* events after the shared _dotnetupEvents filters are applied. CI is derived solely from ci.detected using null-safe tostring(); output.redirected is a separate filter.",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1232,7 +1237,7 @@
     {
       "id": "f1a2b3c4-d5e6-4f78-8901-23456789abcd",
       "title": "Process Health (Whole Invocation)",
-      "description": "_dotnetupRoot is one whole-process completion row per dotnetup invocation after 2026-04-30. It carries wall-clock duration for parser bootstrap, FirstRunNotice, command, and telemetry flush, plus error.* tags from failures that escaped CommandBase or non-zero parser exits tagged ParseError. Outside-command failures are root errors with no command.name rolled up.",
+      "description": "_dotnetupRoot is one whole-process completion row per dotnetup invocation after the shared _dotnetupEvents filters are applied. It carries wall-clock duration for parser bootstrap, FirstRunNotice, command, and telemetry flush, plus error.* tags from failures that escaped CommandBase or non-zero parser exits tagged ParseError. Outside-command failures are root errors with no command.name rolled up.",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1414,12 +1419,12 @@
       ]
     },
     {
-      "id": "aef03f17-b73d-4625-8879-31fc030a514c",
+      "id": "13ff8bc9-f73d-48d5-a9e3-00f399f1d630",
       "dataSource": {
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message == \"dotnetup/command\" or Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command_name_prop = tostring(Properties[\"command.name\"])\n| extend command = iif(isnotempty(command_name_prop), command_name_prop, substring(Message, strlen(\"dotnetup/command/\"), 256))\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend command_status = tostring(Properties[\"command.status\"])\n| extend is_success = isempty(error_type) and iif(isnotempty(exit_code), exit_code == \"0\", command_status == \"ok\")\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
@@ -1427,6 +1432,17 @@
         "_devBuild",
         "_ci",
         "_outputRedirected"
+      ]
+    },
+    {
+      "id": "aef03f17-b73d-4625-8879-31fc030a514c",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
+      "text": "_dotnetupEvents\n| where Message == \"dotnetup/command\" or Message startswith \"dotnetup/command/\"\n| extend command_name_prop = tostring(Properties[\"command.name\"])\n| extend command = iif(isnotempty(command_name_prop), command_name_prop, substring(Message, strlen(\"dotnetup/command/\"), 256))\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend command_status = tostring(Properties[\"command.status\"])\n| extend is_success = isempty(error_type) and iif(isnotempty(exit_code), exit_code == \"0\", command_status == \"ok\")\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])",
+      "usedVariables": [
+        "_dotnetupEvents"
       ]
     },
     {
@@ -1435,14 +1451,9 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "_dotnetupEvents",
       "usedVariables": [
-        "_startTime",
-        "_endTime",
-        "_versionFilter",
-        "_devBuild",
-        "_ci",
-        "_outputRedirected"
+        "_dotnetupEvents"
       ]
     },
     {
@@ -1451,14 +1462,9 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message == \"dotnetup/root\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n| extend is_outside_command_failure = not(is_success) and isempty(command_name)\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "_dotnetupEvents\n| where Message == \"dotnetup/root\"\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n| extend is_outside_command_failure = not(is_success) and isempty(command_name)",
       "usedVariables": [
-        "_startTime",
-        "_endTime",
-        "_versionFilter",
-        "_devBuild",
-        "_ci",
-        "_outputRedirected"
+        "_dotnetupEvents"
       ]
     },
     {
