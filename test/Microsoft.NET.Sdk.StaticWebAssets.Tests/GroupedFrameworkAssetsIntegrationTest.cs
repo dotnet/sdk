@@ -49,9 +49,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 Path.Combine(ProjectDirectory.TestRoot, "GroupedFrameworkLibrary", "obj", "Debug", DefaultTfm));
             var appManifest = LoadBuildManifest(build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString());
 
+            // The materialized asset lives under fx\<originalSourceId> (the originating framework
+            // package), but is owned by the consuming library (SourceId, BasePath are remapped).
             var libraryMaterializedJs = libraryManifest.Assets
                 .Where(a => a.RelativePath.Contains(".js")
-                    && a.Identity.Contains(Path.Combine("fx", "GroupedFrameworkLibrary")))
+                    && a.Identity.Contains(Path.Combine("fx", "GroupedFrameworkPackage")))
                 .ToList();
 
             if (includeGroupedFrameworkAssets)
