@@ -11,6 +11,8 @@
   "symbols/EnablePack/displayName": "Povolit balíček",
   "symbols/skipRestore/description": "Je-li zadáno, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/skipRestore/displayName": "Přeskočit obnovení",
+  "symbols/langVersion/description": "Sets the LangVersion property in the created project file",
+  "symbols/langVersion/displayName": "Language version",
   "postActions/restoreNugetPackages/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "Spustit dotnet restore",
   "postActions/openInEditor/description": "Otevře Class1.cs v editoru."
