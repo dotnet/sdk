@@ -63,11 +63,10 @@ namespace Microsoft.NET.Build.Tests
             string[] msbuildArgs = null,
             GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item,
             [CallerMemberName] string callingMethod = "",
-            Action<XDocument> projectChanges = null)
+            Action<XDocument> projectChanges = null,
+            string targetFramework = "netstandard2.0")
         {
             msbuildArgs = msbuildArgs ?? Array.Empty<string>();
-
-            string targetFramework = "netstandard2.0";
 
             var testAsset = testAssetsManager
                 .CopyTestAsset("AppWithLibraryFS", callingMethod)
@@ -225,6 +224,61 @@ namespace Microsoft.NET.Build.Tests
             var definedConstants = getValuesCommand.GetValues();
 
             definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
+        }
+
+        [Fact]
+        public void It_sets_SupportsHotReload_capability_for_net6_or_newer()
+        {
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                },
+                targetFramework: "net6.0");
+
+            projectCapabilities.Should().Contain("SupportsHotReload");
+        }
+
+        [Fact]
+        public void It_does_not_set_SupportsHotReload_capability_for_pre_net6()
+        {
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net5.0";
+                },
+                targetFramework: "net5.0");
+
+            projectCapabilities.Should().NotContain("SupportsHotReload");
+        }
+
+        [Fact]
+        public void It_respects_SupportsHotReload_false_override()
+        {
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                    project.Root.Descendants(ns + "PropertyGroup").First().Add(new XElement(ns + "SupportsHotReload", "false"));
+                },
+                targetFramework: "net6.0");
+
+            projectCapabilities.Should().NotContain("SupportsHotReload");
         }
     }
 }
