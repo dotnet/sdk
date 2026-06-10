@@ -117,6 +117,32 @@
       "showOnPages": {
         "kind": "all"
       }
+    },
+    {
+      "kind": "bool",
+      "id": "8ef6df1f-2d8b-4d91-a2f5-2a0f4be7b4dd",
+      "displayName": "Output Redirected",
+      "description": "Filter runs by whether dotnetup reported redirected output via the output.redirected telemetry tag.",
+      "variableName": "_outputRedirected",
+      "selectionType": "scalar",
+      "includeAllOption": true,
+      "defaultValue": {
+        "kind": "all"
+      },
+      "dataSource": {
+        "kind": "static",
+        "values": [
+          {
+            "value": true
+          },
+          {
+            "value": false
+          }
+        ]
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
     }
   ],
   "baseQueries": [
@@ -1393,13 +1419,14 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message == \"dotnetup/command\" or Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command_name_prop = tostring(Properties[\"command.name\"])\n| extend command = iif(isnotempty(command_name_prop), command_name_prop, substring(Message, strlen(\"dotnetup/command/\"), 256))\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend command_status = tostring(Properties[\"command.status\"])\n| extend is_success = isempty(error_type) and iif(isnotempty(exit_code), exit_code == \"0\", command_status == \"ok\")\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message == \"dotnetup/command\" or Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command_name_prop = tostring(Properties[\"command.name\"])\n| extend command = iif(isnotempty(command_name_prop), command_name_prop, substring(Message, strlen(\"dotnetup/command/\"), 256))\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend command_status = tostring(Properties[\"command.status\"])\n| extend is_success = isempty(error_type) and iif(isnotempty(exit_code), exit_code == \"0\", command_status == \"ok\")\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
         "_versionFilter",
         "_devBuild",
-        "_ci"
+        "_ci",
+        "_outputRedirected"
       ]
     },
     {
@@ -1408,13 +1435,14 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
         "_versionFilter",
         "_devBuild",
-        "_ci"
+        "_ci",
+        "_outputRedirected"
       ]
     },
     {
@@ -1423,13 +1451,14 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message == \"dotnetup/root\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n| extend is_outside_command_failure = not(is_success) and isempty(command_name)\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message == \"dotnetup/root\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n| extend is_outside_command_failure = not(is_success) and isempty(command_name)\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
         "_versionFilter",
         "_devBuild",
-        "_ci"
+        "_ci",
+        "_outputRedirected"
       ]
     },
     {
