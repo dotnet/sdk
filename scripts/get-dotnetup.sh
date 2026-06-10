@@ -284,7 +284,7 @@ check_icu_present() {
                 return 0
             fi
             # Fallback: filesystem search
-            for f in /usr/lib/libicuuc.so.* /usr/lib64/libicuuc.so.* /usr/local/lib/libicuuc.so.*; do
+            for f in /usr/lib/libicuuc.so.* /usr/lib64/libicuuc.so.* /usr/local/lib/libicuuc.so.* /usr/local/lib64/libicuuc.so.* /lib/libicuuc.so.* /lib64/libicuuc.so.*; do
                 [ -e "$f" ] && return 0
             done
             return 1

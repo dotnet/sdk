@@ -97,17 +97,29 @@ function Get-RuntimeId {
     return "$os-$archStr"
 }
 
+function Get-OsReleaseValue {
+    # Safely reads a key (e.g. ID, VERSION_ID, ID_LIKE) from /etc/os-release.
+    # Returns an empty string when the file or key is absent. Written defensively so
+    # that StrictMode does not throw on a missing key (notably ID_LIKE, which is optional).
+    param([string]$Key)
+
+    if (-not (Test-Path /etc/os-release)) { return "" }
+
+    $match = Select-String -Path /etc/os-release -Pattern "^$Key=" | Select-Object -First 1
+    if (-not $match) { return "" }
+
+    return $match.Line -replace "^$Key=", '' -replace '"', ''
+}
+
 function Get-IcuInstallInfo {
     # Returns a hashtable with PackageName and InstallCommand for the current Linux distro.
     # Package names and install commands are derived from:
     # https://github.com/dotnet/core/blob/main/release-notes/8.0/os-packages.json
     $result = @{ PackageName = ""; InstallCommand = "" }
 
-    if (-not (Test-Path /etc/os-release)) { return $result }
-
-    $distroId      = (Select-String -Path /etc/os-release -Pattern '^ID='       | Select-Object -First 1).Line -replace '^ID=',''      -replace '"',''
-    $distroVersion = (Select-String -Path /etc/os-release -Pattern '^VERSION_ID=' | Select-Object -First 1).Line -replace '^VERSION_ID=','' -replace '"',''
-    $distroIdLike  = (Select-String -Path /etc/os-release -Pattern '^ID_LIKE='  | Select-Object -First 1).Line -replace '^ID_LIKE=','' -replace '"',''
+    $distroId      = Get-OsReleaseValue 'ID'
+    $distroVersion = Get-OsReleaseValue 'VERSION_ID'
+    $distroIdLike  = Get-OsReleaseValue 'ID_LIKE'
 
     switch -Wildcard ($distroId) {
         "ubuntu" {
@@ -173,10 +185,14 @@ function Test-IcuPresent {
         return $true
     }
 
-    if (-not (Test-Path /etc/os-release)) { return $false }
-
-    $distroId     = (Select-String -Path /etc/os-release -Pattern '^ID='       | Select-Object -First 1).Line -replace '^ID=',''     -replace '"',''
-    $distroIdLike = (Select-String -Path /etc/os-release -Pattern '^ID_LIKE='  | Select-Object -First 1).Line -replace '^ID_LIKE=','' -replace '"',''
+    if (-not (Test-Path /etc/os-release)) {
+        # No os-release: fall through to ldconfig / filesystem probing below.
+        $distroId     = ""
+        $distroIdLike = ""
+    } else {
+        $distroId     = Get-OsReleaseValue 'ID'
+        $distroIdLike = Get-OsReleaseValue 'ID_LIKE'
+    }
 
     # Use the native package-manager query for known distros.
     # Package names derived from:
