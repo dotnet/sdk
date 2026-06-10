@@ -134,11 +134,11 @@
             "name": "source-build-externals",
             "defaultRemote": "https://github.com/dotnet/source-build-externals",
             "exclude": [
-                "src/azure-activedirectory-identitymodel-extensions-for-dotnet/docs/*.docx",
                 "src/application-insights/**/*.exe",
                 "src/application-insights/**/*.dll",
                 "src/application-insights/**/*.zip",
                 "src/application-insights/**/NuGet.config",
+                "src/azure-activedirectory-identitymodel-extensions-for-dotnet/docs/*.docx",
                 "src/humanizer/samples/**/*.js",
                 "src/newtonsoft-json/**/NuGet.Config",
                 "src/spectre-console/docs/**",
