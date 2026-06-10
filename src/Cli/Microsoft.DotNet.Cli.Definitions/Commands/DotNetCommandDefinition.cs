@@ -57,6 +57,7 @@ internal sealed class DotNetCommandDefinition : RootCommand
     {
         Arity = ArgumentArity.Zero
     };
+
     public readonly Option<bool> CliSchemaOption = new("--cli-schema")
     {
         Description = CommandDefinitionStrings.SDKSchemaCommandDefinition,

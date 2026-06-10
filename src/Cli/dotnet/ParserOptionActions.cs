@@ -199,11 +199,15 @@ internal class PrintCliSchemaAction(Option<bool> option) : InvocableOptionAction
             return 0;
         }
 
+        CliSchema.PrintCliSchema(
+            parseResult,
+            parseResult.InvocationConfiguration.Output,
 #if CLI_AOT
-        CliSchema.PrintCliSchema(parseResult, parseResult.InvocationConfiguration.Output, telemetryClient: null);
+            telemetryClient: NativeEntryPoint.TelemetryClient
 #else
-        CliSchema.PrintCliSchema(parseResult, parseResult.InvocationConfiguration.Output, Program.TelemetryInstance);
+            telemetryClient: Program.TelemetryInstance
 #endif
+        );
 
         return 0;
     }
