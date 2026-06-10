@@ -1,0 +1,10 @@
+<!--
+  PROTOTYPE: Microsoft.Testing.Platform (MTP) platform wiring.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_UsesMicrosoftTestingPlatform>true</_UsesMicrosoftTestingPlatform>
+  </PropertyGroup>
+
+</Project>

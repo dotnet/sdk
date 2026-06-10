@@ -308,6 +308,36 @@
   <Folder Name="/src/WebSdk/Worker/Tasks/">
     <Project Path="src/WebSdk/Worker/Tasks/Microsoft.NET.Sdk.Worker.Tasks.csproj" />
   </Folder>
+  <Folder Name="/src/TestingSdk/" />
+  <Folder Name="/src/TestingSdk/Sdk/">
+    <File Path="src/TestingSdk/Sdk/Sdk.props" />
+    <File Path="src/TestingSdk/Sdk/Sdk.targets" />
+  </Folder>
+  <Folder Name="/src/TestingSdk/Targets/">
+    <File Path="src/TestingSdk/Targets/Microsoft.NET.Sdk.Testing.props" />
+    <File Path="src/TestingSdk/Targets/Microsoft.NET.Sdk.Testing.targets" />
+  </Folder>
+  <Folder Name="/src/TestingSdk/Targets/Frameworks/">
+    <File Path="src/TestingSdk/Targets/Frameworks/Expecto.props" />
+    <File Path="src/TestingSdk/Targets/Frameworks/Expecto.targets" />
+    <File Path="src/TestingSdk/Targets/Frameworks/MSTest.props" />
+    <File Path="src/TestingSdk/Targets/Frameworks/MSTest.targets" />
+    <File Path="src/TestingSdk/Targets/Frameworks/NUnit.props" />
+    <File Path="src/TestingSdk/Targets/Frameworks/NUnit.targets" />
+    <File Path="src/TestingSdk/Targets/Frameworks/TUnit.props" />
+    <File Path="src/TestingSdk/Targets/Frameworks/TUnit.targets" />
+    <File Path="src/TestingSdk/Targets/Frameworks/XUnit.props" />
+    <File Path="src/TestingSdk/Targets/Frameworks/XUnit.targets" />
+  </Folder>
+  <Folder Name="/src/TestingSdk/Targets/Platforms/">
+    <File Path="src/TestingSdk/Targets/Platforms/MicrosoftTestingPlatform.props" />
+    <File Path="src/TestingSdk/Targets/Platforms/MicrosoftTestingPlatform.targets" />
+    <File Path="src/TestingSdk/Targets/Platforms/VSTest.props" />
+    <File Path="src/TestingSdk/Targets/Platforms/VSTest.targets" />
+  </Folder>
+  <Folder Name="/src/TestingSdk/Tasks/">
+    <Project Path="src/TestingSdk/Tasks/Microsoft.NET.Sdk.Testing.Tasks.csproj" />
+  </Folder>
   <Folder Name="/src/Workloads/" />
   <Folder Name="/src/Workloads/Manifests/">
     <Project Path="src/Workloads/Manifests/manifest-packages.csproj" />

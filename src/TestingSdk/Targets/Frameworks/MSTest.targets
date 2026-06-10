@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="_ValidateMSTestTestingSdk" BeforeTargets="CollectPackageReferences;BeforeBuild">
+    <Error Condition="'$(MSTestVersion)' == ''"
+           Text="The 'MSTestVersion' MSBuild property is required when TestFramework=MSTest." />
+  </Target>
+</Project>

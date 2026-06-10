@@ -1,0 +1,8 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="_ValidateXUnitTestingSdk" BeforeTargets="CollectPackageReferences;BeforeBuild">
+    <Error Condition="'$(XUnitVersion)' == ''"
+           Text="The 'XUnitVersion' MSBuild property is required when TestFramework=XUnit. (Mandatory in v1 of Microsoft.NET.Sdk.Testing to prevent silent test-framework upgrades when the .NET SDK is updated.)" />
+    <Error Condition="'$(TestPlatform)' == 'VSTest' and '$(XUnitRunnerVisualStudioVersion)' == ''"
+           Text="The 'XUnitRunnerVisualStudioVersion' MSBuild property is required when TestFramework=XUnit and TestPlatform=VSTest." />
+  </Target>
+</Project>

@@ -1,0 +1,55 @@
+<Project>
+
+  <!--
+    PROTOTYPE packaging project for Microsoft.NET.Sdk.Testing.
+
+    Mirrors src/WebSdk/Worker/Tasks/Microsoft.NET.Sdk.Worker.Tasks.csproj:
+    no compiled task code, only used to (a) lay out Sdk/ + Targets/ under
+    artifacts/bin/<Configuration>/Sdks/Microsoft.NET.Sdk.Testing/ via
+    CopyPackageLayout.targets so GenerateLayout.targets can pick them up,
+    and (b) produce a NuGet package for out-of-band consumption.
+  -->
+
+  <PropertyGroup>
+    <TestingSdkRoot Condition="'$(TestingSdkRoot)' == ''">$(RepoRoot)\src\TestingSdk\</TestingSdkRoot>
+    <PackageId>Microsoft.NET.Sdk.Testing</PackageId>
+    <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <IsPackable>true</IsPackable>
+    <PackageLayoutOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\$(PackageId)\</PackageLayoutOutputPath>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>MSBuild SDK for .NET test projects (PROTOTYPE for https://github.com/dotnet/sdk/issues/49294).</Description>
+    <ProjectUrl>https://github.com/dotnet/sdk</ProjectUrl>
+    <PackageTags>Sdk;Testing</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalContent Include="$(TestingSdkRoot)\Targets\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>targets</PackagePath>
+    </AdditionalContent>
+
+    <AdditionalContent Include="$(TestingSdkRoot)\Sdk\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>Sdk</PackagePath>
+    </AdditionalContent>
+  </ItemGroup>
+
+  <Import Project="$(RepoRoot)\src\WebSdk\CopyPackageLayout.targets" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+</Project>

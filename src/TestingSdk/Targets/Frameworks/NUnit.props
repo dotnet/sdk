@@ -1,0 +1,21 @@
+<!--
+  PROTOTYPE: NUnit framework wiring for Microsoft.NET.Sdk.Testing.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TestingPlatformDotnetTestSupport Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform' and '$(TestingPlatformDotnetTestSupport)' == ''">true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(NUnitVersion)' != ''">
+    <PackageReference Include="NUnit" Version="$(NUnitVersion)" />
+    <!-- MTP path: pull in NUnit3TestAdapter built atop MTP via TestingPlatformAdapter, plus the MTP entry point. -->
+    <PackageReference Include="NUnit.Analyzers" Version="$(NUnitAnalyzersVersion)" Condition="'$(NUnitAnalyzersVersion)' != ''" />
+    <PackageReference Include="NUnit3TestAdapter" Version="$(NUnit3TestAdapterVersion)" Condition="'$(NUnit3TestAdapterVersion)' != ''" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(NUnitVersion)' != ''">
+    <PackageReference Include="NUnit" Version="$(NUnitVersion)" />
+  </ItemGroup>
+
+</Project>

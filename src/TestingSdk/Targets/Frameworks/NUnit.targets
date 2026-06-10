@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="_ValidateNUnitTestingSdk" BeforeTargets="CollectPackageReferences;BeforeBuild">
+    <Error Condition="'$(NUnitVersion)' == ''"
+           Text="The 'NUnitVersion' MSBuild property is required when TestFramework=NUnit." />
+  </Target>
+</Project>

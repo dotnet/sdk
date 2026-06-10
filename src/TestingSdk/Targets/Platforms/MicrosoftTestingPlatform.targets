@@ -1,0 +1,56 @@
+<!--
+  PROTOTYPE: Microsoft.Testing.Platform (MTP) extension wiring.
+
+  Mirrors the surface MSTest.Sdk exposes in
+  src/Package/MSTest.Sdk/Sdk/Runner/Common.targets, applied uniformly across
+  test frameworks (the extensions hook MTP itself, not the framework).
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TestingExtensionsProfile Condition="'$(TestingExtensionsProfile)' == ''">Default</TestingExtensionsProfile>
+
+    <!-- Common version that per-extension <Name>Version properties fall back to. -->
+    <MicrosoftTestingExtensionsCommonVersion Condition="'$(MicrosoftTestingExtensionsCommonVersion)' == ''">$(MicrosoftTestingPlatformVersion)</MicrosoftTestingExtensionsCommonVersion>
+  </PropertyGroup>
+
+  <Target Name="_ValidateTestingExtensionsProfile" BeforeTargets="CollectPackageReferences;BeforeBuild">
+    <Error Condition="'$(TestingExtensionsProfile)' != 'Default' and '$(TestingExtensionsProfile)' != 'AllMicrosoft' and '$(TestingExtensionsProfile)' != 'None'"
+           Text="Invalid value for property TestingExtensionsProfile. Valid values are 'Default', 'AllMicrosoft' and 'None'." />
+  </Target>
+
+  <!--
+    Default profile turns on a small curated set (TRX + code coverage).
+    AllMicrosoft profile turns on every Microsoft-shipped MTP extension.
+    None requires explicit opt-in per extension.
+    Users can always override any individual EnableMicrosoftTestingExtensions<Name>.
+  -->
+  <PropertyGroup>
+    <!-- TRX report -->
+    <EnableMicrosoftTestingExtensionsTrxReport Condition="'$(EnableMicrosoftTestingExtensionsTrxReport)' == '' and ('$(TestingExtensionsProfile)' == 'Default' or '$(TestingExtensionsProfile)' == 'AllMicrosoft')">true</EnableMicrosoftTestingExtensionsTrxReport>
+
+    <!-- Code coverage -->
+    <EnableMicrosoftTestingExtensionsCodeCoverage Condition="'$(EnableMicrosoftTestingExtensionsCodeCoverage)' == '' and ('$(TestingExtensionsProfile)' == 'Default' or '$(TestingExtensionsProfile)' == 'AllMicrosoft')">true</EnableMicrosoftTestingExtensionsCodeCoverage>
+
+    <!-- The remaining extensions are only auto-enabled by AllMicrosoft. -->
+    <EnableMicrosoftTestingExtensionsCrashDump Condition="'$(EnableMicrosoftTestingExtensionsCrashDump)' == '' and '$(TestingExtensionsProfile)' == 'AllMicrosoft'">true</EnableMicrosoftTestingExtensionsCrashDump>
+    <EnableMicrosoftTestingExtensionsHangDump  Condition="'$(EnableMicrosoftTestingExtensionsHangDump)'  == '' and '$(TestingExtensionsProfile)' == 'AllMicrosoft'">true</EnableMicrosoftTestingExtensionsHangDump>
+    <EnableMicrosoftTestingExtensionsHotReload Condition="'$(EnableMicrosoftTestingExtensionsHotReload)' == '' and '$(TestingExtensionsProfile)' == 'AllMicrosoft'">true</EnableMicrosoftTestingExtensionsHotReload>
+    <EnableMicrosoftTestingExtensionsRetry     Condition="'$(EnableMicrosoftTestingExtensionsRetry)'     == '' and '$(TestingExtensionsProfile)' == 'AllMicrosoft'">true</EnableMicrosoftTestingExtensionsRetry>
+  </PropertyGroup>
+
+  <!--
+    Per-extension version defaulting. Each Enable<Name> toggle is consumed by the
+    extension's own NuGet package or by MTP itself; we only ensure each version
+    property has a sensible default.
+  -->
+  <PropertyGroup>
+    <MicrosoftTestingExtensionsTrxReportVersion        Condition="'$(MicrosoftTestingExtensionsTrxReportVersion)'        == ''">$(MicrosoftTestingExtensionsCommonVersion)</MicrosoftTestingExtensionsTrxReportVersion>
+    <MicrosoftTestingExtensionsCodeCoverageVersion     Condition="'$(MicrosoftTestingExtensionsCodeCoverageVersion)'     == ''">$(MicrosoftTestingExtensionsCommonVersion)</MicrosoftTestingExtensionsCodeCoverageVersion>
+    <MicrosoftTestingExtensionsCrashDumpVersion        Condition="'$(MicrosoftTestingExtensionsCrashDumpVersion)'        == ''">$(MicrosoftTestingExtensionsCommonVersion)</MicrosoftTestingExtensionsCrashDumpVersion>
+    <MicrosoftTestingExtensionsHangDumpVersion         Condition="'$(MicrosoftTestingExtensionsHangDumpVersion)'         == ''">$(MicrosoftTestingExtensionsCommonVersion)</MicrosoftTestingExtensionsHangDumpVersion>
+    <MicrosoftTestingExtensionsHotReloadVersion        Condition="'$(MicrosoftTestingExtensionsHotReloadVersion)'        == ''">$(MicrosoftTestingExtensionsCommonVersion)</MicrosoftTestingExtensionsHotReloadVersion>
+    <MicrosoftTestingExtensionsRetryVersion            Condition="'$(MicrosoftTestingExtensionsRetryVersion)'            == ''">$(MicrosoftTestingExtensionsCommonVersion)</MicrosoftTestingExtensionsRetryVersion>
+  </PropertyGroup>
+
+</Project>

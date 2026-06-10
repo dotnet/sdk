@@ -1,0 +1,20 @@
+<!--
+  PROTOTYPE: Expecto (F#) framework wiring for Microsoft.NET.Sdk.Testing.
+  Expecto on MTP is provided via Expecto.TestingPlatformAdapter.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TestingPlatformDotnetTestSupport Condition="'$(TestingPlatformDotnetTestSupport)' == ''">true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(ExpectoVersion)' != ''">
+    <PackageReference Include="Expecto" Version="$(ExpectoVersion)" />
+    <PackageReference Include="Expecto.TestingPlatformAdapter" Version="$(ExpectoVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(ExpectoVersion)' != ''">
+    <PackageReference Include="Expecto" Version="$(ExpectoVersion)" />
+  </ItemGroup>
+
+</Project>

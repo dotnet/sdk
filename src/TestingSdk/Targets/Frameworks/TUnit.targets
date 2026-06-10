@@ -1,0 +1,8 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="_ValidateTUnitTestingSdk" BeforeTargets="CollectPackageReferences;BeforeBuild">
+    <Error Condition="'$(TUnitVersion)' == ''"
+           Text="The 'TUnitVersion' MSBuild property is required when TestFramework=TUnit." />
+    <Error Condition="'$(TestPlatform)' != 'MicrosoftTestingPlatform'"
+           Text="TUnit only supports TestPlatform=MicrosoftTestingPlatform (it does not have a VSTest adapter)." />
+  </Target>
+</Project>

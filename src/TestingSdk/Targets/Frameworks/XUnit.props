@@ -1,0 +1,22 @@
+<!--
+  PROTOTYPE: XUnit (always v3) framework wiring for Microsoft.NET.Sdk.Testing.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <UseMicrosoftTestingPlatformRunner Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform' and '$(UseMicrosoftTestingPlatformRunner)' == ''">true</UseMicrosoftTestingPlatformRunner>
+    <TestingPlatformDotnetTestSupport Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform' and '$(TestingPlatformDotnetTestSupport)' == ''">true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(XUnitVersion)' != ''">
+    <PackageReference Include="xunit.v3" Version="$(XUnitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)"
+                      Condition="'$(TestPlatform)' == 'VSTest' and '$(XUnitRunnerVisualStudioVersion)' != ''" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(XUnitVersion)' != ''">
+    <PackageReference Include="xunit.v3.extensibility.core" Version="$(XUnitVersion)" />
+    <PackageReference Include="xunit.v3.assert"             Version="$(XUnitVersion)" />
+  </ItemGroup>
+
+</Project>

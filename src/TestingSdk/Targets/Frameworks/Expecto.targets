@@ -1,0 +1,8 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="_ValidateExpectoTestingSdk" BeforeTargets="CollectPackageReferences;BeforeBuild">
+    <Error Condition="'$(ExpectoVersion)' == ''"
+           Text="The 'ExpectoVersion' MSBuild property is required when TestFramework=Expecto." />
+    <Error Condition="'$(TestPlatform)' != 'MicrosoftTestingPlatform'"
+           Text="Expecto in this SDK only supports TestPlatform=MicrosoftTestingPlatform." />
+  </Target>
+</Project>
