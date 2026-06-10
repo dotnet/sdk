@@ -2245,6 +2245,11 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <target state="translated">Les options --prerelease et --version ne sont pas prises en charge dans la même commande.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PressCtrlCAgainToForceExit">
+        <source>Press Ctrl+C again to force exit.</source>
+        <target state="new">Press Ctrl+C again to force exit.</target>
+        <note>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</note>
+      </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
         <source>Only print the list of links to download without downloading.</source>
         <target state="translated">Imprimer uniquement la liste des liens à télécharger sans télécharger.</target>

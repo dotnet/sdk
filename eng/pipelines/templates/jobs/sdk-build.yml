@@ -218,7 +218,15 @@ jobs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)
         # This is the job name, but because of "legacy reasons", both Agent.JobName and System.JobName are not the actual job name.
         # See: https://developercommunity.visualstudio.com/t/systemjobname-seems-to-be-incorrectly-assigned-and/1209736#TPIN-N1211828
-        ArtifactName: $(System.PhaseName)
+        ArtifactName: $(System.PhaseName)_Logs
         publishLocation: Container
       continueOnError: true
       condition: always()
+
+    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+      displayName: 🟣 Publish Built Assets
+      inputs:
+        targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
+        artifactName: $(System.PhaseName)_Assets
+      continueOnError: true
+      condition: not(canceled())

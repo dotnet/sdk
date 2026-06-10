@@ -12,33 +12,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal readonly struct BrowserConnection : IDisposable
+/// <summary>
+/// Represents a connection to a browser that facilitates Hot Reload operations.
+/// </summary>
+internal readonly struct BrowserConnection(WebSocket clientSocket, string? sharedSecret, int id, ILogger serverLogger, ILogger agentLogger) : IDisposable
 {
-    public const string ServerLogComponentName = $"{nameof(BrowserConnection)}:Server";
-    public const string AgentLogComponentName = $"{nameof(BrowserConnection)}:Agent";
-
-    private static int s_lastId;
-
-    public WebSocket ClientSocket { get; }
-    public string? SharedSecret { get; }
-    public int Id { get; }
-    public ILogger ServerLogger { get; }
-    public ILogger AgentLogger { get; }
-
     public readonly TaskCompletionSource<None> Disconnected = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-    public BrowserConnection(WebSocket clientSocket, string? sharedSecret, ILoggerFactory loggerFactory)
-    {
-        ClientSocket = clientSocket;
-        SharedSecret = sharedSecret;
-        Id = Interlocked.Increment(ref s_lastId);
-
-        var displayName = $"Browser #{Id}";
-        ServerLogger = loggerFactory.CreateLogger(ServerLogComponentName, displayName);
-        AgentLogger = loggerFactory.CreateLogger(AgentLogComponentName, displayName);
-
-        ServerLogger.Log(LogEvents.ConnectedToRefreshServer);
-    }
 
     public void Dispose()
     {
@@ -47,6 +26,12 @@ internal readonly struct BrowserConnection : IDisposable
         Disconnected.TrySetResult(default);
         ServerLogger.LogDebug("Disconnected.");
     }
+
+    public WebSocket ClientSocket => clientSocket;
+    public string? SharedSecret => sharedSecret;
+    public int Id => id;
+    public ILogger ServerLogger => serverLogger;
+    public ILogger AgentLogger => agentLogger;
 
     internal async ValueTask<bool> TrySendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
     {
