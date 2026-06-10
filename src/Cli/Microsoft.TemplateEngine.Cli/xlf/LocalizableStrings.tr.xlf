@@ -470,12 +470,12 @@ Tüm diğer adları göstermek için 'dotnet {1} --show-aliases' komutunu bağı
         <target state="translated">Paket sürümü</target>
         <note />
       </trans-unit>
-      <trans-unit id="DetailsCommand_UnableToLoadResorce">
+      <trans-unit id="DetailsCommand_UnableToLoadResource">
         <source>Could not parse NuGet source '{0}', so it was discarded</source>
         <target state="translated">'{0}' NuGet kaynağı ayrıştırılamadı, bu nedenle atıldı</target>
         <note />
       </trans-unit>
-      <trans-unit id="DetailsCommand_UnableToLoadResorces">
+      <trans-unit id="DetailsCommand_UnableToLoadResources">
         <source>Failed to load NuGet sources configured for the folder {0}</source>
         <target state="translated">{0} klasörü için yapılandırılan NuGet kaynakları yüklenemedi.</target>
         <note />
@@ -825,6 +825,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Bu eylemi çalıştırmak istiyor musunuz [{0}(evet)|{1}(hayır)]?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
+        <source>Post action argument '{0}' is not a valid boolean value.</source>
+        <target state="translated">'{0}' eylem sonrası bağımsız değişkeni, geçerli bir boole değeri değil.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
         <source>Post action argument '{0}' is mandatory, but not configured.</source>
         <target state="translated">'{0}' eylem sonrası bağımsız değişkeni zorunlu, ancak yapılandırılmamış.</target>
@@ -848,6 +853,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="PostAction_ModifyJson_Succeeded">
         <source>Successfully modified {0}.</source>
         <target state="translated">{0} başarıyla değiştirildi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile">
+        <source>Attempting to find json file '{0}' in '{1}'</source>
+        <target state="translated">'{1}' içinde '{0}' JSON dosyası bulunmaya çalışılıyor</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">

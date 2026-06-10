@@ -24,6 +24,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Elevate
             {
                 try
                 {
+                    // Capture the unelevated client's temp directory (if supplied) so path validators
+                    // can accept IPC-supplied paths that originate from it. Optional and ignored when null
+                    // or unparseable; in either case validators fall back to the server's own temp.
                     string clientTemp = _parseResult.GetValue(WorkloadElevateCommandParser.ClientTempOption);
                     if (!string.IsNullOrWhiteSpace(clientTemp))
                     {

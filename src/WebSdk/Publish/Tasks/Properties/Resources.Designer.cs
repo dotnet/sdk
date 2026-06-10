@@ -445,6 +445,42 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Deployment status is &apos;{0}&apos;..
+        /// </summary>
+        public static string DeploymentStatus {
+            get {
+                return ResourceManager.GetString("DeploymentStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deployment status URL &apos;{0}&apos; is missing or invalid.
+        /// </summary>
+        public static string DeploymentStatus_InvalidPollingUrl {
+            get {
+                return ResourceManager.GetString("DeploymentStatus_InvalidPollingUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Polling for deployment status....
+        /// </summary>
+        public static string DeploymentStatus_Polling {
+            get {
+                return ResourceManager.GetString("DeploymentStatus_Polling", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deployment status is &apos;{0}&apos;: {1}.
+        /// </summary>
+        public static string DeploymentStatusWithText {
+            get {
+                return ResourceManager.GetString("DeploymentStatusWithText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Generating Entity Framework SQL Scripts....
         /// </summary>
         public static string EFSCRIPT_Generating {
@@ -670,6 +706,87 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Properties {
         public static string MsDeployReadMe {
             get {
                 return ResourceManager.GetString("MsDeployReadMe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OneDeploy attempt to publish file through &apos;{0}&apos; failed with HTTP status code &apos;{1}&apos;..
+        /// </summary>
+        public static string ONEDEPLOY_FailedDeployRequest {
+            get {
+                return ResourceManager.GetString("ONEDEPLOY_FailedDeployRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OneDeploy attempt to publish file through &apos;{0}&apos; failed with HTTP status code &apos;{1}&apos;: {2}..
+        /// </summary>
+        public static string ONEDEPLOY_FailedDeployRequest_With_ResponseText {
+            get {
+                return ResourceManager.GetString("ONEDEPLOY_FailedDeployRequest_With_ResponseText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve publish credentials..
+        /// </summary>
+        public static string ONEDEPLOY_FailedToRetrieveCredentials {
+            get {
+                return ResourceManager.GetString("ONEDEPLOY_FailedToRetrieveCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OneDeploy attempt to publish file &apos;{0}&apos; through &apos;{1}&apos; failed with status code &apos;{2}&apos;. See the logs at &apos;{3}&apos;..
+        /// </summary>
+        public static string ONEDEPLOY_FailedWithLogs {
+            get {
+                return ResourceManager.GetString("ONEDEPLOY_FailedWithLogs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File to publish &apos;{0}&apos; was not found or is not accessible..
+        /// </summary>
+        public static string ONEDEPLOY_FileToPublish_NotFound {
+            get {
+                return ResourceManager.GetString("ONEDEPLOY_FileToPublish_NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PublishUrl &apos;{0}&apos; is missing or has an invalid value..
+        /// </summary>
+        public static string ONEDEPLOY_InvalidPublishUrl {
+            get {
+                return ResourceManager.GetString("ONEDEPLOY_InvalidPublishUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Publishing &apos;{0}&apos; to &apos;{1}&apos;....
+        /// </summary>
+        public static string ONEDEPLOY_PublishingOneDeploy {
+            get {
+                return ResourceManager.GetString("ONEDEPLOY_PublishingOneDeploy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OneDeploy deployment succeeded..
+        /// </summary>
+        public static string ONEDEPLOY_Success {
+            get {
+                return ResourceManager.GetString("ONEDEPLOY_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; uploaded to target instance..
+        /// </summary>
+        public static string ONEDEPLOY_Uploaded {
+            get {
+                return ResourceManager.GetString("ONEDEPLOY_Uploaded", resourceCulture);
             }
         }
         

@@ -470,12 +470,12 @@ Führen Sie "dotnet {1}--show-aliases" ohne Argumente aus, um alle Aliase anzuze
         <target state="translated">Paketversion</target>
         <note />
       </trans-unit>
-      <trans-unit id="DetailsCommand_UnableToLoadResorce">
+      <trans-unit id="DetailsCommand_UnableToLoadResource">
         <source>Could not parse NuGet source '{0}', so it was discarded</source>
         <target state="translated">Die NuGet-Quelle "{0}" konnte nicht analysiert werden, daher wurde sie verworfen.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DetailsCommand_UnableToLoadResorces">
+      <trans-unit id="DetailsCommand_UnableToLoadResources">
         <source>Failed to load NuGet sources configured for the folder {0}</source>
         <target state="translated">Fehler beim Laden der für den Ordner "{0}" konfigurierten NuGet-Quellen.</target>
         <note />
@@ -825,6 +825,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Möchten Sie diese Aktion ausführen [{0} (ja) |{1} (nein)]?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
+        <source>Post action argument '{0}' is not a valid boolean value.</source>
+        <target state="translated">Das Post-Aktionsargument „{0}“ ist kein gültiger boolescher Wert.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
         <source>Post action argument '{0}' is mandatory, but not configured.</source>
         <target state="translated">Das Postaktionsargument "{0}" ist obligatorisch, aber nicht konfiguriert.</target>
@@ -848,6 +853,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="PostAction_ModifyJson_Succeeded">
         <source>Successfully modified {0}.</source>
         <target state="translated">{0} erfolgreich geändert.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile">
+        <source>Attempting to find json file '{0}' in '{1}'</source>
+        <target state="translated">Es wird versucht, die JSON-Datei „{0}“ in „{1}“ zu finden.</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">

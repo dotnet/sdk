@@ -1,0 +1,25 @@
+<!--
+  This project is used to download NuGet packages in the following targets files:
+    BundledDotnetTools.targets
+    Crossgen.targets
+    GenerateLayout.targets
+-->
+<Project Sdk="Microsoft.Build.NoTargets/3.7.0" DefaultTargets="Restore">
+
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <ResolveAssemblyReferencesSilent>true</ResolveAssemblyReferencesSilent>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Use PackageDownload since we don't need to reference the package. -->
+    <!-- See: https://learn.microsoft.com/en-us/nuget/consume-packages/packagedownload-functionality -->
+    <!-- The square brackets for the version constrain restoration to only use that exact version. -->
+    <!-- See: https://learn.microsoft.com/en-us/nuget/concepts/package-versioning#floating-version-resolutions -->
+    <PackageDownload Include="$(PackageToRestore)" Version="[$(PackageVersionToRestore)]" />
+    <!-- Eliminate any package references injected by arcade, since we only want to download a single package. -->
+    <PackageReference Remove="@(PackageReference)" />
+  </ItemGroup>
+
+</Project>

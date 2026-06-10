@@ -11,8 +11,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project ToolsVersion="14.0">
   <PropertyGroup>
-    <!-- FIXME: Important to get rid of missing workload -->
-    <UsingMicrosoftNETSdkBlazorWebAssembly>true</UsingMicrosoftNETSdkBlazorWebAssembly>
     <UsingMicrosoftNETSdkWebAssembly>true</UsingMicrosoftNETSdkWebAssembly>
 
     <!-- WASM projects defaults to browser-wasm -->
@@ -24,11 +22,20 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Disable accelerated builds in Visual Studio as the Wasm SDK needs to post process the outputs from the build and the feature won't work as expected. -->
     <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
 
+    <!-- JS Modules - We disable the manifest generation because we are going to inline the modules in the blazor.boot.json manifest -->
+    <GenerateJSModuleManifest>false</GenerateJSModuleManifest>
+
     <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>
     <_WasmSdkImportsMicrosoftNETSdkStaticWebAssets Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkStaticWebAssets>
+    <_WasmSdkImportsMicrosoftNetSdk Condition="'$(UsingMicrosoftNETSdk)' != 'true'">true</_WasmSdkImportsMicrosoftNetSdk>
   </PropertyGroup>
 
-  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
+  <!-- For browser-wasm, we want to import StaticWebAssets SDK which imports SDK. -->
+  <!-- For wasi-wasm, we don't want to import StaticWebAssets SDK. -->
+  <!-- This file runs before user csproj is evaluated and thus the switch here is just for completeness - SWA props file will always be imported. -->
+  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.props" Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" Condition="'$(RuntimeIdentifier)' == 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNetSdk)' == 'true'" />
+
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
   <Import Project="$(_WebAssemblyPropsFile)" Condition="'$(_WebAssemblyPropsFile)' != ''" />
 </Project>

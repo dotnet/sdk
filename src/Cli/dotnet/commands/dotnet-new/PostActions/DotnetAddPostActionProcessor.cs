@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
         {
             IReadOnlyList<string>? projectsToProcess = GetConfiguredFiles(action.Args, creationEffects, "targetFiles", outputBasePath);
 
-            if (projectsToProcess is null)
+            if (!projectsToProcess.Any())
             {
                 //If the author didn't opt in to the new behavior by specifying "targetFiles", search for project file in current output directory or above.
                 HashSet<string> extensionLimiters = new(StringComparer.Ordinal);
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
                     extensionLimiters.UnionWith(projectFileExtensions.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
                 }
-                projectsToProcess = FindProjFileAtOrAbovePath(environment.Host.FileSystem, outputBasePath, extensionLimiters);
+                projectsToProcess = TryFindProjects(environment, outputBasePath, extensionLimiters);
                 if (projectsToProcess.Count > 1)
                 {
                     // multiple projects at the same level. Error.
@@ -72,7 +72,13 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                     return false;
                 }
             }
-            if (projectsToProcess is null || !projectsToProcess.Any())
+
+            if (!projectsToProcess.Any())
+            {
+                projectsToProcess = FindExistingTargetFiles(environment.Host.FileSystem, action.Args, outputBasePath);
+            }
+
+            if (!projectsToProcess.Any())
             {
                 // no projects found. Error.
                 Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_UnresolvedProjFile);
@@ -90,6 +96,27 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 }
             }
             return true;
+        }
+
+        private static IReadOnlyList<string> TryFindProjects(IEngineEnvironmentSettings environment, string outputBasePath, HashSet<string> extensionLimiters)
+        {
+            try
+            {
+                return FindProjFileAtOrAbovePath(environment.Host.FileSystem, outputBasePath, extensionLimiters);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return [];
+            }
+        }
+
+        private static IReadOnlyList<string> FindExistingTargetFiles(IPhysicalFileSystem fileSystem, IReadOnlyDictionary<string, string> actionArgs, string outputBasePath)
+        {
+            var targetFiles = GetTargetFilesPaths(actionArgs, outputBasePath);
+            var foundFiles = targetFiles?
+                .Where(fileSystem.FileExists)
+                .ToList();
+            return foundFiles ?? [];
         }
 
         private bool AddReference(IPostAction actionConfig, string projectFile, string outputBasePath, ICreationEffects creationEffects)

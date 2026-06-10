@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Installer.Windows
             }
         }
 
-        private void ServerExited(Object sender, EventArgs e)
+        private void ServerExited(object sender, EventArgs e)
         {
             _log?.LogMessage($"Elevated command instance has exited.");
         }

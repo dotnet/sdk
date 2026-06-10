@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <Description><![CDATA[
+      Transport package for Microsoft.Net.Compilers.Toolset.Framework assemblies. For internal use only:
+      do not reference this package directly as it is explicitly not supported in that fashion.
+
+      This package is automatically downloaded when your MSBuild version does not match your SDK version.
+      Then the package is used to build your project with the compiler version matching your SDK version
+      instead of the one bundled with MSBuild.
+
+      If you want to download this package using the dotnet CLI, you can use the following command:
+
+      ```
+      dotnet restore /p:BuildWithNetFrameworkHostedCompiler=true
+      ```
+
+      If you want to disable automatic download and use of this package, set property `BuildWithNetFrameworkHostedCompiler` to `false`
+      (for example, in your `.csproj` or `Directory.Build.props` file).
+      However, be aware that you will be building with mismatched compiler and SDK versions.
+      That is explicitly not supported and can lead to errors (especially with analyzers and source generators).
+    ]]></Description>
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" ExcludeAssets="All" GeneratePathProperty="true" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <Content Include="$(PkgMicrosoft_Net_Compilers_Toolset_Framework)\tasks\net472\**\*" PackagePath="%(RecursiveDir)" />
+  </ItemGroup>
+
+</Project>
