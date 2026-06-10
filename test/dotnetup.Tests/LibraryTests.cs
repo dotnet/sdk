@@ -288,4 +288,65 @@ public class LibraryTests
 
         globalJsonInfo.SdkPath.Should().BeNull();
     }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ReturnsNullWhenOnlyHostSentinel()
+    {
+        // $host$ is a sentinel value meaning "fall back to the default host location".
+        // It should not be treated as a literal directory path.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new[] { "$host$" }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_ReturnsNullWhenAllPathsAreHostSentinel()
+    {
+        // All entries are $host$ sentinel values; should return null.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new[] { "$host$", "$HOST$" }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().BeNull();
+    }
+
+    [Fact]
+    public void GlobalJsonInfo_SdkPath_SkipsHostSentinelAndUsesFirstRealPath()
+    {
+        // When $host$ appears before a real path, the real path should be used.
+        var repoDir = Path.Combine(Path.GetTempPath(), "test-repo");
+        var globalJsonInfo = new GlobalJsonInfo
+        {
+            GlobalJsonPath = Path.Combine(repoDir, "global.json"),
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = new[] { "$host$", ".dotnet" }
+                }
+            }
+        };
+
+        globalJsonInfo.SdkPath.Should().Be(Path.Combine(repoDir, ".dotnet"));
+    }
 }

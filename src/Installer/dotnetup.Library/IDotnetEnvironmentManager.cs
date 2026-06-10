@@ -59,8 +59,21 @@ public class GlobalJsonInfo
     {
         get
         {
-            return (GlobalJsonContents?.Sdk?.Paths is not null && GlobalJsonContents.Sdk.Paths.Length > 0) ?
-                Path.GetFullPath(GlobalJsonContents.Sdk.Paths[0], Path.GetDirectoryName(GlobalJsonPath)!) : null;
+            if (GlobalJsonContents?.Sdk?.Paths is not { Length: > 0 } paths)
+            {
+                return null;
+            }
+
+            // "$host$" is a sentinel value meaning "fall back to the default host location".
+            // See: https://github.com/dotnet/runtime/blob/7f49565b668b93492181b98572be79c54448cd68/src/native/corehost/fxr/sdk_resolver.cpp#L123-L126
+            // Skip any entries with this value; return null if all entries are sentinel.
+            var firstRealPath = Array.Find(paths, p => !string.Equals(p, "$host$", StringComparison.OrdinalIgnoreCase));
+            if (firstRealPath is null)
+            {
+                return null;
+            }
+
+            return Path.GetFullPath(firstRealPath, Path.GetDirectoryName(GlobalJsonPath)!);
         }
     }
 }
