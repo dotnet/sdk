@@ -35,8 +35,8 @@ function InstallBootstrapSdkWithDotnetup() {
             Install-DotnetupFromAkaMs $dotnetupDir
         }
         catch {
-            Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to acquire dotnetup: $($_.Exception.Message)"
-            ExitWithExitCode 1
+            Write-Host "Failed to acquire dotnetup: $($_.Exception.Message). Will fall back to standard dotnet-install script." -ForegroundColor Yellow
+            return
         }
     }
 

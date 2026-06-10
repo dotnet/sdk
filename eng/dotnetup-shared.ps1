@@ -38,8 +38,25 @@ function Test-ShouldUseCachedDotnetup([string]$DotnetupExe) {
 # parity. Throws on non-zero exit code.
 function Invoke-GetDotnetupScript([string]$ScriptPath, [string]$InstallDir, [string]$ErrorLabel) {
     $psExe = (Get-Process -Id $PID).Path
+    if (-not $psExe) {
+        $psExeName = if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh' } else { 'powershell' }
+        $psExe = Join-Path $PSHOME $psExeName
+    }
     if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-    & $psExe -NoProfile -ExecutionPolicy Bypass -File $ScriptPath -InstallDir $InstallDir
+
+    # Temporarily set ErrorActionPreference to Continue so that stderr output
+    # from the child process does not become a terminating error (the parent
+    # shell inherits 'Stop' from eng/common/tools.ps1). We rely on
+    # $LASTEXITCODE for error detection instead.
+    $prevEAP = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        & $psExe -NoProfile -ExecutionPolicy Bypass -File $ScriptPath -InstallDir $InstallDir
+    }
+    finally {
+        $ErrorActionPreference = $prevEAP
+    }
+
     if ($LASTEXITCODE -ne 0) { throw "$ErrorLabel exited with code $LASTEXITCODE." }
 }
 
@@ -53,7 +70,7 @@ function Invoke-GetDotnetupScript([string]$ScriptPath, [string]$InstallDir, [str
 # when code flows between branches with and without the local script.
 function Install-DotnetupFromAkaMs([string]$DotnetupDir) {
     $repoRoot = (Get-Item $PSScriptRoot).Parent.FullName
-    $localGetter = Join-Path $repoRoot 'scripts' 'get-dotnetup.ps1'
+    $localGetter = Join-Path (Join-Path $repoRoot 'scripts') 'get-dotnetup.ps1'
 
     # Prefer the repo-local script when available (e.g. on release/dnup).
     if (Test-Path $localGetter) {
