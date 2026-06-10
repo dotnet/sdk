@@ -116,7 +116,7 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         var firstBuildManifestTime = File.GetLastWriteTime(manifestPath);
 
         // Wait a bit and do incremental build
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         build = CreateBuildCommand(ProjectDirectory);
         ExecuteCommand(build).Should().Pass();
