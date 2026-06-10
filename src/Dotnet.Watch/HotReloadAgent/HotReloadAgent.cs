@@ -33,6 +33,7 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
     private readonly ApplyUpdateDelegate? _applyUpdate;
     private readonly string? _capabilities;
     private readonly MetadataUpdateHandlerInvoker _metadataUpdateHandlerInvoker;
+    private static readonly bool s_traceFSharpHotReload = IsTraceFSharpHotReloadEnabled();
 
     // handler to install on first managed update:
     private Func<AssemblyLoadContext, AssemblyName, Assembly?>? _assemblyResolvingHandlerToInstall;
@@ -140,12 +141,37 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
 
             Reporter.Report($"Applying updates to module {update.ModuleId}.", AgentMessageSeverity.Verbose);
 
+            var matchedAssemblyCount = 0;
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (TryGetModuleId(assembly) is Guid moduleId && moduleId == update.ModuleId)
                 {
+                    matchedAssemblyCount++;
                     _applyUpdate(assembly, update.MetadataDelta, update.ILDelta, update.PdbDelta);
                 }
+            }
+
+            if (s_traceFSharpHotReload && matchedAssemblyCount == 0)
+            {
+                // Trace-only diagnostics for cases where an update is accepted but no loaded module matches its MVID.
+                Reporter.Report(
+                    $"No loaded assembly matched module {update.ModuleId}. The update was cached for future assembly loads.",
+                    AgentMessageSeverity.Verbose);
+
+                var loadedModuleIds = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(assembly =>
+                    {
+                        var assemblyName = assembly.GetName().Name ?? "<unknown>";
+                        var assemblyModuleId = TryGetModuleId(assembly);
+                        return assemblyModuleId is Guid id
+                            ? $"{assemblyName}:{id}"
+                            : $"{assemblyName}:<no-module-id>";
+                    })
+                    .Take(16);
+
+                Reporter.Report(
+                    $"Loaded assembly module ids (first 16): {string.Join(", ", loadedModuleIds)}",
+                    AgentMessageSeverity.Verbose);
             }
 
             // Additionally stash the deltas away so it may be applied to assemblies loaded later.
@@ -267,6 +293,13 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
         {
             Reporter.Report(ex.ToString(), AgentMessageSeverity.Warning);
         }
+    }
+
+    private static bool IsTraceFSharpHotReloadEnabled()
+    {
+        var value = Environment.GetEnvironmentVariable("DOTNET_WATCH_TRACE_FSHARP_HOTRELOAD");
+        return string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
     }
 
     private static Guid? TryGetModuleId(Assembly loadedAssembly)
