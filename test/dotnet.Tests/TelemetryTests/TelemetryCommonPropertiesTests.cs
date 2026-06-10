@@ -257,10 +257,12 @@ public class TelemetryCommonPropertiesTests : SdkTest
         { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot-cli" },
         { new Dictionary<string, string> { { "GH_COPILOT_WORKING_DIRECTORY", "/repo" } }, "copilot-cli" },
         { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot-cli" },
-        { new Dictionary<string, string> { { "COPILOT_AGENT", "1" } }, "copilot-cli" },
         { new Dictionary<string, string> { { "COPILOT_MODEL", "gpt" } }, "copilot-cli" },
         { new Dictionary<string, string> { { "COPILOT_ALLOW_ALL", "1" } }, "copilot-cli" },
         { new Dictionary<string, string> { { "COPILOT_GITHUB_TOKEN", "token" } }, "copilot-cli" },
+        // GitHub Copilot agent mode in VS Code
+        { new Dictionary<string, string> { { "COPILOT_AGENT", "1" } }, "copilot-vscode" },
+        { new Dictionary<string, string> { { "AI_AGENT", "github_copilot_vscode_agent" } }, "copilot-vscode" },
         { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
         { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
         { new Dictionary<string, string> { { "CODEX_CI", "1" } }, "codex" },
