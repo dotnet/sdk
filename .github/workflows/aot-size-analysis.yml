@@ -113,12 +113,21 @@ jobs:
               return;
             }
 
-            await github.rest.reactions.createForIssueComment({
-              owner,
-              repo,
-              comment_id: Number(commentId),
-              content: 'eyes',
-            });
+            if (context.eventName === 'pull_request_review_comment') {
+              await github.rest.reactions.createForPullRequestReviewComment({
+                owner,
+                repo,
+                comment_id: Number(commentId),
+                content: 'eyes',
+              });
+            } else {
+              await github.rest.reactions.createForIssueComment({
+                owner,
+                repo,
+                comment_id: Number(commentId),
+                content: 'eyes',
+              });
+            }
 
       - name: Resolve PR metadata
         id: resolve
