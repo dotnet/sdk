@@ -96,7 +96,7 @@
       "kind": "bool",
       "id": "5f3b2c1a-8d4e-4a6f-9b2c-1e7d3a9f6b04",
       "displayName": "CI Runs",
-      "description": "Filter CI vs interactive runs. CI = ci.detected env-var tag OR redirected stdout (output.redirected), which retroactively captures build/pipeline/container automation the env-var detector missed.",
+      "description": "Filter CI vs interactive runs. CI = the ci.detected env-var tag set by dotnetup's CI environment detector.",
       "variableName": "_ci",
       "selectionType": "scalar",
       "includeAllOption": true,
@@ -188,6 +188,7 @@
     {
       "id": "b17d4bc8-d527-4e83-a7eb-6581c8574bc2",
       "title": "Product Success Rate by Command & Version",
+      "description": "Sorts latest version first, then within a version best success rate first; worst rates fall to the bottom, with total volume breaking ties.",
       "visualType": "table",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -264,6 +265,7 @@
     {
       "id": "eccf2c58-5072-4a07-ba21-6e04e551ba50",
       "title": "Product Success Rate Over Time (by Command, Latest Version)",
+      "description": "When no version filter is set, auto-scopes to the latest version so the chart is not cluttered with old data. When the user sets a version, respects it.",
       "visualType": "line",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -700,6 +702,7 @@
     {
       "id": "3d2b7c85-985d-47a9-b011-45558c8c5ad1",
       "title": "Most Installed SDK Versions",
+      "description": "Missing dynamic properties stringify to empty strings, so this query uses iif + isnotempty rather than coalesce to fall back from install.resolved_version to dotnet.requested.",
       "visualType": "column",
       "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
       "layout": {
@@ -724,6 +727,7 @@
     {
       "id": "5c65443d-e8df-4b87-bf8e-6f268618bd85",
       "title": "Most Installed Runtime Versions",
+      "description": "Missing dynamic properties stringify to empty strings, so this query uses iif + isnotempty rather than coalesce to fall back from install.resolved_version to dotnet.requested.",
       "visualType": "column",
       "pageId": "a9f233eb-eb63-4ccf-93e7-91fd158112a4",
       "layout": {
@@ -1000,6 +1004,7 @@
     {
       "id": "7154ebfe-dfc6-4fb2-8781-e1fdb2ddd1ac",
       "title": "Download Statistics",
+      "description": "download/complete events carry download.bytes and download.from_cache tags emitted by the library via InstallationActivitySource.EmitEvent.",
       "visualType": "table",
       "pageId": "4d45674d-e423-46a3-a402-40777c038e27",
       "layout": {
@@ -1019,6 +1024,7 @@
     {
       "id": "143ec616-00ff-4880-9e16-13c6cd3bff1c",
       "title": "Download & Extract Duration Over Time",
+      "description": "download/complete and extract/complete events are emitted by the library via InstallationActivitySource.EmitEvent with span tags copied to properties.",
       "visualType": "line",
       "pageId": "4d45674d-e423-46a3-a402-40777c038e27",
       "layout": {
@@ -1046,6 +1052,7 @@
     {
       "id": "56514dd3-9563-41ac-8d83-9dff86f64a70",
       "title": "Usage Statistics",
+      "description": "Unique users are distinct device.id values, the SDK DeviceIdGetter stable per-machine hash. Sessions are distinct session.id values, one dotnetup invocation. data-x strips both ids from dotnetup/command rows, so they are only reliable on dotnetup/root. Command totals still come from command rows.",
       "visualType": "table",
       "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
       "layout": {
@@ -1065,6 +1072,7 @@
     {
       "id": "7e79a842-85f9-4172-8f8c-89c7f71e09bf",
       "title": "Daily Unique Sessions by Version",
+      "description": "session.id is stripped from dotnetup/command rows by data-x's per-Message classification; dotnetup/root carries it, with one row per invocation and therefore one session.",
       "visualType": "stackedcolumn",
       "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
       "layout": {
@@ -1092,6 +1100,7 @@
     {
       "id": "b38ca851-8bc0-4709-949f-712d2b3d8f2c",
       "title": "Daily Active Sessions",
+      "description": "session.id is stripped from dotnetup/command rows by data-x's per-Message classification; dotnetup/root carries it, with one row per invocation and therefore one session.",
       "visualType": "line",
       "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
       "layout": {
@@ -1115,6 +1124,7 @@
     {
       "id": "b2d5f801-3c7e-4a92-8d4b-6f9e0c1a2b34",
       "title": "Daily Active Users",
+      "description": "Unique users are distinct device.id values, the SDK DeviceIdGetter stable per-machine hash. device.id is stripped from dotnetup/command rows by data-x's per-Message classification; dotnetup/root carries it.",
       "visualType": "line",
       "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
       "layout": {
@@ -1138,6 +1148,7 @@
     {
       "id": "d4f7b023-5e90-4bc4-af6d-8b1a2e3c4d56",
       "title": "Daily Unique Users by Version",
+      "description": "Unique users are distinct device.id values per day, split by version. device.id is stripped from dotnetup/command rows by data-x's per-Message classification; dotnetup/root carries it.",
       "visualType": "stackedcolumn",
       "pageId": "14db25c2-f747-4516-83af-7f3d932be733",
       "layout": {
@@ -1165,6 +1176,7 @@
     {
       "id": "c7c2b254-517b-4a15-9e8e-a88b1ff330f9",
       "title": "Command Usage",
+      "description": "_dotnetupCommands uses telemetry after 2026-04-30, accepts both stable dotnetup/command rows and legacy dotnetup/command/<sub> rows, gets CI solely from ci.detected, falls back from command.name to the legacy Message suffix, and treats a command as successful only when exit.code is 0 and no error is attached.",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1179,6 +1191,7 @@
     {
       "id": "953713fa-1a29-4ffc-a242-f83a7f35da28",
       "title": "Platform & Environment",
+      "description": "_dotnetupAll includes all dotnetup/* events after 2026-04-30 and derives CI solely from ci.detected using null-safe tostring().",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1193,6 +1206,7 @@
     {
       "id": "f1a2b3c4-d5e6-4f78-8901-23456789abcd",
       "title": "Process Health (Whole Invocation)",
+      "description": "_dotnetupRoot is one whole-process completion row per dotnetup invocation after 2026-04-30. It carries wall-clock duration for parser bootstrap, FirstRunNotice, command, and telemetry flush, plus error.* tags from failures that escaped CommandBase or non-zero parser exits tagged ParseError. Outside-command failures are root errors with no command.name rolled up.",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1269,6 +1283,7 @@
     {
       "id": "f4a5b6c7-d8e9-4f01-a234-56789abcdef0",
       "title": "Failures Outside Any Command",
+      "description": "Invocations where the root row carries an error but no child command rolled up to it. Captures parser-validation failures, FirstRunNotice throws, and anything else that escaped CommandBase entirely. Without this tile these rows are invisible because the per-command success tiles never see them.",
       "visualType": "table",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1288,6 +1303,7 @@
     {
       "id": "f5a6b7c8-d9e0-4f12-b345-6789abcdef01",
       "title": "Parser Errors Over Time",
+      "description": "Tracks the synthetic ParseError tag stamped by Program.Main when the parser returns non-zero without throwing, such as System.CommandLine validation, --help on a wrong path, or an unknown subcommand. A spike here usually indicates a UX regression rather than a product bug.",
       "visualType": "line",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1355,7 +1371,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// Invocations where the root row carries an error but no child command\n// rolled up to it. Captures parser-validation failures, FirstRunNotice\n// throws, and anything else that escaped CommandBase entirely. Without\n// this tile these rows are invisible \u2014 the per-command success tiles\n// above never see them.\n_dotnetupRoot\n| where is_outside_command_failure\n| summarize Count = count() by error_type, error_category\n| order by Count desc",
+      "text": "_dotnetupRoot\n| where is_outside_command_failure\n| summarize Count = count() by error_type, error_category\n| order by Count desc",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1366,7 +1382,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// Tracks the synthetic ParseError tag stamped by Program.Main when the\n// parser returns non-zero without throwing (e.g., System.CommandLine\n// validation, --help on a wrong path, unknown subcommand). A spike here\n// usually indicates a UX regression rather than a product bug.\n_dotnetupRoot\n| where error_type == \"ParseError\"\n| summarize Count = count() by Day = bin(TimeGenerated, 1d)\n| order by Day asc",
+      "text": "_dotnetupRoot\n| where error_type == \"ParseError\"\n| summarize Count = count() by Day = bin(TimeGenerated, 1d)\n| order by Day asc",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1377,7 +1393,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n// Filter out bad data from before telemetry was stable (pre-Apr 30 2026)\n| where TimeGenerated >= datetime(2026-04-30)\n// Command-completion rows. The new stable Message is \"dotnetup/command\" with the\n// subcommand carried in the command.name property. The legacy per-subcommand\n// fan-out (\"dotnetup/command/<sub>\") is kept so dashboards keep rendering\n// historical data through the cutover and can be removed once aged out.\n| where Message == \"dotnetup/command\" or Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n// Treat a run as CI when the env-var detector flagged it (ci.detected) OR the\n// process had redirected stdout (output.redirected). Telemetry showed ~99.5%\n// of supposedly-non-CI installs ran with redirected output \u2014 the hallmark of\n// build scripts / pipelines / containers where the standard CI env vars never\n// reached the process. ORing redirection in retroactively reclassifies that\n// automation traffic. tostring(...) in (...) is null-safe (missing dynamic\n// props stringify to \"\"), so this never yields a null is_ci.\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\") or tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n// tostring() on a missing dynamic property returns \"\" (not null), so coalesce()\n// short-circuits on the empty string and never reaches the fallback. Use iif +\n// isnotempty so legacy rows without command.name fall back to the substring of\n// the Message (\"dotnetup/command/<sub>\").\n| extend command_name_prop = tostring(Properties[\"command.name\"])\n| extend command = iif(isnotempty(command_name_prop), command_name_prop, substring(Message, strlen(\"dotnetup/command/\"), 256))\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend command_status = tostring(Properties[\"command.status\"])\n// A command run is successful when the process exited 0 AND no error was\n// attached to the activity chain. Older rows without exit.code fall back to\n// command.status (\"ok\"/\"error\") set via TrackedOperation.SetStatus.\n| extend is_success = isempty(error_type) and iif(isnotempty(exit_code), exit_code == \"0\", command_status == \"ok\")\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message == \"dotnetup/command\" or Message startswith \"dotnetup/command/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command_name_prop = tostring(Properties[\"command.name\"])\n| extend command = iif(isnotempty(command_name_prop), command_name_prop, substring(Message, strlen(\"dotnetup/command/\"), 256))\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend command_status = tostring(Properties[\"command.status\"])\n| extend is_success = isempty(error_type) and iif(isnotempty(exit_code), exit_code == \"0\", command_status == \"ok\")\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
@@ -1392,7 +1408,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n// Filter out bad data from before telemetry was stable (pre-Apr 30 2026)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n// CI = env-var detector (ci.detected) OR redirected stdout (output.redirected).\n// See the command base query for the rationale; null-safe via tostring().\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\") or tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
@@ -1407,7 +1423,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// Root (whole-process) completion rows. One per dotnetup invocation.\n// Carries wall-clock duration for the entire process (parser bootstrap,\n// FirstRunNotice, command, telemetry flush) and any error.* tags from\n// failures that escaped CommandBase OR from a non-zero parser exit code\n// that didn't throw (tagged ParseError in Program.Main).\nRawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n// Filter out bad data from before telemetry was stable (pre-Apr 30 2026)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message == \"dotnetup/root\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n// CI = env-var detector (ci.detected) OR redirected stdout (output.redirected).\n// See the command base query for the rationale; null-safe via tostring().\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\") or tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n// \"Outside commands\" = root has an error but no command rolled up to it.\n// command.name on the root is only set when a child command propagated tags.\n| extend is_outside_command_failure = not(is_success) and isempty(command_name)\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message == \"dotnetup/root\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend command_name = tostring(Properties[\"command.name\"])\n| extend error_category = tostring(Properties[\"error.category\"])\n| extend error_type = tostring(Properties[\"error.type\"])\n| extend exit_code = tostring(Properties[\"exit.code\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| extend is_success = isempty(error_type) and (isempty(exit_code) or exit_code == \"0\")\n| extend is_outside_command_failure = not(is_success) and isempty(command_name)\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
@@ -1433,7 +1449,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where isnotempty(command)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by command, version\n| where version != \"unknown\" or Total >= 25\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n// Sort latest version first, then within a version best success rate first\n// (worst rates fall to the bottom), breaking ties by total volume.\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, SuccessRate desc, Total desc\n| project Command = command, Version = version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors",
+      "text": "_dotnetupCommands\n| where isnotempty(command)\n| where isnotempty(version)\n| summarize\n    Total = count(),\n    Successful = countif(is_success),\n    ProductErrors = countif(not(is_success) and (error_category == \"product\" or isempty(error_category))),\n    UserErrors = countif(not(is_success) and error_category == \"user\")\n    by command, version\n| where version != \"unknown\" or Total >= 25\n| extend Relevant = Total - UserErrors,\n    SuccessRate = round(100.0 * Successful / (Total - UserErrors), 1)\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc, SuccessRate desc, Total desc\n| project Command = command, Version = version, SuccessRate, Relevant, Successful, ProductErrors, UserErrors",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1455,7 +1471,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// When no version filter is set, auto-scope to the latest version so the\n// chart isn't cluttered with old data. When the user sets a version, respect it.\nlet effectiveVersion = iif(isempty(_versionFilter),\n    toscalar(_dotnetupCommands | where isnotempty(version) | distinct version | order by version desc | take 1),\n    _versionFilter);\n_dotnetupCommands\n| where isnotempty(command)\n| where version == effectiveVersion\n| where not(not(is_success) and error_category == \"user\")\n| summarize Total = count(), Successful = countif(is_success) by Day = bin(TimeGenerated, 1d), command\n| where Total > 0\n| extend SuccessRate = round(100.0 * Successful / Total, 1)\n| project Day, command, SuccessRate\n| order by Day asc, command asc",
+      "text": "let effectiveVersion = iif(isempty(_versionFilter),\n    toscalar(_dotnetupCommands | where isnotempty(version) | distinct version | order by version desc | take 1),\n    _versionFilter);\n_dotnetupCommands\n| where isnotempty(command)\n| where version == effectiveVersion\n| where not(not(is_success) and error_category == \"user\")\n| summarize Total = count(), Successful = countif(is_success) by Day = bin(TimeGenerated, 1d), command\n| where Total > 0\n| extend SuccessRate = round(100.0 * Successful / Total, 1)\n| project Day, command, SuccessRate\n| order by Day asc, command asc",
       "usedVariables": [
         "_dotnetupCommands",
         "_versionFilter"
@@ -1610,7 +1626,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where command == \"sdk/install\"\n// tostring() on a missing dynamic property returns \"\" (not null), so coalesce()\n// would short-circuit on the empty string and never reach the fallback. Use iif\n// + isnotempty so rows missing install.resolved_version fall through to\n// dotnet.requested.\n| extend resolved = tostring(Properties[\"install.resolved_version\"])\n| extend requested = tostring(Properties[\"dotnet.requested\"])\n| extend installed_version = iif(isnotempty(resolved), resolved, requested)\n| where isnotempty(installed_version)\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
+      "text": "_dotnetupCommands\n| where command == \"sdk/install\"\n| extend resolved = tostring(Properties[\"install.resolved_version\"])\n| extend requested = tostring(Properties[\"dotnet.requested\"])\n| extend installed_version = iif(isnotempty(resolved), resolved, requested)\n| where isnotempty(installed_version)\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1621,7 +1637,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "_dotnetupCommands\n| where command == \"runtime/install\"\n// tostring() on a missing dynamic property returns \"\" (not null), so coalesce()\n// would short-circuit on the empty string and never reach the fallback. Use iif\n// + isnotempty so rows missing install.resolved_version fall through to\n// dotnet.requested.\n| extend resolved = tostring(Properties[\"install.resolved_version\"])\n| extend requested = tostring(Properties[\"dotnet.requested\"])\n| extend installed_version = iif(isnotempty(resolved), resolved, requested)\n| where isnotempty(installed_version)\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
+      "text": "_dotnetupCommands\n| where command == \"runtime/install\"\n| extend resolved = tostring(Properties[\"install.resolved_version\"])\n| extend requested = tostring(Properties[\"dotnet.requested\"])\n| extend installed_version = iif(isnotempty(resolved), resolved, requested)\n| where isnotempty(installed_version)\n| summarize Count = count() by version = installed_version\n| order by Count desc\n| take 20",
       "usedVariables": [
         "_dotnetupCommands"
       ]
@@ -1742,7 +1758,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// download/complete events carry download.bytes and download.from_cache tags\n// emitted by the library via InstallationActivitySource.EmitEvent.\n_dotnetupAll\n| where Message == \"dotnetup/download/complete\"\n| extend from_cache = tostring(Properties[\"download.from_cache\"]),\n    bytes = todouble(Properties[\"download.bytes\"])\n| summarize\n    TotalDownloads = count(),\n    CacheHits = countif(from_cache == \"true\" or from_cache == \"True\"),\n    AvgSizeMB = round(avg(bytes) / 1048576, 2)\n| extend CacheHitRate = round(100.0 * CacheHits / TotalDownloads, 1)\n| project TotalDownloads, CacheHits, CacheHitRate, AvgSizeMB",
+      "text": "_dotnetupAll\n| where Message == \"dotnetup/download/complete\"\n| extend from_cache = tostring(Properties[\"download.from_cache\"]),\n    bytes = todouble(Properties[\"download.bytes\"])\n| summarize\n    TotalDownloads = count(),\n    CacheHits = countif(from_cache == \"true\" or from_cache == \"True\"),\n    AvgSizeMB = round(avg(bytes) / 1048576, 2)\n| extend CacheHitRate = round(100.0 * CacheHits / TotalDownloads, 1)\n| project TotalDownloads, CacheHits, CacheHitRate, AvgSizeMB",
       "usedVariables": [
         "_dotnetupAll"
       ]
@@ -1753,7 +1769,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// Unique users = distinct device.id (the SDK's DeviceIdGetter stable\n// per-machine hash \u2014 our closest proxy for a person/machine). Sessions =\n// distinct session.id (one dotnetup invocation). data-x's per-Message\n// property classification strips both ids from dotnetup/command rows, so\n// they are only reliable on dotnetup/root. Command totals still come from\n// the command rows.\nlet users = toscalar(_dotnetupRoot\n    | summarize dcount(tostring(Properties[\"device.id\"])));\nlet sessions = toscalar(_dotnetupRoot\n    | summarize dcount(tostring(Properties[\"session.id\"])));\nlet totalCommands = toscalar(_dotnetupCommands | count);\nprint\n    UniqueUsers = users,\n    UniqueSessions = sessions,\n    TotalCommands = totalCommands,\n    AvgSessionsPerUser = round(1.0 * sessions / users, 1),\n    AvgCommandsPerSession = round(1.0 * totalCommands / sessions, 1)",
+      "text": "let users = toscalar(_dotnetupRoot\n    | summarize dcount(tostring(Properties[\"device.id\"])));\nlet sessions = toscalar(_dotnetupRoot\n    | summarize dcount(tostring(Properties[\"session.id\"])));\nlet totalCommands = toscalar(_dotnetupCommands | count);\nprint\n    UniqueUsers = users,\n    UniqueSessions = sessions,\n    TotalCommands = totalCommands,\n    AvgSessionsPerUser = round(1.0 * sessions / users, 1),\n    AvgCommandsPerSession = round(1.0 * totalCommands / sessions, 1)",
       "usedVariables": [
         "_dotnetupRoot",
         "_dotnetupCommands"
@@ -1765,7 +1781,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// session.id is stripped from dotnetup/command rows by data-x's per-Message\n// classification; dotnetup/root carries it (one row per invocation = one session).\n_dotnetupRoot\n| extend session_id = tostring(Properties[\"session.id\"])\n| where isnotempty(version)\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
+      "text": "_dotnetupRoot\n| extend session_id = tostring(Properties[\"session.id\"])\n| where isnotempty(version)\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1776,7 +1792,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// session.id is stripped from dotnetup/command rows by data-x's per-Message\n// classification; dotnetup/root carries it (one row per invocation = one session).\n_dotnetupRoot\n| extend session_id = tostring(Properties[\"session.id\"])\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d)",
+      "text": "_dotnetupRoot\n| extend session_id = tostring(Properties[\"session.id\"])\n| summarize UniqueSessions = dcount(session_id) by Day = bin(TimeGenerated, 1d)",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1787,7 +1803,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// Unique users = distinct device.id (SDK DeviceIdGetter stable per-machine\n// hash). device.id is stripped from dotnetup/command rows by data-x's\n// per-Message classification; dotnetup/root carries it (one row per invocation).\n_dotnetupRoot\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(device_id)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d)",
+      "text": "_dotnetupRoot\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(device_id)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d)",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1798,7 +1814,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// Unique users (distinct device.id) per day, split by version. device.id is\n// stripped from dotnetup/command rows by data-x's per-Message classification;\n// dotnetup/root carries it.\n_dotnetupRoot\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(device_id) and isnotempty(version)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
+      "text": "_dotnetupRoot\n| extend device_id = tostring(Properties[\"device.id\"])\n| where isnotempty(device_id) and isnotempty(version)\n| summarize UniqueUsers = dcount(device_id) by Day = bin(TimeGenerated, 1d), version\n| order by Day asc, version desc",
       "usedVariables": [
         "_dotnetupRoot"
       ]
@@ -1809,7 +1825,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "// download/complete and extract/complete events are emitted by the library\n// via InstallationActivitySource.EmitEvent with span tags copied to properties.\n_dotnetupAll\n| where Message in (\"dotnetup/download/complete\", \"dotnetup/extract/complete\")\n| extend from_cache = tostring(Properties[\"download.from_cache\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where isnotnull(duration_ms)\n| extend operation = case(\n    Message == \"dotnetup/download/complete\" and (from_cache == \"true\" or from_cache == \"True\"), \"download (cached)\",\n    Message == \"dotnetup/download/complete\", \"download (network)\",\n    \"extract\")\n| summarize AvgDuration = avg(duration_ms) by Hour = bin(TimeGenerated, 1h), operation",
+      "text": "_dotnetupAll\n| where Message in (\"dotnetup/download/complete\", \"dotnetup/extract/complete\")\n| extend from_cache = tostring(Properties[\"download.from_cache\"])\n| extend duration_ms = todouble(Properties[\"operation.duration_ms\"])\n| where isnotnull(duration_ms)\n| extend operation = case(\n    Message == \"dotnetup/download/complete\" and (from_cache == \"true\" or from_cache == \"True\"), \"download (cached)\",\n    Message == \"dotnetup/download/complete\", \"download (network)\",\n    \"extract\")\n| summarize AvgDuration = avg(duration_ms) by Hour = bin(TimeGenerated, 1h), operation",
       "usedVariables": [
         "_dotnetupAll"
       ]
