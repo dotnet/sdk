@@ -40,7 +40,7 @@ internal sealed class TestApplication(
 
     public bool HasFailureDuringDispose { get; private set; }
 
-    public async Task<int> RunAsync()
+    public async Task<int> RunAsync(CtrlCCancellationManager ctrlC)
     {
         if (Interlocked.Exchange(ref _hasRun, 1) != 0)
         {
@@ -53,11 +53,16 @@ internal sealed class TestApplication(
         var cancellationToken = cancellationTokenSource.Token;
         var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
 
+        Process? process = null;
         try
         {
             Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
-            using var process = Process.Start(processStartInfo)!;
+            process = Process.Start(processStartInfo)!;
+
+            // Register with the Ctrl+C manager so a force-exit (second Ctrl+C) kills this process
+            // tree even if the child's own cooperative cancellation hangs.
+            ctrlC.Register(process);
 
             // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
@@ -119,6 +124,12 @@ internal sealed class TestApplication(
         }
         finally
         {
+            if (process is not null)
+            {
+                ctrlC.Unregister(process);
+                process.Dispose();
+            }
+
             cancellationTokenSource.Cancel();
             await testAppPipeConnectionLoop;
         }
