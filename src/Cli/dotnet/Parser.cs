@@ -114,7 +114,7 @@ public static class Parser
             {
                 rootCommand.Options.RemoveAt(i);
             }
-            else if (option is Option<bool> helpOption && helpOption.Name == "--help")
+            else if (option is HelpOption helpOption)
             {
                 helpOption.Action = new PrintHelpAction(helpOption, DotnetHelpBuilder.Instance.Value);
                 helpOption.Description = CliStrings.ShowHelpDescription;
