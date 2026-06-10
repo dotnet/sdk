@@ -32,6 +32,17 @@ function Test-ShouldUseCachedDotnetup([string]$DotnetupExe) {
     return $true
 }
 
+# Runs a PowerShell script in a SEPARATE PowerShell process so that an 'exit'
+# inside it cannot terminate this build host and bypass the caller's try/catch.
+# Uses the current host's own executable to keep pwsh / Windows PowerShell 5.1
+# parity. Throws on non-zero exit code.
+function Invoke-GetDotnetupScript([string]$ScriptPath, [string]$InstallDir, [string]$ErrorLabel) {
+    $psExe = (Get-Process -Id $PID).Path
+    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+    & $psExe -NoProfile -ExecutionPolicy Bypass -File $ScriptPath -InstallDir $InstallDir
+    if ($LASTEXITCODE -ne 0) { throw "$ErrorLabel exited with code $LASTEXITCODE." }
+}
+
 # Downloads the public dotnetup installer from aka.ms
 # (https://aka.ms/dotnetup/get-dotnetup.ps1) and runs it to install dotnetup into
 # $DotnetupDir. Throws on failure so callers can choose how to react.
@@ -47,10 +58,7 @@ function Install-DotnetupFromAkaMs([string]$DotnetupDir) {
     # Prefer the repo-local script when available (e.g. on release/dnup).
     if (Test-Path $localGetter) {
         Write-Host "Using local get-dotnetup.ps1 from '$localGetter'." -ForegroundColor DarkGray
-        $psExe = (Get-Process -Id $PID).Path
-        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-        & $psExe -NoProfile -ExecutionPolicy Bypass -File $localGetter -InstallDir $DotnetupDir
-        if ($LASTEXITCODE -ne 0) { throw "Local get-dotnetup.ps1 exited with code $LASTEXITCODE." }
+        Invoke-GetDotnetupScript -ScriptPath $localGetter -InstallDir $DotnetupDir -ErrorLabel "Local get-dotnetup.ps1"
         return
     }
 
@@ -76,14 +84,7 @@ function Install-DotnetupFromAkaMs([string]$DotnetupDir) {
     }
 
     try {
-        # Run the downloaded installer in a SEPARATE PowerShell process so that an
-        # 'exit' inside it cannot terminate this build host and bypass the caller's
-        # try/catch. Use the current host's own executable to keep pwsh / Windows
-        # PowerShell 5.1 parity.
-        $psExe = (Get-Process -Id $PID).Path
-        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
-        & $psExe -NoProfile -ExecutionPolicy Bypass -File $getterScript -InstallDir $DotnetupDir
-        if ($LASTEXITCODE -ne 0) { throw "get-dotnetup.ps1 exited with code $LASTEXITCODE." }
+        Invoke-GetDotnetupScript -ScriptPath $getterScript -InstallDir $DotnetupDir -ErrorLabel "get-dotnetup.ps1"
     }
     finally {
         Remove-Item $getterScript -Force -ErrorAction SilentlyContinue
