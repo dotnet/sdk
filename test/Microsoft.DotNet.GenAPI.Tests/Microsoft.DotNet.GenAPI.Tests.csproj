@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Moq" />
   </ItemGroup>
 
