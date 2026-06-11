@@ -166,6 +166,27 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         }
 
         [Fact]
+        public void RestoresAndLists_FileBasedApp()
+        {
+            var packageId = "Newtonsoft.Json";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
+
+            var testInstance = _testAssetsManager.CreateTestDirectory();
+            var file = Path.Join(testInstance.Path, "file.cs");
+            File.WriteAllText(file, $"""
+                #:package {packageId}@{packageVersion}
+                Console.WriteLine();
+                """);
+
+            new DotnetCommand(Log, "list", "file.cs", "package")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(packageId)
+                .And.HaveStdOutContaining(packageVersion);
+        }
+
+        [Fact]
         public void ItListsTransitivePackage()
         {
             var testProject = new TestProject

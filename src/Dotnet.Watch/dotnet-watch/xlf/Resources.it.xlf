@@ -97,7 +97,7 @@ Esempi:
       </trans-unit>
       <trans-unit id="Help_Device">
         <source>The device identifier to run on (e.g. emulator, simulator, or physical device).</source>
-        <target state="new">The device identifier to run on (e.g. emulator, simulator, or physical device).</target>
+        <target state="translated">Identificatore del dispositivo su cui eseguire l'operazione (ad es. emulatore, simulatore o dispositivo fisico).</target>
         <note />
       </trans-unit>
       <trans-unit id="Help_List">
@@ -149,7 +149,7 @@ Esempi:
       </trans-unit>
       <trans-unit id="MoreDevicesText">
         <source>Move up and down to reveal more devices</source>
-        <target state="new">Move up and down to reveal more devices</target>
+        <target state="translated">Scorri verso l'alto o verso il basso per visualizzare altri dispositivi</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreFrameworksText">
@@ -164,7 +164,7 @@ Esempi:
       </trans-unit>
       <trans-unit id="SelectDevicePrompt">
         <source>Select a device to run on:</source>
-        <target state="new">Select a device to run on:</target>
+        <target state="translated">Selezionare un dispositivo in cui eseguire:</target>
         <note />
       </trans-unit>
       <trans-unit id="SelectTargetFrameworkPrompt">

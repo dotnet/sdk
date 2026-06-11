@@ -32,7 +32,6 @@ internal class MSBuildFileSetFactory(
 
     private readonly ProjectGraphFactory _buildGraphFactory = new(
         [new ProjectRepresentation(rootProjectFile, entryPointFilePath: null)],
-        targetFramework,
         buildProperties: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value),
         logger,
         globalOptions,
@@ -133,7 +132,7 @@ internal class MSBuildFileSetFactory(
             LoadedProjectGraph? projectGraph = null;
             if (requireProjectGraph != null)
             {
-                projectGraph = _buildGraphFactory.TryLoadProjectGraph(requireProjectGraph.Value, cancellationToken);
+                projectGraph = _buildGraphFactory.TryLoadProjectGraph(requireProjectGraph.Value, targetFramework, cancellationToken);
                 if (projectGraph == null && requireProjectGraph == true)
                 {
                     return null;

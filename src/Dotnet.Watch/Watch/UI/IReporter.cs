@@ -209,6 +209,8 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<(int, string)> UpdateBatchFailedWithError = Create(LogEvents.UpdateBatchFailedWithError, Emoji.HotReload);
     public static readonly MessageDescriptor<(int, string)> UpdateBatchExceptionStackTrace = Create(LogEvents.UpdateBatchExceptionStackTrace, Emoji.HotReload);
     public static readonly MessageDescriptor<string> Capabilities = Create(LogEvents.Capabilities, Emoji.HotReload);
+    public static readonly MessageDescriptor<string> ProjectSpecifiesCapabilities = Create(LogEvents.ProjectSpecifiesCapabilities, Emoji.HotReload);
+    public static readonly MessageDescriptor<(Version, string)> UsingCapabilitiesBasedOnTargetFrameworkVersion = Create(LogEvents.UsingCapabilitiesBasedOnTargetFrameworkVersion, Emoji.HotReload);
     public static readonly MessageDescriptor<None> WaitingForFileChangeBeforeRestarting = Create("Waiting for a file to change before restarting ...", Emoji.Wait, LogLevel.Warning);
     public static readonly MessageDescriptor<None> WatchingWithHotReload = Create("Watching with Hot Reload.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<None> RestartInProgress = Create("Restart in progress.", Emoji.Restart, LogLevel.Information);
@@ -220,8 +222,8 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<string> ApplyUpdate_Verbose = Create<string>("{0}", Emoji.Default, LogLevel.Debug);
     public static readonly MessageDescriptor<string> ApplyUpdate_AutoVerbose = Create<string>("{0}", Emoji.Default, LogLevel.Debug);
     public static readonly MessageDescriptor<string> ApplyUpdate_ChangingEntryPoint = Create<string>("{0} Press \"Ctrl + R\" to restart.", Emoji.Warning, LogLevel.Warning);
-    public static readonly MessageDescriptor<None> ConfiguredToLaunchBrowser = Create("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, LogLevel.Debug);
-    public static readonly MessageDescriptor<None> ConfiguredToUseBrowserRefresh = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
+    public static readonly MessageDescriptor<None> ConfiguredToLaunchBrowser = Create("Configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, LogLevel.Debug);
+    public static readonly MessageDescriptor<None> UsingBrowserRefreshMiddleware = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ManualRefreshRequired = Create<string>("Browser refresh is suppressed via environment variable '{0}'. To reload static assets after an update refresh browser manually.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ApplicationWillBeRestarted = Create<string>("Browser refresh is suppressed via environment variable '{0}'. Application will be restarted when updated.", Emoji.Watch, LogLevel.Warning);
     public static readonly MessageDescriptor<None> BrowserRefreshNotSupportedByProjectTargetFramework_ManualRefreshRequired = Create("Browser refresh is not supported by the project target framework. To reload static assets after an update refresh browser manually. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, LogLevel.Warning);
@@ -262,7 +264,8 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<None> UnableToApplyChanges = Create("Unable to apply changes due to compilation errors.", Emoji.HotReload, LogLevel.Information);
     public static readonly MessageDescriptor<None> RestartNeededToApplyChanges = Create("Restart is needed to apply the changes.", Emoji.HotReload, LogLevel.Information);
     public static readonly MessageDescriptor<None> HotReloadEnabled = Create("Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.", Emoji.HotReload, LogLevel.Information);
-    public static readonly MessageDescriptor<string> ProjectDoesNotSupportHotReload = Create<string>("Project does not support Hot Reload: {0}. Application will be restarted when updated.", Emoji.Warning, LogLevel.Warning);
+    public static readonly MessageDescriptor<Version> ProjectDoesNotSupportHotReload_TargetFramework = Create<Version>("Project does not support Hot Reload: Target Framework is older than {0}. Application will be restarted when updated.", Emoji.Warning, LogLevel.Warning);
+    public static readonly MessageDescriptor<(string, string, string, string)> ProjectDoesNotSupportHotReload_Property = Create<(string, string, string, string)>("Project does not support Hot Reload: '{0}' property is '{1}'. Application will be restarted when updated. Set '{2}' project property to '{3}' to enable Hot Reload.", Emoji.Warning, LogLevel.Warning);
     public static readonly MessageDescriptor<None> PressCtrlRToRestart = Create("Press Ctrl+R to restart.", Emoji.LightBulb, LogLevel.Information);
     public static readonly MessageDescriptor<(string, string)> ApplicationKind_BlazorHosted = Create<(string, string)>("Application kind: BlazorHosted. '{0}' references BlazorWebAssembly project '{1}'.", Emoji.Default, LogLevel.Debug);
     public static readonly MessageDescriptor<None> ApplicationKind_BlazorWebAssembly = Create("Application kind: BlazorWebAssembly.", Emoji.Default, LogLevel.Debug);
@@ -283,6 +286,7 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<(IEnumerable<ProjectRepresentation> projects, bool success)> BuildCompletedNotification = CreateNotification<(IEnumerable<ProjectRepresentation> projects, bool success)>();
     public static readonly MessageDescriptor<string> ManifestFileNotFound = Create(LogEvents.ManifestFileNotFound, Emoji.Default);
     public static readonly MessageDescriptor<None> NoDevicesAvailable = Create("No devices are available for this project.", Emoji.Error, LogLevel.Error);
+    public static readonly MessageDescriptor<(string, string)> FileSpecifiesMultipleTargetFrameworks = Create<(string, string)>("File '{0}' specifies multiple target frameworks: '{1}'. Specify which framework to run using '--framework'.", Emoji.Watch, LogLevel.Error);
 }
 
 internal sealed class MessageDescriptor<TArgs>(string? format, Emoji emoji, LogLevel level, EventId id)

@@ -468,6 +468,11 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     public IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
     {
+        if (packageSourceLocation?.PackageSourceOverrides?.Any() ?? false)
+        {
+            return packageSourceLocation.PackageSourceOverrides;
+        }
+
         var sources = (packageSourceLocation?.SourceFeedOverrides.Any() ?? false) ?
             LoadOverrideSources(packageSourceLocation) :
             LoadDefaultSources(packageId, packageSourceLocation, packageSourceMapping);

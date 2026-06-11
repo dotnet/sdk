@@ -60,7 +60,7 @@ internal abstract partial class HotReloadAppModel()
     {
         if (!project.IsNetCoreApp(Versions.Version6_0))
         {
-            LogWarning("target framework is older than 6.0");
+            logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_TargetFramework, Versions.Version6_0);
             return false;
         }
 
@@ -80,13 +80,10 @@ internal abstract partial class HotReloadAppModel()
                 ? (PropertyNames.PublishTrimmed, true)
                 : (PropertyNames.StartupHookSupport, false);
 
-            LogWarning(string.Format("'{0}' property is '{1}'", propertyName, propertyValue));
+            logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, propertyName, propertyValue.ToString(), PropertyNames.StartupHookSupport, "True");
             return false;
         }
 
         return true;
-
-        void LogWarning(string reason)
-            => logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload, reason);
     }
 }

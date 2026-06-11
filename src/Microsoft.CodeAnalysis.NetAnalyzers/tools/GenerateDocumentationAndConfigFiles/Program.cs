@@ -32,6 +32,7 @@ namespace GenerateDocumentationAndConfigFiles
         {
             const int expectedArguments = 23;
             const string validateOnlyPrefix = "-validateOnly:";
+            const string analyzerVersionTemplate = "${AnalyzerVersion}";
 
             if (args.Length != expectedArguments)
             {
@@ -450,7 +451,9 @@ namespace GenerateDocumentationAndConfigFiles
 
                     if (!string.IsNullOrWhiteSpace(analyzerVersion))
                     {
-                        writer.Write("version", analyzerVersion);
+                        // Keep the checked-in SARIF stable across SDK version updates.
+                        // The build resolves this placeholder into the intermediate output that gets packed.
+                        writer.Write("version", analyzerVersionTemplate);
                     }
 
                     writer.Write("language", culture.Name);

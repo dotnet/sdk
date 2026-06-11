@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -11,7 +11,7 @@ public class MauiHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(
     /// Currently only works on Windows.
     /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
     /// </summary>
-    [PlatformSpecificTheory(TestPlatforms.Windows)]
+    [PlatformSpecificTheory(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/54150")]
     [CombinatorialData]
     public async Task MauiBlazor(bool selectTfm)
     {
