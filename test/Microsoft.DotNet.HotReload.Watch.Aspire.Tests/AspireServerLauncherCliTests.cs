@@ -30,7 +30,7 @@ public class AspireServerLauncherCliTests
     public void MinimalRequiredOptions()
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk" };
-        var launcher = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
+        var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
         Assert.AreEqual("pipe1", launcher.ServerPipeName);
         Assert.AreEqual(LogLevel.Information, launcher.GlobalOptions.LogLevel);
         Assert.IsEmpty(launcher.ResourcePaths);
@@ -42,7 +42,7 @@ public class AspireServerLauncherCliTests
     public void ResourceOption_SingleValue()
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--resource", "proj1.csproj" };
-        var launcher = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
+        var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
         AssertEx.SequenceEqual(["proj1.csproj"], launcher.ResourcePaths);
     }
 
@@ -50,7 +50,7 @@ public class AspireServerLauncherCliTests
     public void ResourceOption_MultipleValues()
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--resource", "proj1.csproj", "proj2.csproj", "file.cs" };
-        var launcher = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
+        var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
         AssertEx.SequenceEqual(["proj1.csproj", "proj2.csproj", "file.cs"], launcher.ResourcePaths);
     }
 
@@ -58,7 +58,7 @@ public class AspireServerLauncherCliTests
     public void ResourceOption_MultipleFlags()
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--resource", "proj1.csproj", "--resource", "proj2.csproj" };
-        var launcher = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
+        var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
         AssertEx.SequenceEqual(["proj1.csproj", "proj2.csproj"], launcher.ResourcePaths);
     }
 
@@ -66,7 +66,7 @@ public class AspireServerLauncherCliTests
     public void StatusPipeOption()
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--status-pipe", "status1" };
-        var launcher = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
+        var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
         Assert.AreEqual("status1", launcher.StatusPipeName);
     }
 
@@ -74,7 +74,7 @@ public class AspireServerLauncherCliTests
     public void ControlPipeOption()
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--control-pipe", "control1" };
-        var launcher = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
+        var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
         Assert.AreEqual("control1", launcher.ControlPipeName);
     }
 
@@ -83,12 +83,12 @@ public class AspireServerLauncherCliTests
     {
         // With verbose flag
         var argsVerbose = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--verbose" };
-        var launcherVerbose = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(argsVerbose));
+        var launcherVerbose = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(argsVerbose));
         Assert.AreEqual(LogLevel.Debug, launcherVerbose.GlobalOptions.LogLevel);
 
         // Without verbose flag
         var argsNotVerbose = new[] { "server", "--server", "pipe1", "--sdk", "sdk" };
-        var launcherNotVerbose = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(argsNotVerbose));
+        var launcherNotVerbose = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(argsNotVerbose));
         Assert.AreEqual(LogLevel.Information, launcherNotVerbose.GlobalOptions.LogLevel);
     }
 
@@ -97,12 +97,12 @@ public class AspireServerLauncherCliTests
     {
         // With quiet flag
         var argsQuiet = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--quiet" };
-        var launcherQuiet = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(argsQuiet));
+        var launcherQuiet = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(argsQuiet));
         Assert.AreEqual(LogLevel.Warning, launcherQuiet.GlobalOptions.LogLevel);
 
         // Without quiet flag
         var argsNotQuiet = new[] { "server", "--server", "pipe1", "--sdk", "sdk" };
-        var launcherNotQuiet = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(argsNotQuiet));
+        var launcherNotQuiet = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(argsNotQuiet));
         Assert.AreEqual(LogLevel.Information, launcherNotQuiet.GlobalOptions.LogLevel);
     }
 
@@ -119,7 +119,7 @@ public class AspireServerLauncherCliTests
     public void AllOptionsSet()
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--resource", "proj1.csproj", "proj2.csproj", "--status-pipe", "status1", "--control-pipe", "control1", "--verbose" };
-        var launcher = Assert.IsInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
+        var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
 
         Assert.AreEqual("pipe1", launcher.ServerPipeName);
         Assert.AreEqual(LogLevel.Debug, launcher.GlobalOptions.LogLevel);
