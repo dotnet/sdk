@@ -829,7 +829,21 @@ public class RunCommand
         // bl information to synchronize the restore and build logger configurations
         var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList();
 
-        LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
+        // Arguments appearing after '--' in the command line are always forwarded to the application as-is.
+        // They should never be treated as MSBuild arguments, even if they look like binlog flags (e.g. '-bl').
+        var argsAfterDoubleDash = parseResult.Tokens
+            .SkipWhile(static t => t.Type != TokenType.DoubleDash)
+            .Where(static t => t.Type == TokenType.Argument)
+            .Select(static t => t.Value)
+            .ToList();
+
+        // Only check the pre-'--' portion of applicationArguments for binlog flags.
+        var argsBeforeDoubleDash = applicationArguments is not null
+            ? applicationArguments.Take(applicationArguments.Count - argsAfterDoubleDash.Count).ToList()
+            : null;
+
+        LoggerUtility.SeparateBinLogArguments(argsBeforeDoubleDash, out var binLogArgs, out var nonBinLogArgs);
+        nonBinLogArgs.AddRange(argsAfterDoubleDash);
 
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(definition).ToList();
         if (binLogArgs.Count > 0)

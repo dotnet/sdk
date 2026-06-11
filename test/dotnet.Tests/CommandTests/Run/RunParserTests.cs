@@ -36,6 +36,21 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.ApplicationArgs.Single().Should().Be("foo");
         }
 
+        [Fact]
+        public void RunParserDoesNotSwallowBinlogArgAfterDoubleDash()
+        {
+            // Regression test for https://github.com/dotnet/sdk/issues/54715
+            // 'dotnet run -- -bl' should pass '-bl' to the application, not consume it as an MSBuild binlog flag.
+            var tam = new TestAssetsManager(output);
+            var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            var projectPath = Path.Combine(newWorkingDir, "HelloWorld.csproj");
+
+            var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath, "--", "-bl" });
+            runCommand.ApplicationArgs.Single().Should().Be("-bl");
+        }
+
         [WindowsOnlyFact]
         public void RunParserAcceptsWindowsPathSeparatorsOnWindows()
         {
