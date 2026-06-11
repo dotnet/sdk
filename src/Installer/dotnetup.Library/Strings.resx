@@ -177,46 +177,46 @@
   <data name="InitCommandDescription" xml:space="preserve">
     <value>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</value>
   </data>
-  <data name="PathPreferenceDotnetupDotnet" xml:space="preserve">
+  <data name="PathPreferenceNone" xml:space="preserve">
     <value>Isolation Mode</value>
   </data>
-  <data name="PathPreferenceShellProfile" xml:space="preserve">
+  <data name="PathPreferenceShell" xml:space="preserve">
     <value>Terminal Mode (Suggested)</value>
   </data>
-  <data name="PathPreferenceFullReplacement" xml:space="preserve">
+  <data name="PathPreferenceAll" xml:space="preserve">
     <value>Replacement Mode</value>
   </data>
-  <data name="PathGuidanceDotnetupDotnet" xml:space="preserve">
+  <data name="PathGuidanceNone" xml:space="preserve">
     <value>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</value>
   </data>
-  <data name="PathGuidanceShellProfile" xml:space="preserve">
+  <data name="PathGuidanceShell" xml:space="preserve">
     <value>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</value>
   </data>
-  <data name="PathGuidanceFullReplacement" xml:space="preserve">
+  <data name="PathGuidanceAll" xml:space="preserve">
     <value>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</value>
   </data>
-  <data name="PathDescriptionDotnetupDotnet" xml:space="preserve">
+  <data name="PathDescriptionNone" xml:space="preserve">
     <value>Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</value>
   </data>
-  <data name="PathDescriptionShellProfile" xml:space="preserve">
+  <data name="PathDescriptionShell" xml:space="preserve">
     <value>Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</value>
   </data>
-  <data name="PathDescriptionShellProfileBase" xml:space="preserve">
+  <data name="PathDescriptionShellBase" xml:space="preserve">
     <value>Configure the current shell profile to use installs managed by dotnetup.</value>
   </data>
-  <data name="PathDescriptionFullReplacement" xml:space="preserve">
+  <data name="PathDescriptionAll" xml:space="preserve">
     <value>The system will be configured to use dotnetup installs over any other installs.</value>
   </data>
-  <data name="PathTooltipDotnetupDotnet" xml:space="preserve">
+  <data name="PathTooltipNone" xml:space="preserve">
     <value>Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</value>
   </data>
-  <data name="PathTooltipShellProfile" xml:space="preserve">
+  <data name="PathTooltipShell" xml:space="preserve">
     <value>Modify the current shell profile file to consume dotnetup on PATH environment variables. Recommended for users who want to develop using dotnetup and launch their IDE through the terminal.</value>
   </data>
-  <data name="PathTooltipShellProfileWindowsNote" xml:space="preserve">
+  <data name="PathTooltipShellWindowsNote" xml:space="preserve">
     <value>Only PowerShell will work in this mode. CMD has no profile file.</value>
   </data>
-  <data name="PathTooltipFullReplacement" xml:space="preserve">
+  <data name="PathTooltipAll" xml:space="preserve">
     <value>Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</value>
   </data>
   <data name="PathReplacementModeUnixError" xml:space="preserve">

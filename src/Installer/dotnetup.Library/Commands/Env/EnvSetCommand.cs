@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
@@ -25,8 +26,9 @@ internal class EnvSetCommand : CommandBase
     {
         if (_target == PathPreference.All && !OperatingSystem.IsWindows())
         {
-            throw new InvalidOperationException(
-                $"'env set all' is only supported on Windows. Use 'env set shell' on this platform.");
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.PlatformNotSupported,
+                "'env set all' is only supported on Windows. Use 'env set shell' on this platform.");
         }
 
         PathPreference? previous = DotnetupConfig.ReadPathPreference();

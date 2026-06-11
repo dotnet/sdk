@@ -284,22 +284,22 @@ internal class InitWorkflows
 
         string isolationTooltip = string.Format(
             CultureInfo.InvariantCulture,
-            Strings.PathTooltipDotnetupDotnet,
+            Strings.PathTooltipNone,
             isWindows ? "Program Files" : "/usr/local");
 
         string terminalTooltip = isWindows
-            ? Strings.PathTooltipShellProfile + " " + Strings.PathTooltipShellProfileWindowsNote
-            : Strings.PathTooltipShellProfile;
+            ? Strings.PathTooltipShell + " " + Strings.PathTooltipShellWindowsNote
+            : Strings.PathTooltipShell;
 
         var options = new List<SelectableOption>
         {
-            new("i", Strings.PathPreferenceDotnetupDotnet, Strings.PathDescriptionDotnetupDotnet, isolationTooltip),
-            new("t", Strings.PathPreferenceShellProfile,   isWindows ? Strings.PathDescriptionShellProfile : Strings.PathDescriptionShellProfileBase,   terminalTooltip),
+            new("i", Strings.PathPreferenceNone, Strings.PathDescriptionNone, isolationTooltip),
+            new("t", Strings.PathPreferenceShell, isWindows ? Strings.PathDescriptionShell : Strings.PathDescriptionShellBase, terminalTooltip),
         };
 
         if (isWindows)
         {
-            options.Add(new("r", Strings.PathPreferenceFullReplacement, Strings.PathDescriptionFullReplacement, Strings.PathTooltipFullReplacement));
+            options.Add(new("r", Strings.PathPreferenceAll, Strings.PathDescriptionAll, Strings.PathTooltipAll));
         }
 
         int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex: 1);
@@ -536,9 +536,9 @@ internal class InitWorkflows
     {
         string? guidance = preference switch
         {
-            PathPreference.None => Strings.PathGuidanceDotnetupDotnet,
-            PathPreference.Shell => Strings.PathGuidanceShellProfile,
-            PathPreference.All => Strings.PathGuidanceFullReplacement,
+            PathPreference.None => Strings.PathGuidanceNone,
+            PathPreference.Shell => Strings.PathGuidanceShell,
+            PathPreference.All => Strings.PathGuidanceAll,
             _ => null,
         };
 

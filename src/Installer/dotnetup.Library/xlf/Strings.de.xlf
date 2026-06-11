@@ -127,52 +127,52 @@
         <target state="new">Total</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathDescriptionDotnetupDotnet">
-        <source>Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</source>
-        <target state="new">Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathDescriptionFullReplacement">
+      <trans-unit id="PathDescriptionAll">
         <source>The system will be configured to use dotnetup installs over any other installs.</source>
         <target state="new">The system will be configured to use dotnetup installs over any other installs.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathDescriptionShellProfile">
+      <trans-unit id="PathDescriptionNone">
+        <source>Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</source>
+        <target state="new">Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathDescriptionShell">
         <source>Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</source>
         <target state="new">Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathDescriptionShellProfileBase">
+      <trans-unit id="PathDescriptionShellBase">
         <source>Configure the current shell profile to use installs managed by dotnetup.</source>
         <target state="new">Configure the current shell profile to use installs managed by dotnetup.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathGuidanceDotnetupDotnet">
-        <source>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</source>
-        <target state="new">You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathGuidanceFullReplacement">
+      <trans-unit id="PathGuidanceAll">
         <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
         <target state="new">PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathGuidanceShellProfile">
+      <trans-unit id="PathGuidanceNone">
+        <source>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</source>
+        <target state="new">You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceShell">
         <source>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</source>
         <target state="new">Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathPreferenceDotnetupDotnet">
-        <source>Isolation Mode</source>
-        <target state="new">Isolation Mode</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathPreferenceFullReplacement">
+      <trans-unit id="PathPreferenceAll">
         <source>Replacement Mode</source>
         <target state="new">Replacement Mode</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathPreferenceShellProfile">
+      <trans-unit id="PathPreferenceNone">
+        <source>Isolation Mode</source>
+        <target state="new">Isolation Mode</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathPreferenceShell">
         <source>Terminal Mode (Suggested)</source>
         <target state="new">Terminal Mode (Suggested)</target>
         <note />
@@ -182,22 +182,22 @@
         <target state="new">Replacement Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathTooltipDotnetupDotnet">
-        <source>Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</source>
-        <target state="new">Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathTooltipFullReplacement">
+      <trans-unit id="PathTooltipAll">
         <source>Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</source>
         <target state="new">Recommended for users who want all of their debuggers, applications, and IDEs to use dotnetup installs by default. Admin privileges are required. Enables 'cmd' functionality by default. Other user accounts on this machine will be impacted and applications may break.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathTooltipShellProfile">
+      <trans-unit id="PathTooltipNone">
+        <source>Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</source>
+        <target state="new">Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathTooltipShell">
         <source>Modify the current shell profile file to consume dotnetup on PATH environment variables. Recommended for users who want to develop using dotnetup and launch their IDE through the terminal.</source>
         <target state="new">Modify the current shell profile file to consume dotnetup on PATH environment variables. Recommended for users who want to develop using dotnetup and launch their IDE through the terminal.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathTooltipShellProfileWindowsNote">
+      <trans-unit id="PathTooltipShellWindowsNote">
         <source>Only PowerShell will work in this mode. CMD has no profile file.</source>
         <target state="new">Only PowerShell will work in this mode. CMD has no profile file.</target>
         <note />

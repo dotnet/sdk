@@ -59,8 +59,19 @@ internal static class PathPreferenceApplier
         }
 
         // 2. Unwind: remove the managed profile block if we no longer want a profile entry.
-        if (prevWroteProfile && !nowWritesProfile && shellProvider is not null)
+        if (prevWroteProfile && !nowWritesProfile)
         {
+            if (shellProvider is null)
+            {
+                // We must remove the managed block we previously wrote, but we can't
+                // detect the active shell. Silently skipping would leave the entry behind
+                // and the env vars exported on every shell startup, contradicting the new
+                // mode. Fail loudly with a hint so the user can re-run with --shell.
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.PlatformNotSupported,
+                    "Could not detect the current shell, which is required to remove the dotnetup profile entry written by the previous mode. Re-run with --shell <bash|zsh|fish|pwsh> to specify it explicitly.");
+            }
+
             ShellProfileManager.RemoveProfileEntries(shellProvider);
         }
 
