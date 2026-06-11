@@ -19,6 +19,11 @@ parameters:
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
+  # Runs the NativeAOT CLI tests (test/dotnet-aot.Tests) on the build agent after the build.
+  # These publish the test assembly as a NativeAOT binary and run it on the same architecture,
+  # validating the AOT CLI entry-point code under NativeAOT compilation. This is distinct from
+  # runAoTTests, which runs the Blazor WebAssembly AoT tests on Helix.
+  runNativeAotCliTests: false
   ### MSBUILD ###
   targetArchitecture: x64
   publishArgument: ''
@@ -178,6 +183,42 @@ jobs:
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
             TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
+
+    ############### NATIVE AOT CLI TESTS ###############
+    # Publishes test/dotnet-aot.Tests as a NativeAOT binary and runs it on the build agent
+    # (same architecture, native toolchain already present from the build). Runs after the
+    # Helix queue step so it never prevents the broader Helix test submission.
+    - ${{ if eq(parameters.runNativeAotCliTests, true) }}:
+      - ${{ if eq(parameters.pool.os, 'windows') }}:
+        - powershell: |
+            test/dotnet-aot.Tests/run-aot-tests.ps1 `
+              -Configuration $(buildConfiguration) `
+              -RuntimeIdentifier win-${{ parameters.targetArchitecture }} `
+              -Trx `
+              -ResultsDirectory $(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)
+          displayName: 🟣 Run NativeAOT CLI Tests
+      - ${{ else }}:
+        - script: |
+            os='${{ parameters.pool.os }}'
+            if [ "$os" = 'macOS' ]; then rid_os='osx'; else rid_os='linux'; fi
+            chmod +x test/dotnet-aot.Tests/run-aot-tests.sh
+            test/dotnet-aot.Tests/run-aot-tests.sh \
+              --configuration $(buildConfiguration) \
+              --rid "$rid_os-${{ parameters.targetArchitecture }}" \
+              --trx \
+              --results-directory $(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)
+          displayName: 🟣 Run NativeAOT CLI Tests
+
+      - task: PublishTestResults@2
+        displayName: 🟣 Publish NativeAOT CLI Test Results
+        inputs:
+          testResultsFormat: VSTest
+          testResultsFiles: artifacts/TestResults/$(buildConfiguration)/dotnet-aot.Tests.trx
+          testRunTitle: NativeAOT CLI ($(System.PhaseName))
+          buildPlatform: ${{ parameters.targetArchitecture }}
+          buildConfiguration: $(buildConfiguration)
+        continueOnError: true
+        condition: always()
 
     ############### POST ###############
     - ${{ if eq(parameters.publishXunitResults, true) }}:

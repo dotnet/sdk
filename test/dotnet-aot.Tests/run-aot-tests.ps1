@@ -24,6 +24,13 @@
 .PARAMETER NoBuild
     Skip the publish step and run a previously published binary.
 
+.PARAMETER Trx
+    Emit a TRX test report (for CI result publishing). The report is written to
+    ResultsDirectory (defaults to <repo>/artifacts/TestResults/<Configuration>).
+
+.PARAMETER ResultsDirectory
+    Directory for the TRX report when -Trx is specified.
+
 .EXAMPLE
     ./run-aot-tests.ps1
     ./run-aot-tests.ps1 -Configuration Release
@@ -33,7 +40,9 @@
 param(
     [string]$Configuration = "Debug",
     [string]$RuntimeIdentifier,
-    [switch]$NoBuild
+    [switch]$NoBuild,
+    [switch]$Trx,
+    [string]$ResultsDirectory
 )
 
 $ErrorActionPreference = "Stop"
@@ -103,7 +112,18 @@ if (-not (Test-Path $exePath)) {
 Write-Host "Running AOT tests..." -ForegroundColor Yellow
 Write-Host ""
 
-& $exePath
+# When -Trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
+# app, so it accepts the --report-trx options) so CI can publish the results.
+$runArgs = @()
+if ($Trx) {
+    if (-not $ResultsDirectory) {
+        $ResultsDirectory = Join-Path $repoRoot "artifacts" "TestResults" $Configuration
+    }
+    New-Item -ItemType Directory -Path $ResultsDirectory -Force | Out-Null
+    $runArgs += @("--report-trx", "--report-trx-filename", "dotnet-aot.Tests.trx", "--results-directory", $ResultsDirectory)
+}
+
+& $exePath @runArgs
 $testExitCode = $LASTEXITCODE
 
 Write-Host ""
