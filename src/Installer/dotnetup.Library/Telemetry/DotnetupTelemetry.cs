@@ -403,12 +403,8 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Returns the flush timeout appropriate for the current environment.
     /// Interactive shells get 10ms to match the .NET SDK CLI's 10ms flush.
     ///
-    /// Only non-interactive CI/one-and-done environments get the larger
-    /// 200ms budget because there's no follow-up invocation to drain the
-    /// AzMonitor offline store, and the extra latency is acceptable on a
-    /// one-shot automated run. An interactive terminal (output not
-    /// redirected) always stays on the fast 10ms path, even if CI is
-    /// detected, so a developer at a CI-tagged shell never pays the wait.
+    /// Only non-interactive CI/one-and-done environments get the larger 200ms budget. (200 taken from the pre aot-era .NET SDK budget)
+    /// There's no follow-up invocation to drain the AzMonitor offline store.
     /// </summary>
     internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment && Console.IsOutputRedirected ? 200 : 10;
 
