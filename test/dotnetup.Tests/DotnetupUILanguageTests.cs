@@ -133,12 +133,12 @@ public class DotnetupUILanguageOverrideTests : IDisposable
     }
 
     [Fact]
-    public void ResolveUICulture_HonorsDotnetCliUiLanguageOffLinux()
+    public void ResolveUICulture_AppliesOverrideAsIsOnNonInvariantPlatforms()
     {
         // On Windows/macOS dotnetup runs non-invariant and the override is applied as-is (the
-        // runtime's parent fallback resolves resources). On Linux it is instead mapped onto a
-        // shipped satellite, which is covered by MatchSupportedLanguage tests.
-        if (OperatingSystem.IsLinux())
+        // runtime's parent fallback resolves resources). On invariant platforms it is instead
+        // mapped onto a shipped satellite, which the next test covers.
+        if (DotnetupUILanguage.PlatformRunsInvariant)
         {
             return;
         }
@@ -149,11 +149,11 @@ public class DotnetupUILanguageOverrideTests : IDisposable
     }
 
     [Fact]
-    public void ResolveUICulture_MapsOverrideToSatelliteOnLinux()
+    public void ResolveUICulture_MapsOverrideToSatelliteOnInvariantPlatforms()
     {
-        // On Linux the override is resolved with the same code as the rest of the .NET CLI and then
-        // mapped onto a shipped satellite (fr-FR -> fr). Off Linux it is applied as-is (above).
-        if (!OperatingSystem.IsLinux())
+        // On invariant platforms (Linux, etc.) the override is resolved with the same code as the
+        // rest of the .NET CLI and then mapped onto a shipped satellite (fr-FR -> fr).
+        if (!DotnetupUILanguage.PlatformRunsInvariant)
         {
             return;
         }
@@ -164,11 +164,11 @@ public class DotnetupUILanguageOverrideTests : IDisposable
     }
 
     [Fact]
-    public void ResolveUICulture_WithoutOverride_DefersToRuntimeOffLinux()
+    public void ResolveUICulture_WithoutOverride_DefersToRuntimeOnNonInvariantPlatforms()
     {
         // On Windows and macOS the runtime already initialized CurrentUICulture from the OS, so
         // ResolveUICulture returns null to leave it untouched.
-        if (OperatingSystem.IsLinux())
+        if (DotnetupUILanguage.PlatformRunsInvariant)
         {
             return;
         }

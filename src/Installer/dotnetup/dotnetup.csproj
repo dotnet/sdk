@@ -29,16 +29,16 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <!-- Globalization: only Linux lacks a guaranteed libicu, so build invariant there to avoid a
-       startup crash ("Couldn't find a valid ICU package"). Windows and macOS ship globalization
-       in-box (and NativeAOT uses the OS ICU there rather than bundling data), so they run
-       non-invariant and the runtime initializes the UI culture from the OS automatically.
-       PredefinedCulturesOnly is relaxed in invariant mode so DotnetupUILanguage can create the
-       detected culture by name for localized resource lookup.
-       Keyed off TargetOS rather than the RID so source-build's non-portable RIDs (e.g.
-       fedora.36-x64) are still recognized as Linux. -->
+  <!-- Globalization: build invariant by default so the NativeAOT binary has no dependency on
+       libicu and cannot crash on startup with "Couldn't find a valid ICU package". Only Windows
+       and macOS are known to ship globalization in-box (and NativeAOT uses the OS ICU there rather
+       than bundling data), so opt those back into full globalization; every other OS (Linux —
+       including musl/Alpine — FreeBSD, etc.) stays invariant. PredefinedCulturesOnly is relaxed
+       in invariant mode so DotnetupUILanguage can create the detected culture by name for localized
+       resource lookup. -->
   <PropertyGroup>
-    <InvariantGlobalization Condition="'$(TargetOS)' == 'linux'">true</InvariantGlobalization>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantGlobalization Condition="'$(OSName)' == 'win' or '$(OSName)' == 'osx'">false</InvariantGlobalization>
     <PredefinedCulturesOnly Condition="'$(InvariantGlobalization)' == 'true'">false</PredefinedCulturesOnly>
   </PropertyGroup>
 

@@ -9,25 +9,27 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// <summary>
 /// Resolves and applies the user's UI language for dotnetup.
 ///
-/// dotnetup is published with <c>InvariantGlobalization=true</c> only on Linux, where libicu is
-/// not guaranteed to be present (running non-invariant there crashes on startup with
-/// "Couldn't find a valid ICU package"). Windows and macOS ship globalization in-box, so the
-/// binary runs non-invariant there and the runtime initializes
-/// <see cref="CultureInfo.CurrentUICulture"/> from the operating system automatically.
+/// dotnetup is published with <c>InvariantGlobalization=true</c> on every platform except Windows
+/// and macOS, which are the only ones known to ship globalization in-box. Elsewhere (Linux,
+/// including musl/Alpine, FreeBSD, etc.) libicu is not guaranteed, and running non-invariant there
+/// crashes on startup with "Couldn't find a valid ICU package". On the invariant platforms the
+/// runtime no longer initializes <see cref="CultureInfo.CurrentUICulture"/> from the operating
+/// system, so it would otherwise always be the invariant (English) culture.
 ///
 /// This type therefore:
 /// <list type="bullet">
-/// <item>On Windows/macOS, applies only the standard .NET CLI override
+/// <item>On Windows/macOS (non-invariant), applies only the standard .NET CLI override
 /// (<c>DOTNET_CLI_UI_LANGUAGE</c> / <c>VSLANG</c>), since the runtime already initialized the UI
 /// culture and <see cref="CultureInfo"/>'s parent fallback works.</item>
-/// <item>On Linux, where invariant mode disables both the runtime's OS-locale detection and
-/// <see cref="CultureInfo.Parent"/> fallback, resolves the desired locale (override, else the
-/// POSIX environment) and maps it onto an exact shipped satellite culture via
-/// <see cref="MatchSupportedLanguage"/>.</item>
+/// <item>On the invariant platforms, where invariant mode disables both the runtime's OS-locale
+/// detection and <see cref="CultureInfo.Parent"/> fallback, resolves the desired locale (the same
+/// CLI override, else the POSIX environment) and maps it onto an exact shipped satellite culture
+/// via <see cref="MatchSupportedLanguage"/>.</item>
 /// </list>
-/// On Linux the project also sets <c>PredefinedCulturesOnly=false</c> so the matched culture can
-/// be created by name (it carries invariant formatting data but retains its name, which is what
-/// drives satellite-resource lookup).
+/// On the invariant platforms the project also sets <c>PredefinedCulturesOnly=false</c> so the
+/// matched culture can be created by name (it carries invariant formatting data but retains its
+/// name, which is what drives satellite-resource lookup). The Windows/macOS-vs-rest split here
+/// mirrors the <c>InvariantGlobalization</c> condition in dotnetup.csproj.
 /// </summary>
 internal static class DotnetupUILanguage
 {
@@ -35,9 +37,9 @@ internal static class DotnetupUILanguage
     // message category, then LANG as the catch-all default.
     private static readonly string[] s_posixLocaleVariables = ["LC_ALL", "LC_MESSAGES", "LANG"];
 
-    // The UI languages dotnetup ships satellite resources for. In invariant mode (Linux) the
-    // runtime provides no parent/neutral culture fallback, so the applied culture must exactly
-    // match one of these names; MatchSupportedLanguage maps an OS/CLI locale onto the right entry.
+    // The UI languages dotnetup ships satellite resources for. In invariant mode the runtime
+    // provides no parent/neutral culture fallback, so the applied culture must exactly match one
+    // of these names; MatchSupportedLanguage maps an OS/CLI locale onto the right entry.
     // Keep in sync with the Strings.*.xlf files — DotnetupUILanguageTests enforces this.
     private static readonly string[] s_supportedUILanguages =
     [
@@ -46,6 +48,10 @@ internal static class DotnetupUILanguage
 
     /// <summary>The UI languages dotnetup ships localized resources for (satellite culture names).</summary>
     internal static IReadOnlyList<string> SupportedUILanguages => s_supportedUILanguages;
+
+    // Windows and macOS run non-invariant (they ship globalization in-box); every other platform
+    // runs invariant. Mirrors the InvariantGlobalization condition in dotnetup.csproj.
+    internal static bool PlatformRunsInvariant => !OperatingSystem.IsWindows() && !OperatingSystem.IsMacOS();
 
     /// <summary>
     /// Detects the user's UI language and applies it to the current process so localized
@@ -69,16 +75,17 @@ internal static class DotnetupUILanguage
     {
         // Windows and macOS run non-invariant: the runtime initialized CurrentUICulture from the
         // OS and CultureInfo's parent fallback works, so only the explicit CLI override is applied.
-        if (!OperatingSystem.IsLinux())
+        if (!PlatformRunsInvariant)
         {
             return UILanguageOverride.GetOverriddenUILanguage();
         }
 
-        // Linux runs invariant: there is no parent/neutral fallback, so the applied culture must
-        // exactly match a shipped satellite. Resolve the desired locale with the same override
-        // resolver as the rest of the .NET CLI (DOTNET_CLI_UI_LANGUAGE > VSLANG), else the POSIX
-        // environment, then map it onto a satellite. (A VSLANG LCID cannot be turned into a named
-        // culture in invariant mode, so it resolves to empty and falls through to the environment.)
+        // Invariant platforms (Linux, etc.): there is no parent/neutral fallback, so the applied
+        // culture must exactly match a shipped satellite. Resolve the desired locale with the same
+        // override resolver as the rest of the .NET CLI (DOTNET_CLI_UI_LANGUAGE > VSLANG), else the
+        // POSIX environment, then map it onto a satellite. (A VSLANG LCID cannot be turned into a
+        // named culture in invariant mode, so it resolves to empty and falls through to the
+        // environment.)
         string? desired = UILanguageOverride.GetOverriddenUILanguage()?.Name;
         if (string.IsNullOrWhiteSpace(desired))
         {
