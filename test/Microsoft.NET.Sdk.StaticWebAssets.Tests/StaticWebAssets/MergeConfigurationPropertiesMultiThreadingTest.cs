@@ -19,6 +19,14 @@ public class MergeConfigurationPropertiesMultiThreadingTest
     [Fact]
     public void ResolvesProjectReferencePathRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
+        // Scope of this test: verify that the *ProjectReferences* side of the path-equality check
+        // in FindMatchingProject is rooted against TaskEnvironment.ProjectDirectory rather than the
+        // process current directory. The *CandidateConfigurations* side (configuration.GetMetadata("FullPath"))
+        // is intentionally passed as an already-absolute path here — that mirrors what MSBuild's
+        // well-known %(FullPath) modifier produces in MT mode (it resolves against the per-task
+        // AsyncLocal working directory, not the process CWD) and is also what the equality check
+        // requires in order to compare against the OS-canonical form on the other side.
+        //
         // Layout (must place the two roots in different subtrees so a relative
         // "../reference/myRcl.csproj" produces *different* absolute paths
         // depending on which root it is resolved against):

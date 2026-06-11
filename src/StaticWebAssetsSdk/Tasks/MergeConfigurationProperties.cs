@@ -113,9 +113,6 @@ public class MergeConfigurationProperties : Task, IMultiThreadableTask
             // We can be more lenient here and fallback to the project reference ItemSpec if not present.
             referenceMetadata = !string.IsNullOrEmpty(referenceMetadata) ? referenceMetadata : projectReference.ItemSpec;
             var configurationFullPath = configuration.GetMetadata("FullPath");
-            // Absolutize via TaskEnvironment so the path is resolved against the project directory, not the process CWD.
-            // Path.GetFullPath on an already-absolute path is safe (no CWD lookup) and resolves ".." segments
-            // to match the old Path.GetFullPath(referenceMetadata) canonical form.
             var projectReferenceFullPath = Path.GetFullPath((string)TaskEnvironment.GetAbsolutePath(referenceMetadata));
             var matchPath = string.Equals(
                 configurationFullPath,
