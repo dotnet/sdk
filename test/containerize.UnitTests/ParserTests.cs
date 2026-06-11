@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -6,9 +6,10 @@ using Microsoft.NET.Build.Containers;
 
 namespace containerize.UnitTests;
 
+[TestClass]
 public class ParserTests
 {
-    [Fact]
+    [TestMethod]
     public void CanParseLabels()
     {
         ContainerizeCommand command = new();
@@ -41,17 +42,17 @@ public class ParserTests
 
         Dictionary<string, string>? labels = parseResult.GetValue(command.LabelsOption);
 
-        Assert.NotNull(labels);
-        Assert.Equal(6, labels.Count);
-        Assert.Empty(labels["NoValue"]);
-        Assert.Equal("Val2", labels["Valid2"]);
-        Assert.Equal("Val 3", labels["Valid3"]);
-        Assert.Equal("\"Val4\"", labels["Valid4"]);
-        Assert.Equal("\"Un1", labels["Unbalanced1"]);
-        Assert.Equal("Un2\"", labels["Unbalanced2"]);
+        Assert.IsNotNull(labels);
+        Assert.AreEqual(6, labels.Count);
+        Assert.IsEmpty(labels["NoValue"]);
+        Assert.AreEqual("Val2", labels["Valid2"]);
+        Assert.AreEqual("Val 3", labels["Valid3"]);
+        Assert.AreEqual("\"Val4\"", labels["Valid4"]);
+        Assert.AreEqual("\"Un1", labels["Unbalanced1"]);
+        Assert.AreEqual("Un2\"", labels["Unbalanced2"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParseLabels2()
     {
         ContainerizeCommand command = new();
@@ -79,15 +80,15 @@ public class ParserTests
 
         Dictionary<string, string>? labels = parseResult.GetValue(command.LabelsOption);
 
-        Assert.NotNull(labels);
-        Assert.Equal(2, labels.Count);
-        Assert.Empty(labels["NoValue"]);
-        Assert.Equal("Val2", labels["Valid2"]);
+        Assert.IsNotNull(labels);
+        Assert.AreEqual(2, labels.Count);
+        Assert.IsEmpty(labels["NoValue"]);
+        Assert.AreEqual("Val2", labels["Valid2"]);
     }
 
-    [Theory]
-    [InlineData("not-a-label")]
-    [InlineData("not", "a", "label")]
+    [TestMethod]
+    [DataRow("not-a-label")]
+    [DataRow("not", "a", "label")]
     public void CanHandleInvalidLabels(params string[] labelStr)
     {
         ContainerizeCommand command = new();
@@ -114,12 +115,12 @@ public class ParserTests
         }
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
-        Assert.Single(parseResult.Errors);
+        Assert.HasCount(1, parseResult.Errors);
 
-        Assert.Equal($"Incorrectly formatted labels: {string.Join(";", labelStr)}", parseResult.Errors[0].Message);
+        Assert.AreEqual($"Incorrectly formatted labels: {string.Join(";", labelStr)}", parseResult.Errors[0].Message);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParseEnvironmentVariables()
     {
         ContainerizeCommand command = new();
@@ -149,21 +150,21 @@ public class ParserTests
 
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
-        Assert.Empty(parseResult.Errors);
+        Assert.IsEmpty(parseResult.Errors);
 
         Dictionary<string, string>? envVars = parseResult.GetValue(command.EnvVarsOption);
 
-        Assert.NotNull(envVars);
-        Assert.Equal(6, envVars.Count);
-        Assert.Empty(envVars["NoValue"]);
-        Assert.Equal("Val2", envVars["Valid2"]);
-        Assert.Equal("Val 3", envVars["Valid3"]);
-        Assert.Equal("\"Val4\"", envVars["Valid4"]);
-        Assert.Equal("\"Un1", envVars["Unbalanced1"]);
-        Assert.Equal("Un2\"", envVars["Unbalanced2"]);
+        Assert.IsNotNull(envVars);
+        Assert.AreEqual(6, envVars.Count);
+        Assert.IsEmpty(envVars["NoValue"]);
+        Assert.AreEqual("Val2", envVars["Valid2"]);
+        Assert.AreEqual("Val 3", envVars["Valid3"]);
+        Assert.AreEqual("\"Val4\"", envVars["Valid4"]);
+        Assert.AreEqual("\"Un1", envVars["Unbalanced1"]);
+        Assert.AreEqual("Un2\"", envVars["Unbalanced2"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void CanParsePorts()
     {
         ContainerizeCommand command = new();
@@ -191,22 +192,22 @@ public class ParserTests
 
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
-        Assert.Empty(parseResult.Errors);
+        Assert.IsEmpty(parseResult.Errors);
 
         Port[]? ports = parseResult.GetValue(command.PortsOption);
 
-        Assert.NotNull(ports);
-        Assert.Equal(4, ports.Length);
+        Assert.IsNotNull(ports);
+        Assert.AreEqual(4, ports.Length);
         Assert.Contains(new Port(1500, PortType.tcp), ports);
         Assert.Contains(new Port(1501, PortType.udp), ports);
         Assert.Contains(new Port(1501, PortType.tcp), ports);
         Assert.Contains(new Port(1502, PortType.tcp), ports);
     }
 
-    [Theory]
-    [InlineData("1501/smth", "(InvalidPortType)")]
-    [InlineData("1501\\tcp", "(InvalidPortNumber)")]
-    [InlineData("not-a-number", "(InvalidPortNumber)")]
+    [TestMethod]
+    [DataRow("1501/smth", "(InvalidPortType)")]
+    [DataRow("1501\\tcp", "(InvalidPortNumber)")]
+    [DataRow("not-a-number", "(InvalidPortNumber)")]
     public void CanHandleInvalidPorts(string portStr, string reason)
     {
         string errorMessage = $"Incorrectly formatted ports:{Environment.NewLine}\t{portStr}:\t{reason}{Environment.NewLine}";
@@ -232,9 +233,9 @@ public class ParserTests
         baseArgs.Add(portStr);
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
-        Assert.Single(parseResult.Errors);
+        Assert.HasCount(1, parseResult.Errors);
 
-        Assert.Equal(errorMessage, parseResult.Errors[0].Message);
+        Assert.AreEqual(errorMessage, parseResult.Errors[0].Message);
     }
 }
 
