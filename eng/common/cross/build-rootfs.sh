@@ -282,7 +282,9 @@ while :; do
             ;;
         noble) # Ubuntu 24.04
             __CodeName=noble
-            __LLDB_Package="liblldb-19-dev"
+            if [[ -z "$__LLDB_Package" ]]; then
+                __LLDB_Package="liblldb-19-dev"
+            fi
             ;;
         stretch) # Debian 9
             __CodeName=stretch
@@ -364,7 +366,7 @@ while :; do
             ;;
         freebsd14)
             __CodeName=freebsd
-            __FreeBSDBase="14.3-RELEASE"
+            __FreeBSDBase="14.2-RELEASE"
             __FreeBSDABI="14"
             __SkipUnmount=1
             ;;

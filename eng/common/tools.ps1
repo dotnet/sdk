@@ -154,6 +154,9 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
     return $global:_DotNetInstallDir
   }
 
+  # Don't resolve runtime, shared framework, or SDK from other locations to ensure build determinism
+  $env:DOTNET_MULTILEVEL_LOOKUP=0
+
   # Disable first run since we do not need all ASP.NET packages restored.
   $env:DOTNET_NOLOGO=1
 
@@ -229,6 +232,7 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   # Make Sure that our bootstrapped dotnet cli is available in future steps of the Azure Pipelines build
   Write-PipelinePrependPath -Path $dotnetRoot
 
+  Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
   Write-PipelineSetVariable -Name 'DOTNET_NOLOGO' -Value '1'
   Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
   Write-PipelineSetVariable -Name 'DOTNET_SKIP_FIRST_TIME_EXPERIENCE' -Value '1'
@@ -264,7 +268,7 @@ function Retry($downloadBlock, $maxRetries = 5) {
 function GetDotNetInstallScript([string] $dotnetRoot) {
   $installScript = Join-Path $dotnetRoot 'dotnet-install.ps1'
   $shouldDownload = $false
-  
+
   if (!(Test-Path $installScript)) {
     $shouldDownload = $true
   } else {
@@ -275,7 +279,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
       $shouldDownload = $true
     }
   }
-  
+
   if ($shouldDownload) {
     Create-Directory $dotnetRoot
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
@@ -283,7 +287,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
 
     Retry({
       Write-Host "GET $uri"
-      Invoke-WebRequest $uri -UseBasicParsing -OutFile $installScript
+      Invoke-WebRequest $uri -OutFile $installScript
     })
   }
 
@@ -314,7 +318,7 @@ function InstallDotNet([string] $dotnetRoot,
     if ($runtime -eq "aspnetcore") { $runtimePath = $runtimePath + "\Microsoft.AspNetCore.App" }
     if ($runtime -eq "windowsdesktop") { $runtimePath = $runtimePath + "\Microsoft.WindowsDesktop.App" }
     $runtimePath = $runtimePath + "\" + $version
-  
+
     $dotnetVersionLabel = "runtime toolset '$runtime/$architecture v$version'"
 
     if (Test-Path $runtimePath) {
@@ -494,30 +498,23 @@ function LocateVisualStudio([object]$vsRequirements = $null){
     Write-Host "Downloading vswhere $vswhereVersion"
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
     Retry({
-      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -UseBasicParsing -OutFile $vswhereExe
+      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
     })
   }
 
-  if (!$vsRequirements) {
-    if (Get-Member -InputObject $GlobalJson.tools -Name 'vs' -ErrorAction SilentlyContinue) {
-      $vsRequirements = $GlobalJson.tools.vs
-    } else {
-      $vsRequirements = $null
-    }
-  }
-
+  if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
   $args = @('-latest', '-format', 'json', '-requires', 'Microsoft.Component.MSBuild', '-products', '*')
 
   if (!$excludePrereleaseVS) {
     $args += '-prerelease'
   }
 
-  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'version' -ErrorAction SilentlyContinue)) {
+  if (Get-Member -InputObject $vsRequirements -Name 'version') {
     $args += '-version'
     $args += $vsRequirements.version
   }
 
-  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'components' -ErrorAction SilentlyContinue)) {
+  if (Get-Member -InputObject $vsRequirements -Name 'components') {
     foreach ($component in $vsRequirements.components) {
       $args += '-requires'
       $args += $component
@@ -527,11 +524,6 @@ function LocateVisualStudio([object]$vsRequirements = $null){
   $vsInfo =& $vsWhereExe $args | ConvertFrom-Json
 
   if ($lastExitCode -ne 0) {
-    return $null
-  }
-
-  if ($null -eq $vsInfo -or $vsInfo.Count -eq 0) {
-    throw "No instance of Visual Studio meeting the requirements specified was found. Requirements: $($args -join ' ')"
     return $null
   }
 
