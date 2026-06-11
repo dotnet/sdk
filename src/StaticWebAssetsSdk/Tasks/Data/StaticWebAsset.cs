@@ -814,12 +814,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     public static StaticWebAsset FromV1TaskItem(ITaskItem item)
         => FromV1TaskItem(item, TaskEnvironment.Fallback);
 
-    /// <summary>
-    /// Builds a <see cref="StaticWebAsset"/> from a legacy v1 MSBuild item, absolutizing
-    /// path-bearing metadata and the backing file lookup against the supplied
-    /// <paramref name="env"/>'s project directory rather than the process current directory.
-    /// Required for multithreaded MSBuild execution.
-    /// </summary>
     public static StaticWebAsset FromV1TaskItem(ITaskItem item, TaskEnvironment env)
     {
         var result = FromTaskItemCore(item);
@@ -1089,19 +1083,12 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public void Normalize() => Normalize(TaskEnvironment.Fallback);
 
-    /// <summary>
-    /// Normalizes path-bearing fields. <see cref="ContentRoot"/> and <see cref="RelatedAsset"/>
-    /// are absolutized against <paramref name="env"/>'s project directory rather than the
-    /// process current directory; the resulting paths are then canonicalized via
-    /// <see cref="Path.GetFullPath(string)"/> (a no-op for absolute inputs, so it does not
-    /// re-read <see cref="Environment.CurrentDirectory"/>).
-    /// </summary>
     public void Normalize(TaskEnvironment env)
     {
         ContentRoot = !string.IsNullOrEmpty(ContentRoot) ? NormalizeContentRootPath(ContentRoot, env) : ContentRoot;
         BasePath = Normalize(BasePath);
         RelativePath = Normalize(RelativePath, allowEmpyPath: true);
-        RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath((string)env.GetAbsolutePath(RelatedAsset)) : RelatedAsset;
+        RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(env.GetAbsolutePath(RelatedAsset)) : RelatedAsset;
     }
 
     // Normalizes the given path to a content root path in the way we expect it:
@@ -1110,13 +1097,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // * Appends a trailing directory separator at the end.
     public static string NormalizeContentRootPath(string path) => NormalizeContentRootPath(path, TaskEnvironment.Fallback);
 
-    /// <summary>
-    /// MT-safe variant of <see cref="NormalizeContentRootPath(string)"/> that absolutizes
-    /// <paramref name="path"/> against <paramref name="env"/>'s project directory rather
-    /// than the process current directory.
-    /// </summary>
     public static string NormalizeContentRootPath(string path, TaskEnvironment env)
-        => Path.GetFullPath((string)env.GetAbsolutePath(path)) +
+        => Path.GetFullPath(env.GetAbsolutePath(path)) +
         // We need to do .ToString because there is no EndsWith overload for chars in .NET Framework
         (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch
         {
@@ -1192,11 +1174,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         TaskLoggingHelper log)
         => MaterializeFrameworkAsset(asset, intermediateOutputPath, projectPackageId, projectBasePath, log, TaskEnvironment.Fallback);
 
-    /// <summary>
-    /// MT-safe variant of <see cref="MaterializeFrameworkAsset(StaticWebAsset, string, string, string, TaskLoggingHelper)"/>
-    /// that resolves <paramref name="intermediateOutputPath"/> and the resulting destination path
-    /// against <paramref name="env"/>'s project directory rather than the process current directory.
-    /// </summary>
     public static (StaticWebAsset Asset, string OldIdentity, string OldBasePath) MaterializeFrameworkAsset(
         StaticWebAsset asset,
         string intermediateOutputPath,
@@ -1213,13 +1190,13 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         var fxDir = Path.Combine(intermediateOutputPath, "fx", originalSourceId);
         var fileSystemRelativePath = asset.ComputePathWithoutTokens(relativePath);
         var destPath = Path.Combine(fxDir, Normalize(fileSystemRelativePath));
-        // Absolutize against env.ProjectDirectory (MT-safe), then canonicalize (".." resolution etc.).
-        destPath = Path.GetFullPath((string)env.GetAbsolutePath(destPath));
+      
+        destPath = Path.GetFullPath(env.GetAbsolutePath(destPath));
 
-        var sourceFile = asset.Identity;
+        var sourceFile = env.GetAbsolutePath(asset.Identity);
         if (!File.Exists(sourceFile))
         {
-            log.LogError("Source file '{0}' does not exist for framework asset materialization.", sourceFile);
+            log.LogError("Source file '{0}' does not exist for framework asset materialization.", sourceFile.OriginalValue);
             return (null, null, null);
         }
 
@@ -1229,11 +1206,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         if (!File.Exists(destPath) || File.GetLastWriteTimeUtc(sourceFile) > File.GetLastWriteTimeUtc(destPath))
         {
             File.Copy(sourceFile, destPath, overwrite: true);
-            log.LogMessage(MessageImportance.Low, "Materialized framework asset '{0}' to '{1}'.", sourceFile, destPath);
+            log.LogMessage(MessageImportance.Low, "Materialized framework asset '{0}' to '{1}'.", sourceFile.OriginalValue, destPath);
         }
         else
         {
-            log.LogMessage(MessageImportance.Low, "Framework asset '{0}' already up to date at '{1}'.", sourceFile, destPath);
+            log.LogMessage(MessageImportance.Low, "Framework asset '{0}' already up to date at '{1}'.", sourceFile.OriginalValue, destPath);
         }
 
         asset.Identity = destPath;
@@ -1662,25 +1639,18 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     internal static FileInfo ResolveFile(string identity, string originalItemSpec, TaskEnvironment env)
     {
-        // Absolutize via env so relative identity/originalItemSpec resolve against the project
-        // directory rather than the process current directory under multithreaded MSBuild.
-        var fileInfo = new FileInfo(AbsolutizeForFileInfo(identity, env));
+        var fileInfo = new FileInfo(string.IsNullOrEmpty(identity) ? identity: env.GetAbsolutePath(identity));
         if (fileInfo.Exists)
         {
             return fileInfo;
         }
-        fileInfo = new FileInfo(AbsolutizeForFileInfo(originalItemSpec, env));
+        fileInfo = new FileInfo(string.IsNullOrEmpty(originalItemSpec) ? originalItemSpec : env.GetAbsolutePath(originalItemSpec));
         if (fileInfo.Exists)
         {
             return fileInfo;
         }
 
         throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
-
-        // env.GetAbsolutePath throws on null/empty; preserve the prior FileInfo("") => ArgumentException
-        // behavior by short-circuiting empty inputs so the second FileInfo can still be tried.
-        static string AbsolutizeForFileInfo(string path, TaskEnvironment env)
-            => string.IsNullOrEmpty(path) ? path : (string)env.GetAbsolutePath(path);
     }
 
     internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(ITaskItem[] candidateAssets, bool validate = false)
