@@ -115,7 +115,7 @@ public class ParserTests
         }
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
-        Assert.HasCount(1, parseResult.Errors);
+        Assert.ContainsSingle(parseResult.Errors);
 
         Assert.AreEqual($"Incorrectly formatted labels: {string.Join(";", labelStr)}", parseResult.Errors[0].Message);
     }
@@ -233,7 +233,7 @@ public class ParserTests
         baseArgs.Add(portStr);
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
-        Assert.HasCount(1, parseResult.Errors);
+        Assert.ContainsSingle(parseResult.Errors);
 
         Assert.AreEqual(errorMessage, parseResult.Errors[0].Message);
     }
