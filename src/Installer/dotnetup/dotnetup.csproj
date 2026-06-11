@@ -34,9 +34,11 @@
        in-box (and NativeAOT uses the OS ICU there rather than bundling data), so they run
        non-invariant and the runtime initializes the UI culture from the OS automatically.
        PredefinedCulturesOnly is relaxed in invariant mode so DotnetupUILanguage can create the
-       detected culture by name for localized resource lookup. -->
+       detected culture by name for localized resource lookup.
+       Keyed off TargetOS rather than the RID so source-build's non-portable RIDs (e.g.
+       fedora.36-x64) are still recognized as Linux. -->
   <PropertyGroup>
-    <InvariantGlobalization Condition="$([MSBuild]::ValueOrDefault('$(RuntimeIdentifier)', '').StartsWith('linux'))">true</InvariantGlobalization>
+    <InvariantGlobalization Condition="'$(TargetOS)' == 'linux'">true</InvariantGlobalization>
     <PredefinedCulturesOnly Condition="'$(InvariantGlobalization)' == 'true'">false</PredefinedCulturesOnly>
   </PropertyGroup>
 

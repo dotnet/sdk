@@ -80,7 +80,7 @@ internal static class DotnetupUILanguage
         // environment, then map it onto a satellite. (A VSLANG LCID cannot be turned into a named
         // culture in invariant mode, so it resolves to empty and falls through to the environment.)
         string? desired = UILanguageOverride.GetOverriddenUILanguage()?.Name;
-        if (string.IsNullOrEmpty(desired))
+        if (string.IsNullOrWhiteSpace(desired))
         {
             desired = GetUnixLocaleName();
         }
