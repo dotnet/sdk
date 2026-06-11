@@ -572,6 +572,19 @@
       SkipUnchangedFiles="true" />
   </Target>
 
+  <Target Name="CodeSignMacOSNativeAotSdkTools"
+          DependsOnTargets="ValidateMacOSNativeAotSdkToolRegistrations"
+          Condition="'$(OSName)' == 'osx' and '$(IncludeAspNetCoreRuntime)' != 'false'">
+    <ItemGroup>
+      <_MacOSNativeAotSdkToolExecutable Include="@(MacOSNativeAotSdkTool->'$(OutputPath)DotnetTools\%(Identity)\**\osx-*\%(Identity)')" />
+    </ItemGroup>
+
+    <Error Condition="'@(_MacOSNativeAotSdkToolExecutable)' == ''"
+           Text="No macOS NativeAOT SDK tool executables were found under $(OutputPath)DotnetTools for registered tools @(MacOSNativeAotSdkTool, ', ')." />
+
+    <Exec Command="codesign --sign - --force --entitlements &quot;$(MSBuildProjectDirectory)/msbuild-entitlements.plist&quot; &quot;%(_MacOSNativeAotSdkToolExecutable.Identity)&quot;" />
+  </Target>
+
   <Target Name="ChmodPublishDir"
           DependsOnTargets="GenerateCliRuntimeConfigurationFiles;CreateMSBuildAppHost;PublishDotnetAot"
           Condition="'$(OSName)' != 'win'">
@@ -641,6 +654,7 @@
                             CopyKnownWorkloadManifestFile;
                             LayoutAppHostTemplate;
                             LayoutBundledTools;
+                            CodeSignMacOSNativeAotSdkTools;
                             DeleteSymbolsFromPublishDir;
                             RetargetTools;
                             RemoveResourcesFromDotnetDeps;

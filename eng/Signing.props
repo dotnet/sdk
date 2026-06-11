@@ -1,5 +1,7 @@
 <Project>
 
+  <Import Project="$(MSBuildThisFileDirectory)..\src\Layout\redist\targets\MacOSNativeAotSdkTools.props" />
+
   <PropertyGroup>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
   </PropertyGroup>
@@ -104,6 +106,8 @@
     <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="csc;vbc;VBCSCompiler" CertificateName="MacDeveloperHarden" />
     <!-- MSBuild apphost -->
     <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="MSBuild" CertificateName="MacDeveloperHarden" />
+    <!-- NativeAOT SDK tools -->
+    <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="@(MacOSNativeAotSdkTool)" CertificateName="MacDeveloperHarden" />
   </ItemGroup>
 
   <!-- Filter out any test packages from ItemsToSign -->

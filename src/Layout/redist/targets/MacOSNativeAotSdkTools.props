@@ -1,0 +1,9 @@
+<Project>
+
+  <ItemGroup>
+    <MacOSNativeAotSdkTool Include="dotnet-dev-certs" />
+    <MacOSNativeAotSdkTool Include="dotnet-user-jwts" />
+    <MacOSNativeAotSdkTool Include="dotnet-user-secrets" />
+  </ItemGroup>
+
+</Project>
