@@ -3,7 +3,6 @@
 
 #if NET
 
-using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Utils;
@@ -16,7 +15,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
     public static string MSBuildVersion
     {
-        get => Microsoft.Build.Evaluation.ProjectCollection.DisplayVersion;
+        get => Build.Evaluation.ProjectCollection.DisplayVersion;
     }
     private const string MSBuildExeName = "MSBuild.dll";
 
@@ -194,7 +193,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
             MSBuildExeName);
     }
 
-    private static string GetMSBuildSDKsPath()
+    public static string GetMSBuildSDKsPath()
     {
         var envMSBuildSDKsPath = Environment.GetEnvironmentVariable("MSBuildSDKsPath");
 

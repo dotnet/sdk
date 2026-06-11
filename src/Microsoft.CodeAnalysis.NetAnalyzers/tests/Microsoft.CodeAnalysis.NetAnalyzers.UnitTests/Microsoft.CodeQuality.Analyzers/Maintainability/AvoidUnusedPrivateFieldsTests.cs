@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -224,7 +225,7 @@ public class Class
                     GetCA1823CSharpResultAt(5, 17, "fieldWithMefV1ExportAttribute"),
                     GetCA1823CSharpResultAt(8, 17, "fieldWithMefV2ExportAttribute"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -268,7 +269,7 @@ public struct InlineArrayType
     private object _item0;
 }
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -429,7 +430,7 @@ End Class
                     GetCA1823BasicResultAt(4, 13, "fieldWithMefV1ExportAttribute"),
                     GetCA1823BasicResultAt(7, 13, "fieldWithMefV2ExportAttribute"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCA1823CSharpResultAt(int line, int column, string fieldName)

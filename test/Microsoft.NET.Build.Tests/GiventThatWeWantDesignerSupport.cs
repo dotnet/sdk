@@ -61,7 +61,7 @@ namespace Microsoft.NET.Build.Tests
                 project.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.17763.38";
             }
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CreateTestProject(project, identifier: targetFramework);
 
             var command = new GetValuesCommand(

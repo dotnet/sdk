@@ -46,7 +46,7 @@ public class Class1
 }
 ";
 
-            var dependencyAsset = _testAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
+            var dependencyAsset = TestAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
             string dependencyAssemblyPath = RestoreAndBuild(dependencyAsset, dependencyProject);
 
             TestProject referencerProject = new()
@@ -68,7 +68,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -167,7 +167,7 @@ public class Class1
 </root>
 ";
 
-            var dependencyAsset = _testAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
+            var dependencyAsset = TestAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
             string dependencyAssemblyPath = RestoreAndBuild(dependencyAsset, dependencyProject);
 
             TestProject referencerProject = new()
@@ -189,7 +189,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -252,7 +252,7 @@ public class Class1
 }
 ";
 
-            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject referencerProject = new()
@@ -274,7 +274,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -390,7 +390,7 @@ public class Class1
 }
 ";
 
-            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject referencerProject = new()
@@ -412,7 +412,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -459,7 +459,7 @@ public class Class2
 }
 ";
 
-            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject dependencyProject = new()
@@ -498,7 +498,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -598,7 +598,7 @@ public class Class2
 </root>
 ";
 
-            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject dependencyProject = new()
@@ -637,7 +637,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -701,7 +701,7 @@ public class Class2
 }
 ";
 
-            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject dependencyProject = new()
@@ -740,7 +740,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)
@@ -857,7 +857,7 @@ public class Class2
 }
 ";
 
-            var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
+            var dllDependencyAsset = TestAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
             TestProject dependencyProject = new()
@@ -896,7 +896,7 @@ public static class Program
 }
 ";
 
-            var referencerAsset = _testAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
+            var referencerAsset = TestAssetsManager.CreateTestProject(referencerProject, identifier: identifier);
             string applicationPath = RestoreAndBuild(referencerAsset, referencerProject);
 
             new DotnetCommand(Log, applicationPath)

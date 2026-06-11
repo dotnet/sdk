@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -387,7 +388,7 @@ End Class";
                 FixedCode = originalSource
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private async Task VerifyFixVisualBasicAsync(string originalSource, string fixedSource)
@@ -399,7 +400,7 @@ End Class";
                 MarkupOptions = MarkupOptions.UseFirstDescriptor
             };
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

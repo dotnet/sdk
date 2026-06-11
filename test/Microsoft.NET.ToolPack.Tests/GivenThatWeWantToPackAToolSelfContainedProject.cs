@@ -45,7 +45,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
         private TestAsset CreateAsset([CallerMemberName] string callingMethod = "")
         {
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                                                     .CopyTestAsset("PortableTool", callingMethod)
                                                     .WithSource()
                                                     .WithProjectChanges(project =>

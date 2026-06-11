@@ -17,7 +17,7 @@ public class GivenDotnetTestsRunsWithDifferentCultures : SdkTest
     [Theory]
     public void CanRunTestsAgainstProjectInLocale(string locale)
     {
-        TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
         CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                 .WithWorkingDirectory(testInstance.Path)

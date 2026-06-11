@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string solutionFile = "AppWithProjRefCaseDiff.sln";
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("AppWithProjRefCaseDiff")
                 .WithSource();
 

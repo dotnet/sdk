@@ -68,7 +68,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject, identifier: targetFramework + isExe);
 
             var buildCommand = new GetValuesCommand(
@@ -175,7 +175,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_builds_a_vb_wpf_app()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
 
             new DotnetNewCommand(Log, "wpf", "-lang", "vb")
                 .WithVirtualHive()

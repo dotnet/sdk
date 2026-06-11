@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TemplateWithMultipleChoicesAndPartialMatches",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithMultipleChoicesAndPartialMatches",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithMultipleChoicesAndPartialMatches",
+  "shortName": "TestAssets.TemplateWithMultipleChoicesAndPartialMatches",
+  "symbols": {
+    "tests": {
+      "displayName": "Tests",
+      "type": "parameter",
+      "datatype": "choice",
+      "replaces": "user_selectedtests",
+      "allowMultipleValues": true,
+      "enableQuotelessLiterals": true,
+      "choices": [
+        {
+          "choice": "aab",
+          "displayName": "aab"
+        },
+        {
+          "choice": "aaa",
+          "displayName": "aaa"
+        },
+        {
+          "choice": "aa",
+          "displayName": "aa"
+        }
+      ]
+    }
+  }
+}

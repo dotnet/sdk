@@ -13,7 +13,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_Configures_MetadataUpdaterSupport_InReleaseBuilds()
         {
             var targetFramework = "net6.0";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("net6.0");
@@ -37,7 +37,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_Configures_MetadataUpdaterSupport_InDebugBuilds()
         {
             var targetFramework = "net6.0";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework("net6.0");

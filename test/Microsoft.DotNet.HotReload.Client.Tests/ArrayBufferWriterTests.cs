@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xunit;
 
 // Copied from
 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Memory/tests/ArrayBufferWriter/ArrayBufferWriterTests.T.cs and
@@ -554,7 +553,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
         Assert.True(transient.Span[0] != 0);
         byte expectedFirstByte = transient.Span[0];
 
-        await memStream.WriteAsync(transient.ToArray(), 0, transient.Length);
+        await memStream.WriteAsync(transient.ToArray(), 0, transient.Length, TestContext.Current.CancellationToken);
 
         if (clearContent)
         {

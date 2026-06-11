@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 {
@@ -12,13 +12,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         public MSBuildWorkspaceFinderTests(ITestOutputHelper log) : base(log)
         {
         }
-        
+
         private string ProjectsPath => TestProjectsPathHelper.GetProjectsDirectory();
 
         [Fact]
         public void ThrowsException_CannotFindMSBuildProjectFile()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/no_project_or_solution", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
@@ -31,7 +31,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void ThrowsException_MultipleMSBuildProjectFiles()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_projects", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void ThrowsException_MultipleMSBuildSolutionFiles()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_solutions", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void ThrowsException_SolutionAndProjectAmbiguity()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/project_and_solution", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
             var exceptionMessageStart = string.Format(
@@ -70,7 +70,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void FindsSolutionByFolder()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/single_solution", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
@@ -84,7 +84,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void FindsSolutionByFilePath()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_solutions", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
@@ -122,7 +122,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void FindsProjectByFolder()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/single_project", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 
@@ -136,7 +136,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [Fact]
         public void FindsProjectByFilePath()
         {
-            var testInstance = _testAssetsManager
+            var testInstance = TestAssetsManager
                 .CopyTestAsset(testProjectName: "for_workspace_finder/multiple_projects", testAssetSubdirectory: "dotnet-format")
                 .WithSource();
 

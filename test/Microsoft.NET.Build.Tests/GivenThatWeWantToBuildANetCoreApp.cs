@@ -5,6 +5,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
 using Newtonsoft.Json.Linq;
@@ -23,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
 
         private BuildCommand GetBuildCommand([CallerMemberName] string callingMethod = "")
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                .CopyTestAsset("HelloWorldWithSubDirs", callingMethod)
                .WithSource();
 
@@ -84,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -134,7 +135,7 @@ namespace Microsoft.NET.Build.Tests
 
             var extraArgs = extraMSBuildArguments?.Split(' ') ?? Array.Empty<string>();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testIdentifier);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testIdentifier);
 
             NuGetConfigWriter.Write(testAsset.TestRoot);
 
@@ -206,7 +207,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["RuntimeIdentifiers"] = runtimeIdentifier;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: allowMismatch.ToString())
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: allowMismatch.ToString())
                 .Restore(Log, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -234,7 +235,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_restores_only_ridless_tfm()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource();
 
@@ -334,7 +335,7 @@ public static class Program
 " + ConflictResolutionAssets.ConflictResolutionTestMethod + @"
 }
 ";
-            var testAsset = _testAssetsManager.CreateTestProject(project, project.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(project, project.Name)
                 .WithProjectChanges(p =>
                 {
                     if (includeConflicts)
@@ -387,7 +388,7 @@ public static class Program
                 IsSdkProject = true
             };
 
-            var buildCommand = new BuildCommand(_testAssetsManager.CreateTestProject(proj, identifier: targetFramework));
+            var buildCommand = new BuildCommand(TestAssetsManager.CreateTestProject(proj, identifier: targetFramework));
 
             var runtimeconfigFile = Path.Combine(
                 buildCommand.GetOutputDirectory(targetFramework).FullName,
@@ -416,7 +417,7 @@ public static class Program
                 IsSdkProject = true
             };
 
-            var buildCommand = new BuildCommand(_testAssetsManager.CreateTestProject(proj, identifier: targetFramework));
+            var buildCommand = new BuildCommand(TestAssetsManager.CreateTestProject(proj, identifier: targetFramework));
             var runtimeconfigFile = Path.Combine(
                 buildCommand.GetOutputDirectory(targetFramework).FullName,
                 $"{proj.Name}.runtimeconfig.dev.json");
@@ -458,7 +459,7 @@ public static class Program
 }
 ";
 
-            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: targetFramework)
+            var testAsset = TestAssetsManager.CreateTestProject(project, identifier: targetFramework)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -512,7 +513,7 @@ public static class Program
                 RuntimeIdentifier = runtimeIdentifier
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: isSelfContained.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(project, identifier: isSelfContained.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -550,7 +551,7 @@ public static class Program
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -582,7 +583,7 @@ public static class Program
             testProject.PackageReferences.Add(new TestPackageReference("Humanizer.Core.fr", "2.2.0"));
             testProject.PackageReferences.Add(new TestPackageReference("Humanizer.Core.pt", "2.2.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(project =>
                 {
                     if (crossTarget)
@@ -622,7 +623,7 @@ public static class Program
 
             string[] extraArgs = new[] { $"/p:TargetFramework={ToolsetInfo.CurrentTargetFramework.ToUpper()}" };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: useStandardOutputPaths.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: useStandardOutputPaths.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -678,7 +679,7 @@ public static class Program
 
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -726,7 +727,7 @@ class Program
             // Without the change to escape the asset paths, the asset will not be found inside the package.
             testProject.PackageReferences.Add(new TestPackageReference("ContentFilesExample", "1.0.2"));
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -754,7 +755,7 @@ class Program
             testProject.PackageReferences.Add(new TestPackageReference("System.Reflection", "4.3.0"));
 
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -774,7 +775,7 @@ class Program
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             string testDirectory = Path.Combine(testAsset.TestRoot, testProject.Name);
 
@@ -806,7 +807,7 @@ class Program
             };
             testProject.PackageReferences.Add(new TestPackageReference("Nuget.Common", "6.5.7"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -828,7 +829,7 @@ class Program
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -855,7 +856,7 @@ class Program
                 SelfContained = "true"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -916,7 +917,7 @@ class Program
 
             testProject.AdditionalProperties["ProduceOnlyReferenceAssembly"] = produceOnlyReferenceAssembly.ToString();
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: produceOnlyReferenceAssembly.ToString());
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: produceOnlyReferenceAssembly.ToString());
 
             var buildCommand = new BuildCommand(testProjectInstance);
             buildCommand
@@ -1006,7 +1007,7 @@ class Program
             // Identifer based on test inputs to create test assets that are unique for each test case
             string assetIdentifier = $"{targetFramework}{string.Join(null, rids)}{addLibAssets}{addNativeAssets}{useRidGraph}{shouldWarn}";
 
-            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject, assetIdentifier));
+            var packCommand = new PackCommand(TestAssetsManager.CreateTestProject(packageProject, assetIdentifier));
             packCommand.Execute().Should().Pass();
             var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
 
@@ -1024,11 +1025,11 @@ class Program
 
             // The actual list comes from BundledVersions.props. For testing, we conditionally add a
             // subset of the list if it isn't already defined (so running on an older version)
-            testProject.AddItem("_KnownRuntimeIdentiferPlatforms",
+            testProject.AddItem("_KnownRuntimeIdentifierPlatforms",
                 new Dictionary<string, string>()
                 {
                     { "Include", "unix" },
-                    { "Condition", "'@(_KnownRuntimeIdentiferPlatforms)'==''" }
+                    { "Condition", "'@(_KnownRuntimeIdentifierPlatforms)'==''" }
                 });
 
             if (useRidGraph.HasValue)
@@ -1041,7 +1042,7 @@ class Program
                     });
             }
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, assetIdentifier);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject, assetIdentifier);
             var result = new BuildCommand(testAsset).Execute();
             result.Should().Pass();
             if (shouldWarn)
@@ -1059,7 +1060,7 @@ class Program
         {
             var packageProject = CreateProjectWithRidAssets(ToolsetInfo.CurrentTargetFramework, new string[] { "unix", "win", "alpine-x64" }, true, true);
 
-            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject));
+            var packCommand = new PackCommand(TestAssetsManager.CreateTestProject(packageProject));
             packCommand.Execute().Should().Pass();
             var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
 
@@ -1082,7 +1083,7 @@ class Program
             testProject.AdditionalProperties["UseAppHost"] = "false";
             testProject.PackageReferences.Add(new TestPackageReference("NETStandard.Library", "1.6.1"));
 
-            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject);
             var result = new BuildCommand(testAsset).Execute();
             result.Should().Pass()
                 .And.NotHaveStdOutContaining("NETSDK1206");
@@ -1118,7 +1119,7 @@ class Program
         #endif
     }
 }";
-            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: disableTracing.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProj, identifier: disableTracing.ToString());
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.Path, testProj.Name));
             buildCommand
@@ -1130,6 +1131,251 @@ class Program
             runCommand
                 .Execute()
                 .Should().HaveStdOut(expectedOutput);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_includes_local_path_for_package_dependencies(bool useCustomSubdirectory)
+        {
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            // Create a test project that references the package
+            TestProject testProject = new()
+            {
+                Name = "TestProjWithPackageDependencies",
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
+
+            string culture = "fr";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
+            testProject.PackageReferences.Add(new TestPackageReference($"Humanizer.Core.{culture}", "2.14.1"));
+            testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
+
+            // Libuv package does not have a native library for macOS arm64, so don't try to call into it.
+            bool shouldUseLibuv = !OperatingSystem.IsMacOS() || RuntimeInformation.OSArchitecture != Architecture.Arm64;
+
+            // Add source that uses all the packages
+            testProject.SourceFiles[$"{testProject.Name}.cs"] =
+                $$""""
+                using System;
+                using System.Runtime.InteropServices;
+                using Humanizer;
+                class Program
+                {
+                    private static void UseNewtonsoftJson()
+                    {
+                        var jsonObject = Newtonsoft.Json.JsonConvert.DeserializeObject("{}");
+                        Console.WriteLine($"Used Newtonsoft.Json - deserialized: {jsonObject}");
+                    }
+                    private static void UseHumanizer()
+                    {
+                        string humanized = DateTime.Now.AddDays(-1).Humanize(culture: new System.Globalization.CultureInfo("{{culture}}"));
+                        Console.WriteLine($"Used Humanizer.Core.{{culture}} - yesterday humanized: {humanized}");
+                    }
+                    private static void UseLibuv()
+                    {
+                        uint libuvVersion = uv_version();
+                        Console.WriteLine($"Used Libuv - version: {libuvVersion}");
+
+                        [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+                        static extern uint uv_version();
+                    }
+                    static void Main(string[] args)
+                    {
+                        try
+                        {
+                            UseNewtonsoftJson();
+                        }
+                        catch (Exception ex) { Console.Error.WriteLine($"Failure using Newtonsoft.Json: {ex}"); }
+
+                        try
+                        {
+                            UseHumanizer();
+                        }
+                        catch (Exception ex) { Console.Error.WriteLine($"Failure using Humanizer.Core.{{culture}}: {ex}"); }
+
+                        if ({{shouldUseLibuv.ToString().ToLowerInvariant()}})
+                        {
+                            try
+                            {
+                                UseLibuv();
+                            }
+                            catch (Exception ex) { Console.Error.WriteLine($"Failure using Libuv: {ex}"); }
+                        }
+                    }
+                }
+                """";
+
+            string subdirectory = string.Empty;
+            if (useCustomSubdirectory)
+            {
+                // Put the resolved package assets in a subdirectory
+                subdirectory = "pkg-ref/";
+                testProject.ProjectChanges.Add(xml =>
+                {
+                    xml.Root.Add(XElement.Parse(
+                        $"""
+                        <Target Name="UpdateRuntimeCopyLocalItems" AfterTargets="ResolvePackageAssets">
+                          <ItemGroup>
+                            <RuntimeCopyLocalItems Update="@(RuntimeCopyLocalItems)" DestinationSubDirectory="{subdirectory}%(RuntimeCopyLocalItems.DestinationSubDirectory)" />
+                            <ResourceCopyLocalItems Update="@(ResourceCopyLocalItems)" DestinationSubDirectory="{subdirectory}%(ResourceCopyLocalItems.DestinationSubDirectory)" />
+                            <RuntimeTargetsCopyLocalItems Update="@(RuntimeTargetsCopyLocalItems)" DestinationSubDirectory="{subdirectory}%(RuntimeTargetsCopyLocalItems.DestinationSubDirectory)" />
+                          </ItemGroup>
+                        </Target>
+                        """));
+                });
+            }
+
+            var buildCommand = new BuildCommand(TestAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}"));
+            buildCommand.Execute().Should().Pass();
+
+            // Expected package and local output paths for package assets
+            // Path for runtime and resource assets is a regex to match for the expected path in the .deps.json
+            (string Name, (string, string)[] Runtime, (string, string)[] Native, (string, string)[] Resource)[] expectedPackages = [
+                ("Newtonsoft.Json",
+                    Runtime: [
+                        ("lib/.*/Newtonsoft.Json.dll", $"{subdirectory}Newtonsoft.Json.dll") ],
+                    Native: [],
+                    Resource: []),
+                ("Libuv",
+                    Runtime: [],
+                    Native: [
+                        ("runtimes/linux-x64/native/libuv.so", $"{subdirectory}runtimes/linux-x64/native/libuv.so"),
+                        ("runtimes/win-x64/native/libuv.dll", $"{subdirectory}runtimes/win-x64/native/libuv.dll") ],
+                    Resource: []),
+                ($"Humanizer.Core",
+                    Runtime: [
+                        ("lib/.*/Humanizer.dll", $"{subdirectory}Humanizer.dll") ],
+                    Native: [],
+                    Resource: []),
+                ($"Humanizer.Core.{culture}",
+                    Runtime: [],
+                    Native: [],
+                    Resource: [
+                        ($"lib/.*/{culture}/Humanizer.resources.dll", $"{subdirectory}{culture}/Humanizer.resources.dll") ])
+            ];
+
+            string outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName;
+            string depsFile = Path.Combine(outputDirectory, $"{testProject.Name}.deps.json");
+            using (FileStream stream = File.OpenRead(depsFile))
+            {
+                DependencyContext dependencyContext = new DependencyContextJsonReader().Read(stream);
+                foreach (var expected in expectedPackages)
+                {
+                    // Validate package assets are in the deps file with the expected path and local paths
+                    RuntimeLibrary lib = dependencyContext.RuntimeLibraries.FirstOrDefault(lib => lib.Name == expected.Name);
+                    Assert.NotNull(lib);
+
+                    foreach ((string packagePath, string localPath) in expected.Runtime)
+                    {
+                        lib.RuntimeAssemblyGroups.Should().Contain(
+                            g => g.RuntimeFiles.Any(f => f.LocalPath == localPath && Regex.IsMatch(f.Path, packagePath)),
+                            $"runtime assemblies should have item with LocalPath={localPath} and Path matching {packagePath}");
+                    }
+
+                    foreach ((string packagePath, string localPath) in expected.Native)
+                    {
+                        lib.NativeLibraryGroups.Should().Contain(
+                            g => g.RuntimeFiles.Any(f => f.LocalPath == localPath && f.Path == packagePath),
+                            $"native libraries should have item with LocalPath={localPath} and Path={packagePath}");
+                    }
+
+                    foreach ((string packagePath, string localPath) in expected.Resource)
+                    {
+                        lib.ResourceAssemblies.Should().Contain(
+                            a => a.LocalPath == localPath && Regex.IsMatch(a.Path, packagePath),
+                            $"resource assemblies should have item with LocalPath={localPath} and Path matching {packagePath}");
+                    }
+                }
+            }
+
+            string app = Path.Join(outputDirectory, $"{testProject.Name}.dll");
+            var result = new DotnetCommand(Log, app).Execute();
+            result.Should().Pass().And.NotHaveStdErr();
+            foreach (var pkg in testProject.PackageReferences)
+            {
+                if (!shouldUseLibuv && pkg.ID == "Libuv")
+                    continue;
+
+                result.Should().HaveStdOutContaining($"Used {pkg.ID}");
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_includes_local_path_for_project_references(bool useCustomSubdirectory)
+        {
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            // Create a referenced library project
+            TestProject referencedProject = new()
+            {
+                Name = "ReferencedLibrary",
+                TargetFrameworks = targetFramework,
+                IsExe = false
+            };
+
+            // Create test project that references the library
+            TestProject testProject = new()
+            {
+                Name = "TestProjWithProjectReference",
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            string subdirectory = string.Empty;
+            if (useCustomSubdirectory)
+            {
+                // Put the project reference in a subdirectory
+                subdirectory = "proj-ref/";
+                testProject.ProjectChanges.Add(xml =>
+                {
+                    xml.Root.Add(XElement.Parse(
+                        $"""
+                    <Target Name="UpdateReferencePaths" AfterTargets="ResolveReferences">
+                      <ItemGroup>
+                        <ReferencePath Update="@(ReferencePath)->WithMetadataValue('CopyLocal', 'true')"
+                                       DestinationSubDirectory="{subdirectory}" />
+                        <_ToUpdate Include="@(ReferencePath)" Condition="'%(ReferencePath.CopyLocal)' == 'true'" />
+                        <ReferenceCopyLocalPaths Remove="@(_ToUpdate)" />
+                        <ReferenceCopyLocalPaths Include="@(_ToUpdate)" />
+                      </ItemGroup>
+                    </Target>
+                    """));
+                });
+            }
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            string outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName;
+            string depsFile = Path.Combine(outputDirectory, $"{testProject.Name}.deps.json");
+            using (FileStream stream = File.OpenRead(depsFile))
+            {
+                DependencyContext dependencyContext = new DependencyContextJsonReader().Read(stream);
+
+                // Find the referenced project in runtime libraries
+                RuntimeLibrary lib = dependencyContext.RuntimeLibraries.FirstOrDefault(lib => lib.Name.Contains(referencedProject.Name));
+                Assert.NotNull(lib);
+
+                // Validate project reference is the deps file with the expected path and local paths
+                string expectedPath = $"{referencedProject.Name}.dll";
+                string expectedLocalPath = useCustomSubdirectory ? $"{subdirectory}{referencedProject.Name}.dll" : null;
+                lib.RuntimeAssemblyGroups.Should().Contain(
+                    g => g.RuntimeFiles.Any(f => f.LocalPath == expectedLocalPath && f.Path == expectedPath),
+                    $"project reference should have LocalPath={expectedLocalPath} and Path={expectedPath}");
+            }
+
+            string app = Path.Join(outputDirectory, $"{testProject.Name}.dll");
+            var result = new DotnetCommand(Log, app).Execute();
+            result.Should().Pass()
+                .And.HaveStdOutContaining(referencedProject.Name);
         }
     }
 }

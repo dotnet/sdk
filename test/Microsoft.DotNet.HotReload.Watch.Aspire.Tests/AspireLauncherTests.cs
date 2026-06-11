@@ -32,7 +32,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
     [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
     public async Task Host()
     {
-        var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithProjectDeps")
+        var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
             .WithSource();
 
         var projectDir = Path.Combine(testAsset.Path, "AppWithDeps");
@@ -48,7 +48,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
     [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
     public async Task ServerAndResources()
     {
-        var testAsset = _testAssetsManager.CopyTestAsset("WatchAppMultiProc")
+        var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
             .WithSource();
 
         var tfm = ToolsetInfo.CurrentTargetFramework;

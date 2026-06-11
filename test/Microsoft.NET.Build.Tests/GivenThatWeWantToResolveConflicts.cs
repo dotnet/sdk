@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
         private void GetReferences(TestProject testProject, bool expectConflicts, out List<string> references, out List<string> referenceCopyLocalPaths, string identifier)
         {
             string targetFramework = testProject.TargetFrameworks;
-            TestAsset tempTestAsset = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
+            TestAsset tempTestAsset = TestAssetsManager.CreateTestProject(testProject, identifier: identifier);
 
             string projectFolder = Path.Combine(tempTestAsset.TestRoot, testProject.Name);
 
@@ -121,7 +121,7 @@ namespace Microsoft.NET.Build.Tests
             //  an easier way to test that files that were removed 
             testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -155,7 +155,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.VisualStudio.Composition", "15.8.112"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -187,7 +187,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.References.Add("System.Runtime");
             testProject.PackageReferences.Add(new TestPackageReference("System.Runtime", "4.3.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -209,7 +209,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Extensions.DependencyInjection.Abstractions", "2.2.0"));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -244,7 +244,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.CodeAnalysis.NetAnalyzers", "5.0.3"));
 
             // enable inbox analyzers too
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -292,7 +292,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["RestoreEnablePackagePruning"] = prunePackages.ToString();
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -359,7 +359,7 @@ namespace Microsoft.NET.Build.Tests
                     testProject.AdditionalProperties["EnableWindowsTargeting"] = "True";
                 }
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: nameof(PrunePackageDataSucceeds), identifier: targetFramework + frameworkReference);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: nameof(PrunePackageDataSucceeds), identifier: targetFramework + frameworkReference);
 
                 var buildCommand = new BuildCommand(testAsset);
 
@@ -429,7 +429,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset).Execute().Should().Pass();
 
@@ -470,7 +470,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -506,7 +506,7 @@ public class Class1
     public (int, int) GetTuple() => (1, 2);
 }
 ");
-            var testAsset = _testAssetsManager.CreateTestProject(project, identifier: "NETFrameworkIsNotPruned");
+            var testAsset = TestAssetsManager.CreateTestProject(project, identifier: "NETFrameworkIsNotPruned");
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
             var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");

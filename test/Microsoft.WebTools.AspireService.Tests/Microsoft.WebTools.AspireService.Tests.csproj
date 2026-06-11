@@ -5,6 +5,11 @@
     <RootNamespace>Microsoft.WebTools.AspireServer.UnitTests</RootNamespace>
     <OutputType>Exe</OutputType>
     <EnableDefaultScopedCssItems>false</EnableDefaultScopedCssItems>
+
+    <!-- Suppress pack warnings for this test project. Microsoft.NET.Sdk.Web defaults 
+         WarnOnPackingNonPackableProject=true, but test projects have IsPackable=false by default,
+         which would generate warnings/errors during pack operations that we want to suppress. -->
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
+using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -192,6 +193,19 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var definition = Assert.IsType<ToolUpdateCommandDefinition>(result.CommandResult.Command);
             result.GetValue(definition.ToolManifestOption).Should().Be(@"folder/my-manifest.format");
+        }
+
+        [Fact]
+        public void UpdateToolWithBothAtVersionAndVersionOptionThrowsError()
+        {
+            var result = Parser.Parse("dotnet tool update -g console.test.app@1.0.0 --version 2.0.0");
+
+            var toolUpdateCommand = new Cli.Commands.Tool.Update.ToolUpdateCommand(result);
+
+            Action a = () => toolUpdateCommand.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(Cli.CliStrings.PackageIdentityArgumentVersionOptionConflict);
         }
     }
 }

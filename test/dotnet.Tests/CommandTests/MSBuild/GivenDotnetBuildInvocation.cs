@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tests;
+using Microsoft.DotNet.Tests.TelemetryTests;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -22,11 +22,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
         [Theory]
         [InlineData(new string[] { }, new string[] { })]
-        [InlineData(new string[] { "-o", "foo" }, new string[] { "--property:OutputPath=<cwd>foo", "--property:_CommandLineDefinedOutputPath=true" })]
+        [InlineData(new string[] { "-o", "myoutput" }, new string[] { "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true" })]
         [InlineData(new string[] { "-property:Verbosity=diag" }, new string[] { "--property:Verbosity=diag" })]
-        [InlineData(new string[] { "--output", "foo" }, new string[] { "--property:OutputPath=<cwd>foo", "--property:_CommandLineDefinedOutputPath=true" })]
+        [InlineData(new string[] { "--output", "myoutput" }, new string[] { "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true" })]
         [InlineData(new string[] { "--artifacts-path", "foo" }, new string[] { "--property:ArtifactsPath=<cwd>foo" })]
-        [InlineData(new string[] { "-o", "foo1 foo2" }, new string[] { "--property:OutputPath=<cwd>foo1 foo2", "--property:_CommandLineDefinedOutputPath=true" })]
+        [InlineData(new string[] { "-o", "foo1 myoutput" }, new string[] { "--property:OutputPath=<cwd>foo1 myoutput", "--property:_CommandLineDefinedOutputPath=true" })]
         [InlineData(new string[] { "--no-incremental" }, new string[] { "--target:Rebuild" })]
         [InlineData(new string[] { "-r", "rid" }, new string[] { "--property:RuntimeIdentifier=rid", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
         [InlineData(new string[] { "-r", "linux-amd64" }, new string[] { "--property:RuntimeIdentifier=linux-x64", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory)).ToArray();
+                expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar)).ToArray();
 
                 var msbuildPath = "<msbuildpath>";
                 var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
@@ -102,11 +102,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 expectedAdditionalArgsForRestore = expectedAdditionalArgsForRestore
-                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar))
                     .ToArray();
 
                 expectedAdditionalArgs = expectedAdditionalArgs
-                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar))
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [Theory]
-        [MemberData(memberName: nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), MemberType =typeof(TelemetryCommonPropertiesTests))]
+        [MemberData(memberName: nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), MemberType = typeof(TelemetryCommonPropertiesTests))]
         public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(Dictionary<string, string>? llmEnvVarsToSet, string? expectedLLMName)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>

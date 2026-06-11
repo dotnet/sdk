@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
         private string SetupDotnetRootEchoProject([CallerMemberName] string callingMethod = null, string targetFramework = null)
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("TestAppEchoDotnetRoot", callingMethod, allowCopyIfPresent: true)
                 .WithSource()
                 .WithTargetFrameworkOrFrameworks(targetFramework ?? null, false)

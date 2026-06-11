@@ -9,13 +9,13 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToGenerateGlobalUsings_BlazorWasm(ITestOutputHelper log) : base(log) { }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5", Skip = "https://github.com/dotnet/sdk/issues/53791")]
         public void It_generates_blazorwasm_usings_and_builds_successfully()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);
@@ -49,7 +49,7 @@ global using System.Threading.Tasks;
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "disable";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
 
             var buildCommand = new BuildCommand(testAsset);

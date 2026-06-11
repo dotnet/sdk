@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -37,7 +38,7 @@ class TestClass
                         GetCSharpResultAt(8, 34, "Rfc2898DeriveBytes"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -66,7 +67,7 @@ class TestClass
                         GetCSharpResultAt(8, 34, "Rfc2898DeriveBytes"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -118,7 +119,7 @@ class TestClass
                         GetCSharpResultAt(15, 28, "DerivedClass"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -157,7 +158,7 @@ class TestClass
                         GetCSharpResultAt(17, 28, "DerivedClass"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -201,7 +202,7 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -233,7 +234,7 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -268,7 +269,7 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

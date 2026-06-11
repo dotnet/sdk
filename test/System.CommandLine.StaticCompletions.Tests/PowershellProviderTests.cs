@@ -7,8 +7,6 @@ namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.StaticCompletions.Shells;
 using EmptyFiles;
-using Xunit;
-using Xunit.Abstractions;
 
 public class PowershellProviderTests(ITestOutputHelper log)
 {

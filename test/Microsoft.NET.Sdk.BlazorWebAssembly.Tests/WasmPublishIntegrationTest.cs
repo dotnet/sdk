@@ -518,11 +518,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
 
             // Verify assemblies are not trimmed
-            var loggingAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.Extensions.Logging.Abstractions.wasm");
-            VerifyAssemblyHasTypes(loggingAssemblyPath, new[] { "Microsoft.Extensions.Logging.Abstractions.NullLogger" });
+            var loggingAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.Extensions.Logging.wasm");
+            VerifyAssemblyHasTypes(loggingAssemblyPath, new[] { "Microsoft.Extensions.Logging.LoggerFactory" });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
         public void Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
         {
             // Arrange
@@ -709,7 +709,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.config.Should().Contain("../appsettings.development.json");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
         public void Publish_HostedApp_WithSatelliteAssemblies()
         {
             // Arrange
@@ -1128,7 +1128,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
         public void Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             var testAppName = "BlazorWasmWithLibrary";
@@ -1495,7 +1495,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5", Skip = "https://github.com/dotnet/sdk/issues/53689")]
         public void Publish_HostingMultipleBlazorWebApps_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/29264

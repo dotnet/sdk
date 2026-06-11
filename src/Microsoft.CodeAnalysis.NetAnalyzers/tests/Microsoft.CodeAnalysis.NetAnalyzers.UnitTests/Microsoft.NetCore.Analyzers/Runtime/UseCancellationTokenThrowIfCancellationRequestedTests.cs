@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -79,7 +80,7 @@ if ({0})
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = parsedVersion,
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_SimpleAffirmativeCheck_ReportedAndFixed_VB
@@ -118,7 +119,7 @@ End If";
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_NegatedCheckWithElse_ReportedAndFixed_CS
@@ -210,7 +211,7 @@ public class C
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -254,7 +255,7 @@ End Class",
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -296,7 +297,7 @@ public class C
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -327,7 +328,7 @@ DoSomething();";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = parsedVersion,
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_NegatedCheckWithElse_ReportedAndFixed_VB
@@ -374,7 +375,7 @@ DoSomething()";
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -406,7 +407,7 @@ Barble();";
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -437,7 +438,7 @@ Barble()";
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 
@@ -457,7 +458,7 @@ if (token.IsCancellationRequested && otherCondition)
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -476,7 +477,7 @@ End If";
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -497,7 +498,7 @@ if (token.IsCancellationRequested)
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -518,7 +519,7 @@ End If";
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> Data_OperationCanceledExceptionCtorArguments
@@ -549,7 +550,7 @@ if (token.IsCancellationRequested)
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -570,7 +571,7 @@ End If";
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -593,7 +594,7 @@ else
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -618,7 +619,7 @@ End If";
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
 

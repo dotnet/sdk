@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FakeItEasy" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Abstractions\Microsoft.TemplateEngine.Abstractions.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="NuGet_testFeed.config" CopyToOutputDirectory="PreserveNewest" Link="NuGet.config" />
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

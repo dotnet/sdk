@@ -13,7 +13,7 @@ internal static class VoidResponseFieldsId
     public const int MessagesSerializerId = 0;
 }
 
-internal static class TestHostProcessExitRequestFieldsId
+internal static class TestHostCompletedRequestFieldsId
 {
     public const int MessagesSerializerId = 1;
 }
@@ -37,12 +37,10 @@ internal static class CommandLineOptionMessageFieldsId
     public const ushort Description = 2;
     public const ushort IsHidden = 3;
     public const ushort IsBuiltIn = 4;
+    // Reserved: field ID 5 was ObsolescenceMessage, removed as unused.
 }
 
-internal static class ModuleFieldsId
-{
-    public const int MessagesSerializerId = 4;
-}
+// Reserved: serializer ID 4 was ModuleSerializer, removed as unused.
 
 internal static class DiscoveredTestMessagesFieldsId
 {
@@ -57,6 +55,19 @@ internal static class DiscoveredTestMessageFieldsId
 {
     public const ushort Uid = 1;
     public const ushort DisplayName = 2;
+    public const ushort FilePath = 3;
+    public const ushort LineNumber = 4;
+    public const ushort Namespace = 5;
+    public const ushort TypeName = 6;
+    public const ushort MethodName = 7;
+    public const ushort Traits = 8;
+    public const ushort ParameterTypeFullNames = 9;
+}
+
+internal static class TraitMessageFieldsId
+{
+    public const ushort Key = 1;
+    public const ushort Value = 2;
 }
 
 internal static class TestResultMessagesFieldsId
@@ -132,4 +143,19 @@ internal static class TestSessionEventFieldsId
 internal static class HandshakeMessageFieldsId
 {
     public const int MessagesSerializerId = 9;
+}
+
+internal static class TestInProgressMessagesFieldsId
+{
+    public const int MessagesSerializerId = 10;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort TestInProgressMessageList = 3;
+}
+
+internal static class TestInProgressMessageFieldsId
+{
+    public const ushort Uid = 1;
+    public const ushort DisplayName = 2;
 }

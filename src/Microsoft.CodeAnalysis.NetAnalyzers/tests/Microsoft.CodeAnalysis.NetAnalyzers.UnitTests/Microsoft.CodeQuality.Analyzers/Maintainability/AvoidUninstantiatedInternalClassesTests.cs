@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -27,7 +28,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 TestCode = source,
                 FixedCode = source,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -253,7 +254,7 @@ End Class");
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -272,7 +273,7 @@ End Class");
 End Class",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -291,7 +292,7 @@ End Class",
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -311,7 +312,7 @@ End Class",
 End Class",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -332,7 +333,7 @@ internal static class C
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -353,7 +354,7 @@ internal static class C
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -399,7 +400,7 @@ End Class",
                      // error BC30737: No accessible 'Main' method with an appropriate signature was found in 'TestProject'.
                      DiagnosticResult.CompilerError("BC30737"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         // The following tests are just to ensure that the messages are formatted properly
@@ -1525,7 +1526,7 @@ public class CC
 ",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
@@ -1623,7 +1624,7 @@ End Class");
                         @"int x = 0;",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1654,7 +1655,7 @@ dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
                         .WithArguments("C"));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7223, "https://github.com/dotnet/roslyn-analyzers/issues/7223")]
@@ -1673,7 +1674,7 @@ dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp12
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(7223, "https://github.com/dotnet/roslyn-analyzers/issues/7223")]
@@ -1695,7 +1696,7 @@ dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp12
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string className)

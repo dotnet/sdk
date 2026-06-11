@@ -1,0 +1,76 @@
+<Project>
+
+  <!--
+    Shared item list for the AOT CLI bridge.
+    Imported by both dotnet-aot.csproj and dotnet-aot.Tests.csproj so that the test
+    project compiles exactly the same parser/command surface as the AOT binary, keeping
+    the two in sync.
+
+    Items are grouped by ownership to minimize merge conflicts when AOT commands are
+    added in parallel changes:
+      * "Common AOT scaffolding" is required by every AOT command. When enabling a new
+        AOT command, REUSE this group rather than re-adding these items in your own
+        group, otherwise the duplicate <Compile>/<EmbeddedResource> items will fail the
+        build once both changes merge.
+      * Each command contributes its own clearly-labeled group below, referencing only
+        its command-specific sources and dependencies.
+
+    NativeEntryPoint.cs and ManagedHost.cs are added separately by each consumer because
+    ManagedHost.cs requires InternalsVisibleTo access to NativeWrapper and the test
+    project stubs it.
+
+    All paths are relative to this file ($(MSBuildThisFileDirectory)) so they resolve
+    correctly regardless of the importing project's location.
+  -->
+
+  <!-- Common AOT scaffolding: shared by every AOT command. Reuse, do not duplicate. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandLineInfo.cs" Link="CommandLineInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
+    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryClient.cs" Link="TelemetryClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryCommonProperties.cs" Link="TelemetryCommonProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ITelemetryClient.cs" Link="ITelemetryClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryDiskLogger.cs" Link="TelemetryDiskLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\IDockerContainerDetector.cs" Link="Telemetry\IDockerContainerDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\DockerContainerDetectorForTelemetry.cs" Link="Telemetry\DockerContainerDetectorForTelemetry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ILLMEnvironmentDetector.cs" Link="Telemetry\ILLMEnvironmentDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\LLMEnvironmentDetectorForTelemetry.cs" Link="Telemetry\LLMEnvironmentDetectorForTelemetry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\MacAddressGetter.cs" Link="Telemetry\MacAddressGetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\DevDeviceIDGetter.cs" Link="Telemetry\DevDeviceIDGetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ExternalTelemetryProperties.cs" Link="Telemetry\ExternalTelemetryProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ActivityExtensions.cs" Link="ActivityExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ParseResultExtensions.cs" Link="ParseResultExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.TemplateEngine.Cli\SymbolExtensions.cs" Link="SymbolExtensions.cs" />
+  </ItemGroup>
+
+  <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
+  </ItemGroup>
+
+  <!-- 'dotnet sln' command: command-specific sources and helpers. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnFileFactory.cs" Link="SlnFileFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnfFileHelper.cs" Link="SlnfFileHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\MsbuildProject.cs" Link="MsbuildProject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionCommandParser.cs" Link="Commands\Solution\SolutionCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionArgumentValidator.cs" Link="Commands\Solution\SolutionArgumentValidator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\List\SolutionListCommand.cs" Link="Commands\Solution\List\SolutionListCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Migrate\SolutionMigrateCommand.cs" Link="Commands\Solution\Migrate\SolutionMigrateCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Remove\SolutionRemoveCommand.cs" Link="Commands\Solution\Remove\SolutionRemoveCommand.cs" />
+  </ItemGroup>
+
+  <!-- 'dotnet sln' command: command-specific dependencies. -->
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
+  </ItemGroup>
+
+</Project>

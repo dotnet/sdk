@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -495,7 +496,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """;
 
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -519,7 +520,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     }
                 }
                 """;
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         public static IEnumerable<object[]> CS_UseNewLocalOptionsAsArgument_FieldAssignment_NoWarn_TheoryData()
@@ -841,7 +842,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -869,7 +870,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -894,7 +895,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             };
-            return test.RunAsync();
+            return test.RunAsync(TestContext.Current.CancellationToken);
         }
         #endregion
     }

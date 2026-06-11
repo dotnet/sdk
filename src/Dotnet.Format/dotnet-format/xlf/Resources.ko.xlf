@@ -62,6 +62,11 @@
         <target state="translated">분석기를 실행할 때는 '--folder' 옵션을 지정할 수 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_with_framework">
+        <source>Cannot specify the '--folder' option with '--framework'.</source>
+        <target state="new">Cannot specify the '--folder' option with '--framework'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_with_no_restore">
         <source>Cannot specify the '--folder' option with '--no-restore'.</source>
         <target state="translated">'--no-restore'와 함께 '--folder' 옵션을 지정할 수 없습니다.</target>
@@ -350,6 +355,11 @@
       <trans-unit id="Formatted_code_file_0">
         <source>Formatted code file '{0}'.</source>
         <target state="translated">코드 파일 '{0}'의 서식을 지정했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_target_framework_to_use_when_loading_the_workspace">
+        <source>The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</source>
+        <target state="new">The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action">

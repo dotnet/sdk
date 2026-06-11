@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="es" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="VerificationEngine_Error_InstallUnexpectedFail">
+        <source>Template installation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">Se esperaba que se pasara la instalación de la plantilla, pero tenía el código de salida "{0}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_ScrubberExtension">
+        <source>File extension passed to scrubber should not start with dot.</source>
+        <target state="translated">La extensión de archivo pasada a la limpieza no debe comenzar con un punto.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_StdOutFolderExists">
+        <source>The folder [{0}] should not exist in the template output - cannot verify stdout/stderr in such case.</source>
+        <target state="translated">La carpeta [{0}] no debe existir en la salida de la plantilla; no se puede comprobar stdout/stderr en ese caso.</target>
+        <note>{0} is a folder path</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_TemplateNameMandatory">
+        <source>Template name is mandatory, but was not supplied.</source>
+        <target state="translated">El nombre de plantilla es obligatorio, pero no se ha proporcionado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_Unexpected">
+        <source>Unexpected error encountered.</source>
+        <target state="translated">Error inesperado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedFail">
+        <source>Template instantiation expected to pass but it had exit code '{0}'.</source>
+        <target state="translated">Se esperaba que se pasara la creación de instancias de plantilla, pero tenía el código de salida "{0}".</target>
+        <note>{0} is an exit code number</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedPass">
+        <source>Template instantiation expected to fail but it passed.</source>
+        <target state="translated">Se esperaba un error en la creación de instancias de plantilla, pero se ha pasado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_UnexpectedStdErr">
+        <source>Template instantiation expected not to have any stderr output, but stderr output was encountered:{0}{1}</source>
+        <target state="translated">Se esperaba que la creación de instancias de plantilla no tuviera ninguna salida stderr, pero se ha encontrado la salida stderr:{0}{1}</target>
+        <note>{0} is newline, {1} is the standard error content</note>
+      </trans-unit>
+      <trans-unit id="VerificationEngine_Error_WorkDirExists">
+        <source>The working directory already exists and is not empty.</source>
+        <target state="translated">El directorio de trabajo ya existe y no está vacío.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -38,7 +38,7 @@ namespace Microsoft.NET.Publish.Tests
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
             var appHostName = $"{TestProjectName}{Constants.ExeSuffix}";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(TestProjectName, $"It_publishes_with_or_without_apphost_{(useAppHost ?? "null")}_{targetFramework}")
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(TestProjectName)
                 .WithSource()
                 .WithTargetFramework("netcoreapp2.0");

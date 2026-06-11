@@ -5,7 +5,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
 using Microsoft.NET.Build.Containers.Resources;
-using Microsoft.NET.Sdk.Common;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.Tasks;

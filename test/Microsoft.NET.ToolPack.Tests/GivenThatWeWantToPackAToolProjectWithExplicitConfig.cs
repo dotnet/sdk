@@ -19,7 +19,7 @@ namespace Microsoft.NET.ToolPack.Tests
         public void It_finds_the_entry_point_dll_and_put_in_setting_file()
         {
             const string explicitEntryPoint = "explicit_entry_point.dll";
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                                         .CopyTestAsset("PortableTool", "PackPortableToolToolEntryPoint")
                                         .WithSource()
                                         .WithProjectChanges(project =>
@@ -55,7 +55,7 @@ namespace Microsoft.NET.ToolPack.Tests
         public void It_finds_commandName_and_put_in_setting_file()
         {
             const string explicitCommandName = "explicit_command_name";
-            TestAsset helloWorldAsset = _testAssetsManager
+            TestAsset helloWorldAsset = TestAssetsManager
                                         .CopyTestAsset("PortableTool", "PackPortableToolToolCommandName")
                                         .WithSource()
                                         .WithProjectChanges(project =>

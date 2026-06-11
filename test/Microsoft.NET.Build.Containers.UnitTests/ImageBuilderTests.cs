@@ -3,9 +3,6 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 

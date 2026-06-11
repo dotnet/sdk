@@ -1,0 +1,548 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using Microsoft.Build.Framework;
+using static Microsoft.NET.Build.Tasks.ResolveTargetingPackAssets;
+
+namespace Microsoft.NET.Build.Tasks.UnitTests
+{
+    public class GivenAResolveTargetingPackAssetsTask : SdkTest
+    {
+        public GivenAResolveTargetingPackAssetsTask(ITestOutputHelper log)
+            : base(log)
+        {
+        }
+
+        [Fact]
+        public void Given_ResolvedTargetingPacks_with_valid_PATH_in_PlatformManifest_It_resolves_TargetingPack()
+        {
+            ResolveTargetingPackAssets task = InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory);
+
+            task.Execute().Should().BeTrue();
+
+            var reference = task.ReferencesToAdd[0];
+            reference.ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "lib/Microsoft.Windows.SDK.NET.dll"));
+            reference.GetMetadata("AssemblyName").Should().Be("Microsoft.Windows.SDK.NET");
+            reference.GetMetadata("AssemblyVersion").Should().Be("10.0.18362.3");
+            reference.GetMetadata("FileVersion").Should().Be("10.0.18362.3");
+            reference.GetMetadata("PublicKeyToken").Should().Be("null");
+            reference.GetMetadata("FrameworkReferenceName").Should().Be("Microsoft.Windows.SDK.NET.Ref");
+            reference.GetMetadata("FrameworkReferenceVersion").Should().Be("5.0.0-preview1");
+
+            task.PlatformManifests[0].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, $"data{Path.DirectorySeparatorChar}PlatformManifest.txt"));
+            task.AnalyzersToAdd.Length.Should().Be(2);
+            task.AnalyzersToAdd[0].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "analyzers/dotnet/anyAnalyzer.dll"));
+            task.AnalyzersToAdd[1].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "analyzers/dotnet/cs/csAnalyzer.dll"));
+
+            ((MockBuildEngine)task.BuildEngine).RegisteredTaskObjectsQueries.Should().Be(2,
+                because: "There should be a lookup for the overall and the specific targeting pack");
+
+            ((MockBuildEngine)task.BuildEngine).RegisteredTaskObjects.Count.Should().Be(2,
+                because: "There should be a cache entry for the overall lookup and for the specific targeting pack");
+        }
+
+        [Fact]
+        public void It_Uses_Multiple_Frameworks()
+        {
+            ResolveTargetingPackAssets task = InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory);
+
+            // Add two RuntimeFrameworks that both point to the default targeting pack.
+            task.RuntimeFrameworks = new[] {
+                new MockTaskItem("RuntimeFramework1", new Dictionary<string, string>{ ["FrameworkName"] = "Microsoft.Windows.SDK.NET.Ref"}),
+                new MockTaskItem("RuntimeFramework2", new Dictionary<string, string>{ ["FrameworkName"] = "Microsoft.Windows.SDK.NET.Ref"}),
+            };
+
+            task.Execute().Should().BeTrue();
+
+            task.UsedRuntimeFrameworks.Select(item => item.ItemSpec)
+                .Should().BeEquivalentTo(new[]
+                {
+                    "RuntimeFramework1",
+                    "RuntimeFramework2",
+                });
+        }
+
+        [Fact]
+        public void Given_Passing_ResolvedTargetingPacks_It_Passes_Again_With_Cached_Results()
+        {
+            ResolveTargetingPackAssets task1 = InitializeMockTargetingPackAssetsDirectory(out string packageDirectory);
+
+            // Save off that build engine to inspect and reuse
+            MockBuildEngine buildEngine = (MockBuildEngine)task1.BuildEngine;
+
+            task1.Execute().Should().BeTrue();
+
+            buildEngine.RegisteredTaskObjectsQueries.Should().Be(2,
+                because: "there should be a lookup for the overall and the specific targeting pack");
+
+            buildEngine.RegisteredTaskObjects.Count.Should().Be(2,
+                because: "there should be a cache entry for the overall lookup and for the specific targeting pack");
+
+            ResolveTargetingPackAssets task2 = InitializeTask(packageDirectory, buildEngine);
+
+            task2.Execute().Should().BeTrue();
+
+            buildEngine.RegisteredTaskObjectsQueries.Should().Be(3,
+                because: "there should be a hit on the overall lookup this time through");
+
+            buildEngine.RegisteredTaskObjects.Count.Should().Be(2,
+                because: "the cache keys should match");
+        }
+
+        [Fact]
+        public void Given_Passing_ResolvedTargetingPacks_A_Different_Language_Parses_Again()
+        {
+            ResolveTargetingPackAssets task1 = InitializeMockTargetingPackAssetsDirectory(out string packageDirectory);
+
+            // Save off that build engine to inspect and reuse
+            MockBuildEngine buildEngine = (MockBuildEngine)task1.BuildEngine;
+
+            task1.Execute().Should().BeTrue();
+
+            buildEngine.RegisteredTaskObjectsQueries.Should().Be(2,
+                because: "there should be a lookup for the overall and the specific targeting pack");
+
+            buildEngine.RegisteredTaskObjects.Count.Should().Be(2,
+                because: "there should be a cache entry for the overall lookup and for the specific targeting pack");
+
+            ResolveTargetingPackAssets task2 = InitializeTask(packageDirectory, buildEngine);
+
+            task2.ProjectLanguage = "F#";
+
+            task2.Execute().Should().BeTrue();
+
+            buildEngine.RegisteredTaskObjectsQueries.Should().Be(4,
+                because: "there should be no hits on the overall or targeting pack lookup this time through");
+
+            buildEngine.RegisteredTaskObjects.Count.Should().Be(4,
+                because: "there should be distinct results for C# and F#");
+        }
+
+        private ResolveTargetingPackAssets InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory,
+            [CallerMemberName] string testName = nameof(GivenAResolvePackageAssetsTask))
+        {
+            mockPackageDirectory = TestAssetsManager.CreateTestDirectory(testName: testName).Path;
+
+            string dataDir = Path.Combine(mockPackageDirectory, "data");
+            Directory.CreateDirectory(dataDir);
+
+            File.WriteAllText(Path.Combine(dataDir, "FrameworkList.xml"), _frameworkList);
+            File.WriteAllText(Path.Combine(dataDir, "PlatformManifest.txt"), "");
+
+            return InitializeTask(mockPackageDirectory, new MockBuildEngine());
+        }
+
+        private ResolveTargetingPackAssets InitializeTask(string mockPackageDirectory, IBuildEngine buildEngine)
+        {
+            var task = new ResolveTargetingPackAssets
+            {
+                BuildEngine = buildEngine,
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(mockPackageDirectory),
+                FrameworkReferences = DefaultFrameworkReferences(),
+                ResolvedTargetingPacks = DefaultTargetingPacks(mockPackageDirectory),
+                ProjectLanguage = "C#"
+            };
+
+            return task;
+        }
+
+        private static MockTaskItem[] DefaultTargetingPacks(string mockPackageDirectory) => new[]
+                    {
+                new MockTaskItem("Microsoft.Windows.SDK.NET.Ref",
+                    new Dictionary<string, string>()
+                    {
+                        {MetadataKeys.NuGetPackageId, "Microsoft.Windows.SDK.NET.Ref"},
+                        {MetadataKeys.NuGetPackageVersion, "5.0.0-preview1"},
+                        {MetadataKeys.PackageConflictPreferredPackages, "Microsoft.Windows.SDK.NET.Ref;"},
+                        {MetadataKeys.PackageDirectory, mockPackageDirectory},
+                        {MetadataKeys.Path, mockPackageDirectory},
+                        {"TargetFramework", "net5.0"}
+                    })
+            };
+        private static MockTaskItem[] DefaultFrameworkReferences() => new[]
+                    {
+                new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>())
+            };
+
+        private readonly string _frameworkList =
+@"<FileList Name=""cswinrt .NET Core 5.0"">
+  <File Type=""Managed"" Path=""lib/Microsoft.Windows.SDK.NET.dll"" PublicKeyToken=""null"" AssemblyName=""Microsoft.Windows.SDK.NET"" AssemblyVersion=""10.0.18362.3"" FileVersion=""10.0.18362.3"" />
+  <File Type=""Analyzer"" Path=""analyzers/dotnet/anyAnalyzer.dll"" PublicKeyToken=""null"" AssemblyName=""anyAnalyzer"" AssemblyVersion=""10.0.18362.3"" FileVersion=""10.0.18362.3"" />
+  <File Type=""Analyzer"" Language=""cs"" Path=""analyzers/dotnet/cs/csAnalyzer.dll"" PublicKeyToken=""null"" AssemblyName=""csAnalyzer"" AssemblyVersion=""10.0.18362.3"" FileVersion=""10.0.18362.3"" />
+  <File Type=""Analyzer"" Language=""vb"" Path=""analyzers/dotnet/vb/vbAnalyzer.dll"" PublicKeyToken=""null"" AssemblyName=""vbAnalyzer"" AssemblyVersion=""10.0.18362.3"" FileVersion=""10.0.18362.3"" />
+</FileList>";
+
+        [Fact]
+        public void CachingBehaviorIsControlledByTaskEnvironment()
+        {
+            ResolveTargetingPackAssets taskNoCaching = InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory);
+            taskNoCaching.TaskEnvironment.SetEnvironmentVariable("DOTNETSDK_ALLOW_TARGETING_PACK_CACHING", "0");
+            taskNoCaching.Execute().Should().BeTrue();
+
+            ResolveTargetingPackAssets taskWithCaching = InitializeTask(mockPackageDirectory, new MockBuildEngine());
+            taskWithCaching.TaskEnvironment.SetEnvironmentVariable("DOTNETSDK_ALLOW_TARGETING_PACK_CACHING", "1");
+            taskWithCaching.Execute().Should().BeTrue();
+
+            ((MockBuildEngine)taskNoCaching.BuildEngine).RegisteredTaskObjects.Should().BeEmpty(
+                "caching should be disabled when DOTNETSDK_ALLOW_TARGETING_PACK_CACHING=0 in TaskEnvironment");
+
+            ((MockBuildEngine)taskWithCaching.BuildEngine).RegisteredTaskObjects.Should().NotBeEmpty(
+                "caching should be enabled when DOTNETSDK_ALLOW_TARGETING_PACK_CACHING!=0 in TaskEnvironment");
+        }
+
+        [Fact]
+        public void RelativeTargetingPackPathsResolveAgainstTaskEnvironmentProjectDirectoryAndArePreservedInOutputs()
+        {
+            string projectDir = TestAssetsManager.CreateTestDirectory().Path;
+            string relativePackPath = Path.Combine("packs", $"Microsoft.Windows.SDK.NET.Ref_{Guid.NewGuid():N}");
+            string mockDir = Path.Combine(projectDir, relativePackPath);
+            CreateMockTargetingPackContents(mockDir, _frameworkList);
+
+            Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), relativePackPath)).Should().BeFalse(
+                "this test must fail if task paths are resolved from process current directory");
+
+            var engine = new MockNeverCacheBuildEngine4();
+            var task = InitializeTask(relativePackPath, engine);
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+
+            task.Execute().Should().BeTrue();
+
+            task.ReferencesToAdd.Single(r => r.GetMetadata("AssemblyName") == "Microsoft.Windows.SDK.NET").ItemSpec
+                .Should().Be(Path.Combine(relativePackPath, "lib/Microsoft.Windows.SDK.NET.dll"));
+            task.AnalyzersToAdd.Select(a => a.ItemSpec).Should().BeEquivalentTo(new[]
+            {
+                Path.Combine(relativePackPath, "analyzers/dotnet/anyAnalyzer.dll"),
+                Path.Combine(relativePackPath, "analyzers/dotnet/cs/csAnalyzer.dll"),
+            });
+            task.PlatformManifests.Single().ItemSpec
+                .Should().Be(Path.Combine(relativePackPath, $"data{Path.DirectorySeparatorChar}PlatformManifest.txt"));
+
+            task.ReferencesToAdd.Select(r => r.ItemSpec)
+                .Concat(task.AnalyzersToAdd.Select(a => a.ItemSpec))
+                .Concat(task.PlatformManifests.Select(m => m.ItemSpec))
+                .Should().OnlyContain(path => !Path.IsPathRooted(path));
+        }
+
+        [Fact]
+        public void SharedCacheKeepsIdenticalRelativeTargetingPackPathsIsolatedByProjectDirectory()
+        {
+            string firstProjectDir = TestAssetsManager.CreateTestDirectory(identifier: "first").Path;
+            string secondProjectDir = TestAssetsManager.CreateTestDirectory(identifier: "second").Path;
+            string relativePackPath = Path.Combine("packs", "Microsoft.Windows.SDK.NET.Ref");
+
+            CreateMockTargetingPackContents(
+                Path.Combine(firstProjectDir, relativePackPath),
+                FrameworkListXmlWithManagedAssembly("First.Project"));
+            CreateMockTargetingPackContents(
+                Path.Combine(secondProjectDir, relativePackPath),
+                FrameworkListXmlWithManagedAssembly("Second.Project"));
+
+            var engine = new MockBuildEngine();
+
+            var firstTask = InitializeTask(relativePackPath, engine);
+            firstTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(firstProjectDir);
+            firstTask.Execute().Should().BeTrue();
+
+            var secondTask = InitializeTask(relativePackPath, engine);
+            secondTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(secondProjectDir);
+            secondTask.Execute().Should().BeTrue();
+
+            firstTask.ReferencesToAdd.Single(r => r.GetMetadata("AssemblyName") == "First.Project").ItemSpec
+                .Should().Be(Path.Combine(relativePackPath, "lib/First.Project.dll"));
+            secondTask.ReferencesToAdd.Single(r => r.GetMetadata("AssemblyName") == "Second.Project").ItemSpec
+                .Should().Be(Path.Combine(relativePackPath, "lib/Second.Project.dll"));
+            secondTask.ReferencesToAdd.Select(r => r.GetMetadata("AssemblyName"))
+                .Should().NotContain("First.Project");
+
+            engine.RegisteredTaskObjects.Count.Should().Be(4,
+                "each project directory should have distinct top-level and framework-list cache entries");
+        }
+
+        private static void CreateMockTargetingPackContents(string mockDir, string frameworkListXml)
+        {
+            Directory.CreateDirectory(mockDir);
+
+            string dataDir = Path.Combine(mockDir, "data");
+            Directory.CreateDirectory(dataDir);
+
+            File.WriteAllText(Path.Combine(dataDir, "FrameworkList.xml"), frameworkListXml);
+            File.WriteAllText(Path.Combine(dataDir, "PlatformManifest.txt"), "");
+        }
+
+        private static string FrameworkListXmlWithManagedAssembly(string assemblyName) =>
+$@"<FileList Name=""{assemblyName}"">
+  <File Type=""Managed"" Path=""lib/{assemblyName}.dll"" PublicKeyToken=""null"" AssemblyName=""{assemblyName}"" AssemblyVersion=""1.0.0.0"" FileVersion=""1.0.0.0"" />
+</FileList>";
+
+        [Fact]
+        public void It_Hashes_All_Inputs()
+        {
+            IEnumerable<PropertyInfo> inputProperties;
+
+            var task = InitializeTaskForHashTesting(out inputProperties);
+
+            string oldHash;
+            try
+            {
+                oldHash = task.GetInputs().CacheKey();
+            }
+            catch (ArgumentNullException)
+            {
+                Assert.Fail(nameof(StronglyTypedInputs) + " is likely not correctly handling null value of one or more optional task parameters");
+
+                throw; // unreachable
+            }
+
+            foreach (var property in inputProperties)
+            {
+                switch (property.PropertyType)
+                {
+                    case var t when t == typeof(bool):
+                        property.SetValue(task, !(bool)property.GetValue(task));
+                        break;
+
+                    case var t when t == typeof(string):
+                        property.SetValue(task, property.Name);
+                        break;
+
+                    case var t when t == typeof(ITaskItem[]):
+                        property.SetValue(task, new[] { new MockTaskItem() { ItemSpec = property.Name } });
+                        // TODO: ideally this would also mutate the relevant metadata per item
+                        break;
+
+                    default:
+                        Assert.Fail($"{property.Name} is not a bool or string or ITaskItem[]. Update the test code to handle that.");
+                        throw null; // unreachable
+                }
+
+                string newHash = task.GetInputs().CacheKey();
+                newHash.Should().NotBe(
+                    oldHash,
+                    because: $"{property.Name} should be included in hash");
+
+                oldHash = newHash;
+            }
+        }
+
+        private ResolveTargetingPackAssets InitializeTaskForHashTesting(out IEnumerable<PropertyInfo> inputProperties)
+        {
+            inputProperties = typeof(ResolveTargetingPackAssets)
+                .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)
+                .Where(p => !p.IsDefined(typeof(OutputAttribute)) &&
+                            p.Name != nameof(ResolvePackageAssets.DesignTimeBuild) &&
+                            p.Name != "TaskEnvironment")
+                .OrderBy(p => p.Name, StringComparer.Ordinal);
+
+            var requiredProperties = inputProperties
+                .Where(p => p.IsDefined(typeof(RequiredAttribute)));
+
+            ResolveTargetingPackAssets task = new()
+            {
+                TaskEnvironment = TaskEnvironmentHelper.CreateForTest()
+            };
+
+            // Initialize all required properties as a genuine task invocation would. We do this
+            // because HashSettings need not defend against required parameters being null.
+            foreach (var property in requiredProperties)
+            {
+                property.PropertyType.Should().Be(
+                    typeof(string),
+                    because: $"this test hasn't been updated to handle non-string required task parameters like {property.Name}");
+
+                property.SetValue(task, "_");
+            }
+
+            return task;
+        }
+
+        [Fact]
+        public static void It_Hashes_All_Inputs_To_FrameworkList()
+        {
+            var constructor = typeof(FrameworkListDefinition).GetConstructors().Single();
+
+            var parameters = constructor.GetParameters();
+
+            var args = new object[parameters.Length];
+
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                args[i] = parameters[i].ParameterType switch
+                {
+                    var t when t == typeof(string) => string.Empty,
+                    var t when t == typeof(AbsolutePath) => default(AbsolutePath),
+                    _ => throw new NotImplementedException($"{parameters[i].ParameterType} is an unknown type. Update the test code to handle that.")
+                };
+            }
+
+            FrameworkListDefinition defaultObject = (FrameworkListDefinition)constructor.Invoke(args);
+
+            List<string> seenKeys = new(args.Length + 1);
+
+            seenKeys.Add(defaultObject.CacheKey());
+
+            AbsolutePath newAbsolutePath = new(Path.Combine(Path.GetTempPath(), "newValue"));
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                args[i] = parameters[i].ParameterType switch
+                {
+                    var t when t == typeof(string) => "newValue",
+                    var t when t == typeof(AbsolutePath) => newAbsolutePath,
+                    var t when t == typeof(ITaskItem) => new MockTaskItem() { ItemSpec = "NewSpec" },
+                    _ => throw new NotImplementedException($"{parameters[i].ParameterType} is an unknown type. Update the test code to handle that.")
+                };
+
+                string newKey = ((FrameworkListDefinition)constructor.Invoke(args)).CacheKey();
+
+                seenKeys.Should().NotContain(newKey);
+
+                seenKeys.Add(newKey);
+            }
+        }
+
+        [Fact]
+        public static void StronglyTypedInputs_Includes_All_Inputs_In_CacheKey()
+        {
+            StronglyTypedInputs defaultObject = new(
+                frameworkReferences: DefaultFrameworkReferences(),
+                resolvedTargetingPacks: DefaultStronglyTypedTargetingPacks(Path.GetTempPath()),
+                runtimeFrameworks: new[] { new MockTaskItem("RuntimeFramework1", new Dictionary<string, string>()) },
+                generateErrorForMissingTargetingPacks: true,
+                nuGetRestoreSupported: true,
+                disableTransitiveFrameworkReferences: false,
+                netCoreTargetingPackRoot: "netCoreTargetingPackRoot",
+                projectLanguage: "C#");
+
+            List<string> seenKeys = new();
+
+            seenKeys.Add(defaultObject.CacheKey());
+
+            foreach (var permutation in Permutations(defaultObject))
+            {
+                string newKey = permutation.Inputs.CacheKey();
+
+                seenKeys.Should().NotContain(newKey,
+                    because: $"The input {permutation.LastFieldChanged} should be included in the cache key");
+
+                seenKeys.Add(newKey);
+            }
+
+            static IEnumerable<(string LastFieldChanged, StronglyTypedInputs Inputs)> Permutations(StronglyTypedInputs input)
+            {
+                var properties = typeof(StronglyTypedInputs).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                foreach (var property in properties)
+                {
+                    if (property.PropertyType == typeof(FrameworkReference[]))
+                    {
+                        var currentValue = (FrameworkReference[])property.GetValue(input);
+
+                        foreach (var subfield in typeof(FrameworkReference).GetProperties())
+                        {
+                            if (subfield.PropertyType == typeof(string))
+                            {
+                                subfield.SetValue(currentValue[0], $"{subfield.Name}_changed");
+                                yield return ($"{property.Name}.{subfield.Name}", input);
+                                continue;
+                            }
+
+                            Assert.Fail($"update test to understand fields of type {subfield.PropertyType} in {nameof(FrameworkReference)}");
+                        }
+                    }
+                    else if (property.PropertyType == typeof(TargetingPack[]))
+                    {
+                        var currentValue = (TargetingPack[])property.GetValue(input);
+
+                        foreach (var subproperty in typeof(TargetingPack).GetProperties())
+                        {
+                            if (subproperty.PropertyType == typeof(string))
+                            {
+                                subproperty.SetValue(currentValue[0], $"{subproperty.Name}_changed");
+                                yield return ($"{property.Name}.{subproperty.Name}", input);
+                                continue;
+                            }
+
+                            if (subproperty.PropertyType == typeof(AbsolutePath))
+                            {
+                                subproperty.SetValue(currentValue[0], new AbsolutePath(Path.Combine(Path.GetTempPath(), $"{subproperty.Name}_changed")));
+                                yield return ($"{property.Name}.{subproperty.Name}", input);
+                                continue;
+                            }
+
+                            Assert.Fail($"update test to understand fields of type {subproperty.PropertyType} in {nameof(TargetingPack)}");
+                        }
+                    }
+                    else if (property.PropertyType == typeof(RuntimeFramework[]))
+                    {
+                        var currentValue = (RuntimeFramework[])property.GetValue(input);
+
+                        foreach (var subproperty in typeof(RuntimeFramework).GetProperties())
+                        {
+                            if (subproperty.PropertyType == typeof(string))
+                            {
+                                subproperty.SetValue(currentValue[0], $"{subproperty.Name}_changed");
+                                yield return ($"{property.Name}.{subproperty.Name}", input);
+                                continue;
+                            }
+
+                            if (subproperty.PropertyType == typeof(ITaskItem))
+                            {
+                                var item = (ITaskItem)subproperty.GetValue(currentValue[0]);
+                                item.SetMetadata("Profile", $"{subproperty.Name}_changed");
+                                yield return ($"{property.Name}.{subproperty.Name}.Profile", input);
+                                continue;
+                            }
+
+                            Assert.Fail($"update test to understand fields of type {subproperty.PropertyType} in {nameof(RuntimeFramework)}");
+                        }
+
+                        foreach (var subfield in typeof(RuntimeFramework).GetFields(BindingFlags.Public | BindingFlags.Instance))
+                        {
+                            if (subfield.FieldType == typeof(ITaskItem))
+                            {
+                                var item = (ITaskItem)subfield.GetValue(currentValue[0]);
+                                item.SetMetadata("Profile", $"{subfield.Name}_changed");
+                                yield return ($"{property.Name}.{subfield.Name}.Profile", input);
+                                continue;
+                            }
+
+                            Assert.Fail($"update test to understand fields of type {subfield.FieldType} in {nameof(RuntimeFramework)}");
+                        }
+                    }
+                    else if (property.PropertyType == typeof(string))
+                    {
+                        property.SetValue(input, $"{property.Name}_changed");
+                        yield return (property.Name, input);
+                    }
+                    else if (property.PropertyType == typeof(bool))
+                    {
+                        property.SetValue(input, !(bool)property.GetValue(input));
+                        yield return (property.Name, input);
+                    }
+                    else
+                    {
+                        Assert.Fail($"Unknown type {property.PropertyType} for field {property.Name}");
+                    }
+                }
+            }
+        }
+
+        private static TargetingPack[] DefaultStronglyTypedTargetingPacks(string mockPackageDirectory) => new[]
+        {
+            new TargetingPack(
+                "Microsoft.Windows.SDK.NET.Ref",
+                new AbsolutePath(mockPackageDirectory),
+                string.Empty,
+                "net5.0",
+                string.Empty,
+                "Microsoft.Windows.SDK.NET.Ref",
+                "5.0.0-preview1",
+                "Microsoft.Windows.SDK.NET.Ref;")
+        };
+    }
+}
+
