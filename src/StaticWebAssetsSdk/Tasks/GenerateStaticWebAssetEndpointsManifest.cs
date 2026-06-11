@@ -73,7 +73,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
             UpdateExclusionPatternsCache(existingPatternString, patternString, manifestAbsolutePath, exclusionCacheAbsolutePath, hasExclusionCache);
 
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
-            var assets = StaticWebAsset.FromTaskItemGroup(Assets);
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment);
             var manifestAssets = ComputeManifestAssets(assets, ManifestType)
                 .ToDictionary(a => a.ResolvedAsset.Identity, a => a, OSPath.PathComparer);
 
