@@ -122,44 +122,46 @@ public class AotParserTests
 
         var bufferedOutput = new BufferedReporter();
         var bufferedError = new BufferedReporter();
-        var originalOut = Console.Out;
-        var originalErr = Console.Error;
         var stdoutWriter = new StringWriter();
         var stderrWriter = new StringWriter();
+
+        // Redirect InvocationConfiguration.Output/Error so S.CL writes are captured.
+        var originalInvocationOut = Parser.InvocationConfiguration.Output;
+        var originalInvocationErr = Parser.InvocationConfiguration.Error;
 
         try
         {
             Reporter.SetOutput(bufferedOutput);
             Reporter.SetError(bufferedError);
-            Console.SetOut(stdoutWriter);
-            Console.SetError(stderrWriter);
+            Parser.InvocationConfiguration.Output = stdoutWriter;
+            Parser.InvocationConfiguration.Error = stderrWriter;
 
             int exitCode = Parser.Invoke(parseResult);
 
-            // Combine Reporter output and direct Console.Out output
+            // Combine Reporter output and InvocationConfiguration output
             string reporterOut = string.Join(Environment.NewLine, bufferedOutput.Lines);
-            string consoleOut = stdoutWriter.ToString();
+            string invocationOut = stdoutWriter.ToString();
             string stdout = string.IsNullOrEmpty(reporterOut)
-                ? consoleOut
-                : (string.IsNullOrEmpty(consoleOut)
+                ? invocationOut
+                : (string.IsNullOrEmpty(invocationOut)
                     ? reporterOut
-                    : reporterOut + Environment.NewLine + consoleOut);
+                    : reporterOut + Environment.NewLine + invocationOut);
 
             string reporterErr = string.Join(Environment.NewLine, bufferedError.Lines);
-            string consoleErr = stderrWriter.ToString();
+            string invocationErr = stderrWriter.ToString();
             string stderr = string.IsNullOrEmpty(reporterErr)
-                ? consoleErr
-                : (string.IsNullOrEmpty(consoleErr)
+                ? invocationErr
+                : (string.IsNullOrEmpty(invocationErr)
                     ? reporterErr
-                    : reporterErr + Environment.NewLine + consoleErr);
+                    : reporterErr + Environment.NewLine + invocationErr);
 
             return (exitCode, stdout, stderr);
         }
         finally
         {
             Reporter.Reset();
-            Console.SetOut(originalOut);
-            Console.SetError(originalErr);
+            Parser.InvocationConfiguration.Output = originalInvocationOut;
+            Parser.InvocationConfiguration.Error = originalInvocationErr;
         }
     }
 }

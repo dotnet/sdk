@@ -179,11 +179,6 @@
         <target state="translated">Imagen “{0}” insertada en el registro “{1}”.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">No se admite la creación de índices de imagen para Podman.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: no se pudo cargar la imagen desde el registro local. Stdout: {0}</target>
