@@ -60,9 +60,9 @@
     </ItemGroup>
 
     <Error Condition="'@(_UnregisteredMacOSNativeAotSdkTool)' != ''"
-           Text="Bundled dotnet tool(s) @(_UnregisteredMacOSNativeAotSdkTool, ', ') produce macOS RID-specific packages but are not registered in MacOSNativeAotSdkTools.props for signing and hardened runtime." />
+           Text="Bundled dotnet tool(s) @(_UnregisteredMacOSNativeAotSdkTool, ', ') produce macOS RID-specific packages but are not registered in src/Layout/redist/targets/MacOSNativeAotSdkTools.props for signing and hardened runtime." />
     <Error Condition="'@(_UnusedMacOSNativeAotSdkToolRegistration)' != ''"
-           Text="Registered macOS NativeAOT SDK tool(s) @(_UnusedMacOSNativeAotSdkToolRegistration, ', ') no longer correspond to macOS RID-specific bundled dotnet tools. Remove the stale registration from MacOSNativeAotSdkTools.props." />
+           Text="Registered macOS NativeAOT SDK tool(s) @(_UnusedMacOSNativeAotSdkToolRegistration, ', ') no longer correspond to macOS RID-specific bundled dotnet tools. Remove the stale registration from src/Layout/redist/targets/MacOSNativeAotSdkTools.props." />
   </Target>
 
   <Target Name="SelectBundledDotnetToolPackages"

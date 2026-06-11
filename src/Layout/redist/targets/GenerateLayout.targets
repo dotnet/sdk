@@ -580,8 +580,10 @@
     </ItemGroup>
 
     <Error Condition="'@(_MacOSNativeAotSdkToolExecutable)' == ''"
-           Text="No macOS NativeAOT SDK tool executables were found under $(OutputPath)DotnetTools for registered tools @(MacOSNativeAotSdkTool, ', ')." />
+           Text="No macOS NativeAOT SDK tool executables were found under $(OutputPath)DotnetTools for registered tools @(MacOSNativeAotSdkTool, ', '). Verify that AspNetCore runtime is included and the tools have been restored." />
 
+    <Message Text="Ad-hoc codesigning macOS NativeAOT SDK tool %(_MacOSNativeAotSdkToolExecutable.Identity)"
+             Importance="Low" />
     <Exec Command="codesign --sign - --force --entitlements &quot;$(MSBuildProjectDirectory)/msbuild-entitlements.plist&quot; &quot;%(_MacOSNativeAotSdkToolExecutable.Identity)&quot;" />
   </Target>
 
