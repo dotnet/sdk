@@ -400,6 +400,14 @@ public sealed class DotnetupTelemetry : IDisposable
     }
 
     /// <summary>
+    /// Returns the flush timeout appropriate for the current environment.
+    /// Interactive shells get 10ms to matches the .NET SDK CLI's 10ms flush.
+    ///
+    /// CI/one-and-done environments get a larger 200ms budget because there's no follow-up
+    /// invocation to drain the AzMonitor offline store.    /// </summary>
+    internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment ? 200 : 10;
+
+    /// <summary>
     /// Drains both the tracer and logger batch export processors out to
     /// their network exporters within <paramref name="timeoutMilliseconds"/>.
     /// Returns as soon as the queues are empty — the timeout is just a
@@ -407,12 +415,14 @@ public sealed class DotnetupTelemetry : IDisposable
     /// happy-path runs. Whatever doesn't drain in time falls back to the
     /// AzMonitor exporter's <c>StorageDirectory</c> retry queue.
     /// </summary>
-    /// <param name="timeoutMilliseconds">Maximum time to wait for flush (default 5 seconds).</param>
-    public void Flush(int timeoutMilliseconds = 5000)
+    /// <param name="timeoutMilliseconds">Maximum time to wait for flush. If not specified, uses <see cref="GetFlushTimeoutMs"/>.</param>
+    public void Flush(int? timeoutMilliseconds = null)
     {
+        var timeout = timeoutMilliseconds ?? GetFlushTimeoutMs();
+
         try
         {
-            _tracerProvider?.ForceFlush(timeoutMilliseconds);
+            _tracerProvider?.ForceFlush(timeout);
         }
         catch
         {
@@ -427,7 +437,7 @@ public sealed class DotnetupTelemetry : IDisposable
             // budget. Each LogRecord is fully decorated by
             // BuildCompletionState at _logger.Log(...) time, so ForceFlush
             // only has to drain an already-self-described queue.
-            _loggerProvider?.ForceFlush(timeoutMilliseconds);
+            _loggerProvider?.ForceFlush(timeout);
         }
         catch
         {
@@ -623,11 +633,11 @@ public sealed class DotnetupTelemetry : IDisposable
 
         // Belt-and-braces drain on paths that reach Dispose without
         // calling Flush first. Skipped when Flush() already ran so we don't
-        // pay another ~5s wait against an empty queue (or, worse, a slow
+        // pay another wait against an empty queue (or, worse, a slow
         // network when the prior Flush's small budget already expired).
         if (!_flushed)
         {
-            try { _loggerProvider?.ForceFlush(5000); } catch { /* never crash on telemetry */ }
+            try { _loggerProvider?.ForceFlush(GetFlushTimeoutMs()); } catch { /* never crash on telemetry */ }
         }
 
         // Dispose the logging service provider before the tracer so its
