@@ -215,7 +215,9 @@ Most common cases inline. For the full table including string/collection/type/nu
 | `Assert.Throws<T>(() => ...)` | **`Assert.ThrowsExactly<T>(() => ...)`** (see trap below) |
 | `Assert.ThrowsAny<T>(() => ...)` | **`Assert.Throws<T>(() => ...)`** |
 | `await Assert.ThrowsAsync<T>(...)` | `await Assert.ThrowsExactlyAsync<T>(...)` |
-| `Assert.IsType<T>(x)` / `Assert.IsAssignableFrom<T>(x)` | `Assert.IsExactInstanceOfType<T>(x)` (MSTest 4.1+, exact type) / `Assert.IsInstanceOfType<T>(x)` (assignable). Both return the typed value. |
+| `Assert.IsType<T>(x)` (exact-type check, returns `T`) | `Assert.IsExactInstanceOfType<T>(x)` (MSTest 4.1+, returns `T`) -- **not** `Assert.IsInstanceOfType<T>`, which is assignable/is-a and silently weakens the assertion |
+| `Assert.IsNotType<T>(x)` (exact-type check) | `Assert.IsNotExactInstanceOfType<T>(x)` (MSTest 4.1+) |
+| `Assert.IsAssignableFrom<T>(x)` | `Assert.IsInstanceOfType<T>(x)` (MSTest v4 returns the typed value) |
 | `Assert.Empty(coll)` / `Assert.NotEmpty(coll)` | `Assert.IsEmpty(coll)` / `Assert.IsNotEmpty(coll)` |
 | `Assert.Single(coll)` | `var item = Assert.ContainsSingle(coll);` |
 | `Assert.Contains(item, coll)` / `Assert.DoesNotContain(...)` | Same -- `Assert.Contains` / `Assert.DoesNotContain` |
