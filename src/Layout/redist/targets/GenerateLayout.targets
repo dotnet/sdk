@@ -576,7 +576,8 @@
           DependsOnTargets="ValidateMacOSNativeAotSdkToolRegistrations"
           Condition="'$(OSName)' == 'osx' and '$(IncludeAspNetCoreRuntime)' != 'false'">
     <ItemGroup>
-      <_MacOSNativeAotSdkToolExecutable Include="@(MacOSNativeAotSdkTool->'$(OutputPath)DotnetTools\%(Identity)\**\osx-*\%(Identity)')" />
+      <_MacOSNativeAotSdkToolExecutable Include="@(MacOSNativeAotSdkTool->'$(OutputPath)DotnetTools\%(Identity)\**\osx-x64\%(Identity)')" />
+      <_MacOSNativeAotSdkToolExecutable Include="@(MacOSNativeAotSdkTool->'$(OutputPath)DotnetTools\%(Identity)\**\osx-arm64\%(Identity)')" />
     </ItemGroup>
 
     <Error Condition="'@(_MacOSNativeAotSdkToolExecutable)' == ''"
