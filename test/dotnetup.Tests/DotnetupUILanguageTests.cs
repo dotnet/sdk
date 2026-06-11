@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Xunit;
 
@@ -33,6 +35,77 @@ public class DotnetupUILanguageTests
     {
         DotnetupUILanguage.NormalizePosixLocale(posix).Should().BeNull();
     }
+
+    // Representative locale -> shipped satellite culture. The neutral cases (e.g. fr-FR -> fr)
+    // and the Chinese script cases (zh-CN -> zh-Hans) exercise the fallback that invariant mode
+    // would otherwise break. SupportedLanguageCases_CoverEverySupportedLanguage asserts there is
+    // a case here for every language we localize for.
+    public static IEnumerable<object[]> SupportedLanguageCases() =>
+    [
+        ["cs-CZ", "cs"],
+        ["de-DE", "de"],
+        ["es-ES", "es"],
+        ["fr-FR", "fr"],
+        ["it-IT", "it"],
+        ["ja-JP", "ja"],
+        ["ko-KR", "ko"],
+        ["pl-PL", "pl"],
+        ["pt-BR", "pt-BR"],
+        ["ru-RU", "ru"],
+        ["tr-TR", "tr"],
+        ["zh-CN", "zh-Hans"],
+        ["zh-TW", "zh-Hant"],
+        // Additional fallback / script cases.
+        ["fr", "fr"],
+        ["zh-SG", "zh-Hans"],
+        ["zh-HK", "zh-Hant"],
+        ["zh-Hant", "zh-Hant"],
+    ];
+
+    [Theory]
+    [MemberData(nameof(SupportedLanguageCases))]
+    public void MatchSupportedLanguage_MapsToShippedSatellite(string input, string expected)
+    {
+        DotnetupUILanguage.MatchSupportedLanguage(input).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("en-US")]
+    [InlineData("en")]
+    [InlineData("nl-NL")]
+    [InlineData("pt-PT")]
+    [InlineData("pt")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void MatchSupportedLanguage_ReturnsNullForUnsupported(string? input)
+    {
+        DotnetupUILanguage.MatchSupportedLanguage(input).Should().BeNull();
+    }
+
+    [Fact]
+    public void SupportedLanguageCases_CoverEverySupportedLanguage()
+    {
+        IEnumerable<string> covered = SupportedLanguageCases().Select(c => (string)c[1]).Distinct();
+
+        covered.Should().BeEquivalentTo(
+            DotnetupUILanguage.SupportedUILanguages,
+            "every shipped UI language needs a representative MatchSupportedLanguage test case");
+    }
+
+    [Fact]
+    public void SupportedUILanguages_MatchesShippedSatelliteResources()
+    {
+        // Discover the satellite resource cultures actually emitted next to the test, so adding or
+        // removing a Strings.*.xlf without updating SupportedUILanguages (and its mapping rules)
+        // fails this test.
+        IEnumerable<string> shipped = Directory.EnumerateDirectories(AppContext.BaseDirectory)
+            .Where(directory => File.Exists(Path.Combine(directory, "dotnetup.Library.resources.dll")))
+            .Select(directory => Path.GetFileName(directory));
+
+        shipped.Should().BeEquivalentTo(
+            DotnetupUILanguage.SupportedUILanguages,
+            "DotnetupUILanguage.SupportedUILanguages must stay in sync with the shipped Strings.*.xlf satellites");
+    }
 }
 
 [Collection("DotnetupEnvironmentMutationTests")]
@@ -60,21 +133,41 @@ public class DotnetupUILanguageOverrideTests : IDisposable
     }
 
     [Fact]
-    public void ResolveUICulture_HonorsDotnetCliUiLanguage()
+    public void ResolveUICulture_HonorsDotnetCliUiLanguageOffLinux()
     {
+        // On Windows/macOS dotnetup runs non-invariant and the override is applied as-is (the
+        // runtime's parent fallback resolves resources). On Linux it is instead mapped onto a
+        // shipped satellite, which is covered by MatchSupportedLanguage tests.
+        if (OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
         Environment.SetEnvironmentVariable(DotnetCliUiLanguage, "fr-FR");
 
-        CultureInfo? uiCulture = DotnetupUILanguage.ResolveUICulture();
+        DotnetupUILanguage.ResolveUICulture()!.Name.Should().Be("fr-FR");
+    }
 
-        uiCulture!.Name.Should().Be("fr-FR");
+    [Fact]
+    public void ResolveUICulture_MapsOverrideToSatelliteOnLinux()
+    {
+        // On Linux the override is resolved with the same code as the rest of the .NET CLI and then
+        // mapped onto a shipped satellite (fr-FR -> fr). Off Linux it is applied as-is (above).
+        if (!OperatingSystem.IsLinux())
+        {
+            return;
+        }
+
+        Environment.SetEnvironmentVariable(DotnetCliUiLanguage, "fr-FR");
+
+        DotnetupUILanguage.ResolveUICulture()!.Name.Should().Be("fr");
     }
 
     [Fact]
     public void ResolveUICulture_WithoutOverride_DefersToRuntimeOffLinux()
     {
-        // On Windows and macOS dotnetup runs non-invariant, so the runtime already initialized the
-        // UI culture; ResolveUICulture returns null to leave it untouched. (On Linux it detects
-        // from the environment, which is machine-dependent and not asserted here.)
+        // On Windows and macOS the runtime already initialized CurrentUICulture from the OS, so
+        // ResolveUICulture returns null to leave it untouched.
         if (OperatingSystem.IsLinux())
         {
             return;

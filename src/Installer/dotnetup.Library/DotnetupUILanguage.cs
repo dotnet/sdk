@@ -17,12 +17,15 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 ///
 /// This type therefore:
 /// <list type="bullet">
-/// <item>Applies the standard .NET CLI overrides (<c>DOTNET_CLI_UI_LANGUAGE</c> / <c>VSLANG</c>)
-/// on every platform, since the runtime never honors those automatically.</item>
-/// <item>Detects the OS locale from the POSIX environment on Linux only, the single platform
-/// where invariant mode suppresses the runtime's own detection.</item>
+/// <item>On Windows/macOS, applies only the standard .NET CLI override
+/// (<c>DOTNET_CLI_UI_LANGUAGE</c> / <c>VSLANG</c>), since the runtime already initialized the UI
+/// culture and <see cref="CultureInfo"/>'s parent fallback works.</item>
+/// <item>On Linux, where invariant mode disables both the runtime's OS-locale detection and
+/// <see cref="CultureInfo.Parent"/> fallback, resolves the desired locale (override, else the
+/// POSIX environment) and maps it onto an exact shipped satellite culture via
+/// <see cref="MatchSupportedLanguage"/>.</item>
 /// </list>
-/// On Linux the project also sets <c>PredefinedCulturesOnly=false</c> so the detected culture can
+/// On Linux the project also sets <c>PredefinedCulturesOnly=false</c> so the matched culture can
 /// be created by name (it carries invariant formatting data but retains its name, which is what
 /// drives satellite-resource lookup).
 /// </summary>
@@ -31,6 +34,18 @@ internal static class DotnetupUILanguage
     // POSIX precedence for the message/UI locale: LC_ALL overrides everything, then the
     // message category, then LANG as the catch-all default.
     private static readonly string[] s_posixLocaleVariables = ["LC_ALL", "LC_MESSAGES", "LANG"];
+
+    // The UI languages dotnetup ships satellite resources for. In invariant mode (Linux) the
+    // runtime provides no parent/neutral culture fallback, so the applied culture must exactly
+    // match one of these names; MatchSupportedLanguage maps an OS/CLI locale onto the right entry.
+    // Keep in sync with the Strings.*.xlf files — DotnetupUILanguageTests enforces this.
+    private static readonly string[] s_supportedUILanguages =
+    [
+        "cs", "de", "es", "fr", "it", "ja", "ko", "pl", "pt-BR", "ru", "tr", "zh-Hans", "zh-Hant"
+    ];
+
+    /// <summary>The UI languages dotnetup ships localized resources for (satellite culture names).</summary>
+    internal static IReadOnlyList<string> SupportedUILanguages => s_supportedUILanguages;
 
     /// <summary>
     /// Detects the user's UI language and applies it to the current process so localized
@@ -47,22 +62,110 @@ internal static class DotnetupUILanguage
     }
 
     /// <summary>
-    /// Resolves the UI culture to apply, or <c>null</c> when there is no explicit override and the
-    /// running platform's runtime has already initialized the UI culture (Windows/macOS), or none
-    /// could be determined.
+    /// Resolves the UI culture to apply, or <c>null</c> to leave the existing default in place
+    /// (no shipped language matched, or Windows/macOS where the runtime already initialized it).
     /// </summary>
     internal static CultureInfo? ResolveUICulture()
     {
-        // Explicit override (DOTNET_CLI_UI_LANGUAGE > VSLANG) applies on every platform.
-        CultureInfo? overridden = UILanguageOverride.GetOverriddenUILanguage();
-        if (overridden is not null)
+        // Windows and macOS run non-invariant: the runtime initialized CurrentUICulture from the
+        // OS and CultureInfo's parent fallback works, so only the explicit CLI override is applied.
+        if (!OperatingSystem.IsLinux())
         {
-            return overridden;
+            return UILanguageOverride.GetOverriddenUILanguage();
         }
 
-        // Only Linux runs invariant, so it is the only platform where the runtime did not already
-        // pick up the OS locale. Windows and macOS leave CurrentUICulture as the runtime set it.
-        return OperatingSystem.IsLinux() ? CreateCulture(GetUnixLocaleName()) : null;
+        // Linux runs invariant: there is no parent/neutral fallback, so the applied culture must
+        // exactly match a shipped satellite. Resolve the desired locale with the same override
+        // resolver as the rest of the .NET CLI (DOTNET_CLI_UI_LANGUAGE > VSLANG), else the POSIX
+        // environment, then map it onto a satellite. (A VSLANG LCID cannot be turned into a named
+        // culture in invariant mode, so it resolves to empty and falls through to the environment.)
+        string? desired = UILanguageOverride.GetOverriddenUILanguage()?.Name;
+        if (string.IsNullOrEmpty(desired))
+        {
+            desired = GetUnixLocaleName();
+        }
+
+        return CreateCulture(MatchSupportedLanguage(desired));
+    }
+
+    /// <summary>
+    /// Maps a BCP-47 culture name (e.g. <c>fr-FR</c>, <c>zh-CN</c>) onto the closest shipped UI
+    /// language, emulating the specific→neutral resource fallback that invariant mode disables.
+    /// Returns the matched satellite culture name, or <c>null</c> when none is shipped.
+    /// </summary>
+    internal static string? MatchSupportedLanguage(string? cultureName)
+    {
+        if (string.IsNullOrEmpty(cultureName))
+        {
+            return null;
+        }
+
+        foreach (string candidate in GetFallbackCandidates(cultureName))
+        {
+            foreach (string supported in s_supportedUILanguages)
+            {
+                if (string.Equals(candidate, supported, StringComparison.OrdinalIgnoreCase))
+                {
+                    return supported;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Yields candidate culture names from most to least specific: the name as given, the
+    /// script-qualified form for Chinese (whose satellites are script- rather than region-based),
+    /// then the bare language. ResourceManager would normally walk this chain via
+    /// <see cref="CultureInfo.Parent"/>, but that chain collapses straight to invariant in
+    /// invariant mode, so it is reconstructed here.
+    /// </summary>
+    private static IEnumerable<string> GetFallbackCandidates(string cultureName)
+    {
+        yield return cultureName;
+
+        string[] parts = cultureName.Split('-');
+        string language = parts[0];
+
+        if (string.Equals(language, "zh", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return $"zh-{GetChineseScript(parts)}";
+        }
+
+        if (parts.Length > 1)
+        {
+            yield return language;
+        }
+    }
+
+    /// <summary>
+    /// Determines the Chinese script (<c>Hans</c>/<c>Hant</c>) for a <c>zh*</c> culture: an
+    /// explicit script subtag wins, otherwise it is inferred from the region, defaulting to
+    /// Simplified.
+    /// </summary>
+    private static string GetChineseScript(string[] parts)
+    {
+        // The script subtag, when present, is the second BCP-47 subtag (e.g. zh-Hant, zh-Hant-TW).
+        if (parts.Length > 1)
+        {
+            if (string.Equals(parts[1], "Hans", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Hans";
+            }
+
+            if (string.Equals(parts[1], "Hant", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Hant";
+            }
+        }
+
+        string region = parts.Length > 1 ? parts[^1].ToUpperInvariant() : string.Empty;
+        return region switch
+        {
+            "TW" or "HK" or "MO" => "Hant",
+            _ => "Hans",
+        };
     }
 
     private static string? GetUnixLocaleName()
