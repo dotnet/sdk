@@ -22,6 +22,8 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public int GetExistingSystemInstallsCallCount { get; private set; }
     public int ApplyEnvironmentModificationsCallCount { get; private set; }
+    public int ApplyEnvironmentModificationsUserCallCount { get; private set; }
+    public int ApplyEnvironmentModificationsSystemCallCount { get; private set; }
     public int ApplyTerminalProfileModificationsCallCount { get; private set; }
     public string? LastDotnetRootForEnvironmentModifications { get; private set; }
     public string? LastDotnetRootForTerminalProfileModifications { get; private set; }
@@ -60,6 +62,14 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
     {
         ApplyEnvironmentModificationsCallCount++;
+        if (installType == InstallType.User)
+        {
+            ApplyEnvironmentModificationsUserCallCount++;
+        }
+        else if (installType == InstallType.System)
+        {
+            ApplyEnvironmentModificationsSystemCallCount++;
+        }
         LastDotnetRootForEnvironmentModifications = dotnetRoot;
     }
 

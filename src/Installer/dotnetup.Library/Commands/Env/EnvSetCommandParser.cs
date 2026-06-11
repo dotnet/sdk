@@ -8,6 +8,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 internal static class EnvSetCommandParser
 {
+    private static readonly string[] s_supportedModes = OperatingSystem.IsWindows()
+        ? ["none", "shell", "all"]
+        : ["none", "shell"];
+
     public static readonly Argument<PathPreference> ModeArgument = CreateModeArgument();
 
     private static Argument<PathPreference> CreateModeArgument()
@@ -15,11 +19,11 @@ internal static class EnvSetCommandParser
         var argument = new Argument<PathPreference>("mode")
         {
             HelpName = "MODE",
-            Description = "The env mode to apply: 'none', 'shell', or 'all'.",
+            Description = $"The env mode to apply: {string.Join(", ", s_supportedModes.Select(m => $"'{m}'"))}.",
             Arity = ArgumentArity.ExactlyOne,
             CustomParser = ParseMode,
         };
-        argument.CompletionSources.Add(_ => ["none", "shell", "all"]);
+        argument.CompletionSources.Add(_ => s_supportedModes);
         return argument;
     }
 
@@ -30,14 +34,18 @@ internal static class EnvSetCommandParser
         {
             "none" => PathPreference.None,
             "shell" => PathPreference.Shell,
-            "all" => PathPreference.All,
-            _ => SetError(result, token),
+            // 'all' is Windows-only. On other platforms reject at parse time with a
+            // clearer error than the runtime throw inside EnvSetCommand (which is kept
+            // as defense-in-depth in case this parse check is ever bypassed).
+            "all" when OperatingSystem.IsWindows() => PathPreference.All,
+            "all" => SetError(result, "'all' mode is only supported on Windows. Use 'shell' on this platform."),
+            _ => SetError(result, $"Unknown env mode '{token}'. Expected one of: {string.Join(", ", s_supportedModes)}."),
         };
     }
 
-    private static PathPreference SetError(ArgumentResult result, string token)
+    private static PathPreference SetError(ArgumentResult result, string message)
     {
-        result.AddError($"Unknown env mode '{token}'. Expected one of: none, shell, all.");
+        result.AddError(message);
         return PathPreference.None;
     }
 
