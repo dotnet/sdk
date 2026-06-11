@@ -13,7 +13,6 @@
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions" />
     <Using Include="FluentAssertions" />
-    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
   <ItemGroup>
