@@ -1098,7 +1098,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     public static string NormalizeContentRootPath(string path) => NormalizeContentRootPath(path, TaskEnvironment.Fallback);
 
     public static string NormalizeContentRootPath(string path, TaskEnvironment env)
-        => Path.GetFullPath(env.GetAbsolutePath(path)) +
+        => Path.GetFullPath(string.IsNullOrEmpty(path) ? path : env.GetAbsolutePath(path)) +
         // We need to do .ToString because there is no EndsWith overload for chars in .NET Framework
         (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch
         {
@@ -1192,6 +1192,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         var destPath = Path.Combine(fxDir, Normalize(fileSystemRelativePath));
       
         destPath = Path.GetFullPath(env.GetAbsolutePath(destPath));
+        if (string.IsNullOrEmpty(asset.Identity))
+        {
+            log.LogError("Source file '{0}' does not exist for framework asset materialization.", asset.Identity);
+            return (null, null, null);
+        }
 
         var sourceFile = env.GetAbsolutePath(asset.Identity);
         if (!File.Exists(sourceFile))
