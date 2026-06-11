@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
+    [TestClass]
     public class BlazorWasmHotReloadMiddlewareTest
     {
         private readonly ILogger<BlazorWasmHotReloadMiddleware> _logger;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             _middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException(), _logger);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeltasAreSavedOnPost()
         {
             var context = new DefaultHttpContext();
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             AssertUpdates([update], _middleware.Updates);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DuplicateDeltasOnPostAreIgnored()
         {
             var updates = new BlazorWasmHotReloadMiddleware.Update[]
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             AssertUpdates(updates, _middleware.Updates);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleDeltaPayloadsCanBeAccepted()
         {
             var update = new BlazorWasmHotReloadMiddleware.Update()
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             AssertUpdates([update, newUpdate], _middleware.Updates);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Get_Returns204_IfNoDeltasPresent()
         {
             var context = new DefaultHttpContext();
@@ -186,10 +187,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             
             await _middleware.InvokeAsync(context);
 
-            Assert.Equal(204, context.Response.StatusCode);
+            Assert.AreEqual(204, context.Response.StatusCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GetReturnsDeltas()
         {
             var context = new DefaultHttpContext();
@@ -226,30 +227,30 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             await _middleware.InvokeAsync(context);
 
-            Assert.Equal(200, context.Response.StatusCode);
-            Assert.Equal(
+            Assert.AreEqual(200, context.Response.StatusCode);
+            Assert.AreSequenceEqual(
                 JsonSerializer.SerializeToUtf8Bytes(updates, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
                 stream.ToArray());
         }
 
         private static void AssertUpdates(IReadOnlyList<BlazorWasmHotReloadMiddleware.Update> expected, IReadOnlyList<BlazorWasmHotReloadMiddleware.Update> actual)
         {
-            Assert.Equal(expected.Count, actual.Count);
+            Assert.AreEqual(expected.Count, actual.Count);
 
             for (var u = 0; u < expected.Count; u++)
             {
                 var expectedUpdate = expected[u];
                 var actualUpdate = actual[u];
-                Assert.Equal(expectedUpdate.Id, actualUpdate.Id);
-                Assert.Equal(expectedUpdate.Deltas.Length, expectedUpdate.Deltas.Length);
+                Assert.AreEqual(expectedUpdate.Id, actualUpdate.Id);
+                Assert.AreEqual(expectedUpdate.Deltas.Length, expectedUpdate.Deltas.Length);
 
                 for (var i = 0; i < expectedUpdate.Deltas.Length; i++)
                 {
-                    Assert.Equal(expectedUpdate.Deltas[i].ILDelta, actualUpdate.Deltas[i].ILDelta);
-                    Assert.Equal(expectedUpdate.Deltas[i].PdbDelta, actualUpdate.Deltas[i].PdbDelta);
-                    Assert.Equal(expectedUpdate.Deltas[i].MetadataDelta, actualUpdate.Deltas[i].MetadataDelta);
-                    Assert.Equal(expectedUpdate.Deltas[i].ModuleId, actualUpdate.Deltas[i].ModuleId);
-                    Assert.Equal(expectedUpdate.Deltas[i].UpdatedTypes, actualUpdate.Deltas[i].UpdatedTypes);
+                    Assert.AreEqual(expectedUpdate.Deltas[i].ILDelta, actualUpdate.Deltas[i].ILDelta);
+                    Assert.AreEqual(expectedUpdate.Deltas[i].PdbDelta, actualUpdate.Deltas[i].PdbDelta);
+                    Assert.AreEqual(expectedUpdate.Deltas[i].MetadataDelta, actualUpdate.Deltas[i].MetadataDelta);
+                    Assert.AreEqual(expectedUpdate.Deltas[i].ModuleId, actualUpdate.Deltas[i].ModuleId);
+                    Assert.AreSequenceEqual(expectedUpdate.Deltas[i].UpdatedTypes, actualUpdate.Deltas[i].UpdatedTypes);
                 }
             }
         }
