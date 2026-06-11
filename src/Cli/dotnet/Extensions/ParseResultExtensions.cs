@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Cli.Extensions;
 
 public static class ParseResultExtensions
 {
+
+#if !CLI_AOT
     /// <summary>
     /// Finds the command of the parse result and invokes help for that command.
     /// If no command is specified, invokes help for the application.
@@ -180,6 +182,7 @@ public static class ParseResultExtensions
             DebugHelper.WaitForDebugger();
         }
     }
+#endif
 
     public static string GetCommandName(this ParseResult parseResult)
     {
@@ -193,12 +196,14 @@ public static class ParseResultExtensions
         }
         parentNames.Reverse();
 
+#if !CLI_AOT
         // Options that perform terminating actions are considered part of the command name as they are essentially subcommands themselves.
         // Example: dotnet --version
         if (parseResult.Action is InvocableOptionAction { Terminating: true } optionAction)
         {
             parentNames.Add(optionAction.Option.Name);
         }
+#endif
 
         return string.Join(' ', parentNames);
     }
