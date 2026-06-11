@@ -46,7 +46,7 @@ public class AspireResourceLauncherCliTests
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "a", "b" };
         var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        AssertEx.SequenceEqual(["a", "b"], launcher.ApplicationArguments);
+        Assert.AreSequenceEqual(["a", "b"], launcher.ApplicationArguments);
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public class AspireResourceLauncherCliTests
         Assert.AreEqual(LogLevel.Debug, launcher.GlobalOptions.LogLevel);
         Assert.IsTrue(launcher.LaunchProfileName.HasValue);
         Assert.AreEqual("Dev", launcher.LaunchProfileName.Value);
-        AssertEx.SequenceEqual(["arg1", "arg2"], launcher.ApplicationArguments);
+        Assert.AreSequenceEqual(["arg1", "arg2"], launcher.ApplicationArguments);
         Assert.AreEqual(2, launcher.EnvironmentVariables.Count);
         Assert.AreEqual("V1", launcher.EnvironmentVariables["K1"]);
         Assert.AreEqual("V2", launcher.EnvironmentVariables["K2"]);
@@ -267,7 +267,7 @@ public class AspireResourceLauncherCliTests
         var command = new AspireResourceCommandDefinition();
         var result = command.Parse(["--server", "S", "--entrypoint", "E", "-e", token]);
 
-        AssertEx.SequenceEqual(
+        Assert.AreSequenceEqual(
         [
             $"Incorrectly formatted environment variables '{token}'"
         ], result.Errors.Select(e => e.Message));

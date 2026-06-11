@@ -55,7 +55,7 @@ public class AspireHostLauncherCliTests
     {
         var args = new[] { "host", "--sdk", "sdk", "--entrypoint", "proj", "--verbose", "a", "b" };
         var launcher = Assert.IsExactInstanceOfType<AspireHostLauncher>(AspireLauncher.TryCreate(args));
-        AssertEx.SequenceEqual(["a", "b"], launcher.ApplicationArguments);
+        Assert.AreSequenceEqual(["a", "b"], launcher.ApplicationArguments);
         Assert.AreEqual(LogLevel.Debug, launcher.GlobalOptions.LogLevel);
     }
 
@@ -127,7 +127,7 @@ public class AspireHostLauncherCliTests
         var args = new[] { "host", "--sdk", "sdk", "--entrypoint", "proj1", "proj2" };
         var launcher = Assert.IsExactInstanceOfType<AspireHostLauncher>(AspireLauncher.TryCreate(args));
         Assert.AreEqual("proj1", launcher.EntryPoint.ProjectOrEntryPointFilePath);
-        AssertEx.SequenceEqual(["proj2"], launcher.ApplicationArguments);
+        Assert.AreSequenceEqual(["proj2"], launcher.ApplicationArguments);
     }
 
     [TestMethod]
@@ -141,6 +141,6 @@ public class AspireHostLauncherCliTests
         Assert.AreEqual("sdk", launcher.EnvironmentOptions.SdkDirectory);
         Assert.AreEqual(LogLevel.Debug, launcher.GlobalOptions.LogLevel);
         Assert.IsFalse(launcher.LaunchProfileName.HasValue);
-        AssertEx.SequenceEqual(["arg1", "arg2", "arg3"], launcher.ApplicationArguments);
+        Assert.AreSequenceEqual(["arg1", "arg2", "arg3"], launcher.ApplicationArguments);
     }
 }

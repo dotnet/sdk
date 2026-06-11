@@ -49,7 +49,7 @@ public class AspireHostLauncherTests
 
         AssertCommonProperties(options, launcher);
         Assert.IsFalse(options.LaunchProfileName.HasValue);
-        AssertEx.SequenceEqual(["--project", "myapp.csproj", "--no-launch-profile"], options.CommandArguments);
+        Assert.AreSequenceEqual(["--project", "myapp.csproj", "--no-launch-profile"], options.CommandArguments);
     }
 
     [TestMethod]
@@ -61,7 +61,7 @@ public class AspireHostLauncherTests
 
         AssertCommonProperties(options, launcher);
         Assert.IsFalse(options.LaunchProfileName.HasValue);
-        AssertEx.SequenceEqual(["--file", "Program.cs", "--no-launch-profile"], options.CommandArguments);
+        Assert.AreSequenceEqual(["--file", "Program.cs", "--no-launch-profile"], options.CommandArguments);
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public class AspireHostLauncherTests
         AssertCommonProperties(options, launcher);
         Assert.IsTrue(options.LaunchProfileName.HasValue);
         Assert.AreEqual("MyProfile", options.LaunchProfileName.Value);
-        AssertEx.SequenceEqual(["--project", "myapp.csproj", "--launch-profile", "MyProfile"], options.CommandArguments);
+        Assert.AreSequenceEqual(["--project", "myapp.csproj", "--launch-profile", "MyProfile"], options.CommandArguments);
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public class AspireHostLauncherTests
 
         AssertCommonProperties(options, launcher);
         Assert.IsFalse(options.LaunchProfileName.HasValue);
-        AssertEx.SequenceEqual(["--project", "myapp.csproj", "--no-launch-profile"], options.CommandArguments);
+        Assert.AreSequenceEqual(["--project", "myapp.csproj", "--no-launch-profile"], options.CommandArguments);
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public class AspireHostLauncherTests
         AssertCommonProperties(options, launcher);
         Assert.IsTrue(options.LaunchProfileName.HasValue);
         Assert.IsNull(options.LaunchProfileName.Value);
-        AssertEx.SequenceEqual(["--project", "myapp.csproj"], options.CommandArguments);
+        Assert.AreSequenceEqual(["--project", "myapp.csproj"], options.CommandArguments);
     }
 
     [TestMethod]
@@ -113,7 +113,7 @@ public class AspireHostLauncherTests
         AssertCommonProperties(options, launcher);
         Assert.IsTrue(options.LaunchProfileName.HasValue);
         Assert.AreEqual("Profile", options.LaunchProfileName.Value);
-        AssertEx.SequenceEqual(["--project", "myapp.csproj", "--launch-profile", "Profile", "arg1", "arg2"], options.CommandArguments);
+        Assert.AreSequenceEqual(["--project", "myapp.csproj", "--launch-profile", "Profile", "arg1", "arg2"], options.CommandArguments);
     }
 
     [TestMethod]
@@ -137,7 +137,7 @@ public class AspireHostLauncherTests
         AssertCommonProperties(options, launcher);
         Assert.IsTrue(options.LaunchProfileName.HasValue);
         Assert.AreEqual("Dev", options.LaunchProfileName.Value);
-        AssertEx.SequenceEqual(["--file", "Program.cs", "--launch-profile", "Dev", "--port", "8080"], options.CommandArguments);
+        Assert.AreSequenceEqual(["--file", "Program.cs", "--launch-profile", "Dev", "--port", "8080"], options.CommandArguments);
     }
 
     [TestMethod]
@@ -149,6 +149,6 @@ public class AspireHostLauncherTests
 
         AssertCommonProperties(options, launcher);
         Assert.IsFalse(options.LaunchProfileName.HasValue);
-        AssertEx.SequenceEqual(["--project", "myapp.csproj", "--no-launch-profile", "--urls", "http://localhost:5000"], options.CommandArguments);
+        Assert.AreSequenceEqual(["--project", "myapp.csproj", "--no-launch-profile", "--urls", "http://localhost:5000"], options.CommandArguments);
     }
 }

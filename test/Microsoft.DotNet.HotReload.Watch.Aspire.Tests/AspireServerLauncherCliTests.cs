@@ -43,7 +43,7 @@ public class AspireServerLauncherCliTests
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--resource", "proj1.csproj" };
         var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
-        AssertEx.SequenceEqual(["proj1.csproj"], launcher.ResourcePaths);
+        Assert.AreSequenceEqual(["proj1.csproj"], launcher.ResourcePaths);
     }
 
     [TestMethod]
@@ -51,7 +51,7 @@ public class AspireServerLauncherCliTests
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--resource", "proj1.csproj", "proj2.csproj", "file.cs" };
         var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
-        AssertEx.SequenceEqual(["proj1.csproj", "proj2.csproj", "file.cs"], launcher.ResourcePaths);
+        Assert.AreSequenceEqual(["proj1.csproj", "proj2.csproj", "file.cs"], launcher.ResourcePaths);
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public class AspireServerLauncherCliTests
     {
         var args = new[] { "server", "--server", "pipe1", "--sdk", "sdk", "--resource", "proj1.csproj", "--resource", "proj2.csproj" };
         var launcher = Assert.IsExactInstanceOfType<AspireServerLauncher>(AspireLauncher.TryCreate(args));
-        AssertEx.SequenceEqual(["proj1.csproj", "proj2.csproj"], launcher.ResourcePaths);
+        Assert.AreSequenceEqual(["proj1.csproj", "proj2.csproj"], launcher.ResourcePaths);
     }
 
     [TestMethod]
@@ -123,7 +123,7 @@ public class AspireServerLauncherCliTests
 
         Assert.AreEqual("pipe1", launcher.ServerPipeName);
         Assert.AreEqual(LogLevel.Debug, launcher.GlobalOptions.LogLevel);
-        AssertEx.SequenceEqual(["proj1.csproj", "proj2.csproj"], launcher.ResourcePaths);
+        Assert.AreSequenceEqual(["proj1.csproj", "proj2.csproj"], launcher.ResourcePaths);
         Assert.AreEqual("status1", launcher.StatusPipeName);
         Assert.AreEqual("control1", launcher.ControlPipeName);
     }
