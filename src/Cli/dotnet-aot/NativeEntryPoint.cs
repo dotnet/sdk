@@ -43,19 +43,31 @@ static unsafe partial class NativeEntryPoint
         string hostPath, string dotnetRoot, string sdkDir,
         string hostfxrPath, string[] args)
     {
-        DateTime preTelemetry = DateTime.UtcNow;
-        // Initialize OTel telemetry (mirrors managed Program.cs setup).
-        var telemetryClient = new TelemetryClient(sessionId: null);
-        DateTime postTelemetry = DateTime.UtcNow;
-        var mainActivity = Activities.Source.StartActivity("native-entrypoint", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
-
-        // Backdate the activity start to process start time for accurate timing.
-        if (mainActivity is not null)
+        // Telemetry is best-effort and must never prevent the CLI from running. Initializing
+        // it can fail on some layouts (e.g. the NativeAOT muxer cannot resolve the crypto
+        // native library used to hash telemetry properties on macOS - see dotnet/sdk#54544),
+        // so swallow any failure here and continue to the actual command.
+        Activity? mainActivity = null;
+        try
         {
-            mainActivity.SetStartTime(Process.GetCurrentProcess().StartTime.ToUniversalTime());
-            using var telemetryActivity = Activities.Source.StartActivity("aot-telemetry-setup");
-            telemetryActivity?.SetStartTime(preTelemetry);
-            telemetryActivity?.SetEndTime(postTelemetry);
+            DateTime preTelemetry = DateTime.UtcNow;
+            // Initialize OTel telemetry (mirrors managed Program.cs setup).
+            var telemetryClient = new TelemetryClient(sessionId: null);
+            DateTime postTelemetry = DateTime.UtcNow;
+            mainActivity = Activities.Source.StartActivity("native-entrypoint", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
+
+            // Backdate the activity start to process start time for accurate timing.
+            if (mainActivity is not null)
+            {
+                mainActivity.SetStartTime(Process.GetCurrentProcess().StartTime.ToUniversalTime());
+                using var telemetryActivity = Activities.Source.StartActivity("aot-telemetry-setup");
+                telemetryActivity?.SetStartTime(preTelemetry);
+                telemetryActivity?.SetEndTime(postTelemetry);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to initialize telemetry in the native entry point: {ex}");
         }
 
         int exitCode = 1;

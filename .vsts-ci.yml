@@ -9,6 +9,14 @@ trigger:
     - internal/release/*
     - exp/*
 
+schedules:
+- cron: '0 0 * * 0'
+  displayName: Weekly CodeQL/SDL build
+  branches:
+    include:
+    - main
+  always: true
+
 pr:
   branches:
     include:
@@ -115,7 +123,7 @@ extends:
           preSteps:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
             displayName: Create artifacts/bin directory
-          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
             timeoutInMinutes: 180
             windowsJobParameterSets:
             ### OFFICIAL ###
@@ -170,7 +178,7 @@ extends:
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
             timeoutInMinutes: 90
             linuxJobParameterSets:
             ### OFFICIAL ###
@@ -253,7 +261,7 @@ extends:
             publishTaskPrefix: 1ES.
           populateInternalRuntimeVariables: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.Reason'], 'BatchedCI')) }}:
             timeoutInMinutes: 90
             macOSJobParameterSets:
             ### OFFICIAL ###
