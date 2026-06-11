@@ -50,6 +50,15 @@ internal sealed class FSharpHotReloadService
     private ProjectInstanceId? _activeProject;
     private object? _activeProjectInput;
 
+    /// <summary>
+    /// The capability set the active session currently uses. The session is prestarted before
+    /// any agent connects (so this is often empty initially); once processes report their
+    /// capabilities the live session is updated in place via
+    /// FSharpChecker.UpdateHotReloadCapabilities — never restarted, because a restart would
+    /// re-capture the baseline from sources that may already contain pending edits.
+    /// </summary>
+    private ImmutableArray<string> _activeSessionCapabilities = [];
+
     public FSharpHotReloadService(ILogger logger, Func<ImmutableArray<string>>? getCapabilities = null)
     {
         _logger = logger;
@@ -170,6 +179,7 @@ internal sealed class FSharpHotReloadService
         _host?.TryEndSession();
         _activeProject = null;
         _activeProjectInput = null;
+        _activeSessionCapabilities = [];
     }
 
 #pragma warning disable CS1998 // Intentional sync fast-path wrapped in ValueTask-returning API.
@@ -688,10 +698,37 @@ internal sealed class FSharpHotReloadService
         status = FSharpManagedUpdateStatus.NoChanges;
         message = null;
 
+        var currentCapabilities = GetRuntimeCapabilities();
+
         if (_activeProject is { } activeProject &&
             _activeProjectInput != null &&
             activeProject.Equals(projectInfo.ProjectId))
         {
+            // The prestarted session is created before any agent reports its capabilities
+            // (empty set => baseline-only classification). Update the live session in place
+            // once the real set is available — never restart it: a restart would re-capture
+            // the baseline from sources that already contain the pending edit.
+            if (!CapabilitySetsEqual(_activeSessionCapabilities, currentCapabilities))
+            {
+                var updated = host.TryUpdateSessionCapabilities(currentCapabilities);
+
+                if (_trace)
+                {
+                    _logger.LogDebug(
+                        updated switch
+                        {
+                            true => "F# hot reload session capabilities refreshed ({Capabilities}).",
+                            false => "F# hot reload session capability refresh failed; keeping previous set ({Capabilities}).",
+                            null => "Loaded F# compiler service does not support capability refresh; keeping session capabilities ({Capabilities}).",
+                        },
+                        string.Join(" ", currentCapabilities));
+                }
+
+                // Record regardless of outcome so an unsupported/failed refresh is not retried
+                // on every edit.
+                _activeSessionCapabilities = currentCapabilities;
+            }
+
             return true;
         }
 
@@ -704,7 +741,7 @@ internal sealed class FSharpHotReloadService
             return false;
         }
 
-        var start = host.StartSession(projectInput!, GetRuntimeCapabilities(), CancellationToken.None);
+        var start = host.StartSession(projectInput!, currentCapabilities, CancellationToken.None);
         if (!start.IsSuccess)
         {
             status = MapErrorStatus(start.ErrorCase);
@@ -720,9 +757,15 @@ internal sealed class FSharpHotReloadService
 
         _activeProject = projectInfo.ProjectId;
         _activeProjectInput = projectInput;
+        _activeSessionCapabilities = currentCapabilities;
         _cachedProjectInputs = _cachedProjectInputs.SetItem(projectInfo.ProjectId, projectInput!);
         return true;
     }
+
+    private static bool CapabilitySetsEqual(ImmutableArray<string> left, ImmutableArray<string> right)
+        => left.Length == right.Length &&
+           left.OrderBy(static c => c, StringComparer.Ordinal)
+               .SequenceEqual(right.OrderBy(static c => c, StringComparer.Ordinal), StringComparer.Ordinal);
 
     private bool TryGetHost(FSharpProjectInfo projectInfo, out FSharpReflectionHost host, out string? message)
     {
@@ -1032,6 +1075,13 @@ internal sealed class FSharpHotReloadService
         private readonly MethodInfo? _notifyFileChanged;
         private readonly MethodInfo _emitDelta;
         private readonly MethodInfo _endSession;
+
+        /// <summary>
+        /// FSharpChecker.UpdateHotReloadCapabilities, probed lazily because older compiler
+        /// service builds do not expose it. Null after probing means unsupported.
+        /// </summary>
+        private MethodInfo? _updateCapabilities;
+        private bool _updateCapabilitiesProbed;
         private readonly ImmutableArray<MethodInfo> _invalidateConfigurationMethods;
         private readonly MethodInfo _runSynchronously;
         private readonly bool _useWorkspaceSnapshots;
@@ -1397,6 +1447,35 @@ internal sealed class FSharpHotReloadService
 
         public FSharpInvocationResult StartSession(object projectInput, ImmutableArray<string> capabilities, CancellationToken cancellationToken)
             => InvokeResult(_startSession, CreateStartSessionArguments(_startSession.GetParameters(), projectInput, capabilities), cancellationToken);
+
+        /// <summary>
+        /// Replaces the active session's capability set without restarting it (restarting would
+        /// re-capture the baseline from already-edited sources). Returns null when the loaded
+        /// compiler service predates FSharpChecker.UpdateHotReloadCapabilities, false when the
+        /// call failed or no session was active, true on success.
+        /// </summary>
+        public bool? TryUpdateSessionCapabilities(ImmutableArray<string> capabilities)
+        {
+            if (!_updateCapabilitiesProbed)
+            {
+                _updateCapabilities = _checker.GetType().GetMethod("UpdateHotReloadCapabilities", BindingFlags.Public | BindingFlags.Instance);
+                _updateCapabilitiesProbed = true;
+            }
+
+            if (_updateCapabilities == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                return _updateCapabilities.Invoke(_checker, [capabilities.ToArray()]) as bool? ?? false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Builds the StartHotReloadSession argument list against whatever FCS surface is loaded.
