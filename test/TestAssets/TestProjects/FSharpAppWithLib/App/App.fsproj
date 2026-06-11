@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <!-- Issue: https://github.com/dotnet/sdk/issues/1150 -->
+    <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
+    <OtherFlags>$(OtherFlags) --enable:hotreloaddeltas</OtherFlags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+    <ProjectReference Include="..\Lib\Lib.fsproj" />
+    <PackageReference Update="FSharp.Core" Version="6.0.1" />
+  </ItemGroup>
+
+</Project>

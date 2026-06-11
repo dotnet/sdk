@@ -360,6 +360,51 @@ public class FSharpHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
     }
 
     [Fact]
+    public async Task ChangeFilesInFSharpAppAndLib_InterleavedEditsApplyInPlace()
+    {
+        var testAsset = TestAssets.CopyTestAsset("FSharpAppWithLib")
+            .WithSource();
+
+        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_COMPILER_SERVICE_PATH"] = GetFSharpCompilerServicePath();
+        App.EnvironmentVariables["DOTNET_WATCH_FSHARP_USE_WORKSPACE_SNAPSHOTS"] = "1";
+
+        var libPath = Path.Combine(testAsset.Path, "Lib", "Lib.fs");
+        var appPath = Path.Combine(testAsset.Path, "App", "Program.fs");
+
+        App.Start(testAsset, [], "App");
+
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        App.Process.ClearOutput();
+
+        // Edit the LIBRARY's method body: the per-project delta targets the Lib module loaded
+        // into the running App process.
+        UpdateSourceFile(libPath, content => content.Replace("LibWaiting", "LibEdit1"));
+
+        await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
+        AssertFSharpEditAppliedInPlace();
+        await App.AssertOutputLineStartsWith("App[LibEdit1]");
+        App.Process.ClearOutput();
+
+        // Edit the APP's method body: same watch session, different project. The legacy
+        // single-active-session bridge could not interleave projects without recapturing
+        // baselines from already-edited sources.
+        UpdateSourceFile(appPath, content => content.Replace("App[%s]", "App2[%s]"));
+
+        await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
+        AssertFSharpEditAppliedInPlace();
+        await App.AssertOutputLineStartsWith("App2[LibEdit1]");
+        App.Process.ClearOutput();
+
+        // Edit the LIBRARY again: its committed baseline and generation chain advanced
+        // independently of the App project's inside the one session object.
+        UpdateSourceFile(libPath, content => content.Replace("LibEdit1", "LibEdit2"));
+
+        await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
+        AssertFSharpEditAppliedInPlace();
+        await App.AssertOutputLineStartsWith("App2[LibEdit2]");
+    }
+
+    [Fact]
     public async Task ChangeFileInFSharpProject_RudeEditTriggersRestart()
     {
         var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
