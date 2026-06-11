@@ -107,10 +107,8 @@ public class DotnetupProgram
         try
         {
             DotnetupTelemetry.Instance.WriteLogIfNecessary();
-            // Flush uses GetFlushTimeoutMs(): 10ms interactive, 200ms CI.
             DotnetupTelemetry.Instance.Flush();
 
-            // Only Dispose in one-and-done environments, as the data would never be sent again otherwise.
             if (DotnetupTelemetry.Instance.IsOneAndDoneEnvironment)
             {
                 DotnetupTelemetry.Instance.Dispose();
