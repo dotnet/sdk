@@ -367,6 +367,23 @@
 
       <MonoRuntimePackRids Include="@(Net100MonoRuntimePackRids)" />
 
+      <MonoRuntimePackRids Remove="
+        ios-arm64;
+        ios-arm;
+        iossimulator-arm64;
+        iossimulator-x64;
+        iossimulator-x86;
+        tvos-arm64;
+        tvossimulator-arm64;
+        tvossimulator-x64;
+        maccatalyst-x64;
+        maccatalyst-arm64;
+        android-arm64;
+        android-arm;
+        android-x64;
+        android-x86;
+        " />
+
       <AspNetCore30RuntimePackRids Include="
         win-x64;
         win-x86;
