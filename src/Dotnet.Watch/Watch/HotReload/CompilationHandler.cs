@@ -1114,7 +1114,15 @@ internal sealed class CompilationHandler : IDisposable
 
     public async Task UpdateFileContentAsync(IReadOnlyList<ChangedFile> changedFiles, CancellationToken cancellationToken)
     {
-        var solution = await Workspace.UpdateFileContentAsync(changedFiles.Select(static f => (f.Item.FilePath, f.Kind.Convert())), cancellationToken);
+        // Changes owned end-to-end by the F# hot reload service are not surfaced to the Roslyn
+        // workspace: the Roslyn EnC service has no F# support and would report rude edit ENC1009
+        // with a redundant auto-rebuild even for F# edits applied in place (or classified as
+        // no-ops) by the F# compiler service.
+        var roslynChangedFiles = changedFiles
+            .Where(file => !_fsharpHotReloadService.OwnsChangedFile(file))
+            .Select(static f => (f.Item.FilePath, f.Kind.Convert()));
+
+        var solution = await Workspace.UpdateFileContentAsync(roslynChangedFiles, cancellationToken);
         await SolutionUpdatedAsync(solution, "document update", cancellationToken);
     }
 

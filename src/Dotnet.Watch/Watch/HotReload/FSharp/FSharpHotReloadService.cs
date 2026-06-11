@@ -250,6 +250,31 @@ internal sealed class FSharpHotReloadService
     }
 
     /// <summary>
+    /// True when the changed file belongs exclusively to F# projects whose updates this service
+    /// owns end-to-end (session-object mode). Such changes must not be surfaced to the Roslyn
+    /// workspace: its EnC service has no F# support, so it reports rude edit ENC1009 ("project
+    /// does not support Hot Reload") and schedules a redundant rebuild for every F# edit —
+    /// including edits the F# compiler service applies in place or correctly classifies as
+    /// no-ops, where the empty Roslyn result would otherwise swallow the user-facing
+    /// "no changes"/"applied" decision message. In legacy single-session mode files are not
+    /// claimed: the Roslyn auto-rebuild remains the fallback for edits the single-active-project
+    /// bridge cannot target (such as F# library projects).
+    /// </summary>
+    public bool OwnsChangedFile(ChangedFile changedFile)
+    {
+        if (_host?.SupportsSessionObject != true)
+        {
+            return false;
+        }
+
+        var containingProjectPaths = changedFile.Item.ContainingProjectPaths;
+        return containingProjectPaths.Count > 0 &&
+               containingProjectPaths.All(containingProjectPath =>
+                   _projects.Keys.Any(knownProject =>
+                       PathUtilities.OSSpecificPathComparer.Equals(knownProject.ProjectPath, containingProjectPath)));
+    }
+
+    /// <summary>
     /// Commits ALL pending F# project updates staged by the last successful emit. dotnet-watch
     /// hands the emitted deltas to every running process immediately and unconditionally once it
     /// decides to apply them, so the committed per-project baselines are advanced at hand-off
@@ -490,7 +515,11 @@ internal sealed class FSharpHotReloadService
                     emit.ErrorText);
             }
 
-            if (mappedStatus == FSharpManagedUpdateStatus.RestartRequired || mappedStatus == FSharpManagedUpdateStatus.Blocked)
+            // Session-object mode keeps the module id recorded at baseline capture while the
+            // process keeps running (a blocked emit does not change the loaded module); the
+            // legacy path keeps its historical reset-on-blocked behavior.
+            if (mappedStatus == FSharpManagedUpdateStatus.RestartRequired ||
+                (mappedStatus == FSharpManagedUpdateStatus.Blocked && _sessionObject == null))
             {
                 _runtimeModuleIds = _runtimeModuleIds.Remove(projectInfo.ProjectId);
             }
@@ -498,8 +527,8 @@ internal sealed class FSharpHotReloadService
             if (mappedStatus == FSharpManagedUpdateStatus.RestartRequired)
             {
                 // The watch rebuilds and restarts the project; drop it from the session object so
-                // the next edit recaptures the baseline from the rebuilt output the new process
-                // actually loads.
+                // the next edit recaptures the baseline (and its module id) from the rebuilt
+                // output the new process actually loads.
                 _sessionObjectProjects = _sessionObjectProjects.Remove(projectInfo.ProjectId);
             }
 
@@ -974,6 +1003,15 @@ internal sealed class FSharpHotReloadService
 
             _sessionObjectProjects = _sessionObjectProjects.Add(projectInfo.ProjectId);
             _cachedProjectInputs = _cachedProjectInputs.SetItem(projectInfo.ProjectId, projectInput!);
+
+            // Record the module id of the output AddProject just baselined — the id the running
+            // process loads. Forced design-time rebuilds (for example after a no-op or
+            // dependency-only emit) move the on-disk MVID without the process reloading, so
+            // later emits must keep targeting this baseline id rather than the disk's.
+            if (TryGetModuleVersionId(projectInfo.TargetPath) is { } baselineModuleId)
+            {
+                _runtimeModuleIds = _runtimeModuleIds.SetItem(projectInfo.ProjectId, baselineModuleId);
+            }
 
             if (_trace)
             {
@@ -1469,7 +1507,9 @@ internal sealed class FSharpHotReloadService
                 // The session-object API (FSharpChecker.CreateHotReloadSession) supersedes the
                 // process-wide single-session checker surface. It consumes project snapshots, so
                 // it requires the workspace bridge regardless of the snapshot-mode preference.
-                var sessionApi = SessionObjectApi.TryCreate(checkerType);
+                // DOTNET_WATCH_FSHARP_USE_SESSION_OBJECT=0 is a safety valve forcing the legacy
+                // single-active-project path even when the new API is available.
+                var sessionApi = ShouldUseSessionObject() ? SessionObjectApi.TryCreate(checkerType) : null;
 
                 if ((preferWorkspaceSnapshots || sessionApi != null) &&
                     startSessionWithSnapshot != null &&
@@ -1547,6 +1587,14 @@ internal sealed class FSharpHotReloadService
                 error = ex.Message;
                 return false;
             }
+        }
+
+        private static bool ShouldUseSessionObject()
+        {
+            var overrideValue = Environment.GetEnvironmentVariable("DOTNET_WATCH_FSHARP_USE_SESSION_OBJECT");
+            return string.IsNullOrEmpty(overrideValue) ||
+                   (!string.Equals(overrideValue, "0", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(overrideValue, "false", StringComparison.OrdinalIgnoreCase));
         }
 
         private static bool ShouldPreferWorkspaceSnapshots(string? servicePathOverride)
