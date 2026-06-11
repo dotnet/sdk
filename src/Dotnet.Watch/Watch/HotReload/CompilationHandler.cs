@@ -392,6 +392,14 @@ internal sealed class CompilationHandler : IDisposable
             // changes and await the next file change.
 
             // Note: CommitUpdate/DiscardUpdate is not expected to be called.
+
+            // A successful F# emit stages a pending update in the compiler-service session;
+            // it will not be applied, so drop it.
+            if (fsharpResult.Status == FSharpManagedUpdateStatus.ReadyToApply)
+            {
+                _fsharpHotReloadService.DiscardUpdates();
+            }
+
             return;
         }
 
@@ -414,6 +422,7 @@ internal sealed class CompilationHandler : IDisposable
             !await restartPrompt.Invoke(projectsToPromptForRestart, cancellationToken))
         {
             _hotReloadService.DiscardUpdate();
+            _fsharpHotReloadService.DiscardUpdates();
 
             Logger.Log(MessageDescriptor.HotReloadSuspended);
             await Task.Delay(-1, cancellationToken);
@@ -425,6 +434,16 @@ internal sealed class CompilationHandler : IDisposable
         {
             // Note: Releases locked project baseline readers, so we can rebuild any projects that need rebuilding.
             _hotReloadService.CommitUpdate();
+        }
+
+        if (fsharpHasUpdates)
+        {
+            // The F# emit staged pending per-project updates in the compiler-service session.
+            // The watch hands the deltas returned from this method to every running process
+            // immediately and unconditionally, so the committed baselines advance at hand-off —
+            // the same point Roslyn's CommitUpdate is invoked above. A runtime apply failure
+            // surfaces as an agent error and restarts the process, which recaptures baselines.
+            _fsharpHotReloadService.CommitUpdates();
         }
 
         var projectsToRebuild = updates.ProjectsToRebuild.Select(id => currentSolution.GetProject(id)!.FilePath!).ToImmutableArray();

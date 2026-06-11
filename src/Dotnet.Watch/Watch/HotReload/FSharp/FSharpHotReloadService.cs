@@ -47,8 +47,28 @@ internal sealed class FSharpHotReloadService
     private ImmutableDictionary<ProjectInstanceId, object> _cachedProjectInputs = ImmutableDictionary<ProjectInstanceId, object>.Empty;
     private ImmutableDictionary<ProjectInstanceId, Guid> _runtimeModuleIds = ImmutableDictionary<ProjectInstanceId, Guid>.Empty;
     private FSharpReflectionHost? _host;
+
+    /// <summary>
+    /// The active project for the LEGACY single-active-project checker surface (older compiler
+    /// service builds without <c>FSharpChecker.CreateHotReloadSession</c>). The legacy surface
+    /// holds one process-wide session, so the bridge has to switch it between projects. Unused
+    /// in session-object mode.
+    /// </summary>
     private ProjectInstanceId? _activeProject;
     private object? _activeProjectInput;
+
+    /// <summary>
+    /// The FSharpHotReloadSession instance (reflection-typed) when the loaded compiler service
+    /// exposes the session-object API. One session per watch session; each discovered F#
+    /// project is captured into it via AddProject (eagerly at session start, lazily on first
+    /// edit otherwise), edits emit per-project deltas, and pending updates are resolved by
+    /// <see cref="CommitUpdates"/>/<see cref="DiscardUpdates"/>. Disposed by
+    /// <see cref="EndSession"/>.
+    /// </summary>
+    private object? _sessionObject;
+
+    /// <summary>Projects whose baseline has been captured into <see cref="_sessionObject"/>.</summary>
+    private ImmutableHashSet<ProjectInstanceId> _sessionObjectProjects = [];
 
     /// <summary>
     /// The capability set the active session currently uses. The session is prestarted before
@@ -88,6 +108,10 @@ internal sealed class FSharpHotReloadService
         _projects = FSharpProjectInfo.Collect(projectGraph, _logger);
         _cachedProjectInputs = _cachedProjectInputs.RemoveRange(_cachedProjectInputs.Keys.Where(key => !_projects.ContainsKey(key)));
         _runtimeModuleIds = _runtimeModuleIds.RemoveRange(_runtimeModuleIds.Keys.Where(key => !_projects.ContainsKey(key)));
+
+        // A project that leaves the graph and later returns must be re-added to the session
+        // object so its baseline is recaptured from the then-current build output.
+        _sessionObjectProjects = _sessionObjectProjects.Except(_sessionObjectProjects.Where(key => !_projects.ContainsKey(key)));
 
         if (_activeProject is { } activeProject && !_projects.ContainsKey(activeProject))
         {
@@ -136,12 +160,43 @@ internal sealed class FSharpHotReloadService
         _cachedProjectInputs = cachedInputsBuilder.ToImmutable();
         _runtimeModuleIds = ImmutableDictionary<ProjectInstanceId, Guid>.Empty;
 
-        if (_projects.Count == 1)
+        if (_host is { } sessionHost && sessionHost.SupportsSessionObject)
+        {
+            // Session-object mode: create ONE session for the whole watch session and capture
+            // every discovered F# project into it up front (the launched project and the F#
+            // libraries loaded into it alike), so first edits diff against the pre-edit
+            // baseline build. Projects that fail to capture here are retried lazily on first
+            // edit by EnsureSession.
+            foreach (var projectInfo in _projects.Values)
+            {
+                if (!_cachedProjectInputs.ContainsKey(projectInfo.ProjectId))
+                {
+                    continue;
+                }
+
+                if (!EnsureSession(sessionHost, projectInfo, out _, out var status, out var message))
+                {
+                    if (_trace)
+                    {
+                        _logger.LogDebug(
+                            "Unable to prestart F# hot reload session project '{ProjectPath}': {Status} ({Message})",
+                            projectInfo.ProjectPath,
+                            status,
+                            message);
+                    }
+                }
+                else if (_trace)
+                {
+                    _logger.LogDebug("F# hot reload session project prestarted for '{ProjectPath}'.", projectInfo.ProjectPath);
+                }
+            }
+        }
+        else if (_projects.Count == 1)
         {
             var projectInfo = _projects.Values.First();
             if (TryGetHost(projectInfo, out var host, out var hostError))
             {
-                if (!EnsureSession(host, projectInfo, out var status, out var message))
+                if (!EnsureSession(host, projectInfo, out _, out var status, out var message))
                 {
                     if (_trace)
                     {
@@ -171,6 +226,18 @@ internal sealed class FSharpHotReloadService
 
     public void EndSession()
     {
+        if (_sessionObject is { } sessionObject)
+        {
+            // Session-object mode: disposing the session ends it; per-project baselines and any
+            // pending updates go with it.
+            _host?.DisposeSession(sessionObject);
+            _sessionObject = null;
+            _sessionObjectProjects = [];
+            _runtimeModuleIds = ImmutableDictionary<ProjectInstanceId, Guid>.Empty;
+            _activeSessionCapabilities = [];
+            return;
+        }
+
         if (_activeProject is { } activeProject)
         {
             _runtimeModuleIds = _runtimeModuleIds.Remove(activeProject);
@@ -180,6 +247,34 @@ internal sealed class FSharpHotReloadService
         _activeProject = null;
         _activeProjectInput = null;
         _activeSessionCapabilities = [];
+    }
+
+    /// <summary>
+    /// Commits ALL pending F# project updates staged by the last successful emit. dotnet-watch
+    /// hands the emitted deltas to every running process immediately and unconditionally once it
+    /// decides to apply them, so the committed per-project baselines are advanced at hand-off
+    /// time — the same point the Roslyn watch service calls CommitUpdate. No-op for the legacy
+    /// checker surface, which auto-commits each successful emit.
+    /// </summary>
+    public void CommitUpdates()
+    {
+        if (_sessionObject is { } sessionObject)
+        {
+            _host?.SessionCommit(sessionObject);
+        }
+    }
+
+    /// <summary>
+    /// Discards ALL pending F# project updates when the watch decides not to apply the emitted
+    /// deltas (hot reload blocked, or the user declined the restart prompt), so the next emit
+    /// diffs against the unchanged committed view. No-op for the legacy checker surface.
+    /// </summary>
+    public void DiscardUpdates()
+    {
+        if (_sessionObject is { } sessionObject)
+        {
+            _host?.SessionDiscard(sessionObject);
+        }
     }
 
 #pragma warning disable CS1998 // Intentional sync fast-path wrapped in ValueTask-returning API.
@@ -225,7 +320,7 @@ internal sealed class FSharpHotReloadService
                 hostError);
         }
 
-        if (!EnsureSession(host, projectInfo, out var ensureStatus, out var ensureMessage))
+        if (!EnsureSession(host, projectInfo, out var projectInput, out var ensureStatus, out var ensureMessage))
         {
             return new FSharpManagedUpdateResult(ensureStatus, [], projectInfo.ProjectPath, ensureMessage);
         }
@@ -249,15 +344,15 @@ internal sealed class FSharpHotReloadService
 
         foreach (var changedSourceFile in changedSourceFiles)
         {
-            host.NotifyFileChanged(changedSourceFile, projectInfo, _activeProjectInput!, cancellationToken);
+            host.NotifyFileChanged(changedSourceFile, projectInfo, projectInput!, cancellationToken);
         }
 
         if (!changedDependencyFiles.IsEmpty)
         {
-            host.InvalidateConfiguration(_activeProjectInput!, projectInfo.ProjectPath);
+            host.InvalidateConfiguration(projectInput!, projectInfo.ProjectPath);
         }
 
-        if (!host.TryRefreshProjectInput(projectInfo, _activeProjectInput!, out var refreshedProjectInput, out var refreshMessage))
+        if (!host.TryRefreshProjectInput(projectInfo, projectInput!, out var refreshedProjectInput, out var refreshMessage))
         {
             return new FSharpManagedUpdateResult(
                 FSharpManagedUpdateStatus.RestartRequired,
@@ -266,7 +361,12 @@ internal sealed class FSharpHotReloadService
                 refreshMessage);
         }
 
-        _activeProjectInput = refreshedProjectInput;
+        projectInput = refreshedProjectInput;
+        if (_activeProject is { } legacyActiveProject && legacyActiveProject.Equals(projectInfo.ProjectId))
+        {
+            _activeProjectInput = refreshedProjectInput;
+        }
+
         _cachedProjectInputs = _cachedProjectInputs.SetItem(projectInfo.ProjectId, refreshedProjectInput!);
 
         var moduleIdAfterCompile = TryGetModuleVersionId(projectInfo.TargetPath);
@@ -314,7 +414,7 @@ internal sealed class FSharpHotReloadService
             }
         }
 
-        var emit = host.EmitDelta(_activeProjectInput!, cancellationToken);
+        var emit = EmitDeltaCore(host, projectInput!, cancellationToken);
         if (!emit.IsSuccess)
         {
             var mappedStatus = MapErrorStatus(emit.ErrorCase);
@@ -327,9 +427,9 @@ internal sealed class FSharpHotReloadService
                 }
 
                 EndSession();
-                if (EnsureSession(host, projectInfo, out var retryStatus, out var retryMessage))
+                if (EnsureSession(host, projectInfo, out projectInput, out var retryStatus, out var retryMessage))
                 {
-                    emit = host.EmitDelta(_activeProjectInput!, cancellationToken);
+                    emit = EmitDeltaCore(host, projectInput!, cancellationToken);
                     if (emit.IsSuccess)
                     {
                         mappedStatus = FSharpManagedUpdateStatus.ReadyToApply;
@@ -395,6 +495,14 @@ internal sealed class FSharpHotReloadService
                 _runtimeModuleIds = _runtimeModuleIds.Remove(projectInfo.ProjectId);
             }
 
+            if (mappedStatus == FSharpManagedUpdateStatus.RestartRequired)
+            {
+                // The watch rebuilds and restarts the project; drop it from the session object so
+                // the next edit recaptures the baseline from the rebuilt output the new process
+                // actually loads.
+                _sessionObjectProjects = _sessionObjectProjects.Remove(projectInfo.ProjectId);
+            }
+
             return new FSharpManagedUpdateResult(mappedStatus, [], projectInfo.ProjectPath, emit.ErrorText);
         }
 
@@ -432,6 +540,12 @@ internal sealed class FSharpHotReloadService
         IReadOnlyList<ChangedFile> changedFiles,
         ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects)
     {
+        // The session object emits per-project deltas, so an edit to an F# library that is
+        // loaded into a running process (but is not itself a running project) is matched to the
+        // library project itself. The legacy single-session surface can only target the running
+        // project, so it keeps the running-projects-only matching.
+        var includeNonRunningProjects = _host?.SupportsSessionObject == true;
+
         foreach (var file in changedFiles)
         {
             var filePath = file.Item.FilePath;
@@ -453,13 +567,13 @@ internal sealed class FSharpHotReloadService
                 continue;
             }
 
-            if (TryMatchRunningProjectByContainingPaths(file.Item.ContainingProjectPaths, runningProjects, out var containingProject))
+            if (TryMatchRunningProjectByContainingPaths(file.Item.ContainingProjectPaths, runningProjects, includeNonRunningProjects, out var containingProject))
             {
                 return containingProject;
             }
 
             if (isDependencyChange &&
-                TryMatchRunningProjectByDependencyPath(filePath, runningProjects, out var dependencyProject))
+                TryMatchRunningProjectByDependencyPath(filePath, runningProjects, includeNonRunningProjects, out var dependencyProject))
             {
                 if (_trace)
                 {
@@ -473,7 +587,7 @@ internal sealed class FSharpHotReloadService
             }
 
             if ((isSourceChange || isDependencyChange) &&
-                TryMatchRunningProjectByPath(filePath, runningProjects, out var fallbackProject))
+                TryMatchRunningProjectByPath(filePath, runningProjects, includeNonRunningProjects, out var fallbackProject))
             {
                 if (_trace)
                 {
@@ -515,13 +629,14 @@ internal sealed class FSharpHotReloadService
     private bool TryMatchRunningProjectByContainingPaths(
         IReadOnlyList<string> containingProjectPaths,
         ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects,
+        bool includeNonRunningProjects,
         out ProjectInstanceId projectId)
     {
         projectId = default;
 
         foreach (var containingProjectPath in containingProjectPaths)
         {
-            if (!runningProjects.ContainsKey(containingProjectPath))
+            if (!includeNonRunningProjects && !runningProjects.ContainsKey(containingProjectPath))
             {
                 continue;
             }
@@ -542,6 +657,7 @@ internal sealed class FSharpHotReloadService
     private bool TryMatchRunningProjectByDependencyPath(
         string filePath,
         ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects,
+        bool includeNonRunningProjects,
         out ProjectInstanceId projectId)
     {
         projectId = default;
@@ -553,7 +669,7 @@ internal sealed class FSharpHotReloadService
 
         foreach (var projectInfo in _projects.Values)
         {
-            if (!runningProjects.ContainsKey(projectInfo.ProjectPath))
+            if (!includeNonRunningProjects && !runningProjects.ContainsKey(projectInfo.ProjectPath))
             {
                 continue;
             }
@@ -571,6 +687,7 @@ internal sealed class FSharpHotReloadService
     private bool TryMatchRunningProjectByPath(
         string filePath,
         ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects,
+        bool includeNonRunningProjects,
         out ProjectInstanceId projectId)
     {
         projectId = default;
@@ -587,7 +704,7 @@ internal sealed class FSharpHotReloadService
 
         foreach (var knownProject in _projects.Keys)
         {
-            if (!runningProjects.ContainsKey(knownProject.ProjectPath))
+            if (!includeNonRunningProjects && !runningProjects.ContainsKey(knownProject.ProjectPath))
             {
                 continue;
             }
@@ -693,8 +810,20 @@ internal sealed class FSharpHotReloadService
         }
     }
 
-    private bool EnsureSession(FSharpReflectionHost host, FSharpProjectInfo projectInfo, out FSharpManagedUpdateStatus status, out string? message)
+    /// <summary>
+    /// Makes the compiler-service session ready to emit a delta for the given project and
+    /// returns the project input (snapshot or options) to emit with. In session-object mode the
+    /// ONE session is created on first use and the project is added to it; the legacy checker
+    /// surface keeps its single-active-project switching behavior unchanged.
+    /// </summary>
+    private bool EnsureSession(FSharpReflectionHost host, FSharpProjectInfo projectInfo, out object? projectInput, out FSharpManagedUpdateStatus status, out string? message)
     {
+        if (host.SupportsSessionObject)
+        {
+            return EnsureSessionObject(host, projectInfo, out projectInput, out status, out message);
+        }
+
+        projectInput = null;
         status = FSharpManagedUpdateStatus.NoChanges;
         message = null;
 
@@ -729,12 +858,13 @@ internal sealed class FSharpHotReloadService
                 _activeSessionCapabilities = currentCapabilities;
             }
 
+            projectInput = _activeProjectInput;
             return true;
         }
 
         EndSession();
 
-        if (!_cachedProjectInputs.TryGetValue(projectInfo.ProjectId, out var projectInput) &&
+        if (!_cachedProjectInputs.TryGetValue(projectInfo.ProjectId, out projectInput) &&
             !host.TryCreateProjectInput(projectInfo, out projectInput, out message))
         {
             status = FSharpManagedUpdateStatus.RestartRequired;
@@ -761,6 +891,107 @@ internal sealed class FSharpHotReloadService
         _cachedProjectInputs = _cachedProjectInputs.SetItem(projectInfo.ProjectId, projectInput!);
         return true;
     }
+
+    /// <summary>
+    /// Session-object mode: creates the watch-session-wide FSharpHotReloadSession on first use,
+    /// keeps its capability set current, and captures the project's baseline into it (AddProject)
+    /// the first time the project is seen. Never switches sessions between projects — every
+    /// tracked project keeps its own committed baseline and generation chain inside the session.
+    /// </summary>
+    private bool EnsureSessionObject(FSharpReflectionHost host, FSharpProjectInfo projectInfo, out object? projectInput, out FSharpManagedUpdateStatus status, out string? message)
+    {
+        projectInput = null;
+        status = FSharpManagedUpdateStatus.NoChanges;
+        message = null;
+
+        var currentCapabilities = GetRuntimeCapabilities();
+
+        if (_sessionObject == null)
+        {
+            if (!host.TryCreateSession(currentCapabilities, out _sessionObject, out message))
+            {
+                status = FSharpManagedUpdateStatus.RestartRequired;
+                return false;
+            }
+
+            _sessionObjectProjects = [];
+            _activeSessionCapabilities = currentCapabilities;
+
+            if (_trace)
+            {
+                _logger.LogDebug(
+                    "F# hot reload session object created (capabilities: {Capabilities}).",
+                    currentCapabilities.IsDefaultOrEmpty ? "<none>" : string.Join(" ", currentCapabilities));
+            }
+        }
+        else if (!CapabilitySetsEqual(_activeSessionCapabilities, currentCapabilities))
+        {
+            // The session is created before any agent reports its capabilities (empty set =>
+            // baseline-only classification). Replace the live session's capability set in place
+            // once the real set is available — never recreate the session: that would drop every
+            // project baseline and recapture from sources that already contain pending edits.
+            var updated = host.TrySessionUpdateCapabilities(_sessionObject, currentCapabilities);
+
+            if (_trace)
+            {
+                _logger.LogDebug(
+                    updated
+                        ? "F# hot reload session capabilities refreshed ({Capabilities})."
+                        : "F# hot reload session capability refresh failed; keeping previous set ({Capabilities}).",
+                    string.Join(" ", currentCapabilities));
+            }
+
+            // Record regardless of outcome so a failed refresh is not retried on every edit.
+            _activeSessionCapabilities = currentCapabilities;
+        }
+
+        if (!_cachedProjectInputs.TryGetValue(projectInfo.ProjectId, out projectInput) &&
+            !host.TryCreateProjectInput(projectInfo, out projectInput, out message))
+        {
+            status = FSharpManagedUpdateStatus.RestartRequired;
+            return false;
+        }
+
+        if (!_sessionObjectProjects.Contains(projectInfo.ProjectId))
+        {
+            // AddProject captures the project's committed baseline from the built output on disk.
+            // At this point the output is still the pre-edit build (forced compilation of the
+            // edited sources happens after EnsureSession), so the baseline matches what the
+            // running process loaded.
+            var add = host.SessionAddProject(_sessionObject!, projectInput!, projectInfo.TargetPath, CancellationToken.None);
+            if (!add.IsSuccess)
+            {
+                status = MapErrorStatus(add.ErrorCase);
+                message = add.ErrorText;
+
+                if (status == FSharpManagedUpdateStatus.Blocked)
+                {
+                    _logger.Log(MessageDescriptor.UnableToApplyChanges);
+                }
+
+                return false;
+            }
+
+            _sessionObjectProjects = _sessionObjectProjects.Add(projectInfo.ProjectId);
+            _cachedProjectInputs = _cachedProjectInputs.SetItem(projectInfo.ProjectId, projectInput!);
+
+            if (_trace)
+            {
+                _logger.LogDebug("F# hot reload session now tracks '{ProjectPath}'.", projectInfo.ProjectPath);
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Emits the per-project delta through the session object when available, otherwise through
+    /// the legacy process-wide checker session.
+    /// </summary>
+    private FSharpReflectionHost.FSharpInvocationResult EmitDeltaCore(FSharpReflectionHost host, object projectInput, CancellationToken cancellationToken)
+        => host.SupportsSessionObject && _sessionObject is { } sessionObject
+            ? host.SessionEmitDelta(sessionObject, projectInput, cancellationToken)
+            : host.EmitDelta(projectInput, cancellationToken);
 
     private static bool CapabilitySetsEqual(ImmutableArray<string> left, ImmutableArray<string> right)
         => left.Length == right.Length &&
@@ -1082,6 +1313,14 @@ internal sealed class FSharpHotReloadService
         /// </summary>
         private MethodInfo? _updateCapabilities;
         private bool _updateCapabilitiesProbed;
+
+        /// <summary>
+        /// Reflection surface of <c>FSharpHotReloadSession</c> (the session-object API). Non-null
+        /// only when the loaded compiler service exposes <c>FSharpChecker.CreateHotReloadSession</c>
+        /// and the workspace snapshot bridge is available (the session API consumes project
+        /// snapshots). Null means the legacy single-active-project checker surface is used.
+        /// </summary>
+        private readonly SessionObjectApi? _sessionApi;
         private readonly ImmutableArray<MethodInfo> _invalidateConfigurationMethods;
         private readonly MethodInfo _runSynchronously;
         private readonly bool _useWorkspaceSnapshots;
@@ -1102,6 +1341,7 @@ internal sealed class FSharpHotReloadService
             MethodInfo? notifyFileChanged,
             MethodInfo emitDelta,
             MethodInfo endSession,
+            SessionObjectApi? sessionApi,
             ImmutableArray<MethodInfo> invalidateConfigurationMethods,
             MethodInfo runSynchronously,
             bool useWorkspaceSnapshots,
@@ -1121,6 +1361,7 @@ internal sealed class FSharpHotReloadService
             _notifyFileChanged = notifyFileChanged;
             _emitDelta = emitDelta;
             _endSession = endSession;
+            _sessionApi = sessionApi;
             _invalidateConfigurationMethods = invalidateConfigurationMethods;
             _runSynchronously = runSynchronously;
             _useWorkspaceSnapshots = useWorkspaceSnapshots;
@@ -1225,7 +1466,12 @@ internal sealed class FSharpHotReloadService
                 MethodInfo selectedEmitDelta;
                 var preferWorkspaceSnapshots = ShouldPreferWorkspaceSnapshots(servicePathOverride);
 
-                if (preferWorkspaceSnapshots &&
+                // The session-object API (FSharpChecker.CreateHotReloadSession) supersedes the
+                // process-wide single-session checker surface. It consumes project snapshots, so
+                // it requires the workspace bridge regardless of the snapshot-mode preference.
+                var sessionApi = SessionObjectApi.TryCreate(checkerType);
+
+                if ((preferWorkspaceSnapshots || sessionApi != null) &&
                     startSessionWithSnapshot != null &&
                     emitDeltaWithSnapshot != null &&
                     TryCreateWorkspaceBridge(
@@ -1247,11 +1493,17 @@ internal sealed class FSharpHotReloadService
 
                     if (trace)
                     {
-                        logger.LogDebug("F# managed hot reload is using workspace snapshot bridge.");
+                        logger.LogDebug(
+                            sessionApi != null
+                                ? "F# managed hot reload is using the session-object API over the workspace snapshot bridge."
+                                : "F# managed hot reload is using workspace snapshot bridge.");
                     }
                 }
                 else
                 {
+                    // Without snapshot inputs the session-object API cannot be used; fall back to
+                    // the legacy single-active-project checker surface.
+                    sessionApi = null;
                     selectedStartSession = startSessionWithOptions
                         ?? throw new MissingMethodException(checkerType.FullName, "StartHotReloadSession(projectOptions)");
                     selectedEmitDelta = emitDeltaWithOptions
@@ -1277,6 +1529,7 @@ internal sealed class FSharpHotReloadService
                     notifyFileChanged,
                     selectedEmitDelta,
                     endSession,
+                    sessionApi,
                     invalidateConfigurationMethods,
                     runSynchronously,
                     useWorkspaceSnapshots,
@@ -1446,7 +1699,180 @@ internal sealed class FSharpHotReloadService
         }
 
         public FSharpInvocationResult StartSession(object projectInput, ImmutableArray<string> capabilities, CancellationToken cancellationToken)
-            => InvokeResult(_startSession, CreateStartSessionArguments(_startSession.GetParameters(), projectInput, capabilities), cancellationToken);
+            => InvokeResult(_checker, _startSession, CreateStartSessionArguments(_startSession.GetParameters(), projectInput, capabilities), cancellationToken);
+
+        public bool SupportsSessionObject => _sessionApi != null;
+
+        /// <summary>
+        /// Creates one FSharpHotReloadSession for the whole watch session. Per-project committed
+        /// baselines and generation chains live inside the session object; projects are captured
+        /// into it via <see cref="SessionAddProject"/> and edits emitted via
+        /// <see cref="SessionEmitDelta"/>.
+        /// </summary>
+        public bool TryCreateSession(ImmutableArray<string> capabilities, out object? session, out string? error)
+        {
+            session = null;
+            error = null;
+
+            if (_sessionApi == null)
+            {
+                error = "The loaded F# compiler service does not expose CreateHotReloadSession.";
+                return false;
+            }
+
+            try
+            {
+                var parameters = _sessionApi.Create.GetParameters();
+                var arguments = new object?[parameters.Length];
+
+                if (!capabilities.IsDefaultOrEmpty)
+                {
+                    for (var i = 0; i < parameters.Length; i++)
+                    {
+                        if (string.Equals(parameters[i].Name, "capabilities", StringComparison.Ordinal) &&
+                            IsFSharpOptionOfStringSequence(parameters[i].ParameterType))
+                        {
+                            arguments[i] = CreateFSharpOptionSomeStringSequence(parameters[i].ParameterType, [.. capabilities]);
+                        }
+                    }
+                }
+
+                session = _sessionApi.Create.Invoke(_checker, arguments);
+                if (session == null)
+                {
+                    error = "CreateHotReloadSession returned null.";
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var rootException = (ex as TargetInvocationException)?.InnerException ?? ex.GetBaseException();
+                error = rootException.Message;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Captures the project's committed baseline into the session from the built output on
+        /// disk. Re-adding a project the session already tracks recaptures its baseline.
+        /// </summary>
+        public FSharpInvocationResult SessionAddProject(object session, object projectInput, string outputPath, CancellationToken cancellationToken)
+        {
+            if (_sessionApi == null)
+            {
+                return new FSharpInvocationResult(false, null, null, "The session-object API is unavailable.");
+            }
+
+            var parameters = _sessionApi.AddProject.GetParameters();
+            var arguments = new object?[parameters.Length];
+            arguments[0] = projectInput;
+
+            for (var i = 1; i < parameters.Length; i++)
+            {
+                if (string.Equals(parameters[i].Name, "outputPath", StringComparison.Ordinal) &&
+                    IsFSharpOptionOfString(parameters[i].ParameterType))
+                {
+                    arguments[i] = CreateFSharpOptionSomeString(parameters[i].ParameterType, outputPath);
+                }
+            }
+
+            return InvokeResult(session, _sessionApi.AddProject, arguments, cancellationToken);
+        }
+
+        /// <summary>
+        /// Emits a delta for one project against its committed baseline in the session. The
+        /// emitted update is staged as pending until <see cref="SessionCommit"/> or
+        /// <see cref="SessionDiscard"/>.
+        /// </summary>
+        public FSharpInvocationResult SessionEmitDelta(object session, object projectInput, CancellationToken cancellationToken)
+        {
+            if (_sessionApi == null)
+            {
+                return new FSharpInvocationResult(false, null, null, "The session-object API is unavailable.");
+            }
+
+            var arguments = new object?[_sessionApi.EmitDelta.GetParameters().Length];
+            arguments[0] = projectInput;
+            return InvokeResult(session, _sessionApi.EmitDelta, arguments, cancellationToken);
+        }
+
+        public void SessionCommit(object session)
+        {
+            try
+            {
+                _sessionApi?.Commit.Invoke(session, null);
+            }
+            catch (Exception ex)
+            {
+                if (_trace)
+                {
+                    var rootException = (ex as TargetInvocationException)?.InnerException ?? ex.GetBaseException();
+                    _logger.LogDebug("F# session Commit failed: {Message}", rootException.Message);
+                }
+            }
+        }
+
+        public void SessionDiscard(object session)
+        {
+            try
+            {
+                _sessionApi?.Discard.Invoke(session, null);
+            }
+            catch (Exception ex)
+            {
+                if (_trace)
+                {
+                    var rootException = (ex as TargetInvocationException)?.InnerException ?? ex.GetBaseException();
+                    _logger.LogDebug("F# session Discard failed: {Message}", rootException.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replaces the session-wide capability set in place on the session object (the
+        /// session-object analogue of <see cref="TryUpdateSessionCapabilities"/>).
+        /// </summary>
+        public bool TrySessionUpdateCapabilities(object session, ImmutableArray<string> capabilities)
+        {
+            if (_sessionApi == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                _sessionApi.UpdateCapabilities.Invoke(session, [capabilities.ToArray()]);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (_trace)
+                {
+                    var rootException = (ex as TargetInvocationException)?.InnerException ?? ex.GetBaseException();
+                    _logger.LogDebug("F# session UpdateCapabilities failed: {Message}", rootException.Message);
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>Ends the session: FSharpHotReloadSession implements IDisposable.</summary>
+        public void DisposeSession(object session)
+        {
+            try
+            {
+                (session as IDisposable)?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                if (_trace)
+                {
+                    _logger.LogDebug("Ignoring F# session dispose failure: {Message}", ex.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// Replaces the active session's capability set without restarting it (restarting would
@@ -1608,7 +2034,7 @@ internal sealed class FSharpHotReloadService
         }
 
         public FSharpInvocationResult EmitDelta(object projectInput, CancellationToken cancellationToken)
-            => InvokeResult(_emitDelta, [projectInput, null], cancellationToken);
+            => InvokeResult(_checker, _emitDelta, [projectInput, null], cancellationToken);
 
         private bool TryCreateProjectOptionsInput(FSharpProjectInfo projectInfo, out object? projectInput, out string? error)
         {
@@ -1772,11 +2198,11 @@ internal sealed class FSharpHotReloadService
             }
         }
 
-        private FSharpInvocationResult InvokeResult(MethodInfo method, object?[] args, CancellationToken cancellationToken)
+        private FSharpInvocationResult InvokeResult(object target, MethodInfo method, object?[] args, CancellationToken cancellationToken)
         {
             try
             {
-                var asyncComputation = method.Invoke(_checker, args)
+                var asyncComputation = method.Invoke(target, args)
                     ?? throw new InvalidOperationException($"{method.Name} returned null.");
 
                 var asyncResultType = method.ReturnType.GetGenericArguments().Single();
@@ -1895,6 +2321,15 @@ internal sealed class FSharpHotReloadService
         private static object? CreateFSharpOptionSomeBoolean(Type optionType, bool value)
             => optionType.GetMethod("Some", BindingFlags.Public | BindingFlags.Static, [typeof(bool)])?.Invoke(null, [value]);
 
+        private static bool IsFSharpOptionOfString(Type parameterType)
+            => parameterType.IsGenericType &&
+               string.Equals(parameterType.GetGenericTypeDefinition().FullName, "Microsoft.FSharp.Core.FSharpOption`1", StringComparison.Ordinal) &&
+               parameterType.GetGenericArguments() is [var argumentType] &&
+               argumentType == typeof(string);
+
+        private static object? CreateFSharpOptionSomeString(Type optionType, string value)
+            => optionType.GetMethod("Some", BindingFlags.Public | BindingFlags.Static, [typeof(string)])?.Invoke(null, [value]);
+
         private static bool IsFSharpOptionOfStringSequence(Type parameterType)
             => parameterType.IsGenericType &&
                string.Equals(parameterType.GetGenericTypeDefinition().FullName, "Microsoft.FSharp.Core.FSharpOption`1", StringComparison.Ordinal) &&
@@ -1907,5 +2342,52 @@ internal sealed class FSharpHotReloadService
                 : null;
 
         internal readonly record struct FSharpInvocationResult(bool IsSuccess, object? Value, string? ErrorCase, string? ErrorText);
+
+        /// <summary>
+        /// Late-bound member set of <c>FSharp.Compiler.CodeAnalysis.FSharpHotReloadSession</c>:
+        /// one session object per watch session, per-project baselines added via AddProject,
+        /// deltas staged by EmitDelta and resolved by Commit/Discard, session-wide capabilities
+        /// replaced via UpdateCapabilities, ended by IDisposable.Dispose.
+        /// </summary>
+        private sealed class SessionObjectApi
+        {
+            public required MethodInfo Create { get; init; }
+            public required MethodInfo AddProject { get; init; }
+            public required MethodInfo EmitDelta { get; init; }
+            public required MethodInfo Commit { get; init; }
+            public required MethodInfo Discard { get; init; }
+            public required MethodInfo UpdateCapabilities { get; init; }
+
+            public static SessionObjectApi? TryCreate(Type checkerType)
+            {
+                var create = checkerType.GetMethod("CreateHotReloadSession", BindingFlags.Public | BindingFlags.Instance);
+                if (create == null || !typeof(IDisposable).IsAssignableFrom(create.ReturnType))
+                {
+                    return null;
+                }
+
+                var sessionType = create.ReturnType;
+                var addProject = sessionType.GetMethod("AddProject", BindingFlags.Public | BindingFlags.Instance);
+                var emitDelta = sessionType.GetMethod("EmitDelta", BindingFlags.Public | BindingFlags.Instance);
+                var commit = sessionType.GetMethod("Commit", BindingFlags.Public | BindingFlags.Instance, Type.EmptyTypes);
+                var discard = sessionType.GetMethod("Discard", BindingFlags.Public | BindingFlags.Instance, Type.EmptyTypes);
+                var updateCapabilities = sessionType.GetMethod("UpdateCapabilities", BindingFlags.Public | BindingFlags.Instance);
+
+                if (addProject == null || emitDelta == null || commit == null || discard == null || updateCapabilities == null)
+                {
+                    return null;
+                }
+
+                return new SessionObjectApi
+                {
+                    Create = create,
+                    AddProject = addProject,
+                    EmitDelta = emitDelta,
+                    Commit = commit,
+                    Discard = discard,
+                    UpdateCapabilities = updateCapabilities,
+                };
+            }
+        }
     }
 }
