@@ -18,8 +18,10 @@
       "test\\Microsoft.DotNet.ApiCompat.IntegrationTests\\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj",
       "test\\Microsoft.DotNet.ApiCompat.Tests\\Microsoft.DotNet.ApiCompat.Tests.csproj",
       "test\\Microsoft.DotNet.ApiCompatibility.Tests\\Microsoft.DotNet.ApiCompatibility.Tests.csproj",
+      "test\\Microsoft.DotNet.ApiDiff.IntegrationTests\\Microsoft.DotNet.ApiDiff.IntegrationTests.csproj",
       "test\\Microsoft.DotNet.ApiDiff.Tests\\Microsoft.DotNet.ApiDiff.Tests.csproj",
       "test\\Microsoft.DotNet.ApiSymbolExtensions.Tests\\Microsoft.DotNet.ApiSymbolExtensions.Tests.csproj",
+      "test\\Microsoft.DotNet.GenAPI.IntegrationTests\\Microsoft.DotNet.GenAPI.IntegrationTests.csproj",
       "test\\Microsoft.DotNet.GenAPI.Tests\\Microsoft.DotNet.GenAPI.Tests.csproj",
       "test\\Microsoft.DotNet.PackageValidation.Tests\\Microsoft.DotNet.PackageValidation.Tests.csproj",
       "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj"

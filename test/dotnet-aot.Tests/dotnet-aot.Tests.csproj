@@ -1,0 +1,79 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
+    <RootNamespace>Microsoft.DotNet.Cli.Tests</RootNamespace>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+
+    <!-- Strong naming deprecated on .NET Core -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
+
+    <!-- Ignore OS API compatibility checks (same as dotnet-aot) -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <!-- AOT publish support: dotnet publish -p:PublishAotTests=true -->
+  <PropertyGroup Condition="'$(PublishAotTests)' == 'true'">
+    <PublishAot>true</PublishAot>
+    <!-- Tell eng/XUnitV3/XUnitV3.targets to use the AOT xUnit packages. -->
+    <UseXUnitAotPackages>true</UseXUnitAotPackages>
+    <!-- The xunit.v3.core.aot.mtp-v2 package includes MTP v2 support. Force MTP mode
+         to prevent xunit.runner.visualstudio (which transitively brings in the
+         reflection-mode xunit.v3.core) from being added. -->
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <!-- xUnit v3 AOT packages are swapped in via eng/XUnitV3/XUnitV3.targets.
+         Project references (TestFramework, Cli.Utils, NativeWrapper) may produce
+         trim/AOT warnings since they are not annotated for AOT. -->
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
+    <EnableAotAnalyzer>false</EnableAotAnalyzer>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+  </PropertyGroup>
+
+  <!-- Shared AOT source files (Parser, CommandLineInfo, EnvironmentVariableNames) -->
+  <Import Project="..\..\src\Cli\dotnet-aot\AotSourceFiles.props" />
+
+  <!-- NativeEntryPoint for ExecuteCore tests (ManagedHost is stubbed in TestManagedHost.cs) -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Cli\dotnet-aot\NativeEntryPoint.cs" Link="NativeEntryPoint.cs" />
+  </ItemGroup>
+
+  <!-- DotnetRootResolver from the dn project -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Cli\dn\DotnetRootResolver.cs" Link="DotnetRootResolver.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+  </ItemGroup>
+
+  <!-- Azure Monitor dependencies aren't part of source build yet - see file://../../../Directory.Build.props#L85 for details -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+  </ItemGroup>
+
+  <!-- When publishing AOT, exclude the reflection-mode xUnit packages
+       that flow transitively from Microsoft.NET.TestFramework. They ship
+       DLLs (xunit.v3.core.dll, xunit.v3.assert.dll) that conflict with the
+       AOT variants (xunit.v3.core.aot.dll, xunit.v3.assert.aot.dll). -->
+  <ItemGroup Condition="'$(UseXUnitAotPackages)' == 'true'">
+    <PackageReference Include="xunit.v3.extensibility.core" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="xunit.v3.assert" VersionOverride="$(XUnitV3Version)" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="xunit.v3.common" VersionOverride="$(XUnitV3Version)" ExcludeAssets="all" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

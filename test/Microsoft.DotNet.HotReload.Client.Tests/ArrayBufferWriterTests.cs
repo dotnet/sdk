@@ -553,7 +553,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
         Assert.True(transient.Span[0] != 0);
         byte expectedFirstByte = transient.Span[0];
 
-        await memStream.WriteAsync(transient.ToArray(), 0, transient.Length);
+        await memStream.WriteAsync(transient.ToArray(), 0, transient.Length, TestContext.Current.CancellationToken);
 
         if (clearContent)
         {

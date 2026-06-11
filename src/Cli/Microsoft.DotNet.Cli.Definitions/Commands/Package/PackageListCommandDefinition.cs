@@ -6,20 +6,12 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
-internal sealed class PackageListCommandDefinition : PackageListCommandDefinitionBase
+internal sealed class PackageListCommandDefinition() : PackageListCommandDefinitionBase(Name)
 {
     public new const string Name = "list";
 
-    public readonly Option<string?> ProjectOption = PackageCommandDefinition.CreateProjectOption();
-
-    public PackageListCommandDefinition()
-        : base(Name)
-    {
-        Options.Add(ProjectOption);
-    }
-
-    public override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(ProjectOption);
+    public override Argument<string>? GetProjectOrFileArgument()
+        => null;
 }
 
 internal abstract class PackageListCommandDefinitionBase : Command
@@ -110,6 +102,9 @@ internal abstract class PackageListCommandDefinitionBase : Command
         Description = CommandDefinitionStrings.CmdOutputVersionDescription
     }.ForwardAsSingle(o => $"--output-version:{o}");
 
+    public readonly Option<string?> ProjectOption = PackageCommandDefinition.CreateProjectOption();
+    public readonly Option<string?> FileOption = PackageCommandDefinition.CreateFileOption();
+
     public PackageListCommandDefinitionBase(string name)
         : base(name, CommandDefinitionStrings.PackageListAppFullName)
     {
@@ -128,9 +123,11 @@ internal abstract class PackageListCommandDefinitionBase : Command
         Options.Add(FormatOption);
         Options.Add(OutputVersionOption);
         Options.Add(NoRestore);
+        Options.Add(ProjectOption);
+        Options.Add(FileOption);
     }
 
-    public abstract string? GetFileOrDirectory(ParseResult parseResult);
+    public abstract Argument<string>? GetProjectOrFileArgument();
 
     public void EnforceOptionRules(ParseResult parseResult)
     {

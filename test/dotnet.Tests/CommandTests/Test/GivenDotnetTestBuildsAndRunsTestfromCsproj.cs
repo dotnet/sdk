@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
@@ -716,7 +716,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([flag]);
 
-            var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b");
+            // Use a unique subdirectory per flag to avoid conflicts between theory data rows.
+            // --diag creates a file, while --output and --results-directory create directories.
+            var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b", flag.TrimStart('-'));
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
@@ -732,7 +734,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/54209")]
         // Even count of slash/backslash
         [InlineData("--output", "\\\\")]
         [InlineData("--output", "\\\\\\\\")]

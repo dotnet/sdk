@@ -565,7 +565,7 @@ namespace CustomxUnit
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -596,7 +596,7 @@ End Namespace
 ",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -639,7 +639,7 @@ namespace CustomNUnit
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -674,7 +674,7 @@ End Namespace
 ",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
@@ -708,7 +708,7 @@ public class Program
                         VerifyCS.Diagnostic().WithLocation(0).WithArguments("N"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
@@ -738,7 +738,7 @@ public class Program
 }",
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
@@ -942,7 +942,7 @@ public class C : System.Web.HttpApplication
                     Sources = { csSource },
                     AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             var vbSource = @"
 Imports System
@@ -996,7 +996,7 @@ End Class
                     Sources = { vbSource },
                     AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1110,7 +1110,7 @@ public class C3
         public event EventHandler<EventArgs> E1 { add {} remove {} }
     }
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1245,7 +1245,7 @@ public class Test
                     Sources = { csSource },
                     AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             var vbSource = @"
 Public Class Test
@@ -1272,7 +1272,7 @@ End Class";
                     Sources = { vbSource },
                     AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
@@ -1380,7 +1380,7 @@ public class C
     [SkippableFact]
     public void M() {}
 }",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
@@ -1498,7 +1498,7 @@ public class Test
     }
 }",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6573, "https://github.com/dotnet/roslyn-analyzers/issues/6573")]
@@ -1528,7 +1528,7 @@ public class Test
                     }
                     """,
                 LanguageVersion = LanguageVersion.Preview
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(78858, "https://github.com/dotnet/roslyn/issues/78858")]
@@ -1547,7 +1547,7 @@ public class Test
                     }
                     """,
                 LanguageVersion = LanguageVersion.Preview,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(78858, "https://github.com/dotnet/roslyn/issues/78858")]
@@ -1576,7 +1576,7 @@ public class Test
                     }
                     """,
                 LanguageVersion = LanguageVersion.Preview,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -26,13 +26,13 @@ internal static class MSBuildUtility
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
     static extern bool ProjectShouldBuild(SolutionFile solutionFile, string projectFile);
 
-    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
+    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
-        bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
+        int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
-        if (!isBuiltOrRestored)
+        if (buildExitCode != 0)
         {
-            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
+            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildExitCode);
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
@@ -69,20 +69,29 @@ internal static class MSBuildUtility
 
         using var collection = new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions);
+        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions);
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
 
-        return (projects, isBuiltOrRestored);
+        return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
     }
 
-    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
+    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
     {
-        bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
+        // Pre-build device selection: evaluate the project to select devices BEFORE building,
+        // so that device-provided RuntimeIdentifiers are included in the build.
+        var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(projectFilePath, buildOptions);
 
-        if (!isBuiltOrRestored)
+        if (deviceSelection is not null)
         {
-            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
+            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection);
+        }
+
+        int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
+
+        if (buildExitCode != 0)
+        {
+            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildExitCode);
         }
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
@@ -94,7 +103,100 @@ internal static class MSBuildUtility
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, configuration: null, platform: null);
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
-        return (projects, isBuiltOrRestored);
+        return (projects, buildExitCode);
+    }
+
+    /// <summary>
+    /// Builds each TFM separately with its selected device/RuntimeIdentifier injected, then
+    /// evaluates each to get test modules. This ensures device-provided RIDs are part of the build.
+    /// </summary>
+    private static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) BuildPerTfmWithDevices(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        SolutionAndProjectUtility.DeviceSelectionResult deviceSelection,
+        string? configuration = null,
+        string? platform = null)
+    {
+        var allGroups = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
+
+        foreach (var (tfm, (device, rid)) in deviceSelection.DevicesByTfm)
+        {
+            var perTfmArgs = buildOptions.MSBuildArgs;
+            if (!string.IsNullOrEmpty(tfm))
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:{ProjectProperties.TargetFramework}={tfm}");
+            }
+
+            if (device is not null)
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:Device={device}");
+            }
+
+            if (!string.IsNullOrEmpty(rid))
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:RuntimeIdentifier={rid}");
+            }
+
+            if (!string.IsNullOrEmpty(configuration))
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:Configuration={configuration}");
+            }
+
+            if (!string.IsNullOrEmpty(platform))
+            {
+                perTfmArgs = perTfmArgs.Append($"-p:Platform={platform}");
+            }
+
+            var perTfmBuildOptions = buildOptions with
+            {
+                MSBuildArgs = perTfmArgs,
+                Device = device,
+            };
+
+            int exitCode = BuildOrRestoreProjectOrSolution(projectFilePath, perTfmBuildOptions);
+            if (exitCode != 0)
+            {
+                return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), exitCode);
+            }
+
+            FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. perTfmBuildOptions.MSBuildArgs], dotnetTestVerb);
+
+            var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(perTfmBuildOptions.MSBuildArgs);
+
+            using var collection = new ProjectCollection(
+                globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs),
+                logger is null ? null : [logger],
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+            var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+            IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> modules = SolutionAndProjectUtility.GetProjectProperties(
+                projectFilePath, collection, evaluationContext, perTfmBuildOptions, configuration, platform);
+            logger?.ReallyShutdown();
+
+            allGroups.AddRange(modules);
+        }
+
+        // When TestTfmsInParallel is false, merge all modules into one sequential group
+        if (!deviceSelection.TestTfmsInParallel && allGroups.Count > 1)
+        {
+            var allModules = new List<TestModule>();
+            foreach (var group in allGroups)
+            {
+                if (group.Modules is not null)
+                {
+                    allModules.AddRange(group.Modules);
+                }
+                else if (group.Module is not null)
+                {
+                    allModules.Add(group.Module);
+                }
+            }
+
+            return (allModules.Count > 0
+                ? [new ParallelizableTestModuleGroupWithSequentialInnerModules(allModules)]
+                : [], 0);
+        }
+
+        return (allGroups, 0);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult)
@@ -103,10 +205,25 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
+        // Terminal logger arguments (e.g. --tl:off, -terminalLogger:auto, -tlp:default=true)
+        // should be forwarded to MSBuild during the build phase rather than being passed to
+        // the test application as it doesn't recognize them. See https://github.com/dotnet/sdk/issues/52229.
+        var terminalLoggerArgs = new List<string>();
+        for (int i = otherArgs.Count - 1; i >= 0; i--)
+        {
+            if (LoggerUtility.IsTerminalLoggerArgument(otherArgs[i]))
+            {
+                terminalLoggerArgs.Add(otherArgs[i]);
+                otherArgs.RemoveAt(i);
+            }
+        }
+        terminalLoggerArgs.Reverse();
+
         var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
-            .Concat(binLogArgs);
+            .Concat(binLogArgs)
+            .Concat(terminalLoggerArgs);
 
         string? resultsDirectory = parseResult.GetValue(definition.ResultsDirectoryOption);
         if (resultsDirectory is not null)
@@ -130,7 +247,7 @@ internal static class MSBuildUtility
         var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
 
         if ((projectOrSolutionOptionValue is not null && positionalProjectOrSolution is not null) ||
-            testModulesFilterOptionValue is not null && positionalTestModules is not null)
+            (testModulesFilterOptionValue is not null && positionalTestModules is not null))
         {
             throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
         }
@@ -151,7 +268,8 @@ internal static class MSBuildUtility
             parseResult.GetValue(definition.NoLaunchProfileOption),
             parseResult.GetValue(definition.NoLaunchProfileArgumentsOption),
             otherArgs,
-            msbuildArgs);
+            msbuildArgs,
+            Device: parseResult.GetValue(definition.DeviceOption));
     }
 
     private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(List<string> otherArgs)
@@ -216,7 +334,7 @@ internal static class MSBuildUtility
             {
                 if (i == 0)
                 {
-                    positionalTestModules = token;
+                    positionalProjectOrSolution = token;
                     otherArgs.RemoveAt(0);
                     break;
                 }
@@ -230,13 +348,13 @@ internal static class MSBuildUtility
         return (positionalProjectOrSolution, positionalTestModules);
     }
 
-
-    private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
+    private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
         if (buildOptions.HasNoBuild)
         {
-            return true;
+            return 0;
         }
+
         List<string> msbuildArgs = [.. buildOptions.MSBuildArgs, filePath];
 
         if (buildOptions.Verbosity is null)
@@ -252,21 +370,46 @@ internal static class MSBuildUtility
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());
 
-        int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
-
-        return result == (int)BuildResultCode.Success;
+        return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
     }
 
-    private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(
+    private static (ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsProperties(
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,
         IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
         BuildOptions buildOptions)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
+        var nonDeviceProjects = new List<(string ProjectFilePath, string? Configuration, string? Platform)>();
 
+        // Phase 1: Handle device projects sequentially. Per-TFM builds use in-process MSBuild
+        // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
+        foreach (var project in projects)
+        {
+            var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(project.ProjectFilePath, buildOptions, projectCollection, evaluationContext);
+
+            if (deviceSelection is not null)
+            {
+                var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, deviceSelection, project.Configuration, project.Platform);
+                if (exitCode != 0)
+                {
+                    return (allProjects, exitCode);
+                }
+
+                foreach (var module in modules)
+                {
+                    allProjects.Add(module);
+                }
+            }
+            else
+            {
+                nonDeviceProjects.Add(project);
+            }
+        }
+
+        // Phase 2: Handle non-device projects in parallel (existing behavior).
         Parallel.ForEach(
-            projects,
+            nonDeviceProjects,
             // We don't use --max-parallel-test-modules here.
             // If user wants to limit the test applications run in parallel, we don't want to punish them and force the evaluation to also be limited.
             new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
@@ -279,6 +422,6 @@ internal static class MSBuildUtility
                 }
             });
 
-        return allProjects;
+        return (allProjects, 0);
     }
 }

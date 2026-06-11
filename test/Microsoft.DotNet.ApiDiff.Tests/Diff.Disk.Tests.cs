@@ -473,18 +473,20 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
         Mock<ILog> log = new();
 
         return DiffGeneratorFactory.Create(log.Object,
-            beforeAssembliesFolderPath,
-            beforeAssemblyReferencesFolderPath: null,
-            afterAssembliesFolderPath,
-            afterAssemblyReferencesFolderPath: null,
-            outputFolderPath,
-            beforeFriendlyName,
-            afterFriendlyName,
-            tableOfContentsTitle,
-            filesWithAssembliesToExclude ?? [],
-            filesWithAttributesToExclude ?? [],
-            filesWithAPIsToExclude ?? [],
-            addPartialModifier: false,
+            new DiffConfiguration(
+                AfterAssembliesFolderPath: afterAssembliesFolderPath,
+                AfterAssemblyReferencesFolderPath: null,
+                BeforeAssembliesFolderPath: beforeAssembliesFolderPath,
+                BeforeAssemblyReferencesFolderPath: null,
+                OutputFolderPath: outputFolderPath,
+                BeforeFriendlyName: beforeFriendlyName,
+                AfterFriendlyName: afterFriendlyName,
+                TableOfContentsTitle: tableOfContentsTitle,
+                FilesWithAssembliesToExclude: filesWithAssembliesToExclude ?? [],
+                FilesWithAttributesToExclude: filesWithAttributesToExclude ?? [],
+                FilesWithApisToExclude: filesWithAPIsToExclude ?? [],
+                AddPartialModifier: false,
+                AttachDebugger: false),
             writeToDisk,
             DiffGeneratorFactory.DefaultDiagnosticOptions);
     }

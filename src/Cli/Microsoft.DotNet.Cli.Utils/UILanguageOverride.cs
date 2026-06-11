@@ -1,7 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
 using System.Security;
 using Microsoft.Win32;
@@ -11,6 +10,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 internal static class UILanguageOverride
 {
     internal const string DOTNET_CLI_UI_LANGUAGE = nameof(DOTNET_CLI_UI_LANGUAGE);
+    private const string DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING = nameof(DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING);
     private const string VSLANG = nameof(VSLANG);
     private const string PreferredUILang = nameof(PreferredUILang);
     // We choose UTF8 as the default encoding as opposed to specific language encodings because it supports emojis & other chars in .NET.
@@ -25,7 +25,7 @@ internal static class UILanguageOverride
             FlowOverrideToChildProcesses(language);
         }
 
-        if (Env.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1")
+        if (Env.GetEnvironmentVariable(DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING) != "1")
         {
             if (
                 !CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.InvariantCultureIgnoreCase) &&

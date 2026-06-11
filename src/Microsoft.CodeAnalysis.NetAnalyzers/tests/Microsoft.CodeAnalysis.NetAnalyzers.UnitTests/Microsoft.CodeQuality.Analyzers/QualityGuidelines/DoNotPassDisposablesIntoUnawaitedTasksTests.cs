@@ -206,7 +206,7 @@ public class C
                 {
                     VerifyCS.Diagnostic().WithSpan(10, 27, 10, 29)
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

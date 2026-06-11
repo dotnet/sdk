@@ -50,7 +50,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             startQuote = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -76,7 +76,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -106,7 +106,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
@@ -128,7 +128,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -158,7 +158,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
@@ -180,7 +180,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -217,7 +217,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             startQuote = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -245,7 +245,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -276,7 +276,7 @@ namespace TestNamespace
                 TestCode = csInput,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
 
             quotes = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -299,7 +299,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -353,7 +353,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             startQuote = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -394,7 +394,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -434,7 +434,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
 
             vbInput = @"
 Public Class StringOf
@@ -466,7 +466,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
 
             vbInput = @"
 Public Class StringOf
@@ -498,7 +498,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
 
             vbInput = @"
 Public Class StringOf
@@ -530,7 +530,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -575,7 +575,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             csInput = @"
 namespace TestNamespace 
@@ -613,7 +613,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             csInput = @"
 namespace TestNamespace 
@@ -651,7 +651,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             csInput = @"
 namespace TestNamespace 
@@ -689,7 +689,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -729,7 +729,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -760,7 +760,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             quotes = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -783,7 +783,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -814,7 +814,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             quotes = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
@@ -837,7 +837,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -860,7 +860,7 @@ namespace TestNamespace
                 TestCode = csInput,
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20
             };
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
 
             string csInputStringAndArgument = @"
 namespace TestNamespace 
@@ -879,7 +879,7 @@ namespace TestNamespace
                 TestCode = csInputStringAndArgument,
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20
             };
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
 
             string csCharInput = @"
 namespace TestNamespace 
@@ -898,7 +898,7 @@ namespace TestNamespace
                 TestCode = csCharInput,
                 ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20
             };
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -927,7 +927,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -954,7 +954,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -981,7 +981,7 @@ namespace TestNamespace
                 TestCode = csInput,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1022,7 +1022,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testCulture.RunAsync();
+            await testCulture.RunAsync(TestContext.Current.CancellationToken);
 
             operatorKind = ToBasicOperator(operatorKind);
             notString = notString == "!" ? " Not" : notString;
@@ -1054,7 +1054,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1095,7 +1095,7 @@ namespace TestNamespace
                 FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testCulture.RunAsync();
+            await testCulture.RunAsync(TestContext.Current.CancellationToken);
 
             operatorKind = ToBasicOperator(operatorKind);
             notString = notString == "!" ? " Not" : notString;
@@ -1127,7 +1127,7 @@ End Class
                 FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1157,7 +1157,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
@@ -1179,7 +1179,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1209,7 +1209,7 @@ namespace TestNamespace
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal.RunAsync();
+            await testOrdinal.RunAsync(TestContext.Current.CancellationToken);
 
             operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
@@ -1231,7 +1231,7 @@ End Class
                 TestState = { Sources = { vbInput } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
-            await testOrdinal_vb.RunAsync();
+            await testOrdinal_vb.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #region Helpers

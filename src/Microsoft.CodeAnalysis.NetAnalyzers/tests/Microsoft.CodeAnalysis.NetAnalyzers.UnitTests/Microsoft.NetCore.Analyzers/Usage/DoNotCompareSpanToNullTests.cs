@@ -157,7 +157,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -201,14 +201,14 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 TestCode = spanCode,
                 FixedCode = fixedSpanCode,
                 ExpectedDiagnostics = { DoNotCompareToNullResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyCS.Test
             {
                 TestCode = rosCode,
                 FixedCode = fixedRosCode,
                 ExpectedDiagnostics = { DoNotCompareToNullResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyCsharpCompareToDefaultAsync(string code, string fixedCode)
@@ -224,14 +224,14 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 TestCode = spanCode,
                 FixedCode = fixedSpanCode,
                 ExpectedDiagnostics = { DoNotCompareToDefaultResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyCS.Test
             {
                 TestCode = rosCode,
                 FixedCode = fixedRosCode,
                 ExpectedDiagnostics = { DoNotCompareToDefaultResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyNoDiagnosticVisualBasicAsync(string code)
@@ -256,14 +256,14 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                 TestCode = spanCode,
                 FixedCode = fixedSpanCode,
                 ExpectedDiagnostics = { DoNotCompareToNullResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
                 TestCode = rosCode,
                 FixedCode = fixedRosCode,
                 ExpectedDiagnostics = { DoNotCompareToNullResult }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

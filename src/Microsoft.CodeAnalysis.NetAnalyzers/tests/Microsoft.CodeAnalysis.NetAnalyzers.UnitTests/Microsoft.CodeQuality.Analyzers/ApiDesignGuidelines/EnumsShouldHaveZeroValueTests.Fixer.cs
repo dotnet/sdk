@@ -293,7 +293,7 @@ End Enum
                     VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(2).WithArguments("E3", "A3"),
                 },
                 FixedCode = expectedFixedCode,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [WorkItem(836193, "DevDiv")]
@@ -368,7 +368,7 @@ End Enum
                     VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(2).WithArguments("E3", "A3"),
                 },
                 FixedCode = expectedFixedCode,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

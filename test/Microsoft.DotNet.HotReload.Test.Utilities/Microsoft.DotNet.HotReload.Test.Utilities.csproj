@@ -8,11 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\BuiltInTools\Watch\Microsoft.DotNet.HotReload.Watch.csproj" />
+    <ProjectReference Include="..\..\src\Dotnet.Watch\Watch\Microsoft.DotNet.HotReload.Watch.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="xunit.v3.extensibility.core" />
     <PackageReference Include="Xunit.Combinatorial" />
     <PackageReference Include="Moq" />
   </ItemGroup>

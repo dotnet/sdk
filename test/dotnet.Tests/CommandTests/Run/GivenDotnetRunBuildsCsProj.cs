@@ -392,6 +392,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -400,7 +401,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("Second");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -411,14 +412,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
-            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run", "--verbosity", "quiet")
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute();
 
             cmd.Should().Pass()
-                .And.NotHaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
 
             cmd.StdErr.Should().BeEmpty();
@@ -441,7 +440,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<First>>>");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -461,7 +460,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<Second>>>");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -518,10 +517,8 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("-v:m");
 
             cmd.Should().Pass()
-                .And.HaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
-
-            cmd.StdErr.Should().BeEmpty();
         }
 
         [Fact]
@@ -532,6 +529,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -540,7 +538,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("http://localhost:12345/");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -551,6 +549,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
             var cmd = new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(testProjectDirectory)
@@ -559,7 +558,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("http://localhost:54321/");
 
-            cmd.StdErr.Should().BeEmpty();
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
         [Fact]
@@ -1048,6 +1047,44 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                                               
                 hasExpectedErrorMessage.Should().BeTrue($"Expected error message to clearly indicate file doesn't exist, but got: {stderr}");
             }
+        }
+
+        [WindowsOnlyFact]
+        public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibrary()
+        {
+            // Reproduces https://github.com/dotnet/sdk/issues/53488 with explicit --framework:
+            // dotnet run -f <platform-specific-TFM> fails with NETSDK1005 when
+            // the project references a library that targets only the base TFM.
+            var testInstance = TestAssetsManager.CopyTestAsset("RunWindowsAppWithLibRef")
+                .WithSource();
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(Path.Combine(testInstance.Path, "App"))
+                .Execute("--framework", $"{ToolsetInfo.CurrentTargetFramework}-windows")
+                .Should().Pass()
+                .And.HaveStdOutContaining("This string came from the test library!");
+        }
+
+        [WindowsOnlyFact]
+        public void ItCanRunWindowsAppReferencingNonPlatformSpecificLibraryWithoutExplicitFramework()
+        {
+            // Same scenario as above but without --framework: exercises the
+            // auto-selected TFM path (saved pre-TF project reuse).
+            var testInstance = TestAssetsManager.CopyTestAsset("RunWindowsAppWithLibRef")
+                .WithSource();
+
+            // Reduce to a single-entry TargetFrameworks so the framework is auto-selected.
+            var appCsproj = Path.Combine(testInstance.Path, "App", "App.csproj");
+            File.WriteAllText(appCsproj, File.ReadAllText(appCsproj)
+                .Replace(
+                    $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}-windows;{ToolsetInfo.CurrentTargetFramework}</TargetFrameworks>",
+                    $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework}-windows</TargetFrameworks>"));
+
+            new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(Path.Combine(testInstance.Path, "App"))
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("This string came from the test library!");
         }
 
         [Fact]

@@ -188,7 +188,7 @@ public class ResolveCompressedAssets : Task
     private static string CreatePathTemplate(StaticWebAsset asset, string outputPath)
     {
         var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
-        var pathHash = FileHasher.HashString(asset.SourceId + asset.BasePath + asset.AssetKind + relativePath);
+        var pathHash = FileHasher.HashString(asset.SourceId + asset.BasePath + asset.AssetKind + asset.AssetGroups + relativePath);
         return Path.Combine(outputPath, $"{pathHash}-{{0}}-{asset.Fingerprint}");
     }
 

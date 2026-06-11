@@ -21,6 +21,6 @@
     <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
   </ItemGroup>
 
-  <Import Project="..\..\src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
+  <Import Project="..\..\src\Dotnet.Watch\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
 
 </Project>

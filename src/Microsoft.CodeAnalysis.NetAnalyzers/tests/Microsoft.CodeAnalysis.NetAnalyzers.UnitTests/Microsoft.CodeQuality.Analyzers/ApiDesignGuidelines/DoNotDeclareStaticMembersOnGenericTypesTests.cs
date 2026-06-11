@@ -448,7 +448,7 @@ public interface ITestInterface<T>
                     Sources = { code },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net60
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

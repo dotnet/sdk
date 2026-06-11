@@ -38,7 +38,7 @@ class TestClass
                         GetCSharpResultAt(8, 34, "Rfc2898DeriveBytes"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ class TestClass
                         GetCSharpResultAt(8, 34, "Rfc2898DeriveBytes"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -119,7 +119,7 @@ class TestClass
                         GetCSharpResultAt(15, 28, "DerivedClass"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ class TestClass
                         GetCSharpResultAt(17, 28, "DerivedClass"),
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -202,7 +202,7 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -234,7 +234,7 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -269,7 +269,7 @@ class TestClass
 }",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

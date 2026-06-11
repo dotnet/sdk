@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.NativeWrapper
             IntPtr reserved = IntPtr.Zero;
             IntPtr resultContext = IntPtr.Zero;
 
-            int errorCode = Interop.hostfxr_get_dotnet_environment_info(dotnetExeDirectory, default, info.Initialize, default);
+            StatusCode errorCode = Interop.hostfxr_get_dotnet_environment_info(dotnetExeDirectory, default, info.Initialize, default);
 
             return info;
         }

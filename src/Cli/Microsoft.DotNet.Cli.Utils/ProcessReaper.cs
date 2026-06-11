@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Win32.SafeHandles;
-#if !DOT_NET_BUILD_FROM_SOURCE
+#if TARGET_WINDOWS
 using Windows.Win32.System.JobObjects;
 #endif
 
@@ -29,9 +29,27 @@ internal class ProcessReaper : IDisposable
 {
     private readonly Process _process;
 
-    private sealed class WindowsProcessReaper(Process process) : ProcessReaper(process)
+#if TARGET_WINDOWS
+    private sealed class WindowsProcessReaper : ProcessReaper
     {
-#if !DOTNET_BUILDSOURCEONLY
+        public WindowsProcessReaper(Process process) : base(process)
+        {
+            // Ensure Ctrl+C handling is enabled in this process.
+            //
+            // When a parent process (e.g. dotnet-watch) launches us with CREATE_NEW_PROCESS_GROUP,
+            // Ctrl+C handlers are disabled in the new process group. We re-enable them so that
+            // HandleCancelKeyPress fires when the parent sends CTRL_C_EVENT.
+            // This is safe to call unconditionally — it's a no-op if Ctrl+C is already enabled.
+            //
+            // See https://learn.microsoft.com/windows/console/setconsolectrlhandler
+            EnableWindowsCtrlCHandling();
+        }
+
+        private unsafe static void EnableWindowsCtrlCHandling()
+        {
+            PInvoke.SetConsoleCtrlHandler(null, false);
+        }
+
         private SafeWaitHandle? _job;
 
         public override void NotifyProcessStarted()
@@ -103,9 +121,10 @@ internal class ProcessReaper : IDisposable
 
             base.Dispose();
         }
-#endif
     }
+#endif
 
+#if !TARGET_WINDOWS
     private sealed class UnixProcessReaper : ProcessReaper
     {
         private readonly Mutex _shutdownMutex;
@@ -149,31 +168,28 @@ internal class ProcessReaper : IDisposable
             _shutdownMutex?.WaitOne();
 
 #if NET
-            if (!_process.WaitForExit(0) && NativeMethods.Posix.kill(processId, NativeMethods.Posix.SIGTERM) != 0)
+            if (!_process.WaitForExit(0) && _process.SafeHandle.Signal(PosixSignal.SIGTERM))
             {
                 // Couldn't send the signal, don't wait
                 return;
             }
 #endif
-
             // If SIGTERM was ignored by the target, then we'll still wait
             _process.WaitForExit();
 
             Environment.ExitCode = _process.ExitCode;
         }
     }
+#endif
 
     /// <inheritdoc cref="ProcessReaper(Process)"/>
     public static ProcessReaper Create(Process process)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
+#if TARGET_WINDOWS
             return new WindowsProcessReaper(process);
-        }
-        else
-        {
+#else
             return new UnixProcessReaper(process);
-        }
+#endif
     }
 
     /// <summary>
@@ -202,9 +218,21 @@ internal class ProcessReaper : IDisposable
         Console.CancelKeyPress -= HandleCancelKeyPress;
     }
 
-    private static void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    private void HandleCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
     {
         // Ignore SIGINT/SIGQUIT so that the process can handle the signal
         e.Cancel = true;
+
+        // For WinExe apps (WinForms, WPF, MAUI) that don't respond to Ctrl+C,
+        // CloseMainWindow() posts WM_CLOSE to gracefully shut them down.
+        // For console apps this is a no-op (returns false) since they have no main window.
+        try
+        {
+            _process.CloseMainWindow();
+        }
+        catch (InvalidOperationException)
+        {
+            // The process hasn't started yet or has already exited; nothing to signal
+        }
     }
 }
