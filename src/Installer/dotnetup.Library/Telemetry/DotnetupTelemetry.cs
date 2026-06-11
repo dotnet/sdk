@@ -403,7 +403,6 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Returns the flush timeout appropriate for the current environment.
     /// Interactive shells get 10ms to matches the .NET SDK CLI's 10ms flush.
     ///
-    internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment ? 200 : 10;
     internal int GetFlushTimeoutMs() =>
         IsOneAndDoneEnvironment && Console.IsOutputRedirected ? 200 : 10;
 
