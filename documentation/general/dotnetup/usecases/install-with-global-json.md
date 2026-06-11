@@ -177,10 +177,11 @@ Empty, null, or whitespace entries are skipped while finding the first meaningfu
 When deciding where to install, dotnetup applies the following precedence (highest first):
 
 1. An explicit `--install-path` on the command line
-2. A literal path from `global.json`'s `sdk.paths`
-3. `global.json`'s `$host$` sentinel → the default host install location
-4. An existing user-level installation
-5. The default install location
+2. `global.json`'s `sdk.paths` — resolved from its first meaningful entry (a literal path, or the default host install location when that entry is `$host$`)
+3. An existing user-level installation
+4. The default install location
+
+> **Note:** Within `sdk.paths`, ordering decides whether a literal path or the `$host$` default location is used — the first meaningful entry wins. A literal path does *not* take precedence over `$host$` unless it appears first.
 
 ## Next Steps
 
