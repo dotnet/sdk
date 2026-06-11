@@ -403,8 +403,9 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Returns the flush timeout appropriate for the current environment.
     /// Interactive shells get 10ms to matches the .NET SDK CLI's 10ms flush.
     ///
-    internal int GetFlushTimeoutMs() =>
-        IsOneAndDoneEnvironment && Console.IsOutputRedirected ? 200 : 10;
+    /// CI/one-and-done environments get a larger 200ms budget because there's no follow-up
+    /// invocation to drain the AzMonitor offline store.    /// </summary>
+    internal int GetFlushTimeoutMs() => IsOneAndDoneEnvironment && Console.IsOutputRedirected ? 200 : 10;;
 
     /// <summary>
     /// Drains both the tracer and logger batch export processors out to
