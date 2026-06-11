@@ -234,6 +234,7 @@ namespace Microsoft.DotNet.Tests
             { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
             { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
+            { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot" },
             { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
             { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },

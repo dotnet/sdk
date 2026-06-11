@@ -68,6 +68,14 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
                     return 1;
                 }
 
+                if (restoreResult.SaveToCache is not null)
+                {
+                    localToolsResolverCache.Save(new Dictionary<RestoredCommandIdentifier, ToolCommand>
+                    {
+                        { restoreResult.SaveToCache.Value.restoredCommandIdentifier, restoreResult.SaveToCache.Value.toolCommand }
+                    });
+                }
+
                 var localToolsCommandResolver = new LocalToolsCommandResolver(
                     _toolManifestFinder,
                     localToolsResolverCache);
@@ -107,8 +115,9 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
             //  other feeds, but this is probably OK.
             var downloadPackageLocation = new PackageLocation(
                 nugetConfig: _configFile != null ? new(_configFile) : null,
-                sourceFeedOverrides: [packageSource.Source],
-                additionalFeeds: _addSource);
+                sourceFeedOverrides: _sources,
+                additionalFeeds: _addSource,
+                packageSourceOverrides: [packageSource]);
 
             toolPackage = _toolPackageDownloader.InstallPackage(
                 downloadPackageLocation,

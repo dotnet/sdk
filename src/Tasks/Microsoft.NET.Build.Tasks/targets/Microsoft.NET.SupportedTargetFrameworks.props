@@ -14,23 +14,30 @@ Copyright (c) .NET Foundation. All rights reserved.
      This is used by VS to show the list of frameworks to which projects can be retargeted. -->
 <Project>
     <!-- .NET Core App -->
-    <!-- Conditional inclusion ensures customers using new SDKs with older VS versions do not see unsupported target frameworks.
-         For example, net10.0 is not supported in VS 17.14 and should only appear when using MSBuild 18.0.0 or higher (VS 18.0.0+). -->
+    <!-- Full list used for compiler define generation (NET*_OR_GREATER); never filtered by VS/MSBuild version. -->
     <ItemGroup>
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v1.0" DisplayName=".NET Core 1.0" Alias="netcoreapp1.0" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v1.1" DisplayName=".NET Core 1.1" Alias="netcoreapp1.1" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v2.0" DisplayName=".NET Core 2.0" Alias="netcoreapp2.0" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v2.1" DisplayName=".NET Core 2.1" Alias="netcoreapp2.1" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v2.2" DisplayName=".NET Core 2.2" Alias="netcoreapp2.2" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v3.0" DisplayName=".NET Core 3.0" Alias="netcoreapp3.0" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v3.1" DisplayName=".NET Core 3.1" Alias="netcoreapp3.1" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v5.0" DisplayName=".NET 5.0" Alias="net5.0" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v6.0" DisplayName=".NET 6.0" Alias="net6.0" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v7.0" DisplayName=".NET 7.0" Alias="net7.0" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v8.0" DisplayName=".NET 8.0" Alias="net8.0" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v9.0" DisplayName=".NET 9.0" Alias="net9.0" />
-        <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v10.0" DisplayName=".NET 10.0" Alias="net10.0"
-                                            Condition="$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '18.0.0'))"/>
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v1.0" DisplayName=".NET Core 1.0" Alias="netcoreapp1.0" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v1.1" DisplayName=".NET Core 1.1" Alias="netcoreapp1.1" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v2.0" DisplayName=".NET Core 2.0" Alias="netcoreapp2.0" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v2.1" DisplayName=".NET Core 2.1" Alias="netcoreapp2.1" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v2.2" DisplayName=".NET Core 2.2" Alias="netcoreapp2.2" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v3.0" DisplayName=".NET Core 3.0" Alias="netcoreapp3.0" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v3.1" DisplayName=".NET Core 3.1" Alias="netcoreapp3.1" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v5.0" DisplayName=".NET 5.0" Alias="net5.0" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v6.0" DisplayName=".NET 6.0" Alias="net6.0" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v7.0" DisplayName=".NET 7.0" Alias="net7.0" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v8.0" DisplayName=".NET 8.0" Alias="net8.0" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v9.0" DisplayName=".NET 9.0" Alias="net9.0" />
+        <_NETCoreAppVersionsForDefines Include=".NETCoreApp,Version=v10.0" DisplayName=".NET 10.0" Alias="net10.0" />
+    </ItemGroup>
+
+    <!-- VS retargeting list: conditional inclusion ensures customers using new SDKs with older VS versions do not see
+         unsupported target frameworks. For example, net10.0 is not supported in VS 17.14 and should only appear when
+         using MSBuild 18.0.0 or higher (VS 18.0.0+). -->
+    <ItemGroup>
+        <SupportedNETCoreAppTargetFramework Include="@(_NETCoreAppVersionsForDefines)" />
+        <SupportedNETCoreAppTargetFramework Remove=".NETCoreApp,Version=v10.0"
+                                            Condition="!$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '18.0.0'))"/>
     </ItemGroup>
 
     <PropertyGroup>
