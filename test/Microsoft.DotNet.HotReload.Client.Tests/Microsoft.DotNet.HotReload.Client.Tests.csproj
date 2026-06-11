@@ -1,6 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
+    <!-- Opts this project out of the xUnit-specific defaults applied by test/Directory.Build.targets.
+         MSTest.Sdk wires up MSTest + Microsoft.Testing.Platform (MTP) itself. -->
+    <UseMSTestSdk>true</UseMSTestSdk>
+
     <!--
       Tests code used in in-proc VS and VS Code.
       Ideally, we would target $(VisualStudioServiceTargetFramework) but Microsoft.NET.TestFramework has dependencies on $(SdkTargetFramework).
@@ -12,12 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
-    <Compile Include="..\Microsoft.DotNet.HotReload.Test.Utilities\TestLogger.cs" Link="Utilities\TestLogger.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -25,8 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
-    <PackageReference Include="Xunit.Combinatorial" />
+    <PackageReference Include="Combinatorial.MSTest" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
