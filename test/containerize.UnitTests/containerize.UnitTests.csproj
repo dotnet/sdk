@@ -10,10 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Containers\containerize\containerize.csproj" />
   </ItemGroup>
 
