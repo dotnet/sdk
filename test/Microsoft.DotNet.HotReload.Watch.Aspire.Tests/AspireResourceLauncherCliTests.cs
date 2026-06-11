@@ -54,7 +54,7 @@ public class AspireResourceLauncherCliTests
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "-e", "KEY=value" };
         var launcher = Assert.IsInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.HasCount(1, launcher.EnvironmentVariables);
+        Assert.ContainsSingle(launcher.EnvironmentVariables);
         Assert.AreEqual("value", launcher.EnvironmentVariables["KEY"]);
     }
 
