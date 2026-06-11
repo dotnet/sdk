@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             stream.Position = 0;
             var script = Encoding.UTF8.GetString(stream.ToArray());
-            StringAssert.Contains(script, "// dotnet-watch browser reload script");
-            StringAssert.Contains(script, "'some-host'");
-            StringAssert.Contains(script, "'test-key'");
+            Assert.Contains("// dotnet-watch browser reload script", script);
+            Assert.Contains("'some-host'", script);
+            Assert.Contains("'test-key'", script);
         }
 
         [TestMethod]

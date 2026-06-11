@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             // Act & Assert
             var responseContent = await TestBrowserRefreshMiddleware(statusCode, contentType, "Test Content");
-            StringAssert.Contains(responseContent, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", responseContent);
         }
 
         [TestMethod]
@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             // Act & Assert
             var responseContent = await TestBrowserRefreshMiddleware(statusCode, contentType, "Test Content", includeHtmlWrapper: false);
-            Assert.IsFalse(responseContent.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>"));
+            Assert.DoesNotContain("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", responseContent);
         }
 
         private async Task<string> TestBrowserRefreshMiddleware(int statusCode, string contentType, string content, bool includeHtmlWrapper = true)

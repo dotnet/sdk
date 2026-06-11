@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
             Assert.IsNull(context.Response.Headers.ContentLength);
         }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
             Assert.IsNull(context.Response.Headers.ContentLength);
         }
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             // Should treat as regular data since we only handle gzip
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.IsTrue(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
         }
 
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             // Should treat as regular data since we only handle gzip
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.IsTrue(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
         }
 
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert: script injected and content encoding removed
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
             Assert.IsNull(context.Response.Headers.ContentLength);
         }
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert: script injected and content encoding removed
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
             Assert.IsNull(context.Response.Headers.ContentLength);
         }
@@ -376,8 +376,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
-            StringAssert.Contains(result, "</body></html>"); // Ensure full doc present
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
+            Assert.Contains("</body></html>", result); // Ensure full doc present
             Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
             Assert.IsNull(context.Response.Headers.ContentLength);
         }
@@ -427,8 +427,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            StringAssert.Contains(result, "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>");
-            StringAssert.Contains(result, "</body></html>"); // Ensure full doc present
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
+            Assert.Contains("</body></html>", result); // Ensure full doc present
             Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
             Assert.IsNull(context.Response.Headers.ContentLength);
         }
