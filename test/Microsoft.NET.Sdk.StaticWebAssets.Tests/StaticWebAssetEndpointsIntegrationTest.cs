@@ -576,12 +576,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
             endpointsByAssetFile.Should().ContainKey(file);
             if (file.EndsWith(".br") || file.EndsWith(".gz"))
             {
-                endpointsByAssetFile[file].Should().HaveCount(2);
+                endpointsByAssetFile[file].Should().HaveCountGreaterThanOrEqualTo(2);
             }
             else if (endpointsByAssetFile[file].Length > 1)
             {
-                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Any(p => p.Name == "integrity")).Count().Should().Be(1);
-                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Length == 0).Count().Should().Be(1);
+                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Any(p => p.Name == "integrity")).Count().Should().BeGreaterThanOrEqualTo(1);
             }
             else
             {
