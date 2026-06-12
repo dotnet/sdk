@@ -235,7 +235,6 @@ Microsoft policy.** Multiple dotnet/Microsoft teams already do this in productio
 | **cli/cli** | GitHub Actions `workflow_dispatch` | `GITHUB_TOKEN` | `production` environment approval |
 | **microsoft/mcp** | AzDO job runs `gh release create` + upload | GitHub App token | Pipeline stage gate |
 
-### Compliance requirements
 ### Note on Arcade
 
 Arcade's post-build infrastructure (`post-build.yml`) does **not** include a GitHub Release stage.
