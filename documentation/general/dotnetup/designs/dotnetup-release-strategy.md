@@ -153,6 +153,8 @@ In this phase, before public preview we'd remove the fallback to the .NET Instal
 
 ### Phase 2 — Stable on `builds.dotnet.microsoft.com` (tentative)
 
+Migrate to `stable` versioning as well. Confirm whether it is actually feasible and correct to only support a latest version if it becomes a 'released' product.
+
 Host a `stable` URL on `builds.dotnet.microsoft.com` by coordinating with the release team to use their promotion pipeline — we already push to `dotnetbuilds`, so this is a copy/promote from
 `dotnetbuilds` → `dotnetcli` plus storage write permissions granted by the release/dnceng team.
 
