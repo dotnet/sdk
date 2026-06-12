@@ -5,7 +5,7 @@
       Used in dotnet cli and Roslyn Features layer
     -->
     <TargetFrameworks>$(VisualStudioServiceTargetFramework);netstandard2.0</TargetFrameworks>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <LangVersion>preview</LangVersion>
@@ -55,7 +55,7 @@
     </Compile>
   </ItemGroup>
 
-  <Import Project="..\Microsoft.DotNet.FileBasedPrograms\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
+  <Import Project=".\Microsoft.DotNet.FileBasedPrograms.projitems" Label="Shared" />
 
   <!-- Include resx and xlf files in the package (once, not per-TFM) -->
   <ItemGroup>

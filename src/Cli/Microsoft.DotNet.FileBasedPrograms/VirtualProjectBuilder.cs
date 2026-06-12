@@ -1,22 +1,24 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Xml;
-using Microsoft.Build.Construction;
-using Microsoft.Build.Definition;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.Utilities;
 
-namespace Microsoft.DotNet.ProjectTools;
+namespace Microsoft.DotNet.FileBasedPrograms;
 
-public sealed class VirtualProjectBuilder
+internal sealed class VirtualProjectBuilder
 {
     internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
 
@@ -28,7 +30,7 @@ public sealed class VirtualProjectBuilder
 
     /// <summary>
     /// Prevents the virtual project's <see cref="ProjectRootElement"/> from being garbage collected
-    /// when MSBuild's <see cref="ProjectRootElementCache"/> demotes it to a weak reference
+    /// when MSBuild's <c>ProjectRootElementCache</c> demotes it to a weak reference
     /// (which can happen when many SDK import files fill the cache during NuGet restore).
     /// Without this, nested <c>&lt;MSBuild&gt;</c> tasks that re-evaluate the project with different properties
     /// would fail to find the <see cref="ProjectRootElement"/> in the cache and try to load it from disk,
@@ -63,7 +65,7 @@ public sealed class VirtualProjectBuilder
         string? artifactsPath = null,
         SourceText? sourceText = null)
     {
-        Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
+        Debug.Assert(ExternalHelpers.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
         RequestedTargets = requestedTargets;
@@ -145,10 +147,10 @@ public sealed class VirtualProjectBuilder
 
         if (string.IsNullOrEmpty(directory))
         {
-            throw new InvalidOperationException(Resources.EmptyTempPath);
+            throw new InvalidOperationException(FileBasedProgramsResources.EmptyTempPath);
         }
 
-        return Path.Join(directory, "dotnet", "runfile");
+        return Path.Combine(directory, "dotnet", "runfile");
     }
 
     /// <summary>
@@ -156,7 +158,7 @@ public sealed class VirtualProjectBuilder
     /// </summary>
     internal static string GetTempSubpath(string name)
     {
-        return Path.Join(GetTempSubdirectory(), name);
+        return Path.Combine(GetTempSubdirectory(), name);
     }
 
     public static bool IsValidEntryPointPath(string entryPointFilePath)
@@ -232,7 +234,7 @@ public sealed class VirtualProjectBuilder
 
                 case CSharpDirective.IncludeOrExclude includeOrExcludeDirective:
                     var expandedPath = project.ExpandString(includeOrExcludeDirective.Name);
-                    var fullPath = Path.GetFullPath(path: expandedPath, basePath: Path.GetDirectoryName(includeOrExcludeDirective.Info.SourceFile.Path)!);
+                    var fullPath = Path.Combine(Path.GetDirectoryName(includeOrExcludeDirective.Info.SourceFile.Path)!, expandedPath);
                     includeOrExcludeDirective = includeOrExcludeDirective.WithName(fullPath);
 
                     if (mapping.IsDefault)
@@ -317,7 +319,7 @@ public sealed class VirtualProjectBuilder
         }
 
         var entryPointDirectory = Path.GetDirectoryName(EntryPointFileFullPath)!;
-        var seenFiles = new HashSet<string>(1, StringComparer.Ordinal) { EntryPointFileFullPath };
+        var seenFiles = new HashSet<string>(StringComparer.Ordinal) { EntryPointFileFullPath };
         var filesToProcess = new Queue<string>();
         var evaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>();
         var deduplicator = new DirectiveDeduplicator();
@@ -374,9 +376,9 @@ public sealed class VirtualProjectBuilder
             var compileItems = project.GetItems("Compile");
             foreach (var compileItem in compileItems)
             {
-                var compilePath = Path.GetFullPath(
-                    path: compileItem.GetMetadataValue("FullPath"),
-                    basePath: entryPointDirectory);
+                var compilePath = Path.Combine(
+                    entryPointDirectory,
+                    compileItem.GetMetadataValue("FullPath"));
                 if (seenFiles.Add(compilePath))
                 {
                     filesToProcess.Enqueue(compilePath);
@@ -392,11 +394,12 @@ public sealed class VirtualProjectBuilder
 
         bool TryGetNextFileToProcess()
         {
-            while (filesToProcess.TryDequeue(out var filePath))
+            while (filesToProcess.Count != 0)
             {
+                var filePath = filesToProcess.Dequeue();
                 if (!File.Exists(filePath))
                 {
-                    reportError(EntryPointSourceFile.Text, EntryPointSourceFile.Path, default, string.Format(Resources.IncludedFileNotFound, filePath));
+                    reportError(EntryPointSourceFile.Text, EntryPointSourceFile.Path, default, string.Format(FileBasedProgramsResources.IncludedFileNotFound, filePath));
                     continue;
                 }
 
@@ -452,7 +455,7 @@ public sealed class VirtualProjectBuilder
                 isVirtualProject: true,
                 entryPointFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,
-                includeRuntimeConfigInformation: RequestedTargets?.ContainsAny("Publish", "Pack") != true);
+                includeRuntimeConfigInformation: RequestedTargets?.Any(static t => t is "Publish" or "Pack") != true);
 
             var projectFileText = projectFileWriter.ToString();
 
@@ -471,11 +474,7 @@ public sealed class VirtualProjectBuilder
                 addGlobalProperties(globalProperties);
             }
 
-            var project = ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
-            {
-                ProjectCollection = projectCollection,
-                GlobalProperties = globalProperties,
-            });
+            var project = ProjectInstance.FromProjectRootElement(projectRoot, projectCollection, globalProperties);
 
             lastProject = (projectFileText, project, projectRoot);
 
@@ -518,7 +517,7 @@ public sealed class VirtualProjectBuilder
                     directive.Info.SourceFile.Text,
                     directive.Info.SourceFile.Path,
                     directive.Info.Span,
-                    string.Format(Resources.ExperimentalFeatureDisabled, flagName));
+                    string.Format(FileBasedProgramsResources.ExperimentalFeatureDisabled, flagName));
             }
         }
     }
