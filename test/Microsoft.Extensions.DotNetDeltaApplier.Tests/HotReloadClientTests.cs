@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.Test.MSTest.Utilities;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
