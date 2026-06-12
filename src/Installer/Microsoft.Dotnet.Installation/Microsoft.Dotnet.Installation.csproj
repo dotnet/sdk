@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <IsAotCompatible>true</IsAotCompatible>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Strong naming not needed on .NET Core -->
+    <!-- SYSLIB1054: Suppress for DllImport in shared NativeWrapper code we don't own -->
+    <NoWarn>$(NoWarn);CS8002;CS1591;SYSLIB1054</NoWarn>
+
+    <!-- Microsoft.Dotnet.Installation is a pure managed, RID-agnostic library. In our pipelines,
+         we only want to publish one copy of it, but we have different legs for each RID to 
+         produce the nativeAOT dotnetup binary.  So we'll set IsPackable to false for all
+         but one of those legs.-->
+    <IsPackable>true</IsPackable>
+    <IsPackable Condition="'$(TargetRid)' != '' and '$(TargetRid)' != 'win-x64'">false</IsPackable>
+    
+    <IncludeSymbols>true</IncludeSymbols>
+    <PackageId>Microsoft.Dotnet.Installation</PackageId>
+    <IsShipping>false</IsShipping>
+    <Title>.NET Installation Library</Title>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnetup" />
+    <InternalsVisibleTo Include="dotnetup.Library" />
+    <InternalsVisibleTo Include="dotnetup.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.Dotnet.Installation" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Trusted root certificate lists for release-manifest signature verification.
+      Same files the SDK ships in src/Layout/redist/trustedroots/ for NuGet signing validation,
+      embedded as resources here so dnup can verify release manifests as a standalone executable
+      without an SDK present. Loaded by Internal/Signing/TrustedRootsLoader.cs.
+    -->
+    <EmbeddedResource Include="$(RepoRoot)src\Layout\redist\trustedroots\codesignctl.pem"
+                      LogicalName="codesignctl.pem" />
+    <EmbeddedResource Include="$(RepoRoot)src\Layout\redist\trustedroots\timestampctl.pem"
+                      LogicalName="timestampctl.pem" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Meziantou.Analyzer" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <!-- Required for SignedCms / Rfc3161TimestampToken used by Internal/Signing/SignatureVerifier. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
+  </ItemGroup>
+</Project>
