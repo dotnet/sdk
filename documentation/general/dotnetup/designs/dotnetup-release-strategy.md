@@ -129,7 +129,7 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
 4. **The release pipeline:**
    - Bumps the patch version by 1 off of the last tagged preview patch version using global `msbuild` parameters. Coordinate to push a PR via maestro or via actions that bumps the version in the real branch. Produce the preview versioned dotnetup `tag`.
    - Pushes that tag onto the commit from the selected daily pipeline run.
-   - Sets `preview` version metadata property as a global property override using the same methodology as the .NET SDK.
+   - Sets `preview` version metadata property `PreReleaseVersionLabel` as a global property override using the same methodology as the .NET SDK.
    - Runs tests on that branch.
    - On pass: repins the `/preview/` `aka.ms` url (only if `test` run is not enabled), and creates the GitHub Release with change notes.
 
