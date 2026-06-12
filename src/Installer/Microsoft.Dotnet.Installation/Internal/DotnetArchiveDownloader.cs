@@ -44,7 +44,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     {
         string tempPath = $"{destinationPath}.download";
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-        using var totalDownloadCts = new CancellationTokenSource(_timeoutSettings.TotalTimeout);
+        using var totalDownloadCts = DefaultHttpClient.CreateTimeoutTokenSource(_timeoutSettings.TotalTimeout);
 
         for (int attempt = 1; attempt <= MaxRetryCount; attempt++)
         {
@@ -55,7 +55,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             }
             catch (OperationCanceledException ex) when (totalDownloadCts.IsCancellationRequested)
             {
-                throw CreateTotalDownloadTimeoutException(downloadUrl, ex);
+                throw DefaultHttpClient.CreateTotalTimeoutException(downloadUrl, _timeoutSettings.TotalTimeout, ex);
             }
             catch (Exception)
             {
@@ -67,7 +67,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                     }
                     catch (OperationCanceledException ex) when (totalDownloadCts.IsCancellationRequested)
                     {
-                        throw CreateTotalDownloadTimeoutException(downloadUrl, ex);
+                        throw DefaultHttpClient.CreateTotalTimeoutException(downloadUrl, _timeoutSettings.TotalTimeout, ex);
                     }
                 }
                 else
@@ -109,7 +109,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         int read;
         var lastProgressReport = DateTime.MinValue;
 
-        while ((read = await ReadWithIdleTimeoutAsync(source, buffer, idleTimeout, cancellationToken).ConfigureAwait(false)) > 0)
+        while ((read = await DefaultHttpClient.ReadWithIdleTimeoutAsync(source, buffer, idleTimeout, cancellationToken).ConfigureAwait(false)) > 0)
         {
             await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
             bytesRead += read;
@@ -124,24 +124,6 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
         progress?.Report(new DownloadProgress(bytesRead, totalBytes));
     }
-
-    private static async Task<int> ReadWithIdleTimeoutAsync(Stream source, byte[] buffer, TimeSpan idleTimeout, CancellationToken cancellationToken)
-    {
-        using var idleCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        idleCts.CancelAfter(idleTimeout);
-
-        try
-        {
-            return await source.ReadAsync(buffer.AsMemory(0, buffer.Length), idleCts.Token).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested && idleCts.IsCancellationRequested)
-        {
-            throw new TimeoutException(FormattableString.Invariant($"Download stalled because no bytes were received for {idleTimeout.TotalSeconds} seconds."), ex);
-        }
-    }
-
-    private TimeoutException CreateTotalDownloadTimeoutException(string downloadUrl, Exception innerException) =>
-        new(FormattableString.Invariant($"Download from {downloadUrl} exceeded the total timeout of {_timeoutSettings.TotalTimeout.TotalSeconds} seconds."), innerException);
 
     private static void CommitDownload(string tempPath, string destinationPath)
     {
@@ -401,7 +383,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// </summary>
     private string? TryGetHashFromUrl(string checksumUrl, ReleaseVersion resolvedVersion, InstallComponent component)
     {
-        using var cts = new CancellationTokenSource(_timeoutSettings.TotalTimeout);
+        using var cts = DefaultHttpClient.CreateTimeoutTokenSource(_timeoutSettings.TotalTimeout);
 
         try
         {

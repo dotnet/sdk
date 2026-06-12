@@ -194,16 +194,19 @@ public class DotnetArchiveDownloaderTests
     }
 
     [Fact]
-    public async Task CopyStreamWithProgressAsync_TimesOutWhenNoBytesAreReceivedWithinIdleTimeout()
+    public async Task DefaultHttpClient_ReadWithIdleTimeoutAsync_TimesOutWhenNoBytesAreReceivedWithinIdleTimeout()
     {
         using var source = new BlockingReadStream("partial"u8.ToArray());
-        using var destination = new MemoryStream();
+        var buffer = new byte[81920];
 
-        var ex = await Assert.ThrowsAsync<TimeoutException>(() =>
-            InvokeCopyStreamWithProgressAsync(source, destination, totalBytes: null, progress: null, TimeSpan.FromMilliseconds(25), CancellationToken.None));
+        int bytesRead = await DefaultHttpClient.ReadWithIdleTimeoutAsync(source, buffer, TimeSpan.FromMilliseconds(25), CancellationToken.None);
+        bytesRead.Should().Be("partial"u8.Length);
+        buffer.AsSpan(0, bytesRead).ToArray().Should().Equal("partial"u8.ToArray());
+
+        var ex = await Assert.ThrowsAsync<TimeoutException>(async () =>
+            await DefaultHttpClient.ReadWithIdleTimeoutAsync(source, buffer, TimeSpan.FromMilliseconds(25), CancellationToken.None));
 
         ex.Message.Should().Contain("no bytes were received");
-        destination.ToArray().Should().Equal("partial"u8.ToArray());
     }
 
     [Fact]
@@ -233,21 +236,6 @@ public class DotnetArchiveDownloaderTests
         handler.SendCount.Should().Be(1, "the total timeout covers all retries for one archive download");
         File.Exists(destinationPath).Should().BeFalse();
         File.Exists(destinationPath + ".download").Should().BeFalse();
-    }
-
-    private static async Task InvokeCopyStreamWithProgressAsync(
-        Stream source,
-        Stream destination,
-        long? totalBytes,
-        IProgress<DownloadProgress>? progress,
-        TimeSpan idleTimeout,
-        CancellationToken cancellationToken)
-    {
-        var method = typeof(DotnetArchiveDownloader).GetMethod("CopyStreamWithProgressAsync", BindingFlags.NonPublic | BindingFlags.Static);
-        method.Should().NotBeNull("CopyStreamWithProgressAsync must exist on DotnetArchiveDownloader");
-
-        var task = (Task)method!.Invoke(null, new object?[] { source, destination, totalBytes, progress, idleTimeout, cancellationToken })!;
-        await task.ConfigureAwait(false);
     }
 
     private static async Task InvokeDownloadArchiveAsync(DotnetArchiveDownloader downloader, string downloadUrl, string destinationPath)

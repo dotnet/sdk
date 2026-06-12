@@ -21,6 +21,26 @@ internal static class DefaultHttpClient
 {
     public static HttpClient Instance { get; } = Create();
 
+    public static CancellationTokenSource CreateTimeoutTokenSource(TimeSpan timeout) => new(timeout);
+
+    public static async Task<int> ReadWithIdleTimeoutAsync(Stream source, Memory<byte> buffer, TimeSpan idleTimeout, CancellationToken cancellationToken)
+    {
+        using var idleCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        idleCts.CancelAfter(idleTimeout);
+
+        try
+        {
+            return await source.ReadAsync(buffer, idleCts.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested && idleCts.IsCancellationRequested)
+        {
+            throw new TimeoutException(FormattableString.Invariant($"HTTP response body stalled because no bytes were received for {idleTimeout.TotalSeconds} seconds."), ex);
+        }
+    }
+
+    public static TimeoutException CreateTotalTimeoutException(string requestUri, TimeSpan timeout, Exception innerException) =>
+        new(FormattableString.Invariant($"HTTP request to {requestUri} exceeded the total timeout of {timeout.TotalSeconds} seconds."), innerException);
+
     private static HttpClient Create()
     {
         var handler = new HttpClientHandler()
