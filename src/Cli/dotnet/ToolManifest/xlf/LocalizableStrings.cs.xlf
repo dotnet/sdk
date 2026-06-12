@@ -36,6 +36,11 @@ Pokud si chcete zobrazit seznam prohledaných umístění, zadejte před název 
         <target state="translated">Existuje více než jedno zadání pro balíčky: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolMissingRollForward">
+        <source>Missing 'rollForward' entry.</source>
+        <target state="translated">Chybí položka rollForward.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
         <source>Expected a {0} for property '{1}'.</source>
         <target state="translated">Očekává se {0} pro vlastnost {1}.</target>

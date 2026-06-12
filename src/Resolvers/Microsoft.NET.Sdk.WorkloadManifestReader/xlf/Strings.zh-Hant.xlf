@@ -77,6 +77,11 @@
         <target state="translated">工作負載資訊清單相依性 '{0}' 版本 ' {1} ' 低於資訊清單 '{3}' [{4}] 所需的版本 '{2}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManifestDoesNotExist">
+        <source>No manifest with ID {0} exists.</source>
+        <target state="translated">沒有識別碼為 {0} 的資訊清單。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestFromInstallStateNotFound">
         <source>Workload manifest {0}, which was specified in {1}, was not found. Running "dotnet workload repair" may resolve this.</source>
         <target state="translated">找不到 {1} 中指定的工作負載資訊清單 {0}。執行 "dotnet workload repair" 可能會解決這個問題。</target>

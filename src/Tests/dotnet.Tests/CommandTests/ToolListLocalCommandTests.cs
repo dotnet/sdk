@@ -34,12 +34,14 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         new PackageId("package.id"),
                         NuGetVersion.Parse("2.1.4"),
                         new[] {new ToolCommandName("package-name")},
-                        new DirectoryPath(_temporaryDirectory)), new FilePath(_testManifestPath)),
+                        new DirectoryPath(_temporaryDirectory),
+                        false), new FilePath(_testManifestPath)),
                     (new ToolManifestPackage(
                         new PackageId("foo.bar"),
                         NuGetVersion.Parse("1.0.8"),
                         new[] {new ToolCommandName("foo-bar")},
-                        new DirectoryPath(_temporaryDirectory)), new FilePath(_testManifestPath))
+                        new DirectoryPath(_temporaryDirectory),
+                        false), new FilePath(_testManifestPath))
                 }
             );
             _parseResult = Parser.Instance.Parse("dotnet tool list");
