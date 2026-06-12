@@ -45,7 +45,7 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
 - `stable` needs to scale beyond `ci.dot.net`; `preview` may not (external customers should not build production CI on top of a preview product).
 - GitHub Releases may provide scalable / CDN-like downloads (works for dotnet diagnostics).
 - `aka.ms` has no Azure Front Door / `x-cache` / Akamai layer of its own. It is a Kestrel app serving a `301` redirect, which is sufficient for `preview` and `daily`.
-- `ci.dot.net` per-version build URLs persist long enough for `dotnetup` rollback needs. This is **assumed, not verified.**
+- `ci.dot.net` per-version build URLs persist long enough for `dotnetup` rollback needs. See [Retention investigation](#retention-investigation-dotnetbuildscinotnet) below.
 
 ### Verified infrastructure facts
 
@@ -138,8 +138,11 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
    Archival CI URLs exist per version and are confirmed live today, e.g.
    `https://ci.dot.net/public/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe` and its
    `.../public-checksums/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe.sha512` sidecar.
-   **Open:** the blob retention/TTL on `dotnetbuilds` is not yet confirmed — if it is finite,
-   rollback past that window would require re-publishing rather than just repointing.
+   **Open (low risk):** No formal retention/TTL policy is documented for `dotnetbuilds` blobs — see
+   [Retention investigation](#retention-investigation-dotnetbuildscinotnet). Empirical evidence shows
+   non-promoted preview builds from 4+ years ago remain accessible, and dotnetup builds are never
+   subject to promotion-cleanup. We consider the rollback-via-repoint strategy safe for practical
+   timescales, though confirming definitively requires Azure portal access from dnceng.
 
 **Recovery — fix needed (e.g. security patch on an old branch):**
 1. Check out the tagged commit.
@@ -167,3 +170,136 @@ Linux Package Manager Feed / WinGet / Homebrew / etc. Needs discussion with part
 ### Phase 4 — Inclusion in the .NET SDK (unplanned at this time)
 
 If dotnetup ever ships inside the SDK, consider shelling it and adding tests to validate it across all in-support SDK versions.
+
+---
+
+## Appendix A: Retention Investigation (`dotnetbuilds`/`ci.dot.net`)
+
+*Investigated 2026-06-12.*
+
+### Summary
+
+There is **no documented retention policy** for `dotnetbuilds.blob.core.windows.net` / `ci.dot.net`.
+Arcade's `PublishingConstants.cs` `TargetChannelConfig` has no `retentionDays`, `expirationDays`, or
+`lifecyclePolicy` field. No retention documentation exists in `dotnet/arcade` or `dotnet/dnceng`.
+Any Azure Blob lifecycle policy would be configured in the Azure portal (not in public repos).
+
+### Empirical HTTP probe results (2026-06-12)
+
+| Build | Age | `ci.dot.net` | `builds.dotnet.microsoft.com` | Explanation |
+|-------|-----|:---:|:---:|---|
+| .NET 6.0 preview 1 (Mar 2021) | ~5 yr | ❌ 404 | ✅ 200 | **Promoted** to dotnetcli, cleaned from dotnetbuilds |
+| .NET 6.0 preview 7 (Aug 2021) | ~5 yr | ❌ 404 | ✅ 200 | Promoted |
+| .NET 7.0 preview 1 (Feb 2022) | ~4.3 yr | ✅ 200 | — | Never promoted; still on staging |
+| .NET 7.0 preview 3–7 (Mar–Jul 2022) | ~4 yr | ✅ 200 | — | Never promoted |
+| .NET 7.0 RC1/RC2 (Sep–Oct 2022) | ~4 yr | ❌ 404 | ✅ 200 | Promoted |
+| .NET 7.0 GA (Nov 2022) | ~4 yr | ❌ 404 | ✅ 200 | Promoted |
+| .NET 8.0 preview 1 (Feb 2023) | ~3.3 yr | ✅ 200 | — | Never promoted |
+| .NET 9.0 preview 1 (Feb 2024) | ~2.3 yr | ✅ 200 | — | Never promoted |
+| dotnetup 0.1.4-preview (Jun 2026) | current | ✅ 200 | — | DotNetToolsFeeds; never promoted |
+
+### Interpretation
+
+The 404s on `ci.dot.net` are **not** from age-based TTL deletion. They are the result of a
+deliberate **promotion workflow**: once a build graduates from staging (`dotnetbuilds`) to production
+(`dotnetcli` / `builds.dotnet.microsoft.com`), the staging copy is cleaned up.
+
+Since dotnetup uses `DotNetToolsFeeds` (which only targets `dotnetbuilds/public`), its builds are
+**never subject to promotion-cleanup**. Non-promoted preview/daily builds from as far back as
+Feb 2022 (~4.3 years) remain accessible at this time.
+
+### Conclusion for dotnetup rollback
+
+We consider the rollback-via-repoint strategy (pointing `/preview/` at an older versioned URL) safe
+for practical timescales. The risk of silent blob deletion is low but cannot be formally ruled out
+without Azure portal access from the dnceng team.
+
+---
+
+## Appendix B: Automated GitHub Releases — Compliance & Precedent
+
+*Investigated 2026-06-12.*
+
+### Summary
+
+**Yes — CI pipelines can automatically create GitHub Releases while remaining compliant with
+Microsoft policy.** Multiple dotnet/Microsoft teams already do this in production.
+
+### Teams with automated GitHub Releases
+
+| Team / Repo | Pattern | Auth mechanism | Human gate |
+|---|---|---|---|
+| **dotnet/aspire** | AzDO dispatches GitHub Actions via `aspire-repo-bot` App | GitHub App installation token | AzDO pipeline approval stage |
+| **dotnet/dotnet-monitor** | AzDO pipeline runs `gh release create` | `dotnet-bot` PAT (KeyVault-backed) | `ManualValidation@1` task |
+| **dotnet/android-native-tools** | AzDO `GitHubRelease@1` task | AzDO service connection | `ManualValidation@0` task |
+| **cli/cli** | GitHub Actions `workflow_dispatch` | `GITHUB_TOKEN` | `production` environment approval |
+| **microsoft/mcp** | AzDO job runs `gh release create` + upload | GitHub App token | Pipeline stage gate |
+
+### Compliance requirements
+
+| Requirement | How to meet it |
+|---|---|
+| Signed binaries | MicroBuild signing (`MicroBuildSignType: Real`) must succeed before release stage |
+| SDL / security scanning | 1ES pipeline templates auto-inject APIScan, BinSkim, CodeQL, Component Governance |
+| Human accountability | `ManualValidation@1` gate or GitHub environment protection rules |
+| Least-privilege auth | GitHub App installation tokens or scoped PATs in KeyVault-backed variable groups |
+| Auditability | 1ES `templateContext: type: releaseJob, isProduction: true` on deployment jobs |
+| Draft safety net | `isDraft: true` default so accidental gate-pass only creates a draft |
+
+### Note on Arcade
+
+Arcade's post-build infrastructure (`post-build.yml`) does **not** include a GitHub Release stage.
+GitHub Release creation is a per-repo responsibility — no `GitHubRelease@1` usage exists in
+`dotnet/arcade`. Teams implement it themselves using one of the patterns above.
+
+### Recommendation for dotnetup
+
+**Recommended: `dotnet-monitor` pattern** (AzDO pipeline + `gh release create` + `ManualValidation@1`).
+
+Rationale:
+- **Simplest** — no GitHub App setup, no cross-system dispatch. Just a pipeline stage that runs
+  `gh release create` with a PAT from a variable group.
+- **Already proven in the dotnet org** — same org, same 1ES template infrastructure, same dnceng team.
+- **Draft-by-default** — `--draft` flag means even if the gate is accidentally approved, the release
+  requires manual publish on GitHub.
+- **`ManualValidation@1`** provides the human gate on a `pool: server` job with no agent cost.
+- **Scales down** — for `preview` phase we may not even need the manual gate (since preview is
+  internal), reducing the release to a single pipeline button press.
+
+The `aspire` pattern (GitHub App → Actions dispatch) is more sophisticated and appropriate if we
+later need cross-repo orchestration or complex release-note generation, but adds setup complexity
+that isn't justified for Phase 1.
+
+#### Minimal implementation sketch
+
+```yaml
+# In the dotnetup release pipeline (Phase 1)
+- stage: GitHubRelease
+  displayName: Create GitHub Release
+  dependsOn: PublishPreview
+  jobs:
+  - job: Approval
+    pool: server
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        instructions: 'Approve to create GitHub Release for dotnetup $(ReleaseVersion)'
+        notifyUsers: '[dotnetup team alias]'
+
+  - job: CreateRelease
+    dependsOn: Approval
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - checkout: self
+    - script: |
+        gh release create "v$(ReleaseVersion)" \
+          --repo dotnet/sdk \
+          --title "dotnetup $(ReleaseVersion)" \
+          --notes-file $(Pipeline.Workspace)/release-notes.md \
+          --target $(Build.SourceVersion) \
+          --draft
+      env:
+        GH_TOKEN: $(BotAccount-dotnet-bot-repo-PAT)
+      displayName: Create draft GitHub Release
+```
