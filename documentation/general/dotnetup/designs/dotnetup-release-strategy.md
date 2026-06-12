@@ -236,16 +236,6 @@ Microsoft policy.** Multiple dotnet/Microsoft teams already do this in productio
 | **microsoft/mcp** | AzDO job runs `gh release create` + upload | GitHub App token | Pipeline stage gate |
 
 ### Compliance requirements
-
-| Requirement | How to meet it |
-|---|---|
-| Signed binaries | MicroBuild signing (`MicroBuildSignType: Real`) must succeed before release stage |
-| SDL / security scanning | 1ES pipeline templates auto-inject APIScan, BinSkim, CodeQL, Component Governance |
-| Human accountability | `ManualValidation@1` gate or GitHub environment protection rules |
-| Least-privilege auth | GitHub App installation tokens or scoped PATs in KeyVault-backed variable groups |
-| Auditability | 1ES `templateContext: type: releaseJob, isProduction: true` on deployment jobs |
-| Draft safety net | `isDraft: true` default so accidental gate-pass only creates a draft |
-
 ### Note on Arcade
 
 Arcade's post-build infrastructure (`post-build.yml`) does **not** include a GitHub Release stage.
