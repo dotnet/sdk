@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using Microsoft.NET.Build.Tests;
 
@@ -50,7 +52,7 @@ namespace Microsoft.NET.Publish.Tests
             s.Should().Contain(
                 "{\"EventName\":\"ReadyToRun\",\"Properties\":{\"PublishReadyToRunUseCrossgen2\":\"true\",")
                 .And.MatchRegex(
-                    "\"Crossgen2PackVersion\":\"[5-9]\\..+\"");
+                    "\"Crossgen2PackVersion\":\"([5-9]|[1-9]\\d{1,})\\..+\"");
             s.Should().Contain(
                 "\"FailedCount\":\"0\"");
             s.Should().MatchRegex(
@@ -82,7 +84,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.Contain(
                     "{\"EventName\":\"ReadyToRun\",\"Properties\":{\"PublishReadyToRunUseCrossgen2\":\"true\",")
                 .And.MatchRegex(
-                    "\"Crossgen2PackVersion\":\"[5-9]\\..+\"")
+                    "\"Crossgen2PackVersion\":\"([5-9]|[1-9]\\d{1,})\\..+\"")
                 .And.Contain(
                     "\"CompileListCount\":\"1\",\"FailedCount\":\"0\"");
         }

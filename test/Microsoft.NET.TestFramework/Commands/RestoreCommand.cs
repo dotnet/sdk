@@ -9,12 +9,12 @@ namespace Microsoft.NET.TestFramework.Commands
     {
         //  Encourage use of the other overload, which is generally simpler to use
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public RestoreCommand(ITestOutputHelper log, string projectPath, string relativePathToProject = null)
+        public RestoreCommand(ITestOutputHelper log, string projectPath, string? relativePathToProject = null)
             : base(log, "Restore", projectPath, relativePathToProject)
         {
         }
 
-        public RestoreCommand(TestAsset testAsset, string relativePathToProject = null)
+        public RestoreCommand(TestAsset testAsset, string? relativePathToProject = null)
             : base(testAsset, "Restore", relativePathToProject)
         {
         }

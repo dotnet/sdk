@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -89,6 +91,16 @@ namespace Microsoft.NET.Build.Tasks
                     if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Xaml") == true)
                     {
                         profiles.Add("Xaml");
+                    }
+
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Windows") == true)
+                    {
+                        profiles.Add("CsWinRT3.Windows");
+                    }
+                    
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Xaml") == true)
+                    {
+                        profiles.Add("CsWinRT3.Xaml");
                     }
                 }
 

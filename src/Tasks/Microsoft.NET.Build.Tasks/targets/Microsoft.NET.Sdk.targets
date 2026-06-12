@@ -88,6 +88,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectRuntimeConfigFilePath Condition="'$(ProjectRuntimeConfigFilePath)' == ''">$(TargetDir)$(ProjectRuntimeConfigFileName)</ProjectRuntimeConfigFilePath>
     <ProjectRuntimeConfigDevFilePath Condition="'$(ProjectRuntimeConfigDevFilePath)' == '' and $(GenerateRuntimeConfigDevFile) == 'true'">$(TargetDir)$(AssemblyName).runtimeconfig.dev.json</ProjectRuntimeConfigDevFilePath>
     <IncludeMainProjectInDepsFile Condition=" '$(IncludeMainProjectInDepsFile)' == '' ">true</IncludeMainProjectInDepsFile>
+    <TrimDepsJsonLibrariesWithoutAssets Condition=" '$(TrimDepsJsonLibrariesWithoutAssets)' == '' ">true</TrimDepsJsonLibrariesWithoutAssets>
   </PropertyGroup>
 
   <Import Project="Microsoft.NET.Sdk.Shared.targets" />
@@ -114,7 +115,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Set the IsRidAgnostic property if this project should NOT accept global RuntimeIdentifier and SelfContained
        property values from referencing projects. -->
   <PropertyGroup Condition="'$(IsRidAgnostic)' == ''">
-    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true' And '$(IsTestProject)' != 'true') Or
+    <!-- It's preferred to read IsTestingPlatformApplication in an actual MSBuild target and not in evaluation, but it's best we can do here -->
+    <!-- NOTE: A VSTest non-MTP test project will have IsTestProject=true AND IsTestingPlatformApplication!=true -->
+    <!-- We want to make VSTest non-MTP test project to be rid agnostic because it doesn't really produce a runnable executable -->
+    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true' And ('$(IsTestProject)' != 'true' Or '$(IsTestingPlatformApplication)' == 'true')) Or
                               '$(RuntimeIdentifier)' != '' Or
                               '$(RuntimeIdentifiers)' != ''">false</IsRidAgnostic>
     <IsRidAgnostic Condition="'$(IsRidAgnostic)' == ''">true</IsRidAgnostic>
@@ -193,7 +197,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- controls warn as error -->
     <_BinaryFormatterObsoleteAsError>true</_BinaryFormatterObsoleteAsError>
     <!-- controls runtime behavior (AppContext & trimming) -->
-    <EnableUnsafeBinaryFormatterSerialization Condition="'$(EnableUnsafeBinaryFormatterSerialization)' == '' AND '$(_ProjectTypeRequiresBinaryFormatter)' == 'true'">true</EnableUnsafeBinaryFormatterSerialization>
     <EnableUnsafeBinaryFormatterSerialization Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) AND '$(_ProjectTypeRequiresBinaryFormatter)' != 'true'">false</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
@@ -220,27 +223,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     </RebuildDependsOn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
-    <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
-          This is to reduce 'tearing'/dependency mismatch, but as always users can override this behavior by disabling the hosted compiler flag. -->
-    <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == ''
-                                                    and '$(_IsDisjointMSBuildVersion)' == 'true'
-                                                    and ('$(Language)' == 'C#'
-                                                    or '$(Language)' == 'VB')">true</BuildWithNetFrameworkHostedCompiler>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
-    <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
-    <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
-    <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
-  </PropertyGroup>
-
   <!-- NOTE: Keep in sync with https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks -->
-  <!-- `Condition="Exists('$(RoslynTargetsPath)')` is needed because the package might not be yet downloaded during restore in VS
+  <!-- `Condition="Exists(...)` is needed because the package might not be yet downloaded during restore in VS
         and we do not want to fail the restore phase because of that. -->
-  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.CopyRefAssembly" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" Condition="Exists('$(RoslynTargetsPath)')" />
-  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Csc" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" Condition="Exists('$(RoslynTargetsPath)')" />
-  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Vbc" AssemblyFile="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll" Condition="Exists('$(RoslynTargetsPath)')" />
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.CopyRefAssembly" AssemblyFile="$(RoslynTasksAssembly)" Condition="Exists('$(RoslynTasksAssembly)')" />
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Csc" AssemblyFile="$(RoslynTasksAssembly)" Condition="Exists('$(RoslynTasksAssembly)')" />
+  <UsingTask TaskName="Microsoft.CodeAnalysis.BuildTasks.Vbc" AssemblyFile="$(RoslynTasksAssembly)" Condition="Exists('$(RoslynTasksAssembly)')" />
 
   <ItemGroup Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true'">
     <PackageDownload Include="Microsoft.Net.Sdk.Compilers.Toolset" Version="[$(NETCoreSdkVersion)]" />
@@ -269,11 +257,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' == 'true' and !($(MSBuildProjectFile.EndsWith('_wpftmp.csproj')) or $(MSBuildProjectFile.EndsWith('_wpftmp.vbproj')))" />
   </Target>
 
-  <!-- TODO: this target should not check GeneratePackageOnBuild.
-             remove when https://github.com/NuGet/Home/issues/7801 is fixed.
-    -->
   <Target Name="_CheckForBuildWithNoBuild"
-          Condition="'$(NoBuild)' == 'true' and '$(GeneratePackageOnBuild)' != 'true'">
+          Condition="'$(NoBuild)' == 'true'">
     <NETSdkError ResourceName="NoBuildRequested" />
   </Target>
 
@@ -334,6 +319,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ReferenceAssemblies="@(_ReferenceAssemblies)"
                       RuntimePackAssets="@(RuntimePackAsset)"
                       IncludeMainProject="$(IncludeMainProjectInDepsFile)"
+                      TrimDepsJsonLibrariesWithoutAssets="$(TrimDepsJsonLibrariesWithoutAssets)"
                       RuntimeIdentifier="$(RuntimeIdentifier)"
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       RuntimeFrameworks="@(RuntimeFramework)"
@@ -553,6 +539,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(_ComObjectDescriptorSupport)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Data.DataSet.XmlSerializationIsSupported"
+                                    Condition="'$(_DataSetXmlSerializationSupport)' != ''"
+                                    Value="$(_DataSetXmlSerializationSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"
                                     Condition="'$(DebuggerSupport)' != ''"
                                     Value="$(DebuggerSupport)"
@@ -599,6 +590,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(InvariantGlobalization)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.TimeZoneInfo.Invariant"
+                                    Condition="'$(InvariantTimezone)' != ''"
+                                    Value="$(InvariantTimezone)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Globalization.Hybrid"
                                     Condition="'$(HybridGlobalization)' != ''"
                                     Value="$(HybridGlobalization)"
@@ -607,6 +603,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Globalization.PredefinedCulturesOnly"
                                     Condition="'$(PredefinedCulturesOnly)' != ''"
                                     Value="$(PredefinedCulturesOnly)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Linq.Enumerable.IsSizeOptimized"
+                                    Condition="'$(UseSizeOptimizedLinq)' != ''"
+                                    Value="$(UseSizeOptimizedLinq)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Net.Http.EnableActivityPropagation"
@@ -619,9 +620,19 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(UseNativeHttpHandler)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Net.Http.WasmEnableStreamingResponse"
+                                    Condition="'$(WasmEnableStreamingResponse)' != ''"
+                                    Value="$(WasmEnableStreamingResponse)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Net.Security.UseManagedNtlm"
                                     Condition="'$(_UseManagedNtlm)' != ''"
                                     Value="$(_UseManagedNtlm)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Net.SocketsHttpHandler.Http3Support"
+                                    Condition="'$(Http3Support)' != ''"
+                                    Value="$(Http3Support)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Reflection.Metadata.MetadataUpdater.IsSupported"
@@ -722,6 +733,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Condition="'$(ThreadPoolMaxThreads)' != ''"
                                     Value="$(ThreadPoolMaxThreads)" />
 
+    <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.UnfairSemaphoreSpinLimit"
+                                    Condition="'$(ThreadPoolSpinCount)' != ''"
+                                    Value="$(ThreadPoolSpinCount)" />
+
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.UseWindowsThreadPool"
                                     Condition="'$(UseWindowsThreadPool)' != ''"
                                     Value="$(UseWindowsThreadPool)"
@@ -800,7 +815,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true'">
     <PropertyGroup>
       <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
-      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
+      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and
                                       ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
       <_UseSingleFileHostForPublish Condition="'$(PublishSingleFile)' == 'true' and
                                                '$(SelfContained)' == 'true' and
@@ -1109,74 +1124,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                                        Run Information
-    The ProcessStart information that can be used to run this project.
-    ============================================================
-    -->
-
-  <!-- TODO: can we now move all of this into the ComputeRunArguments target, or must this be kept for compat? -->
-  <PropertyGroup>
-    <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' == ''">$(StartWorkingDirectory)</RunWorkingDirectory>
-  </PropertyGroup>
-
-  <Choose>
-    <When Condition="'$(StartAction)' == 'Program'">
-      <PropertyGroup>
-        <RunCommand Condition="'$(RunCommand)' == ''">$(StartProgram)</RunCommand>
-        <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
-      </PropertyGroup>
-    </When>
-
-    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_IsExecutable)' == 'true'">
-      <PropertyGroup Condition="'$(UseAppHost)' != 'true'">
-        <!-- TODO: https://github.com/dotnet/sdk/issues/20 Need to get the DotNetHost path from MSBuild -->
-        <RunCommand Condition="'$(RunCommand)' == ''">dotnet</RunCommand>
-
-        <_NetCoreRunArguments>exec &quot;$(TargetPath)&quot;</_NetCoreRunArguments>
-        <RunArguments Condition="'$(RunArguments)' == '' and '$(StartArguments)' != ''">$(_NetCoreRunArguments) $(StartArguments)</RunArguments>
-        <RunArguments Condition="'$(RunArguments)' == ''">$(_NetCoreRunArguments)</RunArguments>
-      </PropertyGroup>
-
-      <PropertyGroup Condition="'$(UseAppHost)' == 'true'">
-        <RunCommand Condition="'$(RunCommand)' == ''">$(TargetDir)$(AssemblyName)$(_NativeExecutableExtension)</RunCommand>
-        <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
-      </PropertyGroup>
-    </When>
-
-    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(_IsExecutable)' == 'true'">
-      <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(`Windows`))">
-        <RunCommand Condition="'$(RunCommand)' == ''">$(TargetPath)</RunCommand>
-        <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
-      </PropertyGroup>
-      <PropertyGroup Condition="$([MSBuild]::IsOSUnixLike())">
-        <RunCommand Condition="'$(RunCommand)' == ''">mono</RunCommand>
-        <RunArguments Condition="'$(RunArguments)' == ''">&quot;$(TargetPath)&quot; $(StartArguments)</RunArguments>
-      </PropertyGroup>
-    </When>
-  </Choose>
-
-  <PropertyGroup>
-    <!-- Ensure $(RunWorkingDirectory) is a full path -->
-    <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' != '' and '$([System.IO.Path]::IsPathRooted($(RunWorkingDirectory)))' != 'true'">$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(RunWorkingDirectory)'))))</RunWorkingDirectory>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <!-- Signals that this project supports the target-based run invocation protocol powered by the ComputeRunArguments target. -->
-    <ProjectCapability Include="SupportsComputeRunCommand" />
-  </ItemGroup>
-  <!-- Placeholder target for tools to override RunCommand/RunArguments/RunWorkingDirectory.
-       This allows tools to run validation or logic required to compute any required data,
-       which cannot be done during evaluation.  -->
-  <Target Name="ComputeRunArguments" />
-
-
-  <!-- Override MSBuild Run Target -->
-  <Target Name="Run" DependsOnTargets="ComputeRunArguments">
-    <Exec Command="$(RunCommand) $(RunArguments)" WorkingDirectory="$(RunWorkingDirectory)"/>
-  </Target>
-
-  <!--
-    ============================================================
                     CoreGenerateSatelliteAssemblies
     ============================================================
     -->
@@ -1353,30 +1300,35 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">
-    <!-- Don't generate an error if a test project references a self-contained Exe.  Test projects
-         use an OutputType of Exe but will usually call APIs in a referenced Exe rather than try
-         to run it. -->
-    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <!-- Don't generate an error if an Exe project references a test project. -->
-    <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
-  </PropertyGroup>
-
-
   <UsingTask TaskName="ValidateExecutableReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <PropertyGroup>
     <_UseAttributeForTargetFrameworkInfoPropertyNames Condition="$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '17.0'))">true</_UseAttributeForTargetFrameworkInfoPropertyNames>
   </PropertyGroup>
 
+  <!-- GetTargetFrameworksWithPlatformForSingleTargetFramework uses AdditionalTargetFrameworkInfoProperty to populate _AdditionalTargetFrameworkInfoPropertyWithValue -->
+  <!-- As we are modifying the value of ShouldBeValidatedAsExecutableReference here (which is part of AdditionalTargetFrameworkInfoProperty), we must run before GetTargetFrameworksWithPlatformForSingleTargetFramework -->
+  <Target Name="_CalculateIsVSTestTestProject" BeforeTargets="GetTargetFrameworksWithPlatformForSingleTargetFramework">
+    <PropertyGroup>
+      <_IsVSTestTestProject Condition="'$(IsTestProject)' == 'true' and '$(IsTestingPlatformApplication)' != 'true'">true</_IsVSTestTestProject>
+      <_IsVSTestTestProject Condition="'$(_IsVSTestTestProject)' == ''">false</_IsVSTestTestProject>
+
+      <!-- Don't generate an error if an Exe project references a test project. -->
+      <ShouldBeValidatedAsExecutableReference Condition="'$(_IsVSTestTestProject)' == 'true'">false</ShouldBeValidatedAsExecutableReference>
+
+        <!-- Don't generate an error if a test project references a self-contained Exe.  Test projects
+            use an OutputType of Exe but will usually call APIs in a referenced Exe rather than try
+            to run it. -->
+      <ValidateExecutableReferencesMatchSelfContained Condition="'$(_IsVSTestTestProject)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">false</ValidateExecutableReferencesMatchSelfContained>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="ValidateExecutableReferences"
-          AfterTargets="_GetProjectReferenceTargetFrameworkProperties"
-          Condition="'$(ValidateExecutableReferencesMatchSelfContained)' != 'false'">
+          DependsOnTargets="_CalculateIsVSTestTestProject"
+          AfterTargets="_GetProjectReferenceTargetFrameworkProperties">
 
     <ValidateExecutableReferences
+      Condition="'$(ValidateExecutableReferencesMatchSelfContained)' != 'false'"
       SelfContained="$(SelfContained)"
       IsExecutable="$(_IsExecutable)"
       ReferencedProjects="@(_MSBuildProjectReferenceExistent)"
@@ -1429,7 +1381,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ObsoleteReferences.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Publish.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackStubs.targets" Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true')"/>
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackTool.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackTool.targets" Condition="'$(PackAsTool)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackProjectTool.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PreserveCompilationContext.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ConflictResolution.targets" />
@@ -1439,6 +1391,78 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(ILCompilerTargetsPath)" Condition="'$(ILCompilerTargetsPath)' != '' and '$(PublishAot)' == 'true'"/>
   <Import Project="$(ILLinkTargetsPath)" Condition="'$(ILLinkTargetsPath)' != '' and '$(Language)' != 'C++'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Analyzers.targets" Condition="'$(Language)' == 'C#' or '$(Language)' == 'VB'" />
+
+  <!--
+    ============================================================
+                                        Run Information
+    The ProcessStart information that can be used to run this project.
+    ============================================================
+    -->
+
+  <!-- TODO: can we now move all of this into the ComputeRunArguments target, or must this be kept for compat? -->
+  <!-- NOTE: the targets above may change UseAppHost and other relevant properties, and so all of this pre-computation needs to come after it.
+             I checked this when I moved it and none of those targets _used_ the Run* properties.
+             This is yet another case where precomputing data during evaluation _is bad_ and should be moved to a Target. -->
+
+  <PropertyGroup>
+    <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' == ''">$(StartWorkingDirectory)</RunWorkingDirectory>
+  </PropertyGroup>
+
+  <Choose>
+    <When Condition="'$(StartAction)' == 'Program'">
+      <PropertyGroup>
+        <RunCommand Condition="'$(RunCommand)' == ''">$(StartProgram)</RunCommand>
+        <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
+      </PropertyGroup>
+    </When>
+
+    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_IsExecutable)' == 'true'">
+      <PropertyGroup Condition="'$(UseAppHost)' != 'true'">
+        <!-- TODO: https://github.com/dotnet/sdk/issues/20 Need to get the DotNetHost path from MSBuild -->
+        <RunCommand Condition="'$(RunCommand)' == ''">dotnet</RunCommand>
+
+        <_NetCoreRunArguments>exec &quot;$(TargetPath)&quot;</_NetCoreRunArguments>
+        <RunArguments Condition="'$(RunArguments)' == '' and '$(StartArguments)' != ''">$(_NetCoreRunArguments) $(StartArguments)</RunArguments>
+        <RunArguments Condition="'$(RunArguments)' == ''">$(_NetCoreRunArguments)</RunArguments>
+      </PropertyGroup>
+
+      <PropertyGroup Condition="'$(UseAppHost)' == 'true'">
+        <RunCommand Condition="'$(RunCommand)' == ''">$(TargetDir)$(AssemblyName)$(_NativeExecutableExtension)</RunCommand>
+        <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
+      </PropertyGroup>
+    </When>
+
+    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(_IsExecutable)' == 'true'">
+      <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(`Windows`))">
+        <RunCommand Condition="'$(RunCommand)' == ''">$(TargetPath)</RunCommand>
+        <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
+      </PropertyGroup>
+      <PropertyGroup Condition="$([MSBuild]::IsOSUnixLike())">
+        <RunCommand Condition="'$(RunCommand)' == ''">mono</RunCommand>
+        <RunArguments Condition="'$(RunArguments)' == ''">&quot;$(TargetPath)&quot; $(StartArguments)</RunArguments>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <PropertyGroup>
+    <!-- Ensure $(RunWorkingDirectory) is a full path -->
+    <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' != '' and '$([System.IO.Path]::IsPathRooted($(RunWorkingDirectory)))' != 'true'">$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(RunWorkingDirectory)'))))</RunWorkingDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Signals that this project supports the target-based run invocation protocol powered by the ComputeRunArguments target. -->
+    <ProjectCapability Include="SupportsComputeRunCommand" />
+  </ItemGroup>
+  <!-- Placeholder target for tools to override RunCommand/RunArguments/RunWorkingDirectory.
+       This allows tools to run validation or logic required to compute any required data,
+       which cannot be done during evaluation.  -->
+  <Target Name="ComputeRunArguments" />
+
+
+  <!-- Override MSBuild Run Target -->
+  <Target Name="Run" DependsOnTargets="ComputeRunArguments">
+    <Exec Command="$(RunCommand) $(RunArguments)" WorkingDirectory="$(RunWorkingDirectory)"/>
+  </Target>
 
   <!-- Import WindowsDesktop targets if necessary -->
   <PropertyGroup Condition=" '$(ImportWindowsDesktopTargets)' == ''
@@ -1473,9 +1497,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TargetPlatformDisplayName>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetPlatformSDKDisplayName($(TargetPlatformIdentifier), $(TargetPlatformVersion)))</TargetPlatformDisplayName>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- If the Windows targets wasn't called to default it, then just default it to the TargetPlatformVersion. -->
+    <EffectiveTargetPlatformVersion Condition="'$(EffectiveTargetPlatformVersion)' == ''">$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
+  </PropertyGroup>
+
   <!-- Default SupportedOSPlatformVersion to TargetPlatformVersion -->
   <PropertyGroup Condition="'$(SupportedOSPlatformVersion)' == ''">
-    <SupportedOSPlatformVersion>$(TargetPlatformVersion)</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>$(EffectiveTargetPlatformVersion)</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <Import Project="$(AfterMicrosoftNETSdkTargets)" Condition="'$(AfterMicrosoftNETSdkTargets)' != ''"/>

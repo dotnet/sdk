@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+
 namespace Microsoft.Net.Sdk.AnalyzerRedirecting.Tests;
 
 public class SdkAnalyzerAssemblyRedirectorTests(ITestOutputHelper log) : SdkTest(log)
@@ -16,7 +18,8 @@ public class SdkAnalyzerAssemblyRedirectorTests(ITestOutputHelper log) : SdkTest
         TestDirectory testDir = _testAssetsManager.CreateTestDirectory(identifier: "RuntimeAnalyzers");
 
         var vsDir = Path.Combine(testDir.Path, "vs");
-        var vsAnalyzerPath = FakeDll(vsDir, @$"AspNetCoreAnalyzers\{a}\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
+        Metadata(vsDir, new() { { "AspNetCoreAnalyzers", a } });
+        var vsAnalyzerPath = FakeDll(vsDir, @$"AspNetCoreAnalyzers\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
         var sdkAnalyzerPath = FakeDll(testDir.Path, @$"sdk\packs\Microsoft.AspNetCore.App.Ref\{b}\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
 
         var resolver = new SdkAnalyzerAssemblyRedirector(vsDir);
@@ -30,7 +33,8 @@ public class SdkAnalyzerAssemblyRedirectorTests(ITestOutputHelper log) : SdkTest
         TestDirectory testDir = _testAssetsManager.CreateTestDirectory(identifier: "RuntimeAnalyzers");
 
         var vsDir = Path.Combine(testDir.Path, "vs");
-        FakeDll(vsDir, @"AspNetCoreAnalyzers\9.0.0-preview.5.24306.11\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
+        Metadata(vsDir, new() { { "AspNetCoreAnalyzers", "9.0.0-preview.5.24306.11" } });
+        FakeDll(vsDir, @"AspNetCoreAnalyzers\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
         var sdkAnalyzerPath = FakeDll(testDir.Path, @"sdk\packs\Microsoft.AspNetCore.App.Ref\9.0.0-preview.7.24406.2\analyzers\dotnet\vb", "Microsoft.AspNetCore.App.Analyzers");
 
         var resolver = new SdkAnalyzerAssemblyRedirector(vsDir);
@@ -50,7 +54,8 @@ public class SdkAnalyzerAssemblyRedirectorTests(ITestOutputHelper log) : SdkTest
         TestDirectory testDir = _testAssetsManager.CreateTestDirectory(identifier: "RuntimeAnalyzers");
 
         var vsDir = Path.Combine(testDir.Path, "vs");
-        FakeDll(vsDir, @$"AspNetCoreAnalyzers\{a}\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
+        Metadata(vsDir, new() { { "AspNetCoreAnalyzers", a } });
+        FakeDll(vsDir, @$"AspNetCoreAnalyzers\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
         var sdkAnalyzerPath = FakeDll(testDir.Path, @$"sdk\packs\Microsoft.AspNetCore.App.Ref\{b}\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
 
         var resolver = new SdkAnalyzerAssemblyRedirector(vsDir);
@@ -64,5 +69,12 @@ public class SdkAnalyzerAssemblyRedirectorTests(ITestOutputHelper log) : SdkTest
         Directory.CreateDirectory(Path.GetDirectoryName(dllPath));
         File.WriteAllText(dllPath, "");
         return dllPath;
+    }
+
+    private static void Metadata(string root, Dictionary<string, string> versions)
+    {
+        var metadataFilePath = Path.Combine(root, "metadata.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(metadataFilePath));
+        File.WriteAllText(metadataFilePath, JsonSerializer.Serialize(versions));
     }
 }

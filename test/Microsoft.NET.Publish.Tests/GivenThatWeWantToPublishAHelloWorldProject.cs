@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli;
@@ -19,8 +21,6 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
-        [InlineData("netcoreapp1.1")]
-        [InlineData("netcoreapp2.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_publishes_portable_apps_to_the_publish_folder_and_the_app_should_run(string targetFramework)
         {
@@ -67,6 +67,12 @@ namespace Microsoft.NET.Publish.Tests
         public void It_publishes_self_contained_apps_to_the_publish_folder_and_the_app_should_run(string targetFramework)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
+            {
+                return;
+            }
+
+            // Some netcoreapp2.0 Linux tests are no longer working on ubuntu 2404
+            if (targetFramework == "netcoreapp2.0" && OperatingSystem.IsLinux())
             {
                 return;
             }
@@ -228,7 +234,8 @@ public static class Program
             Conflicts_are_resolved_when_publishing(selfContained: false, ridSpecific: false);
         }
 
-        [Fact]
+        // This test is for netcoreapp2 and no longer working on ubuntu 2404
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)]
         public void Conflicts_are_resolved_when_publishing_a_self_contained_app()
         {
             Conflicts_are_resolved_when_publishing(selfContained: true, ridSpecific: true);
@@ -265,6 +272,7 @@ public static class Program
 
             string outputMessage = $"Hello from {testProject.Name}!";
 
+            testProject.AdditionalProperties.Add("RollForward", "LatestMajor");
             testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = "true";
             testProject.SourceFiles["Program.cs"] = @"
 using System;
@@ -1153,30 +1161,21 @@ public static class Program
                     CopyDirectory(Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "shared", "Microsoft.NETCore.App"), Path.Combine(expectedRoot, "shared", "Microsoft.NETCore.App"));
                     break;
                 case "EnvironmentVariable":
-                    // Set DOTNET_ROOT environment variable to the expected .NET root
+                    // Set DOTNET_ROOT_<arch> environment variable to the expected .NET root
                     expectedRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
-                    runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT", expectedRoot);
+                    runCommand = runCommand.WithEnvironmentVariable($"DOTNET_ROOT_{RuntimeInformation.OSArchitecture.ToString().ToUpperInvariant()}", expectedRoot);
                     break;
                 default:
-                    // Should fail - make sure DOTNET_ROOT is not set
-                    runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT", string.Empty);
+                    // Should fail - make sure DOTNET_ROOT_<arch> and DOTNET_ROOT are not set
+                    runCommand = runCommand.WithEnvironmentVariable($"DOTNET_ROOT", string.Empty);
+                    runCommand = runCommand.WithEnvironmentVariable($"DOTNET_ROOT_{RuntimeInformation.OSArchitecture.ToString().ToUpperInvariant()}", string.Empty);
                     break;
             }
 
             var result = runCommand.Execute();
             if (expectedRoot != null)
             {
-                // SDK tests use /tmp for test assets. On macOS, it is a symlink - the app will print the resolved path
-                if (OperatingSystem.IsMacOS())
-                {
-                    string tmpPath = "/tmp/";
-                    DirectoryInfo tmp = new DirectoryInfo(tmpPath[..^1]); // No trailing slash in order to properly check the link target
-                    if (tmp.LinkTarget != null && expectedRoot.StartsWith(tmpPath))
-                    {
-                        expectedRoot = Path.Combine(tmp.ResolveLinkTarget(true).FullName, expectedRoot[tmpPath.Length..]);
-                    }
-                }
-
+                expectedRoot = TestPathUtility.ResolveTempPrefixLink(expectedRoot);
                 result.Should().Pass()
                     .And.HaveStdOutContaining($"Runtime directory: {expectedRoot}");
             }

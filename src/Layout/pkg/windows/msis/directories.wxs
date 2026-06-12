@@ -1,0 +1,25 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <!-- Directory structure for the .NET SDK installers. ProgramFiles6432Folder is a new construct introduced in v4. The directory reference automatically
+         resolves to either ProgramFilesFolder for x86 packages and ProgramFilesFolder for x64 and arm64 packages. For MSBuild SDK style projects, the directory
+         is resolved based on the InstallerPlatform property. -->
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="DOTNETHOME" Name="dotnet">
+        <Directory Id="MetadataDir" Name="metadata">
+          <Directory Id="WorkloadsDir" Name="workloads">
+            <Directory Id="FeatureBandDir" Name="$(SdkFeatureBandVersion)">
+              <!-- Directory for storing the sentinel file used by dotnet workload commands to determine if workloads should use MSI packages. -->
+              <Directory Id="InstallerTypeDir" Name="installertype" />
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <?if $(InstallerPlatform)~=x64?>
+    <!-- Override the default DOTNETHOME directory using a custom action when installing x64 on arm64 (non-native architecture). -->
+    <CustomActionRef Id="Set_DOTNETHOME_NON_NATIVE_ARCHITECTURE" />
+    <?endif?>
+  </Fragment>
+</Wix>
