@@ -4,14 +4,14 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true' AND '$(UseMSTestSdk)' != 'true'">
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' AND '$(UsingMSTestSdk)' != 'true'">
     <TestRunnerName>XUnitV3</TestRunnerName>
     <OutputType>Exe</OutputType>
     <!-- Set this to true for test project only because test assets contains .editorconfig file -->
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(UseMSTestSdk)' != 'true'">
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(UsingMSTestSdk)' != 'true'">
     <Using Include="FluentAssertions" />
     <Using Include="Microsoft.NET.TestFramework" />
     <Using Include="Microsoft.NET.TestFramework.Assertions" />
