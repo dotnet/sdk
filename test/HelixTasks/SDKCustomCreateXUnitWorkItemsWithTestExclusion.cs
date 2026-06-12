@@ -176,6 +176,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             xunitProject.TryGetMetadata("IsMTPProject", out string isMTPProjectMetadata);
             bool isMTPProject = string.Equals(isMTPProjectMetadata, "true", StringComparison.OrdinalIgnoreCase);
 
+            // True when the Microsoft.Testing.Extensions.TrxReport extension is loaded on the
+            // project. MSTest.Sdk enables it by default; xUnit v3 MTP projects do not bundle
+            // it unless added explicitly. Passing '--report-trx' to an MTP host without the
+            // extension fails with an 'unknown argument' error, so only emit it when known safe.
+            xunitProject.TryGetMetadata("EnableTrxReport", out string enableTrxReportMetadata);
+            bool enableTrxReport = string.Equals(enableTrxReportMetadata, "true", StringComparison.OrdinalIgnoreCase);
+
             // netfx tests should only run on Windows full framework for testing VS scenarios
             // These tests have to be executed slightly differently and we give them a different Identity so ADO can tell them apart
             var runtimeTargetFrameworkParsed = NuGetFramework.Parse(runtimeTargetFramework);
@@ -241,7 +248,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     // Invoke the test assembly directly via 'dotnet exec' and use MTP-native CLI:
                     //   --filter                replaces VSTest --filter (same MSTest filter syntax)
                     //   --results-directory     same as VSTest
-                    //   --report-trx            replaces '--logger trx' (requires Microsoft.Testing.Extensions.TrxReport)
+                    //   --report-trx            replaces '--logger trx' -- only emitted when the
+                    //                           Microsoft.Testing.Extensions.TrxReport extension is
+                    //                           loaded (always true for MSTest.Sdk default profile;
+                    //                           not bundled with xUnit v3 MTP)
                     //   --diagnostic            replaces VSTest '-d <log>'
                     // Note: --logger "console;verbosity=detailed" and --blame-hang* have no direct MTP
                     // equivalent in the MSTest.Sdk default extension set; the Helix work-item timeout
@@ -260,8 +270,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                         ? "--diagnostic --diagnostic-output-directory $HELIX_WORKITEM_UPLOAD_ROOT"
                         : "--diagnostic --diagnostic-output-directory %HELIX_WORKITEM_UPLOAD_ROOT%";
 
+                    string trxArg = enableTrxReport ? "--report-trx " : "";
+
                     command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{envPrefix}{driver} exec {assemblyName} " +
-                              $"--results-directory .{Path.DirectorySeparatorChar} --report-trx {testFilter} {diagArg}";
+                              $"--results-directory .{Path.DirectorySeparatorChar} {trxArg}{testFilter} {diagArg}";
                 }
                 else
                 {
