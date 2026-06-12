@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
-    <UseMSTestSdk>true</UseMSTestSdk>
   </PropertyGroup>
 
   <ItemGroup>
