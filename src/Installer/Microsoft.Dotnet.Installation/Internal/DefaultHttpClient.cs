@@ -14,8 +14,8 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// single instance is the recommended pattern. Consumers MUST NOT call <c>Dispose</c>
 /// on <see cref="Instance"/>.
 ///
-/// Timeout (10 minutes) is sized for archive downloads. Manifest fetches override per-request
-/// with a tight <see cref="CancellationTokenSource"/> so a slow mirror cannot stall an install.
+/// Timeout is disabled on the shared client so callers can own their operation-specific
+/// cancellation budgets. Archive downloads and manifest fetches pass per-request tokens.
 /// </summary>
 internal static class DefaultHttpClient
 {
@@ -38,7 +38,7 @@ internal static class DefaultHttpClient
 
         var client = new HttpClient(handler)
         {
-            Timeout = TimeSpan.FromMinutes(10)
+            Timeout = Timeout.InfiniteTimeSpan
         };
 
         // Set user-agent to identify dotnetup in telemetry, including version
