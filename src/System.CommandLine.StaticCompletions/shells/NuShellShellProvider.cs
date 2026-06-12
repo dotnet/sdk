@@ -24,13 +24,13 @@ public class NushellShellProvider : IShellProvider
             dotnet complete ($spans | str join " ") | lines
         }
 
-        # If you are using other completers, add the dotnet completer. Otherwise, just set external.completer to $dotnet_completer.
+        # Add the dotnet completer.
         # (see https://nushell.sh/cookbook/external_completers.html#multiple-completer for more info)
         let multiple_completers = {|spans|
             match $spans.0 {
                 # Add the dotnet completer
                 "dotnet" => $dotnet_completer
-                # your other completers...
+                _ => { [] } # Fallback to empty list, or a completer such as $carapace_completer from the example in the nushell docs.
             } | do $in $spans
         }
 
