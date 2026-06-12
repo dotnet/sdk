@@ -147,7 +147,7 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
 3. Open an internal PR with the fix into that branch and get approval.
 4. Run the release pipeline (which runs tests) and repoint the selector.
 
-This phase allows a public preview.
+This phase allows a public preview. I view arcade rollout as valid around this time once we see stabilization of the public preview, but also potential arcade rollout with a fallback during `preview`.
 
 In this phase, before public preview we'd remove the fallback to the .NET Install Script, but keep the fallback on the `daily` dotnetup builds, and keep `release/dnup` using the `daily` dotnetup builds to build. (This prevents a broken `dotnetup` from preventing us from shipping a new `dotnetup`.)
 
