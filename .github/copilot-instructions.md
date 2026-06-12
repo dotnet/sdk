@@ -29,12 +29,17 @@ Testing:
   - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
   - The dogfood script sets up PATH and environment to use the newly built SDK
 
+Investigating PR validation failures:
+1. Read the PR and its comments/reviews. Check for references to other PRs or issues where the problem might have already been solved.
+2. Use the `ci-analysis` skill (if available) to diagnose build failures.
+
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.
 
 Localization:
 - Avoid modifying .xlf files and instead prompt the user to update them using the `/t:UpdateXlf` target on MSBuild. Correctly automatically modified .xlf files have elements with state `needs-review-translation` or `new`.
 - Consider localizing strings in .resx files when possible.
+- When adding a new NETSDK error message in `src/Tasks/Common/Resources/Strings.resx`, assign the next available NETSDK code, append the entry at the end of the file, and update the trailing "latest message added" guard comment.
 
 Documentation:
 - Do not manually edit files under documentation/manpages/sdk as these are generated based on documentation and should not be manually modified.

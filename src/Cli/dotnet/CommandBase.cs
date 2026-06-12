@@ -27,9 +27,7 @@ public abstract class CommandBase
 #if !CLI_AOT
     protected virtual void ShowHelpOrErrorIfAppropriate(ParseResult parseResult)
     {
-#if !CLI_AOT
         parseResult.ShowHelpOrErrorIfAppropriate();
-#endif
     }
 #endif
 

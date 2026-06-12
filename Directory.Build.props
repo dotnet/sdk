@@ -104,8 +104,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/sdk/issues/51466 -->
-  <PropertyGroup>
+  <!-- Disable NuGet audit in official builds. MSBuild does not correctly handle
+       WarningsNotAsErrors for NuGet warnings (https://github.com/dotnet/msbuild/issues/10801),
+       so audit findings become errors via TreatWarningsAsErrors. -->
+  <PropertyGroup Condition="'$(OfficialBuild)' == 'true'">
     <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
