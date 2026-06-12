@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Utilities;
@@ -52,7 +53,11 @@ public class TelemetryFilterTests : SdkTest
     [Fact]
     public void SubLevelCommandNameShouldBeSentToTelemetry()
     {
-        var parseResult = Parser.Parse(["new", "console"]);
+        // Use a fresh DotNetCommandDefinition to avoid test pollution from
+        // other tests that may have dynamically added template names (e.g. "console")
+        // as subcommands to the static Parser.RootCommand's "new" command.
+        // See InstantiateCommand.ExecuteAsync which mutates the static parser tree.
+        var parseResult = new DotNetCommandDefinition().Parse(["new", "console"], Parser.ParserConfiguration);
         TelemetryEventEntry.SendFiltered(parseResult);
         _fakeTelemetry
             .LogEntries.Should()
