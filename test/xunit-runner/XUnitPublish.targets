@@ -1,3 +1,9 @@
 <Project>
   <Target Name="PublishWithOutput" DependsOnTargets="Publish" Returns="$([System.IO.Path]::GetFullPath('$(PublishDir)'))" />
+
+  <!-- Returns 'true' if the project is a Microsoft.Testing.Platform (MTP) project that
+       must be invoked via 'dotnet exec' rather than 'dotnet test'. In this repo,
+       MSTest.Sdk-based projects ship as MTP self-contained executables and set
+       UseMSTestSdk=true; non-MSTest projects (e.g. xUnit v3) keep using the VSTest path. -->
+  <Target Name="GetIsMTPProject" Returns="$(UseMSTestSdk)" />
 </Project>
