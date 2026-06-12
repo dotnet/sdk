@@ -9,6 +9,8 @@ public class ScriptInjectingStreamTests
 {
     private static readonly string s_injectedScript = ScriptInjectingStream.InjectedScript;
 
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public void Write_CompleteBodyTagInSingleWrite_InjectsScript()
     {
@@ -35,7 +37,7 @@ public class ScriptInjectingStreamTests
         var html = "<html><body>Content</body></html>";
 
         // Act
-        await stream.WriteAsync(Encoding.UTF8.GetBytes(html), CancellationToken.None);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes(html), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
@@ -94,7 +96,7 @@ public class ScriptInjectingStreamTests
         // Act
         foreach (var part in parts)
         {
-            await stream.WriteAsync(Encoding.UTF8.GetBytes(part.Replace("^", "")), CancellationToken.None);
+            await stream.WriteAsync(Encoding.UTF8.GetBytes(part.Replace("^", "")), TestContext.CancellationToken);
         }
 
         // Assert
@@ -131,7 +133,7 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><head>Content</head></html></bod"), CancellationToken.None);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><head>Content</head></html></bod"), TestContext.CancellationToken);
         var writeResult = Encoding.UTF8.GetString(baseStream.ToArray());
 
         await stream.DisposeAsync();
@@ -173,13 +175,13 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act - Split "</body>" across 7 writes
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>Content<"), CancellationToken.None);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("/"), CancellationToken.None);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("b"), CancellationToken.None);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("o"), CancellationToken.None);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("d"), CancellationToken.None);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("y"), CancellationToken.None);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("></html>"), CancellationToken.None);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>Content<"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("/"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("b"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("o"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("d"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("y"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("></html>"), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
@@ -212,8 +214,8 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act - Start with partial match that turns out false
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>Content</b"), CancellationToken.None);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("r>Not a body tag</body></html>"), CancellationToken.None);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>Content</b"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("r>Not a body tag</body></html>"), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
@@ -247,7 +249,7 @@ public class ScriptInjectingStreamTests
         var html = "<html><div>Content</div></html>";
 
         // Act
-        await stream.WriteAsync(Encoding.UTF8.GetBytes(html), CancellationToken.None);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes(html), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
@@ -280,8 +282,8 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>First</body>"), CancellationToken.None);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<body>Second</body></html>"), CancellationToken.None);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>First</body>"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<body>Second</body></html>"), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
@@ -329,7 +331,7 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act
-        await stream.WriteAsync(ReadOnlyMemory<byte>.Empty, CancellationToken.None);
+        await stream.WriteAsync(ReadOnlyMemory<byte>.Empty, TestContext.CancellationToken);
 
         // Assert
         Assert.IsEmpty(baseStream.ToArray());
@@ -383,7 +385,7 @@ public class ScriptInjectingStreamTests
         var bytes = Encoding.UTF8.GetBytes(html);
 
         // Act
-        await stream.WriteAsync(bytes, 0, bytes.Length, CancellationToken.None);
+        await stream.WriteAsync(bytes, 0, bytes.Length, TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
@@ -417,7 +419,7 @@ public class ScriptInjectingStreamTests
         var buffer = Encoding.UTF8.GetBytes("XXX<html><body>Content</body></html>YYY");
 
         // Act
-        await stream.WriteAsync(buffer, 3, buffer.Length - 6, CancellationToken.None); // Skip XXX and YYY
+        await stream.WriteAsync(buffer, 3, buffer.Length - 6, TestContext.CancellationToken); // Skip XXX and YYY
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
@@ -448,7 +450,7 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act
-        await stream.FlushAsync(CancellationToken.None);
+        await stream.FlushAsync(TestContext.CancellationToken);
 
         // Assert
         Assert.IsEmpty(baseStream.ToArray());
