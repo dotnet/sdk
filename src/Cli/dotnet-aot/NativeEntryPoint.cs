@@ -5,6 +5,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
+using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.NativeWrapper;
 
@@ -36,6 +37,8 @@ static unsafe partial class NativeEntryPoint
         return ExecuteCore(hostPath, dotnetRoot, sdkDir, hostfxrPath, args);
     }
 
+    public static ITelemetryClient? TelemetryClient { get; private set; }
+
     /// <summary>
     ///  Core execution logic, separated from native marshalling for testability.
     /// </summary>
@@ -51,10 +54,11 @@ static unsafe partial class NativeEntryPoint
         try
         {
             DateTime preTelemetry = DateTime.UtcNow;
-            // Initialize OTel telemetry (mirrors managed Program.cs setup).
-            var telemetryClient = new TelemetryClient(sessionId: null);
+            // Initialize OTel telemetry (mirrors managed Program.cs setup). The client is stored in
+            // the TelemetryClient property so AOT command actions (e.g. --cli-schema) can reuse it.
+            TelemetryClient = new Telemetry.TelemetryClient(sessionId: null);
             DateTime postTelemetry = DateTime.UtcNow;
-            mainActivity = Activities.Source.StartActivity("native-entrypoint", TelemetryClient.ActivityKind, TelemetryClient.ParentActivityContext);
+            mainActivity = Activities.Source.StartActivity("native-entrypoint", Telemetry.TelemetryClient.ActivityKind, Telemetry.TelemetryClient.ParentActivityContext);
 
             // Backdate the activity start to process start time for accurate timing.
             if (mainActivity is not null)
@@ -84,11 +88,36 @@ static unsafe partial class NativeEntryPoint
             // Try the AOT-compiled path for supported commands (if enabled)
             if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
             {
-                var parse = Activities.Source.StartActivity("aot-parsing");
-                var parseResult = Parser.Parse(args);
-                parse?.Stop();
-                mainActivity?.SetDisplayName(parseResult);
-                if (parseResult.Errors.Count == 0)
+                ParseResult? parseResult = null;
+                using (var parse = Activities.Source.StartActivity("aot-parsing"))
+                {
+                    try
+                    {
+                        parseResult = Parser.Parse(args);
+                        mainActivity?.SetDisplayName(parseResult);
+                    }
+                    catch (Exception ex)
+                    {
+                        // The full command tree is shared with the managed CLI, so a command-specific parser or
+                        // validator may run during Parse that is only fully supported there. Rather than surface
+                        // an AOT failure, treat any unexpected error while parsing as a signal to fall back to the
+                        // managed CLI, which will re-parse and handle the command (or report the error). This catch
+                        // is intentionally scoped to Parse only — invocation failures must not be masked here, since
+                        // doing so could re-execute a command that already ran (and had side effects) in AOT.
+                        parse?.SetStatus(ActivityStatusCode.Error);
+                        parse?.AddException(ex);
+                        parseResult = null;
+                    }
+                }
+
+                if (parseResult is not null
+                    && parseResult.Errors.Count == 0
+                    // An unrecognized top-level token - an external command (`dotnet ef`) or an implicit
+                    // file-based app (`dotnet app.cs`) - is resolved by the managed CLI's external command
+                    // resolution / run pipeline. The shared parser only sees it as the root's hidden
+                    // subcommand argument, so defer to the managed fallback below instead of running the
+                    // root command's usage action.
+                    && !parseResult.RequiresManagedCommandResolution())
                 {
                     using var invoke = Activities.Source.StartActivity("aot-invocation");
                     try
@@ -97,18 +126,17 @@ static unsafe partial class NativeEntryPoint
                         success = true;
                         return exitCode;
                     }
-                    catch (Utils.GracefulException ex)
-                    {
-                        Reporter.Error.WriteLine(ex.Message.Red());
-                        invoke?.SetStatus(ActivityStatusCode.Error);
-                        invoke?.AddException(ex);
-                        success = false;
-                        exitCode = 1;
-                        return exitCode;
-                    }
                     catch (CommandNotAvailableInAotException)
                     {
-                        // Command requires managed CLI — fall through to managed fallback below.
+                        // The parsed command requires the managed CLI — fall through to the managed fallback below.
+                    }
+                    catch (Exception ex)
+                    {
+                        invoke?.SetStatus(ActivityStatusCode.Error);
+                        invoke?.AddException(ex);
+                        exitCode = Parser.ExceptionHandler(ex, parseResult);
+                        success = false;
+                        return exitCode;
                     }
                 }
             }
@@ -137,7 +165,7 @@ static unsafe partial class NativeEntryPoint
             mainActivity?.AddTag("process.exit.code", exitCode);
             mainActivity?.SetStatus(success ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             mainActivity?.Stop();
-            TelemetryClient.FlushProviders();
+            Telemetry.TelemetryClient.FlushProviders();
         }
     }
 }
