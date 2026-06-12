@@ -88,6 +88,8 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CmdNoBuildDescription
         };
 
+        public readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
+
         public readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
         {
             Description = CommandDefinitionStrings.NoDependenciesOptionDescription,
@@ -167,6 +169,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(NoBuildOption);
             Options.Add(NoDependenciesOption);
             Options.Add(ArtifactsPathOption);
+            Options.Add(UseCurrentRuntimeOption);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);
             Options.Add(OutputOption);
