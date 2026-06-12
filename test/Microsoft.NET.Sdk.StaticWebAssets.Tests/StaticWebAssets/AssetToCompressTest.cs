@@ -65,31 +65,12 @@ public class AssetToCompressTest : IDisposable
     }
 
     [Fact]
-    public void TryFindInputFilePath_FallsBackToRelatedAssetOriginalItemSpec_WhenRelatedAssetDoesNotExist()
+    public void TryFindInputFilePath_ReturnsError_WhenRelatedAssetDoesNotExist()
     {
         // Arrange
+        var nonExistentPath = Path.Combine(_testDirectory, "non-existent.js");
         var assetToCompress = new TaskItem("test.js.gz");
-        assetToCompress.SetMetadata("RelatedAsset", Path.Combine(_testDirectory, "non-existent.js"));
-        assetToCompress.SetMetadata("RelatedAssetOriginalItemSpec", _testFilePath);
-
-        // Act
-        var result = AssetToCompress.TryFindInputFilePath(assetToCompress, _log, out var fullPath);
-
-        // Assert
-        result.Should().BeTrue();
-        fullPath.Should().Be(_testFilePath);
-        _errorMessages.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void TryFindInputFilePath_ReturnsError_WhenNeitherPathExists()
-    {
-        // Arrange
-        var nonExistentPath1 = Path.Combine(_testDirectory, "non-existent1.js");
-        var nonExistentPath2 = Path.Combine(_testDirectory, "non-existent2.js");
-        var assetToCompress = new TaskItem("test.js.gz");
-        assetToCompress.SetMetadata("RelatedAsset", nonExistentPath1);
-        assetToCompress.SetMetadata("RelatedAssetOriginalItemSpec", nonExistentPath2);
+        assetToCompress.SetMetadata("RelatedAsset", nonExistentPath);
 
         // Act
         var result = AssetToCompress.TryFindInputFilePath(assetToCompress, _log, out var fullPath);
@@ -99,75 +80,43 @@ public class AssetToCompressTest : IDisposable
         fullPath.Should().BeNull();
         _errorMessages.Should().ContainSingle();
         _errorMessages[0].Should().Contain("can not be found");
-        _errorMessages[0].Should().Contain(nonExistentPath1);
-        _errorMessages[0].Should().Contain(nonExistentPath2);
+        _errorMessages[0].Should().Contain(nonExistentPath);
     }
 
     [Fact]
-    public void TryFindInputFilePath_PrefersRelatedAsset_OverRelatedAssetOriginalItemSpec_WhenBothExist()
-    {
-        // Arrange - create two files to simulate the scenario where both metadata values point to existing files
-        var relatedAssetPath = Path.Combine(_testDirectory, "correct-asset.js");
-        var originalItemSpecPath = Path.Combine(_testDirectory, "project-file.esproj");
-        File.WriteAllText(relatedAssetPath, "// correct JavaScript content");
-        File.WriteAllText(originalItemSpecPath, "<Project></Project>");
-
-        var assetToCompress = new TaskItem("test.js.gz");
-        assetToCompress.SetMetadata("RelatedAsset", relatedAssetPath);
-        assetToCompress.SetMetadata("RelatedAssetOriginalItemSpec", originalItemSpecPath);
-
-        // Act
-        var result = AssetToCompress.TryFindInputFilePath(assetToCompress, _log, out var fullPath);
-
-        // Assert - should prefer RelatedAsset (the actual JavaScript file) over RelatedAssetOriginalItemSpec (the esproj file)
-        result.Should().BeTrue();
-        fullPath.Should().Be(relatedAssetPath);
-        fullPath.Should().NotBe(originalItemSpecPath);
-        _errorMessages.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void TryFindInputFilePath_HandlesEmptyRelatedAsset_AndUsesRelatedAssetOriginalItemSpec()
+    public void TryFindInputFilePath_ReturnsError_WhenRelatedAssetIsEmpty()
     {
         // Arrange
         var assetToCompress = new TaskItem("test.js.gz");
         assetToCompress.SetMetadata("RelatedAsset", "");
-        assetToCompress.SetMetadata("RelatedAssetOriginalItemSpec", _testFilePath);
 
         // Act
         var result = AssetToCompress.TryFindInputFilePath(assetToCompress, _log, out var fullPath);
 
         // Assert
-        result.Should().BeTrue();
-        fullPath.Should().Be(_testFilePath);
-        _errorMessages.Should().BeEmpty();
+        result.Should().BeFalse();
+        fullPath.Should().BeNull();
+        _errorMessages.Should().ContainSingle();
     }
 
     [Fact]
-    public void TryFindInputFilePath_HandlesEsprojScenario_WhereOriginalItemSpecPointsToProjectFile()
+    public void TryFindInputFilePath_HandlesEsprojScenario_WhereRelatedAssetPointsToActualFile()
     {
-        // Arrange - simulate the esproj bug scenario where RelatedAssetOriginalItemSpec
-        // incorrectly points to the .esproj project file instead of the actual JS asset
-        var esprojFile = Path.Combine(_testDirectory, "MyProject.esproj");
+        // Arrange - simulate the esproj scenario where RelatedAsset points to the actual JS file
         var actualJsFile = Path.Combine(_testDirectory, "dist", "app.min.js");
 
         Directory.CreateDirectory(Path.GetDirectoryName(actualJsFile));
-        File.WriteAllText(esprojFile, "<Project Sdk=\"Microsoft.VisualStudio.JavaScript.Sdk\"></Project>");
         File.WriteAllText(actualJsFile, "// actual JavaScript content");
 
         var assetToCompress = new TaskItem(Path.Combine(_testDirectory, "compressed", "app.min.js.gz"));
-        // RelatedAsset should contain the correct path to the actual JS file
         assetToCompress.SetMetadata("RelatedAsset", actualJsFile);
-        // RelatedAssetOriginalItemSpec may incorrectly point to .esproj due to esproj SDK bug
-        assetToCompress.SetMetadata("RelatedAssetOriginalItemSpec", esprojFile);
 
         // Act
         var result = AssetToCompress.TryFindInputFilePath(assetToCompress, _log, out var fullPath);
 
-        // Assert - should use RelatedAsset (correct JS file) not RelatedAssetOriginalItemSpec (esproj file)
+        // Assert - should use RelatedAsset (the actual JavaScript file)
         result.Should().BeTrue();
         fullPath.Should().Be(actualJsFile);
-        fullPath.Should().NotBe(esprojFile);
         _errorMessages.Should().BeEmpty();
     }
 }

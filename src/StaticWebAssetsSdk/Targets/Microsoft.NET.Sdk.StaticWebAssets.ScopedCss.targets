@@ -371,7 +371,7 @@ Integration with static web assets:
 
 </Target>
 
-<Target Name="_ComputeScopedCssStaticWebAssets" DependsOnTargets="ResolveScopedCssOutputs;ResolveStaticWebAssetsConfiguration">
+<Target Name="_ComputeScopedCssStaticWebAssets" DependsOnTargets="_ProcessScopedCssFiles;ResolveStaticWebAssetsConfiguration">
   <ItemGroup>
     <_ScopedCssCandidateFile Include="%(_ScopedCss.OutputFile)" Condition="@(_ScopedCss) != ''">
       <RelativePath>%(_ScopedCss.RelativePath)</RelativePath>

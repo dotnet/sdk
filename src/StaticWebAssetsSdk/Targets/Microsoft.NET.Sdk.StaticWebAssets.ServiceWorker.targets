@@ -188,8 +188,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <ItemGroup>
-      <_BuildAssetsForManifestCandidate Include="@(StaticWebAsset)" Condition="'%(AssetRole)' != 'Alternative' and Exists('%(Identity)')" />
-      <_BuildAssetsForManifestCandidate Include="@(StaticWebAsset->'%(OriginalItemSpec)')" Condition="'%(AssetRole)' != 'Alternative' and !Exists('%(Identity)')" />
+      <_BuildAssetsForManifestCandidate Include="@(StaticWebAsset)" Condition="'%(AssetRole)' != 'Alternative'" />
     </ItemGroup>
 
     <MakeDir Directories="$(IntermediateOutputPath)service-worker" />

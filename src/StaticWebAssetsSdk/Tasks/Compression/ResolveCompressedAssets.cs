@@ -156,7 +156,6 @@ public class ResolveCompressedAssets : Task
                     out var compressedAsset))
                 {
                     var result = compressedAsset.ToTaskItem();
-                    result.SetMetadata("RelatedAssetOriginalItemSpec", asset.OriginalItemSpec);
 
                     assetsToCompress[assetCounter++] = result;
                     existingFormats.Add(format);

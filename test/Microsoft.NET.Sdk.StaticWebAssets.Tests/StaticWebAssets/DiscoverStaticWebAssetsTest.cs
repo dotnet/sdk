@@ -219,7 +219,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
     [Fact]
     [Trait("Category", "FingerprintIdentity")]
-    public void ComputesIdentity_UsingFingerprintPattern_ForComputedAssets_WhenIdentityNeedsComputation()
+    public void ComputesIdentity_UsingRealFilePath_ForComputedAssets_WhenFileIsOutsideContentRoot()
         {
             // Arrange: simulate a packaged asset (outside content root) with a RelativePath inside the app
             var errorMessages = new List<string>();
@@ -227,7 +227,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            // Create a physical file to allow fingerprint computation (tests override ResolveFileDetails returning null file otherwise)
+            // Create a physical file to allow fingerprint computation
             var tempRoot = Path.Combine(Path.GetTempPath(), "swafp_identity_test");
             var nugetPackagePath = Path.Combine(tempRoot, "microsoft.aspnetcore.components.webassembly", "10.0.0-rc.1.25451.107", "build", "net10.0");
             Directory.CreateDirectory(nugetPackagePath);
@@ -250,7 +250,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                         ["RelativePath"] = relativePath
                     })
                 ],
-                // No RelativePathPattern, we trigger the branch that synthesizes identity under content root.
                 FingerprintPatterns = [ new TaskItem("Js", new Dictionary<string,string>{{"Pattern","*.js"},{"Expression","#[.{fingerprint}]!"}})],
                 FingerprintCandidates = true,
                 SourceType = "Computed",
@@ -270,14 +269,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
 
-            // RelativePath should still contain the hard fingerprint pattern placeholder (not expanded yet)
+            // RelativePath should still contain the fingerprint pattern placeholder
             asset.GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("_framework/blazor.webassembly#[.{fingerprint}]!.js");
 
-            // Identity must contain the ACTUAL fingerprint value in the file name (placeholder expanded)
-            var actualFingerprint = asset.GetMetadata(nameof(StaticWebAsset.Fingerprint));
-            actualFingerprint.Should().NotBeNullOrEmpty();
-            var expectedIdentity = Path.GetFullPath(Path.Combine(contentRoot, "_framework", $"blazor.webassembly.{actualFingerprint}.js"));
-            asset.ItemSpec.Should().Be(expectedIdentity);
+            // Identity should be the real file path (no synthesized identity under content root)
+            asset.ItemSpec.Should().Be(Path.GetFullPath(assetFullPath));
         }
 
         [Fact]
@@ -669,7 +665,6 @@ for path 'candidate.js'");
             Assert.False(cache.IsUpToDate());
             Assert.Same(inputHashes, cache.OutOfDateInputs());
             Assert.Empty(cache.CachedAssets);
-            Assert.Empty(cache.CachedCopyCandidates);
         }
 
         [Fact]
@@ -687,7 +682,7 @@ for path 'candidate.js'");
             Assert.NotSame(inputHashes, cache.OutOfDateInputs());
             var input1 = Assert.Single(cache.OutOfDateInputs());
             var ouput = cache.GetComputedOutputs();
-            var input2 = Assert.Single(ouput.Assets);
+            var input2 = Assert.Single(ouput);
         }
 
         [Fact]
@@ -709,9 +704,9 @@ for path 'candidate.js'");
             Assert.Contains("input1", cache.CachedAssets.Keys);
 
             var ouput = cache.GetComputedOutputs();
-            Assert.Equal(2, ouput.Assets.Count);
-            Assert.Equal("input2", ouput.Assets[0].ItemSpec);
-            Assert.Equal("input1", ouput.Assets[1].ItemSpec);
+            Assert.Equal(2, ouput.Count);
+            Assert.Equal("input2", ouput[0].ItemSpec);
+            Assert.Equal("input1", ouput[1].ItemSpec);
         }
 
         [Fact]
