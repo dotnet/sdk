@@ -21,6 +21,7 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
 **Nice to have**
 - No PRs required to bump minor versions.
 - Automated changelog notes.
+-  Telemetry informed rollout success gates (this is likely not legally possible)
 - Only maintain one branch at a time.
 - Minimal manual maintenance effort burdens to release.
 
