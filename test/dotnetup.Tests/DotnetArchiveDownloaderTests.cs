@@ -49,10 +49,12 @@ public class DotnetArchiveDownloaderTests
 
         var httpClient = httpClientField!.GetValue(downloader) as HttpClient;
         httpClient.Should().NotBeNull();
+        httpClient!.Timeout.Should().Be(Timeout.InfiniteTimeSpan,
+            "archive downloads use per-request cancellation so environment overrides are not capped by HttpClient.Timeout");
 
         // Check that the request does not include Accept-Encoding: gzip or deflate.
         // The presence of these headers would indicate AutomaticDecompression is active.
-        var acceptEncoding = httpClient!.DefaultRequestHeaders.Contains("Accept-Encoding")
+        var acceptEncoding = httpClient.DefaultRequestHeaders.Contains("Accept-Encoding")
             ? string.Join(",", httpClient.DefaultRequestHeaders.GetValues("Accept-Encoding"))
             : null;
 
@@ -189,5 +191,59 @@ public class DotnetArchiveDownloaderTests
 
         Assert.Throws<ArgumentException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, ""));
         Assert.Throws<ArgumentException>(() => DotnetArchiveDownloader.VerifyFileHash(filePath, null!));
+    }
+
+    [Fact]
+    public async Task DefaultHttpClient_ReadWithIdleTimeoutAsync_TimesOutWhenNoBytesAreReceivedWithinIdleTimeout()
+    {
+        using var source = new BlockingReadStream("partial"u8.ToArray());
+        var buffer = new byte[81920];
+
+        int bytesRead = await DefaultHttpClient.ReadWithIdleTimeoutAsync(source, buffer, TimeSpan.FromMilliseconds(25), CancellationToken.None);
+        bytesRead.Should().Be("partial"u8.Length);
+        buffer.AsSpan(0, bytesRead).ToArray().Should().Equal("partial"u8.ToArray());
+
+        var ex = await Assert.ThrowsAsync<TimeoutException>(async () =>
+            await DefaultHttpClient.ReadWithIdleTimeoutAsync(source, buffer, TimeSpan.FromMilliseconds(25), CancellationToken.None));
+
+        ex.Message.Should().Contain("no bytes were received");
+    }
+
+    [Fact]
+    public async Task DownloadArchiveAsync_TimesOutWhenTotalDownloadTimeoutExpires()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var handler = new SingleResponseHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(new BlockingReadStream()),
+        });
+        using var http = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromSeconds(30),
+        };
+        var downloader = new DotnetArchiveDownloader(
+            new ReleaseManifest(),
+            http,
+            testEnv.TempRoot,
+            new DownloadTimeoutSettings(TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(25)));
+
+        var destinationPath = Path.Combine(testEnv.TempRoot, "archive.zip");
+
+        var ex = await Assert.ThrowsAsync<TimeoutException>(() =>
+            InvokeDownloadArchiveAsync(downloader, "https://example.test/archive.zip", destinationPath));
+
+        ex.Message.Should().Contain("exceeded the total timeout");
+        handler.SendCount.Should().Be(1, "the total timeout covers all retries for one archive download");
+        File.Exists(destinationPath).Should().BeFalse();
+        File.Exists(destinationPath + ".download").Should().BeFalse();
+    }
+
+    private static async Task InvokeDownloadArchiveAsync(DotnetArchiveDownloader downloader, string downloadUrl, string destinationPath)
+    {
+        var method = typeof(DotnetArchiveDownloader).GetMethod("DownloadArchiveAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+        method.Should().NotBeNull("DownloadArchiveAsync must exist on DotnetArchiveDownloader");
+
+        var task = (Task)method!.Invoke(downloader, new object?[] { downloadUrl, destinationPath, null })!;
+        await task.ConfigureAwait(false);
     }
 }

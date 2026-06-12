@@ -18,16 +18,18 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     private readonly HttpClient _httpClient;
     private readonly ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
+    private readonly DownloadTimeoutSettings _timeoutSettings;
 
     public DotnetArchiveDownloader()
         : this(ReleaseManifest.Default)
     {
     }
 
-    public DotnetArchiveDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null)
+    public DotnetArchiveDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null, DownloadTimeoutSettings? timeoutSettings = null)
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
         _downloadCache = new DownloadCache(cacheDirectory);
+        _timeoutSettings = timeoutSettings ?? DownloadTimeoutSettings.FromEnvironment();
         // The HttpClient is either the shared process-wide singleton or supplied by the caller; we never own it.
         _httpClient = httpClient ?? DefaultHttpClient.Instance;
     }
@@ -42,19 +44,31 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     {
         string tempPath = $"{destinationPath}.download";
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+        using var totalDownloadCts = DefaultHttpClient.CreateTimeoutTokenSource(_timeoutSettings.TotalTimeout);
 
         for (int attempt = 1; attempt <= MaxRetryCount; attempt++)
         {
             try
             {
-                await DownloadAttemptAsync(downloadUrl, tempPath, destinationPath, progress).ConfigureAwait(false);
+                await DownloadAttemptAsync(downloadUrl, tempPath, destinationPath, progress, totalDownloadCts.Token).ConfigureAwait(false);
                 return;
+            }
+            catch (OperationCanceledException ex) when (totalDownloadCts.IsCancellationRequested)
+            {
+                throw DefaultHttpClient.CreateTotalTimeoutException(downloadUrl, _timeoutSettings.TotalTimeout, ex);
             }
             catch (Exception)
             {
                 if (attempt < MaxRetryCount)
                 {
-                    await Task.Delay(RetryDelayMilliseconds * attempt).ConfigureAwait(false);
+                    try
+                    {
+                        await Task.Delay(RetryDelayMilliseconds * attempt, totalDownloadCts.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException ex) when (totalDownloadCts.IsCancellationRequested)
+                    {
+                        throw DefaultHttpClient.CreateTotalTimeoutException(downloadUrl, _timeoutSettings.TotalTimeout, ex);
+                    }
                 }
                 else
                 {
@@ -69,35 +83,35 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         }
     }
 
-    private async Task DownloadAttemptAsync(string downloadUrl, string tempPath, string destinationPath, IProgress<DownloadProgress>? progress)
+    private async Task DownloadAttemptAsync(string downloadUrl, string tempPath, string destinationPath, IProgress<DownloadProgress>? progress, CancellationToken cancellationToken)
     {
-        using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         long? totalBytes = response.Content.Headers.ContentLength;
-        using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         // Default FileStream buffer size (matching .NET's internal default)
         const int fileStreamBufferSize = 8192;
         using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, fileStreamBufferSize, useAsync: true);
 
-        await CopyStreamWithProgressAsync(contentStream, fileStream, totalBytes, progress).ConfigureAwait(false);
+        await CopyStreamWithProgressAsync(contentStream, fileStream, totalBytes, progress, _timeoutSettings.IdleTimeout, cancellationToken).ConfigureAwait(false);
 
-        await fileStream.FlushAsync().ConfigureAwait(false);
+        await fileStream.FlushAsync(cancellationToken).ConfigureAwait(false);
         fileStream.Close();
 
         CommitDownload(tempPath, destinationPath);
     }
 
-    private static async Task CopyStreamWithProgressAsync(Stream source, Stream destination, long? totalBytes, IProgress<DownloadProgress>? progress)
+    private static async Task CopyStreamWithProgressAsync(Stream source, Stream destination, long? totalBytes, IProgress<DownloadProgress>? progress, TimeSpan idleTimeout, CancellationToken cancellationToken)
     {
         var buffer = new byte[81920]; // 80KB buffer
         long bytesRead = 0;
         int read;
         var lastProgressReport = DateTime.MinValue;
 
-        while ((read = await source.ReadAsync(buffer).ConfigureAwait(false)) > 0)
+        while ((read = await DefaultHttpClient.ReadWithIdleTimeoutAsync(source, buffer, idleTimeout, cancellationToken).ConfigureAwait(false)) > 0)
         {
-            await destination.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
+            await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
             bytesRead += read;
 
             var now = DateTime.UtcNow;
@@ -369,17 +383,28 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// </summary>
     private string? TryGetHashFromUrl(string checksumUrl, ReleaseVersion resolvedVersion, InstallComponent component)
     {
+        using var cts = DefaultHttpClient.CreateTimeoutTokenSource(_timeoutSettings.TotalTimeout);
+
         try
         {
-            using var response = _httpClient.GetAsync(checksumUrl).GetAwaiter().GetResult();
+            using var response = _httpClient.GetAsync(checksumUrl, cts.Token).GetAwaiter().GetResult();
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
 
             response.EnsureSuccessStatusCode();
-            string contents = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            string contents = response.Content.ReadAsStringAsync(cts.Token).GetAwaiter().GetResult();
             return BlobFeedUrlBuilder.ParseHashFile(contents);
+        }
+        catch (OperationCanceledException ex) when (cts.IsCancellationRequested)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.NetworkError,
+                FormattableString.Invariant($"Timed out fetching hash file from {checksumUrl} after {_timeoutSettings.TotalTimeout.TotalSeconds} seconds."),
+                ex,
+                version: resolvedVersion.ToString(),
+                component: component.ToString());
         }
         catch (HttpRequestException ex)
         {
