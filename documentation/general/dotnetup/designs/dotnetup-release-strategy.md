@@ -84,7 +84,7 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
 
 ## 3. Comparisons
 
-- **aspire** — owns its own download site (`aspire.dev`) plus npm, WinGet, other packages, and GitHub Releases. Includes tich channel identity (stable / staging / daily / local / pr), release branches, and SHA-derived staging feeds. Promotion is *manual*: the release pipeline is queued against a selected build, extracts its BAR ID, and runs `darc add-build-to-channel`. Product SemVer is hand-authored in `eng/Versions.props`, not auto-bumped.
+- **aspire** — owns its own download site (`aspire.dev`) plus npm, WinGet, other packages, and GitHub Releases. Includes rich channel identity (stable / staging / daily / local / pr), release branches, and SHA-derived staging feeds. Promotion is *manual*: the release pipeline is queued against a selected build, extracts its BAR ID, and runs `darc add-build-to-channel`. Product SemVer is hand-authored in `eng/Versions.props`, not auto-bumped.
   ([release-process.md](https://github.com/microsoft/aspire/blob/main/docs/release-process.md))
 - **az cli** — `dev` branch is an `edge` build via `aka.ms`. Official uses WinGet, MSI, and ZIP (served from Microsoft-hosted blob storage behind `aka.ms` links) plus Microsoft package feeds.
   ([docs](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows?pivots=zip))
