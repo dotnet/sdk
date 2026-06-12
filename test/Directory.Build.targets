@@ -11,14 +11,31 @@
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(UsingMSTestSdk)' != 'true'">
+  <!-- FluentAssertions namespace is provided by the AwesomeAssertions package (kept by name
+       for backward compat). For xUnit test projects it comes transitively through the
+       Microsoft.NET.TestFramework project reference; for MSTest.Sdk projects we add the
+       PackageReference below. The global using is therefore shared by both. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' OR '$(UsingMSTestSdk)' == 'true'">
     <Using Include="FluentAssertions" />
+  </ItemGroup>
+
+  <!-- TestFramework helper namespaces and the Xunit using are xUnit-only: MSTest.Sdk projects
+       in this repo do not reference Microsoft.NET.TestFramework, so a global using for those
+       namespaces would fail with CS0246. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(UsingMSTestSdk)' != 'true'">
     <Using Include="Microsoft.NET.TestFramework" />
     <Using Include="Microsoft.NET.TestFramework.Assertions" />
     <Using Include="Microsoft.NET.TestFramework.Commands" />
     <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
     <Using Include="Microsoft.NET.TestFramework.Utilities" />
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- AwesomeAssertions package reference for MSTest.Sdk projects. xUnit projects pick it up
+       transitively from the Microsoft.NET.TestFramework project reference and so do not need
+       it here. -->
+  <ItemGroup Condition="'$(UsingMSTestSdk)' == 'true'">
+    <PackageReference Include="AwesomeAssertions" />
   </ItemGroup>
 
   <Import Project="..\Directory.Build.targets" />
