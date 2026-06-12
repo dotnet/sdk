@@ -480,6 +480,8 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
 [TestClass]
 public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
 {
+    public TestContext TestContext { get; set; } = null!;
+
     protected override void WriteData(IBufferWriter<byte> bufferWriter, int numBytes)
     {
         Span<byte> outputSpan = bufferWriter.GetSpan(numBytes);
@@ -560,7 +562,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
         Assert.IsTrue(transient.Span[0] != 0);
         byte expectedFirstByte = transient.Span[0];
 
-        await memStream.WriteAsync(transient.ToArray(), 0, transient.Length, CancellationToken.None);
+        await memStream.WriteAsync(transient.ToArray(), 0, transient.Length, TestContext.CancellationToken);
 
         if (clearContent)
         {
