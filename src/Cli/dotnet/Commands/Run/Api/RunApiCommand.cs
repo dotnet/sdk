@@ -9,7 +9,6 @@ using System.Text.Json.Serialization;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
@@ -66,6 +65,7 @@ internal abstract class RunApiInput
         public override RunApiOutput Execute()
         {
             var builder = new VirtualProjectBuilder(
+                BuildHost.Instance,
                 entryPointFileFullPath: EntryPointFileFullPath,
                 targetFramework: VirtualProjectBuildingCommand.TargetFramework,
                 artifactsPath: ArtifactsPath);
@@ -73,7 +73,7 @@ internal abstract class RunApiInput
             var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
 
             builder.CreateProjectInstance(
-                new ProjectCollection(),
+                new ProjectCollection().Wrap(),
                 errorReporter,
                 project: out _,
                 out var projectRootElement,
@@ -92,7 +92,7 @@ internal abstract class RunApiInput
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
-                ProjectPath = projectRootElement.FullPath,
+                ProjectPath = projectRootElement.FullPath!,
                 Diagnostics = diagnostics.ToImmutableArray(),
             };
         }

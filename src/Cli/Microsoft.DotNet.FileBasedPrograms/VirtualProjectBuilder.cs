@@ -24,19 +24,21 @@ internal sealed class VirtualProjectBuilder
 
     internal const string FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective";
 
+    private readonly IBuildHost _buildHost;
+
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
 
     /// <summary>
-    /// Prevents the virtual project's <see cref="ProjectRootElement"/> from being garbage collected
+    /// Prevents the virtual project's <see cref="IProjectRootElement"/> from being garbage collected
     /// when MSBuild's <c>ProjectRootElementCache</c> demotes it to a weak reference
     /// (which can happen when many SDK import files fill the cache during NuGet restore).
     /// Without this, nested <c>&lt;MSBuild&gt;</c> tasks that re-evaluate the project with different properties
-    /// would fail to find the <see cref="ProjectRootElement"/> in the cache and try to load it from disk,
+    /// would fail to find the <see cref="IProjectRootElement"/> in the cache and try to load it from disk,
     /// resulting in MSB4025 because the virtual project file does not exist on disk.
     /// </summary>
-    private ProjectRootElement? _projectRootElement;
+    private IProjectRootElement? _projectRootElement;
 
     internal string EntryPointFileFullPath { get; }
 
@@ -59,6 +61,7 @@ internal sealed class VirtualProjectBuilder
     internal string[]? RequestedTargets { get; }
 
     internal VirtualProjectBuilder(
+        IBuildHost buildHost,
         string entryPointFileFullPath,
         string targetFramework,
         string[]? requestedTargets = null,
@@ -67,6 +70,7 @@ internal sealed class VirtualProjectBuilder
     {
         Debug.Assert(ExternalHelpers.IsPathFullyQualified(entryPointFileFullPath));
 
+        _buildHost = buildHost;
         EntryPointFileFullPath = entryPointFileFullPath;
         RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
@@ -201,7 +205,7 @@ internal sealed class VirtualProjectBuilder
     /// and relative paths resolved relative to their containing file.
     /// </remarks>
     private ImmutableArray<CSharpDirective> EvaluateDirectives(
-        ProjectInstance project,
+        IProjectInstance project,
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
@@ -256,7 +260,7 @@ internal sealed class VirtualProjectBuilder
         return builder.DrainToImmutable();
     }
 
-    internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
+    internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(IProjectInstance project, ErrorReporter reportError)
     {
         return CSharpDirective.IncludeOrExclude.ParseMapping(
             project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
@@ -264,13 +268,14 @@ internal sealed class VirtualProjectBuilder
             reportError);
     }
 
-    public static ProjectInstance CreateProjectInstance(
+    public static IProjectInstance CreateProjectInstance(
+        IBuildHost buildHost,
         string entryPointFilePath,
         string targetFramework,
-        ProjectCollection projectCollection,
+        IProjectCollection projectCollection,
         Action<string, int, string> errorReporter)
     {
-        var builder = new VirtualProjectBuilder(entryPointFilePath, targetFramework);
+        var builder = new VirtualProjectBuilder(buildHost, entryPointFilePath, targetFramework);
 
         builder.CreateProjectInstance(
             projectCollection,
@@ -283,10 +288,10 @@ internal sealed class VirtualProjectBuilder
     }
 
     internal void CreateProjectInstance(
-        ProjectCollection projectCollection,
+        IProjectCollection projectCollection,
         ErrorReporter reportError,
-        out ProjectInstance project,
-        out ProjectRootElement projectRootElement,
+        out IProjectInstance project,
+        out IProjectRootElement projectRootElement,
         out ImmutableArray<CSharpDirective> evaluatedDirectives,
         ImmutableArray<CSharpDirective> directives = default,
         Action<IDictionary<string, string>>? addGlobalProperties = null,
@@ -299,7 +304,7 @@ internal sealed class VirtualProjectBuilder
             directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, reportError, checkDuplicates: false);
         }
 
-        (string ProjectFileText, ProjectInstance ProjectInstance, ProjectRootElement ProjectRootElement)? lastProject = null;
+        (string ProjectFileText, IProjectInstance ProjectInstance, IProjectRootElement ProjectRootElement)? lastProject = null;
 
         // If we evaluated directives previously (e.g., during restore), reuse them.
         // We don't use the additional properties from `addGlobalProperties`
@@ -441,8 +446,8 @@ internal sealed class VirtualProjectBuilder
             return changed ? builder.DrainToImmutable() : directives;
         }
 
-        (ProjectInstance, ProjectRootElement) CreateProjectInstanceNoEvaluation(
-            ProjectCollection projectCollection,
+        (IProjectInstance, IProjectRootElement) CreateProjectInstanceNoEvaluation(
+            IProjectCollection projectCollection,
             ImmutableArray<CSharpDirective> directives,
             Action<IDictionary<string, string>>? addGlobalProperties = null)
         {
@@ -474,17 +479,17 @@ internal sealed class VirtualProjectBuilder
                 addGlobalProperties(globalProperties);
             }
 
-            var project = ProjectInstance.FromProjectRootElement(projectRoot, projectCollection, globalProperties);
+            var project = _buildHost.CreateProjectInstanceFromProjectRootElement(projectRoot, projectCollection, globalProperties);
 
             lastProject = (projectFileText, project, projectRoot);
 
             return (project, projectRoot);
 
-            ProjectRootElement CreateProjectRootElement(string projectFileText, ProjectCollection projectCollection)
+            IProjectRootElement CreateProjectRootElement(string projectFileText, IProjectCollection projectCollection)
             {
                 using var reader = new StringReader(projectFileText);
                 using var xmlReader = XmlReader.Create(reader);
-                var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
+                var projectRoot = _buildHost.CreateProjectRootElement(xmlReader, projectCollection);
                 projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
                 _projectRootElement = projectRoot;
                 return projectRoot;
@@ -493,7 +498,7 @@ internal sealed class VirtualProjectBuilder
     }
 
     private void CheckDirectives(
-        ProjectInstance project,
+        IProjectInstance project,
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {

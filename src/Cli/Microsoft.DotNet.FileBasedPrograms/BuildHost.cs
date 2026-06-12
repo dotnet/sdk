@@ -8,61 +8,35 @@ using System.Xml;
 
 namespace Microsoft.DotNet.FileBasedPrograms;
 
-internal readonly partial struct ProjectCollection
+internal interface IBuildHost
 {
-    public partial IDictionary<string, string> GlobalProperties { get; }
-}
-
-internal readonly partial struct ProjectInstance
-{
-    public static partial ProjectInstance FromProjectRootElement(
-        ProjectRootElement projectRoot,
-        ProjectCollection projectCollection,
+    IProjectInstance CreateProjectInstanceFromProjectRootElement(
+        IProjectRootElement projectRoot,
+        IProjectCollection projectCollection,
         IDictionary<string, string> globalProperties);
-    public partial IEnumerable<ProjectItemInstance> GetItems(string itemType);
-    public partial string GetPropertyValue(string propertyName);
-    public partial string ExpandString(string value);
+
+    IProjectRootElement CreateProjectRootElement(XmlReader xmlReader, IProjectCollection projectCollection);
 }
 
-internal readonly partial struct ProjectItemInstance
+internal interface IProjectCollection
 {
-    public partial string GetMetadataValue(string name);
+    IDictionary<string, string> GlobalProperties { get; }
 }
 
-internal readonly partial struct ProjectRootElement
+internal interface IProjectInstance
 {
-    public static partial ProjectRootElement Create(XmlReader xmlReader, ProjectCollection projectCollection);
-    public partial string FullPath { get; set; }
+    IEnumerable<IProjectItemInstance> GetItems(string itemType);
+    string GetPropertyValue(string propertyName);
+    string ExpandString(string value);
 }
 
-#if FILE_BASED_PROGRAMS_SOURCE_PACKAGE_BUILD
-
-internal readonly partial struct ProjectCollection
+internal interface IProjectItemInstance
 {
-    public partial IDictionary<string, string> GlobalProperties => throw null!;
+    string GetMetadataValue(string name);
+    string ItemType { get; }
 }
 
-internal readonly partial struct ProjectInstance
+internal interface IProjectRootElement
 {
-    public static partial ProjectInstance FromProjectRootElement(
-        ProjectRootElement projectRoot,
-        ProjectCollection projectCollection,
-        IDictionary<string, string> globalProperties)
-        => throw null!;
-    public partial IEnumerable<ProjectItemInstance> GetItems(string itemType) => throw null!;
-    public partial string GetPropertyValue(string propertyName) => throw null!;
-    public partial string ExpandString(string value) => throw null!;
+    string? FullPath { get; set; }
 }
-
-internal readonly partial struct ProjectItemInstance
-{
-    public partial string GetMetadataValue(string name) => throw null!;
-}
-
-internal readonly partial struct ProjectRootElement
-{
-    public static partial ProjectRootElement Create(XmlReader xmlReader, ProjectCollection projectCollection) => throw null!;
-    public partial string FullPath { get => throw null!; set => throw null!; }
-}
-
-#endif

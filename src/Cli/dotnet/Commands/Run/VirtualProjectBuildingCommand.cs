@@ -18,7 +18,6 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -161,7 +160,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         .AsReadOnly());
 
-        Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
+        Builder = new VirtualProjectBuilder(BuildHost.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
     public override int Execute()
@@ -557,7 +556,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             var entryPointFileDirectory = Path.GetDirectoryName(Builder.EntryPointFileFullPath);
             Debug.Assert(entryPointFileDirectory != null);
 
-            var mapping = Builder.GetItemMapping(projectInstance, ErrorReporters.IgnoringReporter);
+            var mapping = Builder.GetItemMapping(projectInstance.Wrap(), ErrorReporters.IgnoringReporter);
             foreach (var entry in mapping)
             {
                 if (string.Equals(entry.ItemType, "None", StringComparison.OrdinalIgnoreCase))
@@ -1179,8 +1178,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
     {
+        var projectCollectionWrapped = projectCollection.Wrap();
+
         Builder.CreateProjectInstance(
-            projectCollection,
+            projectCollectionWrapped,
             ThrowingReporter,
             out var project,
             projectRootElement: out _,
@@ -1191,9 +1192,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         EvaluatedDirectives = evaluatedDirectives;
 
         // Create virtual ProjectRootElements for all #:ref directives so MSBuild can resolve them.
-        CreateReferencedVirtualProjects(projectCollection, evaluatedDirectives);
+        CreateReferencedVirtualProjects(projectCollectionWrapped, evaluatedDirectives);
 
-        return project;
+        return project.Unwrap();
     }
 
     /// <summary>
@@ -1203,14 +1204,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// <c>ProjectRootElementCache</c> so MSBuild can resolve <c>&lt;ProjectReference&gt;</c> items to them.
     /// </summary>
     private void CreateReferencedVirtualProjects(
-        ProjectCollection projectCollection,
+        IProjectCollection projectCollection,
         ImmutableArray<CSharpDirective> directives)
     {
         var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Builder.EntryPointFileFullPath };
         CreateReferencedVirtualProjectsCore(projectCollection, directives, processedFiles, _referencedBuilders);
 
         static void CreateReferencedVirtualProjectsCore(
-            ProjectCollection projectCollection,
+            IProjectCollection projectCollection,
             ImmutableArray<CSharpDirective> directives,
             HashSet<string> processedFiles,
             List<VirtualProjectBuilder> referencedBuilders)
@@ -1232,6 +1233,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 }
 
                 var refBuilder = new VirtualProjectBuilder(
+                    BuildHost.Instance,
                     resolvedPath,
                     TargetFramework);
 
