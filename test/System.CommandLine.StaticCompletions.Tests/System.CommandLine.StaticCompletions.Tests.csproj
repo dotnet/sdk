@@ -1,6 +1,5 @@
-﻿<Project Sdk="MSTest.Sdk">
+<Project Sdk="MSTest.Sdk">
   <PropertyGroup>
-    <UseMSTestSdk>true</UseMSTestSdk>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsTestProject>true</IsTestProject>
