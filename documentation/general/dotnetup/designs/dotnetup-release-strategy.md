@@ -258,37 +258,3 @@ Rationale:
 The `aspire` pattern (GitHub App → Actions dispatch) is more sophisticated and appropriate if we
 later need cross-repo orchestration or complex release-note generation, but adds setup complexity
 that isn't justified for Phase 1.
-
-#### Minimal implementation sketch
-
-```yaml
-# In the dotnetup release pipeline (Phase 1)
-- stage: GitHubRelease
-  displayName: Create GitHub Release
-  dependsOn: PublishPreview
-  jobs:
-  - job: Approval
-    pool: server
-    steps:
-    - task: ManualValidation@1
-      inputs:
-        instructions: 'Approve to create GitHub Release for dotnetup $(ReleaseVersion)'
-        notifyUsers: '[dotnetup team alias]'
-
-  - job: CreateRelease
-    dependsOn: Approval
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - checkout: self
-    - script: |
-        gh release create "v$(ReleaseVersion)" \
-          --repo dotnet/sdk \
-          --title "dotnetup $(ReleaseVersion)" \
-          --notes-file $(Pipeline.Workspace)/release-notes.md \
-          --target $(Build.SourceVersion) \
-          --draft
-      env:
-        GH_TOKEN: $(BotAccount-dotnet-bot-repo-PAT)
-      displayName: Create draft GitHub Release
-```
