@@ -123,14 +123,15 @@ public sealed class DotnetupTelemetry : IDisposable
         {
             var disableExport = IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.DisableTraceExportEnvVar));
             var enablePerfTrace = IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.EnablePerfTraceEnvVar));
+            var enableOtlpExporter = IsOtlpExporterEnabled(disableExport);
             var debugConsole = Environment.GetEnvironmentVariable("DOTNETUP_TELEMETRY_DEBUG") == "1";
             var storageDirectory = ResolveStorageDirectory();
             var commonAttrs = BuildCommonAttributes();
             _commonProperties = ToLogStateProperties(commonAttrs);
             var resource = BuildResource(commonAttrs);
 
-            _tracerProvider = BuildTracerProvider(resource, enablePerfTrace, disableExport, debugConsole, storageDirectory);
-            _services = BuildLoggingServices(resource, disableExport, debugConsole, storageDirectory);
+            _tracerProvider = BuildTracerProvider(resource, enablePerfTrace, enableOtlpExporter, disableExport, debugConsole, storageDirectory);
+            _services = BuildLoggingServices(resource, enableOtlpExporter, disableExport, debugConsole, storageDirectory);
             _loggerProvider = _services.GetService<LoggerProvider>();
             _loggerFactory = _services.GetRequiredService<ILoggerFactory>();
             _logger = _loggerFactory.CreateLogger(Constants.Telemetry.BootstrapperSourceName);
@@ -195,7 +196,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// is opt-in via <c>DOTNETUP_CLI_GET_PERF_TRACE=1</c> because data-x
     /// ingests logs, not spans.
     /// </summary>
-    private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool enablePerfTrace, bool disableExport, bool debugConsole, string storageDirectory)
+    private TracerProvider BuildTracerProvider(ResourceBuilder resource, bool enablePerfTrace, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
     {
         var builder = Sdk.CreateTracerProviderBuilder()
             .SetResourceBuilder(resource)
@@ -208,13 +209,15 @@ public sealed class DotnetupTelemetry : IDisposable
             builder.AddInMemoryExporter(_activities);
         }
 
-        // Both OTLP and AzMonitor are network sinks — gate them on the
-        // common `disableExport` switch so tests / CI can opt out of all
-        // network traffic with a single env var, then further gate on the
-        // perf-trace opt-in (data-x ingests logs, not spans).
+        // Span network export is off by default because data-x ingests logs,
+        // not spans. AzMonitor spans are gated on the perf-trace opt-in;
+        // OTLP spans additionally require the SDK-style OTLP exporter opt-in.
         if (enablePerfTrace && !disableExport)
         {
-            builder.AddOtlpExporter();
+            if (enableOtlpExporter)
+            {
+                builder.AddOtlpExporter();
+            }
             builder.AddAzureMonitorTraceExporter(o =>
             {
                 o.ConnectionString = Constants.Telemetry.ConnectionString;
@@ -251,7 +254,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// invocation to retry from the AzMonitor offline store) need a
     /// pre-shutdown drain with an extended budget.
     /// </remarks>
-    private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool disableExport, bool debugConsole, string storageDirectory)
+    private static ServiceProvider BuildLoggingServices(ResourceBuilder resource, bool enableOtlpExporter, bool disableExport, bool debugConsole, string storageDirectory)
     {
         var services = new ServiceCollection();
         services.AddLogging(lb =>
@@ -263,10 +266,9 @@ public sealed class DotnetupTelemetry : IDisposable
                 o.ParseStateValues = true;
                 o.SetResourceBuilder(resource);
 
-                // Both AzMonitor (the prod sink for the AppInsights `traces`
-                // table) and OTLP (Aspire / local collector) are network
-                // sinks — gate both on `disableExport` so tests/CI can opt
-                // out of all network traffic with a single env var.
+                // AzMonitor is the prod sink for the AppInsights `traces`
+                // table. OTLP is only for explicitly enabled local or
+                // collector scenarios.
                 if (!disableExport)
                 {
                     o.AddAzureMonitorLogExporter(amo =>
@@ -275,7 +277,10 @@ public sealed class DotnetupTelemetry : IDisposable
                         amo.EnableLiveMetrics = false;
                         amo.StorageDirectory = storageDirectory;
                     });
-                    o.AddOtlpExporter();
+                    if (enableOtlpExporter)
+                    {
+                        o.AddOtlpExporter();
+                    }
                 }
 
                 if (debugConsole)
@@ -667,4 +672,7 @@ public sealed class DotnetupTelemetry : IDisposable
     private static bool IsTruthy(string? value) =>
         string.Equals(value, "1", StringComparison.Ordinal) ||
         string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+
+    internal static bool IsOtlpExporterEnabled(bool disableExport) =>
+        !disableExport && IsTruthy(Environment.GetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar));
 }
