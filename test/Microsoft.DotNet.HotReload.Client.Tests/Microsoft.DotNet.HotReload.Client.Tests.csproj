@@ -25,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Combinatorial.MSTest" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
