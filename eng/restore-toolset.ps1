@@ -242,11 +242,23 @@ function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs,
             $installArgs.Architecture = $architecture
         }
 
-        if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+        $global:LASTEXITCODE = 0
         & $installScript @installArgs
 
-        if ($lastExitCode -ne 0) {
-            throw "Failed to install shared framework $version to '$dotNetRoot' using dotnet install script for architecture '$architecture' (exit code '$lastExitCode')."
+        $installScriptExitCode = $LASTEXITCODE
+
+        # The install script is a PowerShell script, so $LASTEXITCODE is only updated when it
+        # invokes a native process or calls `exit`. A successful run that returns normally can
+        # leave a stale exit code, and a soft failure can leave 0. We reset $LASTEXITCODE above to
+        # neutralize a stale non-zero (false failure); pair that with a filesystem check that the
+        # expected shared-framework version actually landed to catch a false success (exit 0 but
+        # nothing installed).
+        $sharedFrameworkName = if ($component -eq 'aspnetcore') { 'Microsoft.AspNetCore.App' } elseif ($component -eq 'windowsdesktop') { 'Microsoft.WindowsDesktop.App' } else { 'Microsoft.NETCore.App' }
+        $frameworkInstalled = Test-Path -PathType Container (Join-Path $dotNetRoot "shared\$sharedFrameworkName\$version*")
+
+        if ($installScriptExitCode -ne 0 -or -not $frameworkInstalled) {
+            $architectureMessage = if ([string]::IsNullOrEmpty($architecture)) { "" } else { " for architecture '$architecture'" }
+            throw "Failed to install shared framework $version to '$dotNetRoot' using dotnet install script$architectureMessage (exit code '$installScriptExitCode', installed '$frameworkInstalled')."
         }
     }
 }
