@@ -37,6 +37,17 @@ internal sealed class FSharpHotReloadService
     private readonly bool _trace;
 
     /// <summary>
+    /// Master kill switch for the entire F# hot reload bridge. Set
+    /// DOTNET_WATCH_FSHARP_HOTRELOAD=0 (or false) to make this service behave as if no F#
+    /// projects exist: session prestart does nothing, <see cref="TryEmitUpdatesAsync"/> reports
+    /// no changes, and <see cref="OwnsChangedFile"/> claims nothing, restoring the stock
+    /// restart-on-edit behavior for F# projects without having to know the narrower
+    /// DOTNET_WATCH_FSHARP_* tuning variables. Unset (the default) means enabled. Read once at
+    /// construction.
+    /// </summary>
+    private readonly bool _disabled;
+
+    /// <summary>
     /// Provides the aggregate runtime edit-and-continue capabilities of the running processes,
     /// matching the capabilities the Roslyn hot reload service receives. Evaluated lazily at
     /// session start so newly launched processes are taken into account.
@@ -83,6 +94,7 @@ internal sealed class FSharpHotReloadService
     {
         _logger = logger;
         _trace = IsTraceEnabled();
+        _disabled = IsDisabled();
         _getCapabilities = getCapabilities;
     }
 
@@ -105,6 +117,11 @@ internal sealed class FSharpHotReloadService
 
     public void UpdateProjects(ProjectGraph projectGraph)
     {
+        if (_disabled)
+        {
+            return;
+        }
+
         _projects = FSharpProjectInfo.Collect(projectGraph, _logger);
         _cachedProjectInputs = _cachedProjectInputs.RemoveRange(_cachedProjectInputs.Keys.Where(key => !_projects.ContainsKey(key)));
         _runtimeModuleIds = _runtimeModuleIds.RemoveRange(_runtimeModuleIds.Keys.Where(key => !_projects.ContainsKey(key)));
@@ -121,6 +138,11 @@ internal sealed class FSharpHotReloadService
 
     public ValueTask StartSessionAsync(CancellationToken cancellationToken)
     {
+        if (_disabled)
+        {
+            return ValueTask.CompletedTask;
+        }
+
         // Prime per-project inputs from the baseline build before edits arrive.
         // This mirrors Roslyn's committed-solution model where the first edit is compared
         // against the last built state rather than being used as the session baseline.
@@ -226,6 +248,11 @@ internal sealed class FSharpHotReloadService
 
     public void EndSession()
     {
+        if (_disabled)
+        {
+            return;
+        }
+
         if (_sessionObject is { } sessionObject)
         {
             // Session-object mode: disposing the session ends it; per-project baselines and any
@@ -262,6 +289,11 @@ internal sealed class FSharpHotReloadService
     /// </summary>
     public bool OwnsChangedFile(ChangedFile changedFile)
     {
+        if (_disabled)
+        {
+            return false;
+        }
+
         if (_host?.SupportsSessionObject != true)
         {
             return false;
@@ -283,6 +315,11 @@ internal sealed class FSharpHotReloadService
     /// </summary>
     public void CommitUpdates()
     {
+        if (_disabled)
+        {
+            return;
+        }
+
         if (_sessionObject is { } sessionObject)
         {
             _host?.SessionCommit(sessionObject);
@@ -296,6 +333,11 @@ internal sealed class FSharpHotReloadService
     /// </summary>
     public void DiscardUpdates()
     {
+        if (_disabled)
+        {
+            return;
+        }
+
         if (_sessionObject is { } sessionObject)
         {
             _host?.SessionDiscard(sessionObject);
@@ -308,6 +350,11 @@ internal sealed class FSharpHotReloadService
         ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects,
         CancellationToken cancellationToken)
     {
+        if (_disabled)
+        {
+            return new FSharpManagedUpdateResult(FSharpManagedUpdateStatus.NoChanges, [], null, null);
+        }
+
         var changedProject = TryGetChangedRunningFSharpProject(changedFiles, runningProjects);
         if (changedProject == null)
         {
@@ -1273,6 +1320,17 @@ internal sealed class FSharpHotReloadService
         var value = Environment.GetEnvironmentVariable("DOTNET_WATCH_TRACE_FSHARP_HOTRELOAD");
         return string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// DOTNET_WATCH_FSHARP_HOTRELOAD=0 (or false) disables the F# hot reload bridge entirely;
+    /// any other value, including unset, leaves it enabled. See <see cref="_disabled"/>.
+    /// </summary>
+    private static bool IsDisabled()
+    {
+        var value = Environment.GetEnvironmentVariable("DOTNET_WATCH_FSHARP_HOTRELOAD");
+        return string.Equals(value, "0", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(value, "false", StringComparison.OrdinalIgnoreCase);
     }
 
     private bool TryCompileProjectOutput(FSharpProjectInfo projectInfo, out string? message)

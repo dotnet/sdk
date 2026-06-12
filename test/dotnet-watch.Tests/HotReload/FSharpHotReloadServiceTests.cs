@@ -148,6 +148,57 @@ public class FSharpHotReloadServiceTests
         Assert.Null(result);
     }
 
+    [Theory]
+    [InlineData("0")]
+    [InlineData("false")]
+    public async Task KillSwitch_DisablesEntireBridge(string killSwitchValue)
+    {
+        var originalValue = Environment.GetEnvironmentVariable("DOTNET_WATCH_FSHARP_HOTRELOAD");
+        try
+        {
+            Environment.SetEnvironmentVariable("DOTNET_WATCH_FSHARP_HOTRELOAD", killSwitchValue);
+
+            var projectDirectory = Path.Combine(Path.GetTempPath(), "dotnet-watch-fsharp-tests-killswitch");
+            var projectPath = Path.Combine(projectDirectory, "TestApp.fsproj");
+            var targetPath = Path.Combine(projectDirectory, "bin", "Debug", "net10.0", "TestApp.dll");
+            var compilerPath = Path.Combine(projectDirectory, "fsc.dll");
+
+            var projectId = new ProjectInstanceId(projectPath, "net10.0");
+            var projectInfo = new FSharpProjectInfo(projectId, projectPath, "net10.0", targetPath, compilerPath, []);
+
+            // The kill switch is read once at construction.
+            var service = new FSharpHotReloadService(NullLogger.Instance);
+
+            // Simulate a discovered F# project so that, were the bridge enabled, the change below
+            // would match the running project and produce a result carrying the project path.
+            var projectsField = typeof(FSharpHotReloadService).GetField("_projects", BindingFlags.Instance | BindingFlags.NonPublic)!;
+            projectsField.SetValue(service, ImmutableDictionary<ProjectInstanceId, FSharpProjectInfo>.Empty.Add(projectId, projectInfo));
+
+            var changedFile = new ChangedFile(
+                new FileItem
+                {
+                    FilePath = Path.Combine(projectDirectory, "Program.fs"),
+                    ContainingProjectPaths = [projectPath]
+                },
+                ChangeKind.Update);
+
+            var runningProjects = ImmutableDictionary<string, ImmutableArray<RunningProject>>.Empty.Add(projectPath, []);
+
+            await service.StartSessionAsync(CancellationToken.None);
+            var result = await service.TryEmitUpdatesAsync([changedFile], runningProjects, CancellationToken.None);
+
+            // Disabled: the service behaves as if no F# projects exist.
+            Assert.Equal(FSharpManagedUpdateStatus.NoChanges, result.Status);
+            Assert.Empty(result.Updates);
+            Assert.Null(result.ProjectPath);
+            Assert.False(service.OwnsChangedFile(changedFile));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("DOTNET_WATCH_FSHARP_HOTRELOAD", originalValue);
+        }
+    }
+
     [Fact]
     public void TryGetCommandLineDependencyPath_ParsesResourceLogicalNameSuffix()
     {
