@@ -1,9 +1,6 @@
-﻿<Project Sdk="MSTest.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
-    <!-- Opts this project out of the xUnit-specific defaults applied by test/Directory.Build.targets.
-         MSTest.Sdk wires up MSTest + Microsoft.Testing.Platform (MTP) itself. -->
-    <UseMSTestSdk>true</UseMSTestSdk>
 
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
