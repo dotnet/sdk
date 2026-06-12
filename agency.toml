@@ -1,0 +1,2 @@
+[mcps.servers]
+ms-docs = { tools = ["*"], type = "http", url = "https://learn.microsoft.com/api/mcp" }

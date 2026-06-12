@@ -9,8 +9,12 @@ using Task = Microsoft.Build.Utilities.Task;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    public class FindAssembliesWithReferencesTo : Task
+    [MSBuildMultiThreadableTask]
+    public class FindAssembliesWithReferencesTo : Task, IMultiThreadableTask
     {
+        /// <inheritdoc/>
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         [Required]
         public ITaskItem[] TargetAssemblyNames { get; set; }
 
@@ -44,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             var targetAssemblyNames = TargetAssemblyNames.Select(s => s.ItemSpec).ToList();
 
-            var provider = new ReferenceResolver((IReadOnlyList<string>)targetAssemblyNames, referenceItems);
+            var provider = new ReferenceResolver((IReadOnlyList<string>)targetAssemblyNames, referenceItems, TaskEnvironment);
             try
             {
                 var assemblyNames = provider.ResolveAssemblies();
