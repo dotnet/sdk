@@ -8,11 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Verify.MSTest" />
     <PackageReference Include="Verify.DiffPlex" />
-    <Using Include="FluentAssertions" />
   </ItemGroup>
 
   <ItemGroup>
