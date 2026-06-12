@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <UseMSTestSdk>true</UseMSTestSdk>
   </PropertyGroup>
 
   <ItemGroup>
