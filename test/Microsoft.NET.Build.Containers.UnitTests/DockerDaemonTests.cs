@@ -6,14 +6,14 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 [TestClass]
 public class DockerDaemonTests : IDisposable
 {
-    private TestLoggerFactory _loggerFactory = default!;
+    private readonly TestLoggerFactory _loggerFactory;
 
-    public TestContext TestContext { get; set; } = default!;
+    public TestContext TestContext { get; }
 
-    [TestInitialize]
-    public void Initialize()
+    public DockerDaemonTests(TestContext testContext)
     {
-        _loggerFactory = new TestLoggerFactory(TestContext);
+        TestContext = testContext;
+        _loggerFactory = new TestLoggerFactory(testContext);
     }
 
     public void Dispose()

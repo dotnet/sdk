@@ -9,16 +9,16 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 [TestClass]
 public class ImageBuilderTests
 {
-    private TestLoggerFactory _loggerFactory = default!;
+    private readonly TestLoggerFactory _loggerFactory;
 
     private static readonly string StaticKnownDigestValue = "sha256:338c0b702da88157ba4bb706678e43346ece2e4397b888d59fb2d9f6113c8070";
 
-    public TestContext TestContext { get; set; } = default!;
+    public TestContext TestContext { get; }
 
-    [TestInitialize]
-    public void Initialize()
+    public ImageBuilderTests(TestContext testContext)
     {
-        _loggerFactory = new TestLoggerFactory(TestContext);
+        TestContext = testContext;
+        _loggerFactory = new TestLoggerFactory(testContext);
     }
 
     [TestCleanup]
