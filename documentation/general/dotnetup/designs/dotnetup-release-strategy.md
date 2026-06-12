@@ -134,7 +134,7 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
    - On pass: repins the `/preview/` `aka.ms` url (only if `test` run is not enabled), and creates the GitHub Release with change notes.
 
 **Recovery — if only a simple revert is needed:**
-1. Re-run the `release` pipeline against an existing tag and repoint the `/preview/` URL.
+1. Re-run the `release` pipeline against an existing tag and repoint the `/preview/` URL. Allow skipping tests if needed (break-glass.)
    Archival CI URLs exist per version and are confirmed live today, e.g.
    `https://ci.dot.net/public/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe` and its
    `.../public-checksums/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe.sha512` sidecar.
