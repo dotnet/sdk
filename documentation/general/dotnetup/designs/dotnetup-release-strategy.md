@@ -158,7 +158,7 @@ Migrate to `stable` versioning as well. Confirm whether it is actually feasible 
 Host a `stable` URL on `builds.dotnet.microsoft.com` by coordinating with the release team to use their promotion pipeline — we already push to `dotnetbuilds`, so this is a copy/promote from
 `dotnetbuilds` → `dotnetcli` plus storage write permissions granted by the release/dnceng team.
 
-Similar release process, through coordination. Possibly automate `preview` releases at this point.
+Similar release process, through coordination. Possibly automate `preview` releases at this point. Required to rollout to any azdo task. 
 
 ### Phase 3 — Package-manager acquisition (tentative)
 
