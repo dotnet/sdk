@@ -14,7 +14,7 @@ public partial class DefineStaticWebAssets : Task
 {
     private DefineStaticWebAssetsCache GetOrCreateAssetsCache()
     {
-        var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, CacheManifestPath);
+        var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, TaskEnvironment.GetAbsolutePath(CacheManifestPath));
         if (CacheManifestPath == null)
         {
             assetsCache.NoCache(CandidateAssets);
@@ -71,7 +71,7 @@ public partial class DefineStaticWebAssets : Task
     {
         private readonly List<ITaskItem> _assets = [];
         private readonly List<ITaskItem> _copyCandidates = [];
-        private string? _manifestPath;
+        private AbsolutePath? _manifestPath;
         private IDictionary<string, ITaskItem>? _inputByHash;
         private ITaskItem[]? _noCacheCandidates;
         private bool _cacheUpToDate;
@@ -79,7 +79,7 @@ public partial class DefineStaticWebAssets : Task
 
         public DefineStaticWebAssetsCache() { }
 
-        internal DefineStaticWebAssetsCache(TaskLoggingHelper log, string? manifestPath) : this()
+        internal DefineStaticWebAssetsCache(TaskLoggingHelper log, AbsolutePath? manifestPath) : this()
             => SetPathAndLogger(manifestPath, log);
 
         // Inputs for the cache
@@ -92,7 +92,7 @@ public partial class DefineStaticWebAssets : Task
         public Dictionary<string, StaticWebAsset> CachedAssets { get; set; } = [];
         public Dictionary<string, CopyCandidate> CachedCopyCandidates { get; set; } = [];
 
-        internal static DefineStaticWebAssetsCache ReadOrCreateCache(TaskLoggingHelper log, string manifestPath)
+        internal static DefineStaticWebAssetsCache ReadOrCreateCache(TaskLoggingHelper log, AbsolutePath? manifestPath)
         {
             if (manifestPath != null && File.Exists(manifestPath))
             {
@@ -100,7 +100,7 @@ public partial class DefineStaticWebAssets : Task
                 var cache = JsonSerializer.Deserialize(existingManifestFile, DefineStaticWebAssetsSerializerContext.Default.DefineStaticWebAssetsCache);
                 if (cache == null)
                 {
-                    throw new InvalidOperationException($"Failed to deserialize cache from {manifestPath}");
+                    throw new InvalidOperationException($"Failed to deserialize cache from {manifestPath?.OriginalValue}");
                 }
                 cache.SetPathAndLogger(manifestPath, log);
                 return cache;
@@ -231,7 +231,7 @@ public partial class DefineStaticWebAssets : Task
             _inputByHash = remainingCandidates;
         }
 
-        internal void SetPathAndLogger(string? manifestPath, TaskLoggingHelper log) => (_manifestPath, _log) = (manifestPath, log);
+        internal void SetPathAndLogger(AbsolutePath? manifestPath, TaskLoggingHelper log) => (_manifestPath, _log) = (manifestPath, log);
 
         public (IList<ITaskItem> CopyCandidates, IList<ITaskItem> Assets) GetComputedOutputs() => (_copyCandidates, _assets);
 

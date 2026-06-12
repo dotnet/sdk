@@ -20,8 +20,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // There is also a RelativePathPattern that is used to automatically transform the relative path of the candidates to match
 // the expected path of the final asset. This is typically use to remove a common path prefix, like `wwwroot` from the target
 // path of the assets and so on.
-public partial class DefineStaticWebAssets : Task
+[MSBuildMultiThreadableTask]
+public partial class DefineStaticWebAssets : Task, IMultiThreadableTask
 {
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     private static readonly char[] GroupPatternSeparator = [';'];
 
     [Required]
@@ -128,7 +131,7 @@ public partial class DefineStaticWebAssets : Task
                     var candidateMatchPath = GetDiscoveryCandidateMatchPath(candidate);
                     if (Path.IsPathRooted(candidateMatchPath) && candidateMatchPath == candidate.ItemSpec)
                     {
-                        var normalizedAssetPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
+                        var normalizedAssetPath = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(candidate.GetMetadata("FullPath")));
                         var normalizedDirectoryPath = Path.GetDirectoryName(BuildEngine.ProjectFileOfTaskNode);
                         if (normalizedAssetPath.StartsWith(normalizedDirectoryPath))
                         {
@@ -229,7 +232,7 @@ public partial class DefineStaticWebAssets : Task
                 var fingerprint = ComputePropertyValue(candidate, nameof(StaticWebAsset.Fingerprint), null, false);
                 var integrity = ComputePropertyValue(candidate, nameof(StaticWebAsset.Integrity), null, false);
 
-                var identity = Path.GetFullPath(candidate.GetMetadata("FullPath"));
+                var identity = Path.GetFullPath(TaskEnvironment.GetAbsolutePath(candidate.GetMetadata("FullPath")));
                 var (file, fileLength, lastWriteTimeUtc) = ResolveFileDetails(originalItemSpec, identity);
 
                 switch ((fingerprint, integrity))
@@ -285,7 +288,8 @@ public partial class DefineStaticWebAssets : Task
                     }
                 }
 
-                var asset = StaticWebAsset.FromProperties(
+                    // TODO pass env when StaticWebAsset supports taskEnvironment
+                    var asset = StaticWebAsset.FromProperties(
                     identity,
                     sourceId,
                     sourceType,
@@ -330,6 +334,7 @@ public partial class DefineStaticWebAssets : Task
                     }
                 }
 
+                // TODO pass env when StaticWebAsset supports taskEnvironment
                 var item = asset.ToTaskItem();
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
