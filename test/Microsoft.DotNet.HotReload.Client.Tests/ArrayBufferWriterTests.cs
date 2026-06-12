@@ -319,20 +319,11 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
     //       succeed even if there is not enough memory but then the test may get killed by the OOM killer at the
     //       time the memory is accessed which triggers the full memory allocation.
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows | OperatingSystems.OSX)]
+    [Is64BitProcessCondition]
     [TestCategory("OuterLoop")]
     public void InvalidAdvance_Large()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-            !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            Assert.Inconclusive("This test is constrained to run on Windows and macOS.");
-        }
-
-        if (!Environment.Is64BitProcess)
-        {
-            Assert.Inconclusive("This test requires a 64-bit process.");
-        }
-
         try
         {
             {
