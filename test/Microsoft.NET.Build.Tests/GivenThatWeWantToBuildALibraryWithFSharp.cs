@@ -227,7 +227,47 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_sets_SupportsHotReload_capability_for_net6_or_newer()
+        public void It_sets_SupportsHotReload_capability_for_net6_or_newer_under_dotnet_watch()
+        {
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                msbuildArgs: new[] { "/p:DotNetWatchBuild=true" },
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                },
+                targetFramework: "net6.0");
+
+            projectCapabilities.Should().Contain("SupportsHotReload");
+        }
+
+        [Fact]
+        public void It_does_not_set_SupportsHotReload_capability_outside_dotnet_watch()
+        {
+            // ProjectCapabilities are read by other hosts such as Visual Studio, which has no
+            // F# Edit-and-Continue support, so the capability is only advertised when
+            // dotnet-watch sets DotNetWatchBuild=true (or a project opts in explicitly).
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                },
+                targetFramework: "net6.0");
+
+            projectCapabilities.Should().NotContain("SupportsHotReload");
+        }
+
+        [Fact]
+        public void It_sets_SupportsHotReload_capability_when_explicitly_opted_in()
         {
             var projectCapabilities = GetValuesFromTestLibrary(
                 Log,
@@ -238,6 +278,7 @@ namespace Microsoft.NET.Build.Tests
                 {
                     var ns = project.Root.Name.Namespace;
                     project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                    project.Root.Descendants(ns + "PropertyGroup").First().Add(new XElement(ns + "SupportsHotReload", "true"));
                 },
                 targetFramework: "net6.0");
 
@@ -251,6 +292,7 @@ namespace Microsoft.NET.Build.Tests
                 Log,
                 TestAssetsManager,
                 "ProjectCapability",
+                msbuildArgs: new[] { "/p:DotNetWatchBuild=true" },
                 valueType: GetValuesCommand.ValueType.Item,
                 projectChanges: project =>
                 {
@@ -269,6 +311,7 @@ namespace Microsoft.NET.Build.Tests
                 Log,
                 TestAssetsManager,
                 "ProjectCapability",
+                msbuildArgs: new[] { "/p:DotNetWatchBuild=true" },
                 valueType: GetValuesCommand.ValueType.Item,
                 projectChanges: project =>
                 {
