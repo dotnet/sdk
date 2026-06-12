@@ -16,11 +16,13 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
 - Develop features without risk of them reaching a stable release.
 - Preview consumption / telemetry on a dev branch to confirm stability before promoting to stable.
 - Only support 'latest' preview to reduce maintenance burden and move fast.
+- Compliance with MSFT policy.
 
 **Nice to have**
 - No PRs required to bump minor versions.
 - Automated changelog notes.
 - Only maintain one branch at a time.
+- Minimal manual maintenance effort burdens to release.
 
 **Not necessary**
 - Truly supporting multiple dotnetup versions simultaneously.
