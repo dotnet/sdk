@@ -191,6 +191,30 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\Fake-License.txt.zst",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "/",
+      "RelativePath": "Fake-License.txt.zst",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "zstd",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt.zst",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\styles.css.br",
       "SourceId": "RazorClassLibrary",
       "SourceType": "Project",
@@ -211,6 +235,30 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\_content\\RazorClassLibrary\\styles.css.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\styles.css.zst",
+      "SourceId": "RazorClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/RazorClassLibrary",
+      "RelativePath": "styles.css.zst",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "zstd",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\_content\\RazorClassLibrary\\styles.css.zst",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -239,6 +287,30 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.zst",
+      "SourceId": "RazorClassLibrary",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "_content/RazorClassLibrary",
+      "RelativePath": "wwwroot/exampleJsInterop.js.zst",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "zstd",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.zst",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.br",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -263,6 +335,30 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.zst",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "/",
+      "RelativePath": "blazorwasm.styles.css.zst",
+      "AssetKind": "All",
+      "AssetMode": "CurrentProject",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "zstd",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css.zst",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.br",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -283,6 +379,30 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.zst",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "/",
+      "RelativePath": "index.html.zst",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "zstd",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.zst",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -961,6 +1081,98 @@
       ]
     },
     {
+      "Route": "Fake-License.txt.zst",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\Fake-License.txt.zst",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/plain"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "Fake-License.txt",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\Fake-License.txt.zst",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/plain"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
       "Route": "_content/RazorClassLibrary/styles.css.br",
       "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\styles.css.br",
       "Selectors": [],
@@ -1019,6 +1231,98 @@
         {
           "Name": "Content-Encoding",
           "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/RazorClassLibrary/styles.css.zst",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\styles.css.zst",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/RazorClassLibrary/styles.css",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\styles.css.zst",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
         },
         {
           "Name": "Content-Length",
@@ -1145,6 +1449,98 @@
       ]
     },
     {
+      "Route": "_content/RazorClassLibrary/wwwroot/exampleJsInterop.js.zst",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.zst",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.zst",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
       "Route": "blazorwasm.styles.css.br",
       "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.br",
       "Selectors": [],
@@ -1237,6 +1633,98 @@
       ]
     },
     {
+      "Route": "blazorwasm.styles.css.zst",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.zst",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "blazorwasm.styles.css",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.zst",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
       "Route": "index.html.br",
       "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.br",
       "Selectors": [],
@@ -1295,6 +1783,98 @@
         {
           "Name": "Content-Encoding",
           "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "index.html.zst",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.zst",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "index.html",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.zst",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "zstd"
         },
         {
           "Name": "Content-Length",
