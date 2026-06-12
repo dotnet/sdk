@@ -86,8 +86,8 @@ extends:
         steps:
         - script: >
             $(Build.SourcesDirectory)/build.sh
-              --projects $(Build.SourcesDirectory)/src/TemplateEngine/Tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
-              -bl
+            --projects $(Build.SourcesDirectory)/src/TemplateEngine/Tools/Microsoft.TemplateSearch.TemplateDiscovery/Microsoft.TemplateSearch.TemplateDiscovery.csproj
+            -bl
           displayName: Build Cache Updater
 
         - task: CopyFiles@2
