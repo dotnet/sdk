@@ -1,9 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
     <TestRunnerName>XUnitV3</TestRunnerName>
     <OutputType>Exe</OutputType>
