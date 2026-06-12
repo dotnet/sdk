@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
@@ -57,7 +58,17 @@ public class TelemetryFilterTests : SdkTest
         // other tests that may have dynamically added template names (e.g. "console")
         // as subcommands to the static Parser.RootCommand's "new" command.
         // See InstantiateCommand.ExecuteAsync which mutates the static parser tree.
-        var parseResult = new DotNetCommandDefinition().Parse(["new", "console"], Parser.ParserConfiguration);
+        var rootCommand = new DotNetCommandDefinition();
+        // Remove the built-in VersionOption that conflicts with the SDK's custom --version option.
+        // In production, Parser.NormalizeRootOptions handles this, but it's private.
+        for (int i = rootCommand.Options.Count - 1; i >= 0; i--)
+        {
+            if (rootCommand.Options[i] is VersionOption)
+            {
+                rootCommand.Options.RemoveAt(i);
+            }
+        }
+        var parseResult = rootCommand.Parse(["new", "console"], Parser.ParserConfiguration);
         TelemetryEventEntry.SendFiltered(parseResult);
         _fakeTelemetry
             .LogEntries.Should()
