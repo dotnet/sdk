@@ -18,6 +18,9 @@ public class DotnetupProgram
 {
     public static int Main(string[] args)
     {
+        // Apply the user's UI language before any output (honors DOTNET_CLI_UI_LANGUAGE/VSLANG, and
+        // on Linux—where dotnetup runs invariant—detects the OS locale the runtime cannot).
+        DotnetupUILanguage.Setup();
         // Handle --debug flag using the standard .NET SDK pattern
         // This is DEBUG-only and removes the --debug flag from args
         DotnetupDebugHelper.HandleDebugSwitch(ref args);
