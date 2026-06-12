@@ -461,6 +461,45 @@ public class DotnetArchiveExtractorTests
         File.ReadAllText(runtimeFile).Should().Be("runtime-content");
     }
 
+    [Fact]
+    public void Commit_ExtractsTarGzArchive_WhenDecompressedTarPathAlreadyExists()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var version = new ReleaseVersion(9, 0, 0);
+
+        var request = new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel("9.0"),
+            InstallComponent.Runtime,
+            new InstallRequestOptions());
+
+        byte[] tarGzContent = CreateTarGzWithFiles(
+            ("shared/Microsoft.NETCore.App/9.0.0/System.Runtime.dll", "runtime-content"));
+
+        var mockDownloader = new MockArchiveDownloader
+        {
+            CreateFakeArchive = true,
+            FakeArchiveContent = tarGzContent,
+            ArchiveFileExtension = ".tar.gz"
+        };
+
+        var releaseManifest = new ReleaseManifest();
+        var progressTarget = new NullProgressTarget();
+
+        using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
+
+        extractor.Prepare();
+        Directory.CreateDirectory(mockDownloader.DownloadCalls[0].DestinationPath.Replace(".gz", "", StringComparison.Ordinal));
+
+        extractor.Commit();
+
+        var runtimeFile = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "9.0.0", "System.Runtime.dll");
+        File.Exists(runtimeFile).Should().BeTrue("tar.gz extraction should not depend on a sibling decompressed .tar staging file");
+        File.ReadAllText(runtimeFile).Should().Be("runtime-content");
+    }
+
     [PlatformSpecificFact(TestPlatforms.Windows)]
     public void Commit_ExtractsZipArchive_Correctly()
     {
