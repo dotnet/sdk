@@ -11,8 +11,8 @@
        enabled on the project. MSTest.Sdk defaults this to 'true' for the Default and
        AllMicrosoft extension profiles (see microsoft/testfx Runner/Common.targets);
        other MTP project types (e.g. xUnit v3 MTP) do not bundle the extension unless
-       added explicitly. The Helix dispatcher uses this to decide whether emitting
-       '--report-trx' on the test command is safe -- passing it to an MTP host without
+       added explicitly. The Helix dispatcher uses this to decide whether emitting the
+       report-trx switch on the test command is safe; passing it to an MTP host without
        the extension fails with an 'unknown argument' error. -->
   <Target Name="GetTrxReportEnabled" Returns="$(EnableMicrosoftTestingExtensionsTrxReport)" />
 </Project>

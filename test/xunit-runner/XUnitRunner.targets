@@ -87,7 +87,7 @@
 
     <!-- Detect whether the project has the Microsoft.Testing.Extensions.TrxReport extension
          loaded. MSTest.Sdk enables it by default; other MTP runners (e.g. xUnit v3 MTP) do
-         not, so passing '--report-trx' to those hosts would fail with 'unknown argument'. -->
+         not, so passing the report-trx switch to those hosts would fail with 'unknown argument'. -->
     <MSBuild Projects="$(_CurrentSDKCustomXUnitProject)" Targets="GetTrxReportEnabled" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomXUnitPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
       <Output TaskParameter="TargetOutputs" PropertyName="_EnableTrxReport" />
     </MSBuild>
