@@ -1398,10 +1398,15 @@ internal sealed class FSharpHotReloadService
         private readonly bool _trace;
         private readonly object _checker;
         private readonly MethodInfo _getProjectOptions;
-        private readonly MethodInfo _startSession;
+
+        // The legacy process-wide checker surface (StartHotReloadSession/EmitHotReloadDelta/
+        // EndHotReloadSession/NotifyFileChanged). Current compiler service builds no longer ship
+        // it — all four are null in session-object mode, where FSharpHotReloadSession members
+        // (via _sessionApi) are the replacements.
+        private readonly MethodInfo? _startSession;
         private readonly MethodInfo? _notifyFileChanged;
-        private readonly MethodInfo _emitDelta;
-        private readonly MethodInfo _endSession;
+        private readonly MethodInfo? _emitDelta;
+        private readonly MethodInfo? _endSession;
 
         /// <summary>
         /// FSharpChecker.UpdateHotReloadCapabilities, probed lazily because older compiler
@@ -1433,10 +1438,10 @@ internal sealed class FSharpHotReloadService
             bool trace,
             object checker,
             MethodInfo getProjectOptions,
-            MethodInfo startSession,
+            MethodInfo? startSession,
             MethodInfo? notifyFileChanged,
-            MethodInfo emitDelta,
-            MethodInfo endSession,
+            MethodInfo? emitDelta,
+            MethodInfo? endSession,
             SessionObjectApi? sessionApi,
             ImmutableArray<MethodInfo> invalidateConfigurationMethods,
             MethodInfo runSynchronously,
@@ -1522,8 +1527,10 @@ internal sealed class FSharpHotReloadService
                     .Where(method => method.Name == "EmitHotReloadDelta")
                     .ToImmutableArray();
 
-                var endSession = checkerType.GetMethod("EndHotReloadSession", BindingFlags.Public | BindingFlags.Instance)
-                    ?? throw new MissingMethodException(checkerType.FullName, "EndHotReloadSession");
+                // Null on current compiler service builds: the legacy process-wide checker
+                // surface was retired in favor of CreateHotReloadSession. Only required when the
+                // legacy path ends up selected below.
+                var endSession = checkerType.GetMethod("EndHotReloadSession", BindingFlags.Public | BindingFlags.Instance);
 
                 var invalidateConfigurationMethods = checkerType
                     .GetMethods(BindingFlags.Public | BindingFlags.Instance)
@@ -1558,20 +1565,38 @@ internal sealed class FSharpHotReloadService
                 MethodInfo? workspaceFilesEdit = null;
                 MethodInfo? workspaceFilesClose = null;
                 string? workspaceError = null;
-                MethodInfo selectedStartSession;
-                MethodInfo selectedEmitDelta;
+                MethodInfo? selectedStartSession;
+                MethodInfo? selectedEmitDelta;
                 var preferWorkspaceSnapshots = ShouldPreferWorkspaceSnapshots(servicePathOverride);
 
                 // The session-object API (FSharpChecker.CreateHotReloadSession) supersedes the
                 // process-wide single-session checker surface. It consumes project snapshots, so
                 // it requires the workspace bridge regardless of the snapshot-mode preference.
                 // DOTNET_WATCH_FSHARP_USE_SESSION_OBJECT=0 is a safety valve forcing the legacy
-                // single-active-project path even when the new API is available.
-                var sessionApi = ShouldUseSessionObject() ? SessionObjectApi.TryCreate(checkerType) : null;
+                // single-active-project path even when the new API is available — honored only
+                // while the loaded compiler service still ships that legacy surface.
+                var legacySurfaceAvailable = startSessionMethods.Length > 0 && emitDeltaMethods.Length > 0 && endSession != null;
+                var sessionApi = SessionObjectApi.TryCreate(checkerType);
+                if (sessionApi != null && !ShouldUseSessionObject())
+                {
+                    if (legacySurfaceAvailable)
+                    {
+                        sessionApi = null;
+                    }
+                    else
+                    {
+                        // The valve has nothing to fall back to; ignore it loudly rather than
+                        // failing host creation (which would silently degrade to restarts).
+                        logger.LogDebug(
+                            "Ignoring DOTNET_WATCH_FSHARP_USE_SESSION_OBJECT=0: the loaded F# compiler service no longer exposes the legacy hot reload checker surface (StartHotReloadSession/EmitHotReloadDelta/EndHotReloadSession). Proceeding with the session-object API.");
+                    }
+                }
 
                 if ((preferWorkspaceSnapshots || sessionApi != null) &&
-                    startSessionWithSnapshot != null &&
-                    emitDeltaWithSnapshot != null &&
+                    // Session-object mode drives emit through FSharpHotReloadSession members and
+                    // does not need the legacy snapshot overloads (current compiler service
+                    // builds no longer ship them).
+                    (sessionApi != null || (startSessionWithSnapshot != null && emitDeltaWithSnapshot != null)) &&
                     TryCreateWorkspaceBridge(
                         assembly,
                         checkerType,
@@ -1606,6 +1631,11 @@ internal sealed class FSharpHotReloadService
                         ?? throw new MissingMethodException(checkerType.FullName, "StartHotReloadSession(projectOptions)");
                     selectedEmitDelta = emitDeltaWithOptions
                         ?? throw new MissingMethodException(checkerType.FullName, "EmitHotReloadDelta(projectOptions)");
+
+                    if (endSession == null)
+                    {
+                        throw new MissingMethodException(checkerType.FullName, "EndHotReloadSession");
+                    }
 
                     if (trace && !string.IsNullOrEmpty(workspaceError))
                     {
@@ -1805,7 +1835,9 @@ internal sealed class FSharpHotReloadService
         }
 
         public FSharpInvocationResult StartSession(object projectInput, ImmutableArray<string> capabilities, CancellationToken cancellationToken)
-            => InvokeResult(_checker, _startSession, CreateStartSessionArguments(_startSession.GetParameters(), projectInput, capabilities), cancellationToken);
+            => _startSession == null
+                ? new FSharpInvocationResult(false, null, null, "The loaded F# compiler service does not expose StartHotReloadSession; use the session-object API.")
+                : InvokeResult(_checker, _startSession, CreateStartSessionArguments(_startSession.GetParameters(), projectInput, capabilities), cancellationToken);
 
         public bool SupportsSessionObject => _sessionApi != null;
 
@@ -2140,7 +2172,9 @@ internal sealed class FSharpHotReloadService
         }
 
         public FSharpInvocationResult EmitDelta(object projectInput, CancellationToken cancellationToken)
-            => InvokeResult(_checker, _emitDelta, [projectInput, null], cancellationToken);
+            => _emitDelta == null
+                ? new FSharpInvocationResult(false, null, null, "The loaded F# compiler service does not expose EmitHotReloadDelta; use the session-object API.")
+                : InvokeResult(_checker, _emitDelta, [projectInput, null], cancellationToken);
 
         private bool TryCreateProjectOptionsInput(FSharpProjectInfo projectInfo, out object? projectInput, out string? error)
         {
@@ -2291,6 +2325,13 @@ internal sealed class FSharpHotReloadService
 
         public void TryEndSession()
         {
+            if (_endSession == null)
+            {
+                // Session-object mode: sessions end via DisposeSession; there is no process-wide
+                // legacy session to tear down.
+                return;
+            }
+
             try
             {
                 _ = _endSession.Invoke(_checker, null);
