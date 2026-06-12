@@ -39,9 +39,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             _assemblyItems = assemblyItems;
             _classifications = new Dictionary<AssemblyItem, Classification>();
 
-            Lookup = assemblyItems.ToDictionary(
-                item => item.AssemblyName,
-                StringComparer.Ordinal);
+            Lookup = new Dictionary<string, AssemblyItem>(StringComparer.Ordinal);
+            foreach (var item in assemblyItems)
+            {
+                Lookup[item.AssemblyName] = item;
+            }
         }
 
         protected Dictionary<string, AssemblyItem> Lookup { get; }
