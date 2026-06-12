@@ -228,6 +228,43 @@ public class NativeEntryPointTests
     }
 
     [Fact]
+    public void ExecuteCore_AotEnabled_FileBasedApp_FallsBackToManaged()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            // `dotnet app.cs` must not be served by the AOT path (which would print root usage);
+            // it has to fall back to the managed CLI's run pipeline. With a nonexistent SDK dir the
+            // fallback can't be hosted, so it reports the missing dotnet.dll - proving we reached it.
+            var csFile = Path.Combine(Path.GetTempPath(), $"aot-entry-filebased-{Guid.NewGuid():N}.cs");
+            File.WriteAllText(csFile, "Console.WriteLine(\"hi\");");
+
+            var originalErr = Console.Error;
+            var stderrWriter = new StringWriter();
+            Console.SetError(stderrWriter);
+
+            try
+            {
+                int exitCode = NativeEntryPoint.ExecuteCore(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: "nonexistent-sdk-dir",
+                    hostfxrPath: "",
+                    args: [csFile]);
+
+                Assert.Equal(1, exitCode);
+                Assert.Contains("dotnet.dll", stderrWriter.ToString());
+            }
+            finally
+            {
+                Console.SetError(originalErr);
+                File.Delete(csFile);
+            }
+        });
+    }
+
+    [Fact]
     public void ExecuteCore_SetsHostfxrPathInAppContext()
     {
         WithEnvRestore(() =>

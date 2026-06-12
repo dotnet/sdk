@@ -25,8 +25,10 @@
 
   <!-- Common AOT scaffolding: shared by every AOT command. Reuse, do not duplicate. -->
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandLineInfo.cs" Link="CommandLineInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliUsage.cs" Link="CliUsage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliSchema.cs" Link="CliSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ParserOptionActions.cs" Link="ParserOptionActions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
@@ -71,6 +73,26 @@
   <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
+  </ItemGroup>
+
+  <!--
+    Forwarding-app help support: the shared DotnetHelpBuilder renders help for the external-tool
+    commands (msbuild/nuget/vstest/format/fsi) by shelling out to the underlying tool. These sources
+    use AOT-friendly (out-of-process) codepaths under #if CLI_AOT so the help writer needs no
+    conditional compilation of its own.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ForwardingApp.cs" Link="ForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ICommandRunner.cs" Link="ICommandRunner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NuGetForwardingApp.cs" Link="NuGetForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NuGetSignatureVerificationEnabler.cs" Link="NuGetSignatureVerificationEnabler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\NuGet\NuGetCommand.cs" Link="Commands\NuGet\NuGetCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildForwardingApp.cs" Link="Commands\MSBuild\MSBuildForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\CommonRunHelpers.cs" Link="Commands\Run\CommonRunHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Fsi\FsiForwardingApp.cs" Link="Commands\Fsi\FsiForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Format\FormatForwardingApp.cs" Link="Commands\Format\FormatForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestForwardingApp.cs" Link="Commands\Test\VSTest\VSTestForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestTrace.cs" Link="Commands\Test\VSTest\VSTestTrace.cs" />
   </ItemGroup>
 
 </Project>
