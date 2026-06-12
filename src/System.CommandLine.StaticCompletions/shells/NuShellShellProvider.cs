@@ -20,29 +20,22 @@ public class NushellShellProvider : IShellProvider
         """
         # Add the following content to your config.nu file:
 
-        let external_completer = { |spans|
-            {
-                dotnet: { ||
-                    dotnet complete (
-                        $spans | skip 1 | str join " "
-                    ) | lines
-                }
-            } | get $spans.0 | each { || do $in }
+        let dotnet_completer = {|spans|
+            dotnet complete ($spans | str join " ") | lines
         }
 
-        # And then in the config record, find the completions section and add the
-        # external_completer that was defined earlier to external:
-
-        let-env config = {
-            # your options here
-            completions: {
-                # your options here
-                external: {
-                    # your options here
-                    completer: $external_completer # add it here
-                }
-            }
+        # If you are using other completers, add the dotnet completer. Otherwise, just set external.completer to $dotnet_completer.
+        # (see https://nushell.sh/cookbook/external_completers.html#multiple-completer for more info)
+        let multiple_completers = {|spans|
+            match $spans.0 {
+                # Add the dotnet completer
+                "dotnet" => $dotnet_completer
+                # your other completers...
+            } | do $in $spans
         }
+
+        $env.config.completions.external.enable = true
+        $env.config.completions.external.completer = $multiple_completers
         """;
 
     public string GenerateCompletions(System.CommandLine.Command command) => _dynamicCompletionScript;
