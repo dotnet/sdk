@@ -8,32 +8,20 @@ namespace Microsoft.DotNet.ShellShim.Tests
 {
     public class EnvironmentPathFactoryTests
     {
-        [MacOsOnlyFact]
-        public void GivenFollowingEnvironmentVariableValueItCanReturnOsxZshEnvironmentPathInstruction()
+        [MacOSOnlyTheory]
+        [InlineData("/bin/bash")]
+        [InlineData("/bin/zsh")]
+        public void GivenFollowingEnvironmentVariableValueItShouldReturnOsxBashEnvironmentPath(string shell)
         {
             Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
 
             provider
                 .Setup(p => p.GetEnvironmentVariable("SHELL"))
-                .Returns("/bin/zsh");
+                .Returns(shell);
 
             IEnvironmentPathInstruction result =
                 EnvironmentPathFactory.CreateEnvironmentPathInstruction(provider.Object);
-            (result is OsxZshEnvironmentPathInstruction).Should().BeTrue();
-        }
-
-        [MacOsOnlyFact]
-        public void GivenFollowingEnvironmentVariableValueItShouldReturnOsxBashEnvironmentPath()
-        {
-            Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
-
-            provider
-                .Setup(p => p.GetEnvironmentVariable("SHELL"))
-                .Returns("/bin/bash");
-
-            IEnvironmentPathInstruction result =
-                EnvironmentPathFactory.CreateEnvironmentPathInstruction(provider.Object);
-            (result is OsxBashEnvironmentPath).Should().BeTrue();
+            (result is MacOSEnvironmentPath).Should().BeTrue();
         }
 
         [WindowsOnlyFact]
