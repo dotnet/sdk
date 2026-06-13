@@ -3,10 +3,15 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
+using Moq;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
+    [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenMsbuildForwardingApp : SdkTest
     {
         public GivenMsbuildForwardingApp(ITestOutputHelper log) : base(log)
@@ -17,7 +22,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void DotnetExeIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
-            new MSBuildForwardingApp(new string[0], msbuildPath)
+            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet.exe");
         }
 
@@ -25,7 +30,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void DotnetIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
-            new MSBuildForwardingApp(new string[0], msbuildPath)
+            new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet");
         }
 
@@ -36,7 +41,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void ItSetsEnvironmentalVariables(string envVarName)
         {
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath).GetProcessStartInfo();
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath).GetProcessStartInfo();
             startInfo.Environment.ContainsKey(envVarName).Should().BeTrue();
         }
 
@@ -45,7 +50,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "MSBuildExtensionsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(new string[0], msbuildPath)
+            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                                 .GetProcessStartInfo()
                                 .Environment[envVar])
                 .Should()
@@ -57,7 +62,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "MSBuildSDKsPath";
-            new DirectoryInfo(new MSBuildForwardingApp(new string[0], msbuildPath)
+            new DirectoryInfo(new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                                 .GetProcessStartInfo()
                                 .Environment[envVar])
                 .Should()
@@ -69,7 +74,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             var envVar = "DOTNET_CLI_TELEMETRY_SESSIONID";
-            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath)
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo();
 
             string sessionId = startInfo.Environment[envVar];
@@ -86,10 +91,42 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [Fact]
+        public void ItUsesSeededTelemetrySessionId()
+        {
+            const string sessionId = "gha-12345-1";
+            var msbuildPath = "<msbuildpath>";
+            var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+
+            TelemetryClient.DisabledForTests = true;
+            TelemetryClient.DisabledForTests = false;
+
+            try
+            {
+                environmentProvider
+                    .Setup(p => p.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, It.IsAny<bool>()))
+                    .Returns(false);
+                environmentProvider
+                    .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID))
+                    .Returns(sessionId);
+
+                _ = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
+
+                var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
+                    .GetProcessStartInfo();
+
+                startInfo.Environment["DOTNET_CLI_TELEMETRY_SESSIONID"].Should().Be(sessionId);
+            }
+            finally
+            {
+                TelemetryClient.DisabledForTests = true;
+            }
+        }
+
+        [Fact]
         public void ItDoesNotSetCurrentWorkingDirectory()
         {
             var msbuildPath = "<msbuildpath>";
-            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath)
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath)
                 .GetProcessStartInfo().WorkingDirectory.Should().Be("");
         }
     }
