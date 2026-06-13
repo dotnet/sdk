@@ -10,122 +10,123 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
+    [TestClass]
     public class TemplateMatchInfoTests
     {
-        [Fact(DisplayName = nameof(EmptyMatchDisposition_ReportsCorrectly))]
+        [TestMethod]
         public void EmptyMatchDisposition_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
-            Assert.False(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.False(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
-            Assert.Empty(templateMatchInfo.GetInvalidParameterNames());
-            Assert.Empty(templateMatchInfo.GetValidTemplateParameters());
+            Assert.IsFalse(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsFalse(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsFalse(templateMatchInfo.GetInvalidParameterNames().Any());
+            Assert.IsFalse(templateMatchInfo.GetValidTemplateParameters().Any());
         }
 
-        [Fact(DisplayName = nameof(NameExactMatch_ReportsCorrectly))]
+        [TestMethod]
         public void NameExactMatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Name, "test", MatchKind.Exact));
-            Assert.True(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.True(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
 
-        [Fact(DisplayName = nameof(NamePartialMatch_ReportsCorrectly))]
+        [TestMethod]
         public void NamePartialMatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Name, "test", MatchKind.Partial));
-            Assert.True(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.True(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
 
-        [Fact(DisplayName = nameof(NameMismatch_ReportsCorrectly))]
+        [TestMethod]
         public void NameMismatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Name, "test", MatchKind.Mismatch));
-            Assert.False(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.False(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsFalse(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsFalse(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
 
-        [Fact(DisplayName = nameof(TypeMatch_ReportsCorrectly))]
+        [TestMethod]
         public void TypeMatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Type, "test", MatchKind.Exact));
-            Assert.True(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.True(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
 
-        [Fact(DisplayName = nameof(TypeMismatch_ReportsCorrectly))]
+        [TestMethod]
         public void TypeMismatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Type, "test", MatchKind.Mismatch));
-            Assert.False(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.False(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsFalse(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsFalse(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
 
-        [Fact(DisplayName = nameof(TypeMatch_NameMatch_ReportsCorrectly))]
+        [TestMethod]
         public void TypeMatch_NameMatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Name, "test", MatchKind.Exact));
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Type, "test", MatchKind.Exact));
-            Assert.True(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.True(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
 
-        [Fact(DisplayName = nameof(TypeMatch_NameMismatch_ReportsCorrectly))]
+        [TestMethod]
         public void TypeMatch_NameMismatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Name, "test", MatchKind.Mismatch));
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Type, "test", MatchKind.Exact));
-            Assert.False(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.True(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsFalse(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
 
-        [Fact(DisplayName = nameof(TypeMatch_NamePartialMatch_ReportsCorrectly))]
+        [TestMethod]
         public void TypeMatch_NamePartialMatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Name, "test", MatchKind.Partial));
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Type, "test", MatchKind.Exact));
-            Assert.True(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.True(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
 
-        [Fact(DisplayName = nameof(TypeMismatch_NameMatch_ReportsCorrectly))]
+        [TestMethod]
         public void TypeMismatch_NameMatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Name, "test", MatchKind.Exact));
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Type, "test", MatchKind.Mismatch));
-            Assert.False(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.True(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsFalse(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
 
-        [Fact(DisplayName = nameof(TypeMismatch_NamePartialMatch_ReportsCorrectly))]
+        [TestMethod]
         public void TypeMismatch_NamePartialMatch_ReportsCorrectly()
         {
             ITemplateInfo templateInfo = new MockTemplateInfo();
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Name, "test", MatchKind.Partial));
             templateMatchInfo.AddMatchDisposition(new MatchInfo(MatchInfo.BuiltIn.Type, "test", MatchKind.Mismatch));
-            Assert.False(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
-            Assert.True(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
+            Assert.IsFalse(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
+            Assert.IsTrue(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
         }
     }
 }
