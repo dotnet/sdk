@@ -156,7 +156,7 @@ public class RunCommand
         {
             // Pre-run evaluation: Handle target framework and device selection for project-based scenarios
             using var selector = ProjectFileFullPath is not null
-                ? new RunCommandSelector(ProjectFileFullPath, Interactive, MSBuildArgs, EnvironmentVariables, logger)
+                ? new RunCommandSelector(ProjectFileFullPath, Interactive, MSBuildArgs, EnvironmentVariables, commandName: "dotnet run", logger)
                 : null;
             if (selector is not null && !TrySelectTargetFrameworkAndDeviceIfNeeded(selector))
             {
@@ -358,7 +358,7 @@ public class RunCommand
         }
 
         // Use RunCommandSelector to handle multi-target selection (or single framework selection)
-        if (RunCommandSelector.TrySelectTargetFramework(frameworks, Interactive, out string? selectedFramework))
+        if (RunCommandSelector.TrySelectTargetFramework(frameworks, Interactive, "dotnet run", out string? selectedFramework))
         {
             ApplySelectedFramework(selectedFramework);
             return true;

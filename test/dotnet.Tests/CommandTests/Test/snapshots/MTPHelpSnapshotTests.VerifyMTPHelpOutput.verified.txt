@@ -42,7 +42,8 @@ Options:
   --list-tests <list-tests>                       List the discovered tests instead of running the tests.
   --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application. [default: False]
   --no-launch-profile-arguments                   Do not use arguments specified in launch profile to run the application. [default: False]
-  --device <DEVICE>                               The device identifier to use for running the application.
+  --device <DEVICE>                               The device identifier to use for running tests.
+  --list-devices                                  List available devices for running tests. [default: False]
   -?, -h, --help                                  Show command line help.
 
 Waiting for options and extensions...
