@@ -834,10 +834,10 @@ Esempi:
       </trans-unit>
       <trans-unit id="Command_Install_Argument_Package">
         <source>NuGet package ID or path to folder or NuGet package to install. 
-To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.
+To install the NuGet package of certain version, use &lt;package ID&gt;@&lt;version&gt;.
 </source>
-        <target state="translated">ID pacchetto NuGet o percorso della cartella o del pacchetto NuGet da installare. 
-Per installare il pacchetto NuGet di una determinata versione, usare &lt;package ID&gt;::&lt;version&gt;.
+        <target state="needs-review-translation">ID pacchetto NuGet o percorso della cartella o del pacchetto NuGet da installare. 
+Per installare il pacchetto NuGet di una determinata versione, usare &lt;package ID&gt;@&lt;version&gt;.
 </target>
         <note />
       </trans-unit>

@@ -6,7 +6,7 @@ Usage:
 
 Arguments:
   <package>  NuGet package ID or path to folder or NuGet package to install. 
-             To install the NuGet package of certain version, use <package ID>::<version>.
+             To install the NuGet package of certain version, use <package ID>@<version>.
 
 Options:
   --interactive                                Allows the command to stop and wait for user input or action (for example to complete authentication). [default: False]
