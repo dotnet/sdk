@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -6,175 +6,176 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class AspireResourceLauncherCliTests
 {
-    [Fact]
+    [TestMethod]
     public void RequiredServerOption()
     {
         // --server option is missing
         var args = new[] { "resource", "--entrypoint", "proj" };
         var launcher = AspireLauncher.TryCreate(args);
-        Assert.Null(launcher);
+        Assert.IsNull(launcher);
     }
 
-    [Fact]
+    [TestMethod]
     public void RequiredEntryPointOption()
     {
         // --entrypoint option is missing
         var args = new[] { "resource", "--server", "pipe1" };
         var launcher = AspireLauncher.TryCreate(args);
-        Assert.Null(launcher);
+        Assert.IsNull(launcher);
     }
 
-    [Fact]
+    [TestMethod]
     public void MinimalRequiredOptions()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj.csproj" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.Equal("pipe1", launcher.ServerPipeName);
-        Assert.Equal("proj.csproj", launcher.EntryPoint);
-        Assert.Empty(launcher.ApplicationArguments);
-        Assert.Empty(launcher.EnvironmentVariables);
-        Assert.True(launcher.LaunchProfileName.HasValue);
-        Assert.Null(launcher.LaunchProfileName.Value);
-        Assert.Equal(LogLevel.Information, launcher.GlobalOptions.LogLevel);
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        Assert.AreEqual("pipe1", launcher.ServerPipeName);
+        Assert.AreEqual("proj.csproj", launcher.EntryPoint);
+        Assert.IsEmpty(launcher.ApplicationArguments);
+        Assert.IsEmpty(launcher.EnvironmentVariables);
+        Assert.IsTrue(launcher.LaunchProfileName.HasValue);
+        Assert.IsNull(launcher.LaunchProfileName.Value);
+        Assert.AreEqual(LogLevel.Information, launcher.GlobalOptions.LogLevel);
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplicationArguments()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "a", "b" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        AssertEx.SequenceEqual(["a", "b"], launcher.ApplicationArguments);
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        Assert.AreSequenceEqual(["a", "b"], launcher.ApplicationArguments);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_SingleVariable()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "-e", "KEY=value" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.Single(launcher.EnvironmentVariables);
-        Assert.Equal("value", launcher.EnvironmentVariables["KEY"]);
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        Assert.ContainsSingle(launcher.EnvironmentVariables);
+        Assert.AreEqual("value", launcher.EnvironmentVariables["KEY"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_MultipleVariables()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "-e", "KEY1=val1", "-e", "KEY2=val2" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.Equal(2, launcher.EnvironmentVariables.Count);
-        Assert.Equal("val1", launcher.EnvironmentVariables["KEY1"]);
-        Assert.Equal("val2", launcher.EnvironmentVariables["KEY2"]);
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        Assert.AreEqual(2, launcher.EnvironmentVariables.Count);
+        Assert.AreEqual("val1", launcher.EnvironmentVariables["KEY1"]);
+        Assert.AreEqual("val2", launcher.EnvironmentVariables["KEY2"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_ValueWithEquals()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "-e", "CONN=Server=localhost;Port=5432" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.Equal("Server=localhost;Port=5432", launcher.EnvironmentVariables["CONN"]);
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        Assert.AreEqual("Server=localhost;Port=5432", launcher.EnvironmentVariables["CONN"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_EmptyValue()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "-e", "KEY=" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.Equal("", launcher.EnvironmentVariables["KEY"]);
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        Assert.AreEqual("", launcher.EnvironmentVariables["KEY"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_NoEquals()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "-e", "KEY" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.Equal("", launcher.EnvironmentVariables["KEY"]);
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        Assert.AreEqual("", launcher.EnvironmentVariables["KEY"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void NoLaunchProfileOption()
     {
         // With no-launch-profile flag
         var argsNoProfile = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "--no-launch-profile" };
-        var launcherNoProfile = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsNoProfile));
-        Assert.False(launcherNoProfile.LaunchProfileName.HasValue);
+        var launcherNoProfile = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsNoProfile));
+        Assert.IsFalse(launcherNoProfile.LaunchProfileName.HasValue);
 
         // Without no-launch-profile flag
         var argsDefault = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj" };
-        var launcherDefault = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsDefault));
-        Assert.True(launcherDefault.LaunchProfileName.HasValue);
-        Assert.Null(launcherDefault.LaunchProfileName.Value);
+        var launcherDefault = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsDefault));
+        Assert.IsTrue(launcherDefault.LaunchProfileName.HasValue);
+        Assert.IsNull(launcherDefault.LaunchProfileName.Value);
     }
 
-    [Fact]
+    [TestMethod]
     public void LaunchProfileOption()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "--launch-profile", "MyProfile" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.True(launcher.LaunchProfileName.HasValue);
-        Assert.Equal("MyProfile", launcher.LaunchProfileName.Value);
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        Assert.IsTrue(launcher.LaunchProfileName.HasValue);
+        Assert.AreEqual("MyProfile", launcher.LaunchProfileName.Value);
     }
 
-    [Fact]
+    [TestMethod]
     public void LaunchProfileOption_ShortForm()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "-lp", "MyProfile" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.True(launcher.LaunchProfileName.HasValue);
-        Assert.Equal("MyProfile", launcher.LaunchProfileName.Value);
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        Assert.IsTrue(launcher.LaunchProfileName.HasValue);
+        Assert.AreEqual("MyProfile", launcher.LaunchProfileName.Value);
     }
 
-    [Fact]
+    [TestMethod]
     public void VerboseOption()
     {
         var argsVerbose = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "--verbose" };
-        var launcherVerbose = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsVerbose));
-        Assert.Equal(LogLevel.Debug, launcherVerbose.GlobalOptions.LogLevel);
+        var launcherVerbose = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsVerbose));
+        Assert.AreEqual(LogLevel.Debug, launcherVerbose.GlobalOptions.LogLevel);
 
         var argsNotVerbose = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj" };
-        var launcherNotVerbose = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsNotVerbose));
-        Assert.Equal(LogLevel.Information, launcherNotVerbose.GlobalOptions.LogLevel);
+        var launcherNotVerbose = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsNotVerbose));
+        Assert.AreEqual(LogLevel.Information, launcherNotVerbose.GlobalOptions.LogLevel);
     }
 
-    [Fact]
+    [TestMethod]
     public void QuietOption()
     {
         var argsQuiet = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "--quiet" };
-        var launcherQuiet = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsQuiet));
-        Assert.Equal(LogLevel.Warning, launcherQuiet.GlobalOptions.LogLevel);
+        var launcherQuiet = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsQuiet));
+        Assert.AreEqual(LogLevel.Warning, launcherQuiet.GlobalOptions.LogLevel);
 
         var argsNotQuiet = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj" };
-        var launcherNotQuiet = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsNotQuiet));
-        Assert.Equal(LogLevel.Information, launcherNotQuiet.GlobalOptions.LogLevel);
+        var launcherNotQuiet = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(argsNotQuiet));
+        Assert.AreEqual(LogLevel.Information, launcherNotQuiet.GlobalOptions.LogLevel);
     }
 
-    [Fact]
+    [TestMethod]
     public void ConflictingOptions()
     {
         // Cannot specify both --quiet and --verbose
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "--quiet", "--verbose" };
         var launcher = AspireLauncher.TryCreate(args);
-        Assert.Null(launcher);
+        Assert.IsNull(launcher);
     }
 
-    [Fact]
+    [TestMethod]
     public void AllOptionsSet()
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "myapp.csproj", "-e", "K1=V1", "-e", "K2=V2", "--launch-profile", "Dev", "--verbose", "arg1", "arg2" };
-        var launcher = Assert.IsType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
+        var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
 
-        Assert.Equal("pipe1", launcher.ServerPipeName);
-        Assert.Equal("myapp.csproj", launcher.EntryPoint);
-        Assert.Equal(LogLevel.Debug, launcher.GlobalOptions.LogLevel);
-        Assert.True(launcher.LaunchProfileName.HasValue);
-        Assert.Equal("Dev", launcher.LaunchProfileName.Value);
-        AssertEx.SequenceEqual(["arg1", "arg2"], launcher.ApplicationArguments);
-        Assert.Equal(2, launcher.EnvironmentVariables.Count);
-        Assert.Equal("V1", launcher.EnvironmentVariables["K1"]);
-        Assert.Equal("V2", launcher.EnvironmentVariables["K2"]);
+        Assert.AreEqual("pipe1", launcher.ServerPipeName);
+        Assert.AreEqual("myapp.csproj", launcher.EntryPoint);
+        Assert.AreEqual(LogLevel.Debug, launcher.GlobalOptions.LogLevel);
+        Assert.IsTrue(launcher.LaunchProfileName.HasValue);
+        Assert.AreEqual("Dev", launcher.LaunchProfileName.Value);
+        Assert.AreSequenceEqual(["arg1", "arg2"], launcher.ApplicationArguments);
+        Assert.AreEqual(2, launcher.EnvironmentVariables.Count);
+        Assert.AreEqual("V1", launcher.EnvironmentVariables["K1"]);
+        Assert.AreEqual("V2", launcher.EnvironmentVariables["K2"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_Duplicates()
     {
         var command = new AspireResourceCommandDefinition();
@@ -187,7 +188,7 @@ public class AspireResourceLauncherCliTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_Duplicates_CasingDifference()
     {
         var command = new AspireResourceCommandDefinition();
@@ -212,7 +213,7 @@ public class AspireResourceLauncherCliTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_MultiplePerToken()
     {
         var command = new AspireResourceCommandDefinition();
@@ -230,7 +231,7 @@ public class AspireResourceLauncherCliTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_NoValue()
     {
         var command = new AspireResourceCommandDefinition();
@@ -243,7 +244,7 @@ public class AspireResourceLauncherCliTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentOption_WhitespaceTrimming()
     {
         var command = new AspireResourceCommandDefinition();
@@ -256,17 +257,17 @@ public class AspireResourceLauncherCliTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("=")]
-    [InlineData("= X")]
-    [InlineData("  \u2002 = X")]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("=")]
+    [DataRow("= X")]
+    [DataRow("  \u2002 = X")]
     public void EnvironmentOption_Errors(string token)
     {
         var command = new AspireResourceCommandDefinition();
         var result = command.Parse(["--server", "S", "--entrypoint", "E", "-e", token]);
 
-        AssertEx.SequenceEqual(
+        Assert.AreSequenceEqual(
         [
             $"Incorrectly formatted environment variables '{token}'"
         ], result.Errors.Select(e => e.Message));
