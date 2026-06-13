@@ -8,9 +8,10 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
+    [TestClass]
     public class ResponseStreamWrapperCompressionTest
     {
-        [Fact]
+        [TestMethod]
         public async Task WriteAsync_HandlesGzipCompressedHtmlResponse()
         {
             // Arrange
@@ -32,17 +33,17 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(compressedData, TestContext.Current.CancellationToken);
+            await wrapper.WriteAsync(compressedData, CancellationToken.None);
             await wrapper.CompleteAsync();
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.False(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
-            Assert.Null(context.Response.Headers.ContentLength);
+            Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Write_HandlesGzipCompressedHtmlResponse()
         {
             // Arrange
@@ -70,11 +71,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.False(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
-            Assert.Null(context.Response.Headers.ContentLength);
+            Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WriteAsync_DoesNotModifyNonHtmlCompressedResponse()
         {
             // Arrange
@@ -96,15 +97,15 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(compressedData, TestContext.Current.CancellationToken);
+            await wrapper.WriteAsync(compressedData, CancellationToken.None);
             await wrapper.CompleteAsync();
 
             var result = outputStream.ToArray();
-            Assert.Equal(compressedData, result);
-            Assert.True(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.AreSequenceEqual(compressedData, result);
+            Assert.IsTrue(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Write_DoesNotModifyNonHtmlCompressedResponse()
         {
             // Arrange
@@ -130,11 +131,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await wrapper.CompleteAsync();
 
             var result = outputStream.ToArray();
-            Assert.Equal(compressedData, result);
-            Assert.True(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.AreSequenceEqual(compressedData, result);
+            Assert.IsTrue(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WriteAsync_IgnoresNonGzipCompressionTypes()
         {
             // Arrange
@@ -156,17 +157,17 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(data, TestContext.Current.CancellationToken);
+            await wrapper.WriteAsync(data, CancellationToken.None);
             await wrapper.CompleteAsync();
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             // Should treat as regular data since we only handle gzip
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.True(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.IsTrue(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Write_IgnoresNonGzipCompressionTypes()
         {
             // Arrange
@@ -195,10 +196,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             // Should treat as regular data since we only handle gzip
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.True(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.IsTrue(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WriteAsync_PreservesNonCompressedHtmlResponse()
         {
             // Arrange
@@ -219,16 +220,16 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
 
             // Act
-            await wrapper.WriteAsync(data, TestContext.Current.CancellationToken);
+            await wrapper.WriteAsync(data, CancellationToken.None);
             await wrapper.CompleteAsync();
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.Null(context.Response.Headers.ContentLength);
+            Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Write_PreservesNonCompressedHtmlResponse()
         {
             // Arrange
@@ -255,10 +256,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.Null(context.Response.Headers.ContentLength);
+            Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WriteAsync_GzipHtml_SingleByteChunks()
         {
             // Arrange: small HTML so compressed output is reasonably small; we will feed one byte at a time.
@@ -290,11 +291,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Assert: script injected and content encoding removed
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.False(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
-            Assert.Null(context.Response.Headers.ContentLength);
+            Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Write_GzipHtml_SingleByteChunks()
         {
             // Arrange: small HTML so compressed output is reasonably small; we will feed one byte at a time.
@@ -326,11 +327,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Assert: script injected and content encoding removed
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.False(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
-            Assert.Null(context.Response.Headers.ContentLength);
+            Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WriteAsync_GzipHtml_LargeChunk32K()
         {
             // Arrange: generate largely incompressible-ish HTML body so compressed data spans >= 32K
@@ -346,7 +347,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             sb.Append("</body></html>");
             var htmlContent = sb.ToString();
             var compressedData = CompressWithGzip(htmlContent);
-            Assert.True(compressedData.Length > 0, "Expected non-empty compressed payload");
+            Assert.IsTrue(compressedData.Length > 0, "Expected non-empty compressed payload");
             var outputStream = new MemoryStream();
 
             var context = new DefaultHttpContext
@@ -377,11 +378,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.Contains("</body></html>", result); // Ensure full doc present
-            Assert.False(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
-            Assert.Null(context.Response.Headers.ContentLength);
+            Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Write_GzipHtml_LargeChunk32K()
         {
             // Arrange: generate largely incompressible-ish HTML body so compressed data spans >= 32K
@@ -397,7 +398,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             sb.Append("</body></html>");
             var htmlContent = sb.ToString();
             var compressedData = CompressWithGzip(htmlContent);
-            Assert.True(compressedData.Length > 0, "Expected non-empty compressed payload");
+            Assert.IsTrue(compressedData.Length > 0, "Expected non-empty compressed payload");
             var outputStream = new MemoryStream();
 
             var context = new DefaultHttpContext
@@ -428,8 +429,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
             Assert.Contains("</body></html>", result); // Ensure full doc present
-            Assert.False(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
-            Assert.Null(context.Response.Headers.ContentLength);
+            Assert.IsFalse(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            Assert.IsNull(context.Response.Headers.ContentLength);
         }
 
         private static byte[] CompressWithGzip(string content)
