@@ -1,14 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+    <IsTestProject>true</IsTestProject>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AwesomeAssertions" />
-    <PackageReference Include="Verify.XunitV3" />
-    <PackageReference Include="Verify.DiffPlex" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />

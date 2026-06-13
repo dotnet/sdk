@@ -7,21 +7,23 @@ using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
-    [Collection("Verify Tests")]
+    [TestClass]
     public class SnapshotTests : TestBase
     {
-        private readonly ILogger _log;
+        private ILogger _log = null!;
 
-        public SnapshotTests(ITestOutputHelper log)
+        public TestContext TestContext { get; set; } = null!;
+
+        [TestInitialize]
+        public void TestInitialize()
         {
-            _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
+            _log = new TestContextLogger(TestContext);
         }
 
-        [Fact]
+        [TestMethod]
         public Task PreferDefaultNameTest()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithPreferDefaultName");
@@ -38,10 +40,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            return engine.Execute(options, TestContext.CancellationTokenSource.Token);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TemplateWithOnlyIfStatementTest()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithOnlyIfStatement");
@@ -58,10 +60,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>() { { "default-port", "3332" } });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            return engine.Execute(options, TestContext.CancellationTokenSource.Token);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TemplateWithOnlyIfStatementTestForLocalhostTest()
         {
             string templateLocation = GetTestTemplateLocation("TemplateWithOnlyIfForLocalhost");
@@ -78,14 +80,14 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>() { { "default-port", "3332" } });
 
             VerificationEngine engine = new VerificationEngine(_log);
-            return engine.Execute(options, TestContext.Current.CancellationToken);
+            return engine.Execute(options, TestContext.CancellationTokenSource.Token);
         }
 
-        [Theory]
-        [InlineData("no options", null)]
-        [InlineData("options without value", new[] { "A", null, "B", null, "C", null, "D", null })]
-        [InlineData("option equals to false", new[] { "A", "false", "B", "false", "C", "false", "D", "false" })]
-        [InlineData("option equals to true", new[] { "A", "true", "B", "true", "C", "true", "D", "true" })]
+        [TestMethod]
+        [DataRow("no options", null)]
+        [DataRow("options without value", new[] { "A", null, "B", null, "C", null, "D", null })]
+        [DataRow("option equals to false", new[] { "A", "false", "B", "false", "C", "false", "D", "false" })]
+        [DataRow("option equals to true", new[] { "A", "true", "B", "true", "C", "true", "D", "true" })]
         public async Task BooleanConditionsTest(string testName, string?[]? parametersArray)
         {
             string workingDirectory = TestUtils.CreateTemporaryFolder();
@@ -108,35 +110,35 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             .WithInstantiationThroughTemplateCreatorApi(parameters);
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            await engine.Execute(options, TestContext.CancellationTokenSource.Token);
         }
 
-        [Theory]
-        [InlineData("DefaultIfOptionWithoutValue_NoValueDefaultsNotUsedIfSwitchesNotSpecified", "DefaultIfOptionWithoutValue", "TestAssets.DefaultIfOptionWithoutValue", null)]
-        [InlineData("DefaultIfOptionWithoutValue_NoValueDefaultForChoiceParamIsUsed", "DefaultIfOptionWithoutValue", "TestAssets.DefaultIfOptionWithoutValue", new[] { "MyChoice", null })]
-        [InlineData("DefaultIfOptionWithoutValue_NoValueDefaultForStringParamIsUsed", "DefaultIfOptionWithoutValue", "TestAssets.DefaultIfOptionWithoutValue", new[] { "MyString", null })]
-        [InlineData("DefaultIfOptionWithoutValue_NoValueDefault_UserProvidedValuesAreIsUsed", "DefaultIfOptionWithoutValue", "TestAssets.DefaultIfOptionWithoutValue", new[] { "MyString", "UserString", "MyChoice", "OtherChoice" })]
-        [InlineData("Renames_FileRenames", "TemplateWithRenames", "TestAssets.TemplateWithRenames", new[] { "foo", "baz", "testForms", "TestProject" })]
-        [InlineData("Renames_SourceNameFileRenames", "TemplateWithSourceName", "TestAssets.TemplateWithSourceName", new[] { "name", "baz" })]
-        [InlineData("Renames_NegativeFileRenames", "TemplateWithUnspecifiedSourceName", "TestAssets.TemplateWithUnspecifiedSourceName", new[] { "name", "baz" })]
-        [InlineData("Renames_CustomSourcePathRename", "TemplateWithSourceNameAndCustomSourcePath", "TestAssets.TemplateWithSourceNameAndCustomSourcePath", new[] { "name", "bar" })]
-        [InlineData("Renames_CustomTargetPathRename", "TemplateWithSourceNameAndCustomTargetPath", "TestAssets.TemplateWithSourceNameAndCustomTargetPath", new[] { "name", "bar" })]
-        [InlineData("Renames_CustomSourceAndTargetPathRename", "TemplateWithSourceNameAndCustomSourceAndTargetPaths", "TestAssets.TemplateWithSourceNameAndCustomSourceAndTargetPaths", new[] { "name", "bar" })]
-        [InlineData("Renames_SourcePathOutsideConfigRoot", "TemplateWithSourcePathOutsideConfigRoot", "TestAssets.TemplateWithSourcePathOutsideConfigRoot", new[] { "name", "baz" })]
-        [InlineData("Renames_SourceNameInTargetPathGetsRenamed", "TemplateWithSourceNameInTargetPathGetsRenamed", "TestAssets.TemplateWithSourceNameInTargetPathGetsRenamed", new[] { "name", "baz" })]
-        [InlineData("Renames_PlaceholderFiles", "TemplateWithPlaceholderFiles", "TestAssets.TemplateWithPlaceholderFiles", null)]
-        [InlineData("Renames_DerivedSymbolFileRename", "TemplateWithDerivedSymbolFileRename", "TestAssets.TemplateWithDerivedSymbolFileRename", new[] { "name", "Last.Part.Is.For.Rename" })]
-        [InlineData("Renames_MultipleRenamesOnSameFile", "TemplateWithMultipleRenamesOnSameFile", "TestAssets.TemplateWithMultipleRenamesOnSameFile", new[] { "fooRename", "base", "barRename", "ball" })]
-        [InlineData("Renames_MultipleRenamesOnSameFileHandlesOverlap", "TemplateWithMultipleRenamesOnSameFileHandlesOverlap", "TestAssets.TemplateWithMultipleRenamesOnSameFileHandlesOverlap", new[] { "fooRename", "pin", "oobRename", "ball" })]
-        [InlineData("Renames_MultipleRenamesOnSameFileHandlesInducedOverlap", "TemplateWithMultipleRenamesOnSameFileHandlesInducedOverlap", "TestAssets.TemplateWithMultipleRenamesOnSameFileHandlesInducedOverlap", new[] { "fooRename", "bar", "barRename", "baz" })]
-        [InlineData("Renames_CaseSensitiveNameBasedRenames", "TemplateWithCaseSensitiveNameBasedRenames", "TestAssets.TemplateWithCaseSensitiveNameBasedRenames", new[] { "name", "NewName" })]
-        [InlineData("Renames_JoinAndFolderRename", "TemplateWithJoinAndFolderRename", "TestAssets.TemplateWithJoinAndFolderRename", new[] { "name", "NewName", "product", "Office" })]
-        [InlineData("KitchenSink_ConfigurationKitchenSink", "ConfigurationKitchenSink", "TestAssets.ConfigurationKitchenSink", new[] { "replaceThings", "Stuff", "replaceThere", "You" })]
-        [InlineData("RegexMatch_RegexMatchMacroPositive", "TemplateWithRegexMatchMacro", "TestAssets.TemplateWithRegexMatchMacro", new[] { "name", "hello" })]
-        [InlineData("RegexMatch_RegexMatchMacroNegative", "TemplateWithRegexMatchMacro", "TestAssets.TemplateWithRegexMatchMacro", new[] { "name", "there" })]
-        [InlineData("TemplateWithTagsBasicTest", "TemplateWithTags", "TestAssets.TemplateWithTags", null)]
-        [InlineData("ValueForms", "TemplateWithValueForms", "TestAssets.TemplateWithValueForms", new[] { "foo", "Test.Value6", "param1", "MyPascalTestValue", "param2", "myCamelTestValue", "param3", "my test text" })]
-        [InlineData("ValueForms_DerivedSymbolWithValueForms", "TemplateWithDerivedSymbolWithValueForms", "TestAssets.TemplateWithDerivedSymbolWithValueForms", new[] { "n", "Test.AppSeven" })]
+        [TestMethod]
+        [DataRow("DefaultIfOptionWithoutValue_NoValueDefaultsNotUsedIfSwitchesNotSpecified", "DefaultIfOptionWithoutValue", "TestAssets.DefaultIfOptionWithoutValue", null)]
+        [DataRow("DefaultIfOptionWithoutValue_NoValueDefaultForChoiceParamIsUsed", "DefaultIfOptionWithoutValue", "TestAssets.DefaultIfOptionWithoutValue", new[] { "MyChoice", null })]
+        [DataRow("DefaultIfOptionWithoutValue_NoValueDefaultForStringParamIsUsed", "DefaultIfOptionWithoutValue", "TestAssets.DefaultIfOptionWithoutValue", new[] { "MyString", null })]
+        [DataRow("DefaultIfOptionWithoutValue_NoValueDefault_UserProvidedValuesAreIsUsed", "DefaultIfOptionWithoutValue", "TestAssets.DefaultIfOptionWithoutValue", new[] { "MyString", "UserString", "MyChoice", "OtherChoice" })]
+        [DataRow("Renames_FileRenames", "TemplateWithRenames", "TestAssets.TemplateWithRenames", new[] { "foo", "baz", "testForms", "TestProject" })]
+        [DataRow("Renames_SourceNameFileRenames", "TemplateWithSourceName", "TestAssets.TemplateWithSourceName", new[] { "name", "baz" })]
+        [DataRow("Renames_NegativeFileRenames", "TemplateWithUnspecifiedSourceName", "TestAssets.TemplateWithUnspecifiedSourceName", new[] { "name", "baz" })]
+        [DataRow("Renames_CustomSourcePathRename", "TemplateWithSourceNameAndCustomSourcePath", "TestAssets.TemplateWithSourceNameAndCustomSourcePath", new[] { "name", "bar" })]
+        [DataRow("Renames_CustomTargetPathRename", "TemplateWithSourceNameAndCustomTargetPath", "TestAssets.TemplateWithSourceNameAndCustomTargetPath", new[] { "name", "bar" })]
+        [DataRow("Renames_CustomSourceAndTargetPathRename", "TemplateWithSourceNameAndCustomSourceAndTargetPaths", "TestAssets.TemplateWithSourceNameAndCustomSourceAndTargetPaths", new[] { "name", "bar" })]
+        [DataRow("Renames_SourcePathOutsideConfigRoot", "TemplateWithSourcePathOutsideConfigRoot", "TestAssets.TemplateWithSourcePathOutsideConfigRoot", new[] { "name", "baz" })]
+        [DataRow("Renames_SourceNameInTargetPathGetsRenamed", "TemplateWithSourceNameInTargetPathGetsRenamed", "TestAssets.TemplateWithSourceNameInTargetPathGetsRenamed", new[] { "name", "baz" })]
+        [DataRow("Renames_PlaceholderFiles", "TemplateWithPlaceholderFiles", "TestAssets.TemplateWithPlaceholderFiles", null)]
+        [DataRow("Renames_DerivedSymbolFileRename", "TemplateWithDerivedSymbolFileRename", "TestAssets.TemplateWithDerivedSymbolFileRename", new[] { "name", "Last.Part.Is.For.Rename" })]
+        [DataRow("Renames_MultipleRenamesOnSameFile", "TemplateWithMultipleRenamesOnSameFile", "TestAssets.TemplateWithMultipleRenamesOnSameFile", new[] { "fooRename", "base", "barRename", "ball" })]
+        [DataRow("Renames_MultipleRenamesOnSameFileHandlesOverlap", "TemplateWithMultipleRenamesOnSameFileHandlesOverlap", "TestAssets.TemplateWithMultipleRenamesOnSameFileHandlesOverlap", new[] { "fooRename", "pin", "oobRename", "ball" })]
+        [DataRow("Renames_MultipleRenamesOnSameFileHandlesInducedOverlap", "TemplateWithMultipleRenamesOnSameFileHandlesInducedOverlap", "TestAssets.TemplateWithMultipleRenamesOnSameFileHandlesInducedOverlap", new[] { "fooRename", "bar", "barRename", "baz" })]
+        [DataRow("Renames_CaseSensitiveNameBasedRenames", "TemplateWithCaseSensitiveNameBasedRenames", "TestAssets.TemplateWithCaseSensitiveNameBasedRenames", new[] { "name", "NewName" })]
+        [DataRow("Renames_JoinAndFolderRename", "TemplateWithJoinAndFolderRename", "TestAssets.TemplateWithJoinAndFolderRename", new[] { "name", "NewName", "product", "Office" })]
+        [DataRow("KitchenSink_ConfigurationKitchenSink", "ConfigurationKitchenSink", "TestAssets.ConfigurationKitchenSink", new[] { "replaceThings", "Stuff", "replaceThere", "You" })]
+        [DataRow("RegexMatch_RegexMatchMacroPositive", "TemplateWithRegexMatchMacro", "TestAssets.TemplateWithRegexMatchMacro", new[] { "name", "hello" })]
+        [DataRow("RegexMatch_RegexMatchMacroNegative", "TemplateWithRegexMatchMacro", "TestAssets.TemplateWithRegexMatchMacro", new[] { "name", "there" })]
+        [DataRow("TemplateWithTagsBasicTest", "TemplateWithTags", "TestAssets.TemplateWithTags", null)]
+        [DataRow("ValueForms", "TemplateWithValueForms", "TestAssets.TemplateWithValueForms", new[] { "foo", "Test.Value6", "param1", "MyPascalTestValue", "param2", "myCamelTestValue", "param3", "my test text" })]
+        [DataRow("ValueForms_DerivedSymbolWithValueForms", "TemplateWithDerivedSymbolWithValueForms", "TestAssets.TemplateWithDerivedSymbolWithValueForms", new[] { "n", "Test.AppSeven" })]
         public async Task LegacyTests(string scenarioName, string templateFolderName, string templateShortName, string?[]? parametersArray)
         {
             string workingDirectory = TestUtils.CreateTemporaryFolder();
@@ -154,10 +156,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             .WithInstantiationThroughTemplateCreatorApi(parameters);
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            await engine.Execute(options, TestContext.CancellationTokenSource.Token);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LegacyTest_PortsAndCoalesceRenames()
         {
             string workingDirectory = TestUtils.CreateTemporaryFolder();
@@ -190,7 +192,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             .WithInstantiationThroughTemplateCreatorApi(parameters);
 
             VerificationEngine engine = new(_log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            await engine.Execute(options, TestContext.CancellationTokenSource.Token);
         }
 
         private Dictionary<string, string?> ConvertToParameters(string?[]? parametersArray)

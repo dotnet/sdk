@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -8,16 +8,15 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
-    [CollectionDefinition("Localization Tests")]
-    public class LocalizationTestsCollection
-    {
-        //this collection is used in order that the tests are run sequentially, as they change UI localization.
-    }
-
-    [Collection("Localization Tests")]
+    // [DoNotParallelize] mirrors the xUnit [Collection("Localization Tests")] grouping
+    // that forced these tests to run sequentially (they mutate CurrentUICulture).
+    [TestClass]
+    [DoNotParallelize]
     public class LocalizationTests : BootstrapperTestBase
     {
-        [Fact]
+        public TestContext TestContext { get; set; } = null!;
+
+        [TestMethod]
         public async Task SkipsLocalizationOnInstall_WhenInvalidFormat()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
@@ -27,19 +26,19 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string testTemplateLocation = GetTestTemplateLocation("Invalid/Localization/InvalidFormat");
 
             List<InstallRequest> installRequests = new() { new InstallRequest(testTemplateLocation) };
-            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.Current.CancellationToken);
-            Assert.True(installationResults.Single().Success);
+            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.CancellationTokenSource.Token);
+            Assert.IsTrue(installationResults.Single().Success);
 
             loggedMessages.Clear();
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.Current.CancellationToken);
-            Assert.Single(foundTemplates);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.CancellationTokenSource.Token);
+            Assert.ContainsSingle(foundTemplates);
 
-            (LogLevel level, string message) = Assert.Single(loggedMessages, m => m.Level == LogLevel.Warning);
+            (LogLevel level, string message) = Assert.ContainsSingle(loggedMessages.Where(m => m.Level == LogLevel.Warning));
             Assert.Contains("Failed to read or parse localization file", message);
             Assert.Contains("localize/templatestrings.de-DE.json", message);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SkipsLocalizationOnInstall_WhenLocalizationValidationFails()
         {
             List<(LogLevel Level, string Message)> loggedMessages = new();
@@ -75,18 +74,18 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             };
 
             List<InstallRequest> installRequests = new() { new InstallRequest(testTemplateLocation) };
-            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.Current.CancellationToken);
-            Assert.True(installationResults.Single().Success);
+            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.CancellationTokenSource.Token);
+            Assert.IsTrue(installationResults.Single().Success);
 
             loggedMessages.Clear();
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.Current.CancellationToken);
-            Assert.Single(foundTemplates);
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.CancellationTokenSource.Token);
+            Assert.ContainsSingle(foundTemplates);
 
-            var errors = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message);
-            var warnings = loggedMessages.Where(m => m.Level == LogLevel.Warning).Select(m => m.Message);
+            var errors = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message).ToList();
+            var warnings = loggedMessages.Where(m => m.Level == LogLevel.Warning).Select(m => m.Message).ToList();
 
-            Assert.Equal(expectedErrors.Length, errors.Count());
-            Assert.Equal(expectedWarnings.Length, warnings.Count());
+            Assert.AreEqual(expectedErrors.Length, errors.Count);
+            Assert.AreEqual(expectedWarnings.Length, warnings.Count);
 
             foreach (string error in expectedErrors)
             {
@@ -98,7 +97,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SkipsLocalizationOnInstantiate_WhenInvalidFormat()
         {
             var oldCulture = CultureInfo.CurrentUICulture;
@@ -117,15 +116,15 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 TestUtils.DirectoryCopy(validTestTemplateLocation, tmpTemplateLocation, copySubDirs: true);
 
                 List<InstallRequest> installRequests = new() { new InstallRequest(tmpTemplateLocation) };
-                IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.Current.CancellationToken);
-                Assert.True(installationResults.Single().Success);
+                IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.CancellationTokenSource.Token);
+                Assert.IsTrue(installationResults.Single().Success);
 
                 loggedMessages.Clear();
-                var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.Current.CancellationToken);
-                var templateToRun = Assert.Single(foundTemplates);
+                var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.CancellationTokenSource.Token);
+                var templateToRun = Assert.ContainsSingle(foundTemplates);
 
-                Assert.DoesNotContain(loggedMessages, m => m.Level == LogLevel.Error);
-                Assert.DoesNotContain(loggedMessages, m => m.Level == LogLevel.Warning);
+                Assert.IsFalse(loggedMessages.Any(m => m.Level == LogLevel.Error));
+                Assert.IsFalse(loggedMessages.Any(m => m.Level == LogLevel.Warning));
 
                 loggedMessages.Clear();
 
@@ -135,16 +134,16 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                     Path.Combine(tmpTemplateLocation, ".template.config", "localize", "templatestrings.de-DE.json"),
                     overwrite: true);
 
-                var result = await bootstrapper.CreateAsync(templateToRun, "MyApp.1", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
+                var result = await bootstrapper.CreateAsync(templateToRun, "MyApp.1", output, new Dictionary<string, string?>(), cancellationToken: TestContext.CancellationTokenSource.Token);
 
-                Assert.True(result.Status == Edge.Template.CreationResultStatus.Success);
+                Assert.IsTrue(result.Status == Edge.Template.CreationResultStatus.Success);
 
-                var errors = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message);
-                var warnings = loggedMessages.Where(m => m.Level == LogLevel.Warning).Select(m => m.Message);
+                var errors = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message).ToList();
+                var warnings = loggedMessages.Where(m => m.Level == LogLevel.Warning).Select(m => m.Message).ToList();
 
-                Assert.Empty(errors);
-                string warning = Assert.Single(warnings);
-                Assert.Equal($"Fehler beim Lesen oder parsen der Lokalisierungsdatei {tmpTemplateLocation}{Path.DirectorySeparatorChar}.template.config/localize/templatestrings.de-DE.json. Sie wird bei der weiteren Verarbeitung übersprungen.", warning);
+                Assert.IsEmpty(errors);
+                string warning = Assert.ContainsSingle(warnings);
+                Assert.AreEqual($"Fehler beim Lesen oder parsen der Lokalisierungsdatei {tmpTemplateLocation}{Path.DirectorySeparatorChar}.template.config/localize/templatestrings.de-DE.json. Sie wird bei der weiteren Verarbeitung übersprungen.", warning);
             }
             finally
             {
@@ -152,7 +151,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SkipsLocalizationOnInstantiate_WhenLocalizationValidationFails()
         {
             var oldCulture = CultureInfo.CurrentUICulture;
@@ -183,15 +182,15 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                     "Lokalisierung „de-DE“ der Vorlage 'name' (TestAssets.TemplateWithLocalization) konnte nicht geladen werden: Die Lokalisierungsdatei ist ungültig. Die Lokalisierung wird übersprungen.",
                 };
                 List<InstallRequest> installRequests = new() { new InstallRequest(tmpTemplateLocation) };
-                IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.Current.CancellationToken);
-                Assert.True(installationResults.Single().Success);
+                IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests, cancellationToken: TestContext.CancellationTokenSource.Token);
+                Assert.IsTrue(installationResults.Single().Success);
 
                 loggedMessages.Clear();
-                var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.Current.CancellationToken);
-                var templateToRun = Assert.Single(foundTemplates);
+                var foundTemplates = await bootstrapper.GetTemplatesAsync(TestContext.CancellationTokenSource.Token);
+                var templateToRun = Assert.ContainsSingle(foundTemplates);
 
-                Assert.DoesNotContain(loggedMessages, m => m.Level == LogLevel.Error);
-                Assert.DoesNotContain(loggedMessages, m => m.Level == LogLevel.Warning);
+                Assert.IsFalse(loggedMessages.Any(m => m.Level == LogLevel.Error));
+                Assert.IsFalse(loggedMessages.Any(m => m.Level == LogLevel.Warning));
 
                 loggedMessages.Clear();
 
@@ -201,15 +200,15 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 Path.Combine(tmpTemplateLocation, ".template.config", "localize", "templatestrings.de-DE.json"),
                 overwrite: true);
 
-                var result = await bootstrapper.CreateAsync(templateToRun, "MyApp.1", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
+                var result = await bootstrapper.CreateAsync(templateToRun, "MyApp.1", output, new Dictionary<string, string?>(), cancellationToken: TestContext.CancellationTokenSource.Token);
 
-                Assert.True(result.Status == Edge.Template.CreationResultStatus.Success);
+                Assert.IsTrue(result.Status == Edge.Template.CreationResultStatus.Success);
 
-                var errors = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message);
-                var warnings = loggedMessages.Where(m => m.Level == LogLevel.Warning).Select(m => m.Message);
+                var errors = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message).ToList();
+                var warnings = loggedMessages.Where(m => m.Level == LogLevel.Warning).Select(m => m.Message).ToList();
 
-                Assert.Equal(expectedErrors.Length, errors.Count());
-                Assert.Equal(expectedWarnings.Length, warnings.Count());
+                Assert.AreEqual(expectedErrors.Length, errors.Count);
+                Assert.AreEqual(expectedWarnings.Length, warnings.Count);
 
                 foreach (string error in expectedErrors)
                 {
@@ -227,5 +226,4 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             }
         }
     }
-
 }
