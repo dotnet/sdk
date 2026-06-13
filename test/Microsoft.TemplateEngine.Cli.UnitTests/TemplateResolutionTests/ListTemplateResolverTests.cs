@@ -16,6 +16,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
     [TestClass]
     public class ListTemplateResolverTests : BaseTest
     {
+        public new TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         public async Task TestGetTemplateResolutionResult_UniqueNameMatchesCorrectly()
         {
@@ -29,7 +31,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console2"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsNotNull(matchResult.UnambiguousTemplateGroup);
@@ -51,7 +53,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsNull(matchResult.UnambiguousTemplateGroup);
@@ -74,7 +76,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
@@ -99,7 +101,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list c"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.HasCount(2, matchResult.TemplateGroupsWithMatchingTemplateInfo);
@@ -120,7 +122,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsNotNull(matchResult.UnambiguousTemplateGroup);
@@ -143,7 +145,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --language L2"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsNotNull(matchResult.UnambiguousTemplateGroup);
@@ -166,7 +168,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --language L2"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsFalse(matchResult.TemplateGroupsWithMatchingTemplateInfo.Any());
@@ -193,7 +195,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --type item"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsFalse(matchResult.TemplateGroupsWithMatchingTemplateInfo.Any());
@@ -220,7 +222,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --baseline core"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsFalse(matchResult.TemplateGroupsWithMatchingTemplateInfo.Any());
@@ -247,7 +249,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --language L2 --type item --baseline core"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsFalse(matchResult.TemplateGroupsWithMatchingTemplateInfo.Any());
@@ -274,7 +276,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list zzzzz --language L1 --type project --baseline app"),
                      defaultLanguage: null,
-                     CancellationToken.None);
+                     TestContext.CancellationTokenSource.Token);
 
             Assert.IsFalse(matchResult.HasTemplateGroupMatches);
             Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
@@ -303,7 +305,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list --tag Common"),
                      defaultLanguage: null,
-                     CancellationToken.None);
+                     TestContext.CancellationTokenSource.Token);
 
             Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
@@ -335,7 +337,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list Test"),
                      defaultLanguage: null,
-                     CancellationToken.None);
+                     TestContext.CancellationTokenSource.Token);
 
             Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
@@ -368,7 +370,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list Console"),
                      defaultLanguage: null,
-                     CancellationToken.None);
+                     TestContext.CancellationTokenSource.Token);
 
             Assert.IsTrue(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.HasCount(1, matchResult.TemplateGroupsWithMatchingTemplateInfo);
@@ -396,7 +398,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor("new list --language L2 --type item --tag Common"),
                      defaultLanguage: null,
-                     CancellationToken.None);
+                     TestContext.CancellationTokenSource.Token);
 
             Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsFalse(matchResult.TemplateGroupsWithMatchingTemplateInfo.Any());
@@ -430,7 +432,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                      GetListCommandArgsFor($"new list console --author {commandAuthor}"),
                      defaultLanguage: null,
-                     CancellationToken.None);
+                     TestContext.CancellationTokenSource.Token);
 
             if (matchExpected)
             {
@@ -482,7 +484,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor($"new list console --tag {commandTag}"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             if (matchExpected)
             {
@@ -520,7 +522,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 GetListCommandArgsFor("new list console --type item"),
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.IsFalse(matchResult.HasTemplateGroupWithTemplateInfoMatches);
             Assert.IsFalse(matchResult.TemplateGroupsWithMatchingTemplateInfo.Any());
@@ -555,7 +557,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 args,
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.AreEqual(2, matchResult.ContraintsMismatchGroupCount);
             Assert.IsFalse(matchResult.TemplateGroupsWithMatchingTemplateInfoAndParameters.Any());
@@ -586,7 +588,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
             TemplateResolutionResult matchResult = await resolver.ResolveTemplatesAsync(
                 args,
                 defaultLanguage: null,
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             Assert.AreEqual(0, matchResult.ContraintsMismatchGroupCount);
             Assert.HasCount(2, matchResult.TemplateGroupsWithMatchingTemplateInfoAndParameters);

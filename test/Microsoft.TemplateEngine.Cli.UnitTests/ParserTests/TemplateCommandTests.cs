@@ -16,6 +16,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
     [TestClass]
     public class TemplateCommandTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         public Task CannotCreateCommandForInvalidParameter()
         {
@@ -75,7 +77,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.IsFalse((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, CancellationToken.None)).Any());
+            Assert.IsFalse((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationTokenSource.Token)).Any());
         }
 
         [TestMethod]
@@ -88,7 +90,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.IsTrue((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, CancellationToken.None)).Any());
+            Assert.IsTrue((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationTokenSource.Token)).Any());
         }
 
         [TestMethod]
@@ -100,7 +102,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.IsTrue((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, CancellationToken.None)).Any());
+            Assert.IsTrue((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationTokenSource.Token)).Any());
         }
 
     }

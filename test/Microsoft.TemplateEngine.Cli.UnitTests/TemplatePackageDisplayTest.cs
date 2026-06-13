@@ -17,6 +17,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
     [TestClass]
     public class TemplatePackageDisplayTest
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         public void DisplayUpdateCheckResultTest()
         {
@@ -89,7 +91,7 @@ Installed package has the following vulnerabilities:
                 A.Fake<TemplatePackageManager>(),
                 A.Fake<IEngineEnvironmentSettings>(),
                 A.Fake<TemplateConstraintManager>(),
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             var reportedOutput = fakeOutputReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             reportedOutput.Should().NotBeEmpty();
@@ -135,7 +137,7 @@ Installed package has the following vulnerabilities:
                 A.Fake<TemplatePackageManager>(),
                 A.Fake<IEngineEnvironmentSettings>(),
                 A.Fake<TemplateConstraintManager>(),
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             var reportedErrors = fakeErrorReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             fakeOutputReporter.ReportedStrings.ToString().Should().BeNullOrEmpty();
@@ -178,7 +180,7 @@ Installed package has the following vulnerabilities:
                 A.Fake<TemplatePackageManager>(),
                 A.Fake<IEngineEnvironmentSettings>(),
                 A.Fake<TemplateConstraintManager>(),
-                CancellationToken.None);
+                TestContext.CancellationTokenSource.Token);
 
             var reportedErrors = fakeErrorReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             fakeOutputReporter.ReportedStrings.ToString().Should().BeNullOrEmpty();
