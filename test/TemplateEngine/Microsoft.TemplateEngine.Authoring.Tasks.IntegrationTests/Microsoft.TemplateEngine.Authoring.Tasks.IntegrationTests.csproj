@@ -1,17 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="Resources\**\*" CopyToOutputDirectory="Always" />
     <Compile Remove="Resources\**\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Verify.XunitV3" />
-    <PackageReference Include="Verify.DiffPlex" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +21,9 @@
 
   <ItemGroup>
     <Compile Include="$(TemplateEngSrcDir)Tools\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- The shared CommandResultAssertions.cs uses xUnit's Assert.True/False/NotNull which clash
+         with MSTest's Assert global using. Replace it with a local MSTest-friendly copy below. -->
+    <Compile Remove="$(TemplateEngSrcDir)Tools\Shared\Microsoft.TemplateEngine.CommandUtils\CommandResultAssertions.cs" />
   </ItemGroup>
 
 </Project>
