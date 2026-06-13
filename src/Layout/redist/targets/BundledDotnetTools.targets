@@ -2,6 +2,8 @@
 
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.SelectRuntimeIdentifierSpecificItems" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
+  <Import Project="MacOSNativeAotSdkTools.props" />
+
   <PropertyGroup>
     <AspNetCoreRidSpecificToolPackageRids>;linux-x64;linux-arm;linux-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;win-x64;win-x86;win-arm64;osx-x64;osx-arm64;</AspNetCoreRidSpecificToolPackageRids>
     <AspNetCoreRidSpecificToolPackageRids Condition="'$(ProductMonikerRid)' != '' and !$(AspNetCoreRidSpecificToolPackageRids.Contains(';$(ProductMonikerRid);'))">$(AspNetCoreRidSpecificToolPackageRids)$(ProductMonikerRid);</AspNetCoreRidSpecificToolPackageRids>
@@ -37,6 +39,31 @@
       <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLowerInvariant())</RestoredNupkgPath>
     </BundledDotnetTool>
   </ItemGroup>
+
+  <Target Name="ValidateMacOSNativeAotSdkToolRegistrations"
+          Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">
+    <ItemGroup>
+      <_BundledDotnetToolWithMacOSRidSpecificPackage Include="@(BundledDotnetTool)"
+                                                     Condition="$([MSBuild]::ValueOrDefault('%(RidSpecificPackageRids)', '').Contains(';osx-x64;')) or
+                                                                $([MSBuild]::ValueOrDefault('%(RidSpecificPackageRids)', '').Contains(';osx-arm64;'))">
+        <ToolName>%(Identity)</ToolName>
+      </_BundledDotnetToolWithMacOSRidSpecificPackage>
+      <_RegisteredMacOSNativeAotSdkTool Include="@(MacOSNativeAotSdkTool)">
+        <ToolName>%(Identity)</ToolName>
+      </_RegisteredMacOSNativeAotSdkTool>
+
+      <_UnregisteredMacOSNativeAotSdkTool Include="@(_BundledDotnetToolWithMacOSRidSpecificPackage)" />
+      <_UnregisteredMacOSNativeAotSdkTool Remove="@(_RegisteredMacOSNativeAotSdkTool)" MatchOnMetadata="ToolName" />
+
+      <_UnusedMacOSNativeAotSdkToolRegistration Include="@(_RegisteredMacOSNativeAotSdkTool)" />
+      <_UnusedMacOSNativeAotSdkToolRegistration Remove="@(_BundledDotnetToolWithMacOSRidSpecificPackage)" MatchOnMetadata="ToolName" />
+    </ItemGroup>
+
+    <Error Condition="'@(_UnregisteredMacOSNativeAotSdkTool)' != ''"
+           Text="Bundled dotnet tool(s) @(_UnregisteredMacOSNativeAotSdkTool, ', ') produce macOS RID-specific packages but are not registered in src/Layout/redist/targets/MacOSNativeAotSdkTools.props for signing and hardened runtime." />
+    <Error Condition="'@(_UnusedMacOSNativeAotSdkToolRegistration)' != ''"
+           Text="Registered macOS NativeAOT SDK tool(s) @(_UnusedMacOSNativeAotSdkToolRegistration, ', ') no longer correspond to macOS RID-specific bundled dotnet tools. Remove the stale registration from src/Layout/redist/targets/MacOSNativeAotSdkTools.props." />
+  </Target>
 
   <Target Name="SelectBundledDotnetToolPackages"
           Condition="'@(BundledDotnetTool)' != ''">
@@ -99,7 +126,7 @@
   </Target>
 
   <Target Name="LayoutBundledTools"
-          DependsOnTargets="SelectBundledDotnetToolPackages"
+          DependsOnTargets="SelectBundledDotnetToolPackages;ValidateMacOSNativeAotSdkToolRegistrations"
           Condition="'@(BundledDotnetTool)' != ''">
     <ItemGroup>
       <BundledToolFiles Include="%(_SelectedBundledDotnetToolPackage.RestoredPackagePath)\**\*.*" PackageToRestore="%(_SelectedBundledDotnetToolPackage.ToolId)" PackageVersionToRestore="%(_SelectedBundledDotnetToolPackage.ToolVersion)" />
