@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
 
             new DotnetCommand(Log, "run")
             {
-                WorkingDirectory = Path.Combine(testAsset.TestRoot, testProject.Name)
+                WorkingDirectory = Path.Combine(testAsset.TestRoot, testProject.Name!)
             }
                 .Execute()
                 .Should()
