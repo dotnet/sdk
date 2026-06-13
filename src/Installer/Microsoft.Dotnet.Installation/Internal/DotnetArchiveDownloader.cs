@@ -276,12 +276,14 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
 
     /// <summary>
     /// Returns true if a manifest miss should fall back to the blob feed.
-    /// We only fall back when the user gave us an exact prerelease version
-    /// (e.g. <c>10.0.100-preview.4.25216.37</c>) and the manifest doesn't yet
-    /// know about it, OR when the channel is a daily channel (where the
-    /// resolved version always points at a blob-feed-only build). Stable
-    /// versions and named channels (e.g. "preview") are served only from the
-    /// manifest so that real misses surface as errors.
+    /// We fall back when the channel is a daily channel (whose resolved version always points at
+    /// a blob-feed-only build) OR when the resolved version is a prerelease the signed manifest
+    /// doesn't list AND the channel is a version scope (an exact version, major/major.minor, or a
+    /// roll-forward band like <c>11.0.1xx</c>). The version-scope case covers both an exact
+    /// prerelease the user typed (e.g. <c>10.0.100-preview.4.25216.37</c>) and a band channel that
+    /// resolved to a prerelease (e.g. migrating a system <c>11.0.1xx</c> install whose only build
+    /// is a preview). Stable versions and named keyword channels (e.g. "preview", "lts") are
+    /// served only from the manifest so that real misses surface as errors.
     /// </summary>
     private static bool ShouldFallbackToBlobFeed(
         DotnetInstallRequest installRequest,
@@ -294,13 +296,10 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             return true;
         }
 
-        if (string.IsNullOrEmpty(resolvedVersion.Prerelease)
-            || !installRequest.Channel.IsFullySpecifiedVersion())
-        {
-            return false;
-        }
-
-        return true;
+        // A prerelease version the manifest didn't list is a blob-feed-only build — but only treat
+        // it as such for version-scope channels, not named channels whose misses are real errors.
+        return !string.IsNullOrEmpty(resolvedVersion.Prerelease)
+            && installRequest.Channel.IsVersionScope();
     }
 
     /// <summary>
@@ -314,9 +313,13 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         // Blob-feed downloads have no detached CMS signature — only a SHA-512 hash file.
         // Defense-in-depth: refuse before issuing any blob-feed request when the host has
         // the "block unsigned downloads" policy enabled. The user-facing warning about
-        // unsigned downloads is emitted up-front by the CLI workflow layer (see
-        // InstallExecutor.ExecuteInstalls / UpdateWorkflow.InstallVersion via
-        // UnsignedSourcePolicy.MayDownloadUnsigned), so no per-fallback warning is needed here.
+        // unsigned downloads is emitted by the CLI workflow layer (see
+        // InstallExecutor.ExecuteInstalls / UpdateWorkflow.InstallVersion). It is shown up-front
+        // when the channel makes the blob feed predictable; for cases that only surface here
+        // (e.g. a roll-forward band that resolves to a blob-feed-only preview) we record the
+        // fallback via UnsignedSourcePolicy.MarkUnsignedFallbackUsed so that layer can show the
+        // warning afterward. This class has no console access and runs during the progress
+        // display, so it must not print directly.
         if (UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
         {
             throw new DotnetInstallException(
@@ -332,6 +335,8 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 version: resolvedVersion.ToString(),
                 component: installRequest.Component.ToString());
         }
+
+        UnsignedSourcePolicy.MarkUnsignedFallbackUsed();
 
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var locationsChecked = new List<string>();

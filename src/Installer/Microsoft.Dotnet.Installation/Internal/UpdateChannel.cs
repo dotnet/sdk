@@ -25,6 +25,14 @@ internal class UpdateChannel
     }
 
     /// <summary>
+    /// True when the channel is a version scope — an exact version, a major or major.minor scope,
+    /// or a feature band like <c>10.0.1xx</c> — rather than a named keyword channel such as
+    /// <c>latest</c>, <c>lts</c>, or <c>preview</c>. Version scopes always start with a digit,
+    /// whereas named channels start with a letter.
+    /// </summary>
+    public bool IsVersionScope() => Name.Length > 0 && char.IsDigit(Name[0]);
+
+    /// <summary>
     /// True if this channel refers to a daily build — either bare <c>daily</c>
     /// or a scope with a <c>-daily</c> suffix (e.g. <c>10.0-daily</c>,
     /// <c>10.0.1xx-daily</c>).

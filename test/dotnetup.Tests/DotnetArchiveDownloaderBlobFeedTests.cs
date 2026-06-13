@@ -30,9 +30,14 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
         _log = log;
         // Defensive: clear any IT-policy override leaked from an earlier test.
         UnsignedSourcePolicy.OverrideForTesting = null;
+        UnsignedSourcePolicy.ResetWarningStateForTesting();
     }
 
-    public void Dispose() => UnsignedSourcePolicy.OverrideForTesting = null;
+    public void Dispose()
+    {
+        UnsignedSourcePolicy.OverrideForTesting = null;
+        UnsignedSourcePolicy.ResetWarningStateForTesting();
+    }
 
     [Theory]
     [InlineData(InstallComponent.SDK, "Sdk", "dotnet-sdk")]
@@ -172,6 +177,56 @@ public class DotnetArchiveDownloaderBlobFeedTests : IDisposable
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
         history.Should().BeEmpty("named channel misses must not fall back to blob feeds");
+    }
+
+    /// <summary>
+    /// A roll-forward band channel (e.g. "11.0.1xx") that resolves to a prerelease the manifest
+    /// does not list — as happens when migrating a system preview install — must fall back to the
+    /// blob feed and record that an unsigned download occurred so the warning can be shown.
+    /// </summary>
+    [Fact]
+    public void ResolveManifestEntry_FallsBackToBlobFeed_ForBandChannelResolvingToPrerelease()
+    {
+        const string band = "11.0.1xx";
+        const string resolved = "11.0.100-preview.5.26263.106";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        string ext = DotnetupTestUtilities.DefaultArchiveFileExtension;
+        string expectedHash = new string('a', 128);
+        var (handler, history) = BuildHandler(new()
+        {
+            [$"https://ci.dot.net/public-checksums/Sdk/{resolved}/dotnet-sdk-{resolved}-{rid}{ext}.sha512"] = (HttpStatusCode.OK, expectedHash + "\n"),
+        });
+
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+
+        var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest(band, InstallComponent.SDK), new ReleaseVersion(resolved));
+
+        url.Should().Be($"https://ci.dot.net/public/Sdk/{resolved}/dotnet-sdk-{resolved}-{rid}{ext}");
+        hash.Should().Be(expectedHash);
+        history.Should().HaveCount(1, "band channels resolving to a prerelease should probe the blob feed");
+        UnsignedSourcePolicy.UnsignedFallbackUsed.Should().BeTrue("the blob-feed fallback must record that an unsigned download occurred");
+    }
+
+    /// <summary>
+    /// A band channel that resolves to a stable (GA) version must NOT fall back to the blob feed;
+    /// a manifest miss there is a real error.
+    /// </summary>
+    [Fact]
+    public void ResolveManifestEntry_DoesNotFallback_ForBandChannelResolvingToStable()
+    {
+        const string band = "10.0.3xx";
+        const string resolved = "10.0.300";
+        var (handler, history) = BuildHandler(new());
+
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+
+        var ex = Assert.Throws<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildRequest(band, InstallComponent.SDK), new ReleaseVersion(resolved)));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
+        history.Should().BeEmpty("stable band resolutions must not fall back to blob feeds");
     }
 
     /// <summary>
