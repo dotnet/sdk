@@ -560,7 +560,7 @@ class Program
         {
             string targetFramework = "";
             TestInvalidTargetFramework("EmptyTargetFramework", targetFramework, useSolution,
-                $"The TargetFramework value '{targetFramework}' was not recognized");
+                "The TargetFramework property is empty");
         }
 
         [Theory]
