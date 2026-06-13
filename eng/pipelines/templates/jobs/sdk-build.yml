@@ -223,6 +223,26 @@ jobs:
       continueOnError: true
       condition: always()
 
+    - task: CopyFiles@2
+      displayName: 🟣 Copy NativeAOT Size Analysis Files
+      inputs:
+        SourceFolder: $(Build.SourcesDirectory)/artifacts/obj/dotnet-aot
+        Contents: |
+          $(buildConfiguration)/**/native/dotnet-aot.mstat
+          $(buildConfiguration)/**/native/dotnet-aot.scan.dgml
+        TargetFolder: $(Build.ArtifactStagingDirectory)/aot-size-analysis
+        flattenFolders: true
+      continueOnError: true
+      condition: not(canceled())
+
+    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+      displayName: 🟣 Publish NativeAOT Size Analysis
+      inputs:
+        targetPath: $(Build.ArtifactStagingDirectory)/aot-size-analysis
+        artifactName: $(System.PhaseName)_AotSizeAnalysis
+      continueOnError: true
+      condition: not(canceled())
+
     - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
       displayName: 🟣 Publish Built Assets
       inputs:
