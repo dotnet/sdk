@@ -14,9 +14,9 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
     [TestClass]
-    public class TemplateCommandTests
+    public class TemplateCommandTests : VerifyBase
     {
-        public TestContext TestContext { get; set; } = null!;
+        public new TestContext TestContext { get; set; } = null!;
 
         [TestMethod]
         public Task CannotCreateCommandForInvalidParameter()
