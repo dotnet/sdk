@@ -1,0 +1,43 @@
+<!--
+  PROTOTYPE: Expecto (F#) framework wiring for Microsoft.NET.Sdk.Testing.
+  Expecto on MTP is provided via Expecto.TestingPlatformAdapter.
+  Expecto on VSTest is provided via YoloDev.Expecto.TestSdk.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TestingPlatformDotnetTestSupport Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform' and '$(TestingPlatformDotnetTestSupport)' == ''">true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(ExpectoVersion)' != ''">
+    <PackageReference Include="Expecto">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(ExpectoVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="Expecto" Version="$(ExpectoVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+
+    <PackageReference Include="Expecto.TestingPlatformAdapter"
+                      Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform'">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(ExpectoVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="Expecto.TestingPlatformAdapter" Version="$(ExpectoVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(TestPlatform)' == 'MicrosoftTestingPlatform' " />
+
+    <PackageReference Include="YoloDev.Expecto.TestSdk"
+                      Condition="'$(TestPlatform)' == 'VSTest' and '$(YoloDevExpectoTestSdkVersion)' != ''">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(YoloDevExpectoTestSdkVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="YoloDev.Expecto.TestSdk" Version="$(YoloDevExpectoTestSdkVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(TestPlatform)' == 'VSTest' and '$(YoloDevExpectoTestSdkVersion)' != '' " />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(ExpectoVersion)' != ''">
+    <PackageReference Include="Expecto">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(ExpectoVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="Expecto" Version="$(ExpectoVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+  </ItemGroup>
+
+</Project>
+

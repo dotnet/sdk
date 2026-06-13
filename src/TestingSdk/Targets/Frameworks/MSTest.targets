@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    No mandatory-version validation: MSTestVersion has a pinned default in
+    _DefaultPackageVersions.props. Users can override with a fixed version or '*'.
+  -->
+</Project>

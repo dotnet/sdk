@@ -1,0 +1,32 @@
+<!--
+  PROTOTYPE: MSTest framework wiring for Microsoft.NET.Sdk.Testing.
+
+  NOTE: A future iteration may delegate to MSTest.Sdk via Sdk import rather than
+  re-implementing the MSTest reference shape here. For the prototype we inline a
+  minimal MSTest setup so the SDK can be exercised end-to-end without depending
+  on MSTest.Sdk being available.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <EnableMSTestRunner Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform' and '$(EnableMSTestRunner)' == ''">true</EnableMSTestRunner>
+    <TestingPlatformDotnetTestSupport Condition="'$(TestPlatform)' == 'MicrosoftTestingPlatform' and '$(TestingPlatformDotnetTestSupport)' == ''">true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' != 'true' and '$(MSTestVersion)' != ''">
+    <PackageReference Include="MSTest">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(MSTestVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="MSTest" Version="$(MSTestVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestUtilityProject)' == 'true' and '$(MSTestVersion)' != ''">
+    <PackageReference Include="MSTest.TestFramework">
+      <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">$(MSTestVersion)</Version>
+    </PackageReference>
+    <PackageVersion Include="MSTest.TestFramework" Version="$(MSTestVersion)"
+                    Condition=" '$(ManagePackageVersionsCentrally)' == 'true' " />
+  </ItemGroup>
+
+</Project>
