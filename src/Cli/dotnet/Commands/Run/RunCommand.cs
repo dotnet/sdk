@@ -816,23 +816,22 @@ public class RunCommand
             parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
         }
 
-        // if the application arguments contain any binlog args then we need to remove them from the application arguments and apply
-        // them to the restore args.
-        // this is because we can't model the binlog command structure in MSbuild in the System.CommandLine parser, but we need
-        // bl information to synchronize the restore and build logger configurations
+        // If the application arguments contain any logger args then we need to remove them from the application arguments and apply
+        // them to the restore args. This is because we can't model the logger command structure in MSBuild in the System.CommandLine
+        // parser, but we need logger information to synchronize the restore and build logger configurations.
         var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList();
 
-        LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
+        LoggerUtility.SeparateLoggerArguments(applicationArguments, out var loggerArgs, out var nonLoggerArgs);
 
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(definition).ToList();
-        if (binLogArgs.Count > 0)
+        if (loggerArgs.Count > 0)
         {
-            msbuildProperties.AddRange(binLogArgs);
+            msbuildProperties.AddRange(loggerArgs);
         }
 
         // Only consider `-` to mean "read code from stdin" if it is before double dash `--`
         // (otherwise it should be forwarded to the target application as its command-line argument).
-        bool readCodeFromStdin = nonBinLogArgs is ["-", ..] &&
+        bool readCodeFromStdin = nonLoggerArgs is ["-", ..] &&
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
@@ -844,7 +843,7 @@ public class RunCommand
             throw new GracefulException(CliCommandStrings.CannotCombineOptions, definition.ProjectOption.Name, definition.FileOption.Name);
         }
 
-        string[] args = [.. nonBinLogArgs];
+        string[] args = [.. nonLoggerArgs];
         string? projectFilePath = DiscoverProjectFilePath(
             filePath: fileOption,
             projectFileOrDirectoryPath: projectOption,
@@ -916,8 +915,8 @@ public class RunCommand
                 stdinStream.CopyTo(fileStream);
             }
 
-            Debug.Assert(nonBinLogArgs[0] == "-");
-            nonBinLogArgs[0] = entryPointFilePath;
+            Debug.Assert(nonLoggerArgs[0] == "-");
+            nonLoggerArgs[0] = entryPointFilePath;
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
