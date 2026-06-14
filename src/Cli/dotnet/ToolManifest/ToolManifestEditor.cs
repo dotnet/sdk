@@ -4,6 +4,8 @@
 #nullable disable
 
 using System.Buffers;
+using System.IO;
+using System.Text;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -50,7 +52,7 @@ internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileD
             {
                 var toEdit = deserializedManifest.Tools.Single(t => new PackageId(t.PackageId).Equals(packageId));
                 toEdit.RollForward = rollForward;
-                _fileSystem.File.WriteAllText(manifest.Value, deserializedManifest.ToJson());
+                Write(manifest, deserializedManifest);
                 return;
             }
 
@@ -73,7 +75,18 @@ internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileD
                 RollForward = rollForward,
             });
 
-        _fileSystem.File.WriteAllText(manifest.Value, deserializedManifest.ToJson());
+        Write(manifest, deserializedManifest);
+    }
+
+    private void Write(FilePath manifest, SerializableLocalToolsManifest serializableLocalToolsManifest)
+    {
+        string json = serializableLocalToolsManifest.ToJson(serializableLocalToolsManifest.DetectedNewline);
+
+        json += serializableLocalToolsManifest.TrailingNewline;
+
+        using var stream = _fileSystem.File.OpenFile(manifest.Value, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.None);
+        using var writer = new StreamWriter(stream, serializableLocalToolsManifest.OriginalEncoding);
+        writer.Write(json);
     }
 
     public void Edit(
@@ -106,7 +119,7 @@ internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileD
             throw new ArgumentException($"Manifest {manifest.Value} does not contain package id '{packageId}'.");
         }
 
-        _fileSystem.File.WriteAllText(manifest.Value, deserializedManifest.ToJson());
+        Write(manifest, deserializedManifest);
     }
 
     public (List<ToolManifestPackage> content, bool isRoot)
@@ -136,8 +149,18 @@ internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileD
         try
         {
             using (Stream jsonStream = _fileSystem.File.OpenRead(possibleManifest.Value))
-            using (JsonDocument doc = JsonDocument.Parse(jsonStream))
+            using (var reader = new StreamReader(jsonStream, detectEncodingFromByteOrderMarks: true))
             {
+                var text = reader.ReadToEnd();
+                serializableLocalToolsManifest.OriginalEncoding = reader.CurrentEncoding;
+
+                if (text.EndsWith("\r\n")) serializableLocalToolsManifest.TrailingNewline = "\r\n";
+                else if (text.EndsWith("\n")) serializableLocalToolsManifest.TrailingNewline = "\n";
+                else if (text.EndsWith("\r")) serializableLocalToolsManifest.TrailingNewline = "\r";
+
+                if (text.Contains("\r\n")) serializableLocalToolsManifest.DetectedNewline = "\r\n";
+
+                using JsonDocument doc = JsonDocument.Parse(text);
                 JsonElement root = doc.RootElement;
 
                 if (root.TryGetInt32Value(JsonPropertyVersion, out var version))
@@ -357,12 +380,17 @@ internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileD
 
         public List<SerializableLocalToolSinglePackage> Tools { get; set; }
 
-        public string ToJson()
+        public Encoding OriginalEncoding { get; set; } = Encoding.UTF8;
+
+        public string TrailingNewline { get; set; } = string.Empty;
+
+        public string DetectedNewline { get; set; } = "\n";
+
+        public string ToJson(string newline)
         {
             var arrayBufferWriter = new ArrayBufferWriter<byte>();
-            using (var writer = new Utf8JsonWriter(arrayBufferWriter, new JsonWriterOptions { Indented = true }))
+            using (var writer = new Utf8JsonWriter(arrayBufferWriter, new JsonWriterOptions { Indented = true, NewLine = newline }))
             {
-
                 writer.WriteStartObject();
 
                 if (Version.HasValue)
@@ -427,8 +455,6 @@ internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileD
 
         serializableLocalToolsManifest.Tools = [.. serializableLocalToolsManifest.Tools.Where(package => !package.PackageId.Equals(packageId.ToString(), StringComparison.Ordinal))];
 
-        _fileSystem.File.WriteAllText(
-                       manifest.Value,
-                       serializableLocalToolsManifest.ToJson());
+        Write(manifest, serializableLocalToolsManifest);
     }
 }
