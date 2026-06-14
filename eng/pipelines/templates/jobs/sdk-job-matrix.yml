@@ -6,6 +6,7 @@ parameters:
   windowsJobParameterSets:
   - categoryName: TestBuild
     publishRetryConfig: true
+    runNativeAotCliTests: true
   - categoryName: FullFramework
     testFullMSBuild: true
   - categoryName: AoT
@@ -14,6 +15,7 @@ parameters:
   linuxJobParameterSets:
   - categoryName: TestBuild
     osProperties: $(linuxOsglibcProperties)
+    runNativeAotCliTests: true
   - categoryName: TestBuild
     targetArchitecture: arm64
     runtimeIdentifier: linux-arm64
@@ -31,6 +33,7 @@ parameters:
   - categoryName: TestBuild
     targetArchitecture: arm64
     runtimeIdentifier: osx-arm64
+    runNativeAotCliTests: true
   - categoryName: AoT
     runAoTTests: true
     targetArchitecture: arm64
