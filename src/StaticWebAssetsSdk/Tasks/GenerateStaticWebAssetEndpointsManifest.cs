@@ -8,8 +8,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class GenerateStaticWebAssetEndpointsManifest : Task
+[MSBuildMultiThreadableTask]
+public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public ITaskItem[] Assets { get; set; } = [];
 
@@ -32,12 +36,18 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
 
     public override bool Execute()
     {
+        AbsolutePath manifestAbsolutePath = TaskEnvironment.GetAbsolutePath(ManifestPath);
+        bool hasCacheFile = !string.IsNullOrEmpty(CacheFilePath);
+        AbsolutePath cacheAbsolutePath = hasCacheFile ? TaskEnvironment.GetAbsolutePath(CacheFilePath) : default;
+        bool hasExclusionCache = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath);
+        AbsolutePath exclusionCacheAbsolutePath = hasExclusionCache ? TaskEnvironment.GetAbsolutePath(ExclusionPatternsCacheFilePath) : default;
+
         var (patternString, parsedPatterns) = ParseAndSortPatterns(ExclusionPatterns);
-        var existingPatternString = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) && File.Exists(ExclusionPatternsCacheFilePath)
-            ? File.ReadAllText(ExclusionPatternsCacheFilePath)
+        var existingPatternString = hasExclusionCache && File.Exists(exclusionCacheAbsolutePath)
+            ? File.ReadAllText(exclusionCacheAbsolutePath)
             : null;
         existingPatternString = string.IsNullOrEmpty(existingPatternString) ? null : existingPatternString;
-        if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
+        if (hasCacheFile && File.Exists(manifestAbsolutePath) && File.GetLastWriteTimeUtc(manifestAbsolutePath) > File.GetLastWriteTimeUtc(cacheAbsolutePath))
         {
             // Check if exclusion patterns cache is also up to date
             if (string.Equals(patternString, existingPatternString, StringComparison.Ordinal))
@@ -60,10 +70,10 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         try
         {
             // Update exclusion patterns cache if needed
-            UpdateExclusionPatternsCache(existingPatternString, patternString);
+            UpdateExclusionPatternsCache(existingPatternString, patternString, manifestAbsolutePath, exclusionCacheAbsolutePath, hasExclusionCache);
 
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
-            var assets = StaticWebAsset.FromTaskItemGroup(Assets);
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment);
             var manifestAssets = ComputeManifestAssets(assets, ManifestType)
                 .ToDictionary(a => a.ResolvedAsset.Identity, a => a, OSPath.PathComparer);
 
@@ -95,7 +105,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                     var match = exclusionMatcher.Match(route);
                     if (match.IsMatch)
                     {
-                        if (!updatedManifest && File.Exists(ManifestPath))
+                        if (!updatedManifest && File.Exists(manifestAbsolutePath))
                         {
                             updatedManifest = true;
                             // Touch the manifest if we are excluding endpoints to ensure we don't keep reporting out of date
@@ -103,7 +113,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                             // (The SWA manifest we use as cache might get updated, but if we filter out the new endpoints, we won't
                             // update the endpoints manifest file and on the next build we will re-enter this loop).
                             Log.LogMessage(MessageImportance.Low, "Updating manifest timestamp '{0}'.", ManifestPath);
-                            File.SetLastWriteTime(ManifestPath, DateTime.UtcNow);
+                            File.SetLastWriteTime(manifestAbsolutePath, DateTime.UtcNow);
                         }
                         Log.LogMessage(MessageImportance.Low, "Excluding endpoint '{0}' based on exclusion patterns", route);
                         continue;
@@ -128,7 +138,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                 Endpoints = [.. filteredEndpoints]
             };
 
-            this.PersistFileIfChanged(manifest, ManifestPath, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
+            this.PersistFileIfChanged(manifest, manifestAbsolutePath, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
         }
         catch (Exception ex)
         {
@@ -194,27 +204,27 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         return (string.Join(Environment.NewLine, parsed), parsed);
     }
 
-    private void UpdateExclusionPatternsCache(string existingPatternString, string patternString)
+    private static void UpdateExclusionPatternsCache(string existingPatternString, string patternString, AbsolutePath manifestAbsolutePath, AbsolutePath exclusionCacheAbsolutePath, bool hasExclusionCache)
     {
-        if (string.IsNullOrEmpty(ExclusionPatternsCacheFilePath))
+        if (!hasExclusionCache)
         {
             return;
         }
 
-        if (!File.Exists(ExclusionPatternsCacheFilePath) ||
+        if (!File.Exists(exclusionCacheAbsolutePath) ||
             !string.Equals(existingPatternString, patternString, StringComparison.Ordinal))
         {
-            var directoryName = Path.GetDirectoryName(ExclusionPatternsCacheFilePath);
+            var directoryName = Path.GetDirectoryName((string)exclusionCacheAbsolutePath);
             if (directoryName != null)
             {
                 Directory.CreateDirectory(directoryName);
             }
-            File.WriteAllText(ExclusionPatternsCacheFilePath, patternString);
+            File.WriteAllText(exclusionCacheAbsolutePath, patternString);
             // We need to touch the file because otherwise we will keep thinking that is out of date in the future.
             // This file might not be rewritten if the results are unchanged.
-            if (File.Exists(ManifestPath))
+            if (File.Exists(manifestAbsolutePath))
             {
-                File.SetLastWriteTime(ManifestPath, DateTime.UtcNow);
+                File.SetLastWriteTime(manifestAbsolutePath, DateTime.UtcNow);
             }
         }
     }
