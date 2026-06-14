@@ -9,12 +9,6 @@
 <!--#if (TestRunner == "VSTest")-->
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
-<!--#if (CoverageTool == "coverlet")-->
-
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
-  </ItemGroup>
-<!--#endif-->
 <!--#else-->
     <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
 <!--#if (ExplicitProgramFile)-->
@@ -62,10 +56,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-<!--#if (CoverageTool == "coverlet")-->
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
-<!--#endif-->
-    <PackageReference Include="MSTest" Version="4.2.3" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
   <ItemGroup>
