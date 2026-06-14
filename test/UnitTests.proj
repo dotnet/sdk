@@ -28,8 +28,16 @@
     <!-- Don't run MSI installation tests in Helix / CI -->
     <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
 
-    <!-- dotnet-format unit tests are run under the DOTNET_FORMAT pipeline section. -->
+    <!-- dotnet-format unit tests have pre-existing failures and parallelization issues.
+         Enablement tracked by https://github.com/dotnet/sdk/issues/54249 -->
     <SDKCustomXUnitProject Remove="dotnet-format.UnitTests\dotnet-format.UnitTests.csproj" />
+
+    <!-- dotnet-format integration tests: one Helix work item per test class.
+         PartitionByClass dynamically discovers classes in the assembly and creates
+         one shard per class. Adding a new test class automatically creates a new shard. -->
+    <SDKCustomXUnitProject Remove="dotnet-format.IntegrationTests\dotnet-format.IntegrationTests.csproj" />
+    <SDKCustomXUnitProject Include="dotnet-format.IntegrationTests\dotnet-format.IntegrationTests.csproj"
+                           PartitionByClass="true" />
 
     <!-- Filter out .NET Framework only test projects and add them manually. -->
     <SDKCustomXUnitProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
@@ -209,6 +217,8 @@
            Point to the test NuGet.config so the workload packs can be resolved from the configured feeds. -->
       <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and !$(IsPosixShell)">$(HelixPreCommands);%DOTNET_ROOT%\dotnet workload install wasm-tools --skip-manifest-update --configfile %TestExecutionDirectory%\NuGet.config</HelixPreCommands>
       <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and $(IsPosixShell)">$(HelixPreCommands);$DOTNET_ROOT/dotnet workload install wasm-tools --skip-manifest-update --configfile $TestExecutionDirectory/NuGet.config</HelixPreCommands>
+      <HelixPreCommands Condition="'$(BUILD_REASON)' == 'PullRequest' and !$(IsPosixShell)">set DOTNET_SDK_TEST_MAX_PRIORITY=0;$(HelixPreCommands)</HelixPreCommands>
+      <HelixPreCommands Condition="'$(BUILD_REASON)' == 'PullRequest' and $(IsPosixShell)">export DOTNET_SDK_TEST_MAX_PRIORITY=0;$(HelixPreCommands)</HelixPreCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -print0 | xargs -0 -I@ cp @ "$HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>

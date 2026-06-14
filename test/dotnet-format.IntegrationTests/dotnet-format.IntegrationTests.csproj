@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <RollForward>LatestMajor</RollForward>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  </ItemGroup>
+
+</Project>
