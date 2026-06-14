@@ -30,7 +30,7 @@ internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string 
                 globalJsonWorkloadSetVersions = [];
             }
             globalJsonWorkloadSetVersions[globalJsonPath] = workloadSetVersion;
-            fileStream.Seek(0, SeekOrigin.Begin);
+            fileStream.SetLength(0);
             JsonSerializer.Serialize(fileStream, globalJsonWorkloadSetVersions, GlobalJsonWorkloadSetsJsonSerializerContext.Default.DictionaryStringString);
         }
     }
@@ -80,7 +80,7 @@ internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string 
 
             if (updated)
             {
-                fileStream.Seek(0, SeekOrigin.Begin);
+                fileStream.SetLength(0);
                 JsonSerializer.Serialize(fileStream, globalJsonWorkloadSetVersions, GlobalJsonWorkloadSetsJsonSerializerContext.Default.DictionaryStringString);
             }
 
