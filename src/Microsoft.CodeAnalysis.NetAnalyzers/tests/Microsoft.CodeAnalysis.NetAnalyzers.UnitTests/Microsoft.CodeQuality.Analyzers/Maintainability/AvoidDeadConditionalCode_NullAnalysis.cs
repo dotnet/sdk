@@ -7831,5 +7831,49 @@ namespace Ca1508FalsePositive
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync(TestContext.Current.CancellationToken);
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(49953, "https://github.com/dotnet/sdk/issues/49953")]
+        public async Task NullableTupleSwapInsideLoop_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+
+namespace Test
+{
+    public class TestClass
+    {
+        public static void TestTupleSwap()
+        {
+            var groups = new List<(bool IsLeft, List<int> Data)>();
+
+            for (int i = 0; i < groups.Count; ++i)
+            {
+                (bool IsLeft, List<int> Data)? groupLeft = groups[i];
+                (bool IsLeft, List<int> Data)? groupRight = null;
+
+                if (groupLeft?.IsLeft == false)
+                {
+                    (groupLeft, groupRight) = (groupRight, groupLeft);
+                }
+
+                if (groupLeft != null)
+                {
+                    var x = groupLeft.Value.Data;
+                }
+
+                if (groupRight != null)
+                {
+                    var x = groupRight.Value.Data;
+                }
+            }
+        }
+    }
+}",
+            }.RunAsync();
+        }
     }
 }
