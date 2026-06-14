@@ -64,39 +64,51 @@ internal abstract partial class HotReloadAppModel()
             return false;
         }
 
-        // If property is not specified startup hook is enabled:
-        // https://github.com/dotnet/runtime/blob/4b0b7238ba021b610d3963313b4471517108d2bc/src/libraries/System.Private.CoreLib/src/System/StartupHookProvider.cs#L22
-        // Startup hooks are not used for WASM projects.
-        //
-        // TODO: Remove once implemented: https://github.com/dotnet/runtime/issues/123778
-        if (!project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.StartupHookSupport, defaultValue: true) &&
-            !project.GetCapabilities().Contains(ProjectCapability.WebAssembly))
-        {
-            // Report which property is causing lack of support for startup hooks:
-            var (propertyName, propertyValue) =
-                project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.PublishAot)
-                ? (PropertyNames.PublishAot, true)
-                : project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.PublishTrimmed)
-                ? (PropertyNames.PublishTrimmed, true)
-                : (PropertyNames.StartupHookSupport, false);
-
-            logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, propertyName, propertyValue.ToString(), PropertyNames.StartupHookSupport, "True");
-            return false;
-        }
-
-        // MetadataUpdaterSupport is the primary indicator of whether the runtime supports Hot Reload.
-        // It is however not correctly set prior to .NET 11, so we use Optimize and DebugSymbols instead for older frameworks.
-        // See https://github.com/dotnet/runtime/pull/127163
+        // Since .NET 11 the SDK generates runtimeconfig.dev.json file that configures the runtime to support
+        // startup hooks and metadata update handlers in Debug builds.
+        // The file is generated when the property EnableHotReloadInRuntimeConfigDevFile is true.
         if (project.IsNetCoreApp(Versions.Version11_0))
         {
-            if (!project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.MetadataUpdaterSupport, defaultValue: true))
+            if (!project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.EnableHotReloadInRuntimeConfigDevFile, defaultValue: true))
             {
-                logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, PropertyNames.MetadataUpdaterSupport, "False", PropertyNames.MetadataUpdaterSupport, "True");
-                return false;
+                // If runtimeconfig.dev.json file is not generated MetadataUpdaterSupport and StartupHookSupport need to be enabled.
+                var metadataUpdaterSupported = project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.MetadataUpdaterSupport, defaultValue: true);
+                if (!metadataUpdaterSupported || !StartupHookSupportedIfRequired())
+                {
+                    logger.Log(
+                        MessageDescriptor.ProjectDoesNotSupportHotReload_Property,
+                        // setting blocking Hot Reload:
+                        metadataUpdaterSupported ? PropertyNames.StartupHookSupport : PropertyNames.MetadataUpdaterSupport,
+                        "False",
+                        // recommended setting:
+                        PropertyNames.EnableHotReloadInRuntimeConfigDevFile,
+                        "True");
+
+                    return false;
+                }
             }
         }
         else
         {
+            // Startup hooks are not used for WASM projects.
+            if (StartupHookSupportedIfRequired())
+            {
+                // Report which property is causing lack of support for startup hooks:
+                var (propertyName, propertyValue) =
+                    project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.PublishAot)
+                    ? (PropertyNames.PublishAot, true)
+                    : project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.PublishTrimmed)
+                    ? (PropertyNames.PublishTrimmed, true)
+                    : (PropertyNames.StartupHookSupport, false);
+
+                logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, propertyName, propertyValue.ToString(), PropertyNames.StartupHookSupport, "True");
+                return false;
+            }
+
+            // Not checking MetadataUpdateSupport since it's not set correctly prior .NET 11.
+            // Use Optimize and DebugSymbols instead for older frameworks.
+            // See https://github.com/dotnet/runtime/pull/127163
+
             if (project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.Optimize))
             {
                 logger.Log(MessageDescriptor.ProjectDoesNotSupportHotReload_Property, PropertyNames.Optimize, "True", PropertyNames.Optimize, "False");
@@ -111,5 +123,9 @@ internal abstract partial class HotReloadAppModel()
         }
 
         return true;
+
+        bool StartupHookSupportedIfRequired()
+            => project.ProjectInstance.GetBooleanPropertyValue(PropertyNames.StartupHookSupport, defaultValue: true) ||
+               project.GetCapabilities().Contains(ProjectCapability.WebAssembly);
     }
 }
