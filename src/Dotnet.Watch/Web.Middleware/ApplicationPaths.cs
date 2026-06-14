@@ -39,4 +39,11 @@ internal static class ApplicationPaths
     /// </summary>
     /// <value>/_framework/blazor-hotreload.js</value>
     public static PathString BlazorHotReloadJS { get; } = FrameworkRoot + "/blazor-hotreload.js";
+
+    /// <summary>
+    /// Returns JSON configuration for browser refresh (WebSocket endpoint URL and server key).
+    /// Used by lib.module.js to establish WebSocket connection without script injection.
+    /// </summary>
+    /// <value><c>/_framework/browser-refresh-config</c></value>
+    public static PathString BrowserRefreshConfig { get; } = FrameworkRoot + "/browser-refresh-config";
 }
