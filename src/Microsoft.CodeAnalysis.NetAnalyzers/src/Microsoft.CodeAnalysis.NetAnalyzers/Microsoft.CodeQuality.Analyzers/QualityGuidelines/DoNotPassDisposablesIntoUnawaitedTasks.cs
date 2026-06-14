@@ -190,6 +190,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         {
             return op.GetAncestor<IAwaitOperation>(OperationKind.Await) is not null ||
                 op.Parent is IInvocationOperation { TargetMethod.Name: "Wait" } or
+                IInvocationOperation { TargetMethod.Name: "GetAwaiter", Parent: IInvocationOperation { TargetMethod.Name: "GetResult" } } or
                 IPropertyReferenceOperation { Property.Name: "Result" };
         }
 
