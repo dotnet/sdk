@@ -58,6 +58,8 @@ internal sealed class BuildCommandDefinition : Command
 
     public readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
+    public readonly Option<IEnumerable<string>> LoggerOption = CommonOptions.CreateLoggerOption();
+
     public readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
@@ -80,6 +82,7 @@ internal sealed class BuildCommandDefinition : Command
         Options.Add(NoRestoreOption);
         Options.Add(InteractiveOption);
         Options.Add(VerbosityOption);
+        Options.Add(LoggerOption);
         Options.Add(OutputOption);
         Options.Add(ArtifactsPathOption);
         Options.Add(NoIncrementalOption);

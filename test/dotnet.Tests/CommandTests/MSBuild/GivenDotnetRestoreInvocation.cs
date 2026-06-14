@@ -33,6 +33,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--no-dependencies" }, new string[] { "--property:RestoreRecursive=false" })]
         [InlineData(new string[] { "-v", "minimal" }, new string[] { "--verbosity:minimal" })]
         [InlineData(new string[] { "--verbosity", "minimal" }, new string[] { "--verbosity:minimal" })]
+        [InlineData(new string[] { "--logger:xyz" }, new string[] { "--logger:xyz" })]
         [InlineData(new string[] { "--use-lock-file" }, new string[] { "--property:RestorePackagesWithLockFile=true" })]
         [InlineData(new string[] { "--locked-mode" }, new string[] { "--property:RestoreLockedMode=true" })]
         [InlineData(new string[] { "--force-evaluate" }, new string[] { "--property:RestoreForceEvaluate=true" })]

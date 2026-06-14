@@ -2,9 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tests.TelemetryTests;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
+using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
+using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
+using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
+using RestoreCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoreCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
@@ -41,6 +46,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diag" })]
         [InlineData(new string[] { "--no-incremental", "-o", "myoutput", "-r", "myruntime", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
                    new string[] { "--target:Rebuild", "--property:RuntimeIdentifier=myruntime", "--property:_CommandLineDefinedRuntimeIdentifier=true", "--verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
+        [InlineData(new string[] { "--logger", "xyz" }, new string[] { "--logger:xyz" })]
+        [InlineData(new string[] { "--logger:xyz" }, new string[] { "--logger:xyz" })]
+        [InlineData(new string[] { "-l", "xyz" }, new string[] { "--logger:xyz" })]
+        [InlineData(new string[] { "-l:xyz" }, new string[] { "--logger:xyz" })]
         [InlineData(new string[] { "/t:CustomTarget" }, new string[] { "--target:CustomTarget" })]
         [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
@@ -57,6 +66,50 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 List<string> expectedArgs = [.. ExpectedPrefix, "-restore", "-consoleloggerparameters:Summary", NugetInteractiveProperty, .. expectedAdditionalArgs, .. RestoreExpectedPrefixForImplicitRestore];
                 expectedArgs.Should().BeSubsetOf(commandArgs);
             });
+        }
+
+        public static IEnumerable<object[]> LoggerFileBasedBuildData()
+        {
+            foreach (var commandName in new[] { "build", "clean", "pack", "publish", "restore" })
+            {
+                yield return [commandName, new[] { "--logger", "xyz", "Program.cs" }];
+                yield return [commandName, new[] { "--logger:xyz", "Program.cs" }];
+                yield return [commandName, new[] { "-l", "xyz", "Program.cs" }];
+                yield return [commandName, new[] { "-l:xyz", "Program.cs" }];
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(LoggerFileBasedBuildData))]
+        public void LoggerOptionDoesNotPreventFileBasedBuild(string commandName, string[] args)
+        {
+            var workingDirectory = Path.Join(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(workingDirectory);
+
+            try
+            {
+                File.WriteAllText(Path.Join(workingDirectory, "Program.cs"), "System.Console.WriteLine(\"Hello\");");
+
+                CommandDirectoryContext.PerformActionWithBasePath(workingDirectory, () =>
+                {
+                    var command = commandName switch
+                    {
+                        "build" => BuildCommand.FromArgs(args),
+                        "clean" => CleanCommand.FromArgs(args),
+                        "pack" => PackCommand.FromArgs(args),
+                        "publish" => PublishCommand.FromArgs(args),
+                        "restore" => RestoreCommand.FromArgs(args),
+                        _ => throw new InvalidOperationException($"Unexpected command name '{commandName}'.")
+                    };
+
+                    var virtualCommand = command.Should().BeOfType<VirtualProjectBuildingCommand>().Subject;
+                    virtualCommand.MSBuildArgs.OtherMSBuildArgs.Should().Contain("--logger:xyz");
+                });
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, recursive: true);
+            }
         }
 
         [Fact]
