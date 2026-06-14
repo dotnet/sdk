@@ -50,6 +50,14 @@ public class AotParserTests
     }
 
     [Fact]
+    public void ParseSdkCheck_HasNoErrors()
+    {
+        // `sdk check` is AOT-capable, so it parses cleanly from the shared command tree.
+        var result = Parser.Parse(["sdk", "check"]);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
     public void DetectFileBasedApp_WhenFirstArgIsCSharpFile()
     {
         // `dotnet app.cs` is an implicit file-based app invocation. The AOT parser only sees the
@@ -136,6 +144,26 @@ public class AotParserTests
         var result = Parser.Parse(["build"]);
         Assert.Empty(result.Errors);
         Assert.Throws<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [Fact]
+    public void InvokeBareSdk_FallsBackToManaged()
+    {
+        // `dotnet sdk` with no subcommand needs full help/usage, so it defers to the managed CLI.
+        var result = Parser.Parse(["sdk"]);
+        Assert.Empty(result.Errors);
+        Assert.Throws<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [Fact]
+    public void InvokeSdkCheckHelp_RendersFromAotWithoutFallback()
+    {
+        // `sdk check` is wired to its real AOT implementation (not the managed fallback), so its
+        // help renders entirely from AOT and must not request a managed fallback.
+        var result = Parser.Parse(["sdk", "check", "--help"]);
+        var exception = Record.Exception(() => Parser.Invoke(result));
+
+        Assert.Null(exception);
     }
 
     [Fact]

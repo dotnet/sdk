@@ -51,7 +51,9 @@
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
-    <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj">
+      <Aliases>global,NativeWrapper,DotNetNativeWrapper</Aliases>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
