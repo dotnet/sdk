@@ -379,6 +379,10 @@ jobs:
         if: needs.generate.outputs.changes == 'true'
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          # Always use the canonical validator from the repository's default branch (main), never the PR's copy.
+          # issue_comment workflows already run from the default branch, so this also keeps the script version
+          # matched to this workflow definition regardless of which branch the PR targets.
+          ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
           path: _validator
           sparse-checkout: |

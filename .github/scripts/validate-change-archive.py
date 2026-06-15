@@ -80,10 +80,16 @@ def main() -> int:
             for member in members:
                 if not (member.isfile() or member.isdir()):
                     fail(f"Disallowed member type in archive: {member.name}")
+                # Reject backslashes outright. tar member names always use '/' as the separator, but on Windows
+                # '\\' is also a path separator, so a member such as '.git\\config.xlf' would slip past the '/'-only
+                # split below and the .git check, then be written under '.git'. Rejecting it keeps the separator
+                # handling identical across platforms.
+                if "\\" in member.name:
+                    fail(f"Backslash path separator in archive member name: {member.name}")
                 # Reject absolute paths and parent-directory traversal explicitly, rather than relying on the
                 # 'data' filter's silent slash-stripping. This keeps member.name a clean relative path so the
                 # source/destination paths built below are consistent with what is extracted.
-                if member.name.startswith("/") or member.name.startswith("\\"):
+                if member.name.startswith("/"):
                     fail(f"Absolute path in archive: {member.name}")
                 if ".." in member.name.split("/"):
                     fail(f"Path traversal in archive: {member.name}")
