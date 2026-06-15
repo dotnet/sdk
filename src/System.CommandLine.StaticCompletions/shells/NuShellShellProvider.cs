@@ -18,24 +18,13 @@ public class NushellShellProvider : IShellProvider
 
     private static readonly string _dynamicCompletionScript =
         """
-        # Add the following content to your config.nu file:
-
-        let dotnet_completer = {|spans|
-            dotnet complete ($spans | str join " ") | lines
+        def "nu-complete dotnet" [context: string] {
+            ^dotnet complete $"($context)" | lines 
         }
 
-        # Add the dotnet completer.
-        # (see https://nushell.sh/cookbook/external_completers.html#multiple-completer for more info)
-        let multiple_completers = {|spans|
-            match $spans.0 {
-                # Add the dotnet completer
-                "dotnet" => $dotnet_completer
-                _ => { [] } # Fallback to empty list, or a completer such as $carapace_completer from the example in the nushell docs.
-            } | do $in $spans
-        }
-
-        $env.config.completions.external.enable = true
-        $env.config.completions.external.completer = $multiple_completers
+        export extern "dotnet" [
+            ...command: string@"nu-complete dotnet"
+        ]
         """;
 
     public string GenerateCompletions(System.CommandLine.Command command) => _dynamicCompletionScript;
