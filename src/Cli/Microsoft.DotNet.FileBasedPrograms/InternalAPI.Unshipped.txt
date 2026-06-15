@@ -21,9 +21,11 @@ Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetItems(string! itemType) -
 Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetPropertyValue(string! propertyName) -> string!
 Microsoft.DotNet.FileBasedPrograms.IProjectItemInstance
 Microsoft.DotNet.FileBasedPrograms.IProjectItemInstance.GetMetadataValue(string! name) -> string!
+Microsoft.DotNet.FileBasedPrograms.IProjectItemInstance.ItemType.get -> string!
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.FullPath.get -> string?
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.FullPath.set -> void
+Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.GetRawXml() -> string!
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ArtifactsPath.get -> string!
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstance(Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError, out Microsoft.DotNet.FileBasedPrograms.IProjectInstance! project, out Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRootElement, out System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!> evaluatedDirectives, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!> directives = default(System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>), System.Action<System.Collections.Generic.IDictionary<string!, string!>!>? addGlobalProperties = null, bool validateAllDirectives = false) -> void

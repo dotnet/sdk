@@ -39,4 +39,5 @@ internal interface IProjectItemInstance
 internal interface IProjectRootElement
 {
     string? FullPath { get; set; }
+    string GetRawXml();
 }

@@ -101,4 +101,5 @@ sealed file class ProjectRootElement(Microsoft.Build.Construction.ProjectRootEle
 
     public Microsoft.Build.Construction.ProjectRootElement Inner => inner;
     public string? FullPath { get => inner.FullPath; set => inner.FullPath = value; }
+    public string GetRawXml() => inner.RawXml;
 }
