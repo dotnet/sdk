@@ -1,0 +1,131 @@
+<Project>
+
+  <PropertyGroup>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <!--
+    MSTest-flavored counterpart of test/Microsoft.NET.TestFramework (which is xUnit-coupled).
+
+    The xUnit coupling of the legacy framework is concentrated in ~17 of ~99 files (the
+    Attributes/* discovery attributes and a couple of IMessageSink-based logger bridges). The
+    remaining ~82 runner-agnostic files reference the test output sink only through the
+    unqualified name `ITestOutputHelper`. This project therefore LINK-SHARES those agnostic
+    sources (zero duplication) and supplies the MSTest-specific pieces locally:
+      * ITestOutputHelper        - our own 4-method interface (replaces Xunit.ITestOutputHelper)
+      * TestContextOutputHelper  - MSTest TestContext-backed implementation
+      * SdkTest                  - MSTest base class (TestContext property instead of ctor injection)
+      * TestLoggerFactory        - MSTest logger factory
+
+    The namespace is kept as Microsoft.NET.TestFramework so that, once every consumer has
+    migrated, the legacy project can be deleted and this one renamed with no source churn.
+  -->
+
+  <PropertyGroup>
+    <!-- PackageReference to MSTest defaults IsTestProject to true in some configurations; this is
+         a shared library, not a runnable test project, so force it off (mirrors the legacy
+         Microsoft.NET.TestFramework project). -->
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <RootNamespace>Microsoft.NET.TestFramework</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Directory holding the runner-agnostic sources that are link-shared from the legacy framework. -->
+  <PropertyGroup>
+    <SharedTestFrameworkDir>$(MSBuildThisFileDirectory)..\Microsoft.NET.TestFramework\</SharedTestFrameworkDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>NewtonsoftJsonPackageVersion</_Parameter1>
+      <_Parameter2>$(NewtonsoftJsonPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SystemDataSqlClientPackageVersion</_Parameter1>
+      <_Parameter2>$(SystemDataSqlClientPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" >
+      <_Parameter1>MicrosoftAspNetCoreAppRefPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftAspNetCoreAppRefPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" >
+      <_Parameter1>AspirePackageVersion</_Parameter1>
+      <_Parameter2>$(AspirePackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" >
+      <_Parameter1>MicrosoftExtensionsServiceDiscoveryPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftExtensionsServiceDiscoveryPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MicrosoftNETTestSdkPackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETTestSdkPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>XUnitPackageVersion</_Parameter1>
+      <_Parameter2>$(XUnitVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>XUnitRunnerVisualStudioPackageVersion</_Parameter1>
+      <_Parameter2>$(XUnitRunnerVisualStudioPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+    WARNING: Do not add dependencies on MSBuild packages.
+    Some tests (e.g. dotnet-watch.Tests) need to have total control over the loading of MSBuild assemblies.
+    -->
+
+    <PackageReference Include="DiffPlex" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.IO.Hashing" />
+    <PackageReference Include="AwesomeAssertions" />
+
+    <!-- MSTest.TestFramework supplies TestContext. VersionOverride sidesteps Central Package
+         Management (no PackageVersion entry needed) and avoids a duplicate-version clash with
+         MSTest.Sdk; see test/Microsoft.DotNet.Test.MSTest.Utilities for the same pattern. -->
+    <PackageReference Include="MSTest.TestFramework" VersionOverride="$(MSTestVersion)" />
+
+    <Using Include="FluentAssertions" />
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+  </ItemGroup>
+
+  <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Link-share the runner-agnostic sources from the legacy xUnit framework (zero duplication).
+         Excluded files are runner-specific and have MSTest replacements in this project (or are
+         deferred): the Attributes/* discovery attributes, the IMessageSink-based logger bridges,
+         and the ctor-injection base classes (SdkTest, AspNetSdkTest). -->
+    <Compile Include="$(SharedTestFrameworkDir)**\*.cs"
+             Exclude="$(SharedTestFrameworkDir)Attributes\**\*.cs;$(SharedTestFrameworkDir)SharedTestOutputHelper.cs;$(SharedTestFrameworkDir)TestLoggerFactory.cs;$(SharedTestFrameworkDir)SdkTest.cs;$(SharedTestFrameworkDir)AspNetSdkTest.cs;$(SharedTestFrameworkDir)bin\**\*.cs;$(SharedTestFrameworkDir)obj\**\*.cs"
+             LinkBase="Shared" />
+
+    <!-- This project's own MSTest-specific sources. -->
+    <Compile Include="*.cs" />
+
+    <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+</Project>
