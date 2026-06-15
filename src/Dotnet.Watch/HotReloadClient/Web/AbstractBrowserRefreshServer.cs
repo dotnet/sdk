@@ -22,11 +22,15 @@ namespace Microsoft.DotNet.HotReload;
 /// Communicates with aspnetcore-browser-refresh.js loaded in the browser.
 /// Associated with a project instance.
 /// </summary>
-internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPath, ILogger logger, ILoggerFactory loggerFactory) : IDisposable
+internal abstract class AbstractBrowserRefreshServer(
+    string middlewareAssemblyPath,
+    ILogger logger,
+    Func<int, ILogger> connectionServerLoggerFactory,
+    Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
 {
-    public const string ServerLogComponentName = "BrowserRefreshServer";
-
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
+    private static int s_lastConnectionId;
 
     private readonly List<BrowserConnection> _activeConnections = [];
     private readonly TaskCompletionSource<None> _browserConnected = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -102,19 +106,39 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         }
     }
 
+    /// <summary>
+    /// Takes ownership of the <paramref name="clientSocket"/>.
+    /// </summary>
     protected BrowserConnection OnBrowserConnected(WebSocket clientSocket, string? subProtocol)
     {
-        var sharedSecret = (subProtocol != null) ? _sharedSecretProvider.DecryptSecret(WebUtility.UrlDecode(subProtocol)) : null;
-
-        var connection = new BrowserConnection(clientSocket, sharedSecret, loggerFactory);
-
-        lock (_activeConnections)
+        bool connectionPublished = false;
+        try
         {
-            _activeConnections.Add(connection);
-        }
+            var sharedSecret = (subProtocol != null) ? _sharedSecretProvider.DecryptSecret(WebUtility.UrlDecode(subProtocol)) : null;
 
-        _browserConnected.TrySetResult(default);
-        return connection;
+            var connectionId = Interlocked.Increment(ref s_lastConnectionId);
+            var serverLogger = connectionServerLoggerFactory(connectionId);
+            var agentLogger = connectionAgentLoggerFactory(connectionId);
+            var connection = new BrowserConnection(clientSocket, sharedSecret, connectionId, serverLogger, agentLogger);
+
+            lock (_activeConnections)
+            {
+                _activeConnections.Add(connection);
+            }
+
+            connectionPublished = true;
+
+            serverLogger.Log(LogEvents.ConnectedToRefreshServer);
+            _browserConnected.TrySetResult(default);
+            return connection;
+        }
+        finally
+        {
+            if (!connectionPublished)
+            {
+                clientSocket.Dispose();
+            }
+        }
     }
 
     /// <summary>
