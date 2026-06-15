@@ -828,6 +828,60 @@ public class ActivitySourceIntegrationTests
 }
 
 [Collection("DotnetupTelemetryStateMutationTests")]
+public sealed class OtlpExporterGateTests : IDisposable
+{
+    private readonly string? _previousValue;
+
+    public OtlpExporterGateTests()
+    {
+        _previousValue = Environment.GetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar);
+        Environment.SetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar, null);
+    }
+
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar, _previousValue);
+    }
+
+    [Fact]
+    public void IsOtlpExporterEnabled_NoOptIn_ReturnsFalse()
+    {
+        Assert.False(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: false));
+    }
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("true")]
+    [InlineData("TRUE")]
+    public void IsOtlpExporterEnabled_DotnetCliExporterOptIn_ReturnsTrue(string value)
+    {
+        Environment.SetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar, value);
+
+        Assert.True(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: false));
+    }
+
+    [Fact]
+    public void IsOtlpExporterEnabled_DisableExportWinsOverDotnetCliExporterOptIn_ReturnsFalse()
+    {
+        Environment.SetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar, "1");
+
+        Assert.False(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: true));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("0")]
+    [InlineData("false")]
+    [InlineData("yes")]
+    public void IsOtlpExporterEnabled_NonTruthyDotnetCliExporterValue_ReturnsFalse(string value)
+    {
+        Environment.SetEnvironmentVariable(Constants.Telemetry.EnableOtlpExporterEnvVar, value);
+
+        Assert.False(DotnetupTelemetry.IsOtlpExporterEnabled(disableExport: false));
+    }
+}
+
+[Collection("DotnetupTelemetryStateMutationTests")]
 public class TrackedOperationTests : IDisposable
 {
     private const string TestSessionId = "test-session-id";

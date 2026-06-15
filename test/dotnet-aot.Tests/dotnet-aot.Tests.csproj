@@ -47,7 +47,16 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" />
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
+  </ItemGroup>
+
+  <!-- Files from Microsoft.DotNet.FileBasedPrograms needed by MsbuildProject.cs.
+       These are compiled directly (not via ProjectReference to Microsoft.DotNet.ProjectTools)
+       to avoid strong-name key mismatch issues in the test assembly. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Cli\Microsoft.DotNet.FileBasedPrograms\ProjectLocator.cs" Link="ProjectLocator.cs" />
+    <EmbeddedResource Include="..\..\src\Cli\Microsoft.DotNet.FileBasedPrograms\FileBasedProgramsResources.resx" Link="FileBasedProgramsResources.resx" GenerateSource="true" Namespace="Microsoft.DotNet.FileBasedPrograms" />
   </ItemGroup>
 
   <ItemGroup>
