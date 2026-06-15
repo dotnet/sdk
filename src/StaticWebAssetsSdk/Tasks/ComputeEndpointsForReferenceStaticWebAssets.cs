@@ -7,8 +7,11 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class ComputeEndpointsForReferenceStaticWebAssets : Task
+[MSBuildMultiThreadableTask]
+public class ComputeEndpointsForReferenceStaticWebAssets : Task, IMultiThreadableTask
 {
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public ITaskItem[] Assets { get; set; }
 
@@ -20,7 +23,7 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
 
     public override bool Execute()
     {
-        var assets = StaticWebAsset.ToAssetDictionary(Assets);
+        var assets = StaticWebAsset.ToAssetDictionary(Assets, TaskEnvironment);
 
         var result = CandidateEndpoints;
 
