@@ -159,6 +159,17 @@ namespace Microsoft.NET.TestFramework.Commands
             var command = spec
                 .ToCommand(_doNotEscapeArguments);
 
+            bool verboseTestOutput = string.Equals(
+                Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_VERBOSE"),
+                "1",
+                StringComparison.Ordinal);
+
+            // Buffer output lines so we can decide after execution whether to log them.
+            // When DOTNET_SDK_TEST_VERBOSE=1, stream lines in real-time (original behavior).
+            // Otherwise, only dump captured output when the command fails.
+            List<string>? bufferedStdOut = verboseTestOutput ? null : new();
+            List<string>? bufferedStdErr = verboseTestOutput ? null : new();
+
             if (!spec.DisableOutputAndErrorRedirection)
             {
                 command
@@ -166,12 +177,26 @@ namespace Microsoft.NET.TestFramework.Commands
                     .CaptureStdErr()
                     .OnOutputLine(line =>
                      {
-                         Log.WriteLine($"》{line}");
+                         if (verboseTestOutput)
+                         {
+                             Log.WriteLine($"》{line}");
+                         }
+                         else
+                         {
+                             bufferedStdOut!.Add(line);
+                         }
                          CommandOutputHandler?.Invoke(line);
                      })
                     .OnErrorLine(line =>
                     {
-                        Log.WriteLine($"❌{line}");
+                        if (verboseTestOutput)
+                        {
+                            Log.WriteLine($"❌{line}");
+                        }
+                        else
+                        {
+                            bufferedStdErr!.Add(line);
+                        }
                     });
 
                 if (StandardOutputEncoding is not null)
@@ -188,6 +213,28 @@ namespace Microsoft.NET.TestFramework.Commands
             Log.WriteLine($"Executing '{display}':");
             var result = command.Execute(ProcessStartedHandler);
             Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
+
+            // On failure, dump the buffered output so the cause is visible in test logs.
+            if (!verboseTestOutput && result.ExitCode != 0)
+            {
+                foreach (var line in bufferedStdOut!)
+                {
+                    Log.WriteLine($"》{line}");
+                }
+                foreach (var line in bufferedStdErr!)
+                {
+                    Log.WriteLine($"❌{line}");
+                }
+            }
+            else if (!verboseTestOutput)
+            {
+                int stdOutCount = bufferedStdOut!.Count;
+                int stdErrCount = bufferedStdErr!.Count;
+                if (stdOutCount + stdErrCount > 0)
+                {
+                    Log.WriteLine($"  ({stdOutCount} stdout + {stdErrCount} stderr lines suppressed — set DOTNET_SDK_TEST_VERBOSE=1 for full output)");
+                }
+            }
 
             if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
             {
