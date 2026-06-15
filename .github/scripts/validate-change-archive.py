@@ -34,6 +34,13 @@ import tarfile
 import tempfile
 from typing import NoReturn
 
+# Upper bounds on what a legitimate generated change can contain. These are intentionally generous relative
+# to real xlf/snapshot/baseline updates (which are small text files) but small enough that a decompression
+# bomb shipped with an allowed suffix cannot exhaust the write-permission job's disk before extraction.
+MAX_MEMBER_SIZE = 25 * 1024 * 1024  # 25 MiB per regular file
+MAX_TOTAL_SIZE = 200 * 1024 * 1024  # 200 MiB across all regular files
+MAX_MEMBER_COUNT = 5000  # total members (files + directories)
+
 
 def fail(message: str) -> NoReturn:
     print(message, file=sys.stderr)
@@ -77,6 +84,9 @@ def main() -> int:
     try:
         with tarfile.open(args.archive) as tar:
             members = tar.getmembers()
+            if len(members) > MAX_MEMBER_COUNT:
+                fail(f"Archive has too many members ({len(members)} > {MAX_MEMBER_COUNT}).")
+            total_size = 0
             for member in members:
                 if not (member.isfile() or member.isdir()):
                     fail(f"Disallowed member type in archive: {member.name}")
@@ -100,6 +110,14 @@ def main() -> int:
                         fail(f"Member outside allowed scope '{scope}': {member.name}")
                     if not member.name.endswith(exts):
                         fail(f"Member with disallowed extension: {member.name}")
+                    # Bound the declared size before extraction so a decompression bomb with an allowed suffix
+                    # cannot fill the write-permission job's disk. tarfile honors member.size when extracting,
+                    # so checking it here caps both the per-file and aggregate bytes actually written.
+                    if member.size > MAX_MEMBER_SIZE:
+                        fail(f"Member exceeds maximum size ({member.size} > {MAX_MEMBER_SIZE}): {member.name}")
+                    total_size += member.size
+                    if total_size > MAX_TOTAL_SIZE:
+                        fail(f"Archive regular-file size exceeds maximum ({total_size} > {MAX_TOTAL_SIZE}).")
 
             # The 'data' filter re-validates traversal/links/special files during extraction.
             tar.extractall(scratch, filter="data")
