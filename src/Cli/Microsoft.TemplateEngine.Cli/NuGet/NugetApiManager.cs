@@ -34,9 +34,13 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             PackageSource? sourceFeed = null,
             CancellationToken cancellationToken = default)
         {
-            if (sourceFeed == null)
+            if (sourceFeed == null && Microsoft.DotNet.Tools.Common.PathUtility.CheckForNuGetInNuGetConfig())
             {
                 sourceFeed = _nugetOrgSource;
+            }
+            else if (sourceFeed is null)
+            {
+                return null;
             }
 
             SourceRepository repository = GetSourceRepository(sourceFeed);

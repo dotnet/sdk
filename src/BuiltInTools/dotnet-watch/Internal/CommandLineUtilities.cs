@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Copied from dotnet/runtime/src/libraries/System.Private.CoreLib/src/System/PasteArguments.cs
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal static class CommandLineUtilities
 {

@@ -37,6 +37,36 @@
         <target state="translated">No se admite la especificación de las opciones '-r|--runtime' y '-os'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="translated">Establece el valor de una variable de entorno. 
+Crea la variable si no existe o la reemplaza en caso de que exista. 
+Esto forzará la ejecución de las pruebas en un proceso aislado. 
+Este argumento se puede especificar varias veces para proporcionar múltiples variables.
+
+Ejemplos:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableExpression">
+        <source>NAME="VALUE"</source>
+        <target state="translated">NAME="VALUE"</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Permite que el comando se detenga y espere la entrada o acción del usuario (por ejemplo, para autenticarse).</target>
@@ -128,6 +158,11 @@ export PATH="$PATH:{0}"
       <trans-unit id="FrameworkDependentOptionDescription">
         <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
         <target state="translated">Publique la aplicación como una aplicación dependiente del marco de trabajo. para ejecutar la aplicación debe instalarse un entorno de ejecución de .NET compatible en el equipo de destino.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="translated">Las variables de entorno tienen un formato incorrecto: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
@@ -222,6 +257,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 
 El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o inferior, el valor predeterminado es "true" si se especifica un identificador en tiempo de ejecución.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="translated">Busque las versiones de carga de trabajo disponibles o qué consta de una versión de carga de trabajo. Use 'dotnet workload search version --help' para obtener más información.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
       </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>

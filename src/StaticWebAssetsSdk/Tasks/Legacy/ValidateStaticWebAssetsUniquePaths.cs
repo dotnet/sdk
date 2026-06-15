@@ -17,22 +17,22 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public ITaskItem[] WebRootFiles { get; set; }
 
-        public override bool Execute()
+    public override bool Execute()
+    {
+        var assetsByWebRootPaths = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < StaticWebAssets.Length; i++)
         {
-            var assetsByWebRootPaths = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < StaticWebAssets.Length; i++)
+            var contentRootDefinition = StaticWebAssets[i];
+            if (!EnsureRequiredMetadata(contentRootDefinition, BasePath) ||
+                !EnsureRequiredMetadata(contentRootDefinition, RelativePath))
             {
-                var contentRootDefinition = StaticWebAssets[i];
-                if (!EnsureRequiredMetadata(contentRootDefinition, BasePath) ||
-                    !EnsureRequiredMetadata(contentRootDefinition, RelativePath))
-                {
-                    return false;
-                }
-                else
-                {
-                    var webRootPath = GetWebRootPath("/wwwroot",
-                        contentRootDefinition.GetMetadata(BasePath),
-                        contentRootDefinition.GetMetadata(RelativePath));
+                return false;
+            }
+            else
+            {
+                var webRootPath = GetWebRootPath("/wwwroot",
+                    contentRootDefinition.GetMetadata(BasePath),
+                    contentRootDefinition.GetMetadata(RelativePath));
 
                     if (assetsByWebRootPaths.TryGetValue(webRootPath, out var existingWebRootPath))
                     {
@@ -49,17 +49,17 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 }
             }
 
-            for (var i = 0; i < WebRootFiles.Length; i++)
+        for (var i = 0; i < WebRootFiles.Length; i++)
+        {
+            var webRootFile = WebRootFiles[i];
+            var relativePath = webRootFile.GetMetadata(TargetPath);
+            var webRootFileWebRootPath = GetWebRootPath("", "/", relativePath);
+            if (assetsByWebRootPaths.TryGetValue(webRootFileWebRootPath, out var existingAsset))
             {
-                var webRootFile = WebRootFiles[i];
-                var relativePath = webRootFile.GetMetadata(TargetPath);
-                var webRootFileWebRootPath = GetWebRootPath("", "/", relativePath);
-                if (assetsByWebRootPaths.TryGetValue(webRootFileWebRootPath, out var existingAsset))
-                {
-                    Log.LogError($"The static web asset '{existingAsset.ItemSpec}' has a conflicting web root path '{webRootFileWebRootPath}' with the project file '{webRootFile.ItemSpec}'.");
-                    return false;
-                }
+                Log.LogError($"The static web asset '{existingAsset.ItemSpec}' has a conflicting web root path '{webRootFileWebRootPath}' with the project file '{webRootFile.ItemSpec}'.");
+                return false;
             }
+        }
 
             return true;
         }

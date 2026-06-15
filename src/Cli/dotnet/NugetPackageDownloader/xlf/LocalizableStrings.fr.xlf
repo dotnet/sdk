@@ -28,13 +28,20 @@
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
-        <source>Failed to validate package signing.</source>
-        <target state="translated">Échec de la validation de la signature du package.</target>
+        <source>Failed to validate package signing.
+{0}</source>
+        <target state="translated">Nous n’avons pas pu valider la signature de package.
+{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="translated">{0} est introuvable dans les flux NuGet {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetPackageShouldNotBeSigned">
+        <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
+        <target state="translated">La vérification de signature pour le package NuGet « {0} » est ignorée, car elle provient d’une source qui ne nécessite pas de validation de signature.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
@@ -70,6 +77,11 @@
       <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
         <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
         <target state="translated">Ignorer la validation de signature de package NuGet. La validation de signature NuGet n’est pas disponible sur Linux ou macOS https://aka.ms/workloadskippackagevalidation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerifyingNuGetPackageSignature">
+        <source>Verified that the NuGet package "{0}" has a valid signature.</source>
+        <target state="translated">Nous avons vérifié que le package NuGet « {0} » a une signature valide.</target>
         <note />
       </trans-unit>
     </body>

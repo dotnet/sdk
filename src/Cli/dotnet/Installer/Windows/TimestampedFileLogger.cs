@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.IO.Pipes;
 using System.Runtime.Versioning;
 
@@ -42,7 +43,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// The locale-neutral timestamp prefix.
         /// </summary>
-        protected static string TimeStamp => $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}]";
+        protected static string TimeStamp => $"[{string.Create(CultureInfo.InvariantCulture, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}")}]";
 
         /// <summary>
         /// Creates a new <see cref="TimestampedFileLogger"/> instance.

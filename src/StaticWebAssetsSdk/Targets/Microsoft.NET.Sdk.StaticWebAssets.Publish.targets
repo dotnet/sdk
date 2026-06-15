@@ -61,9 +61,16 @@ Copyright (c) .NET Foundation. All rights reserved.
          for example, assets from packages as a result of a publish (no-build) invocation. Those assets were already taken
          into account when we built the build manifest that we are about to load for resuming the publish process. -->
     <PropertyGroup>
-        <_ShouldLoadBuildManifestAndUpdateAssets>false</_ShouldLoadBuildManifestAndUpdateAssets>
-        <_ShouldLoadBuildManifestAndUpdateAssets
-          Condition="@(_CachedBuildStaticWebAssets) == '' or @(_CachedBuildStaticWebAssetDiscoveryPatterns) == '' or @(_CachedBuildStaticWebAssetReferencedProjectsConfiguration) == ''">true</_ShouldLoadBuildManifestAndUpdateAssets>
+      <_HasStaticWebAssetsProjectReferences Condition="@(ProjectReference) != ''">true</_HasStaticWebAssetsProjectReferences>
+      <_HasCachedBuildStaticWebAssets Condition="@(_CachedBuildStaticWebAssets) == ''">false</_HasCachedBuildStaticWebAssets>
+      <_HasCachedBuildStaticWebAssetEndpoints Condition="@(_CachedBuildStaticWebAssetEndpoints) == ''">false</_HasCachedBuildStaticWebAssetEndpoints>
+      <_HasCachedBuildStaticWebAssetDiscoveryPatterns Condition="@(_CachedBuildStaticWebAssetDiscoveryPatterns) == ''">false</_HasCachedBuildStaticWebAssetDiscoveryPatterns>
+      <_HasCachedBuildStaticWebAssetReferencedProjectsConfiguration Condition="@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration) == ''">false</_HasCachedBuildStaticWebAssetReferencedProjectsConfiguration>
+      <_ShouldLoadBuildManifestAndUpdateAssets>false</_ShouldLoadBuildManifestAndUpdateAssets>
+      <_ShouldLoadBuildManifestAndUpdateAssets Condition="'$(_HasCachedBuildStaticWebAssets)' == 'false' or
+        '$(_HasCachedBuildStaticWebAssetEndpoints)' == 'false' or
+        '$(_HasCachedBuildStaticWebAssetDiscoveryPatterns)' == 'false' or
+        ('$(_HasStaticWebAssetsProjectReferences)' == 'true' and '$(_HasCachedBuildStaticWebAssetReferencedProjectsConfiguration)' == 'false')">true</_ShouldLoadBuildManifestAndUpdateAssets>
     </PropertyGroup>
 
     <ItemGroup>
@@ -131,11 +138,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_ReferencedProjectPublishStaticWebAssetsUpdateCandidates
         Include="@(_ReferencedProjectPublishStaticWebAssetsItems)"
-        Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAsset'" />        
+        Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAsset'" />
 
       <_ReferencedProjectPublishStaticWebAssetEndpointsUpdateCandidates
         Include="@(_ReferencedProjectPublishStaticWebAssetsItems)"
-        Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAssetEndpoint'" />        
+        Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAssetEndpoint'" />
     </ItemGroup>
 
     <UpdateExternallyDefinedStaticWebAssets Condition="$(_HasProjectsWithStaticWebAssetPublishTargets)"

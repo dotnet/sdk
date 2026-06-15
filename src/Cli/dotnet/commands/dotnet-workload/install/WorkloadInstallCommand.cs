@@ -11,8 +11,6 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
-using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using System.Text;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -39,7 +37,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                   tempDirPath: tempDirPath)
         {
             _skipManifestUpdate = skipWorkloadManifestUpdate ?? parseResult.GetValue(WorkloadInstallCommandParser.SkipManifestUpdateOption);
-            _workloadIds = workloadIds ?? parseResult.GetValue(WorkloadInstallCommandParser.WorkloadIdArgument).ToList().AsReadOnly();
+            var unprocessedWorkloadIds = workloadIds ?? parseResult.GetValue(WorkloadInstallCommandParser.WorkloadIdArgument);
+            if (unprocessedWorkloadIds?.Any(id => id.Contains('@')) == true)
+            {
+                _workloadIds = unprocessedWorkloadIds.Select(id => id.Split('@')[0]).ToList().AsReadOnly();
+                if (SpecifiedWorkloadSetVersionOnCommandLine)
+                {
+                    throw new GracefulException(LocalizableStrings.CannotSpecifyVersionAndWorkloadIdsByComponent, isUserError: true);
+                }
+
+                _workloadSetVersionFromCommandLine = unprocessedWorkloadIds;
+            }
+            else
+            {
+                _workloadIds = unprocessedWorkloadIds.ToList().AsReadOnly();
+            }
+
             var resolvedReporter = _printDownloadLinkOnly ? NullReporter.Instance : Reporter;
 
             _workloadInstaller = _workloadInstallerFromConstructor ??
