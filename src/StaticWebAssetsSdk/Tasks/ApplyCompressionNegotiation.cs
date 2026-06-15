@@ -8,8 +8,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class ApplyCompressionNegotiation : Task
+[MSBuildMultiThreadableTask]
+public class ApplyCompressionNegotiation : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public ITaskItem[] CandidateEndpoints { get; set; }
 
@@ -23,7 +27,7 @@ public class ApplyCompressionNegotiation : Task
 
     public override bool Execute()
     {
-        var assetsById = StaticWebAsset.ToAssetDictionary(CandidateAssets);
+        var assetsById = StaticWebAsset.ToAssetDictionary(CandidateAssets, TaskEnvironment);
 
         var endpointsByAsset = StaticWebAssetEndpoint.ToAssetFileDictionary(CandidateEndpoints);
 
