@@ -285,47 +285,40 @@ jobs:
           name: xlf-updates
           path: artifact
 
+      - name: Checkout trusted validation script
+        if: needs.generate.outputs.changes == 'true'
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          persist-credentials: false
+          path: _validator
+          sparse-checkout: |
+            .github/scripts/validate-change-archive.py
+          sparse-checkout-cone-mode: false
+
       - name: Validate and stage XLF files
         if: needs.generate.outputs.changes == 'true'
         run: |
           set -euo pipefail
 
-          # The tar change artifact comes from the untrusted 'generate' job; treat its member list and contents as hostile.
-          rm -rf __extract
-          mkdir -p __extract
+          # The artifact comes from the untrusted 'generate' job. Validate and extract it with the shared script
+          # checked out separately above from the trusted default branch (never the PR's copy), then stage only
+          # the repository-relative paths it approves.
+          if ! python3 _validator/.github/scripts/validate-change-archive.py \
+              --archive artifact/xlf-files.tar.gz \
+              --dest . \
+              --ext .xlf \
+              > __staged-files.nul; then
+            echo "Artifact validation failed." >&2
+            exit 1
+          fi
 
-          # Extract with Python tarfile's 'data' filter: https://docs.python.org/3/library/tarfile.html#tarfile.data_filter
-          # Additionally enforce that every file member is a plain *.xlf
-          python3 - <<'PY'
-          import sys, tarfile
-          with tarfile.open("artifact/xlf-files.tar.gz") as tar:
-              for m in tar.getmembers():
-                  if not (m.isfile() or m.isdir()):
-                      sys.exit(f"Disallowed member type in archive: {m.name}")
-                  if ".git" in m.name.split("/") or m.name.endswith(".gitattributes"):
-                      sys.exit(f".git path in archive: {m.name}")
-                  if m.isfile() and not m.name.endswith(".xlf"):
-                      sys.exit(f"Non-.xlf member in archive: {m.name}")
-              tar.extractall("__extract", filter="data")
-          PY
-
-          # Stage the validated *.xlf files actually present in the sanitized extract dir
-          staged_any=false
-          while IFS= read -r -d '' extracted_file; do
-            dest_path="${extracted_file#__extract/}"
-            case "/$dest_path/" in
-              */.git/*) echo ".git path in artifact: $dest_path" >&2; exit 1 ;;
-            esac
-            mkdir -p "$(dirname "$dest_path")"
-            cp -- "$extracted_file" "$dest_path"
-            git add -- "$dest_path"
-            staged_any=true
-          done < <(find __extract -type f -name '*.xlf' -print0)
-
-          if [ "$staged_any" = false ]; then
+          mapfile -d '' -t staged_files < __staged-files.nul
+          rm -f __staged-files.nul
+          if [ ${#staged_files[@]} -eq 0 ]; then
             echo "No .xlf files were present in the artifact." >&2
             exit 1
           fi
+          git add -- "${staged_files[@]}"
 
       - name: Prepare commit message
         id: commit-message

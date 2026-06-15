@@ -343,69 +343,47 @@ jobs:
           name: cli-completion-snapshots
           path: artifact
 
+      - name: Checkout trusted validation script
+        if: needs.generate.outputs.changes == 'true'
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          persist-credentials: false
+          path: _validator
+          sparse-checkout: |
+            .github/scripts/validate-change-archive.py
+          sparse-checkout-cone-mode: false
+
       - name: Validate and stage snapshot files
         if: needs.generate.outputs.changes == 'true'
         run: |
           set -euo pipefail
 
-          snapshot_root="test/dotnet.Tests/CompletionTests/snapshots"
+          # The artifact comes from the untrusted 'generate' job. Validate and extract it with the shared script
+          # checked out separately above from the trusted default branch (never the PR's copy), then stage only
+          # the repository-relative paths it approves. Only known <name>.verified.<shell-ext> snapshots inside the
+          # snapshot directory are accepted; adding a new shell requires adding its extension here and in the
+          # commit allowlist below.
+          if ! python3 _validator/.github/scripts/validate-change-archive.py \
+              --archive artifact/snapshots.tar.gz \
+              --dest . \
+              --scope test/dotnet.Tests/CompletionTests/snapshots \
+              --ext .verified.sh \
+              --ext .verified.zsh \
+              --ext .verified.fish \
+              --ext .verified.ps1 \
+              --ext .verified.nu \
+              > __staged-files.nul; then
+            echo "Artifact validation failed." >&2
+            exit 1
+          fi
 
-          # The tar change artifact comes from the untrusted 'generate' job; treat its member list and contents as hostile.
-          rm -rf __extract
-          mkdir -p __extract
-
-          # Extract with Python tarfile's 'data' filter: https://docs.python.org/3/library/tarfile.html#tarfile.data_filter
-          # Additionally enforce that every file member is a known <name>.verified.<shell-ext> snapshot inside the
-          # snapshot directory. Adding a new shell requires adding its extension here, in the find filter below,
-          # and in the commit allowlist.
-          python3 - "$snapshot_root" <<'PY'
-          import sys, tarfile
-          snapshot_root = sys.argv[1]
-          allowed = (".verified.sh", ".verified.zsh", ".verified.fish", ".verified.ps1", ".verified.nu")
-          with tarfile.open("artifact/snapshots.tar.gz") as tar:
-              for m in tar.getmembers():
-                  if not (m.isfile() or m.isdir()):
-                      sys.exit(f"Disallowed member type in archive: {m.name}")
-                  if ".git" in m.name.split("/") or m.name.endswith(".gitattributes"):
-                      sys.exit(f".git path in archive: {m.name}")
-                  if m.isfile():
-                      if m.name != snapshot_root and not m.name.startswith(snapshot_root + "/"):
-                          sys.exit(f"Member outside snapshot directory: {m.name}")
-                      if not m.name.endswith(allowed):
-                          sys.exit(f"Unexpected snapshot file name: {m.name}")
-              tar.extractall("__extract", filter="data")
-          PY
-
-          # Stage the validated snapshots actually present in the sanitized extract dir. Only the exact
-          # <name>.verified.<shell-ext> files Verify produces are accepted; a crafted name with a different
-          # extension (e.g. evil.verified.exe) or a stray *.received.* temporary is never selected.
-          # Adding a new shell requires adding its verified extension to this list and the commit allowlist below.
-          staged_any=false
-          while IFS= read -r -d '' extracted_file; do
-            dest_path="${extracted_file#__extract/}"
-            case "/$dest_path/" in
-              */.git/*) echo ".git path in artifact: $dest_path" >&2; exit 1 ;;
-            esac
-            case "$dest_path" in
-              "$snapshot_root"/*) : ;;
-              *) echo "Snapshot file outside snapshot directory: $dest_path" >&2; exit 1 ;;
-            esac
-            case "$dest_path" in
-              *.verified.sh|*.verified.zsh|*.verified.fish|*.verified.ps1|*.verified.nu) : ;;
-              *) echo "Unexpected snapshot file name: $dest_path" >&2; exit 1 ;;
-            esac
-            mkdir -p "$(dirname "$dest_path")"
-            cp -- "$extracted_file" "$dest_path"
-            git add -- "$dest_path"
-            staged_any=true
-          done < <(find "__extract/$snapshot_root" -type f \
-            \( -name '*.verified.sh' -o -name '*.verified.zsh' -o -name '*.verified.fish' \
-               -o -name '*.verified.ps1' -o -name '*.verified.nu' \) -print0)
-
-          if [ "$staged_any" = false ]; then
+          mapfile -d '' -t staged_files < __staged-files.nul
+          rm -f __staged-files.nul
+          if [ ${#staged_files[@]} -eq 0 ]; then
             echo "No snapshot files were present in the artifact." >&2
             exit 1
           fi
+          git add -- "${staged_files[@]}"
 
       - name: Prepare commit message
         id: commit-message

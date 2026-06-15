@@ -213,51 +213,41 @@ jobs:
           name: static-web-assets-baselines
           path: artifact
 
+      - name: Checkout trusted validation script
+        if: needs.generate.outputs.changes == 'true'
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          path: _validator
+          sparse-checkout: |
+            .github/scripts/validate-change-archive.py
+          sparse-checkout-cone-mode: false
+
       - name: Validate and stage baseline files
         if: needs.generate.outputs.changes == 'true'
         run: |
           set -euo pipefail
 
-          # The tar change artifact comes from the untrusted 'generate' job; treat its member list and contents as hostile.
-          rm -rf __extract
-          mkdir -p __extract
+          # The artifact comes from the untrusted 'generate' job. Validate and extract it with the shared script
+          # checked out separately above from the trusted default branch (never the PR's copy), then stage only
+          # the repository-relative paths it approves.
+          if ! python3 _validator/.github/scripts/validate-change-archive.py \
+              --archive artifact/baselines.tar.gz \
+              --dest . \
+              --scope test \
+              --ext .json \
+              > __staged-files.nul; then
+            echo "Artifact validation failed." >&2
+            exit 1
+          fi
 
-          # Extract with Python tarfile's 'data' filter: https://docs.python.org/3/library/tarfile.html#tarfile.data_filter
-          # Additionally enforce that every file member is a test/**/*.json baseline
-          python3 - <<'PY'
-          import sys, tarfile
-          with tarfile.open("artifact/baselines.tar.gz") as tar:
-              for m in tar.getmembers():
-                  if not (m.isfile() or m.isdir()):
-                      sys.exit(f"Disallowed member type in archive: {m.name}")
-                  if ".git" in m.name.split("/") or m.name.endswith(".gitattributes"):
-                      sys.exit(f".git path in archive: {m.name}")
-                  if m.isfile() and not (m.name.startswith("test/") and m.name.endswith(".json")):
-                      sys.exit(f"Non test/**/*.json member in archive: {m.name}")
-              tar.extractall("__extract", filter="data")
-          PY
-
-          # Stage the validated test/**/*.json baselines actually present in the sanitized extract dir
-          staged_any=false
-          while IFS= read -r -d '' extracted_file; do
-            dest_path="${extracted_file#__extract/}"
-            case "/$dest_path/" in
-              */.git/*) echo ".git path in artifact: $dest_path" >&2; exit 1 ;;
-            esac
-            case "$dest_path" in
-              test/*) : ;;
-              *) echo "Baseline file outside test/: $dest_path" >&2; exit 1 ;;
-            esac
-            mkdir -p "$(dirname "$dest_path")"
-            cp -- "$extracted_file" "$dest_path"
-            git add -- "$dest_path"
-            staged_any=true
-          done < <(find __extract/test -type f -name '*.json' -print0)
-
-          if [ "$staged_any" = false ]; then
+          mapfile -d '' -t staged_files < __staged-files.nul
+          rm -f __staged-files.nul
+          if [ ${#staged_files[@]} -eq 0 ]; then
             echo "No baseline files were present in the artifact." >&2
             exit 1
           fi
+          git add -- "${staged_files[@]}"
 
       - name: Prepare commit message
         id: commit-message
