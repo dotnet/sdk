@@ -36,6 +36,26 @@ $ErrorActionPreference = "Stop"
 
 $BaseUrl = "https://aka.ms/dotnet/dotnetup/$Quality"
 
+function ConvertTo-RidArchitecture([System.Runtime.InteropServices.Architecture]$Architecture) {
+    switch ($Architecture) {
+        ([System.Runtime.InteropServices.Architecture]::Arm64) { return "arm64" }
+        ([System.Runtime.InteropServices.Architecture]::X86) { return "x86" }
+        ([System.Runtime.InteropServices.Architecture]::Arm) { return "arm" }
+        default { return "x64" }
+    }
+}
+
+function Get-NativeMachineArchitecture {
+    try {
+        return ConvertTo-RidArchitecture ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)
+    }
+    catch {
+        # Match the shared SDK toolset helper's fallback behavior when
+        # RuntimeInformation.OSArchitecture cannot be read.
+        return "x64"
+    }
+}
+
 function Get-RuntimeId {
     if ($RuntimeId) {
         return $RuntimeId
@@ -86,40 +106,13 @@ function Get-RuntimeId {
         throw "Unsupported operating system. Use -RuntimeId to specify a RID manually."
     }
 
-    # Detect architecture
-    # Wrap in try/catch: on Windows PowerShell 5.1 with older .NET Framework,
-    # OSArchitecture may throw PropertyNotFoundException under Set-StrictMode.
-    $arch = $null
-    try {
-        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-    }
-    catch { }
-
-    if (-not $arch) {
-        # Fallback: use environment variable on Windows, uname -m elsewhere
-        if ($os -like "win*") {
-            $procArch = $env:PROCESSOR_ARCHITECTURE
-            $arch = switch ($procArch) {
-                "AMD64" { "X64" }
-                "ARM64" { "Arm64" }
-                default { $procArch }
-            }
-        }
-        else {
-            $uname = & uname -m 2>/dev/null
-            $arch = switch ($uname) {
-                "x86_64"          { "X64" }
-                "aarch64"         { "Arm64" }
-                "arm64"           { "Arm64" }
-                default           { $uname }
-            }
-        }
-    }
-
-    $archStr = switch ($arch) {
-        "X64" { "x64" }
-        "Arm64" { "arm64" }
-        default { throw "Unsupported architecture: $arch. Use -RuntimeId to specify a RID manually." }
+    # Detect architecture using the same native-architecture helper shape used by
+    # the SDK toolset scripts, while keeping this script standalone.
+    $archStr = Get-NativeMachineArchitecture
+    switch ($archStr) {
+        "x64" { }
+        "arm64" { }
+        default { throw "Unsupported architecture: $archStr. Use -RuntimeId to specify a RID manually." }
     }
 
     return "$os-$archStr"
