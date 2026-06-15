@@ -262,11 +262,26 @@ jobs:
         if: steps.evaluate.outputs.status == 'success' && steps.check-changes.outputs.changes == 'true'
         working-directory: pr
         run: |
+          set -euo pipefail
+          snapshot_root="test/dotnet.Tests/CompletionTests/snapshots"
           mkdir -p __artifacts
-          git diff --name-only -- test/dotnet.Tests/CompletionTests/snapshots/ > __artifacts/changed-files.txt
-          git status --short test/dotnet.Tests/CompletionTests/snapshots/ > __artifacts/status.txt
-          git diff --stat -- test/dotnet.Tests/CompletionTests/snapshots/ > __artifacts/diff-summary.txt
-          tar -czf __artifacts/snapshots.tar.gz test/dotnet.Tests/CompletionTests/snapshots
+
+          # Build the file list packed into the tarball. Updated verified snapshots are either modifications to
+          # tracked files (git diff) or brand-new files for a newly supported shell (git ls-files --others).
+          # __changed-files.txt is only used to build the tarball; it is intentionally not shipped, because the
+          # 'apply' job derives the file list from the extracted tree, not from this list.
+          {
+            git diff --name-only -- "$snapshot_root"
+            git ls-files --others --exclude-standard -- "$snapshot_root"
+          } | grep -E '\.verified\.(sh|zsh|fish|ps1|nu)$' | sort -u > __changed-files.txt || true
+
+          if [ ! -s __changed-files.txt ]; then
+            echo "No updated verified snapshots found to package." >&2
+            exit 1
+          fi
+
+          git diff --stat -- "$snapshot_root" > __artifacts/diff-summary.txt
+          tar -czf __artifacts/snapshots.tar.gz -T __changed-files.txt
           printf 'diff_summary<<EOF\n%s\nEOF\n' "$(cat __artifacts/diff-summary.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Upload snapshot artifacts
@@ -328,28 +343,69 @@ jobs:
           name: cli-completion-snapshots
           path: artifact
 
-      - name: Apply snapshot updates
-        if: needs.generate.outputs.changes == 'true'
-        run: |
-          tar -xzf artifact/snapshots.tar.gz
-
       - name: Validate and stage snapshot files
         if: needs.generate.outputs.changes == 'true'
         run: |
-          if [ ! -f artifact/changed-files.txt ]; then
-            echo "Expected list of changed files is missing." >&2
+          set -euo pipefail
+
+          snapshot_root="test/dotnet.Tests/CompletionTests/snapshots"
+
+          # The tar change artifact comes from the untrusted 'generate' job; treat its member list and contents as hostile.
+          rm -rf __extract
+          mkdir -p __extract
+
+          # Extract with Python tarfile's 'data' filter: https://docs.python.org/3/library/tarfile.html#tarfile.data_filter
+          # Additionally enforce that every file member is a known <name>.verified.<shell-ext> snapshot inside the
+          # snapshot directory. Adding a new shell requires adding its extension here, in the find filter below,
+          # and in the commit allowlist.
+          python3 - "$snapshot_root" <<'PY'
+          import sys, tarfile
+          snapshot_root = sys.argv[1]
+          allowed = (".verified.sh", ".verified.zsh", ".verified.fish", ".verified.ps1", ".verified.nu")
+          with tarfile.open("artifact/snapshots.tar.gz") as tar:
+              for m in tar.getmembers():
+                  if not (m.isfile() or m.isdir()):
+                      sys.exit(f"Disallowed member type in archive: {m.name}")
+                  if ".git" in m.name.split("/") or m.name.endswith(".gitattributes"):
+                      sys.exit(f".git path in archive: {m.name}")
+                  if m.isfile():
+                      if m.name != snapshot_root and not m.name.startswith(snapshot_root + "/"):
+                          sys.exit(f"Member outside snapshot directory: {m.name}")
+                      if not m.name.endswith(allowed):
+                          sys.exit(f"Unexpected snapshot file name: {m.name}")
+              tar.extractall("__extract", filter="data")
+          PY
+
+          # Stage the validated snapshots actually present in the sanitized extract dir. Only the exact
+          # <name>.verified.<shell-ext> files Verify produces are accepted; a crafted name with a different
+          # extension (e.g. evil.verified.exe) or a stray *.received.* temporary is never selected.
+          # Adding a new shell requires adding its verified extension to this list and the commit allowlist below.
+          staged_any=false
+          while IFS= read -r -d '' extracted_file; do
+            dest_path="${extracted_file#__extract/}"
+            case "/$dest_path/" in
+              */.git/*) echo ".git path in artifact: $dest_path" >&2; exit 1 ;;
+            esac
+            case "$dest_path" in
+              "$snapshot_root"/*) : ;;
+              *) echo "Snapshot file outside snapshot directory: $dest_path" >&2; exit 1 ;;
+            esac
+            case "$dest_path" in
+              *.verified.sh|*.verified.zsh|*.verified.fish|*.verified.ps1|*.verified.nu) : ;;
+              *) echo "Unexpected snapshot file name: $dest_path" >&2; exit 1 ;;
+            esac
+            mkdir -p "$(dirname "$dest_path")"
+            cp -- "$extracted_file" "$dest_path"
+            git add -- "$dest_path"
+            staged_any=true
+          done < <(find "__extract/$snapshot_root" -type f \
+            \( -name '*.verified.sh' -o -name '*.verified.zsh' -o -name '*.verified.fish' \
+               -o -name '*.verified.ps1' -o -name '*.verified.nu' \) -print0)
+
+          if [ "$staged_any" = false ]; then
+            echo "No snapshot files were present in the artifact." >&2
             exit 1
           fi
-
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            if [[ "$file" == test/dotnet.Tests/CompletionTests/snapshots/* ]]; then
-              git add "$file"
-            else
-              echo "Disallowed file detected in artifact: $file" >&2
-              exit 1
-            fi
-          done < artifact/changed-files.txt
 
       - name: Prepare commit message
         id: commit-message
@@ -366,7 +422,11 @@ jobs:
         env:
           COMMIT_MESSAGE: ${{ steps.commit-message.outputs.message }}
           ALLOWED_PATTERNS: |
-            test/dotnet.Tests/CompletionTests/snapshots/**.verified.*
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.sh
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.zsh
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.fish
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.ps1
+            test/dotnet.Tests/CompletionTests/snapshots/**.verified.nu
           GIT_USER_NAME: github-actions[bot]
           GIT_USER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: |
@@ -410,7 +470,10 @@ jobs:
             fi
           done
 
-          git commit -m "${COMMIT_MESSAGE}"
+          # Defense in depth: disable hooks and gitattributes-driven filters so a
+          # commit can never execute repository- or artifact-supplied code, even
+          # if an unexpected file slipped into .git/ earlier.
+          git -c core.hooksPath=/dev/null -c core.attributesFile=/dev/null commit -m "${COMMIT_MESSAGE}"
 
       - name: Push snapshot changes
         if: steps.commit.outcome == 'success'
