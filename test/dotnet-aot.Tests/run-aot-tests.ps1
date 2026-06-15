@@ -49,7 +49,7 @@ $ErrorActionPreference = "Stop"
 
 # Resolve paths
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..") | Select-Object -ExpandProperty Path
-$dotnet = Join-Path $repoRoot ".dotnet" "dotnet"
+$dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", "dotnet")
 $testProject = Join-Path $PSScriptRoot "dotnet-aot.Tests.csproj"
 
 # Auto-detect RID
@@ -68,7 +68,7 @@ if (-not $RuntimeIdentifier) {
     }
 }
 
-$publishDir = Join-Path $PSScriptRoot "artifacts" "aot-tests" $Configuration $RuntimeIdentifier
+$publishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "aot-tests", $Configuration, $RuntimeIdentifier)
 $exeName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.Tests.exe" } else { "dotnet-aot.Tests" }
 $exePath = Join-Path $publishDir $exeName
 
@@ -117,7 +117,7 @@ Write-Host ""
 $runArgs = @()
 if ($Trx) {
     if (-not $ResultsDirectory) {
-        $ResultsDirectory = Join-Path $repoRoot "artifacts" "TestResults" $Configuration
+        $ResultsDirectory = [System.IO.Path]::Combine($repoRoot, "artifacts", "TestResults", $Configuration)
     }
     New-Item -ItemType Directory -Path $ResultsDirectory -Force | Out-Null
     $runArgs += @("--report-trx", "--report-trx-filename", "dotnet-aot.Tests.trx", "--results-directory", $ResultsDirectory)

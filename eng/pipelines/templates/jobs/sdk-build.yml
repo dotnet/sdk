@@ -185,26 +185,25 @@ jobs:
             TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### NATIVE AOT CLI TESTS ###############
-    # Publishes test/dotnet-aot.Tests as a NativeAOT binary and runs it on the build agent
-    # (same architecture, native toolchain already present from the build). Runs after the
-    # Helix queue step so it never prevents the broader Helix test submission.
+    # Publishes test/dotnet-aot.Tests as a NativeAOT binary and runs it on the build agent.
+    # NativeAOT binaries must run on the same architecture they are built for, so the scripts
+    # auto-detect the agent's host RID (via .dotnet/dotnet --info) rather than using the build's
+    # target RID. On cross-architecture legs (e.g. the macOS leg cross-builds osx-arm64 on an
+    # x64 host) this runs the tests for the host architecture. Runs after the Helix queue step
+    # so it never prevents the broader Helix test submission.
     - ${{ if eq(parameters.runNativeAotCliTests, true) }}:
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: |
             test/dotnet-aot.Tests/run-aot-tests.ps1 `
               -Configuration $(buildConfiguration) `
-              -RuntimeIdentifier win-${{ parameters.targetArchitecture }} `
               -Trx `
               -ResultsDirectory $(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)
           displayName: 🟣 Run NativeAOT CLI Tests
       - ${{ else }}:
         - script: |
-            os='${{ parameters.pool.os }}'
-            if [ "$os" = 'macOS' ]; then rid_os='osx'; else rid_os='linux'; fi
             chmod +x test/dotnet-aot.Tests/run-aot-tests.sh
             test/dotnet-aot.Tests/run-aot-tests.sh \
               --configuration $(buildConfiguration) \
-              --rid "$rid_os-${{ parameters.targetArchitecture }}" \
               --trx \
               --results-directory $(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)
           displayName: 🟣 Run NativeAOT CLI Tests
