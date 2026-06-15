@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["CheckEolTargetFramework"] = "false";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -102,7 +102,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netcoreapp1.0",
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -131,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
                 { "Url", "https://aka.ms/maui-support-policy" }
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -162,7 +162,7 @@ namespace Microsoft.NET.Build.Tests
                 { "Url", "https://aka.ms/maui-support-policy" }
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 

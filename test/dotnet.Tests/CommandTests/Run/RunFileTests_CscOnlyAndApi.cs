@@ -4,7 +4,6 @@
 using System.Text.Json;
 using Basic.CompilerLog.Util;
 using Microsoft.Build.Evaluation;
-using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -19,7 +18,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void UpToDate()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Console.WriteLine("Hello v1");
             """);
@@ -141,7 +140,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void UpToDate_InvalidOptions()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-build")
@@ -158,7 +157,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void UpToDate_SymbolicLink()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var originalPath = Path.Join(testInstance.Path, "original.cs");
         var code = """
@@ -193,7 +192,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void UpToDate_SymbolicLink2()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var originalPath = Path.Join(testInstance.Path, "original.cs");
         var code = """
@@ -234,7 +233,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void UpToDate_ProjectReferences()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libDir = Path.Join(testInstance.Path, "Lib");
         Directory.CreateDirectory(libDir);
@@ -292,7 +291,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void UpToDate_RefDirectives()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         EnableRefDirective(testInstance);
 
         var libPath = Path.Join(testInstance.Path, "lib.cs");
@@ -338,7 +337,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Theory, CombinatorialData]
     public void UpToDate_DefaultItems(bool optOut)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var code = $"""
             {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
             #:property EnableDefaultEmbeddedResourceItems=true
@@ -383,7 +382,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void UpToDate_DefaultItems_Razor()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var programFileName = "MyRazorApp.cs";
         File.WriteAllText(Path.Join(testInstance.Path, programFileName), """
             #:sdk Microsoft.NET.Sdk.Web
@@ -411,7 +410,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Console.WriteLine("v1");
@@ -442,7 +441,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_CompilationDiagnostics()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             string x = null;
@@ -478,7 +477,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_DotNetRoot()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             foreach (var entry in Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process)
                 .Cast<System.Collections.DictionaryEntry>()
@@ -529,7 +528,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_IntermediateFiles()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Expression<Func<int>> e = () => 1 + 1;
             Console.WriteLine(e);
@@ -575,7 +574,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_NotRestored()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         // Remove artifacts from possible previous runs of this test.
@@ -615,7 +614,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_SpacesInPath()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var programFileName = "Program with spaces.cs";
         var programPath = Path.Join(testInstance.Path, programFileName);
@@ -634,7 +633,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact] // https://github.com/dotnet/sdk/issues/50778
     public void CscOnly_Args()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, s_program);
 
@@ -654,7 +653,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_SymbolicLink()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var originalPath = Path.Join(testInstance.Path, "original.cs");
         var code = """
@@ -690,7 +689,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var code = """
             #:property Configuration=Release
@@ -748,7 +747,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild_SpacesInPath()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var code = """
             #:property Configuration=Release
@@ -783,7 +782,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild_CompilationFailure_NoCopyToBin()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         // First, create a valid program and build it successfully
         var programPath = Path.Join(testInstance.Path, "Program.cs");
@@ -831,7 +830,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild_Args()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         var programPath = Path.Join(testInstance.Path, "Program.cs");
 
         var code = $"""
@@ -869,7 +868,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild_HardLinks()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         var programPath = Path.Join(testInstance.Path, "Program.cs");
 
         var code = $"""
@@ -898,7 +897,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild_SymbolicLink()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var originalPath = Path.Join(testInstance.Path, "original.cs");
         var code = """
@@ -932,7 +931,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Theory, CombinatorialData]
     public void CscOnly_AfterMSBuild_DirectoryBuildProps(bool touch1, bool touch2)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var propsPath = Path.Join(testInstance.Path, "Directory.Build.props");
         var propsContent = """
@@ -984,7 +983,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild_ProjectReferences()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libDir = Path.Join(testInstance.Path, "Lib");
         Directory.CreateDirectory(libDir);
@@ -1044,7 +1043,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild_RefDirectives()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         EnableRefDirective(testInstance);
 
         var libPath = Path.Join(testInstance.Path, "lib.cs");
@@ -1089,7 +1088,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Theory, CombinatorialData]
     public void CscOnly_AfterMSBuild_OptOut(bool canSkipMSBuild, bool inDirectoryBuildProps)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         const string propertyName = VirtualProjectBuildingCommand.FileBasedProgramCanSkipMSBuild;
 
@@ -1134,7 +1133,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild_AuxiliaryFilesNotReused()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var code = """
             #:property Configuration=Release
@@ -1174,7 +1173,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void MSBuild_WritesCscRsp()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
@@ -1202,7 +1201,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void DotnetBuild_WritesCscRsp()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
@@ -1231,7 +1230,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_NuGetCacheCleared()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var code = """
             Console.Write("v1");
@@ -1279,7 +1278,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscOnly_AfterMSBuild_NuGetCacheCleared()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         var code = """
             #:property PublishAot=false
@@ -1331,7 +1330,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void Api()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
             #!/program
@@ -1416,7 +1415,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void Api_Evaluation()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var programPath = Path.Join(testInstance.Path, "A.cs");
         File.WriteAllText(programPath, """
@@ -1497,7 +1496,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void Api_Diagnostic_01()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
             Console.WriteLine();
@@ -1572,7 +1571,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void Api_Diagnostic_02()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
             #:unknown directive
@@ -1664,7 +1663,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void Api_RunCommand()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
             Console.WriteLine();
@@ -1691,7 +1690,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void Api_VirtualProjectBuilder_CreateProjectRootElement()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var libDir = Path.Join(testInstance.Path, "Lib");
         Directory.CreateDirectory(libDir);
@@ -1742,7 +1741,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Theory, CombinatorialData]
     public void EntryPointFilePath(bool cscOnly)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, """"
             var entryPointFilePath = AppContext.GetData("EntryPointFilePath") as string;
@@ -1767,7 +1766,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void EntryPointFileDirectoryPath()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """"
             var entryPointFileDirectoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
             Console.WriteLine($"""EntryPointFileDirectoryPath: {entryPointFileDirectoryPath}""");
@@ -1783,7 +1782,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void EntryPointFilePath_WithRelativePath()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var fileName = "Program.cs";
         File.WriteAllText(Path.Join(testInstance.Path, fileName), """
             var entryPointFilePath = AppContext.GetData("EntryPointFilePath") as string;
@@ -1801,7 +1800,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void EntryPointFilePath_WithSpacesInPath()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var dirWithSpaces = Path.Join(testInstance.Path, "dir with spaces");
         Directory.CreateDirectory(dirWithSpaces);
         var filePath = Path.Join(dirWithSpaces, "Program.cs");
@@ -1820,7 +1819,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void EntryPointFileDirectoryPath_WithDotSlash()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var fileName = "Program.cs";
         File.WriteAllText(Path.Join(testInstance.Path, fileName), """
         var entryPointFileDirectoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
@@ -1837,7 +1836,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void EntryPointFilePath_WithUnicodeCharacters()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var unicodeFileName = "Программа.cs";
         var filePath = Path.Join(testInstance.Path, unicodeFileName);
         File.WriteAllText(filePath, """
@@ -1856,7 +1855,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void EntryPointFilePath_SymbolicLink()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         var fileName = "Program.cs";
         var programPath = Path.Join(testInstance.Path, fileName);
         File.WriteAllText(programPath, """
@@ -1885,7 +1884,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void MSBuildGet_Simple()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         new DotnetCommand(Log, "build", "Program.cs", "-getProperty:TargetFramework")
@@ -1915,7 +1914,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [InlineData(true, "clean", "-getProperty:Configuration")]
     public void MSBuildGet_Consistent(bool success, string subcommand, params string[] args)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
@@ -1981,7 +1980,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void VirtualProject_SurvivesGCDuringRestore()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Console.WriteLine("Hello from virtual project");
             """);
@@ -2024,7 +2023,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void VirtualProject_SurvivesGCDuringRestore_RefDirective()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var testInstance = TestAssetsManager.CreateTestDirectory();
 
         File.WriteAllText(Path.Join(testInstance.Path, "Lib.cs"), """
             #:property OutputType=Library
@@ -2079,7 +2078,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [Fact]
     public void CscArguments()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         const string programName = "TestProgram";
         const string fileName = $"{programName}.cs";
         string entryPointPath = Path.Join(testInstance.Path, fileName);
@@ -2235,6 +2234,13 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                 needsInterpolation = true;
             }
 
+            // Use variable target framework version.
+            if (rewritten.Contains(CSharpCompilerCommand.TargetFrameworkVersion, StringComparison.OrdinalIgnoreCase))
+            {
+                rewritten = rewritten.Replace(CSharpCompilerCommand.TargetFrameworkVersion, "{" + nameof(CSharpCompilerCommand.TargetFrameworkVersion) + "}", StringComparison.OrdinalIgnoreCase);
+                needsInterpolation = true;
+            }
+
             // Ignore `/analyzerconfig` which is not variable (so it comes from the machine or sdk repo).
             if (!needsInterpolation && arg.StartsWith("/analyzerconfig", StringComparison.Ordinal))
             {
@@ -2343,7 +2349,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                 interpolationPrefix = "$$";
                 foreach (var (key, value) in replacements)
                 {
-                    interpolatedString = interpolatedString.Replace(JsonSerializer.Serialize(key), "{{JsonSerializer.Serialize(" + value + ")}}");
+                    interpolatedString = interpolatedString.Replace(JsonSerializer.Serialize(key), "{{JsonSerializer.Serialize(" + value + ", CSharpCompilerCommandJsonSerializerContext.Default.String)}}");
                 }
             }
             else
@@ -2495,7 +2501,7 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
     [InlineData("noext")]
     public void CscVsMSBuild(string fileName)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         string entryPointPath = Path.Join(testInstance.Path, fileName);
         File.WriteAllText(entryPointPath, $"""
             #!/test
@@ -2510,7 +2516,17 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
         var artifactsBackupDir = Path.ChangeExtension(artifactsDir, ".bak");
         if (Directory.Exists(artifactsBackupDir)) Directory.Delete(artifactsBackupDir, recursive: true);
 
-        // Build using CSC.
+        // Build using MSBuild first (also populates NuGet cache needed for csc-only).
+        new DotnetCommand(Log, "run", fileName, "-bl", "--no-cache")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"Hello from {programName}");
+
+        // Backup the MSBuild artifacts directory.
+        Directory.Move(artifactsDir, artifactsBackupDir);
+
+        // Build using CSC (NuGet cache is now populated from the MSBuild run above).
         new DotnetCommand(Log, "run", fileName, "-bl")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
@@ -2520,27 +2536,17 @@ public sealed class RunFileTests_CscOnlyAndApi(ITestOutputHelper log) : RunFileT
                 Hello from {programName}
                 """);
 
-        // Backup the artifacts directory.
-        Directory.Move(artifactsDir, artifactsBackupDir);
-
-        // Build using MSBuild.
-        new DotnetCommand(Log, "run", fileName, "-bl", "--no-cache")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut($"Hello from {programName}");
-
-        // Check that files generated by MSBuild and CSC-only runs are equivalent.
-        var cscOnlyFiles = Directory.EnumerateFiles(artifactsBackupDir, "*", SearchOption.AllDirectories)
+        // Check that files generated by CSC-only and MSBuild runs are equivalent.
+        var cscOnlyFiles = Directory.EnumerateFiles(artifactsDir, "*", SearchOption.AllDirectories)
             .Where(f =>
-                Path.GetDirectoryName(f) != artifactsBackupDir && // exclude top-level marker files
+                Path.GetDirectoryName(f) != artifactsDir && // exclude top-level marker files
                 Path.GetFileName(f) != programName && // binary on unix
                 Path.GetExtension(f) is not (".dll" or ".exe" or ".pdb")); // other binaries
         bool hasErrors = false;
         foreach (var cscOnlyFile in cscOnlyFiles)
         {
-            var relativePath = Path.GetRelativePath(relativeTo: artifactsBackupDir, path: cscOnlyFile);
-            var msbuildFile = Path.Join(artifactsDir, relativePath);
+            var relativePath = Path.GetRelativePath(relativeTo: artifactsDir, path: cscOnlyFile);
+            var msbuildFile = Path.Join(artifactsBackupDir, relativePath);
 
             if (!File.Exists(msbuildFile))
             {

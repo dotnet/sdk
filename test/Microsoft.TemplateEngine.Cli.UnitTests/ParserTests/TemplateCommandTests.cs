@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.Empty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default));
+            Assert.Empty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.Current.CancellationToken));
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default));
+            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.Current.CancellationToken));
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default));
+            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.Current.CancellationToken));
         }
 
     }

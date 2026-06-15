@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tests
         public void WhenPropertiesAreNotSetItShouldNotGenerateSupportedOSPlatformAttribute()
         {
             TestProject testProject = SetUpProject();
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var runCommand = new DotnetCommand(Log, "run")
             {
@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["SupportedOSPlatformVersion"] = "13.2";
             testProject.AdditionalProperties["TargetPlatformVersion"] = "14.0";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var runCommand = new DotnetCommand(Log, "run")
             {
@@ -64,7 +64,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["TargetPlatformVersionSupported"] = "true";
             testProject.AdditionalProperties["TargetPlatformVersion"] = "13.2";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var runCommand = new DotnetCommand(Log, "run")
             {
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
             TestProject testProject = SetUpProject();
             testProject.AdditionalProperties["TargetPlatformIdentifier"] = "windows";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var runCommand = new DotnetCommand(Log, "run")
             {
@@ -103,7 +103,7 @@ namespace Microsoft.NET.Build.Tests
         {
             TestProject testProject = SetUpProject(targetFramework);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var runCommand = new DotnetCommand(Log, "run")
             {
@@ -122,7 +122,7 @@ namespace Microsoft.NET.Build.Tests
             TestProject testProject = SetUpProject($"{ToolsetInfo.CurrentTargetFramework}-windows");
             testProject.AdditionalProperties["SupportedOSPlatformVersion"] = "0.0";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var runCommand = new DotnetCommand(Log, "run")
             {
@@ -147,7 +147,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["SupportedOSPlatformVersion"] = "14.0";
             testProject.AdditionalProperties["TargetPlatformSupported"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new DotnetBuildCommand(Log, Path.Combine(testAsset.Path, "Project", "Project.csproj"));
             buildCommand.Execute()
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Build.Tests
             TestProject testProject = SetUpProject($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041");
             testProject.AdditionalProperties["TargetPlatformMinVersion"] = "10.0.18362.0";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var runCommand = new DotnetCommand(Log, "run")
             {
@@ -180,7 +180,7 @@ namespace Microsoft.NET.Build.Tests
             TestProject testProject = SetUpProject($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041");
             testProject.AdditionalProperties["SupportedOSPlatformVersion"] = "10.0.18362.0";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var runCommand = new DotnetCommand(Log, "run")
             {
@@ -209,7 +209,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["TargetPlatformMinVersion"] = "10.0.18362.0";
             testProject.AdditionalProperties["SupportedOSPlatformVersion"] = "10.0.17663.0";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var runCommand = new DotnetCommand(Log, "run")
             {
@@ -237,7 +237,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["TargetPlatformMinVersion"] = "10.0.18362.0";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             new BuildCommand(testAsset)
                 .Execute()
@@ -258,7 +258,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["TargetPlatformVersion"] = "14.0";
             testProject.AdditionalProperties["TargetPlatformMinVersion"] = "12.0";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var runCommand = new DotnetCommand(Log, "run")
             {

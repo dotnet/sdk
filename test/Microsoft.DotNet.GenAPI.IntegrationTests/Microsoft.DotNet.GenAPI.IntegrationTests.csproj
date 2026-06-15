@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <OutputType Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Exe</OutputType>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Build-ordering dependencies on the tool and task under test. ReferenceOutputAssembly="false" so we don't take a compile-time dependency on netcore-only types; SetTargetFramework pins both inner builds to consume the netcore TFM since these projects are netcore-only. -->
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Task\Microsoft.DotNet.GenAPI.Task.csproj" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=$(NetMinimum)" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\GenAPI\Microsoft.DotNet.GenAPI.Tool\Microsoft.DotNet.GenAPI.Tool.csproj" ReferenceOutputAssembly="false" SetTargetFramework="TargetFramework=$(NetMinimum)" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  </ItemGroup>
+
+  <!-- Stage the genapi CLI binary closure under tools\Microsoft.DotNet.GenAPI.Tool\ so the
+       test can invoke 'dotnet exec' against it both locally and on Helix. ToolPaths reads the
+       DLL relative to AppContext.BaseDirectory; the CopyToOutputDirectory/CopyToPublishDirectory
+       metadata makes the tools tree ride along into both the local bin output (used by 'dotnet
+       test' with the no-build flag) and the Helix work item payload (which is built from
+       PublishDir). -->
+  <Target Name="_StageToolsUnderTest" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <_GenAPIToolFile Include="$(ArtifactsBinDir)Microsoft.DotNet.GenAPI.Tool\$(Configuration)\$(NetMinimum)\**\*" />
+      <Content Include="@(_GenAPIToolFile)"
+               Link="tools\Microsoft.DotNet.GenAPI.Tool\%(_GenAPIToolFile.RecursiveDir)%(_GenAPIToolFile.Filename)%(_GenAPIToolFile.Extension)"
+               CopyToOutputDirectory="PreserveNewest"
+               CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+
+</Project>

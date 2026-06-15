@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -762,7 +763,7 @@ End Class
                 TestCode = code,
                 FixedCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6001, "https://github.com/dotnet/roslyn-analyzers/issues/6001")]
@@ -781,7 +782,7 @@ End Class
                 TestCode = code,
                 FixedCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

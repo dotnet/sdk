@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -625,7 +626,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                     }
                 },
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -655,7 +656,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                              """)
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -691,7 +692,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                     }
                 },
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -715,7 +716,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                              """)
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -755,6 +756,31 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 """);
         }
 
+        [Theory]
+        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        public Task ExtensionMembers_NoDiagnostic(OutputKind outputKind)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                           internal static class E
+                           {
+                               public static void Main() {}
+
+                               extension(int x)
+                               {
+                                   public int M() => x + 1;
+                               }
+                           }
+                           """,
+                TestState =
+                {
+                    OutputKind = outputKind,
+                },
+                LanguageVersion = LanguageVersion.CSharp14
+            }.RunAsync(TestContext.Current.CancellationToken);
+        }
+
         private Task VerifyCsAsync(OutputKind outputKind, string testCode, string fixedCode = null)
         {
             return new VerifyCS.Test
@@ -763,7 +789,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 FixedCode = fixedCode!,
                 TestState = { OutputKind = outputKind },
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private Task VerifyVbAsync(OutputKind outputKind, string testCode, string fixedCode = null)
@@ -773,7 +799,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 TestCode = testCode,
                 FixedCode = fixedCode!,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

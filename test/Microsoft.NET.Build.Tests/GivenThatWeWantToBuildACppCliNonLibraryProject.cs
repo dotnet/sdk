@@ -13,10 +13,10 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/54145")]
         public void Given_an_exe_project_It_should_fail_with_error_message()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NETCoreCppClApp")
                 .WithSource();
 
@@ -27,10 +27,10 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining(Strings.NoSupportCppNonDynamicLibraryDotnetCore);
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/54145")]
         public void Given_an_StaticLibrary_project_It_should_fail_with_error_message()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("NETCoreCppClApp")
                 .WithSource()
                 .WithProjectChanges((projectPath, project) =>

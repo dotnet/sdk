@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json.schemastore.org/ide.host",
+  "icon": "ide/icon.ico",
+  "symbolInfo": [
+    {
+      "id": "UseMSTestSdk",
+      "isVisible": true,
+      "persistenceScope": "shared"
+    },
+    {
+      "id": "TestRunner",
+      "isVisible": true,
+      "persistenceScope": "shared"
+    },
+    {
+      "id": "ExtensionsProfile",
+      "isVisible": true
+    },
+    {
+      "id": "ExplicitProgramFile",
+      "isVisible": true,
+      "persistenceScope": "shared"
+    },
+    {
+      "id": "CoverageTool",
+      "isVisible": true,
+      "persistenceScope": "shared"
+    },
+    {
+      "id": "Fixture",
+      "isVisible": true
+    }
+  ],
+  "tags": [
+    {
+      "type": "platform",
+      "add": [ "Linux", "macOS", "Windows" ]
+    }
+  ]
+}

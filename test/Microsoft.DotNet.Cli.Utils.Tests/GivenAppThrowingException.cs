@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [RequiresSpecificFrameworkFact("netcoreapp1.1")]
         public void ItShowsStackTraceWhenRun()
         {
-            var root = _testAssetsManager.CopyTestAsset("AppThrowingException", testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
+            var root = TestAssetsManager.CopyTestAsset("AppThrowingException", testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
                 .WithSource()
                 .Path;
 
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [RequiresSpecificFrameworkFact("netcoreapp1.1")]
         public void ItShowsStackTraceWhenRunAsTool()
         {
-            var root = _testAssetsManager.CopyTestAsset("AppThrowingException", testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
+            var root = TestAssetsManager.CopyTestAsset("AppThrowingException", testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
                 .WithSource()
                 .Path;
 

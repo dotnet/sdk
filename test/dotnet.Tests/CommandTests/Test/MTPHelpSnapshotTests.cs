@@ -17,7 +17,7 @@ public class MTPHelpSnapshotTests : SdkTest
     [Fact]
     public async Task VerifyMTPHelpOutput()
     {
-        TestAsset testInstance = _testAssetsManager
+        TestAsset testInstance = TestAssetsManager
             .CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString())
             .WithSource();
 
@@ -44,7 +44,11 @@ public class MTPHelpSnapshotTests : SdkTest
             Log.WriteLine($"Using snapshots from local repository because $USER {Environment.GetEnvironmentVariable("USER")} is not helix-related");
             settings.UseDirectory("snapshots");
         }
-        
+
+        // MTP emits a "Running tests from <abs-path>\TestProject.dll (<tfm>|<arch>)" line whose
+        // path/TFM/architecture vary by machine and run. Scrub it so the snapshot stays stable.
+        settings.ScrubLinesContaining("Running tests from");
+
         await Verify(helpOutput, settings);
     }
 }

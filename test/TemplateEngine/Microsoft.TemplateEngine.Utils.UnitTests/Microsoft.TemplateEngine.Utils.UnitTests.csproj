@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="AwesomeAssertions" />
+  </ItemGroup>
+
+</Project>

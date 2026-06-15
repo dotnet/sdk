@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             IWorkloadsInfoProvider wp = new WorkloadsInfoProvider(new Lazy<IWorkloadsRepositoryEnumerator>(workloadsEnumerator));
 
             // Act
-            var workloads = await wp.GetInstalledWorkloadsAsync(default);
+            var workloads = await wp.GetInstalledWorkloadsAsync(TestContext.Current.CancellationToken);
 
             // Assert
             List<WorkloadInfo> expected = new()

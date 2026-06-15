@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
@@ -25,7 +26,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             TestOutputHelper = output;
         }
 
-        public async Task InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
             var logger = new TestLogger();
 
@@ -37,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 
                 // Load the analyzer_project into a MSBuildWorkspace.
                 var workspacePath = Path.Combine(TestProjectsPathHelper.GetProjectsDirectory(), s_analyzerProjectFilePath);
-                var analyzerWorkspace = await MSBuildWorkspaceLoader.LoadAsync(workspacePath, WorkspaceType.Project, binaryLogPath: null, logWorkspaceWarnings: true, logger, CancellationToken.None);
+                var analyzerWorkspace = await MSBuildWorkspaceLoader.LoadAsync(workspacePath, WorkspaceType.Project, binaryLogPath: null, logWorkspaceWarnings: true, logger, targetFramework: null, CancellationToken.None);
 
                 TestOutputHelper.WriteLine(logger.GetLog());
 
@@ -51,11 +52,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             }
         }
 
-        public Task DisposeAsync()
+        public ValueTask DisposeAsync()
         {
             _analyzerReferencesProject = null;
 
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         private IEnumerable<AnalyzerReference> GetAnalyzerReferences(string prefix)

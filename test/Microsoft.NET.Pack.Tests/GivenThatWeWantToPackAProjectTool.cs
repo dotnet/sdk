@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
 
             toolProject.AdditionalProperties.Add("PackageType", "DotnetCliTool");
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                        .CreateTestProject(toolProject, toolProject.Name);
 
             var packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, toolProject.Name));
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Build.Tests
 
             toolProject.AdditionalProperties.Add("PackageType", "DotnetCliTool");
 
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                        .CreateTestProject(toolProject, toolProject.Name);
 
             var result = new PackCommand(Log, Path.Combine(asset.TestRoot, toolProject.Name)).Execute();

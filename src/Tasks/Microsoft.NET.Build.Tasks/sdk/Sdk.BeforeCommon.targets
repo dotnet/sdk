@@ -10,5 +10,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
+
+  <!-- This file is imported by Microsoft.CppCommon.props -->
+
+  <Import Project="..\targets\Microsoft.NET.Sdk.BeforeCommon.props" />
   <Import Project="..\targets\Microsoft.NET.Sdk.BeforeCommon.targets" />
+
 </Project>

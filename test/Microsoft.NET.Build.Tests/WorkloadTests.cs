@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-workloadtestplatform"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-missingworkloadtestplatform"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
@@ -60,7 +60,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-missingworkloadtestplatform"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "SuggestedWorkload", GetValuesCommand.ValueType.Item)
@@ -93,7 +93,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new RestoreCommand(testAsset)
@@ -120,7 +120,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
@@ -142,7 +142,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-foo;{ToolsetInfo.CurrentTargetFramework}-bar"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
@@ -163,7 +163,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             //  NETSDK1208: The target platform identifier android was not recognized.
@@ -185,7 +185,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var expectedProperty = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "WinTestWorkloadAutoImportPropsImported" : "UnixTestWorkloadAutoImportPropsImported";
 
@@ -211,7 +211,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-workloadtestplatform"
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             var expectedProperty = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
@@ -242,7 +242,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(mainProject);
 
             var getValuesCommand =
@@ -292,7 +292,7 @@ namespace Microsoft.NET.Build.Tests
             mainProject.ReferencedProjects.Add(referencedProject);
 
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(mainProject, identifier: mainTfm + "_" + referencingTfm);
 
             var getValuesCommand =

@@ -15,7 +15,7 @@ namespace Microsoft.NET.Publish.Tests
         public void PublishDepsFilePathIsSetAsExpectedForNormalApps()
         {
             var testProject = SetupProject(singleFile: false);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var projectPath = Path.Combine(testAsset.Path, testProject.Name);
             var targetFramework = testProject.TargetFrameworks;
@@ -32,7 +32,7 @@ namespace Microsoft.NET.Publish.Tests
         public void PublishDepsFilePathIsEmptyForSingleFileApps()
         {
             var testProject = SetupProject(singleFile: true);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand
                 .Execute()

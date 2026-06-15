@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_builds_the_projects_successfully()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppsWithFrameworkReferences")
                 .WithSource();
             VerifyProjectsBuild(testAsset);
@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_builds_with_disable_implicit_frameworkRefs()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppsWithFrameworkReferences")
                 .WithSource();
             VerifyProjectsBuild(testAsset, "/p:DisableImplicitFrameworkReferences=true");
@@ -67,7 +67,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("AppsWithFrameworkReferences", "CleanTargetRemovesAll")
                 .WithSource();
             VerifyClean(testAsset, "StopwatchLib", "net45", "",

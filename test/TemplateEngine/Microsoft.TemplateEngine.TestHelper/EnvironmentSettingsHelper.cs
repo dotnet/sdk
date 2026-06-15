@@ -1,0 +1,92 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Globalization;
+using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Edge;
+using Microsoft.TemplateEngine.Utils;
+using Xunit.Sdk;
+
+namespace Microsoft.TemplateEngine.TestHelper
+{
+    public class EnvironmentSettingsHelper : IDisposable
+    {
+        private readonly List<string> _foldersToCleanup = new List<string>();
+        private readonly SharedTestOutputHelper _testOutputHelper;
+
+        public EnvironmentSettingsHelper(IMessageSink messageSink)
+        {
+            _testOutputHelper = new SharedTestOutputHelper(messageSink);
+        }
+
+        public IEngineEnvironmentSettings CreateEnvironment(
+            string? locale = null,
+            bool virtualize = false,
+            [CallerMemberName] string hostIdentifier = "",
+            bool loadDefaultGenerator = true,
+            IEnvironment? environment = null,
+            IReadOnlyList<(Type, IIdentifiedComponent)>? additionalComponents = null,
+            IEnumerable<ILoggerProvider>? addLoggerProviders = null)
+        {
+            if (string.IsNullOrEmpty(locale))
+            {
+                locale = "en-US";
+            }
+
+            IEnumerable<ILoggerProvider> loggerProviders = new[] { new XunitLoggerProvider(_testOutputHelper) };
+            if (addLoggerProviders != null)
+            {
+                loggerProviders = loggerProviders.Concat(addLoggerProviders);
+            }
+            ITemplateEngineHost host = new TestHost(
+                hostIdentifier: hostIdentifier,
+                additionalComponents: additionalComponents,
+                fileSystem: new MonitoredFileSystem(new PhysicalFileSystem()),
+                fallbackNames: new[] { "dotnetcli" },
+                addLoggerProviders: loggerProviders);
+
+            CultureInfo.CurrentUICulture = new CultureInfo(locale);
+            EngineEnvironmentSettings engineEnvironmentSettings;
+            if (virtualize)
+            {
+                engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true, environment: environment);
+            }
+            else
+            {
+                var templateEngineRoot = Path.Combine(CreateTemporaryFolder(), ".templateengine");
+                engineEnvironmentSettings = new EngineEnvironmentSettings(host, settingsLocation: templateEngineRoot, environment: environment);
+            }
+            return engineEnvironmentSettings;
+        }
+
+        public string CreateTemporaryFolder(string name = "")
+        {
+            string folder = TestUtils.CreateTemporaryFolder(name);
+            _foldersToCleanup.Add(folder);
+            return folder;
+        }
+
+        public void Dispose()
+        {
+            _foldersToCleanup.ForEach(f =>
+            {
+                if (Directory.Exists(f))
+                {
+                    try
+                    {
+                        Directory.Delete(f, true);
+                    }
+                    catch (Exception e) when (e is UnauthorizedAccessException or IOException)
+                    {
+                        // Failed to delete the temporary test folders.
+                        // There may be some access being released prior to this dispose or the machine holding a handle to inner files/folders.
+                        // No need to worry that deletion failed since these folders are in the Temp directory anyway.
+                        // See: https://stackoverflow.com/questions/329355/cannot-delete-directory-with-directory-deletepath-true
+                    }
+                }
+            });
+        }
+    }
+}

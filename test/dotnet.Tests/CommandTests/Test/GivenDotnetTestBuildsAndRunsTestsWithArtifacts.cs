@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunTestProjectWithFailingTestsAndFileArtifacts_ShouldReturnExitCodeGenericFailure(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -45,13 +45,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        // Linux and macOS are being skipped. See: https://github.com/dotnet/sdk/issues/52029
-        [WindowsOnlyTheory]
-        public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeGenericFailure(string configuration)
+        [InlineData(TestingConstants.Debug, false)]
+        [InlineData(TestingConstants.Release, false)]
+        [InlineData(TestingConstants.Debug, true)]
+        [InlineData(TestingConstants.Release, true)]
+        [Theory]
+        public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration, bool includeTestAssembly)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
 
             // Read MSTestPackageVersion from Version.Details.props and update the .csproj file
             // Search for Version.Details.props file from the current directory up to the root
@@ -59,9 +60,34 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string msTestVersion = testInstance.ReadMSTestPackageVersionFromProps(versionsPropsPath);
             testInstance.UpdateProjectFileWithMSTestPackageVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
+            // Explicitly configure IncludeTestAssembly so the test behavior does not depend on
+            // changes to the Microsoft.CodeCoverage default value. Also explicitly enable static
+            // managed instrumentation and populate <IncludeDirectories> so the
+            // StaticManagedInstrumenter actually rewrites the test assembly and its dependencies
+            // (it short-circuits when both <IncludeDirectories> and <AdditionalFiles> are empty).
+            // This is what surfaces the historic crash described in
+            // https://github.com/dotnet/sdk/issues/52029 on Linux/macOS.
+            string testProjectBinDir = Path.Combine(testInstance.Path, "TestProject", "bin", configuration);
+            string coverageSettingsPath = Path.Combine(testInstance.Path, "coverage.config");
+            File.WriteAllText(coverageSettingsPath, $"""
+                <?xml version="1.0" encoding="utf-8"?>
+                <Configuration>
+                    <CodeCoverage>
+                        <EnableStaticManagedInstrumentation>True</EnableStaticManagedInstrumentation>
+                        <EnableStaticManagedInstrumentationRestore>True</EnableStaticManagedInstrumentationRestore>
+                        <IncludeTestAssembly>{includeTestAssembly}</IncludeTestAssembly>
+                        <ModulePaths>
+                            <IncludeDirectories>
+                                <Directory Recursive="true">{testProjectBinDir}</Directory>
+                            </IncludeDirectories>
+                        </ModulePaths>
+                    </CodeCoverage>
+                </Configuration>
+                """);
+
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("--coverage", "-c", configuration);
+                                    .Execute("--coverage", "--coverage-settings", coverageSettingsPath, "-c", configuration);
 
             if (!SdkTestContext.IsLocalized())
             {
@@ -71,8 +97,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
-                    .And.Contain("total: 2")
-                    .And.Contain("succeeded: 1")
+                    .And.Contain("total: 6")
+                    .And.Contain("succeeded: 5")
                     .And.Contain("failed: 1")
                     .And.Contain("skipped: 0");
             }

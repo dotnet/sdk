@@ -22,7 +22,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("System.Threading", "4.3.0"));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testProjectInstance);
 

@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
 
         private void ResetObjectState()
         {
-            Telemetry.EnableForTests();
+            TelemetryClient.DisabledForTests = false;
             _firstTimeUseNoticeSentinelMock = new MockBasicSentinel();
             _aspNetCertificateSentinelMock = new MockBasicSentinel();
             _aspNetCoreCertificateGeneratorMock = new Mock<IAspNetCoreCertificateGenerator>(MockBehavior.Strict);
@@ -183,16 +183,6 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             }
         }
 
-        private static ActionCalledTime GetCalledTime(bool predicate, ActionCalledTime actionCalledTime)
-        {
-            if (actionCalledTime != FirstRun && predicate)
-            {
-                actionCalledTime = SecondRun;
-            }
-
-            return actionCalledTime;
-        }
-
         public enum ActionCalledTime
         {
             Never,
@@ -200,7 +190,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             SecondRun
         }
 
-        private Telemetry RunConfigUsingMocks(bool isInstallerRun)
+        private TelemetryClient RunConfigUsingMocks(bool isInstallerRun)
         {
             // Assume the following objects set up are in sync with production behavior.
             // subject to future refactoring to de-dup with production code.
@@ -252,10 +242,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
 
             configurer.Configure();
 
-            return new Telemetry(firstTimeUseNoticeSentinel,
-                "test",
-                environmentProvider: _environmentProviderObject,
-                senderCount: 0);
+            return new TelemetryClient("test", environmentProvider: _environmentProviderObject);
         }
 
         private class MockBasicSentinel : IFileSentinel, IFirstTimeUseNoticeSentinel, IAspNetCertificateSentinel

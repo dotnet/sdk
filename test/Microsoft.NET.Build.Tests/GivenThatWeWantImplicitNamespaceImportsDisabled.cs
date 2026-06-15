@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_with_implicit_namespace_imports_disabled()
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("InferredTypeVariableName")
                 .WithSource();
 

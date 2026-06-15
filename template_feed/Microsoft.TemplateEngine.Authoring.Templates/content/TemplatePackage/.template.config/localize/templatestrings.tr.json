@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Şablon Paketi",
+  "description": ".NET şablonlarını içeren şablon paketine ilişkin proje.",
+  "postActions/instructions/description": "El ile işlem yapılması gerekiyor",
+  "postActions/instructions/manualInstructions/default/text": "*.csproj dosyasını düzenleyicide açın ve paket meta verilerini yapılandırmayı tamamlayın. Şablonları 'content' klasörüne kopyalayın. README.md dosyasını doldurun."
+}
