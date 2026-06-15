@@ -125,6 +125,35 @@ jobs:
               pull_number: context.payload.issue.number,
             });
 
+            if (pr.data.state !== 'open') {
+              core.setFailed(`Pull request #${pr.data.number} is not open.`);
+              return;
+            }
+
+            // Fork guard: the GitHub Actions runner's token can only push to the repository the workflow runs in
+            // (the base repo). It has no write access to a contributor's fork, so commits cannot be applied to a
+            // pull request whose head branch lives in a fork. Detect that and explain how to proceed.
+            const baseRepo = `${context.repo.owner}/${context.repo.repo}`;
+            const headRepo = pr.data.head.repo ? pr.data.head.repo.full_name : null;
+            if (headRepo !== baseRepo) {
+              const body = [
+                `❌ This command can't run on this pull request because its head branch lives in a fork`,
+                `(\`${headRepo || 'a deleted fork'}\`), not in \`${baseRepo}\`.`,
+                ``,
+                `The GitHub Actions runner can only push to \`${baseRepo}\`; it has no access to push commits to your fork.`,
+                `To use this command, push your branch directly to the \`${baseRepo}\` remote and open the pull request`,
+                `from that branch (based off \`${baseRepo}\`), then comment the command again.`,
+              ].join('\n');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: Number(context.payload.issue.number),
+                body,
+              });
+              core.setFailed(`Pull request head branch is in a fork (${headRepo || 'deleted'}); the runner cannot push to it.`);
+              return;
+            }
+
             core.setOutput('pr_number', String(pr.data.number));
             core.setOutput('head_ref', pr.data.head.ref);
 
@@ -333,7 +362,10 @@ jobs:
         with:
           token: ${{ github.token }}
           fetch-depth: 0
-          ref: ${{ needs.authorize.outputs.head_ref }}
+          # Check out the PR head commit by pull-request ref (mirrors the generate job). The branch NAME
+          # (head_ref) is only resolvable for same-repo PRs; refs/pull/<n>/head resolves for any open PR, so
+          # the checkout no longer fails on fork PRs or when the head branch was renamed/deleted.
+          ref: refs/pull/${{ needs.authorize.outputs.pr_number }}/head
           persist-credentials: false
 
       - name: Download snapshot artifacts
