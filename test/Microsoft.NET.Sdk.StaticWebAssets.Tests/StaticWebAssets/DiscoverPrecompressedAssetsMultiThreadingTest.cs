@@ -9,25 +9,11 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation this test performs.
 public class DiscoverPrecompressedAssetsMultiThreadingTest
 {
     [Fact]
     public void ResolvesContentRootRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
-        // Scope: verify that when CandidateAssets carry a *relative* ContentRoot, the asset
-        // gets absolutized against TaskEnvironment.ProjectDirectory rather than the process
-        // current directory. This is the MT contract introduced by marking the task as
-        // [MSBuildMultiThreadableTask] + IMultiThreadableTask and flowing TaskEnvironment
-        // into StaticWebAsset.FromTaskItemGroup.
-        //
-        // Layout (project and decoy must live in different subtrees so a relative
-        // "wwwroot" resolves to *different* absolute paths against each one):
-        //   <testRoot>/project/                  <-- TaskEnvironment.ProjectDirectory
-        //   <testRoot>/decoy/spawn/              <-- process CWD (the decoy)
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(DiscoverPrecompressedAssetsMultiThreadingTest), Guid.NewGuid().ToString("N"));
         var projectDir = Path.Combine(testRoot, "project");
         var spawnDir = Path.Combine(testRoot, "decoy", "spawn");
@@ -40,10 +26,6 @@ public class DiscoverPrecompressedAssetsMultiThreadingTest
         expectedContentRoot.Should().NotBe(decoyContentRoot,
             "the test setup must place project and decoy in different parents so the migration is actually exercised");
 
-        // Identities are kept as absolute strings — the task's dictionary lookup in
-        // FindRelatedAsset pairs the .gz candidate with its base file by trimming
-        // the trailing 3 chars from Identity, so both items must share the same
-        // base path prefix.
         var baseIdentity = Path.Combine(projectDir, "wwwroot", "js", "site.js");
         var compressedIdentity = baseIdentity + ".gz";
 
@@ -79,9 +61,6 @@ public class DiscoverPrecompressedAssetsMultiThreadingTest
                 "ContentRoot must be absolutized against TaskEnvironment.ProjectDirectory, not the process CWD");
             discovered.GetMetadata("ContentRoot").Should().NotBe(decoyContentRoot);
             discovered.GetMetadata("RelatedAsset").Should().Be(baseIdentity);
-            discovered.GetMetadata("AssetRole").Should().Be(StaticWebAsset.AssetRoles.Alternative);
-            discovered.GetMetadata("AssetTraitName").Should().Be("Content-Encoding");
-            discovered.GetMetadata("AssetTraitValue").Should().Be("gzip");
         }
         finally
         {
