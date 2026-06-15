@@ -131,5 +131,44 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             //  An absolute PackageDirectory is unaffected by the process CWD after the migration.
             task.RuntimePackAssets[0].ItemSpec.Should().Be(testEnv.GetProjectPath("runtimepack/runtimes/a.dll"));
         }
+
+        [Fact]
+        public void ItResolvesAnEmptyFilePathToTheRuntimePackRoot()
+        {
+            //  Pre-migration the asset path was built with Path.Combine(runtimePackRoot, Path), and
+            //  Path.Combine returns the base directory unchanged for an empty relative segment. Resolving
+            //  the same input through AbsolutePath must not throw and must keep producing the runtime pack root.
+            using var testEnv = new TaskTestEnvironment();
+
+            string absolutePackageDirectory = testEnv.GetProjectPath("runtimepack");
+            testEnv.CreateProjectFile(
+                "runtimepack/data/RuntimeList.xml",
+@"<FileList Name=""Test"" TargetFrameworkIdentifier="".NETCoreApp"" TargetFrameworkVersion=""3.1"" FrameworkName=""Microsoft.NETCore.App"">
+  <File Type=""Managed"" Path="""" AssemblyVersion=""1.0.0.0"" FileVersion=""1.0.0.0"" />
+</FileList>");
+
+            var task = new ResolveRuntimePackAssets()
+            {
+                BuildEngine = new MockBuildEngine(),
+                TaskEnvironment = testEnv.TaskEnvironment,
+                FrameworkReferences = new TaskItem[] { new TaskItem("TestFramework") },
+                ResolvedRuntimePacks = new TaskItem[]
+                {
+                    new TaskItem("TestRuntimePack",
+                    new Dictionary<string, string> {
+                        { "FrameworkName", "TestFramework" },
+                        { "RuntimeIdentifier", "test-rid" },
+                        { "PackageDirectory", absolutePackageDirectory },
+                        { "PackageVersion", "0.1.0" },
+                        { "IsTrimmable", "false" }
+                    })
+                }
+            };
+
+            task.Execute().Should().BeTrue();
+
+            task.RuntimePackAssets.Should().HaveCount(1);
+            task.RuntimePackAssets[0].ItemSpec.Should().Be(Path.GetFullPath(absolutePackageDirectory));
+        }
     }
 }

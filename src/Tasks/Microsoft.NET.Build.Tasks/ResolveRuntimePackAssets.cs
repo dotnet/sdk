@@ -204,7 +204,10 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 //  Call GetFullPath to normalize slashes
-                string assetPath = Path.GetFullPath(new AbsolutePath(fileElement.Attribute("Path").Value, absoluteRuntimePackRoot));
+                string pathAttributeValue = fileElement.Attribute("Path").Value;
+                string assetPath = string.IsNullOrEmpty(pathAttributeValue)
+                    ? Path.GetFullPath(absoluteRuntimePackRoot)
+                    : Path.GetFullPath(new AbsolutePath(pathAttributeValue, absoluteRuntimePackRoot));
 
                 string typeAttributeValue = fileElement.Attribute("Type").Value;
                 string assetType;
@@ -227,7 +230,7 @@ namespace Microsoft.NET.Build.Tasks
                     culture = fileElement.Attribute("Culture")?.Value;
                     if (culture == null)
                     {
-                        throw new BuildErrorException($"Culture not set in runtime manifest for {assetPath}");
+                        throw new BuildErrorException($"Culture not set in runtime manifest for {Path.GetFullPath(Path.Combine(runtimePack.GetMetadata(MetadataKeys.PackageDirectory), fileElement.Attribute("Path").Value))}");
                     }
                     if (SatelliteResourceLanguages.Length >= 1 &&
                         !SatelliteResourceLanguages.Any(lang => string.Equals(lang.ItemSpec, culture, StringComparison.OrdinalIgnoreCase)))
