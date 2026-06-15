@@ -394,6 +394,27 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     }
 
     /// <summary>
+    /// New SDK directives should be appended after the last existing SDK to preserve primary SDK order.
+    /// </summary>
+    [Fact]
+    public void SdkAppendPreservesPrimaryOrder()
+    {
+        Verify(
+            """
+            #:sdk Microsoft.NET.Sdk.Web
+            #:property X=Y
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Sdk(default) { Name = "Cake.Sdk", Version = "6.2.0" }),
+            """
+            #:sdk Microsoft.NET.Sdk.Web
+            #:sdk Cake.Sdk@6.2.0
+            #:property X=Y
+            Console.WriteLine();
+            """));
+    }
+
+    /// <summary>
     /// New package directive should be sorted into the correct location in the package group.
     /// </summary>
     [Fact]
