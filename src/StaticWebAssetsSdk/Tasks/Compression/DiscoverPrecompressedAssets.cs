@@ -8,8 +8,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class DiscoverPrecompressedAssets : Task
+[MSBuildMultiThreadableTask]
+public class DiscoverPrecompressedAssets : Task, IMultiThreadableTask
 {
+    /// <inheritdoc />
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     private const string GzipAssetTraitValue = "gzip";
     private const string BrotliAssetTraitValue = "br";
 
@@ -29,7 +33,7 @@ public class DiscoverPrecompressedAssets : Task
             return true;
         }
 
-        var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
+        var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets, TaskEnvironment);
         var assetsToUpdate = new List<ITaskItem>();
 
         var candidatesByIdentity = candidates.ToDictionary(asset => asset.Identity, OSPath.PathComparer);
