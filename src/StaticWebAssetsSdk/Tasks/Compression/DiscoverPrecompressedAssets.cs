@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 [MSBuildMultiThreadableTask]
 public class DiscoverPrecompressedAssets : Task, IMultiThreadableTask
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
     private const string GzipAssetTraitValue = "gzip";
