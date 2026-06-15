@@ -138,6 +138,7 @@
                 "src/application-insights/**/*.dll",
                 "src/application-insights/**/*.zip",
                 "src/application-insights/**/NuGet.config",
+                "src/azure-activedirectory-identitymodel-extensions-for-dotnet/docs/*.docx",
                 "src/humanizer/samples/**/*.js",
                 "src/newtonsoft-json/**/NuGet.Config",
                 "src/spectre-console/docs/**",
