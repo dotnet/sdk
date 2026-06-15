@@ -212,45 +212,30 @@ without Azure portal access from the dnceng team.
 
 ---
 
-## Appendix B: Automated GitHub Releases — Compliance & Precedent
+## Appendix B: Automated GitHub Releases
 
-*Investigated 2026-06-12.*
+Automated GitHub Release creation from CI is compliant with Microsoft policy and is established
+practice across the dotnet org. Arcade does not provide a shared release stage; each repo
+implements its own using one of the patterns below.
 
-### Summary
+### Precedent in the dotnet org
 
-**Yes — CI pipelines can automatically create GitHub Releases while remaining compliant with
-Microsoft policy.** Multiple dotnet/Microsoft teams already do this in production.
-
-### Teams with automated GitHub Releases
-
-| Team / Repo | Pattern | Auth mechanism | Human gate |
+| Repo | Pattern | Auth | Human gate |
 |---|---|---|---|
-| **dotnet/aspire** | AzDO dispatches GitHub Actions via `aspire-repo-bot` App | GitHub App installation token | AzDO pipeline approval stage |
-| **dotnet/dotnet-monitor** | AzDO pipeline runs `gh release create` | `dotnet-bot` PAT (KeyVault-backed) | `ManualValidation@1` task |
-| **dotnet/android-native-tools** | AzDO `GitHubRelease@1` task | AzDO service connection | `ManualValidation@0` task |
-| **cli/cli** | GitHub Actions `workflow_dispatch` | `GITHUB_TOKEN` | `production` environment approval |
-| **microsoft/mcp** | AzDO job runs `gh release create` + upload | GitHub App token | Pipeline stage gate |
+| dotnet/aspire | AzDO dispatches GitHub Actions via `aspire-repo-bot` App | GitHub App token | AzDO approval stage |
+| dotnet/dotnet-monitor | AzDO pipeline runs `gh release create` | KeyVault-backed `dotnet-bot` PAT | `ManualValidation@1` |
+| dotnet/android-native-tools | AzDO `GitHubRelease@1` task | AzDO service connection | `ManualValidation@0` |
+| cli/cli | GitHub Actions `workflow_dispatch` | `GITHUB_TOKEN` | `production` environment approval |
+| microsoft/mcp | AzDO job runs `gh release create` + upload | GitHub App token | Pipeline stage gate |
 
-### Note on Arcade
+### dotnetup approach
 
-Arcade's post-build infrastructure (`post-build.yml`) does **not** include a GitHub Release stage.
-GitHub Release creation is a per-repo responsibility — no `GitHubRelease@1` usage exists in
-`dotnet/arcade`. Teams implement it themselves using one of the patterns above.
+dotnetup uses the `dotnet-monitor` pattern: an AzDO pipeline stage runs `gh release create --draft`
+with a KeyVault-backed PAT, gated by `ManualValidation@1`.
 
-### Recommendation for dotnetup
-
-**Recommended: `dotnet-monitor` pattern** (AzDO pipeline + `gh release create` + `ManualValidation@1`).
-
-Rationale:
-- **Simplest** — no GitHub App setup, no cross-system dispatch. Just a pipeline stage that runs
-  `gh release create` with a PAT from a variable group.
-- **Already proven in the dotnet org** — same org, same 1ES template infrastructure, same dnceng team.
-- **Draft-by-default** — `--draft` flag means even if the gate is accidentally approved, the release
-  requires manual publish on GitHub.
-- **`ManualValidation@1`** provides the human gate on a `pool: server` job with no agent cost.
-- **Scales down** — for `preview` phase we may not even need the manual gate (since preview is
-  internal), reducing the release to a single pipeline button press.
-
-The `aspire` pattern (GitHub App → Actions dispatch) is more sophisticated and appropriate if we
-later need cross-repo orchestration or complex release-note generation, but adds setup complexity
-that isn't justified for Phase 1.
+- No GitHub App or cross-system dispatch to set up — a single pipeline stage on existing 1ES/dnceng
+  infrastructure.
+- `--draft` ensures a release is never published without a manual confirmation on GitHub.
+- `ManualValidation@1` runs on a `pool: server` job with no agent cost.
+- For `preview`, the manual gate may be dropped since the channel is internal, reducing release to a
+  single pipeline run.
