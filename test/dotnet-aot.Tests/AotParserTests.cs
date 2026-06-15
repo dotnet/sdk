@@ -147,12 +147,27 @@ public class AotParserTests
     }
 
     [Fact]
-    public void InvokeBareSdk_FallsBackToManaged()
+    public void InvokeBareSdk_RendersHelpFromAot()
     {
-        // `dotnet sdk` with no subcommand needs full help/usage, so it defers to the managed CLI.
-        var result = Parser.Parse(["sdk"]);
-        Assert.Empty(result.Errors);
-        Assert.Throws<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+        // `dotnet sdk` with no subcommand renders its missing-command error and help entirely
+        // from AOT (no managed fallback), matching the managed CLI behavior.
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["sdk"]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("check", stdout);
+        Assert.False(string.IsNullOrWhiteSpace(stderr), "Expected a missing-command error on stderr");
+    }
+
+    [Fact]
+    public void InvokeBareSln_RendersHelpFromAot()
+    {
+        // `dotnet sln` with no subcommand renders its missing-command error and help entirely
+        // from AOT (no managed fallback). Only `sln add` falls back to the managed CLI.
+        var (exitCode, stdout, stderr) = InvokeWithCapture(["sln"]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("list", stdout);
+        Assert.False(string.IsNullOrWhiteSpace(stderr), "Expected a missing-command error on stderr");
     }
 
     [Fact]

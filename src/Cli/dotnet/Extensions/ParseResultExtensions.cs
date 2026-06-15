@@ -106,6 +106,13 @@ public static class ParseResultExtensions
         return [.. subargsFiltered, .. runArgs];
     }
 
+    public static int HandleMissingCommand(this ParseResult parseResult)
+    {
+        Reporter.Error.WriteLine(CliStrings.RequiredCommandNotPassed.Red());
+        parseResult.ShowHelp();
+        return 1;
+    }
+
 #if !CLI_AOT
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
@@ -164,13 +171,6 @@ public static class ParseResultExtensions
         Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null
         || parseResult.Tokens.Any(token => token.Type == TokenType.Directive)
         || (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
-
-    public static int HandleMissingCommand(this ParseResult parseResult)
-    {
-        Reporter.Error.WriteLine(CliStrings.RequiredCommandNotPassed.Red());
-        parseResult.ShowHelp();
-        return 1;
-    }
 
     public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult) =>
         parseResult.GetRunPropertyOptions(true)?.Where(property => !property.Contains("="));

@@ -191,10 +191,12 @@ public static class Parser
 
         // Commands that can run entirely in AOT mode wire their real implementations on top of the
         // fallback defaults above. SolutionCommandParser is AOT-aware: it keeps real implementations
-        // for `sln list`/`migrate`/`remove` and falls back for `sln` and `sln add`.
+        // for `sln`/`sln list`/`migrate`/`remove` (bare `sln` renders help from AOT) and falls back
+        // only for `sln add`, which requires MSBuild.
         SolutionCommandParser.ConfigureCommand(rootCommand.SolutionCommand);
 
-        // SdkCommandParser is AOT-aware: `sdk check` runs natively; bare `dotnet sdk` falls back.
+        // SdkCommandParser is AOT-aware: `sdk check` runs natively and bare `dotnet sdk` renders
+        // help from AOT (no managed fallback needed).
         SdkCommandParser.ConfigureCommand(rootCommand.SdkCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
