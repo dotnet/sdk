@@ -167,8 +167,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             Directory.CreateDirectory(Path.Combine(_workingDirectory, "subdir2"));
 
             string templateJson = GetTestTemplateJsonContent();
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", "template.json"), templateJson);
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir2", "template.json"), templateJson);
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", "template.json"), templateJson, TestContext.Current.CancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir2", "template.json"), templateJson, TestContext.Current.CancellationToken);
 
             int runResult = await Program.Main(new string[] { "localize", "export", _workingDirectory, "--language", "es" });
             // Error: no templates found under the given folder.
@@ -185,8 +185,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             Directory.CreateDirectory(Path.Combine(_workingDirectory, ".template.config"));
 
             string templateJson = GetTestTemplateJsonContent();
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", ".template.config", "template.json"), templateJson);
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, ".template.config", "template.json"), templateJson);
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", ".template.config", "template.json"), templateJson, TestContext.Current.CancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, ".template.config", "template.json"), templateJson, TestContext.Current.CancellationToken);
 
             int runResult = await Program.Main(new string[] { "localize", "export", _workingDirectory, "--language", "es", "--recursive" });
             Assert.Equal(0, runResult);
@@ -200,7 +200,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         {
             Directory.CreateDirectory(Path.Combine(_workingDirectory, "subdir"));
 
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", "template.json"), GetTestTemplateJsonContent());
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", "template.json"), GetTestTemplateJsonContent(), TestContext.Current.CancellationToken);
 
             int runResult = await Program.Main(new string[] { "localize", "export", _workingDirectory, "--language", "es", "--recursive" });
             // Error: no templates found under the given folder.
@@ -243,21 +243,11 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 
         private static string GetTestTemplateJsonContent()
         {
-            string? thisDir = Path.GetDirectoryName(typeof(ExportCommandTests).Assembly.Location);
-            Assert.NotNull(thisDir);
-            string templateJsonPath = Path.GetFullPath(Path.Combine(
-                thisDir!,
-                "..",
-                "..",
-                "..",
-                "..",
-                "..",
-                "test",
-                "Microsoft.TemplateEngine.TestTemplates",
-                "test_templates",
+            string templateJsonPath = Path.Combine(
+                TestTemplatesLocation,
                 "TemplateWithLocalization",
                 ".template.config",
-                "template.json"));
+                "template.json");
 
             return File.ReadAllText(templateJsonPath);
         }

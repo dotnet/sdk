@@ -12,6 +12,7 @@ internal static class TestOptions
     public static int GetTestPort()
         => Interlocked.Increment(ref s_testPort);
 
+    public static readonly GlobalOptions GlobalOptions = new() { BinaryLogPath = "msbuild.binlog" };
     public static readonly ProjectOptions ProjectOptions = GetProjectOptions(GetCommandLineOptions([]));
 
     public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", TestAsset? asset = null)

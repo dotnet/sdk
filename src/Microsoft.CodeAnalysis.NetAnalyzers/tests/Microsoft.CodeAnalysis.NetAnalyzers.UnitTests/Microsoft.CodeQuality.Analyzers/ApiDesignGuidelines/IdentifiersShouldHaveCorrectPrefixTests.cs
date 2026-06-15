@@ -306,7 +306,7 @@ public class Class6<TTypeParameter>
                         GetCA1715CSharpResultAt(16, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -355,7 +355,7 @@ public class Class6<TTypeParameter>
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -605,7 +605,7 @@ End Class
                         GetCA1715BasicResultAt(13, 29, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
@@ -649,7 +649,7 @@ End Class
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCA1715CSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

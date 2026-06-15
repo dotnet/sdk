@@ -5,9 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateApiVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-#if !XUNIT_V3
-using Xunit.Abstractions;
-#endif
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 {
@@ -37,7 +34,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             {
                 TemplateSpecificArgs = new string[] { "--paramB", "true" },
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
                 DoNotPrependCallerMethodNameToScenarioName = true,
@@ -58,7 +55,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                         }));
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -73,7 +70,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplatePath = templateLocation,
-                SnapshotsDirectory = "Snapshots",
+                SnapshotsDirectory = SnapshotsDirectory,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
                 DoNotPrependCallerMethodNameToScenarioName = true,
@@ -93,7 +90,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                         }));
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
     }
 }

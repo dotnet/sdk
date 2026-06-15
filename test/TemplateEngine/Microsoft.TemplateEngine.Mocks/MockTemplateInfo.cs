@@ -7,11 +7,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
-#if XUNIT_V3
 using Xunit.Sdk;
-#else
-using Xunit.Abstractions;
-#endif
 
 namespace Microsoft.TemplateEngine.Mocks
 {
@@ -245,7 +241,6 @@ namespace Microsoft.TemplateEngine.Mocks
             GroupIdentity = info.GetValue<string>("template_group");
             Description = info.GetValue<string>("template_description");
             Author = info.GetValue<string>("template_author");
-#if XUNIT_V3
             _tags = JsonSerializer.Deserialize<Dictionary<string, string>>(info.GetValue<string>("template_tags")!)
                 ?? throw new Exception("Deserialiation failed");
             _parameters = JsonSerializer.Deserialize<Dictionary<string, TemplateParameter>>(info.GetValue<string>("template_params")!)
@@ -256,18 +251,6 @@ namespace Microsoft.TemplateEngine.Mocks
                          ?? throw new Exception("Deserialiation failed");
             _shortNameList = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_shortname")!)
                          ?? throw new Exception("Deserialiation failed");
-#else
-            _tags = JsonSerializer.Deserialize<Dictionary<string, string>>(info.GetValue<string>("template_tags"))
-                ?? throw new Exception("Deserialiation failed");
-            _parameters = JsonSerializer.Deserialize<Dictionary<string, TemplateParameter>>(info.GetValue<string>("template_params"))
-                         ?? throw new Exception("Deserialiation failed");
-            _baselineInfo = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_baseline"))
-                         ?? throw new Exception("Deserialiation failed");
-            _classifications = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_classifications"))
-                         ?? throw new Exception("Deserialiation failed");
-            _shortNameList = JsonSerializer.Deserialize<string[]>(info.GetValue<string>("template_shortname"))
-                         ?? throw new Exception("Deserialiation failed");
-#endif
         }
 
         public void Serialize(IXunitSerializationInfo info)

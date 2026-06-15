@@ -1,7 +1,7 @@
 ## Primary outputs
 Primary outputs define the list of template files for further processing. 
 The primary outputs are returned by template engine API after template instantiation (`Microsoft.TemplateEngine.IDE.Bootstrapper.CreateAsync`, `Microsoft.TemplateEngine.Edge.Template.TemplateCreator.InstantiateAsync`) or dry run (`Microsoft.TemplateEngine.IDE.Bootstrapper.GetCreationEffectsAsync`).
-The main use for primary outputs is to provide the list of files to perform post actions implemented by the host. dotnet CLI host and Visual Studio host implement the default set of post actions based on primary outputs returned by API, described in [post-action registry](https://github.com/dotnet/templating/wiki/Post-Action-Registry). In case the template files have to be used in post actions, they should be added as the primary outputs in `template.json` definition.
+The main use for primary outputs is to provide the list of files to perform post actions implemented by the host. dotnet CLI host and Visual Studio host implement the default set of post actions based on primary outputs returned by API, described in [post-action registry](Post-Action-Registry.md). In case the template files have to be used in post actions, they should be added as the primary outputs in `template.json` definition.
 
 The template can define any number of primary outputs. Each primary output contains the following information:
 - `path` - the path should contain the relative path to the file after template instantiation is done and prior to symbol based renaming is applied.

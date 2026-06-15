@@ -451,7 +451,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             uncompressedText.Should().Be(originalText);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5", Skip = "https://github.com/dotnet/sdk/issues/53791")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithTrimmingdDisabled_Works()
         {
             // Arrange
@@ -518,8 +518,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
 
             // Verify assemblies are not trimmed
-            var loggingAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.Extensions.Logging.Abstractions.wasm");
-            VerifyAssemblyHasTypes(loggingAssemblyPath, new[] { "Microsoft.Extensions.Logging.Abstractions.NullLogger" });
+            var loggingAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.Extensions.Logging.wasm");
+            VerifyAssemblyHasTypes(loggingAssemblyPath, new[] { "Microsoft.Extensions.Logging.LoggerFactory" });
         }
 
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/52429")]
@@ -1612,7 +1612,7 @@ public class TestReference
             fileInWwwroot.Should().Exist();
         }
 
-        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5", Skip = "https://github.com/dotnet/sdk/issues/53791")]
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         [InlineData("")]
         [InlineData("/p:BlazorFingerprintBlazorJs=false")]
         public void Publish_BlazorWasmReferencedByAspNetCoreServer(string publishArg)

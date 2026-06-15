@@ -40,7 +40,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -102,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     }
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -126,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8814 is reported on inaccessible initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8814 is reported on inaccessible initializers 
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -177,7 +177,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8815 is reported on non-void initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -201,7 +201,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8815 is reported on instance initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -225,7 +225,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8816 is reported on Generic type initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -249,7 +249,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 // CS8816 is reported on Generic initializers
                 CompilerDiagnostics = CompilerDiagnostics.None
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

@@ -17,7 +17,7 @@
     <Authors>Microsoft</Authors>
     <Description>The templates for useful items and projects for template authoring.</Description>
     <language>en-US</language>
-    <PackageProjectUrl>https://github.com/dotnet/templating</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/dotnet/sdk</PackageProjectUrl>
     <PackageType>Template</PackageType>
     <SuppressDependenciesWhenPacking>True</SuppressDependenciesWhenPacking>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>

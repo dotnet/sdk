@@ -662,7 +662,7 @@ public class C
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -682,7 +682,7 @@ End Class",
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -712,7 +712,7 @@ public class C
 ") },
                     ExpectedDiagnostics = { GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -733,7 +733,7 @@ End Class",
 ") },
                     ExpectedDiagnostics = { GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -762,7 +762,7 @@ public class C
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -781,7 +781,7 @@ End Class",
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -811,7 +811,7 @@ public class C
 ") },
                     ExpectedDiagnostics = { GetCSharpResultAt(4, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -831,7 +831,7 @@ End Class",
 ") },
                     ExpectedDiagnostics = { GetBasicResultAt(3, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -861,7 +861,7 @@ public class C
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -892,7 +892,7 @@ public class C
 ") },
                     ExpectedDiagnostics = { GetCSharpResultAt(5, 35, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.float", "float"), },
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

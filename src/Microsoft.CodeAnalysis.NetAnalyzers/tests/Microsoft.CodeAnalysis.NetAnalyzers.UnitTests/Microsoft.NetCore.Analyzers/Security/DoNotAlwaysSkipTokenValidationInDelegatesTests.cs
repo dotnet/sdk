@@ -264,7 +264,7 @@ class TestClass
                             .Solution;
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         // Ideally we could detect this but we'll have to rely on CodeQL instead for more robust detection.
@@ -334,7 +334,7 @@ class TestClass
                             .Solution;
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -556,7 +556,7 @@ class TestClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

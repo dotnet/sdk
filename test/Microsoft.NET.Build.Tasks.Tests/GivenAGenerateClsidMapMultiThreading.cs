@@ -12,9 +12,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void ItProducesSameErrorsInMultiProcessAndMultiThreadedEnvironments()
         {
-            // In multiprocess mode, CWD == projectDir (as MSBuild traditionally works).
-            // In multithreaded mode, CWD == otherDir but TaskEnvironment still points to projectDir.
-            // Both should produce identical errors for an invalid (non-PE) assembly.
+            // In multi-process mode, each task runs in its own process where CWD == projectDir
+            // and tasks read live process state via TaskEnvironment.Fallback.
+            // In multi-threaded mode, tasks share a process; CWD may be unrelated to projectDir,
+            // and TaskEnvironment is an isolated MultiThreadedTaskEnvironmentDriver.
+            // Both should produce identical errors for an invalid (non-PE) assembly because
+            // GenerateClsidMap only uses TaskEnvironment.GetAbsolutePath for path resolution.
             var projectDir = Path.Combine(Path.GetTempPath(), "clsidmap-test-" + Guid.NewGuid().ToString("N"));
             var otherDir = Path.Combine(Path.GetTempPath(), "clsidmap-decoy-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(projectDir);
@@ -30,13 +33,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 var clsidMapRelativePath = Path.Combine("output", "clsid.map");
 
-                // --- Multiprocess mode: CWD == projectDir ---
+                // --- Multi-process mode: CWD == projectDir; TaskEnvironment.Fallback reads live CWD ---
                 Directory.SetCurrentDirectory(projectDir);
-                var (multiProcessResult, multiProcessEngine) = RunTask(assemblyRelativePath, clsidMapRelativePath, projectDir);
+                var (multiProcessResult, multiProcessEngine) = RunTask(
+                    assemblyRelativePath, clsidMapRelativePath, TaskEnvironment.Fallback);
 
-                // --- Multithreaded mode: CWD == otherDir (different from projectDir) ---
+                // --- Multi-threaded mode: CWD == otherDir; TaskEnvironment carries projectDir explicitly ---
                 Directory.SetCurrentDirectory(otherDir);
-                var (multiThreadedResult, multiThreadedEngine) = RunTask(assemblyRelativePath, clsidMapRelativePath, projectDir);
+                var (multiThreadedResult, multiThreadedEngine) = RunTask(
+                    assemblyRelativePath, clsidMapRelativePath,
+                    TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir));
 
                 // Both should produce the same result
                 multiProcessResult.Should().Be(multiThreadedResult,
@@ -86,13 +92,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var clsidMap1Absolute = Path.Combine(projectDir, clsidMap1Relative);
                 var clsidMap2Absolute = Path.Combine(projectDir, clsidMap2Relative);
 
-                // --- Multiprocess mode: CWD == projectDir ---
+                // --- Multi-process mode: CWD == projectDir; TaskEnvironment.Fallback ---
                 Directory.SetCurrentDirectory(projectDir);
-                var (result1, engine1) = RunTask(assemblyRelativePath, clsidMap1Relative, projectDir);
+                var (result1, engine1) = RunTask(
+                    assemblyRelativePath, clsidMap1Relative, TaskEnvironment.Fallback);
 
-                // --- Multithreaded mode: CWD == otherDir ---
+                // --- Multi-threaded mode: CWD == otherDir; isolated TaskEnvironment ---
                 Directory.SetCurrentDirectory(otherDir);
-                var (result2, engine2) = RunTask(assemblyRelativePath, clsidMap2Relative, projectDir);
+                var (result2, engine2) = RunTask(
+                    assemblyRelativePath, clsidMap2Relative,
+                    TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir));
 
                 // Same result, same errors/warnings
                 result1.Should().Be(result2, "task result should match between environments");
@@ -120,13 +129,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         private static (bool result, MockBuildEngine engine) RunTask(
-            string assemblyRelativePath, string clsidMapRelativePath, string projectDir)
+            string assemblyRelativePath, string clsidMapRelativePath, TaskEnvironment taskEnvironment)
         {
             var task = new GenerateClsidMap
             {
                 IntermediateAssembly = assemblyRelativePath,
                 ClsidMapDestinationPath = clsidMapRelativePath,
-                TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir),
+                TaskEnvironment = taskEnvironment,
             };
             var engine = new MockBuildEngine();
             task.BuildEngine = engine;

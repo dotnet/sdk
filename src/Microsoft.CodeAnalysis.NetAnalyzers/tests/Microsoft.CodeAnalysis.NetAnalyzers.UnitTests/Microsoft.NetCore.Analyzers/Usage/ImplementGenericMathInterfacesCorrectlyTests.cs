@@ -30,7 +30,7 @@ public readonly struct MyDate : IParsable<{|#0:DateOnly|}> // The 'IParsable<TSe
         throw new NotImplementedException();
     }
 }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IParsable<TSelf>", "TSelf", "MyDate")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IParsable<TSelf>", "TSelf", "MyDate")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -60,7 +60,7 @@ public class Test : ISpanParsable<{|#0:DateOnly|}> // The 'ISpanParsable<TSelf>'
     {
         throw new NotImplementedException();
     }
-}", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ISpanParsable<TSelf>", "TSelf", "Test")).RunAsync();
+}", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ISpanParsable<TSelf>", "TSelf", "Test")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -93,7 +93,7 @@ public class MyTest : IAdditionOperators<{|#0:Test|}, MyTest, long> // The 'IAdd
     {
         throw new NotImplementedException();
     }
-}", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IAdditionOperators<TSelf, TOther, TResult>", "TSelf", "MyTest")).RunAsync();
+}", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IAdditionOperators<TSelf, TOther, TResult>", "TSelf", "MyTest")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ public class Additive : IAdditiveIdentity<{|#0:int|}, int> // The 'IAdditiveIden
 {
     public static int AdditiveIdentity => throw new NotImplementedException();
 }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IAdditiveIdentity<TSelf, TResult>", "TSelf", "Additive")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IAdditiveIdentity<TSelf, TResult>", "TSelf", "Additive")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -118,7 +118,7 @@ using System.Numerics;
 
 interface IMyNumber : IBinaryFloatingPointIeee754<{|#0:double|}> // The 'IBinaryFloatingPointIeee754<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyNumber' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IBinaryFloatingPointIeee754<TSelf>", "TSelf", "IMyNumber")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IBinaryFloatingPointIeee754<TSelf>", "TSelf", "IMyNumber")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -129,7 +129,7 @@ using System.Numerics;
 
 interface IMyNumber : IBinaryInteger<{|#0:uint|}> // The 'IBinaryInteger<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyNumber' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IBinaryInteger<TSelf>", "TSelf", "IMyNumber")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IBinaryInteger<TSelf>", "TSelf", "IMyNumber")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -140,7 +140,7 @@ using System.Numerics;
 
 interface IMyNumber : IBinaryNumber<{|#0:uint|}> // The 'IBinaryNumber<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyNumber' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IBinaryNumber<TSelf>", "TSelf", "IMyNumber")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IBinaryNumber<TSelf>", "TSelf", "IMyNumber")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -185,7 +185,7 @@ class Base : IComparisonOperators<Base, int, int>
 
 class Derived : Base, IComparisonOperators<{|#0:Base|}, int, int> // The 'IComparisonOperators<TSelf, TOther, TResult>' requires the 'TSelf' type parameter to be filled with the derived type 'Derived'
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IComparisonOperators<TSelf, TOther, TResult>", "TSelf", "Derived")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IComparisonOperators<TSelf, TOther, TResult>", "TSelf", "Derived")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ class Base : IBitwiseOperators<{|#0:Derived|}, int, int> // The 'IBitwiseOperato
 
 class Derived : Base, IBitwiseOperators<Derived, int, int>
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IBitwiseOperators<TSelf, TOther, TResult>", "TSelf", "Base")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IBitwiseOperators<TSelf, TOther, TResult>", "TSelf", "Base")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -240,7 +240,7 @@ class Foo<TMe> : IDecrementOperators<TMe> where TMe : IDecrementOperators<TMe>
 class WrongImplementation : Foo<{|#0:int|}> { } // The 'Foo<TMe>' requires the 'TMe' type parameter to be filled with the derived type 'WrongImplementation' 
 
 class CorrectImplementation : Foo<CorrectImplementation> { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("Foo<TMe>", "TMe", "WrongImplementation")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("Foo<TMe>", "TMe", "WrongImplementation")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -251,7 +251,7 @@ using System.Numerics;
 
 interface IMyInterface : IDivisionOperators<{|#0:int|}, int, int> // The 'IDivisionOperators<TSelf, TOther, TResult>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyInterface' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IDivisionOperators<TSelf, TOther, TResult>", "TSelf", "IMyInterface")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IDivisionOperators<TSelf, TOther, TResult>", "TSelf", "IMyInterface")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -262,7 +262,7 @@ using System.Numerics;
 
 interface IMyEquality : IEqualityOperators<{|#0:int|}, int, bool> // The 'IEqualityOperators<TSelf, TOther, TResult>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyEquality' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IEqualityOperators<TSelf, TOther, TResult>", "TSelf", "IMyEquality")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IEqualityOperators<TSelf, TOther, TResult>", "TSelf", "IMyEquality")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -273,7 +273,7 @@ using System.Numerics;
 
 interface IMyExponential : IExponentialFunctions<{|#0:double|}> // The 'IExponentialFunctions<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyExponential' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IExponentialFunctions<TSelf>", "TSelf", "IMyExponential")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IExponentialFunctions<TSelf>", "TSelf", "IMyExponential")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -284,7 +284,7 @@ using System.Numerics;
 
 interface IMyFloat : IFloatingPointIeee754<{|#0:float|}> // The 'IFloatingPointIeee754<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyFloat' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IFloatingPointIeee754<TSelf>", "TSelf", "IMyFloat")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IFloatingPointIeee754<TSelf>", "TSelf", "IMyFloat")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -295,7 +295,7 @@ using System.Numerics;
 
 interface IMyFloat : IFloatingPoint<{|#0:float|}> // The 'IFloatingPoint<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyFloat' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IFloatingPoint<TSelf>", "TSelf", "IMyFloat")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IFloatingPoint<TSelf>", "TSelf", "IMyFloat")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -306,7 +306,7 @@ using System.Numerics;
 
 interface IMyHyperbolic : IHyperbolicFunctions<{|#0:float|}> // The 'IHyperbolicFunctions<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyHyperbolic' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IHyperbolicFunctions<TSelf>", "TSelf", "IMyHyperbolic")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IHyperbolicFunctions<TSelf>", "TSelf", "IMyHyperbolic")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -328,7 +328,7 @@ class Base2<T> : Base1<T> where T : IIncrementOperators<T> { }
 
 class Wrong : Base2<{|#0:int|}> // The 'Base2<T>' requires the 'T' type parameter to be filled with the derived type 'Wrong'
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("Base2<T>", "T", "Wrong")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("Base2<T>", "T", "Wrong")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -339,7 +339,7 @@ using System.Numerics;
 
 interface IMyLogarithm : ILogarithmicFunctions<{|#0:float|}> // The 'ILogarithmicFunctions<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyLogarithm' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ILogarithmicFunctions<TSelf>", "TSelf", "IMyLogarithm")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ILogarithmicFunctions<TSelf>", "TSelf", "IMyLogarithm")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -355,7 +355,7 @@ public record MyRecord : IMinMaxValue<{|#0:float|}> // The 'IMinMaxValue<TSelf>'
 
     public static float MinValue => throw new NotImplementedException();
 }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IMinMaxValue<TSelf>", "TSelf", "MyRecord")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IMinMaxValue<TSelf>", "TSelf", "MyRecord")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -375,7 +375,7 @@ public record MyRecord<TMe> : IModulusOperators<TMe, int, int> where TMe : IModu
         throw new NotImplementedException();
     }
 }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("MyRecord<TMe>", "TMe", "WrongRecord")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("MyRecord<TMe>", "TMe", "WrongRecord")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -386,7 +386,7 @@ using System.Numerics;
 
 interface IMyInterface : IMultiplicativeIdentity<{|#0:int|}, int> // The 'IMultiplicativeIdentity<TSelf, TResult>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyInterface' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IMultiplicativeIdentity<TSelf, TResult>", "TSelf", "IMyInterface")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IMultiplicativeIdentity<TSelf, TResult>", "TSelf", "IMyInterface")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -397,7 +397,7 @@ using System.Numerics;
 
 interface IMyInterface : IMultiplyOperators<{|#0:int|}, int, int> // The 'IMultiplyOperators<TSelf, TOther, TResult>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyInterface' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IMultiplyOperators<TSelf, TOther, TResult>", "TSelf", "IMyInterface")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IMultiplyOperators<TSelf, TOther, TResult>", "TSelf", "IMyInterface")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -408,7 +408,7 @@ using System.Numerics;
 
 interface IMyNumber : INumberBase<{|#0:float|}> // The 'INumberBase<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyNumber' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("INumberBase<TSelf>", "TSelf", "IMyNumber")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("INumberBase<TSelf>", "TSelf", "IMyNumber")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -419,7 +419,7 @@ using System.Numerics;
 
 interface IMyNumber : INumber<{|#0:float|}> // The 'INumber<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyNumber' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("INumber<TSelf>", "TSelf", "IMyNumber")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("INumber<TSelf>", "TSelf", "IMyNumber")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -430,7 +430,7 @@ using System.Numerics;
 
 interface IMyPower : IPowerFunctions<{|#0:float|}> // The 'IPowerFunctions<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyPower' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IPowerFunctions<TSelf>", "TSelf", "IMyPower")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IPowerFunctions<TSelf>", "TSelf", "IMyPower")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -441,7 +441,7 @@ using System.Numerics;
 
 interface IMyRoot : IRootFunctions<{|#0:float|}> // The 'IRootFunctions<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyRoot' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IRootFunctions<TSelf>", "TSelf", "IMyRoot")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IRootFunctions<TSelf>", "TSelf", "IMyRoot")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -452,7 +452,7 @@ using System.Numerics;
 
 interface IMyNumber : ISignedNumber<{|#0:float|}> // The 'ISignedNumber<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyNumber' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ISignedNumber<TSelf>", "TSelf", "IMyNumber")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ISignedNumber<TSelf>", "TSelf", "IMyNumber")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -463,7 +463,7 @@ using System.Numerics;
 
 interface IMyNumber : ITrigonometricFunctions<{|#0:float|}> // The 'ITrigonometricFunctions<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyNumber' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ITrigonometricFunctions<TSelf>", "TSelf", "IMyNumber")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ITrigonometricFunctions<TSelf>", "TSelf", "IMyNumber")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -474,7 +474,7 @@ using System.Numerics;
 
 interface IMyInterface : IShiftOperators<{|#0:int|}, int, int> // The 'IShiftOperators<TSelf, TOther, TResult>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyInterface' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IShiftOperators<TSelf, TOther, TResult>", "TSelf", "IMyInterface")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IShiftOperators<TSelf, TOther, TResult>", "TSelf", "IMyInterface")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -485,7 +485,7 @@ using System.Numerics;
 
 interface IMyInterface : IUnaryNegationOperators<{|#0:int|}, int> // The 'IUnaryNegationOperators<TSelf, TResult>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyInterface' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IUnaryNegationOperators<TSelf, TResult>", "TSelf", "IMyInterface")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IUnaryNegationOperators<TSelf, TResult>", "TSelf", "IMyInterface")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -496,7 +496,7 @@ using System.Numerics;
 
 interface IMyInterface : IUnaryPlusOperators<{|#0:int|}, int> // The 'IUnaryPlusOperators<TSelf, TResult>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyInterface' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IUnaryPlusOperators<TSelf, TResult>", "TSelf", "IMyInterface")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IUnaryPlusOperators<TSelf, TResult>", "TSelf", "IMyInterface")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -507,7 +507,7 @@ using System.Numerics;
 
 interface IMyInterface : ISubtractionOperators<{|#0:int|}, int, int> // The 'ISubtractionOperators<TSelf, TOther, TResult>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyInterface' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ISubtractionOperators<TSelf, TOther, TResult>", "TSelf", "IMyInterface")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("ISubtractionOperators<TSelf, TOther, TResult>", "TSelf", "IMyInterface")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -518,7 +518,7 @@ using System.Numerics;
 
 interface IMyNumber : IUnsignedNumber<{|#0:uint|}> // The 'IUnsignedNumber<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyNumber' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IUnsignedNumber<TSelf>", "TSelf", "IMyNumber")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IUnsignedNumber<TSelf>", "TSelf", "IMyNumber")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -529,7 +529,7 @@ using System.Numerics;
 
 interface IMyNumber : IFloatingPointConstants<{|#0:double|}> // The 'IFloatingPointConstants<TSelf>' requires the 'TSelf' type parameter to be filled with the derived type 'IMyNumber' 
 { }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IFloatingPointConstants<TSelf>", "TSelf", "IMyNumber")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IFloatingPointConstants<TSelf>", "TSelf", "IMyNumber")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -550,7 +550,7 @@ class MyClass<T> : IParsable<{|#0:int|}> // The 'IParsable<TSelf>' requires the 
         throw new NotImplementedException();
     }
 }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IParsable<TSelf>", "TSelf", "MyClass<T>")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IParsable<TSelf>", "TSelf", "MyClass<T>")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -569,7 +569,7 @@ namespace MyNamespace
 
     public readonly struct MyDate2 : IParsable<MyDate>
     { }
-}").RunAsync();
+}").RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -582,7 +582,7 @@ namespace MyNamespace
 {
     public interface IMyInterface<TSelf> : IParsable<TSelf> where TSelf : IMyInterface<TSelf>
     { }
-}").RunAsync();
+}").RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -603,7 +603,7 @@ public class MyDate<TSelf> : IParsable<TSelf> where TSelf : MyDate<TSelf>
         throw new NotImplementedException();
     }
 }
-").RunAsync();
+").RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -681,7 +681,7 @@ class MyClass<T> : IParsable<MyClass<T>>
         throw new NotImplementedException();
     }
 }
-").RunAsync();
+").RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -718,7 +718,7 @@ class CorrectImplementation : IMyInterface<CorrectImplementation>
         throw new NotImplementedException();
     }
 }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IMyInterface<TMe>", "TMe", "WrongImplementation")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IMyInterface<TMe>", "TMe", "WrongImplementation")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -741,7 +741,7 @@ class {|#0:MyDate|} : IParsableOfDateOnly // The 'IParsable<TSelf>' requires the
         throw new NotImplementedException();
     }
 }
-", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IParsable<TSelf>", "TSelf", "MyDate")).RunAsync();
+", VerifyCS.Diagnostic(ImplementGenericMathInterfacesCorrectly.GMIRule).WithLocation(0).WithArguments("IParsable<TSelf>", "TSelf", "MyDate")).RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -766,7 +766,7 @@ interface IMyNumber : IAdditionOperators<[|int|], int, int>,
           IUnaryPlusOperators<[|nint|], nint>,
           IUnaryNegationOperators<[|ushort|], ushort>
 { }
-").RunAsync();
+").RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -785,7 +785,7 @@ partial interface IMyNumber : IEquatable<int>,
           IEqualityOperators<[|long|], long, bool>,
           IIncrementOperators<[|double|]>
 { }
-").RunAsync();
+").RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static VerifyCS.Test PopulateTestCs(string sourceCode, params DiagnosticResult[] expected)

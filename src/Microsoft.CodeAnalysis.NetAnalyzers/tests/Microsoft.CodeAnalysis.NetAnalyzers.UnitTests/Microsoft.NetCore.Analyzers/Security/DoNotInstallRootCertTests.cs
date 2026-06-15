@@ -454,7 +454,7 @@ class TestClass
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(10, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)

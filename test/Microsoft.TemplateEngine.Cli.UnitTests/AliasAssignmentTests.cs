@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
@@ -275,8 +275,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         [MemberData(nameof(GetTemplateData))]
         public void CanOverrideAliasesForParameterWithHostData(string hostJsonData, string expectedJsonResult)
         {
-            var hostData = new HostSpecificTemplateData(string.IsNullOrEmpty(hostJsonData) ? null : JObject.Parse(hostJsonData));
-            var expectedResults = JObject.Parse(expectedJsonResult);
+            var hostData = new HostSpecificTemplateData(string.IsNullOrEmpty(hostJsonData) ? null : JsonNode.Parse(hostJsonData)?.AsObject());
+            var expectedResults = JsonNode.Parse(expectedJsonResult)!.AsObject();
             var template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group");
             foreach (var expectedResult in expectedResults)
             {
@@ -297,10 +297,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Single(templateCommands);
             foreach (var expectedResult in expectedResults)
             {
-                var expectedValues = expectedResult.Value!.Select(s => ((JValue)s).Value).ToArray();
-                var expectedLongAlias = expectedValues[0];
-                var expectedShortAlias = expectedValues[1];
-                var expectedIsHidden = expectedValues[2];
+                var expectedArr = expectedResult.Value!.AsArray();
+                var expectedLongAlias = expectedArr[0]?.GetValue<string>();
+                var expectedShortAlias = expectedArr[1]?.GetValue<string>();
+                var expectedIsHidden = expectedArr[2]?.GetValue<bool>() ?? false;
                 var templateOptions = templateCommands.Single().TemplateOptions;
                 Assert.NotNull(templateOptions);
                 Assert.Contains(expectedResult.Key, templateOptions.Keys);

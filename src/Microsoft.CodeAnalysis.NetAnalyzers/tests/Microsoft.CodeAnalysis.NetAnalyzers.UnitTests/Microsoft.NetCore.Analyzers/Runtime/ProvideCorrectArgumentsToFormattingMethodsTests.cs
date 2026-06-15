@@ -220,7 +220,7 @@ public class C
     }
 }
 ",
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -433,7 +433,7 @@ class Test
                     GetCSharpResultAt(8, 17));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var basicTest = new VerifyVB.Test
             {
@@ -467,7 +467,7 @@ End Class"
                     GetBasicResultAt(8, 17));
             }
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -503,7 +503,7 @@ class Test
                 }
             };
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var basicTest = new VerifyVB.Test
             {
@@ -530,7 +530,7 @@ End Class"
                 }
             };
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -579,7 +579,7 @@ class Test
                     GetCSharpResultAt(8, 17));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var basicTest = new VerifyVB.Test
             {
@@ -613,7 +613,7 @@ End Class"
                     GetBasicResultAt(8, 17));
             }
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -647,7 +647,7 @@ class Test
                 // Test0.cs(10,17): warning CA2241: Provide correct arguments to formatting methods
                 GetCSharpResultAt(10, 17));
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var basicTest = new VerifyVB.Test
             {
@@ -676,7 +676,7 @@ End Class"
                 // Test0.vb(10,17): warning CA2241: Provide correct arguments to formatting methods
                 GetBasicResultAt(10, 17));
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -752,7 +752,7 @@ End Class"
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -824,7 +824,7 @@ End Class"
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 },
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -858,7 +858,7 @@ class Test
             csharpTest.ExpectedDiagnostics.Add(
                 GetCSharpResultAt(11, 17, ProvideCorrectArgumentsToFormattingMethodsAnalyzer.InvalidFormatRule));
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         #endregion

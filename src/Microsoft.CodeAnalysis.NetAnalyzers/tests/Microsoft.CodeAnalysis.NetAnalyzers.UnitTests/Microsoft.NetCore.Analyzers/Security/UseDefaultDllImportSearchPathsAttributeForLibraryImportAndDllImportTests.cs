@@ -41,7 +41,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
                 test.TestState.AnalyzerConfigFiles.Add(editorConfig.Value);
             }
 
-            await test.RunAsync();
+            await test.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private const string LibraryImportAttribute = """

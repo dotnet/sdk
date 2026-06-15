@@ -4,9 +4,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.TestHelper;
-#if !XUNIT_V3
-using Xunit.Abstractions;
-#endif
+using Microsoft.TemplateEngine.Tests;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 {
@@ -153,12 +151,13 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
                 TemplateSpecificArgs = new[] { "--empty" },
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 VerifyCommandOutput = true,
             };
 
             VerificationEngine engine = new VerificationEngine(_log);
             // Demonstrate well handling of dot files - workarounding Verify bug https://github.com/VerifyTests/Verify/issues/699
-            await engine.Execute(options);
+            await engine.Execute(options, TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -168,6 +167,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
                 TemplateSpecificArgs = new[] { "--empty" },
+                SnapshotsDirectory = TestBase.SnapshotsDirectory,
                 VerifyCommandOutput = false,
                 SettingsDirectory = settingsPath
             };

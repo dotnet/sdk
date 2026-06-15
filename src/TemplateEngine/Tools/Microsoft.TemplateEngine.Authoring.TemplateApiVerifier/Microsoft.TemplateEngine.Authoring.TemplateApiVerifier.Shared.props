@@ -12,9 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
-    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.IDE\Microsoft.TemplateEngine.IDE.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.IDE\Microsoft.TemplateEngine.IDE.csproj" />
   </ItemGroup>
 
 </Project>

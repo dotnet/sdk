@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
@@ -636,7 +637,6 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
         VerifyBinLogEvaluationDataCount(binaryLogPath, expectedCount: 3);
     }
 
-
     /// <summary>
     /// Binary logs from our in-memory projects should have evaluation data.
     /// </summary>
@@ -645,16 +645,9 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
-        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
-            <Project>
-              <PropertyGroup>
-                <ExperimentalFileBasedProgramEnableIncludeDirective>true</ExperimentalFileBasedProgramEnableIncludeDirective>
-              </PropertyGroup>
-            </Project>
-            """);
-
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"),
             $"""
+            #!/usr/bin/env dotnet
             #:include *.cs
             {s_programDependingOnUtil}
             """);
@@ -812,6 +805,196 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
     }
 
+    [Fact]
+    public void MissingShebangWarning()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        // Single-file program without shebang should NOT produce CA2266
+        // (the warning only fires when there are multiple files via #:include).
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("hello");
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello");
+
+        // Included file without shebang should not produce CA2266.
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            class Util { public static string Greet() => "hello"; }
+            """);
+
+        // Entry point with shebang and #:include — no warning.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
+            #:include Util.cs
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello");
+
+        // Entry point without shebang and #:include — CA2266 warning expected.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:include Util.cs
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
+
+        // CA2266 can be suppressed via NoWarn.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property NoWarn=CA2266
+            #:include Util.cs
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello");
+    }
+
+    [Fact]
+    public void MissingShebangWarning_CompileItemFromDirectoryBuildProps()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        // Directory.Build.props adds a Compile item, but CA2266 should only fire
+        // for files included via #:include.
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            class Util { public static string Greet() => "hello"; }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Included.cs"), """
+            class Included { public static string Greet() => "included"; }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <ItemGroup>
+                <Compile Include="Util.cs" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        // Entry point without shebang does not warn because the extra Compile item
+        // was not added by #:include.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello");
+
+        // Adding shebang should keep the program warning-free.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello");
+
+        // A real #:include without shebang should still warn.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:include Included.cs
+            Console.WriteLine($"{Util.Greet()} {Included.Greet()}");
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello included");
+    }
+
+    [Fact]
+    public void MissingShebangWarning_NonCsFile()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "file.json"), "{}");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:include file.json
+            Console.WriteLine("hello");
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property ext=.json
+            #:include file$(ext)
+            Console.WriteLine("hello");
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "file.cs"), """
+            class Util { public static string Greet() => "hello from util"; }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property ext=.cs
+            #:include file$(ext)
+            Console.WriteLine(Util.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello from util");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "file.cs"), """
+            Console.WriteLine("hello from file");
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:property {CSharpDirective.IncludeOrExclude.MappingPropertyName}=.cs=Content
+            #:include file.cs
+            Console.WriteLine("hello");
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
+    }
+
     /// <summary>
     /// File-based projects using the default SDK do not include embedded resources by default.
     /// </summary>
@@ -899,5 +1082,4 @@ public sealed class RunFileTests_BuildOptions(ITestOutputHelper log) : RunFileTe
             .Should().Pass()
             .And.HaveStdOut(considered ? "Resource not found" : "[MyString, TestValue]");
     }
-
 }

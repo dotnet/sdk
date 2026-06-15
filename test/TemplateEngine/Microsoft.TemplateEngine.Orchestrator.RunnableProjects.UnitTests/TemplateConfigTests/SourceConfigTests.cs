@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            await (generator as IGenerator).CreateAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
+            await (generator as IGenerator).CreateAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.Current.CancellationToken);
             Assert.True(_engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetDir, "core.config")));
             Assert.False(_engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetDir, "full.config")));
         }
@@ -112,7 +112,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.Current.CancellationToken);
             Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
 
             Assert.Single(result.FileChanges);
@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.Current.CancellationToken);
             Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
 
             Assert.Single(result.FileChanges);
@@ -211,7 +211,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.Current.CancellationToken);
             Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
 
             Assert.Single(result.FileChanges);
@@ -265,7 +265,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.Current.CancellationToken);
             Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
 
             Assert.Single(result.FileChanges);
@@ -320,7 +320,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, TestContext.Current.CancellationToken);
             IEnumerable<IFileChange2> changes = result.FileChanges.Cast<IFileChange2>();
             Assert.All(result.FileChanges.Cast<IFileChange2>(), c => c.SourceRelativePath.StartsWith("./"));
 

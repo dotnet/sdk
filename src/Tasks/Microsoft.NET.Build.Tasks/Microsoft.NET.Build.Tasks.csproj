@@ -60,7 +60,7 @@
     <PackageReference Include="NuGet.Build.Tasks.Pack" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 

@@ -30,7 +30,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private static async Task VerifyVisualBasicAnalyzerAsync(
@@ -49,7 +49,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 
             visualBasicTest.ExpectedDiagnostics.AddRange(expected);
 
-            await visualBasicTest.RunAsync();
+            await visualBasicTest.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

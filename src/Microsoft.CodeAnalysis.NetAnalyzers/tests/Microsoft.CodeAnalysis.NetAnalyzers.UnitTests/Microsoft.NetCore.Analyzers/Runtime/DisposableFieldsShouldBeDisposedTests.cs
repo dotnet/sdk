@@ -418,7 +418,7 @@ class B : IDisposable
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -447,7 +447,7 @@ Class B
         a.DisposeAsync()
     End Sub
 End Class"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
@@ -485,7 +485,7 @@ class B : IDisposable
                 {
                     GetCSharpResultAt(15, 24, "B", "a", "A"),
                 },
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -517,7 +517,7 @@ End Class",
                 {
                     GetBasicResultAt(16, 22, "B", "a", "A"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
@@ -552,7 +552,7 @@ class B : IAsyncDisposable
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -580,7 +580,7 @@ Class B
         Return Nothing
     End Function
 End Class"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
@@ -618,7 +618,7 @@ class B : IAsyncDisposable
                 {
                     GetCSharpResultAt(14, 24, "B", "a", "A"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -649,7 +649,7 @@ End Class",
                 {
                     GetBasicResultAt(14, 22, "B", "a", "A"),
                 }
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6075, "https://github.com/dotnet/roslyn-analyzers/issues/6075")]
@@ -691,7 +691,7 @@ public sealed class Test : IAsyncDisposable, IDisposable
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -729,7 +729,7 @@ public class Test
 	end function
 end class
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -768,7 +768,7 @@ public class Test
 	end function
 end class
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(6075, "https://github.com/dotnet/roslyn-analyzers/issues/6075")]
@@ -801,7 +801,7 @@ public sealed class Test : IDisposable
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -829,7 +829,7 @@ public class Test
 	end sub
 end class
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -1198,7 +1198,7 @@ class C
                 }
             };
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbCode = @"
 Imports System
@@ -1236,7 +1236,7 @@ End Class
                 }
             };
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Theory]
@@ -1288,7 +1288,7 @@ class C
                 }
             };
 
-            await csTest.RunAsync();
+            await csTest.RunAsync(TestContext.Current.CancellationToken);
 
             var vbCode = @"
 Imports System
@@ -1325,7 +1325,7 @@ End Class
                 }
             };
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -3534,7 +3534,7 @@ class BB : IDisposable
                     GetCSharpResultAt(13, 24, "BB", "a", "A"));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
 
             var basicTest = new VerifyVB.Test
             {
@@ -3578,7 +3578,7 @@ End Class"
                     GetBasicResultAt(13, 22, "BB", "a", "A"));
             }
 
-            await basicTest.RunAsync();
+            await basicTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
@@ -3615,7 +3615,7 @@ class B : IAsyncDisposable
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
 
             await new VerifyVB.Test
             {
@@ -3648,7 +3648,7 @@ Class B
         End If
     End Function
 End Class"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -3737,7 +3737,7 @@ class C : IAsyncDisposable
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -3826,7 +3826,7 @@ class Inner : IAsyncDisposable
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact, WorkItem(5099, "https://github.com/dotnet/roslyn-analyzers/issues/5099")]
@@ -3909,7 +3909,7 @@ class SubSub : Sub
 {
     private readonly FileStream [|disposableField|] = new FileStream("""", FileMode.Create);
 }"
-            }.RunAsync();
+            }.RunAsync(TestContext.Current.CancellationToken);
         }
 
         [Fact]

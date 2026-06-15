@@ -119,6 +119,7 @@ Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.IsIndivisible.get -
 Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.IsQuoted.get -> bool
 Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.IsQuoted.set -> void
 Microsoft.TemplateEngine.Core.Expressions.TypeConverterDelegate<T>
+virtual Microsoft.TemplateEngine.Core.Expressions.TypeConverterDelegate<T>.Invoke(object? source, out T result) -> bool
 Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>
 Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.IsFull.get -> bool
 Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.IsIndivisible.get -> bool
@@ -188,6 +189,7 @@ Microsoft.TemplateEngine.Core.Operations.Conditional.WholeLine.get -> bool
 Microsoft.TemplateEngine.Core.Operations.ConditionalTokens
 Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ConditionalTokens() -> void
 Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator
+virtual Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator.Invoke(Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
 Microsoft.TemplateEngine.Core.Operations.ExpandVariables
 Microsoft.TemplateEngine.Core.Operations.Include
 Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional

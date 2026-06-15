@@ -65,7 +65,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     // Since boot config gets modified on each build, we explicitly exclude it from compression so
                     // its compressed asset doesn't fail the thumb print check.
-                    document.Root.Add(XElement.Parse($"<PropertyGroup><CompressionExcludePatterns>$(CompressionExcludePatterns);_framework\\{WasmBootConfigFileName}</CompressionExcludePatterns></PropertyGroup>"));
+                    // blazor.webassembly.js is a grouped framework asset whose content may be regenerated on each build,
+                    // so we exclude it from compression as well.
+                    document.Root.Add(XElement.Parse($"<PropertyGroup><CompressionExcludePatterns>$(CompressionExcludePatterns);_framework\\{WasmBootConfigFileName};_framework\\blazor.webassembly.js</CompressionExcludePatterns></PropertyGroup>"));
                 }
             });
 
@@ -145,7 +147,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             void Verify()
             {
-                new FileInfo(satelliteAssemblyFile).Should().Exist();
+                // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+                new FileInfo(satelliteAssemblyFile).Should().NotExist();
 
                 var bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
                 var satelliteResources = bootJsonFile.resources.satelliteResources;
@@ -199,7 +202,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            new FileInfo(satelliteAssemblyFile).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(satelliteAssemblyFile).Should().NotExist();
             bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             satelliteResources = bootJsonFile.resources.satelliteResources;
             satelliteResources.Should().HaveCount(1);
@@ -238,7 +242,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            new FileInfo(satelliteAssemblyFile).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(satelliteAssemblyFile).Should().NotExist();
 
             var bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             var satelliteResources = bootJsonFile.resources.satelliteResources;

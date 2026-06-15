@@ -128,7 +128,7 @@ End Class", VerifyVB.Diagnostic());
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
         }
 
         private async Task VerifyBasicWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -147,7 +147,7 @@ End Class", VerifyVB.Diagnostic());
 
             vbTest.ExpectedDiagnostics.AddRange(expected);
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(TestContext.Current.CancellationToken);
         }
     }
 }

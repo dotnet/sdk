@@ -42,6 +42,7 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
         host.Start(testAsset, ["--entrypoint", projectPath]);
 
         await host.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
+        await host.WaitUntilOutputContains("Started");
     }
 
     [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
@@ -81,6 +82,11 @@ public class AspireLauncherTests(ITestOutputHelper logger) : WatchSdkTest(logger
             "--resource", serviceProjectA,
             "--resource", serviceProjectB,
         ]);
+
+        // Wait until running projects for the services are initialized,
+        // so that we can deterministically test updates to their source code:
+        await server.WaitUntilOutputContains(MessageDescriptor.Capabilities, $"A ({tfm})");
+        await server.WaitUntilOutputContains(MessageDescriptor.Capabilities, $"B ({tfm})");
 
         await server.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 

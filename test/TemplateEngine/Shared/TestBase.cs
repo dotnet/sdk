@@ -1,48 +1,68 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Tests
 {
     /// <summary>
     /// The class contains the utils for unit and integration tests.
+    /// Paths are resolved via <see cref="SdkTestContext"/> which handles both
+    /// local (repo-rooted) and Helix (environment variable) environments.
     /// </summary>
     public abstract class TestBase
     {
-        internal static string CodeBaseRoot { get; } = GetCodeBaseRoot();
+        private static readonly Lazy<string> s_codeBaseRoot = new(() =>
+            SdkTestContext.GetRepoRoot()
+            ?? throw new InvalidOperationException(
+                "Could not determine the repo root. Ensure .git exists in the directory tree or set the required DOTNET_SDK_TEST_* environment variables."));
+
+        internal static string CodeBaseRoot => s_codeBaseRoot.Value;
 
         internal static string ShippingPackagesLocation
         {
             get
             {
-#if DEBUG
-                string configuration = "Debug";
-#elif RELEASE
-                string configuration = "Release";
-#else
-                throw new NotSupportedException("The configuration is not supported");
-#endif
-
-                string packagesLocation = Path.Combine(CodeBaseRoot, "artifacts", "packages", configuration, "Shipping");
-
-                if (!Directory.Exists(packagesLocation))
+                string? location = SdkTestContext.Current.ShippingPackagesDirectory;
+                if (string.IsNullOrEmpty(location) || !Directory.Exists(location))
                 {
-                    throw new Exception($"{packagesLocation} does not exist");
+                    throw new InvalidOperationException(
+                        $"ShippingPackagesDirectory '{location}' does not exist. " +
+                        "Set the DOTNET_SDK_ARTIFACTS_DIR environment variable or run from the repo root.");
                 }
-                return Path.GetFullPath(packagesLocation);
+                return Path.GetFullPath(location);
             }
         }
 
-        internal static string TemplateFeedLocation { get; } = Path.Combine(CodeBaseRoot, "template_feed");
+        internal static string TemplateFeedLocation { get; } = SdkTestContext.Current.RepoTemplatePackages;
 
-        internal static string TestTemplatesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates");
+        internal static string ApprovalsDirectory { get; } = Path.Combine(AppContext.BaseDirectory, "Approvals");
 
-        internal static string SampleTemplatesLocation { get; } = Path.Combine(CodeBaseRoot, "dotnet-template-samples");
+        internal static string SnapshotsDirectory { get; } = Path.Combine(AppContext.BaseDirectory, "Snapshots");
 
-        internal static string TestTemplatePackagesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates");
+        internal static string TestTemplatesLocation { get; } =
+            Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "TestPackages", "TemplateEngine", "test_templates");
 
-        internal static string TestPackageProjectPath { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "Microsoft.TemplateEngine.TestTemplates.csproj");
+        internal static string SampleTemplatesLocation
+        {
+            get
+            {
+                string? envSamplesDir = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_TEMPLATE_SAMPLES_DIR");
+                if (!string.IsNullOrEmpty(envSamplesDir) && Directory.Exists(envSamplesDir))
+                {
+                    return envSamplesDir;
+                }
+
+                return Path.Combine(CodeBaseRoot, "documentation", "TemplateEngine", "Samples");
+            }
+        }
+
+        internal static string TestTemplatePackagesLocation { get; } =
+            Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "TestPackages", "TemplateEngine", "nupkg_templates");
+
+        internal static string TestPackageProjectPath { get; } =
+            Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "TestPackages", "TemplateEngine", "Microsoft.TemplateEngine.TestTemplates.csproj");
 
         internal static string PackTestTemplatesNuGetPackage(PackageManager packageManager)
         {
@@ -60,24 +80,15 @@ namespace Microsoft.TemplateEngine.Tests
             return Path.GetFullPath(templateLocation);
         }
 
-        private static string GetCodeBaseRoot()
+        /// <summary>
+        /// Creates a NuGet.config in the specified directory with sources for both
+        /// shipping packages and locally-built test packages.
+        /// </summary>
+        internal static void SetupNuGetConfigForPackagesLocation(string projectDirectory)
         {
-            string codebase = typeof(TestBase).Assembly.Location;
-            string? codeBaseRoot = new FileInfo(codebase).Directory?.Parent?.Parent?.Parent?.Parent?.Parent?.FullName;
-
-            if (string.IsNullOrEmpty(codeBaseRoot))
-            {
-                throw new InvalidOperationException("The codebase root was not found");
-            }
-            if (!File.Exists(Path.Combine(codeBaseRoot!, "Microsoft.TemplateEngine.sln")))
-            {
-                throw new InvalidOperationException("Microsoft.TemplateEngine.sln was not found in codebase root");
-            }
-            if (!Directory.Exists(Path.Combine(codeBaseRoot!, "test", "Microsoft.TemplateEngine.TestTemplates")))
-            {
-                throw new InvalidOperationException("Microsoft.TemplateEngine.TestTemplates was not found in test/");
-            }
-            return codeBaseRoot!;
+            TestUtils.SetupNuGetConfigForPackagesLocation(
+                projectDirectory,
+                new[] { ShippingPackagesLocation, SdkTestContext.Current.TestPackages });
         }
     }
 }

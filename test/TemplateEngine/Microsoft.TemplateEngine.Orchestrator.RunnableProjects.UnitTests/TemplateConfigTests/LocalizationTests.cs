@@ -354,7 +354,7 @@ false,
             Assert.NotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
 
             Assert.NotNull(runnableProjectConfig.Localization);
             Assert.True(runnableProjectConfig.Localization.IsValid);
@@ -408,7 +408,7 @@ false,
             Assert.NotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
 
             Assert.NotNull(runnableProjectConfig.Localization);
             Assert.True(runnableProjectConfig.Localization.IsValid);
@@ -474,7 +474,7 @@ false,
             Assert.NotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
 
             Assert.NotNull(runnableProjectConfig.Localization);
             Assert.False(runnableProjectConfig.Localization.IsValid);
@@ -546,7 +546,7 @@ false,
             Assert.NotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
 
             Assert.NotNull(runnableProjectConfig.Localization);
             Assert.False(runnableProjectConfig.Localization.IsValid);
@@ -615,7 +615,7 @@ false,
             Assert.NotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
 
             Assert.NotNull(runnableProjectConfig.Localization);
             Assert.True(runnableProjectConfig.Localization.IsValid);

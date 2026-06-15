@@ -219,9 +219,64 @@ namespace Microsoft.TemplateEngine
                 {
                     return [];
                 }
-                return element is not JsonObject jObj ? [] : jObj.ToList();
+                return element is not JsonObject jObj ? [] : GetObjectProperties(jObj);
             }
-            return obj.ToList();
+            return GetObjectProperties(obj);
+        }
+
+        /// <summary>
+        /// Enumerates the properties of a <see cref="JsonObject"/>, handling duplicate keys gracefully.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="JsonObject"/> lazily initializes its internal dictionary when first accessed.
+        /// If the underlying JSON contains duplicate property keys, initialization throws
+        /// <see cref="ArgumentException"/>. In that case this method falls back to re-parsing via
+        /// <see cref="JsonDocument"/>, which supports duplicate keys (last-wins semantics, like Newtonsoft.Json).
+        /// </remarks>
+        private static IReadOnlyList<KeyValuePair<string, JsonNode?>> GetObjectProperties(JsonObject obj)
+        {
+            try
+            {
+                return obj.ToList();
+            }
+            catch (ArgumentException)
+            {
+                // The JsonObject contains duplicate property keys (malformed JSON).
+                // Fall back to JsonDocument-based enumeration which supports duplicate keys.
+                return GetObjectPropertiesViaDocument(obj);
+            }
+        }
+
+        /// <summary>
+        /// Enumerates the properties of a <see cref="JsonObject"/> by re-parsing its JSON text via
+        /// <see cref="JsonDocument"/>, which tolerates duplicate keys.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="JsonObject.WriteTo"/> falls back to the underlying <see cref="System.Text.Json.JsonElement"/>
+        /// when the internal dictionary has not yet been initialized, so <see cref="JsonNode.ToJsonString"/> is
+        /// safe to call even after a failed <see cref="JsonObject"/> initialization.
+        /// Duplicate keys are de-duplicated with last-wins semantics to match normal JsonObject enumeration behavior.
+        /// </remarks>
+        private static List<KeyValuePair<string, JsonNode?>> GetObjectPropertiesViaDocument(JsonObject obj)
+        {
+            string json = obj.ToJsonString();
+            var result = new List<KeyValuePair<string, JsonNode?>>();
+            var propertyIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
+            using JsonDocument doc = JsonDocument.Parse(json, DocOptions);
+            foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
+            {
+                var property = new KeyValuePair<string, JsonNode?>(prop.Name, ParseJsonNode(prop.Value.GetRawText()));
+                if (propertyIndexes.TryGetValue(prop.Name, out int existingIndex))
+                {
+                    result[existingIndex] = property;
+                }
+                else
+                {
+                    propertyIndexes[prop.Name] = result.Count;
+                    result.Add(property);
+                }
+            }
+            return result;
         }
 
         internal static T? Get<T>(this JsonNode? token, string? key)
@@ -453,25 +508,64 @@ namespace Microsoft.TemplateEngine
 
         /// <summary>
         /// Gets a property from a JsonObject with case-insensitive key matching.
+        /// Handles duplicate keys gracefully by falling back to JsonDocument-based lookup.
         /// </summary>
         internal static JsonNode? GetPropertyCaseInsensitive(JsonObject obj, string key)
         {
-            // Try exact match first (fast path).
-            if (obj.TryGetPropertyValue(key, out JsonNode? result))
+            try
             {
-                return result;
-            }
-
-            // Fall back to case-insensitive search.
-            foreach (var kvp in obj)
-            {
-                if (string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase))
+                // Try exact match first (fast path).
+                if (obj.TryGetPropertyValue(key, out JsonNode? result))
                 {
-                    return kvp.Value;
+                    return result;
+                }
+
+                // Fall back to case-insensitive search.
+                foreach (var kvp in obj)
+                {
+                    if (string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return kvp.Value;
+                    }
+                }
+
+                return null;
+            }
+            catch (ArgumentException)
+            {
+                // The JsonObject contains duplicate property keys (malformed JSON).
+                // Fall back to JsonDocument-based lookup which supports duplicate keys.
+                return GetPropertyCaseInsensitiveViaDocument(obj, key);
+            }
+        }
+
+        /// <summary>
+        /// Gets a property from a JsonObject by re-parsing via JsonDocument (tolerates duplicate keys).
+        /// Uses last-wins semantics for duplicate keys, consistent with Newtonsoft.Json behavior.
+        /// </summary>
+        private static JsonNode? GetPropertyCaseInsensitiveViaDocument(JsonObject obj, string key)
+        {
+            string json = obj.ToJsonString();
+            using JsonDocument doc = JsonDocument.Parse(json, DocOptions);
+
+            JsonNode? result = null;
+            JsonNode? caseInsensitiveResult = null;
+
+            // Enumerate all properties; last-wins for duplicates
+            foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
+            {
+                if (string.Equals(prop.Name, key, StringComparison.Ordinal))
+                {
+                    result = ParseJsonNode(prop.Value.GetRawText());
+                }
+                else if (string.Equals(prop.Name, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    caseInsensitiveResult = ParseJsonNode(prop.Value.GetRawText());
                 }
             }
 
-            return null;
+            // Prefer exact match, fall back to case-insensitive
+            return result ?? caseInsensitiveResult;
         }
 
         /// <summary>

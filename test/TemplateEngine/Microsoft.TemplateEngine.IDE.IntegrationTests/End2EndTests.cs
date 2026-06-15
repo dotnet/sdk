@@ -22,8 +22,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.SourceNameForms") });
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "MyApp.1", output, new Dictionary<string, string?>());
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.SourceNameForms") }, cancellationToken: TestContext.Current.CancellationToken);
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "MyApp.1", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -44,8 +44,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.ValueForms.DerivedSymbol") });
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "Real.Web.App", output, new Dictionary<string, string?>());
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.ValueForms.DerivedSymbol") }, cancellationToken: TestContext.Current.CancellationToken);
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "Real.Web.App", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -66,8 +66,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.ValueForms.DerivedSymbolFromGeneratedSymbol") });
-            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "Real.Web.App", output, new Dictionary<string, string?>());
+            var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.ValueForms.DerivedSymbolFromGeneratedSymbol") }, cancellationToken: TestContext.Current.CancellationToken);
+            var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "Real.Web.App", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -86,8 +86,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") });
-            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>());
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }, cancellationToken: TestContext.Current.CancellationToken);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -124,8 +124,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 { "userPort2", "3000" },
             };
 
-            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") });
-            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }, cancellationToken: TestContext.Current.CancellationToken);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -155,8 +155,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 { "userPort2", "0" },
             };
 
-            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") });
-            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }, cancellationToken: TestContext.Current.CancellationToken);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -181,8 +181,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") });
-            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>());
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }, cancellationToken: TestContext.Current.CancellationToken);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>(), cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -210,8 +210,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 { "userVal", "myVal" },
             };
 
-            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") });
-            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }, cancellationToken: TestContext.Current.CancellationToken);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -241,8 +241,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             };
 #pragma warning restore SA1122 // Use string.Empty for empty strings
 
-            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") });
-            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }, cancellationToken: TestContext.Current.CancellationToken);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -270,8 +270,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 { "userVal", null },
             };
 
-            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") });
-            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }, cancellationToken: TestContext.Current.CancellationToken);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -295,7 +295,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") });
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }, cancellationToken: TestContext.Current.CancellationToken);
 
             Dictionary<string, string?> parameters = new()
             {
@@ -303,7 +303,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 { "userPort2", string.Empty }
             };
 
-            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "Test", output, parameters);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "Test", output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.InvalidParamValues, result.Status);
             Assert.Equal("userPort1, userPort2", result.ErrorMessage);
@@ -318,7 +318,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") });
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }, cancellationToken: TestContext.Current.CancellationToken);
 
             Dictionary<string, string?> parameters = new()
             {
@@ -326,7 +326,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 { "userPort2", string.Empty }
             };
 
-            ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "Test", output, parameters);
+            ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "Test", output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.InvalidParamValues, result.Status);
             Assert.Equal("userPort1, userPort2", result.ErrorMessage);
@@ -342,7 +342,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = TestUtils.CreateTemporaryFolder();
 
             IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper
-                .GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithConditions") });
+                .GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithConditions") }, cancellationToken: TestContext.Current.CancellationToken);
 
             Dictionary<string, string?> parameters = new()
             {
@@ -350,7 +350,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             };
 
             ITemplateCreationResult result = await bootstrapper
-                .CreateAsync(foundTemplates[0].Info, "Test", output, parameters);
+                .CreateAsync(foundTemplates[0].Info, "Test", output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
@@ -374,7 +374,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = TestUtils.CreateTemporaryFolder();
 
             IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper
-                .GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPreferDefaultName") });
+                .GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPreferDefaultName") }, cancellationToken: TestContext.Current.CancellationToken);
 
             // Using this parameter with no real info so bootstrapper.CreateAsync is not an ambiguous call
             Dictionary<string, string?> parameters = new()
@@ -383,7 +383,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             };
 
             ITemplateCreationResult result = await bootstrapper
-                .CreateAsync(foundTemplates[0].Info, name, output, parameters);
+                .CreateAsync(foundTemplates[0].Info, name, output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
             string expectedName = Path.Combine(output, expectedFileName);
@@ -400,7 +400,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string output = TestUtils.CreateTemporaryFolder();
 
             IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper
-                .GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPreferDefaultName") });
+                .GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPreferDefaultName") }, cancellationToken: TestContext.Current.CancellationToken);
 
             // Using this parameter with no real info so bootstrapper.CreateAsync is not an ambiguous call
             Dictionary<string, string?> parameters = new()
@@ -409,7 +409,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             };
 
             ITemplateCreationResult result = await bootstrapper
-                .CreateAsync(foundTemplates[0].Info, null, output, parameters);
+                .CreateAsync(foundTemplates[0].Info, null, output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(CreationResultStatus.TemplateIssueDetected, result.Status);
             Assert.Equal(
@@ -426,13 +426,13 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
             IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper
-                .GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.PostActions.AddJsonProperty.WithSourceNameChangeInJson") });
+                .GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.PostActions.AddJsonProperty.WithSourceNameChangeInJson") }, cancellationToken: TestContext.Current.CancellationToken);
 
             // Using this parameter with no real info so bootstrapper.CreateAsync is not an ambiguous call
             Dictionary<string, string?> parameters = new();
 
             ITemplateCreationResult result = await bootstrapper
-                .CreateAsync(foundTemplates[0].Info, "CompanyProject", output, parameters);
+                .CreateAsync(foundTemplates[0].Info, "CompanyProject", output, parameters, cancellationToken: TestContext.Current.CancellationToken);
 
             IPostAction postAction = Assert.Single(result.CreationResult!.PostActions);
             Assert.Equal("testfile.json", postAction.Args["jsonFileName"]);

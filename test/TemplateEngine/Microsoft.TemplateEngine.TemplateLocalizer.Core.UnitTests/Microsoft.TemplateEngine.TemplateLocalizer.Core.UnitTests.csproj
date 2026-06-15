@@ -5,8 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.TemplateLocalizer.Core\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj" />
-    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestTemplates\Microsoft.TemplateEngine.TestTemplates.csproj" />
+    <ProjectReference Include="$(TemplateEngSrcDir)Tools/Microsoft.TemplateEngine.TemplateLocalizer.Core\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
