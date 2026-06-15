@@ -1,6 +1,6 @@
 # dotnetup `Preview` Release Strategy
 
-`dotnetup` ships today as a small internal preview built daily from the tip of the  internal CI pipeline. SDK `main` consumes that daily build.
+`dotnetup` ships today as a small internal preview built daily from the tip of the internal CI pipeline. SDK `main` consumes that daily build.
 
 The problem: every daily change reaches every CI consumer, so we cannot let an SDK servicing/release branch depend on a *stable* dotnetup without it being broken by an unrelated daily change once we remove the `.NET Install Script` fallback.
 
@@ -45,7 +45,7 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
 - `stable` needs to scale beyond `ci.dot.net`; `preview` may not (external customers should not build production CI on top of a preview product).
 - GitHub Releases may provide scalable / CDN-like downloads (works for dotnet diagnostics).
 - `aka.ms` has no Azure Front Door / `x-cache` / Akamai layer of its own. It is a Kestrel app serving a `301` redirect, which is sufficient for `preview` and `daily`.
-- `ci.dot.net` per-version build URLs persist long enough for `dotnetup` rollback needs. See [Retention investigation](#retention-investigation-dotnetbuildscinotnet) below.
+- `ci.dot.net` per-version build URLs persist long enough for `dotnetup` rollback needs. See [Retention investigation](#appendix-a-retention-investigation-dotnetbuildscidotnet) below.
 
 ### Verified infrastructure facts
 
@@ -70,7 +70,7 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
   `x-ms-blob-type: BlockBlob`). dotnetup daily already lands here today.
 - `builds.dotnet.microsoft.com` fronts `dotnetcli.blob.core.windows.net` via **Akamai** (`Akamai-GRN` present, no `x-azure-ref`). Reaching it requires a promotion (copy) from `dotnetbuilds` → `dotnetcli`, gated by the release team's staging process. The account→CDN mapping is encoded in Arcade's `PublishingConstants.cs`.
 
-- dotnetup's Arcade channel, with `targetFeeds: DotNetToolsFeeds`) publishes installers/checksums to `dotnetbuilds/public` and
+- dotnetup's Arcade channel, with `targetFeeds: DotNetToolsFeeds` publishes installers/checksums to `dotnetbuilds/public` and
   `dotnetbuilds/public-checksums`. i.e. we are **already in staging**.
 
 - The versioned blob layout `dotnetup/$(DotnetupVersion)/dotnetup-$(TargetRid)$(_DotnetupNativeExt)`
@@ -139,7 +139,7 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
    `https://ci.dot.net/public/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe` and its
    `.../public-checksums/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe.sha512` sidecar.
    **Open (low risk):** No formal retention/TTL policy is documented for `dotnetbuilds` blobs — see
-   [Retention investigation](#retention-investigation-dotnetbuildscinotnet). Empirical evidence shows
+   [Retention investigation](#appendix-a-retention-investigation-dotnetbuildscidotnet). Empirical evidence shows
    non-promoted preview builds from 4+ years ago remain accessible, and dotnetup builds are never
    subject to promotion-cleanup. We consider the rollback-via-repoint strategy safe for practical
    timescales, though confirming definitively requires Azure portal access from dnceng.
