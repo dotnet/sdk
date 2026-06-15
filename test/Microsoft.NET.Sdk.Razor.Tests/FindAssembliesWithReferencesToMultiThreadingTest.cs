@@ -70,9 +70,6 @@ namespace Microsoft.NET.Sdk.Razor.Test
                 "the file is present under TaskEnvironment.ProjectDirectory; no not-found warning should be raised");
         }
 
-        private static TaskEnvironment CreateMultiThreadedEnvironment() =>
-            TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(Path.GetTempPath());
-
         private static ExposingReferenceResolver CreateExposingResolver(TaskEnvironment env) =>
             new(Array.Empty<string>(), Array.Empty<AssemblyItem>(), env);
 
