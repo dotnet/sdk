@@ -16,8 +16,13 @@ public sealed class TestLoggerFactory : ILoggerFactory
     private readonly List<ILoggerProvider> _loggerProviders = new();
     private readonly List<ILoggerFactory> _factories = new();
 
+    public TestLoggerFactory()
+        : this((TestContext?)null)
+    {
+    }
+
     public TestLoggerFactory(TestContext? testContext)
-        : this((ITestOutputHelper)new TestContextOutputHelper(testContext))
+        : this(new TestContextOutputHelper(testContext))
     {
     }
 

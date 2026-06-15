@@ -26,8 +26,8 @@ public sealed class TestContextOutputHelper : ITestOutputHelper
     public void Write(string message)
     {
         _output.Append(message);
-        // TestContext only exposes WriteLine; appending without a trailing newline is the
-        // closest approximation for partial writes.
+        // TestContext.Write appends without a trailing line break, matching this partial-write
+        // semantic (don't switch to WriteLine here: that would add an unintended newline).
         _testContext?.Write(message);
     }
 
