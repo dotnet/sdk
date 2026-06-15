@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 [MSBuildMultiThreadableTask]
 public class ComputeEndpointsForReferenceStaticWebAssets : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
     public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
     [Required]
