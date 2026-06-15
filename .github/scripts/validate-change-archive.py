@@ -34,9 +34,7 @@ import tarfile
 import tempfile
 from typing import NoReturn
 
-# Upper bounds on what a legitimate generated change can contain. These are intentionally generous relative
-# to real xlf/snapshot/baseline updates (which are small text files) but small enough that a decompression
-# bomb shipped with an allowed suffix cannot exhaust the write-permission job's disk before extraction.
+# Upper bounds on what a legitimate generated change can contain
 MAX_MEMBER_SIZE = 25 * 1024 * 1024  # 25 MiB per regular file
 MAX_TOTAL_SIZE = 200 * 1024 * 1024  # 200 MiB across all regular files
 MAX_MEMBER_COUNT = 5000  # total members (files + directories)
@@ -90,15 +88,8 @@ def main() -> int:
             for member in members:
                 if not (member.isfile() or member.isdir()):
                     fail(f"Disallowed member type in archive: {member.name}")
-                # Reject backslashes outright. tar member names always use '/' as the separator, but on Windows
-                # '\\' is also a path separator, so a member such as '.git\\config.xlf' would slip past the '/'-only
-                # split below and the .git check, then be written under '.git'. Rejecting it keeps the separator
-                # handling identical across platforms.
                 if "\\" in member.name:
                     fail(f"Backslash path separator in archive member name: {member.name}")
-                # Reject absolute paths and parent-directory traversal explicitly, rather than relying on the
-                # 'data' filter's silent slash-stripping. This keeps member.name a clean relative path so the
-                # source/destination paths built below are consistent with what is extracted.
                 if member.name.startswith("/"):
                     fail(f"Absolute path in archive: {member.name}")
                 if ".." in member.name.split("/"):
@@ -110,9 +101,6 @@ def main() -> int:
                         fail(f"Member outside allowed scope '{scope}': {member.name}")
                     if not member.name.endswith(exts):
                         fail(f"Member with disallowed extension: {member.name}")
-                    # Bound the declared size before extraction so a decompression bomb with an allowed suffix
-                    # cannot fill the write-permission job's disk. tarfile honors member.size when extracting,
-                    # so checking it here caps both the per-file and aggregate bytes actually written.
                     if member.size > MAX_MEMBER_SIZE:
                         fail(f"Member exceeds maximum size ({member.size} > {MAX_MEMBER_SIZE}): {member.name}")
                     total_size += member.size

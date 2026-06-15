@@ -130,9 +130,7 @@ jobs:
               return;
             }
 
-            // Fork guard: the GitHub Actions runner's token can only push to the repository the workflow runs in
-            // (the base repo). It has no write access to a contributor's fork, so commits cannot be applied to a
-            // pull request whose head branch lives in a fork. Detect that and explain how to proceed.
+            // Commits cannot be applied to a pull request whose head branch lives in a fork. Detect that and explain how to proceed.
             const baseRepo = `${context.repo.owner}/${context.repo.repo}`;
             const headRepo = pr.data.head.repo ? pr.data.head.repo.full_name : null;
             if (headRepo !== baseRepo) {
