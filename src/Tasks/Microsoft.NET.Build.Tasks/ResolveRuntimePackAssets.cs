@@ -166,12 +166,12 @@ namespace Microsoft.NET.Build.Tasks
             RuntimePackAssets = runtimePackAssets.ToArray();
         }
 
-        private void AddRuntimePackAssetsFromManifest(List<ITaskItem> runtimePackAssets, AbsolutePath runtimePackRoot,
-            AbsolutePath runtimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal, HashSet<string> profiles)
+        private void AddRuntimePackAssetsFromManifest(List<ITaskItem> runtimePackAssets, AbsolutePath absoluteRuntimePackRoot,
+            AbsolutePath absoluteRuntimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal, HashSet<string> profiles)
         {
             var assetSubPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            XDocument frameworkListDoc = XDocument.Load(runtimeListPath);
+            XDocument frameworkListDoc = XDocument.Load(absoluteRuntimeListPath);
             // profile feature is only supported in net9.0 and later. We would ignore it for previous versions.
             bool profileSupported = false;
             string targetFrameworkVersion = frameworkListDoc.Root.Attribute("TargetFrameworkVersion")?.Value;
@@ -204,7 +204,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 //  Call GetFullPath to normalize slashes
-                string assetPath = Path.GetFullPath(new AbsolutePath(fileElement.Attribute("Path").Value, runtimePackRoot));
+                string assetPath = Path.GetFullPath(new AbsolutePath(fileElement.Attribute("Path").Value, absoluteRuntimePackRoot));
 
                 string typeAttributeValue = fileElement.Attribute("Type").Value;
                 string assetType;
@@ -237,7 +237,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else
                 {
-                    throw new BuildErrorException($"Unrecognized file type '{typeAttributeValue}' in {Path.Combine(runtimePackRoot.OriginalValue, runtimeListPath.OriginalValue)}");
+                    throw new BuildErrorException($"Unrecognized file type '{typeAttributeValue}' in {Path.Combine(absoluteRuntimePackRoot.OriginalValue, absoluteRuntimeListPath.OriginalValue)}");
                 }
 
                 var assetItem = CreateAssetItem(assetPath, assetType, runtimePack, culture);
