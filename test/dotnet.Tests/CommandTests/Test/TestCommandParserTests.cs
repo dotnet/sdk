@@ -90,6 +90,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 "--no-dependencies should be forwarded to MSBuild as BuildProjectReferences=false to skip building project-to-project references.");
         }
 
+        [Theory]
+        [InlineData("--use-current-runtime")]
+        [InlineData("--ucr")]
+        public void MTPCommandForwardsUseCurrentRuntimeOption(string optionAlias)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([optionAlias]);
+            var forwarded = parseResult.OptionValuesToBeForwarded(command);
+
+            forwarded.Should().Contain("--property:UseCurrentRuntimeIdentifier=True",
+                $"{optionAlias} should be forwarded to MSBuild as UseCurrentRuntimeIdentifier=True so restore and build target the current runtime.");
+        }
+
         [Fact]
         public void DllDetectionShouldExcludeRunArgumentsAndGlobalProperties()
         {
