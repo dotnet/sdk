@@ -318,6 +318,51 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         task.SelectedItems[0].ItemSpec.Should().Be("Item1");
     }
 
+    [Fact]
+    public void SelectRuntimeIdentifierSpecificItems_IgnoresDecoyRuntimeGraphInCwd()
+    {
+        // Correct graph (project dir): linux-x64 imports linux, so an item with RID "linux" is compatible.
+        var projectGraph = @"{
+            ""runtimes"": {
+                ""linux"": {},
+                ""linux-x64"": { ""#import"": [""linux""] }
+            }
+        }";
+        // Decoy graph (process CWD): no import, so "linux" is NOT compatible with linux-x64.
+        var decoyGraph = @"{
+            ""runtimes"": {
+                ""linux"": {},
+                ""linux-x64"": {}
+            }
+        }";
+        _env.CreateProjectFile("obj/runtime.json", projectGraph);
+
+        // Place a valid-but-wrong graph at the process CWD. A task that resolved the relative
+        // path against the CWD would read this and select nothing.
+        var decoyPath = _env.GetIncorrectPath("obj/runtime.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(decoyPath)!);
+        File.WriteAllText(decoyPath, decoyGraph);
+
+        var item = new MockTaskItem { ItemSpec = "Item1" };
+        item.SetMetadata("RuntimeIdentifier", "linux");
+
+        var task = new SelectRuntimeIdentifierSpecificItems
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            TargetRuntimeIdentifier = "linux-x64",
+            Items = new ITaskItem[] { item },
+            RuntimeIdentifierGraphPath = "obj/runtime.json"
+        };
+
+        task.Execute().Should().BeTrue();
+
+        // The item is selected only if the project-directory graph (with the import) was used,
+        // not the decoy graph at the CWD.
+        task.SelectedItems.Should().ContainSingle()
+            .Which.ItemSpec.Should().Be("Item1");
+    }
+
     #endregion
 
     #region ResolveOverlappingItemGroupConflicts
