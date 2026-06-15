@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsPackable>true</IsPackable>
+    <DefineConstants>$(DefineConstants);FILE_BASED_PROGRAMS_PUBLIC</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

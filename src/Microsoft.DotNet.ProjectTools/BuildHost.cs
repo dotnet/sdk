@@ -5,7 +5,7 @@ using System.Xml;
 
 namespace Microsoft.DotNet.FileBasedPrograms;
 
-internal sealed class BuildHost : IBuildHost
+public sealed class BuildHost : IBuildHost
 {
     public static BuildHost Instance { get; } = new();
 
@@ -25,7 +25,7 @@ internal sealed class BuildHost : IBuildHost
     }
 }
 
-internal static class BuildHostExtensions
+public static class BuildHostExtensions
 {
     extension(Microsoft.Build.Evaluation.ProjectCollection projectCollection)
     {

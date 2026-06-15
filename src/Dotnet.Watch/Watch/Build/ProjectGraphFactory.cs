@@ -8,6 +8,7 @@ using System.Runtime.Versioning;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -127,9 +128,10 @@ internal sealed class ProjectGraphFactory(
             var anyError = false;
 
             var projectInstance = VirtualProjectBuilder.CreateProjectInstance(
+                BuildHost.Instance,
                 entryPointFilePath,
                 virtualProjectTargetFramework,
-                projectCollection,
+                projectCollection.Wrap(),
                 (path, line, message) =>
                 {
                     anyError = true;
@@ -141,7 +143,7 @@ internal sealed class ProjectGraphFactory(
                 throw new ProjectCreationFailedException();
             }
 
-            return projectInstance;
+            return projectInstance.Unwrap();
         }
 
         return new ProjectInstance(

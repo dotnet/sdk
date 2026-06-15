@@ -18,7 +18,12 @@ using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.FileBasedPrograms;
 
-internal sealed class VirtualProjectBuilder
+#if FILE_BASED_PROGRAMS_PUBLIC
+public
+#else
+internal
+#endif
+sealed class VirtualProjectBuilder
 {
     internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
 
