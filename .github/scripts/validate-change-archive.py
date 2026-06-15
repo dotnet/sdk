@@ -80,6 +80,13 @@ def main() -> int:
             for member in members:
                 if not (member.isfile() or member.isdir()):
                     fail(f"Disallowed member type in archive: {member.name}")
+                # Reject absolute paths and parent-directory traversal explicitly, rather than relying on the
+                # 'data' filter's silent slash-stripping. This keeps member.name a clean relative path so the
+                # source/destination paths built below are consistent with what is extracted.
+                if member.name.startswith("/") or member.name.startswith("\\"):
+                    fail(f"Absolute path in archive: {member.name}")
+                if ".." in member.name.split("/"):
+                    fail(f"Path traversal in archive: {member.name}")
                 if is_git_path(member.name):
                     fail(f".git path in archive: {member.name}")
                 if member.isfile():
