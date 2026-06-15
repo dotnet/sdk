@@ -21,7 +21,6 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
 **Nice to have**
 - No PRs required to bump minor versions.
 - Automated changelog notes.
--  Telemetry informed rollout success gates (this is likely not legally possible)
 - Only maintain one branch at a time.
 - Minimal manual maintenance effort burdens to release.
 
@@ -162,15 +161,11 @@ Migrate to `stable` versioning as well. Confirm whether it is actually feasible 
 Host a `stable` URL on `builds.dotnet.microsoft.com` by coordinating with the release team to use their promotion pipeline — we already push to `dotnetbuilds`, so this is a copy/promote from
 `dotnetbuilds` → `dotnetcli` plus storage write permissions granted by the release/dnceng team.
 
-Similar release process, through coordination. Possibly automate `preview` releases at this point. Required to rollout to any azdo task. 
+Similar release process, through coordination. Possibly automate `preview` releases at this point. Required to rollout to any azdo task.
 
 ### Phase 3 — Package-manager acquisition (tentative)
 
 Linux Package Manager Feed / WinGet / Homebrew / etc. Needs discussion with partners.
-
-### Phase 4 — Inclusion in the .NET SDK (unplanned at this time)
-
-If dotnetup ever ships inside the SDK, consider shelling it and adding tests to validate it across all in-support SDK versions.
 
 ---
 
