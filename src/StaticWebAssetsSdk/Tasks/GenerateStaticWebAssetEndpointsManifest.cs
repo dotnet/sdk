@@ -36,7 +36,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
 
     public override bool Execute()
     {
-        AbsolutePath manifestAbsolutePath = TaskEnvironment.GetAbsolutePath(ManifestPath);
+        AbsolutePath manifestAbsolutePath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : default;
         bool hasCacheFile = !string.IsNullOrEmpty(CacheFilePath);
         AbsolutePath cacheAbsolutePath = hasCacheFile ? TaskEnvironment.GetAbsolutePath(CacheFilePath) : default;
         bool hasExclusionCache = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath);
