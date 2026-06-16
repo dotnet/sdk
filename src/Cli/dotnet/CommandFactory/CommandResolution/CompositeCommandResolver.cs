@@ -35,10 +35,16 @@ public class CompositeCommandResolver : ICommandResolver
     {
         foreach (var commandResolver in _orderedCommandResolvers)
         {
+            using var resolverActivity = Activities.Source.StartActivity("resolve-command");
+            resolverActivity?.AddTag("lookup.type", commandResolver.GetType().Name);
             var commandSpec = commandResolver.Resolve(commandResolverArguments);
 
             if (commandSpec != null)
             {
+                resolverActivity?.SetStatus(System.Diagnostics.ActivityStatusCode.Ok);
+                resolverActivity?.AddTag("lookup.command", commandSpec.Path);
+                resolverActivity?.AddTag("lookup.env", commandSpec.EnvironmentVariables);
+                resolverActivity?.AddTag("lookup.args", commandSpec.Args);
                 TelemetryEventEntry.TrackEvent(CommandResolveEvent, new Dictionary<string, string>()
                 {
                     { "commandName", commandResolverArguments is null ? string.Empty : Sha256Hasher.HashWithNormalizedCasing(commandResolverArguments.CommandName) },
@@ -46,6 +52,10 @@ public class CompositeCommandResolver : ICommandResolver
                 });
 
                 return commandSpec;
+            }
+            else
+            {
+                resolverActivity?.SetStatus(System.Diagnostics.ActivityStatusCode.Error);
             }
         }
 

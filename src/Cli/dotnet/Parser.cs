@@ -23,6 +23,10 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
 using Command = System.CommandLine.Command;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+
+
 
 #if !CLI_AOT
 using System.CommandLine.StaticCompletions;
@@ -77,7 +81,10 @@ public static class Parser
 #if CLI_AOT
         ConfigureAotActions(rootCommand);
 #else
-        ConfigureManagedActions(rootCommand);
+        if (RuntimeFeature.IsDynamicCodeSupported)
+        {
+            ConfigureManagedActions(rootCommand);
+        }
 #endif
 
         rootCommand.SetAction(parseResult =>
@@ -123,6 +130,7 @@ public static class Parser
     }
 
 #if !CLI_AOT
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static void ConfigureManagedActions(DotNetCommandDefinition rootCommand)
     {
         // Augment the definition of each subcommand with command-specific actions and completions.
