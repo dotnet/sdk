@@ -87,6 +87,13 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
 
+    <!-- Tell Arcade we are using MSTest.Sdk for MSTest test projects. This prevents
+         Arcade from implicitly adding Microsoft.TestPlatform / MSTest.TestFramework /
+         MSTest.TestAdapter / Microsoft.NET.Test.Sdk package references (MSTest.Sdk
+         brings them transitively with versions controlled by the SDK), so the MSTest
+         package versions don't need to be specified in Directory.Packages.props. -->
+    <UseMSTestSdk>true</UseMSTestSdk>
+
     <!-- https://github.com/dotnet/source-build/issues/4115. -->
     <PublishWindowsPdb>false</PublishWindowsPdb>
 

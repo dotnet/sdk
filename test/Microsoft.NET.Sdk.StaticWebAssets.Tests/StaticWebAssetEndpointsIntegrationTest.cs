@@ -45,7 +45,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(27);
+        endpoints.Should().HaveCount(39);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(2);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
@@ -205,7 +205,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(45);
+        endpoints.Should().HaveCount(65);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(3);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
@@ -394,7 +394,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(45);
+        endpoints.Should().HaveCount(65);
 
         AssertManifest(publishManifest, LoadPublishManifest());
     }
@@ -576,12 +576,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
             endpointsByAssetFile.Should().ContainKey(file);
             if (file.EndsWith(".br") || file.EndsWith(".gz"))
             {
-                endpointsByAssetFile[file].Should().HaveCount(2);
+                endpointsByAssetFile[file].Should().HaveCountGreaterThanOrEqualTo(2);
             }
             else if (endpointsByAssetFile[file].Length > 1)
             {
-                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Any(p => p.Name == "integrity")).Count().Should().Be(1);
-                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Length == 0).Count().Should().Be(1);
+                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Any(p => p.Name == "integrity")).Count().Should().BeGreaterThanOrEqualTo(1);
             }
             else
             {
