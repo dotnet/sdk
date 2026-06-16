@@ -10,6 +10,7 @@ namespace Microsoft.NET.TestFramework.Commands
     public abstract class TestCommand
     {
         private readonly Dictionary<string, string> _environment = [];
+        private readonly HashSet<int> _retryOnExitCodes = [];
         private bool _doNotEscapeArguments;
         public ITestOutputHelper Log { get; }
         public string? WorkingDirectory { get; set; }
@@ -85,6 +86,16 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public TestCommand WithCulture(string locale) => WithEnvironmentVariable(UILanguageOverride.DOTNET_CLI_UI_LANGUAGE, locale);
 
+        /// <summary>
+        /// Configures the command to retry when the specified exit code is returned.
+        /// Useful for transient errors like file locks from background processes.
+        /// </summary>
+        public TestCommand WithRetryOnExitCode(int exitCode)
+        {
+            _retryOnExitCodes.Add(exitCode);
+            return this;
+        }
+
         public TestCommand WithTraceOutput()
         {
             WithEnvironmentVariable("DOTNET_CLI_VSTEST_TRACE", "1");
@@ -135,18 +146,23 @@ namespace Microsoft.NET.TestFramework.Commands
             IEnumerable<string> enumerableArgs = args;
             return ExecuteWithRetry(
                     action: () => Execute(enumerableArgs),
-                    shouldStopRetry: SuccessOrNotTransientRestoreError,
+                    shouldStopRetry: ShouldStopRetry,
                     maxRetryCount: 3,
                     timer: () => Timer(Intervals),
-                    taskDescription: "Run command while retry transient restore error")
+                    taskDescription: "Run command while retry transient error")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        private static bool SuccessOrNotTransientRestoreError(CommandResult result)
+        private bool ShouldStopRetry(CommandResult result)
         {
             if (result.ExitCode == 0)
             {
                 return true;
+            }
+
+            if (_retryOnExitCodes.Contains(result.ExitCode))
+            {
+                return false;
             }
 
             return !NuGetTransientErrorDetector.IsTransientError(result.StdOut);
