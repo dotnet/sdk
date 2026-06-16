@@ -51,9 +51,9 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             var sources = await provider.GetAllTemplatePackagesAsync(TestContext.CancellationToken);
 
             //Total should be 7
-            Assert.AreEqual(7, sources.Count);
+            Assert.HasCount(7, sources);
 
-            Assert.IsTrue(sources[0].LastChangeTime > new DateTime(2000, 1, 1));
+            Assert.IsGreaterThan(new DateTime(2000, 1, 1), sources[0].LastChangeTime);
             Assert.IsFalse(string.IsNullOrWhiteSpace(sources[0].MountPointUri));
             Assert.AreEqual(provider, sources[0].Provider);
         }

@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             manuallyAppended.AddRange(listOne);
             manuallyAppended.AddRange(listTwo);
 
-            Assert.AreEqual(combined.Count, manuallyAppended.Count);
+            Assert.HasCount(combined.Count, manuallyAppended);
 
             int enumerationCount = 0;
             foreach (int value in combined)

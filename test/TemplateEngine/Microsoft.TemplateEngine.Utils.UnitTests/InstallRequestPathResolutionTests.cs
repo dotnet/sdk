@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Path.Combine(testRootDir, "*"), _engineEnvironmentSettings);
 
-            Assert.AreEqual(3, installPath.Count());
+            Assert.HasCount(3, installPath);
             Assert.Contains(Path.Combine(testRootDir, "dir1"), installPath);
         }
 
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Path.Combine(testRootDir, "dir*"), _engineEnvironmentSettings);
 
-            Assert.AreEqual(2, installPath.Count());
+            Assert.HasCount(2, installPath);
             Assert.Contains(Path.Combine(testRootDir, "dir1"), installPath);
             Assert.Contains(Path.Combine(testRootDir, "dir33"), installPath);
         }
@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Path.Combine(testRootDir, "*.nupkg"), _engineEnvironmentSettings);
 
-            Assert.AreEqual(2, installPath.Count());
+            Assert.HasCount(2, installPath);
             Assert.Contains(Path.Combine(testRootDir, "1.nupkg"), installPath);
             Assert.Contains(Path.Combine(testRootDir, "2.nupkg"), installPath);
         }

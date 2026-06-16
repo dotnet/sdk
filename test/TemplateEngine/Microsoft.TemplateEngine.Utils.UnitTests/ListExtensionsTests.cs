@@ -59,12 +59,12 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             };
 
             var templateGroups = templatesToGroup.GroupBy(x => x._groupIdentity, x => !string.IsNullOrEmpty(x._groupIdentity), StringComparer.OrdinalIgnoreCase);
-            Assert.AreEqual(7, templateGroups.Count());
+            Assert.HasCount(7, templateGroups);
             var groupWithExpectedMultipleElements = templateGroups.Single(g => g.Key?.Equals("TemplateGroup", StringComparison.OrdinalIgnoreCase) ?? false);
-            Assert.AreEqual(3, groupWithExpectedMultipleElements.Count());
-            Assert.AreEqual(1, groupWithExpectedMultipleElements.Count(s => s._identity == "5"));
-            Assert.AreEqual(1, groupWithExpectedMultipleElements.Count(s => s._identity == "6"));
-            Assert.AreEqual(1, groupWithExpectedMultipleElements.Count(s => s._identity == "9"));
+            Assert.HasCount(3, groupWithExpectedMultipleElements);
+            Assert.ContainsSingle(groupWithExpectedMultipleElements.Where(s => s._identity == "5"));
+            Assert.ContainsSingle(groupWithExpectedMultipleElements.Where(s => s._identity == "6"));
+            Assert.ContainsSingle(groupWithExpectedMultipleElements.Where(s => s._identity == "9"));
         }
 
         internal struct GroupByTestStruct
