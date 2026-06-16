@@ -19,6 +19,14 @@ namespace Microsoft.NET.TestFramework.Commands
         public bool DisableOutputAndErrorRedirection { get; set; }
 
         /// <summary>
+        /// When true, streams all stdout/stderr lines to test output in real-time,
+        /// regardless of exit code. Useful for tests that need to diagnose output
+        /// from commands that succeed but produce unexpected results.
+        /// Can also be enabled globally via the DOTNET_SDK_TEST_VERBOSE=1 environment variable.
+        /// </summary>
+        public bool VerboseOutput { get; set; }
+
+        /// <summary>
         /// When true, the child process is launched in a new process group so that
         /// console signals (e.g. Ctrl+C) sent to it do not propagate to the test host.
         /// </summary>
@@ -159,45 +167,37 @@ namespace Microsoft.NET.TestFramework.Commands
             var command = spec
                 .ToCommand(_doNotEscapeArguments);
 
-            bool verboseTestOutput = string.Equals(
+            bool verboseTestOutput = VerboseOutput || string.Equals(
                 Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_VERBOSE"),
                 "1",
                 StringComparison.Ordinal);
-
-            // Buffer output lines so we can decide after execution whether to log them.
-            // When DOTNET_SDK_TEST_VERBOSE=1, stream lines in real-time (original behavior).
-            // Otherwise, only dump captured output when the command fails.
-            List<string>? bufferedStdOut = verboseTestOutput ? null : new();
-            List<string>? bufferedStdErr = verboseTestOutput ? null : new();
 
             if (!spec.DisableOutputAndErrorRedirection)
             {
                 command
                     .CaptureStdOut()
-                    .CaptureStdErr()
-                    .OnOutputLine(line =>
-                     {
-                         if (verboseTestOutput)
-                         {
-                             Log.WriteLine($"》{line}");
-                         }
-                         else
-                         {
-                             bufferedStdOut!.Add(line);
-                         }
-                         CommandOutputHandler?.Invoke(line);
-                     })
-                    .OnErrorLine(line =>
-                    {
-                        if (verboseTestOutput)
+                    .CaptureStdErr();
+
+                if (verboseTestOutput)
+                {
+                    // Stream output in real-time for verbose mode.
+                    command
+                        .OnOutputLine(line =>
+                        {
+                            Log.WriteLine($"》{line}");
+                            CommandOutputHandler?.Invoke(line);
+                        })
+                        .OnErrorLine(line =>
                         {
                             Log.WriteLine($"❌{line}");
-                        }
-                        else
-                        {
-                            bufferedStdErr!.Add(line);
-                        }
-                    });
+                        });
+                }
+                else if (CommandOutputHandler is not null)
+                {
+                    // Still invoke the handler for tests that process output,
+                    // but don't log to test output.
+                    command.OnOutputLine(line => CommandOutputHandler.Invoke(line));
+                }
 
                 if (StandardOutputEncoding is not null)
                 {
@@ -214,25 +214,33 @@ namespace Microsoft.NET.TestFramework.Commands
             var result = command.Execute(ProcessStartedHandler);
             Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
 
-            // On failure, dump the buffered output so the cause is visible in test logs.
+            // On failure, dump the already-captured output so the cause is visible in test logs.
+            // Uses result.StdOut/StdErr (captured by CaptureStdOut/CaptureStdErr) to avoid
+            // buffering output a second time in memory.
             if (!verboseTestOutput && result.ExitCode != 0)
             {
-                foreach (var line in bufferedStdOut!)
+                if (!string.IsNullOrEmpty(result.StdOut))
                 {
-                    Log.WriteLine($"》{line}");
+                    foreach (var line in result.StdOut.Split(Environment.NewLine))
+                    {
+                        Log.WriteLine($"》{line}");
+                    }
                 }
-                foreach (var line in bufferedStdErr!)
+                if (!string.IsNullOrEmpty(result.StdErr))
                 {
-                    Log.WriteLine($"❌{line}");
+                    foreach (var line in result.StdErr.Split(Environment.NewLine))
+                    {
+                        Log.WriteLine($"❌{line}");
+                    }
                 }
             }
             else if (!verboseTestOutput)
             {
-                int stdOutCount = bufferedStdOut!.Count;
-                int stdErrCount = bufferedStdErr!.Count;
-                if (stdOutCount + stdErrCount > 0)
+                int stdOutLines = string.IsNullOrEmpty(result.StdOut) ? 0 : result.StdOut.Split(Environment.NewLine).Length;
+                int stdErrLines = string.IsNullOrEmpty(result.StdErr) ? 0 : result.StdErr.Split(Environment.NewLine).Length;
+                if (stdOutLines + stdErrLines > 0)
                 {
-                    Log.WriteLine($"  ({stdOutCount} stdout + {stdErrCount} stderr lines suppressed — set DOTNET_SDK_TEST_VERBOSE=1 for full output)");
+                    Log.WriteLine($"  ({stdOutLines} stdout + {stdErrLines} stderr lines suppressed — set DOTNET_SDK_TEST_VERBOSE=1 or command.VerboseOutput=true for full output)");
                 }
             }
 
