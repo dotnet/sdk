@@ -19,7 +19,7 @@
     <ProjectReference Include="..\dotnet-watch-test-browser\dotnet-watch-test-browser.csproj" ReferenceOutputAssembly="false" OutputItemType="TestBrowserOutput" />
     <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" ExcludeAssets="Runtime" />
     <!-- Needed for AspireLauncherIntegrationTests which exec the Aspire launcher executable. -->
-    <ProjectReference Include="$(RepoRoot)\src\Dotnet.Watch\Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj" ExcludeAssets="Runtime" />
+    <ProjectReference Include="$(RepoRoot)\src\Dotnet.Watch\Watch.Aspire\Microsoft.DotNet.HotReload.Watch.Aspire.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Build.Locator" />
