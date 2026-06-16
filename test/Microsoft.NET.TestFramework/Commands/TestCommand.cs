@@ -87,7 +87,7 @@ namespace Microsoft.NET.TestFramework.Commands
         public TestCommand WithCulture(string locale) => WithEnvironmentVariable(UILanguageOverride.DOTNET_CLI_UI_LANGUAGE, locale);
 
         /// <summary>
-        /// Configures the command to retry when the specified exit code is returned.
+        /// Configures the command to retry when the specified exit code is returned (only when executing via Execute()/Execute(params string[])).
         /// Useful for transient errors like file locks from background processes.
         /// </summary>
         public TestCommand WithRetryOnExitCode(int exitCode)
