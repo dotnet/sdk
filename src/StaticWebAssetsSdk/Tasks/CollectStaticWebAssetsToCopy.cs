@@ -25,7 +25,8 @@ public class CollectStaticWebAssetsToCopy : Task, IMultiThreadableTask
     public override bool Execute()
     {
         var copyToOutputFolder = new List<ITaskItem>();
-        var normalizedOutputPath = StaticWebAsset.NormalizeContentRootPath(TaskEnvironment.GetAbsolutePath(OutputPath).Value);
+        var normalizedOutputPath = StaticWebAsset.NormalizeContentRootPath(
+            string.IsNullOrEmpty(OutputPath) ? OutputPath : TaskEnvironment.GetAbsolutePath(OutputPath).Value);
         try
         {
             foreach (var asset in StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment))
