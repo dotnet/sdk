@@ -349,6 +349,33 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [Fact]
+        public void ReturnsErrorwhenManifestPathIsEmpty()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            var task = new ReadStaticWebAssetsManifestFile
+            {
+                BuildEngine = buildEngine.Object,
+                ManifestPath = ""
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().Be(false);
+            errorMessages.Count.Should().Be(1);
+            errorMessages[0].Should().Be("Manifest file at '' not found.");
+            task.Assets.Should().BeNull();
+            task.Endpoints.Should().BeNull();
+            task.DiscoveryPatterns.Should().BeNull();
+            task.ReferencedProjectsConfiguration.Should().BeNull();
+        }
+
+        [Fact]
         public void ReturnsErrorwhenManifestIsMalformed()
         {
             var errorMessages = new List<string>();
