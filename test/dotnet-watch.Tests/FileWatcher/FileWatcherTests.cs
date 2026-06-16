@@ -80,7 +80,7 @@ public class FileWatcherTests(ITestOutputHelper output)
         await (Debugger.IsAttached ? task : task.TimeoutAfter(DefaultTimeout));
 
         // Verify all expected changes were observed (extra events from the OS are acceptable)
-        var missing = expectedSet.Except(filesChanged).ToArray();
+        var missing = expectedSet.Except(filesChanged).OrderBy(x => x.Path).ToArray();
         Assert.True(missing.Length == 0,
             $"Expected changes not observed: {string.Join(", ", missing.Select(m => $"{m.Kind}: '{m.Path}'"))}\nActual changes: {string.Join(", ", filesChanged.OrderBy(x => x.Path).Select(m => $"{m.Kind}: '{m.Path}'"))}");
     }
