@@ -6,6 +6,9 @@ on:
     types: [opened, reopened, ready_for_review]
     branches:
       - 'release/[0-9]*'
+    branches-ignore:
+      # ignore 10.0.4xx until we release it
+      - release/10.0.4xx 
 
 permissions:
   contents: read
