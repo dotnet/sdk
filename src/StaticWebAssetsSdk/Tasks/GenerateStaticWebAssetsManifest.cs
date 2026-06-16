@@ -129,7 +129,7 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
     private void PersistManifest(StaticWebAssetsManifest manifest)
     {
         // Absolutize once; preserve original paths for log messages.
-        AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(ManifestPath);
+        AbsolutePath manifestPath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : default;
         bool hasCacheFile = !string.IsNullOrEmpty(ManifestCacheFilePath);
         AbsolutePath manifestCachePath = hasCacheFile ? TaskEnvironment.GetAbsolutePath(ManifestCacheFilePath) : default;
         var cacheFileExists = hasCacheFile && File.Exists(manifestCachePath);
