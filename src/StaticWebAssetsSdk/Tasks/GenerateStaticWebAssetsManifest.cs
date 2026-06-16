@@ -9,8 +9,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class GenerateStaticWebAssetsManifest : Task
+[MSBuildMultiThreadableTask]
+public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public string Source { get; set; }
 
@@ -44,7 +48,7 @@ public class GenerateStaticWebAssetsManifest : Task
     {
         try
         {
-            var assets = StaticWebAsset.FromTaskItemGroup(Assets, validate: true);
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment, validate: true);
             Array.Sort(assets, (l, r) => string.CompareOrdinal(l.Identity, r.Identity));
 
             var endpoints = FilterPublishEndpointsIfNeeded(assets);
@@ -124,11 +128,15 @@ public class GenerateStaticWebAssetsManifest : Task
 
     private void PersistManifest(StaticWebAssetsManifest manifest)
     {
-        var cacheFileExists = File.Exists(ManifestCacheFilePath);
-        var fileExists = File.Exists(ManifestPath);
+        // Absolutize once; preserve original paths for log messages.
+        AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(ManifestPath);
+        bool hasCacheFile = !string.IsNullOrEmpty(ManifestCacheFilePath);
+        AbsolutePath manifestCachePath = hasCacheFile ? TaskEnvironment.GetAbsolutePath(ManifestCacheFilePath) : default;
+        var cacheFileExists = hasCacheFile && File.Exists(manifestCachePath);
+        var fileExists = File.Exists(manifestPath);
         var existingManifestHash = cacheFileExists ?
-            File.ReadAllText(ManifestCacheFilePath) :
-            fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath)).Hash : "";
+            File.ReadAllText(manifestCachePath) :
+            fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath)).Hash : "";
 
         if (!fileExists || !string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
         {
@@ -141,10 +149,10 @@ public class GenerateStaticWebAssetsManifest : Task
             {
                 Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest version '{manifest.Hash}' is different from existing manifest hash '{existingManifestHash}'.");
             }
-            File.WriteAllBytes(ManifestPath, data);
-            if (!string.IsNullOrEmpty(ManifestCacheFilePath))
+            File.WriteAllBytes(manifestPath, data);
+            if (hasCacheFile)
             {
-                File.WriteAllText(ManifestCacheFilePath, manifest.Hash);
+                File.WriteAllText(manifestCachePath, manifest.Hash);
             }
         }
         else
