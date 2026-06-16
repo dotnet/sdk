@@ -73,12 +73,25 @@ internal sealed class TestApplication(
             var stdOutBuilder = new ConcurrentQueue<string>();
             var stdErrBuilder = new ConcurrentQueue<string>();
 
+            // When running on an Azure DevOps agent, Azure Pipelines logging commands (e.g.
+            // '##vso[task.logissue ...]' emitted by the Microsoft.Testing.Extensions.AzureDevOpsReport
+            // extension) written by the test module are otherwise captured here and never reach the
+            // pipeline step's standard output. Recognize and re-emit them on our own standard output so
+            // they take effect (without keeping them in the captured diagnostics buffer).
+            bool passThroughAzureDevOpsLoggingCommands = AzureDevOpsUtilities.IsAzureDevOpsEnvironment();
+
             var stdOutTask = Task.Factory.StartNew(() =>
             {
                 var stdOut = process.StandardOutput;
                 string? currentLine;
                 while ((currentLine = stdOut.ReadLine()) is not null)
                 {
+                    if (passThroughAzureDevOpsLoggingCommands && AzureDevOpsUtilities.IsAzureDevOpsLoggingCommand(currentLine))
+                    {
+                        output.WriteAzureDevOpsLoggingCommand(currentLine);
+                        continue;
+                    }
+
                     stdOutBuilder.Enqueue(currentLine);
                 }
             }, TaskCreationOptions.LongRunning);

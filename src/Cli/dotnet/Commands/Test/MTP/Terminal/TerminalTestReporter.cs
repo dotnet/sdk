@@ -108,6 +108,19 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _showActiveTests = _options.ShowActiveTests && showProgress;
     }
 
+    /// <summary>
+    /// Writes an Azure Pipelines logging command (for example <c>##vso[task.logissue ...]</c>) verbatim
+    /// to the terminal so that it takes effect on the Azure DevOps build/pipeline summary. These
+    /// commands originate from a test module (for instance the AzureDevOpsReport extension) and would
+    /// otherwise be swallowed because the module's standard output is captured by the SDK.
+    /// </summary>
+    public void WriteAzureDevOpsLoggingCommand(string command)
+        => _terminalWithProgress.WriteToTerminal(terminal =>
+        {
+            terminal.Append(command);
+            terminal.AppendLine();
+        });
+
     public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
     {
         _isDiscovery = isDiscovery;

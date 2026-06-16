@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
 
@@ -182,6 +183,32 @@ public class TerminalTestReporterTests
 
         string assemblyLine = GetAssemblySummaryLine(capturingConsole.GetOutput(), assembly);
         assemblyLine.Should().Contain("[+1/x0/?0/r1]");
+    }
+
+    /// <summary>
+    /// Azure Pipelines logging commands surfaced from a test module (for example
+    /// '##vso[task.logissue ...]' from the AzureDevOpsReport extension) must be written verbatim to the
+    /// terminal so they take effect on the build summary. See
+    /// <see cref="AzureDevOpsUtilities.IsAzureDevOpsLoggingCommand(string?)"/> and the pass-through in
+    /// <c>TestApplication</c>.
+    /// </summary>
+    [Fact]
+    public void WriteAzureDevOpsLoggingCommand_WritesCommandVerbatim()
+    {
+        var capturingConsole = new CapturingConsole();
+
+        var options = new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+
+        const string command = "##vso[task.logissue type=error]Test 'MyTest' failed";
+        reporter.WriteAzureDevOpsLoggingCommand(command);
+
+        StripAnsi(capturingConsole.GetOutput()).Should().Contain(command);
     }
 
     private static void ReportTest(TerminalTestReporter reporter, string assembly, string executionId, string instanceId, string testUid, TestOutcome outcome)
