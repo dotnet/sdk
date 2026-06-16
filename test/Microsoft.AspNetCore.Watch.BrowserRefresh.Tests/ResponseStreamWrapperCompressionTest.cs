@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             sb.Append("</body></html>");
             var htmlContent = sb.ToString();
             var compressedData = CompressWithGzip(htmlContent);
-            Assert.IsTrue(compressedData.Length > 0, "Expected non-empty compressed payload");
+            Assert.IsNotEmpty(compressedData);
             var outputStream = new MemoryStream();
 
             var context = new DefaultHttpContext
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             sb.Append("</body></html>");
             var htmlContent = sb.ToString();
             var compressedData = CompressWithGzip(htmlContent);
-            Assert.IsTrue(compressedData.Length > 0, "Expected non-empty compressed payload");
+            Assert.IsNotEmpty(compressedData);
             var outputStream = new MemoryStream();
 
             var context = new DefaultHttpContext

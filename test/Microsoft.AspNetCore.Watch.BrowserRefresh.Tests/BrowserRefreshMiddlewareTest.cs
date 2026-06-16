@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     [TestClass]
     public class BrowserRefreshMiddlewareTest
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         [DataRow("DELETE")]
         [DataRow("head")]
@@ -519,8 +521,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var middleware = new BrowserRefreshMiddleware(async (context) =>
             {
                 context.Response.ContentType = "application/json";
-                await context.Response.StartAsync();
-                await context.Response.WriteAsync("{ }");
+                await context.Response.StartAsync(TestContext.CancellationToken);
+                await context.Response.WriteAsync("{ }", TestContext.CancellationToken);
             }, NullLogger<BrowserRefreshMiddleware>.Instance);
 
             middleware.Test_SetEnvironment(dotnetModifiableAssemblies: "true", aspnetcoreBrowserTools: "true");
@@ -565,8 +567,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 context.Response.ContentType = "application/json";
                 context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", "true");
                 context.Response.Headers.Append("ASPNETCORE-BROWSER-TOOLS", "true");
-                await context.Response.StartAsync();
-                await context.Response.WriteAsync("{ }");
+                await context.Response.StartAsync(TestContext.CancellationToken);
+                await context.Response.WriteAsync("{ }", TestContext.CancellationToken);
             }, NullLogger<BrowserRefreshMiddleware>.Instance);
 
             middleware.Test_SetEnvironment(dotnetModifiableAssemblies: "true", aspnetcoreBrowserTools: "true");

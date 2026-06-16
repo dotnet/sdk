@@ -342,19 +342,15 @@ public class ScriptInjectingStreamTests
     public async Task WriteAsync_WithCancellation_PropagatesCancellation()
     {
         // Arrange
-        var baseStream = new MemoryStream();
-        var stream = new ScriptInjectingStream(baseStream);
         var cts = new CancellationTokenSource();
         cts.Cancel();
+        var mockStream = new CancellationTestStream();
+        var testStream = new ScriptInjectingStream(mockStream);
+        var buffer = Encoding.UTF8.GetBytes("test");
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<OperationCanceledException>(async () =>
-        {
-            // Use a mock stream that respects cancellation
-            var mockStream = new CancellationTestStream();
-            var testStream = new ScriptInjectingStream(mockStream);
-            await testStream.WriteAsync(Encoding.UTF8.GetBytes("test"), cts.Token);
-        });
+            await testStream.WriteAsync(buffer, cts.Token));
     }
 
     [TestMethod]
