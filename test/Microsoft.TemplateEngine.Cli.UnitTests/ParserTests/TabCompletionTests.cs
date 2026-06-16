@@ -446,13 +446,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux, IgnoreMessage = "https://github.com/dotnet/sdk/issues/46212")]
         public void CanIgnoreTemplateGroupsWithConstraints()
         {
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
-            {
-                Assert.Inconclusive("Skipped on Linux: https://github.com/dotnet/sdk/issues/46212");
-            }
-
             MockTemplateInfo template1 = new MockTemplateInfo("foo1", identity: "foo.1")
                 .WithConstraints(new TemplateConstraintInfo("test", "yes"));
 
