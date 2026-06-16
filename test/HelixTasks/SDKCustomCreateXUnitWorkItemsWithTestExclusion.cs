@@ -259,11 +259,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     string envPrefix;
                     if (IsPosixShell)
                     {
-                        envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} ";
+                        string testExecutionDirectoryEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory ";
+                        envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectoryEnv}";
                     }
                     else
                     {
-                        envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& ";
+                        string testExecutionDirectoryEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ";
+                        string msbuildAdditionalSdkResolverFolderEnv = string.IsNullOrEmpty(msbuildAdditionalSdkResolverFolder) ? "" : "set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ";
+                        envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& {testExecutionDirectoryEnv}{msbuildAdditionalSdkResolverFolderEnv}";
                     }
 
                     string diagArg = IsPosixShell
