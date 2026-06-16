@@ -282,6 +282,89 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #endregion
 
+    #region SelectRuntimeIdentifierSpecificItems
+
+    [Fact]
+    public void SelectRuntimeIdentifierSpecificItems_WithRelativePaths_ShouldResolveFromProjectDirectory()
+    {
+        var runtimeGraphContent = @"{
+            ""runtimes"": {
+                ""linux"": {},
+                ""linux-x64"": { ""#import"": [""linux""] }
+            }
+        }";
+        _env.CreateProjectDirectory("obj");
+        _env.CreateProjectFile("obj/runtime.json", runtimeGraphContent);
+
+        File.Exists(_env.GetProjectPath("obj/runtime.json")).Should().BeTrue("file should exist in project directory");
+        File.Exists("obj/runtime.json").Should().BeFalse("file should NOT exist relative to CWD");
+
+        var item = new MockTaskItem { ItemSpec = "Item1" };
+        item.SetMetadata("RuntimeIdentifier", "linux-x64");
+
+        var task = new SelectRuntimeIdentifierSpecificItems
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            TargetRuntimeIdentifier = "linux-x64",
+            Items = new ITaskItem[] { item },
+            RuntimeIdentifierGraphPath = "obj/runtime.json"
+        };
+
+        var result = task.Execute();
+
+        result.Should().BeTrue("task should resolve relative paths via TaskEnvironment");
+        task.SelectedItems.Should().HaveCount(1);
+        task.SelectedItems[0].ItemSpec.Should().Be("Item1");
+    }
+
+    [Fact]
+    public void SelectRuntimeIdentifierSpecificItems_IgnoresDecoyRuntimeGraphInCwd()
+    {
+        // Correct graph (project dir): linux-x64 imports linux, so an item with RID "linux" is compatible.
+        var projectGraph = @"{
+            ""runtimes"": {
+                ""linux"": {},
+                ""linux-x64"": { ""#import"": [""linux""] }
+            }
+        }";
+        // Decoy graph (process CWD): no import, so "linux" is NOT compatible with linux-x64.
+        var decoyGraph = @"{
+            ""runtimes"": {
+                ""linux"": {},
+                ""linux-x64"": {}
+            }
+        }";
+        _env.CreateProjectFile("obj/runtime.json", projectGraph);
+
+        // Place a valid-but-wrong graph at the process CWD. A task that resolved the relative
+        // path against the CWD would read this and select nothing.
+        var decoyPath = _env.GetIncorrectPath("obj/runtime.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(decoyPath)!);
+        File.WriteAllText(decoyPath, decoyGraph);
+
+        var item = new MockTaskItem { ItemSpec = "Item1" };
+        item.SetMetadata("RuntimeIdentifier", "linux");
+
+        var task = new SelectRuntimeIdentifierSpecificItems
+        {
+            BuildEngine = new MockBuildEngine(),
+            TaskEnvironment = _env.TaskEnvironment,
+            TargetRuntimeIdentifier = "linux-x64",
+            Items = new ITaskItem[] { item },
+            RuntimeIdentifierGraphPath = "obj/runtime.json"
+        };
+
+        task.Execute().Should().BeTrue();
+
+        // The item is selected only if the project-directory graph (with the import) was used,
+        // not the decoy graph at the CWD.
+        task.SelectedItems.Should().ContainSingle()
+            .Which.ItemSpec.Should().Be("Item1");
+    }
+
+    #endregion
+
     #region ResolveOverlappingItemGroupConflicts
 
     [Fact]
@@ -360,6 +443,94 @@ public class GivenTasksUseAbsolutePaths : IDisposable
         conflictItem.Exists.Should().BeFalse("existing callers that do not opt into TaskEnvironment should keep previous relative path behavior");
         conflictItem.SourcePath.Should().Be(existingPath, "SourcePath should remain the original value");
         conflictItem.DisplayName.Should().Be($"CopyLocal:{existingPath}", "display strings should not be absolutized");
+    }
+
+    [Fact]
+    public void ConflictItem_WithTaskEnvironment_ExistsResolvesRelativePathToProjectDirectory()
+    {
+        const string relativePath = "libs/existing.dll";
+
+        _env.CreateProjectFile(relativePath, string.Empty);
+
+        File.Exists(relativePath).Should().BeFalse("file should NOT be findable relative to the spawn CWD");
+
+        var item = CreateCopyLocalConflictItem(relativePath, assemblyVersion: string.Empty);
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal, _env.TaskEnvironment);
+
+        conflictItem.Exists.Should().BeTrue(
+            "Exists must resolve the relative HintPath against the TaskEnvironment's project directory, not the process CWD");
+    }
+
+    [Fact]
+    public void ConflictItem_WithTaskEnvironment_FileVersionReadsFileViaProjectDirectory()
+    {
+        // Copy a real managed assembly (this test assembly) into the project directory so
+        // FileUtilities.GetFileVersion has something to read. If path resolution were CWD-based,
+        // the file would not be found and FileVersion would be null.
+        var sourceAssemblyPath = typeof(GivenTasksUseAbsolutePaths).Assembly.Location;
+        const string relativePath = "libs/sample.dll";
+        var targetPath = _env.GetProjectPath(relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+        File.Copy(sourceAssemblyPath, targetPath, overwrite: true);
+
+        File.Exists(relativePath).Should().BeFalse("file should NOT be findable relative to the spawn CWD");
+
+        // No AssemblyVersion/FileVersion metadata -> ConflictItem must fall back to reading the file.
+        var item = new MockTaskItem(relativePath, new Dictionary<string, string>
+        {
+            ["HintPath"] = relativePath,
+        });
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal, _env.TaskEnvironment);
+
+        conflictItem.FileVersion.Should().NotBeNull(
+            "FileVersion must be obtainable via TaskEnvironment-resolved path even when the process CWD is wrong");
+    }
+
+    [Fact]
+    public void ConflictItem_WithTaskEnvironment_SourcePathAndDisplayNamePreserveOriginalRelativePath()
+    {
+        const string relativePath = "libs/existing.dll";
+
+        _env.CreateProjectFile(relativePath, string.Empty);
+
+        var item = CreateCopyLocalConflictItem(relativePath, "1.0.0.0");
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal, _env.TaskEnvironment);
+
+        // Trigger file access first so the lazy absolutized path is computed; it must still not
+        // leak into the user-visible string properties.
+        _ = conflictItem.Exists;
+
+        conflictItem.SourcePath.Should().Be(relativePath,
+            "SourcePath is surfaced to users and must preserve the original relative value, not the absolutized form");
+        conflictItem.FileName.Should().Be(Path.GetFileName(relativePath),
+            "FileName is derived from the original ItemSpec and must not include directory parts from absolutization");
+        conflictItem.DisplayName.Should().Be($"CopyLocal:{relativePath}",
+            "DisplayName is used in diagnostics and must not leak the absolutized path");
+    }
+
+    [Fact]
+    public void ConflictItem_WithTaskEnvironment_HonorsMetadataAndDoesNotAccessFile()
+    {
+        // Point at a file that does NOT exist anywhere; if anything other than Exists touches the
+        // file system, AssemblyVersion/FileVersion would be null. They must come from metadata.
+        const string nonexistentRelativePath = "does/not/exist.dll";
+
+        File.Exists(_env.GetProjectPath(nonexistentRelativePath)).Should().BeFalse();
+
+        var item = new MockTaskItem(nonexistentRelativePath, new Dictionary<string, string>
+        {
+            ["HintPath"] = nonexistentRelativePath,
+            ["AssemblyVersion"] = "2.5.0.0",
+            ["FileVersion"] = "3.4.2.1",
+        });
+        var conflictItem = new ConflictItem(item, ConflictItemType.CopyLocal, _env.TaskEnvironment);
+
+        conflictItem.AssemblyVersion.Should().Be(new Version(2, 5, 0, 0),
+            "metadata-supplied AssemblyVersion must be honored without triggering file I/O");
+        conflictItem.FileVersion.Should().Be(new Version(3, 4, 2, 1),
+            "metadata-supplied FileVersion must be honored without triggering file I/O");
+        conflictItem.Exists.Should().BeFalse(
+            "Exists should still report the actual on-disk state via the TaskEnvironment-resolved path");
     }
 
     private static ITaskItem CreateCopyLocalConflictItem(string relativeHintPath, string assemblyVersion)

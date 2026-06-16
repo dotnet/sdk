@@ -44,6 +44,12 @@ jobs:
               return;
             }
 
+            // Skip branding and internal-to-public flow PRs from vseanreesermsft
+            if (author === 'vseanreesermsft') {
+              console.log(`Skipping branding/internal-to-public PR authored by: ${author}`);
+              return;
+            }
+
             // Fetch all changed files in the PR (paginated to handle large PRs)
             let files = [];
             let page = 1;
