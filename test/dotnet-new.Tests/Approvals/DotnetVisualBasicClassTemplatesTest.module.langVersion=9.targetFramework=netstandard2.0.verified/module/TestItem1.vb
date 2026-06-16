@@ -1,3 +1,0 @@
-﻿Module ClassLib
-
-End Module

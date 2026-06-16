@@ -1,6 +1,0 @@
-﻿
-// value of A: true
-// value of B: paramB
-
-	// A is enabled
-

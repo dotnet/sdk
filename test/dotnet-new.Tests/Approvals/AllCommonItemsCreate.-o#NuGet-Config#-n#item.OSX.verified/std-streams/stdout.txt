@@ -1,3 +1,0 @@
-The template "%TEMPLATE_NAME%" was created successfully.
-
-Processing post-creation actions...

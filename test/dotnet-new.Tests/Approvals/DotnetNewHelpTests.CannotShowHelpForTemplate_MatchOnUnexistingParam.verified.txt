@@ -1,6 +1,0 @@
-﻿Error: Invalid option(s):
---do-not-exist
-   '--do-not-exist' is not a valid option
-
-For more information, run:
-   dotnet new console -h

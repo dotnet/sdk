@@ -1,1 +1,0 @@
-﻿The template "Class Library" was created successfully.
