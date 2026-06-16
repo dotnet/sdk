@@ -25,25 +25,29 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
         // This prevents finding stray .sln files in ancestor directories when the intended
         // .slnx file exists in the output directory (which can happen with parallel test runs).
         string? directory = fileSystem.DirectoryExists(outputBasePath) ? outputBasePath : Path.GetDirectoryName(outputBasePath);
-        do
+        while (!string.IsNullOrEmpty(directory))
         {
-            var slnFiles = fileSystem.EnumerateFileSystemEntries(directory!, "*.sln", SearchOption.TopDirectoryOnly).ToList();
+            var slnFiles = fileSystem.EnumerateFileSystemEntries(directory, "*.sln", SearchOption.TopDirectoryOnly).ToList();
             if (slnFiles.Count > 0)
             {
                 return slnFiles;
             }
 
-            var slnxFiles = fileSystem.EnumerateFileSystemEntries(directory!, "*.slnx", SearchOption.TopDirectoryOnly).ToList();
+            var slnxFiles = fileSystem.EnumerateFileSystemEntries(directory, "*.slnx", SearchOption.TopDirectoryOnly).ToList();
             if (slnxFiles.Count > 0)
             {
                 return slnxFiles;
             }
 
-            directory = Path.GetPathRoot(directory) != directory ? Directory.GetParent(directory!)?.FullName : null;
-        }
-        while (directory != null);
+            if (Path.GetPathRoot(directory) == directory)
+            {
+                break;
+            }
 
-        return [];
+            directory = Path.GetDirectoryName(directory);
+        }
+
+        return []
     }
 
     // The project files to add are a subset of the primary outputs, specifically the primary outputs indicated by the primaryOutputIndexes post action argument (semicolon separated)
