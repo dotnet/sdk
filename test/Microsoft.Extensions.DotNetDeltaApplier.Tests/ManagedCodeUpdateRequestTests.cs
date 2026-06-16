@@ -62,7 +62,7 @@ public class ManagedCodeUpdateRequestTests
 
     private static void AssertEqual(ManagedCodeUpdateRequest initial, ManagedCodeUpdateRequest read)
     {
-        Assert.AreEqual(initial.Updates.Count, read.Updates.Count);
+        Assert.HasCount(initial.Updates.Count, read.Updates);
 
         for (var i = 0; i < initial.Updates.Count; i++)
         {
