@@ -23,6 +23,9 @@ parameters:
   targetArchitecture: x64
   publishArgument: ''
   signArgument: ''
+  # MSBuild /p:Projects argument used to scope the build to specific projects (e.g. a .slnf).
+  # Defaults to empty, which builds the repo's default solution.
+  projectsArgument: ''
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -94,6 +97,7 @@ jobs:
           -configuration $(buildConfiguration)
           ${{ parameters.publishArgument }}
           ${{ parameters.signArgument }}
+          ${{ parameters.projectsArgument }}
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
@@ -117,6 +121,7 @@ jobs:
           -configuration $(buildConfiguration) \
           ${{ parameters.publishArgument }} \
           ${{ parameters.signArgument }} \
+          ${{ parameters.projectsArgument }} \
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
           /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
