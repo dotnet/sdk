@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             string locFolder = Path.Combine(tmpDir, "content/TemplateWithSourceName/.template.config/localize");
 
             Assert.IsTrue(Directory.Exists(locFolder));
-            Assert.AreEqual(14, Directory.GetFiles(locFolder).Length);
+            Assert.HasCount(14, Directory.GetFiles(locFolder));
             Assert.IsTrue(File.Exists(Path.Combine(locFolder, "templatestrings.de.json")));
 
             Directory.Delete(tmpDir, true);
@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             string locFolder = Path.Combine(tmpDir, "content/TemplateWithSourceName/.template.config/localize");
 
             Assert.IsTrue(Directory.Exists(locFolder));
-            Assert.AreEqual(2, Directory.GetFiles(locFolder).Length);
+            Assert.HasCount(2, Directory.GetFiles(locFolder));
             Assert.IsTrue(File.Exists(Path.Combine(locFolder, "templatestrings.de.json")));
             Assert.IsFalse(File.Exists(Path.Combine(locFolder, "templatestrings.fr.json")));
 
@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             string noLocFolder = Path.Combine(tmpDir, "content/non-localized/.template.config/localize");
 
             Assert.IsTrue(Directory.Exists(locFolder));
-            Assert.AreEqual(14, Directory.GetFiles(locFolder).Length);
+            Assert.HasCount(14, Directory.GetFiles(locFolder));
             Assert.IsTrue(File.Exists(Path.Combine(locFolder, "templatestrings.de.json")));
             Assert.IsFalse(Directory.Exists(noLocFolder));
 
