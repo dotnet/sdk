@@ -630,17 +630,17 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
                 if (includeHtmlWrapper)
                 {
-                    await context.Response.WriteAsync("<html>");
-                    await context.Response.WriteAsync("<body>");
-                    await context.Response.WriteAsync("<h1>");
-                    await context.Response.WriteAsync(content);
-                    await context.Response.WriteAsync("</h1>");
-                    await context.Response.WriteAsync("</body>");
-                    await context.Response.WriteAsync("</html>");
+                    await context.Response.WriteAsync("<html>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync("<body>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync("<h1>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync(content, TestContext.CancellationToken);
+                    await context.Response.WriteAsync("</h1>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync("</body>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync("</html>", TestContext.CancellationToken);
                 }
                 else
                 {
-                    await context.Response.WriteAsync(content);
+                    await context.Response.WriteAsync(content, TestContext.CancellationToken);
                 }
             }, NullLogger<BrowserRefreshMiddleware>.Instance);
 
