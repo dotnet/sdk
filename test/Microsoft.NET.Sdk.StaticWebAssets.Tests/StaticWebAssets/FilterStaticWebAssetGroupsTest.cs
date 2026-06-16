@@ -127,6 +127,26 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
     }
 
     [Fact]
+    public void CascadingExclusion_RelatedAssetPathResolvedAgainstTaskEnvironment()
+    {
+        var primary = CreateAssetItem("server.js", "MyLib", "ServerRendering=true");
+        var related = CreateRelatedAssetItem("server.js.gz", "server.js.gz", "MyLib", primary, relatedAsset: "server.js");
+
+        var primaryEndpoint = CreateEndpointItem("server.js", primary.ItemSpec);
+        var relatedEndpoint = CreateEndpointItem("server.js.gz", related.ItemSpec);
+
+        var (task, result) = ExecuteFilterTask(
+            new[] { primary, related },
+            new[] { primaryEndpoint, relatedEndpoint },
+            new[] { CreateGroup("ServerRendering", "false", "MyLib") },
+            taskEnvironment: TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(_tempDir));
+
+        result.Should().BeTrue();
+        task.FilteredAssets.Where(a => a != null).Should().HaveCount(0, "the related asset path should resolve against the project directory");
+        task.SurvivingEndpoints.Should().HaveCount(0);
+    }
+
+    [Fact]
     public void EndpointsFiltered_ForExcludedAssets()
     {
         var includedAsset = CreateAssetItem("app.js", "MyLib", "");
@@ -203,11 +223,13 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         ITaskItem[] assets,
         ITaskItem[] endpoints,
         ITaskItem[] groups = null,
-        bool skipDeferred = false)
+        bool skipDeferred = false,
+        TaskEnvironment taskEnvironment = null)
     {
         var task = new FilterStaticWebAssetGroups
         {
             BuildEngine = _buildEngine.Object,
+            TaskEnvironment = taskEnvironment ?? TaskEnvironment.Fallback,
             Assets = assets,
             Endpoints = endpoints,
             SkipDeferred = skipDeferred,
@@ -217,7 +239,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
         return (task, result);
     }
 
-    private ITaskItem CreateRelatedAssetItem(string fileName, string relativePath, string sourceId, ITaskItem primaryAsset, string traitName = "Content-Encoding", string traitValue = "gzip")
+    private ITaskItem CreateRelatedAssetItem(string fileName, string relativePath, string sourceId, ITaskItem primaryAsset, string traitName = "Content-Encoding", string traitValue = "gzip", string relatedAsset = null)
     {
         var filePath = Path.Combine(_tempDir, fileName);
         if (!File.Exists(filePath))
@@ -235,7 +257,7 @@ public class FilterStaticWebAssetGroupsTest : IDisposable
             ["AssetKind"] = "All",
             ["AssetMode"] = "All",
             ["AssetRole"] = "Alternative",
-            ["RelatedAsset"] = primaryAsset.ItemSpec,
+            ["RelatedAsset"] = relatedAsset ?? primaryAsset.ItemSpec,
             ["AssetTraitName"] = traitName,
             ["AssetTraitValue"] = traitValue,
             ["AssetGroups"] = "",
