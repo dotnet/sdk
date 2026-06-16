@@ -9,6 +9,12 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[CollectionDefinition("ProcessState", DisableParallelization = true)]
+public class ProcessStateCollection
+{
+}
+
+[Collection("ProcessState")]
 public class ComputeStaticWebAssetsTargetPathsMultiThreadingTest
 {
     [Fact]
@@ -65,7 +71,7 @@ public class ComputeStaticWebAssetsTargetPathsMultiThreadingTest
             Directory.SetCurrentDirectory(originalCurrentDirectory);
             if (Directory.Exists(testRoot))
             {
-                Directory.Delete(testRoot, recursive: true);
+                try { Directory.Delete(testRoot, recursive: true); } catch { }
             }
         }
     }
