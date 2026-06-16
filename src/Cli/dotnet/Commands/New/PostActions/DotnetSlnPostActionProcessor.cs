@@ -20,8 +20,30 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
 
     internal static IReadOnlyList<string> FindSolutionFilesAtOrAbovePath(IPhysicalFileSystem fileSystem, string outputBasePath)
     {
-        var slnFiles = FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, outputBasePath, "*.sln");
-        return slnFiles.Count > 0 ? slnFiles : FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, outputBasePath, "*.slnx");
+        // Search for .sln and .slnx at each directory level before traversing to parent.
+        // At each level, .sln is preferred over .slnx.
+        // This prevents finding stray .sln files in ancestor directories when the intended
+        // .slnx file exists in the output directory (which can happen with parallel test runs).
+        string? directory = fileSystem.DirectoryExists(outputBasePath) ? outputBasePath : Path.GetDirectoryName(outputBasePath);
+        do
+        {
+            var slnFiles = fileSystem.EnumerateFileSystemEntries(directory!, "*.sln", SearchOption.TopDirectoryOnly).ToList();
+            if (slnFiles.Count > 0)
+            {
+                return slnFiles;
+            }
+
+            var slnxFiles = fileSystem.EnumerateFileSystemEntries(directory!, "*.slnx", SearchOption.TopDirectoryOnly).ToList();
+            if (slnxFiles.Count > 0)
+            {
+                return slnxFiles;
+            }
+
+            directory = Path.GetPathRoot(directory) != directory ? Directory.GetParent(directory!)?.FullName : null;
+        }
+        while (directory != null);
+
+        return [];
     }
 
     // The project files to add are a subset of the primary outputs, specifically the primary outputs indicated by the primaryOutputIndexes post action argument (semicolon separated)

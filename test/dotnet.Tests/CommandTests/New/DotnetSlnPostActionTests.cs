@@ -61,6 +61,29 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.Equal(slnFileFullPath, solutionFiles[0]);
         }
 
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/49923
+        public void AddProjectToSolutionPostActionPrefersLocalSlnxOverParentSln()
+        {
+            string parentPath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            _engineEnvironmentSettings.Host.VirtualizeDirectory(parentPath);
+            EnsureParentDirectoriesExist(parentPath);
+
+            string childPath = Path.Combine(parentPath, "output");
+            _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(childPath);
+
+            // Place a .sln in the parent (simulating another test's stray file)
+            string parentSlnFile = Path.Combine(parentPath, "Stray.sln");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(parentSlnFile, string.Empty);
+
+            // Place a .slnx in the child (the intended solution file)
+            string childSlnxFile = Path.Combine(childPath, "MySolution.slnx");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(childSlnxFile, string.Empty);
+
+            IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, childPath);
+            Assert.Single(solutionFiles);
+            Assert.Equal(childSlnxFile, solutionFiles[0]);
+        }
+
         [Fact(DisplayName = nameof(AddProjectToSolutionPostActionFindsOneProjectToAdd))]
         public void AddProjectToSolutionPostActionFindsOneProjectToAdd()
         {
