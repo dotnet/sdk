@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             InstantiateCommandArgs args = new((InstantiateCommand)parseResult.CommandResult.Command, parseResult);
 
             Assert.AreEqual("console", args.ShortName);
-            Assert.AreEqual(2, args.RemainingArguments.Length);
+            Assert.HasCount(2, args.RemainingArguments);
             Assert.Contains("--framework", args.RemainingArguments);
             Assert.Contains("net5.0", args.RemainingArguments);
         }
@@ -226,7 +226,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             TemplateCommand templateCommand = new(instantiateCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
             Command parser = ParserFactory.CreateParser(templateCommand);
             ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
-            Assert.IsTrue(templateParseResult.Errors.Any());
+            Assert.IsNotEmpty(templateParseResult.Errors);
             Assert.AreEqual(expectedError, templateParseResult.Errors.Single().Message);
         }
 
@@ -260,7 +260,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             TemplateCommand templateCommand = new(instantiateCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
             Command parser = ParserFactory.CreateParser(templateCommand);
             ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
-            Assert.IsTrue(templateParseResult.Errors.Any());
+            Assert.IsNotEmpty(templateParseResult.Errors);
             Assert.AreEqual(expectedError, templateParseResult.Errors.Single().Message);
         }
 

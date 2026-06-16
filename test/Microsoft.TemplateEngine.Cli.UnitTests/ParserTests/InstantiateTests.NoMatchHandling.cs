@@ -302,7 +302,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($" new {command}");
             var args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             HashSet<TemplateCommand> templateCommands = InstantiateCommand.GetTemplateCommand(args, settings, A.Fake<TemplatePackageManager>(), templateGroup);
-            Assert.IsFalse(templateCommands.Any());
+            Assert.IsEmpty(templateCommands);
 
             List<TemplateResult> templateMatchInfos = InstantiateCommand.CollectTemplateMatchInfo(args, settings, templatePackageManager, templateGroup);
             List<InvalidTemplateOptionResult> invalidOptions = InstantiateCommand.GetInvalidOptions(templateMatchInfos);

@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt);
             Assert.AreEqual(PostActionExecutionStatus.Success, result);
-            Assert.IsFalse(postActionProcessor.Calls.Any());
+            Assert.IsEmpty(postActionProcessor.Calls);
         }
 
         [TestMethod]
@@ -146,7 +146,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: true, AllowRunScripts.Prompt);
             Assert.AreEqual(PostActionExecutionStatus.Success, result);
-            Assert.IsFalse(postActionProcessor.Calls.Any());
+            Assert.IsEmpty(postActionProcessor.Calls);
         }
 
         [TestMethod]
@@ -176,7 +176,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             var result = dispatcher.Process(templateCreationResult, isDryRun: false, AllowRunScripts.Prompt);
             Assert.AreEqual(PostActionExecutionStatus.Failure, result);
-            Assert.IsFalse(postActionProcessor.Calls.Any());
+            Assert.IsEmpty(postActionProcessor.Calls);
         }
 
         [TestMethod]
@@ -293,7 +293,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.AreEqual(PostActionExecutionStatus.Failure, result);
 
             //only first post action was executed
-            Assert.IsFalse(trueProcessor.Calls.Any());
+            Assert.IsEmpty(trueProcessor.Calls);
             Assert.HasCount(1, falseProcessor.Calls);
             Assert.AreEqual(postAction1, falseProcessor.Calls[0].PostAction);
         }

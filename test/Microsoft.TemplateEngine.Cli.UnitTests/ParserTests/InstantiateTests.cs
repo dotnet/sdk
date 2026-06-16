@@ -482,7 +482,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             TemplateCommand templateCommand = new(myCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
             Command parser = ParserFactory.CreateParser(templateCommand);
             ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
-            Assert.IsTrue(templateParseResult.Errors.Any());
+            Assert.IsNotEmpty(templateParseResult.Errors);
             Assert.AreEqual(expectedError, templateParseResult.Errors.Single().Message);
         }
 
@@ -527,7 +527,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             TemplateCommand templateCommand = new(myCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
             Command templateCommandParser = ParserFactory.CreateParser(templateCommand);
             ParseResult templateParseResult = templateCommandParser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
-            Assert.IsTrue(templateParseResult.Errors.Any());
+            Assert.IsNotEmpty(templateParseResult.Errors);
             Assert.AreEqual(expectedError, templateParseResult.Errors.Single().Message);
         }
 

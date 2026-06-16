@@ -20,8 +20,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ITemplateMatchInfo templateMatchInfo = new TemplateMatchInfo(templateInfo);
             Assert.IsFalse(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
             Assert.IsFalse(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
-            Assert.IsFalse(templateMatchInfo.GetInvalidParameterNames().Any());
-            Assert.IsFalse(templateMatchInfo.GetValidTemplateParameters().Any());
+            Assert.IsEmpty(templateMatchInfo.GetInvalidParameterNames());
+            Assert.IsEmpty(templateMatchInfo.GetValidTemplateParameters());
         }
 
         [TestMethod]

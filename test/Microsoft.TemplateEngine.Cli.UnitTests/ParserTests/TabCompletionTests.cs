@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new console --framework {ToolsetInfo.CurrentTargetFramework} --l");
             string[] suggestions = parseResult.GetCompletions().Select(l => l.Label).ToArray();
 
-            Assert.AreEqual(2, suggestions.Length);
+            Assert.HasCount(2, suggestions);
             Assert.Contains("--langVersion", suggestions);
             Assert.Contains("--language", suggestions);
         }
@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse("new console --language ");
             string[] suggestions = parseResult.GetCompletions().Select(l => l.Label).ToArray();
 
-            Assert.AreEqual(3, suggestions.Length);
+            Assert.HasCount(3, suggestions);
             Assert.Contains("C#", suggestions);
             Assert.Contains("F#", suggestions);
             Assert.Contains("VB", suggestions);
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse("new install --interactive ");
             string[] result = parseResult.GetCompletions().Select(l => l.Label).ToArray();
 
-            Assert.AreEqual(2, result.Length);
+            Assert.HasCount(2, result);
             Assert.Contains("--nuget-source", result);
         }
 
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse("new install --nuget-source ");
             CompletionItem[] result = parseResult.GetCompletions().ToArray();
 
-            Assert.IsFalse(result.Any());
+            Assert.IsEmpty(result);
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
@@ -503,7 +503,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             IEnumerable<string> result = InstantiateCommand.GetTemplateNameCompletions(args.ShortName, templateGroups, settings).Select(l => l.Label);
 
-            Assert.IsFalse(result.Any());
+            Assert.IsEmpty(result);
         }
 
         [TestMethod]
