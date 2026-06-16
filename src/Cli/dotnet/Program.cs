@@ -310,8 +310,9 @@ public class Program
     {
         string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
         CommandSpec? resolvedCommandSpec = null;
-        using (var _ = Activities.Source.StartActivity("lookup-external-command"))
+        using (var lookupActivity = Activities.Source.StartActivity("lookup-external-command"))
         {
+            lookupActivity?.AddTag("command.name", commandName);
             resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
                 new DefaultCommandResolverPolicy(),
                 commandName,
