@@ -47,7 +47,7 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
             directory = Path.GetDirectoryName(directory);
         }
 
-        return []
+        return [];
     }
 
     // The project files to add are a subset of the primary outputs, specifically the primary outputs indicated by the primaryOutputIndexes post action argument (semicolon separated)
