@@ -58,7 +58,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             var searchCoordinator = new TemplateSearchCoordinator(_engineEnvironmentSettings);
             var searchResult = await searchCoordinator.SearchAsync(p => true, p => p.Templates.ToList(), TestContext.CancellationToken);
 
-            Assert.AreEqual(2, searchResult.Count);
+            Assert.HasCount(2, searchResult);
             Assert.ContainsSingle(r => r.Provider.Factory.DisplayName == "provider1", searchResult);
             Assert.ContainsSingle(r => r.Provider.Factory.DisplayName == "provider2", searchResult);
 
@@ -88,15 +88,15 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             var searchCoordinator = new TemplateSearchCoordinator(_engineEnvironmentSettings);
             var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, TestContext.CancellationToken);
-            Assert.AreEqual(2, searchResult.Count);
+            Assert.HasCount(2, searchResult);
 
             var searchResultDictionary = searchResult.ToDictionary(r => r.Provider.Factory.DisplayName);
 
             Assert.IsTrue(searchResultDictionary.ContainsKey("source one"));
             Assert.IsTrue(searchResultDictionary.ContainsKey("source two"));
 
-            Assert.AreEqual(3, searchResultDictionary["source two"].SearchHits.Count);
-            Assert.AreEqual(2, searchResultDictionary["source one"].SearchHits.Count);
+            Assert.HasCount(3, searchResultDictionary["source two"].SearchHits);
+            Assert.HasCount(2, searchResultDictionary["source one"].SearchHits);
 
             Assert.IsTrue(createdProviders.All(p => p.WasSearched));
         }

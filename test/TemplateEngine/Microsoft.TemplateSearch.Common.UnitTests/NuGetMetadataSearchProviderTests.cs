@@ -68,7 +68,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.ContainsSingle(searchResult);
             Assert.IsTrue(searchResult[0].Success);
             Assert.IsTrue(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.IsTrue(searchResult[0].SearchHits.Count > 0);
+            Assert.IsNotEmpty(searchResult[0].SearchHits);
         }
 
         [TestMethod]
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.ContainsSingle(searchResult);
             Assert.IsTrue(searchResult[0].Success);
             Assert.IsTrue(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.IsTrue(searchResult[0].SearchHits.Count > 0);
+            Assert.IsNotEmpty(searchResult[0].SearchHits);
 
             //provider should not copy local file to settings
             Assert.IsFalse(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
@@ -123,7 +123,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.ContainsSingle(searchResult);
             Assert.IsFalse(searchResult[0].Success);
             Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.IsTrue(searchResult[0].SearchHits.Count == 0);
+            Assert.IsEmpty(searchResult[0].SearchHits);
             Assert.AreEqual("Local search cache 'do-not-exist' does not exist.", searchResult[0].ErrorMessage);
 
             //provider should not copy local file to settings
@@ -165,7 +165,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.ContainsSingle(searchResult);
             Assert.IsFalse(searchResult[0].Success);
             Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.IsTrue(searchResult[0].SearchHits.Count == 0);
+            Assert.IsEmpty(searchResult[0].SearchHits);
             Assert.AreEqual($"Local search cache '{Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")}' does not exist.", searchResult[0].ErrorMessage);
 
             environment.SetEnvironmentVariable("DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY", null);
@@ -175,7 +175,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.ContainsSingle(searchResult);
             Assert.IsTrue(searchResult[0].Success);
             Assert.IsTrue(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.IsTrue(searchResult[0].SearchHits.Count > 0);
+            Assert.IsNotEmpty(searchResult[0].SearchHits);
 
             environment.SetEnvironmentVariable("DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY", "true");
             searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
@@ -184,7 +184,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.ContainsSingle(searchResult);
             Assert.IsTrue(searchResult[0].Success);
             Assert.IsTrue(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.IsTrue(searchResult[0].SearchHits.Count > 0);
+            Assert.IsNotEmpty(searchResult[0].SearchHits);
         }
 
         [TestMethod]
@@ -214,7 +214,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.IsFalse(searchResult[0].Success);
             Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
             Assert.AreEqual("The template search cache data is not supported.", searchResult[0].ErrorMessage);
-            Assert.IsTrue(searchResult[0].SearchHits.Count == 0);
+            Assert.IsEmpty(searchResult[0].SearchHits);
 
             //provider should not copy local file to settings
             Assert.IsFalse(engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")));
@@ -246,7 +246,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.ContainsSingle(searchResult);
             Assert.IsFalse(searchResult[0].Success);
             Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.IsTrue(searchResult[0].SearchHits.Count == 0);
+            Assert.IsEmpty(searchResult[0].SearchHits);
             Assert.AreEqual("The template search cache data is not valid.", searchResult[0].ErrorMessage);
 
             //provider should not copy local file to settings
@@ -279,7 +279,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.ContainsSingle(searchResult);
             Assert.IsFalse(searchResult[0].Success);
             Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.IsTrue(searchResult[0].SearchHits.Count == 0);
+            Assert.IsEmpty(searchResult[0].SearchHits);
             Assert.AreEqual("The template search cache data is not valid.", searchResult[0].ErrorMessage);
 
             //provider should not copy local file to settings
@@ -312,7 +312,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.ContainsSingle(searchResult);
             Assert.IsFalse(searchResult[0].Success);
             Assert.IsFalse(string.IsNullOrWhiteSpace(searchResult[0].ErrorMessage));
-            Assert.IsTrue(searchResult[0].SearchHits.Count == 0);
+            Assert.IsEmpty(searchResult[0].SearchHits);
             Assert.AreEqual("The template search cache data is not supported.", searchResult[0].ErrorMessage);
 
             //provider should not copy local file to settings

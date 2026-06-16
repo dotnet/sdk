@@ -50,10 +50,10 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.IsInstanceOfType<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
 
             //can read tags
-            Assert.AreEqual(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection.Count);
+            Assert.HasCount(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection);
 
             //can read parameters
-            Assert.AreEqual(5, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions.Count);
+            Assert.HasCount(5, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions);
         }
 
         [TestMethod]
@@ -71,13 +71,13 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.IsInstanceOfType<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
 
             //can read tags
-            Assert.AreEqual(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection.Count);
+            Assert.HasCount(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection);
 
             //can read parameters: 2 tags + 3 cache parameters
-            Assert.AreEqual(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions.Count);
+            Assert.HasCount(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions);
 
-            Assert.AreEqual(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Count);
-            Assert.AreEqual(1, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Count(p => p.DataType == "choice"));
+            Assert.HasCount(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions);
+            Assert.ContainsSingle(((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Where(p => p.DataType == "choice"));
             Assert.AreEqual(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
         }
 
@@ -176,18 +176,18 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.AreEqual("test.group.identity", templateToTest.GroupIdentity);
             Assert.AreEqual(100, templateToTest.Precedence);
             Assert.AreEqual("test author", templateToTest.Author);
-            Assert.AreEqual(2, templateToTest.Classifications.Count);
+            Assert.HasCount(2, templateToTest.Classifications);
 
             Assert.AreEqual("my test description", templateToTest.Description);
             Assert.AreEqual("CSharp", templateToTest.TagsCollection["language"]);
 
-            Assert.AreEqual(3, templateToTest.ParameterDefinitions.Count);
+            Assert.HasCount(3, templateToTest.ParameterDefinitions);
 
             Assert.ContainsSingle(p => p.DataType == "choice", templateToTest.ParameterDefinitions);
             Assert.AreEqual(3, templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
             Assert.IsTrue(templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.ContainsKey("var1"));
 
-            Assert.AreEqual(2, ((ITemplateInfo)templateToTest).PostActions.Count);
+            Assert.HasCount(2, ((ITemplateInfo)templateToTest).PostActions);
             Assert.AreSequenceEqual(new[] { postAction1, postAction2 }, ((ITemplateInfo)templateToTest).PostActions);
         }
     }
