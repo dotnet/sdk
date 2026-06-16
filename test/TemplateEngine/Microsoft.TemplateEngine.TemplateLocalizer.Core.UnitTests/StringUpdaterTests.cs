@@ -247,7 +247,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             Dictionary<string, string> resultStrings =
                 await ReadTemplateStringsFromJsonFile(expectedFilename, cts.Token);
 
-            Assert.AreEqual(locStrings.Count, resultStrings.Count);
+            Assert.HasCount(locStrings.Count, resultStrings);
             foreach (TemplateString x in locStrings)
             {
                 Assert.Contains(x.Value, resultStrings.Values);
