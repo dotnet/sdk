@@ -197,17 +197,17 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>5ef850130ff4fc29043271f51ca415a885b39d41</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="18.6.0-release-26315-104">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="18.6.0-release-26270-102">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>5ef850130ff4fc29043271f51ca415a885b39d41</Sha>
+      <Sha>2970f74d535c31d8ad587c8127796c72f29bfcee</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="18.6.0-release-26315-104">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="18.6.0-release-26270-102">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>5ef850130ff4fc29043271f51ca415a885b39d41</Sha>
+      <Sha>2970f74d535c31d8ad587c8127796c72f29bfcee</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="18.6.0-release-26315-104">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="18.6.0-release-26270-102">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>5ef850130ff4fc29043271f51ca415a885b39d41</Sha>
+      <Sha>2970f74d535c31d8ad587c8127796c72f29bfcee</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="10.0.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet</Uri>
