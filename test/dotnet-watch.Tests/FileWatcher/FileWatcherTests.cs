@@ -41,6 +41,7 @@ public class FileWatcherTests(ITestOutputHelper output)
 
         var operationCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var expectedSet = new HashSet<ChangedPath>(expectedChanges);
+        Assert.True(expectedSet.Count == expectedChanges.Length, "expectedChanges must not contain duplicates.");
         var filesChanged = new HashSet<ChangedPath>();
 
         EventHandler<ChangedPath> handler = null;
