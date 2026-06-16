@@ -265,6 +265,93 @@ public class NativeEntryPointTests
     }
 
     [Fact]
+    public void ExecuteCore_AotEnabled_UnresolvedExternalCommand_FallsBackToManaged()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            // An unrecognized top-level token that does not resolve to any tool/command on the
+            // muxer, global/local tools, PATH, or app base must defer to the managed CLI (which
+            // has the full resolver set, including project tools, and reports the error). With a
+            // nonexistent SDK dir the managed fallback can't be hosted, so it reports the missing
+            // dotnet.dll - proving the AOT external-command path returned false and we reached it.
+            var originalErr = Console.Error;
+            var stderrWriter = new StringWriter();
+            Console.SetError(stderrWriter);
+
+            try
+            {
+                int exitCode = NativeEntryPoint.ExecuteCore(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: "nonexistent-sdk-dir",
+                    hostfxrPath: "",
+                    args: ["some-command-that-does-not-resolve-anywhere-xyz", "arg1"]);
+
+                Assert.Equal(1, exitCode);
+                Assert.Contains("dotnet.dll", stderrWriter.ToString());
+            }
+            finally
+            {
+                Console.SetError(originalErr);
+            }
+        });
+    }
+
+    [Fact]
+    public void ExecuteCore_AotEnabled_ResolvableExternalCommandOnPath_InvokesOutOfProcess()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            // Place a `dotnet-<command>` executable on PATH and verify the AOT external-command
+            // path resolves it via the PATH resolver and invokes it out-of-process, returning the
+            // child's exit code - without ever reaching the managed fallback.
+            string toolDir = Path.Combine(Path.GetTempPath(), $"aot-pathtool-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(toolDir);
+            string originalPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+
+            try
+            {
+                const int expectedExitCode = 42;
+                string toolPath;
+                if (OperatingSystem.IsWindows())
+                {
+                    toolPath = Path.Combine(toolDir, "dotnet-aotpathtool.cmd");
+                    File.WriteAllText(toolPath, $"@echo off{Environment.NewLine}exit /b {expectedExitCode}{Environment.NewLine}");
+                }
+                else
+                {
+                    toolPath = Path.Combine(toolDir, "dotnet-aotpathtool");
+                    File.WriteAllText(toolPath, $"#!/bin/sh{Environment.NewLine}exit {expectedExitCode}{Environment.NewLine}");
+                    File.SetUnixFileMode(toolPath,
+                        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                        UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                        UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+                }
+
+                Environment.SetEnvironmentVariable("PATH", toolDir + Path.PathSeparator + originalPath);
+
+                int exitCode = NativeEntryPoint.ExecuteCore(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: "nonexistent-sdk-dir",
+                    hostfxrPath: "",
+                    args: ["aotpathtool"]);
+
+                Assert.Equal(expectedExitCode, exitCode);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("PATH", originalPath);
+                try { Directory.Delete(toolDir, recursive: true); } catch { }
+            }
+        });
+    }
+
+    [Fact]
     public void ExecuteCore_SetsHostfxrPathInAppContext()
     {
         WithEnvRestore(() =>
