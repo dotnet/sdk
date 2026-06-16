@@ -591,12 +591,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     public static StaticWebAsset FromTaskItem(ITaskItem item, bool validate = false)
         => FromTaskItem(item, TaskEnvironment.Fallback, validate);
 
-    /// <summary>
-    /// Builds a <see cref="StaticWebAsset"/> from an MSBuild item, absolutizing path-bearing
-    /// metadata (ContentRoot, RelatedAsset) against the supplied <paramref name="env"/>'s
-    /// project directory rather than the process current directory. Required for multithreaded
-    /// MSBuild execution.
-    /// </summary>
     public static StaticWebAsset FromTaskItem(ITaskItem item, TaskEnvironment env, bool validate = false)
     {
         var result = FromTaskItemCore(item);
@@ -1088,17 +1082,17 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         ContentRoot = !string.IsNullOrEmpty(ContentRoot) ? NormalizeContentRootPath(ContentRoot, env) : ContentRoot;
         BasePath = Normalize(BasePath);
         RelativePath = Normalize(RelativePath, allowEmpyPath: true);
-        RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(env.GetAbsolutePath(RelatedAsset)) : RelatedAsset;
+        RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? new FileInfo(env.GetAbsolutePath(RelatedAsset)).FullName : RelatedAsset;
     }
 
     // Normalizes the given path to a content root path in the way we expect it:
-    // * Converts the path to absolute with Path.GetFullPath(path) which takes care of normalizing
+    // * Converts the path to a full path which takes care of normalizing
     //   the directory separators to use Path.DirectorySeparator
     // * Appends a trailing directory separator at the end.
     public static string NormalizeContentRootPath(string path) => NormalizeContentRootPath(path, TaskEnvironment.Fallback);
 
     public static string NormalizeContentRootPath(string path, TaskEnvironment env)
-        => Path.GetFullPath(string.IsNullOrEmpty(path) ? path : env.GetAbsolutePath(path)) +
+        => new DirectoryInfo(env.GetAbsolutePath(path)).FullName +
         // We need to do .ToString because there is no EndsWith overload for chars in .NET Framework
         (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch
         {
@@ -1693,6 +1687,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     }
 
     internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind)
+        => AssetsByTargetPath(assets, source, assetKind, TaskEnvironment.Fallback);
+
+    internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind, TaskEnvironment env)
     {
         // We return either the selected asset or a list with all the candidates that were found to be ambiguous
         var result = new Dictionary<string, (StaticWebAsset selected, List<StaticWebAsset> all)>();
@@ -1707,7 +1704,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             {
                 continue;
             }
-            var asset = FromTaskItem(candidate);
+            var asset = FromTaskItem(candidate, env);
             var key = asset.ComputeTargetPath("", '/');
             if (!result.TryGetValue(key, out var existing))
             {

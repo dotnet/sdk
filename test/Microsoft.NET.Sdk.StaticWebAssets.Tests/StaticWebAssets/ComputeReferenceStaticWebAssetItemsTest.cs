@@ -431,6 +431,47 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets[0].GetMetadata("AssetGroups").Should().Be("MyGroup");
         }
 
+        [Fact]
+        public void MakeReferencedAssetOriginalItemSpecAbsolute_ResolvesAgainstProjectDirectory()
+        {
+            var projectDirectory = Path.Combine(Path.GetTempPath(), "ComputeReferenceSwaTests-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(projectDirectory);
+
+            try
+            {
+                var errorMessages = new List<string>();
+                var buildEngine = new Mock<IBuildEngine>();
+                buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                    .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+                var relativeOriginalItemSpec = Path.Combine("wwwroot", "candidate.js");
+
+                var task = new ComputeReferenceStaticWebAssetItems
+                {
+                    BuildEngine = buildEngine.Object,
+                    TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDirectory),
+                    Source = "MyPackage",
+                    Assets = new[] { CreateCandidate(relativeOriginalItemSpec, "MyPackage", "Discovered", "candidate.js", "All", "All") },
+                    Patterns = new ITaskItem[] { },
+                    AssetKind = "Build",
+                    ProjectMode = "Default",
+                    MakeReferencedAssetOriginalItemSpecAbsolute = true
+                };
+
+                var result = task.Execute();
+
+                result.Should().Be(true);
+                errorMessages.Should().BeEmpty();
+                task.StaticWebAssets.Should().HaveCount(1);
+                task.StaticWebAssets[0].GetMetadata("OriginalItemSpec")
+                    .Should().Be(Path.GetFullPath(Path.Combine(projectDirectory, relativeOriginalItemSpec)));
+            }
+            finally
+            {
+                Directory.Delete(projectDirectory, recursive: true);
+            }
+        }
+
         private static ITaskItem CreateCandidate(
             string itemSpec,
             string sourceId,
