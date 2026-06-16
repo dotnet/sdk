@@ -417,23 +417,6 @@ jobs:
         - script: cp "$(sourcesPath)/src/sdk/NuGet.config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
           displayName: Copy Test NuGet Config for Smoke Tests
 
-      - ${{ else }}:
-        - task: Bash@3
-          displayName: Add aspnetcore public feed for smoke tests
-          inputs:
-            targetType: inline
-            script: |
-              set -euo pipefail
-
-              ONLINE_CONFIG="$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
-              FEED_KEY="darc-pub-dotnet-aspnetcore-3c5c32a7"
-              FEED_URL="https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-aspnetcore-3c5c32a7/nuget/v3/index.json"
-
-              # Add only if missing. Do not touch disabledPackageSources.
-              if ! grep -qi "<add key=\"$FEED_KEY\"" "$ONLINE_CONFIG"; then
-                sed -i.bak "s|</packageSources>|    <add key=\"$FEED_KEY\" value=\"$FEED_URL\" />\n  </packageSources>|" "$ONLINE_CONFIG"
-              fi
-
       - script: |
           set -ex
 
