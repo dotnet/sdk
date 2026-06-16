@@ -269,7 +269,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 {
                     Assert.AreEqual(parameter.Value, parsedParameters.Get(parameter.Key));
                 }
-                Assert.AreEqual(expected.Count, parsedParameters.AllKeys.Length);
+                Assert.HasCount(expected.Count, parsedParameters.AllKeys);
             }
         }
 

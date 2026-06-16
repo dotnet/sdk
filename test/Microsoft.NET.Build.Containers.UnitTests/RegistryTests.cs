@@ -434,20 +434,20 @@ public class RegistryTests : IDisposable
         {
             while (true)
             {
-                using TcpClient client = await listener.AcceptTcpClientAsync();
+                using TcpClient client = await listener.AcceptTcpClientAsync(TestContext.CancellationToken);
                 try
                 {
                     using Stream stream = serverIsHttps ? new SslStream(client.GetStream(), leaveInnerStreamOpen: false) : client.GetStream();
                     if (stream is SslStream sslStream)
                     {
-                        await sslStream.AuthenticateAsServerAsync(sslOptions!, default(CancellationToken));
+                        await sslStream.AuthenticateAsServerAsync(sslOptions!, TestContext.CancellationToken);
                     }
                     byte[] buffer = new byte[10];
-                    await stream.ReadAtLeastAsync(buffer, buffer.Length); // Wait for the request.
+                    await stream.ReadAtLeastAsync(buffer, buffer.Length, cancellationToken: TestContext.CancellationToken); // Wait for the request.
                     // Repond if we see '/v2/' in the buffer (since we expect that as part of the request path).
                     if (buffer.AsSpan().IndexOf("/v2/"u8) != 0)
                     {
-                        await stream.WriteAsync("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n"u8.ToArray());
+                        await stream.WriteAsync("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n"u8.ToArray(), TestContext.CancellationToken);
                     }
                     else
                     {
