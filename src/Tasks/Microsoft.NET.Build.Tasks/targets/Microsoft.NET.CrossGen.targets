@@ -37,7 +37,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PublishReadyToRunStripDebugInfo Condition="'$(PublishReadyToRunStripDebugInfo)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and '$(_IsIOSLikeRid)' == 'true'">true</PublishReadyToRunStripDebugInfo>
 
-    <PublishReadyToRunStripILBodies Condition="'$(PublishReadyToRunStripILBodies)' == '' and '$(_IsIOSLikeRid)' == 'true'">true</PublishReadyToRunStripILBodies>
+    <PublishReadyToRunStripILBodies Condition="'$(PublishReadyToRunStripILBodies)' == '' and '$(DebuggerSupport)' != 'true' and '$(Configuration)' != 'Debug' and '$(_IsIOSLikeRid)' == 'true'">true</PublishReadyToRunStripILBodies>
 
     <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripInliningInfo)' == 'true'">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-inlining-info</PublishReadyToRunCrossgen2ExtraArgs>
     <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(PublishReadyToRunStripDebugInfo)' == 'true'">$(PublishReadyToRunCrossgen2ExtraArgs);--strip-debug-info</PublishReadyToRunCrossgen2ExtraArgs>
