@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
+namespace Microsoft.DotNet.GenAPI.Tests
 {
     internal static class SymbolFactory
     {

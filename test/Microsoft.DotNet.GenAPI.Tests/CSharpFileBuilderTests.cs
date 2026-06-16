@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
