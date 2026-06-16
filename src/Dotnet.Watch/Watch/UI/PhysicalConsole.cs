@@ -13,7 +13,15 @@ internal sealed class PhysicalConsole : IConsole
     public PhysicalConsole(TestFlags testFlags)
     {
         Console.OutputEncoding = Encoding.UTF8;
-        _ = testFlags.HasFlag(TestFlags.ReadKeyFromStdin) ? ListenToStandardInputAsync() : ListenToConsoleKeyPressAsync();
+
+        if (testFlags.HasFlag(TestFlags.ReadKeyFromStdin))
+        {
+            _ = ListenToStandardInputAsync();
+        }
+        else if (!Console.IsInputRedirected)
+        {
+            _ = ListenToConsoleKeyPressAsync();
+        }
     }
 
     private async Task ListenToStandardInputAsync()

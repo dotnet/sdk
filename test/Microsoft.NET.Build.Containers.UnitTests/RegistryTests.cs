@@ -689,7 +689,8 @@ public class RegistryTests : IDisposable
         public string GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
             => throw new NotImplementedException();
 
-        public bool TryGetEnvironmentVariable(string name, [NotNullWhen(true)] out string? value) => _environmentVariables.TryGetValue(name, out value);
+        public bool TryGetEnvironmentVariable(string name, [NotNullWhen(true)] out string? value) => _environmentVariables.TryGetValue(name, out value!);
+
         public bool TryGetEnvironmentVariableAsBool(string name, [NotNullWhen(true)] out bool value)
         {
             if (TryGetEnvironmentVariable(name, out string? strValue) && bool.TryParse(strValue, out bool boolValue))
