@@ -207,6 +207,10 @@ jobs:
               --trx \
               --results-directory $(Build.SourcesDirectory)/artifacts/TestResults/$(buildConfiguration)
           displayName: 🟣 Run NativeAOT CLI Tests
+          # The CLI's --cli-schema rendering evaluates a shell-completion default that requires
+          # SHELL to be set; the bare AzDO script task does not export it, so set it explicitly.
+          env:
+            SHELL: /bin/bash
 
       - task: PublishTestResults@2
         displayName: 🟣 Publish NativeAOT CLI Test Results
