@@ -149,7 +149,7 @@ namespace Microsoft.NET.TestFramework.Commands
                     shouldStopRetry: ShouldStopRetry,
                     maxRetryCount: 3,
                     timer: () => Timer(Intervals),
-                    taskDescription: "Run command while retry transient error")
+                    taskDescription: "Run command while retrying transient errors")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
