@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="cs" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CannotCombineSearchStringAndVersion">
+        <source>Cannot specify both the {0} and {1} arguments.</source>
+        <target state="translated">Není možné zadat argumenty {0} a {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Search for available workloads.</source>
+        <target state="translated">Vyhledávejte dostupné úlohy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DescriptionColumnName">
+        <source>Description</source>
+        <target state="translated">Popis</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatOptionDescription">
+        <source>Changes the format of outputted workload versions. Can take 'json' or 'list'</source>
+        <target state="translated">Změní formát výstupních verzí úloh. Může přijmout json nebo list.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadVersionsFound">
+        <source>No workload versions found for SDK feature band {0}.</source>
+        <target state="translated">Nenašly se žádné verze úloh pro pásmo funkcí sady SDK {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformColumnName">
+        <source>Platforms</source>
+        <target state="translated">Platformy</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrintSetVersionsDescription">
+        <source>'dotnet workload search version' has three functions depending on its argument:
+      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
+           dotnet workload search version --take 2 --format json
+           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
+      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
+         Example:
+           dotnet workload search version 9.0.201
+           Workload manifest ID                               Manifest feature band      Manifest Version
+           ------------------------------------------------------------------------------------------------
+           microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80
+           microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1
+           microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9
+           microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
+      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
+           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
+           9.0.201
+    </source>
+        <target state="translated">'dotnet workload search version' má v závislosti na argumentu tři funkce:
+      1. Pokud se nezadá žádný argument, vypíše se z tohoto pásma funkcí seznam nejnovějších verzí uvolněných úloh. Přijímá možnost --take určující, kolik má být zadáno, a --format změnit formát.
+         Příklad:
+           dotnet workload search version --take 2 --format JSON
+           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
+      2. Pokud se jako argument zadá verze úlohy, zobrazí se pro zadanou verzi úlohy tabulka různých úloh a jejich verze. Převezme možnost --format pro změnu výstupního formátu.
+         Příklad:
+           dotnet workload search version 9.0.201
+           Verze manifestu skupiny funkcí manifestu ID manifestu úlohy
+           ------------------------------------------------------------------------------------------------
+           microsoft.net.workload.emscripten.current 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net6 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net7 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net8 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.sdk.android 9.0.100-rc.1 35.0.0-rc.1.80
+           microsoft.net.sdk.ios 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.sdk.mac 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.sdk.macos 9.0.100-rc.1 14.5.9270-net9-rc1
+           microsoft.net.sdk.maui 9.0.100-rc.1 9.0.0-rc.1.24453.9
+           microsoft.net.sdk.tvos 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.workload.mono.toolchain.current 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net6 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net7 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net8 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.sdk.aspire 8.0.100 8.2.0
+      3. Pokud je k dispozici nejméně jedna úloha spolu s jejich verzemi (spojením pomocí znaku @), vyjdou výstupy verzí úloh, které odpovídají zadaným verzím. Přebírá možnost --take určující, kolik má být zadáno, a --format změnit formát.
+         Příklad:
+           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
+           9.0.201
+    </target>
+        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
+      </trans-unit>
+      <trans-unit id="TakeOptionMustBePositive">
+        <source>The --take option must be positive.</source>
+        <target state="translated">Možnost --take musí být kladná.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdColumnName">
+        <source>Workload ID</source>
+        <target state="translated">ID úlohy</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdStubArgumentDescription">
+        <source>The text to search for in the IDs and descriptions of available workloads.</source>
+        <target state="translated">Text, který se má vyhledávat v ID a popisech dostupných úloh.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdStubArgumentName">
+        <source>SEARCH_STRING</source>
+        <target state="translated">SEARCH_STRING</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestFeatureBandColumn">
+        <source>Manifest feature band</source>
+        <target state="translated">Pásmo funkcí manifestu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestIdColumn">
+        <source>Workload manifest ID</source>
+        <target state="translated">ID manifestu úlohy</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgument">
+        <source>WORKLOAD_VERSION</source>
+        <target state="translated">WORKLOAD_VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgumentDescription">
+        <source>Output workload manifest versions associated with the provided workload version.</source>
+        <target state="translated">Verze manifestu výstupní úlohy přidružené k zadané verzi úlohy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
+        <source>No workload version matching {0} was found.</source>
+        <target state="translated">Nenašla se žádná verze úlohy odpovídající {0}.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ru" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CannotCombineSearchStringAndVersion">
+        <source>Cannot specify both the {0} and {1} arguments.</source>
+        <target state="translated">Невозможно одновременно указать аргументы {0} и {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Search for available workloads.</source>
+        <target state="translated">Поиск доступных рабочих нагрузок.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DescriptionColumnName">
+        <source>Description</source>
+        <target state="translated">Описание</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatOptionDescription">
+        <source>Changes the format of outputted workload versions. Can take 'json' or 'list'</source>
+        <target state="translated">Изменяет формат выводимых версий рабочей нагрузки. Может принимать значения "json" или "list"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadVersionsFound">
+        <source>No workload versions found for SDK feature band {0}.</source>
+        <target state="translated">Не найдены версии рабочей нагрузки для диапазона функций SDK {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformColumnName">
+        <source>Platforms</source>
+        <target state="translated">Платформы</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrintSetVersionsDescription">
+        <source>'dotnet workload search version' has three functions depending on its argument:
+      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
+           dotnet workload search version --take 2 --format json
+           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
+      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
+         Example:
+           dotnet workload search version 9.0.201
+           Workload manifest ID                               Manifest feature band      Manifest Version
+           ------------------------------------------------------------------------------------------------
+           microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80
+           microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1
+           microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9
+           microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
+      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
+           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
+           9.0.201
+    </source>
+        <target state="translated">'dotnet workload search version' имеет три функции в зависимости от своего аргумента:
+      1. Если аргумент не указан, он выводит список последних выпущенных версий рабочей нагрузки из этого диапазона функций. Принимает параметр --take, чтобы указать количество --format и изменить формат.
+         Пример:
+           dotnet workload search version --take 2 --format JSON
+           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
+      2. Если в качестве аргумента указана версия рабочей нагрузки, она выводит таблицу различных рабочих нагрузок и их версии для указанной версии рабочей нагрузки. Принимает параметр --format для изменения формата выходных данных.
+         Пример:
+           dotnet workload search version 9.0.201
+           Версия манифеста манифеста манифеста рабочей нагрузки
+           ------------------------------------------------------------------------------------------------
+           microsoft.net.workload.emscripten.current 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net6 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net7 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net8 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.sdk.android 9.0.100-rc.1 35.0.0-rc.1.80
+           microsoft.net.sdk.ios 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.sdk.maccatalyst 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.sdk.macos 9.0.100-rc.1 14.5.9270-net9-rc1
+           microsoft.net.sdk.maui 9.0.100-rc.1 9.0.0-rc.1.24453.9
+           microsoft.net.sdk.tvos 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.workload.mono.toolchain.current 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net6 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net7 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net8 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.sdk.веб-сайт 8.0.100 8.2.0
+      3. Если одна или несколько рабочих нагрузок предоставляются вместе с их версиями (путем присоединения к ним с символом "@"), выводить версии рабочей нагрузки, соответствующие указанным версиям. Принимает параметр --take, чтобы указать, сколько нужно предоставить и --format изменить формат.
+         Пример:
+           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
+           9.0.201
+    </target>
+        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
+      </trans-unit>
+      <trans-unit id="TakeOptionMustBePositive">
+        <source>The --take option must be positive.</source>
+        <target state="translated">Значение параметра --take должно быть положительным.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdColumnName">
+        <source>Workload ID</source>
+        <target state="translated">ИД рабочей нагрузки</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdStubArgumentDescription">
+        <source>The text to search for in the IDs and descriptions of available workloads.</source>
+        <target state="translated">Текст для поиска в идентификаторах и описаниях доступных рабочих нагрузок.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdStubArgumentName">
+        <source>SEARCH_STRING</source>
+        <target state="translated">SEARCH_STRING</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestFeatureBandColumn">
+        <source>Manifest feature band</source>
+        <target state="translated">Диапазон функций манифеста</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestIdColumn">
+        <source>Workload manifest ID</source>
+        <target state="translated">Идентификатор манифеста рабочей нагрузки</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgument">
+        <source>WORKLOAD_VERSION</source>
+        <target state="translated">WORKLOAD_VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgumentDescription">
+        <source>Output workload manifest versions associated with the provided workload version.</source>
+        <target state="translated">Вывод версий манифеста рабочей нагрузки, связанных с указанной версией рабочей нагрузки.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
+        <source>No workload version matching {0} was found.</source>
+        <target state="translated">Версия рабочей нагрузки, соответствующая {0}, не найдена.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

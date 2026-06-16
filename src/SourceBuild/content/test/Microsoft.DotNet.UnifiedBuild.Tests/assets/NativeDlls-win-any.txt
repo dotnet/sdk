@@ -1,0 +1,49 @@
+# Contains the list of native .dll and .exe files that shouldn't have their assembly version checked.
+#
+# This list is processed using FileSystemName.MatchesSimpleExpression
+#
+# Examples
+# 'folder/*' matches 'folder/' and 'folder/abc'
+# 'folder/?*' matches 'folder/abc' but not 'folder/'
+#
+# We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
+
+
+./sdk/x.y.z/AppHostTemplate/apphost.exe
+./host/fxr/x.y.z/hostfxr.dll
+./shared/Microsoft.AspNetCore.App/x.y.z/aspnetcorev2_inprocess.dll
+./shared/Microsoft.WindowsDesktop.App/x.y.z/D3DCompiler_47_cor3.dll
+./shared/Microsoft.NETCore.App/x.y.z/clretwrc.dll
+./shared/Microsoft.NETCore.App/x.y.z/clrgc.dll
+./shared/Microsoft.WindowsDesktop.App/x.y.z/PenImc_cor3.dll
+./shared/Microsoft.WindowsDesktop.App/x.y.z/PresentationNative_cor3.dll
+./shared/Microsoft.NETCore.App/x.y.z/clrgcexp.dll
+./shared/Microsoft.NETCore.App/x.y.z/clrjit.dll
+./shared/Microsoft.WindowsDesktop.App/x.y.z/vcruntime140_cor3.dll
+./shared/Microsoft.NETCore.App/x.y.z/coreclr.dll
+./shared/Microsoft.NETCore.App/x.y.z/createdump.exe
+./shared/Microsoft.WindowsDesktop.App/x.y.z/wpfgfx_cor3.dll
+./shared/Microsoft.NETCore.App/x.y.z/hostpolicy.dll
+./shared/Microsoft.NETCore.App/x.y.z/Microsoft.DiaSymReader.Native.amd64.dll
+./shared/Microsoft.NETCore.App/x.y.z/mscordaccore.dll
+./shared/Microsoft.NETCore.App/x.y.z/mscordaccore_amd64_amd64_x.y.z.dll
+./shared/Microsoft.NETCore.App/x.y.z/mscordbi.dll
+./shared/Microsoft.NETCore.App/x.y.z/mscorrc.dll
+./shared/Microsoft.NETCore.App/x.y.z/msquic.dll
+./packs/Microsoft.NETCore.App.Host.win-x64/x.y.z/runtimes/win-x64/native/apphost.exe
+./packs/Microsoft.NETCore.App.Host.win-x86/x.y.z/runtimes/win-x86/native/apphost.exe
+./packs/Microsoft.NETCore.App.Host.win-arm64/x.y.z/runtimes/win-arm64/native/apphost.exe
+./packs/Microsoft.NETCore.App.Host.win-x64/x.y.z/runtimes/win-x64/native/comhost.dll
+./packs/Microsoft.NETCore.App.Host.win-x86/x.y.z/runtimes/win-x86/native/comhost.dll
+./packs/Microsoft.NETCore.App.Host.win-arm64/x.y.z/runtimes/win-arm64/native/comhost.dll
+./packs/Microsoft.NETCore.App.Host.win-x64/x.y.z/runtimes/win-x64/native/ijwhost.dll
+./packs/Microsoft.NETCore.App.Host.win-x86/x.y.z/runtimes/win-x86/native/ijwhost.dll
+./packs/Microsoft.NETCore.App.Host.win-arm64/x.y.z/runtimes/win-arm64/native/ijwhost.dll
+./packs/Microsoft.NETCore.App.Host.win-x64/x.y.z/runtimes/win-x64/native/nethost.dll
+./packs/Microsoft.NETCore.App.Host.win-x86/x.y.z/runtimes/win-x86/native/nethost.dll
+./packs/Microsoft.NETCore.App.Host.win-arm64/x.y.z/runtimes/win-arm64/native/nethost.dll
+./packs/Microsoft.NETCore.App.Host.win-x64/x.y.z/runtimes/win-x64/native/singlefilehost.exe
+./packs/Microsoft.NETCore.App.Host.win-x86/x.y.z/runtimes/win-x86/native/singlefilehost.exe
+./packs/Microsoft.NETCore.App.Host.win-arm64/x.y.z/runtimes/win-arm64/native/singlefilehost.exe
+./shared/Microsoft.NETCore.App/x.y.z/System.IO.Compression.Native.dll
+./dotnet.exe

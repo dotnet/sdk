@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="de" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Authors">
+        <source>Authors</source>
+        <target state="translated">Autoren</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Search dotnet tools in nuget.org</source>
+        <target state="translated">"dotnet tools" in nuget.org suchen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandsColumn">
+        <source>Commands</source>
+        <target state="translated">Befehle</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Description">
+        <source>Description</source>
+        <target state="translated">Beschreibung</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="DetailArgumentName">
+        <source>Detail</source>
+        <target state="translated">Details</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailDescription">
+        <source>Show detail result of the query.</source>
+        <target state="translated">Hiermit wird das Ergebnis der Abfrage im Detail angezeigt.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Downloads">
+        <source>Downloads</source>
+        <target state="translated">Downloads</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="InvalidInputTypeInteger">
+        <source>{0} should be an integer</source>
+        <target state="translated">{0} muss eine ganze Zahl sein.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LatestVersion">
+        <source>Latest Version</source>
+        <target state="translated">Aktuelle Version</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="NeedNuGetInConfig">
+        <source>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
+    This can be done with this command:
+  dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</source>
+        <target state="translated">Der Befehl "dotnet tool search" greift ohne Bedingungen auf nuget.org zu, um Tools zu finden, ist jedoch in Ihrem nuget.config nicht vorhanden. Fügen Sie ihn hinzu, um diesen Befehl auszuführen.
+    Dies kann mit diesem Befehl erfolgen:
+  dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</target>
+        <note>Do not translate 'dotnet tool search' or 'nuget.config'. Do not localize the last line at all.</note>
+      </trans-unit>
+      <trans-unit id="NoResult">
+        <source>Could not find any results.</source>
+        <target state="translated">Es wurden keine Ergebnisse gefunden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageId">
+        <source>Package ID</source>
+        <target state="translated">Paket-ID</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="PrereleaseDescription">
+        <source>Include pre-release packages.</source>
+        <target state="translated">Vorabversionspakete einschließen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermArgumentName">
+        <source>SEARCH_TERM</source>
+        <target state="translated">SEARCH_TERM</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermDescription">
+        <source>Search term from package id or package description. Require at least one character.</source>
+        <target state="translated">Suchbegriff aus Paket-ID oder Paketbeschreibung. Es ist mindestens ein Zeichen erforderlich.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipArgumentName">
+        <source>Skip</source>
+        <target state="translated">Überspringen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipDescription">
+        <source>The number of results to skip, for pagination.</source>
+        <target state="translated">Die Anzahl der zu überspringenden Ergebnisse für die Paginierung.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Summary">
+        <source>Summary</source>
+        <target state="translated">Zusammenfassung</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="Tags">
+        <source>Tags</source>
+        <target state="translated">Tags</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="TakeArgumentName">
+        <source>Take</source>
+        <target state="translated">Anzahl</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeDescription">
+        <source>The number of results to return, for pagination.</source>
+        <target state="translated">Die Anzahl der zurückzugebenden Ergebnisse für die Paginierung.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Verified">
+        <source>Verified</source>
+        <target state="translated">Überprüft</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="Version">
+        <source>Version</source>
+        <target state="translated">Version</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="Versions">
+        <source>Versions</source>
+        <target state="translated">Versionen</target>
+        <note>Table lable</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

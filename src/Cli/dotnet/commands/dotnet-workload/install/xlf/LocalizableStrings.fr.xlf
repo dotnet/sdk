@@ -1,0 +1,422 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="fr" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="AdManifestPackageDoesNotExist">
+        <source>Advertising manifest not updated. Manifest package for {0} doesn't exist.</source>
+        <target state="translated">Manifeste de publicité non mis à jour. Le package de manifeste pour {0} n’existe pas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdManifestUpdated">
+        <source>Updated advertising manifest {0}.</source>
+        <target state="translated">{0} manifeste de publicité mis à jour.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CacheMissingPackage">
+        <source>Package {0} version {1} doesn't exist in offline cache {2}.</source>
+        <target state="translated">La version du {0} de package {1} n’existe pas dans le cache hors connexion {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotCombineSkipManifestAndRollback">
+        <source>Cannot use the {0} and {1} options together. If installing from a rollback file, remove {0}. Otherwise, remove {1}</source>
+        <target state="translated">Impossible d’utiliser les options {0} et {1} ensemble. Si vous installez à partir d’un fichier de restauration, supprimez {0}. Sinon, supprimez {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotCombineSkipManifestAndVersion">
+        <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
+        <target state="translated">Impossible d’utiliser les options {0} et {1} ensemble.  Supprimez l’une des options.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
+        <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
+        <target state="translated">Impossible de spécifier une version de charge de travail à l’aide de l’option --version tout en spécifiant également les versions à installer à l’aide de la syntaxe workload@version.</target>
+        <note>{Locked="--version"}</note>
+      </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="translated">Impossible de spécifier une version de charge de travail particulière sur la ligne de commande via --version ou --from-history lorsqu’une version est déjà spécifiée dans global.json fichier {0}. Pour mettre à jour la version de la charge de travail installée globalement, exécutez la commande en dehors du chemin contenant ce fichier global.json ou mettez à jour la version spécifiée dans le fichier global.json et exécutez « dotnet workload update »</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
+        <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
+        <target state="translated">Impossible d’utiliser l’option {0} lorsque la version de la charge de travail est spécifiée dans global.json.  Supprimez l’option {0} ou supprimez l’élément « workloadVersion » de {1}.</target>
+        <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
+      </trans-unit>
+      <trans-unit id="CheckForUpdatedWorkloadManifests">
+        <source>Checking for updated workload version.</source>
+        <target state="translated">Vérification de la version mise à jour de la charge de travail.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="translated">Désinstallation du manifeste de charge de travail {0} version {1}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadPack">
+        <source>Uninstalling workload pack {0} version {1}...</source>
+        <target state="translated">Désinstallation de la version {1} du pack {0} de charge de travail...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">Suppression de la version de la charge de travail {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DownloadToCacheOptionArgumentName">
+        <source>DIRECTORY</source>
+        <target state="translated">RÉPERTOIRE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DownloadToCacheOptionDescription">
+        <source>Download packages needed to install a workload to a folder that can be used for offline installation.</source>
+        <target state="translated">Télécharger les packages nécessaires à l’installation d’une charge de travail dans un dossier utilisable pour une installation hors connexion.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DownloadingPackToCacheMessage">
+        <source>Downloading pack {0} version {1} to offline cache {2}...</source>
+        <target state="translated">Téléchargement de la version du pack d' {0} de la {1} sur le cache hors connexion {2}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExpectedSingleManifest">
+        <source>Expected single manifest feature band and manifest folder in MSI from package {0}</source>
+        <target state="translated">Bande de fonctionnalités de manifeste unique et dossier manifeste attendus dans MSI à partir du package {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedAdManifestUpdate">
+        <source>Failed to update the advertising manifest {0}: {1}.</source>
+        <target state="translated">Échec de la mise à jour du manifeste de publicité {0} : {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToDownloadPackageManifest">
+        <source>Failed to download manifest package {0}.</source>
+        <target state="translated">Impossible de télécharger le package de manifeste '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToExtractMsi">
+        <source>Failed to extract information from MSI: {0}</source>
+        <target state="translated">Échec de l’extraction des informations de MSI : {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadManifest">
+        <source>Failed to install manifest {0} version {1}: {2}.</source>
+        <target state="translated">Impossible d'installer la {0} version de manifeste {1}: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToInstallWorkloadSet">
+        <source>Failed to install workload version {0}: {1}</source>
+        <target state="translated">Échec de l’installation de la version de charge de travail {0}: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromCacheOptionArgumentName">
+        <source>DIRECTORY</source>
+        <target state="translated">RÉPERTOIRE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromCacheOptionDescription">
+        <source>Complete the operation from cache (offline).</source>
+        <target state="translated">Effectuer l'opération à partir du cache (hors connexion).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GarbageCollectingSdkFeatureBandsMessage">
+        <source>Garbage collecting for SDK feature band(s) {0}...</source>
+        <target state="translated">Nettoyage de la mémoire pour les bandes de fonctionnalités SDK {0}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GarbageCollectionFailed">
+        <source>Warning: Workload garbage collection failed with error: {0}.</source>
+        <target state="translated">AVERTISSEMENT : la charge de travail garbage collection a échoué avec l’erreur : {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InadequatePermissions">
+        <source>Inadequate permissions. Run the command with elevated privileges.</source>
+        <target state="translated">Autorisations insuffisantes. Exécutez la commande avec des privilèges élevés.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IncludePreviewOptionDescription">
+        <source>Allow prerelease workload manifests.</source>
+        <target state="translated">Autorisez les manifestes de la charge de travail préliminaire.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstallationSucceeded">
+        <source>Successfully installed workload(s) {0}.</source>
+        <target state="translated">Installation réussie de la ou des charges de travail {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstallingPackVersionMessage">
+        <source>Installing pack {0} version {1}...</source>
+        <target state="translated">Installation de la version {1} du pack {0}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstallingWorkloadManifest">
+        <source>Installing workload manifest {0} version {1}...</source>
+        <target state="translated">Installation de la version {1} du manifeste {0} de charge de travail...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InsufficientPrivilegeToStartServer">
+        <source>Insufficient privilege to start the server.</source>
+        <target state="translated">Privilèges insuffisants pour démarrer le serveur</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidVersionForWorkload">
+        <source>Error parsing version '{1}' for workload manifest ID '{0}'</source>
+        <target state="translated">Erreur lors de l’analyse de la version «{1}» pour l’ID de manifeste de charge de travail «{0}»</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidWorkloadConfiguration">
+        <source>The settings file in the workload's NuGet package is invalid: {0}</source>
+        <target state="translated">Le fichier de paramètres situé dans le package NuGet de la charge de travail n'est pas valide : {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Install one or more workloads.</source>
+        <target state="translated">Installez une ou plusieurs charges de travail.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigFileOptionDescription">
+        <source>The NuGet configuration file to use.</source>
+        <target state="translated">Fichier de configuration NuGet à utiliser.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkOptionDescription">
+        <source>The target framework to install the workload for.</source>
+        <target state="translated">Framework cible pour lequel la charge de travail doit être installée.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
+        <source>Manifest MSI not found in NuGet package {0}</source>
+        <target state="translated">MSI de manifeste introuvable dans le package NuGet {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestPackageUrlNotResolved">
+        <source>Manifest package not resolved. Manifest package or URL for {0} doesn't exist.</source>
+        <target state="translated">Package de manifeste non résolu. Le package ou l’URL du manifeste pour {0} n’existe pas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MsiProgressInstall">
+        <source>Installing {0} </source>
+        <target state="translated">Installation en cours de {0} </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MsiProgressRepair">
+        <source>Repairing {0} </source>
+        <target state="translated">Réparation de {0} </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MsiProgressUninstall">
+        <source>Removing {0} </source>
+        <target state="translated">Suppression de {0} </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">Installation de la charge de travail {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoTrustWithParentPID">
+        <source>Failed to establish a trust relationship with parent process ({0}).</source>
+        <target state="translated">Impossible d’établir une relation de confiance avec le processus parent ({0}).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OSDoesNotSupportMsi">
+        <source>MSI installations are only supported on Windows.</source>
+        <target state="translated">Les installations MSI sont prises en charge uniquement sur Windows.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PendingReboot">
+        <source>The machine has a pending reboot. The workload operation will continue, but you may need to restart.</source>
+        <target state="translated">La machine a un redémarrage en attente. L'opération de charge de travail se poursuivra, mais vous devrez peut-être redémarrer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ResolvingPackageUrls">
+        <source>Resolving package URLs for workload(s) {0}...</source>
+        <target state="translated">Résolution des URL de package pour la ou les charges de travail {0}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollBackFailedMessage">
+        <source>Installation rollback failed: {0}</source>
+        <target state="translated">Échec de la restauration de l'installation : {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
+        <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
+        <target state="translated">Définition de restauration non valide. Les ID de manifeste dans la définition de restauration {0} ne correspondent pas aux ID de manifeste installés {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollbackDefinitionFileDoesNotExist">
+        <source>Provided rollback definition file {0} doesn't exist.</source>
+        <target state="translated">Le {0} du fichier de définition de restauration fourni n’existe pas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollingBackInstall">
+        <source>Workload installation failed. Rolling back installed packs...</source>
+        <target state="translated">Échec de l’installation de la charge de travail, restauration des packs installés...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollingBackPackInstall">
+        <source>Rolling back pack {0} installation...</source>
+        <target state="translated">Annulation de l'installation {0}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="translated">L’option --sdk-version n’est plus prise en charge pour cette commande.</target>
+        <note>{Locked="--sdk-version"}</note>
+      </trans-unit>
+      <trans-unit id="SkipManifestUpdateOptionDescription">
+        <source>Skip updating the workload manifests.</source>
+        <target state="translated">Ignorer la mise à jour des manifestes de charge de travail.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipSignCheckOptionDescription">
+        <source>Skip signature verification of workload packages and installers.</source>
+        <target state="translated">Ignorez la vérification de signature des packages de charge de travail et des programmes d’installation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkippingManifestUpdate">
+        <source>Manifest packages were not found. Skipping manifest update...</source>
+        <target state="translated">Les packages de manifestes sont introuvables, mise à jour du manifeste ignorée...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
+        <target state="translated">Source de package NuGet à utiliser pendant la restauration. Pour spécifier plusieurs sources, répétez l’option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TempDirOptionDescription">
+        <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
+        <target state="translated">Spécifiez un répertoire temporaire pour que cette commande télécharge et extrait les packages NuGet (doit être sécurisé).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownInstallType">
+        <source>Unknown installation type: {0}.</source>
+        <target state="translated">Type d’installation inconnu : {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnrecognizedPackError">
+        <source>Pack ID {0} unrecognized.</source>
+        <target state="translated">ID du pack {0} non reconnu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrintDownloadLinkOnlyDescription">
+        <source>Only print the list of links to download without downloading.</source>
+        <target state="translated">Imprimer uniquement la liste des liens à télécharger sans télécharger.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="translated">Le mode d’installation de la charge de travail a été mis à jour pour utiliser {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsingCacheForPackInstall">
+        <source>Installing package {0} version {1} from offline cache {2}.</source>
+        <target state="translated">Installation du {0} de {1} la version du package à partir du {2} de cache hors connexion.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VersionOptionDescription">
+        <source>The version of the SDK.</source>
+        <target state="translated">Version du kit SDK.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstallFullCommandNameLocalized">
+        <source>.NET install command</source>
+        <target state="translated">Commande d'installation .NET</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetConfigurationFileDoesNotExist">
+        <source>NuGet configuration file '{0}' doesn't exist.</source>
+        <target state="translated">Le fichier config NuGet '{0}' n'existe pas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidNuGetVersionRange">
+        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
+        <target state="translated">La version spécifiée '{0}' n'est pas une plage de versions NuGet valide.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VersionOptionName">
+        <source>VERSION</source>
+        <target state="translated">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigFileOptionName">
+        <source>FILE</source>
+        <target state="translated">FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadAlreadyInstalled">
+        <source>Workload(s) '{0}' are already installed.</source>
+        <target state="translated">La ou les charges de travail '{0}' sont déjà installées.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadCacheDownloadFailed">
+        <source>Download of workload packs to offline cache failed: {0}</source>
+        <target state="translated">Échec du téléchargement des packs de charge de travail dans le cache hors connexion : {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdArgumentDescription">
+        <source>The NuGet package ID of the workload to install.</source>
+        <target state="translated">ID de package NuGet de la charge de travail à installer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIdArgumentName">
+        <source>WORKLOAD_ID</source>
+        <target state="translated">WORKLOAD_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallationFailed">
+        <source>Workload installation failed: {0}</source>
+        <target state="translated">Échec de l’installation de la charge de travail : {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadNotRecognized">
+        <source>Workload ID {0} is not recognized.</source>
+        <target state="translated">La charge de travail avec l’ID {0} n’est pas reconnue.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadNotSupportedOnPlatform">
+        <source>Workload ID {0} isn't supported on this platform.</source>
+        <target state="translated">L’ID de charge de travail {0} n’est pas pris en charge sur cette plateforme.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadPackAlreadyInstalledMessage">
+        <source>Pack {0} version {1} is already installed.</source>
+        <target state="translated">La version {1} du pack {0} est déjà installée.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadPathOptionDescription">
+        <source>The directory where the workload will be installed. The directory will be created if it doesn't exist.</source>
+        <target state="translated">Répertoire où la charge de travail va être installée. Ce répertoire est créé, s'il n'existe pas déjà.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadPathOptionName">
+        <source>PATH</source>
+        <target state="translated">PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="translated">Version de charge de travail à afficher ou une ou plusieurs charges de travail et leurs versions jointes par le caractère « @ ».</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadUpdatesAvailable">
+        <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
+        <target state="translated">Des mises à jour de la charge de travail sont disponibles. Exécutez `dotnet workload list` pour plus d’informations.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WritingPackInstallRecordMessage">
+        <source>Writing workload pack installation record for {0} version {1}...</source>
+        <target state="translated">Écriture de l’enregistrement d’installation du pack de charge de travail pour {0} version {1}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WritingWorkloadInstallRecordMessage">
+        <source>Writing workload installation record for {0}...</source>
+        <target state="translated">Écriture de l’enregistrement d’installation de charge de travail pour {0}...</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
