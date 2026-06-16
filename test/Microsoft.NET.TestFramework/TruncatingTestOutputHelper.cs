@@ -12,10 +12,22 @@ namespace Microsoft.NET.TestFramework
     /// individual lines can be arbitrarily long.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// This is useful for commands that intentionally produce an enormous amount of output (for example
     /// <c>dotnet test -v diag</c>). Echoing every line to xUnit's output buffer can flush hundreds of
     /// megabytes over the test host's single IPC channel when the test completes, which is enough to
     /// starve the blame hang-dump collector's inactivity timer and trigger a spurious timeout.
+    /// </para>
+    /// <para>
+    /// Tail eviction is line-oriented: whole buffered lines (oldest first) are dropped to stay within
+    /// <c>maxTailCharacters</c>, so the retained tail is rounded to line boundaries rather than an exact
+    /// character count. To avoid the degenerate case where a short final line would otherwise evict a
+    /// much larger immediately-preceding line (collapsing the tail to almost nothing), the single oldest
+    /// line that straddles the budget boundary is trimmed from its front instead of dropped — its
+    /// trailing (most recent) portion is kept. A single <see cref="WriteLine(string)"/> larger than the
+    /// tail budget likewise keeps only its final <c>maxTailCharacters</c> characters. The net effect is
+    /// that the tail always retains close to <c>maxTailCharacters</c> of the most recent output.
+    /// </para>
     /// </remarks>
     public sealed class TruncatingTestOutputHelper : ITestOutputHelper, IDisposable
     {
@@ -26,7 +38,7 @@ namespace Microsoft.NET.TestFramework
         private readonly int _maxHeadCharacters;
         private readonly int _maxTailCharacters;
         private readonly object _lock = new();
-        private readonly Queue<string> _tail = new();
+        private readonly LinkedList<string> _tail = new();
 
         private int _headCharactersWritten;
         private bool _headFull;
@@ -93,15 +105,35 @@ namespace Microsoft.NET.TestFramework
                 message = message.Substring(message.Length - _maxTailCharacters);
             }
 
-            _tail.Enqueue(message);
+            _tail.AddLast(message);
             _tailCharacters += message.Length;
 
-            while (_tailCharacters > _maxTailCharacters && _tail.Count > 1)
+            // Evict the oldest content to stay within the tail budget. Whole lines are dropped while a
+            // whole line can be removed without going under budget. The single oldest line that straddles
+            // the boundary is trimmed from its front (keeping its most recent, trailing portion) rather
+            // than dropped, so a short final line can never discard a much larger recent line and leave
+            // the tail nearly empty.
+            while (_tailCharacters > _maxTailCharacters && _tail.Count > 0)
             {
-                string dropped = _tail.Dequeue();
-                _tailCharacters -= dropped.Length;
-                _omittedCharacters += dropped.Length;
-                _omittedLines++;
+                string oldest = _tail.First!.Value;
+                int overBy = _tailCharacters - _maxTailCharacters;
+
+                if (oldest.Length <= overBy)
+                {
+                    _tail.RemoveFirst();
+                    _tailCharacters -= oldest.Length;
+                    _omittedCharacters += oldest.Length;
+                    _omittedLines++;
+                }
+                else
+                {
+                    // Dropping this whole line would remove more than necessary, discarding recent
+                    // output. Trim just its leading (oldest) characters instead.
+                    _tail.First.Value = oldest.Substring(overBy);
+                    _tailCharacters -= overBy;
+                    _omittedCharacters += overBy;
+                    break;
+                }
             }
         }
 
@@ -129,7 +161,7 @@ namespace Microsoft.NET.TestFramework
 
                 _flushed = true;
 
-                if (_omittedLines > 0)
+                if (_omittedCharacters > 0)
                 {
                     _inner.WriteLine($"... [{_omittedLines} lines / {_omittedCharacters} characters of output omitted by {nameof(TruncatingTestOutputHelper)}] ...");
                 }
