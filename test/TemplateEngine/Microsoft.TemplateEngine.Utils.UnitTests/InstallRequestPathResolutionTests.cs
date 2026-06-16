@@ -130,8 +130,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             var testRootDir = TestUtils.CreateTemporaryFolder();
             Directory.CreateDirectory(Path.Combine(testRootDir, "dir"));
             File.Create(Path.Combine(testRootDir, "dir", "1.nupkg"));
-using _ = File.Create(Path.Combine(testRootDir, "dir", "1.nupkg"));
-using _ = File.Create(Path.Combine(testRootDir, "dir", "2.nupkg"));
+            File.Create(Path.Combine(testRootDir, "dir", "2.nupkg"));
 
             IEnumerable<string> installPath = InstallRequestPathResolution.ExpandMaskedPath(Path.Combine(testRootDir, "*", "*.nupkg"), _engineEnvironmentSettings);
             Assert.AreEqual(Path.Combine(testRootDir, "*", "*.nupkg"), installPath.Single());
