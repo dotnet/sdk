@@ -28,21 +28,33 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="RegisterTypeScriptStaticWebAssets"
           DependsOnTargets="ResolveTypeScriptStaticWebAssetsConfiguration;CompileTypeScriptWithTSConfig;GetTypeScriptOutputForPublishing">
 
+    <!--
+      Use project-relative paths (e.g. wwwroot/app.js) for the candidate items
+      instead of the absolute paths from @(GeneratedJavascript). On macOS, VsTsc
+      may report paths through the /tmp symlink while $(MSBuildProjectDirectory)
+      resolves to /private/tmp. DefineStaticWebAssets resolves candidate FullPath
+      via Path.GetFullPath which does not resolve symlinks, causing a StartsWith
+      mismatch against ContentRoot. Project-relative identities avoid this because
+      MSBuild resolves %(FullPath) through $(MSBuildProjectDirectory).
+    -->
     <ItemGroup>
-      <_TypeScriptWwwrootAssets Include="@(GeneratedJavascript)"
-        Condition="$([System.String]::new('%(Identity)').Contains('wwwroot')) And Exists('%(Identity)')">
-        <!--
-          Project-relative identity so RemoveTypeScriptFromContentBeforeSwaDiscovery
-          can match against the wwwroot\** Content items added by the Razor SDK
-          (whose Identity is project-relative, e.g. wwwroot\app.js).
-        -->
-        <_RelativeIdentity>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '%(Identity)'))</_RelativeIdentity>
-      </_TypeScriptWwwrootAssets>
+      <_TypeScriptGeneratedInWwwroot Include="@(GeneratedJavascript)"
+        Condition="$([System.String]::new('%(Identity)').Contains('wwwroot')) And Exists('%(Identity)')" />
+
+      <!-- Strip everything up to and including "wwwroot/" (8 chars) from Identity,
+           then prepend "wwwroot/" to form a project-relative path. -->
+      <_TypeScriptGeneratedInWwwroot>
+        <_WwwrootSubPath>$([System.String]::new('%(Identity)').Substring(
+          $([MSBuild]::Add(
+            $([System.String]::new('%(Identity)').IndexOf('wwwroot')), 8))))</_WwwrootSubPath>
+      </_TypeScriptGeneratedInWwwroot>
+
+      <_TypeScriptWwwrootAssets Include="@(_TypeScriptGeneratedInWwwroot->'wwwroot\%(_WwwrootSubPath)')" />
     </ItemGroup>
 
     <WriteLinesToFile
       File="$(_TypeScriptSwaManifestPath)"
-      Lines="@(_TypeScriptWwwrootAssets->'%(_RelativeIdentity)')"
+      Lines="@(_TypeScriptWwwrootAssets)"
       Overwrite="true"
       WriteOnlyWhenDifferent="true"
       Condition="'@(_TypeScriptWwwrootAssets)' != ''" />
