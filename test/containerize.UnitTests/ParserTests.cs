@@ -43,7 +43,7 @@ public class ParserTests
         Dictionary<string, string>? labels = parseResult.GetValue(command.LabelsOption);
 
         Assert.IsNotNull(labels);
-        Assert.AreEqual(6, labels.Count);
+        Assert.HasCount(6, labels);
         Assert.IsEmpty(labels["NoValue"]);
         Assert.AreEqual("Val2", labels["Valid2"]);
         Assert.AreEqual("Val 3", labels["Valid3"]);
@@ -81,7 +81,7 @@ public class ParserTests
         Dictionary<string, string>? labels = parseResult.GetValue(command.LabelsOption);
 
         Assert.IsNotNull(labels);
-        Assert.AreEqual(2, labels.Count);
+        Assert.HasCount(2, labels);
         Assert.IsEmpty(labels["NoValue"]);
         Assert.AreEqual("Val2", labels["Valid2"]);
     }
@@ -155,7 +155,7 @@ public class ParserTests
         Dictionary<string, string>? envVars = parseResult.GetValue(command.EnvVarsOption);
 
         Assert.IsNotNull(envVars);
-        Assert.AreEqual(6, envVars.Count);
+        Assert.HasCount(6, envVars);
         Assert.IsEmpty(envVars["NoValue"]);
         Assert.AreEqual("Val2", envVars["Valid2"]);
         Assert.AreEqual("Val 3", envVars["Valid3"]);
@@ -197,7 +197,7 @@ public class ParserTests
         Port[]? ports = parseResult.GetValue(command.PortsOption);
 
         Assert.IsNotNull(ports);
-        Assert.AreEqual(4, ports.Length);
+        Assert.HasCount(4, ports);
         Assert.Contains(new Port(1500, PortType.tcp), ports);
         Assert.Contains(new Port(1501, PortType.udp), ports);
         Assert.Contains(new Port(1501, PortType.tcp), ports);
