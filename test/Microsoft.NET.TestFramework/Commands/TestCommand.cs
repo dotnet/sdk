@@ -221,14 +221,14 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 if (!string.IsNullOrEmpty(result.StdOut))
                 {
-                    foreach (var line in result.StdOut.Split(Environment.NewLine))
+                    foreach (var line in result.StdOut.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
                     {
                         Log.WriteLine($"》{line}");
                     }
                 }
                 if (!string.IsNullOrEmpty(result.StdErr))
                 {
-                    foreach (var line in result.StdErr.Split(Environment.NewLine))
+                    foreach (var line in result.StdErr.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
                     {
                         Log.WriteLine($"❌{line}");
                     }
@@ -236,8 +236,8 @@ namespace Microsoft.NET.TestFramework.Commands
             }
             else if (!verboseTestOutput)
             {
-                int stdOutLines = string.IsNullOrEmpty(result.StdOut) ? 0 : result.StdOut.Split(Environment.NewLine).Length;
-                int stdErrLines = string.IsNullOrEmpty(result.StdErr) ? 0 : result.StdErr.Split(Environment.NewLine).Length;
+                int stdOutLines = string.IsNullOrEmpty(result.StdOut) ? 0 : result.StdOut.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Length;
+                int stdErrLines = string.IsNullOrEmpty(result.StdErr) ? 0 : result.StdErr.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Length;
                 if (stdOutLines + stdErrLines > 0)
                 {
                     Log.WriteLine($"  ({stdOutLines} stdout + {stdErrLines} stderr lines suppressed — set DOTNET_SDK_TEST_VERBOSE=1 or command.VerboseOutput=true for full output)");
