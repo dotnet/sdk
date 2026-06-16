@@ -149,6 +149,10 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         Reporter.Output.WriteLine($"{LocalizableStrings.DotNetSdkInfoLabel}");
         Reporter.Output.WriteLine($" Version:           {Product.Version}");
         Reporter.Output.WriteLine($" Commit:            {commitSha}");
+        if (!string.IsNullOrEmpty(versionFile.VmrCommitSha) && versionFile.VmrCommitSha != versionFile.CommitSha)
+        {
+            Reporter.Output.WriteLine($" VMR Commit:        {versionFile.VmrCommitSha}");
+        }
 #if !CLI_AOT
         // Workload and MSBuild version reporting are not AOT-compatible yet (they pull in the
         // workload manager and MSBuild forwarding machinery), so they are omitted from the AOT build.

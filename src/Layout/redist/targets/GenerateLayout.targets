@@ -30,13 +30,23 @@
   </Target>
 
   <Target Name="PublishVersionFile">
+    <PropertyGroup>
+      <!-- When building from the VMR, SourceRevisionId is the VMR commit. Prefer the original
+           product-repo (dotnet/sdk) commit so the SDK commit reported by the CLI maps back to
+           this repository. Falls back to SourceRevisionId for standalone builds. -->
+      <_SdkRevisionId Condition="'$(RepoOriginalSourceRevisionId)' != ''">$(RepoOriginalSourceRevisionId)</_SdkRevisionId>
+      <_SdkRevisionId Condition="'$(_SdkRevisionId)' == ''">$(SourceRevisionId)</_SdkRevisionId>
+      <!-- In VMR builds, also record the VMR commit as a trailing line so it remains available. -->
+      <_VmrRevisionSuffix Condition="'$(RepoOriginalSourceRevisionId)' != '' and '$(SourceRevisionId)' != ''">;$(SourceRevisionId)</_VmrRevisionSuffix>
+    </PropertyGroup>
+
     <WriteLinesToFile File="$(OutputPath).toolsetversion"
-                      Lines="$(SourceRevisionId);$(Version);$(TargetRid)"
+                      Lines="$(_SdkRevisionId);$(Version);$(TargetRid)"
                       Overwrite="true"
                       WriteOnlyWhenDifferent="true" />
 
     <WriteLinesToFile File="$(OutputPath).version"
-                      Lines="$(SourceRevisionId);$(Version);$(TargetRid);$(FullNugetVersion);$(SdkFeatureBand)"
+                      Lines="$(_SdkRevisionId);$(Version);$(TargetRid);$(FullNugetVersion);$(SdkFeatureBand)$(_VmrRevisionSuffix)"
                       Overwrite="true"
                       WriteOnlyWhenDifferent="true" />
   </Target>
