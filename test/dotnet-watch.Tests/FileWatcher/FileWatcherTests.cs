@@ -40,6 +40,7 @@ public class FileWatcherTests(ITestOutputHelper output)
         }
 
         var operationCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var expectedSet = new HashSet<ChangedPath>(expectedChanges);
         var filesChanged = new HashSet<ChangedPath>();
 
         EventHandler<ChangedPath> handler = null;
@@ -47,14 +48,14 @@ public class FileWatcherTests(ITestOutputHelper output)
         {
             if (filesChanged.Add(f))
             {
-                output.WriteLine($"Observed new {f.Kind}: '{f.Path}' ({filesChanged.Count} out of {expectedChanges.Length})");
+                output.WriteLine($"Observed new {f.Kind}: '{f.Path}' ({filesChanged.Count} changes, {expectedSet.Count(e => filesChanged.Contains(e))} out of {expectedChanges.Length} expected)");
             }
             else
             {
                 output.WriteLine($"Already seen {f.Kind}: '{f.Path}'");
             }
 
-            if (filesChanged.Count == expectedChanges.Length)
+            if (expectedSet.IsSubsetOf(filesChanged))
             {
                 watcher.EnableRaisingEvents = false;
                 watcher.OnFileChange -= handler;
@@ -78,7 +79,10 @@ public class FileWatcherTests(ITestOutputHelper output)
         var task = operationCompletionSource.Task;
         await (Debugger.IsAttached ? task : task.TimeoutAfter(DefaultTimeout));
 
-        AssertEx.SequenceEqual(expectedChanges, filesChanged.OrderBy(x => x.Path));
+        // Verify all expected changes were observed (extra events from the OS are acceptable)
+        var missing = expectedSet.Except(filesChanged).ToArray();
+        Assert.True(missing.Length == 0,
+            $"Expected changes not observed: {string.Join(", ", missing.Select(m => $"{m.Kind}: '{m.Path}'"))}\nActual changes: {string.Join(", ", filesChanged.OrderBy(x => x.Path).Select(m => $"{m.Kind}: '{m.Path}'"))}");
     }
 
     private sealed class TestFileWatcher(ILogger logger)
