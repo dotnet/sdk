@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
-using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
@@ -11,11 +10,11 @@ using Xunit;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
-/// Behavioral tests for <see cref="EnvSetCommand"/> and <see cref="EnvShowCommand"/>.
-/// Focus is on what each command does to its persisted state (config file) and which
-/// underlying environment APIs it invokes — drift-detection branches that depend on
-/// real Windows registry / arbitrary host shell profiles are intentionally not asserted
-/// because they cannot be sandboxed cleanly in CI.
+/// Behavioral tests for <see cref="EnvSetCommand"/>, <see cref="EnvClearCommand"/>, and
+/// <see cref="EnvShowCommand"/>. Focus is on what each command persists to the config and which
+/// underlying environment APIs it invokes — drift-detection branches that depend on the real
+/// Windows registry / arbitrary host shell profiles are intentionally not asserted because they
+/// cannot be sandboxed cleanly in CI.
 /// </summary>
 public class EnvCommandTests : IDisposable
 {
@@ -45,17 +44,51 @@ public class EnvCommandTests : IDisposable
     [Fact]
     public void EnvSet_None_PersistsConfig()
     {
-        // Simplest happy path: target=None means the applier does nothing (no profile or
-        // env-var work), so this is cross-platform safe and exercises only the persistence.
         var parseResult = Parser.Parse(["env", "set", "none"]);
         parseResult.Errors.Should().BeEmpty();
 
         int exitCode = new EnvSetCommand(parseResult, _env).Execute();
 
         exitCode.Should().Be(0);
-        DotnetupConfig.ReadPathPreference().Should().Be(PathPreference.None);
+        var config = DotnetupConfig.Read();
+        config!.Env.Should().Be(PathPreference.None);
+        // dotnetup-on-PATH defaults to on when not specified and not previously stored.
+        config.DotnetupOnPath.Should().BeTrue();
+        // None + dotnetup-on-PATH still wires the dotnetup PATH entry (idempotent) but no dotnet env vars.
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
-        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        _env.LastDotnetupOnUserPathEnabled.Should().BeTrue();
+    }
+
+    [Fact]
+    public void EnvSet_DotnetupOnPathOff_PersistsAndUnwires()
+    {
+        var parseResult = Parser.Parse(["env", "set", "none", "--dotnetup-on-path", "off"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvSetCommand(parseResult, _env).Execute();
+
+        exitCode.Should().Be(0);
+        var config = DotnetupConfig.Read();
+        config!.Env.Should().Be(PathPreference.None);
+        config.DotnetupOnPath.Should().BeFalse();
+        _env.LastDotnetupOnUserPathEnabled.Should().BeFalse();
+    }
+
+    [Fact]
+    public void EnvSet_DotnetupOnPathOnly_LeavesStoredModeUnchanged()
+    {
+        // Pre-existing config: shell mode, dotnetup on. Change only --dotnetup-on-path off.
+        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true });
+
+        var parseResult = Parser.Parse(["env", "set", "--dotnetup-on-path", "off", "--shell", "bash"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvSetCommand(parseResult, _env).Execute();
+
+        exitCode.Should().Be(0);
+        var config = DotnetupConfig.Read();
+        config!.Env.Should().Be(PathPreference.Shell);   // mode preserved (re-sync)
+        config.DotnetupOnPath.Should().BeFalse();          // only this changed
     }
 
     [Fact]
@@ -63,21 +96,14 @@ public class EnvCommandTests : IDisposable
     {
         if (OperatingSystem.IsWindows())
         {
-            // The positive case is covered separately; here we only exercise the rejection.
             return;
         }
 
         var parseResult = Parser.Parse(["env", "set", "all"]);
 
-        // On non-Windows, the parser rejects 'all' up-front so the user gets a clear
-        // "not supported on this platform" error before any side effects can happen.
-        // The runtime guard inside EnvSetCommand.ExecuteCore is kept as defense-in-depth
-        // (in case a future change accidentally relaxes the parser), but is unreachable
-        // through normal command-line invocation now.
         parseResult.Errors.Should().NotBeEmpty();
         parseResult.Errors.Should().Contain(e => e.Message.Contains("Windows", StringComparison.Ordinal));
-        // Nothing should have been persisted, since Execute was never called.
-        DotnetupConfig.ReadPathPreference().Should().BeNull();
+        DotnetupConfig.Read().Should().BeNull();
     }
 
     [Fact]
@@ -94,24 +120,44 @@ public class EnvCommandTests : IDisposable
         int exitCode = new EnvSetCommand(parseResult, _env).Execute();
 
         exitCode.Should().Be(0);
-        DotnetupConfig.ReadPathPreference().Should().Be(PathPreference.All);
+        var config = DotnetupConfig.Read();
+        config!.Env.Should().Be(PathPreference.All);
+        config.DotnetupOnPath.Should().BeTrue();
         _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(1);
         _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(0);
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(1);
     }
 
     [Fact]
-    public void EnvSet_OverwritesExistingPreference()
+    public void EnvSet_NoModeAndNoStoredConfig_Fails()
     {
-        // Start with None already configured and switch to None again: a re-sync should
-        // succeed (idempotent) and leave the file at None.
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.None });
+        var parseResult = Parser.Parse(["env", "set"]);
+        parseResult.Errors.Should().BeEmpty();
 
-        var parseResult = Parser.Parse(["env", "set", "none"]);
         int exitCode = new EnvSetCommand(parseResult, _env).Execute();
 
+        // Nothing to apply → DotnetInstallException → exit code 1.
+        exitCode.Should().Be(1);
+        DotnetupConfig.Read().Should().BeNull();
+    }
+
+    // ── EnvClearCommand ──
+
+    [Fact]
+    public void EnvClear_UnwiresEverythingAndPersists()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true });
+
+        var parseResult = Parser.Parse(["env", "clear", "--shell", "bash"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvClearCommand(parseResult, _env).Execute();
+
         exitCode.Should().Be(0);
-        DotnetupConfig.ReadPathPreference().Should().Be(PathPreference.None);
+        var config = DotnetupConfig.Read();
+        config!.Env.Should().Be(PathPreference.None);
+        config.DotnetupOnPath.Should().BeFalse();
+        _env.LastDotnetupOnUserPathEnabled.Should().BeFalse();
     }
 
     // ── EnvShowCommand ──
@@ -124,15 +170,13 @@ public class EnvCommandTests : IDisposable
 
         int exitCode = new EnvShowCommand(parseResult, _env).Execute();
 
-        // 'env show' is read-only and must succeed even when no config exists; it
-        // prints a hint and returns 0 so scripts can run it safely.
         exitCode.Should().Be(0);
     }
 
     [Fact]
     public void EnvShow_ConfiguredNone_ExitCodeZero()
     {
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.None });
+        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.None, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
         int exitCode = new EnvShowCommand(parseResult, _env).Execute();
@@ -143,10 +187,7 @@ public class EnvCommandTests : IDisposable
     [Fact]
     public void EnvShow_ConfiguredShell_ExitCodeZero()
     {
-        // Drift may or may not be reported depending on whether the user's actual
-        // shell profile has a dotnetup managed block; either way the command must
-        // succeed (drift is informational, not a failure).
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.Shell });
+        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
         int exitCode = new EnvShowCommand(parseResult, _env).Execute();

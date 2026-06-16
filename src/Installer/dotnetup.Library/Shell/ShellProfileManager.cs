@@ -59,17 +59,19 @@ public class ShellProfileManager
     /// </summary>
     /// <param name="provider">The shell provider to use.</param>
     /// <param name="dotnetupPath">The full path to the dotnetup binary.</param>
-    /// <param name="dotnetupOnly">When true, the profile entry only adds dotnetup to PATH (no DOTNET_ROOT or dotnet PATH).</param>
-    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>print-env-script</c>.</param>
+    /// <param name="includeDotnet">When true, the entry sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
+    /// <param name="includeDotnetup">When true, the entry adds the dotnetup directory to PATH.</param>
+    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>env script</c>.</param>
     /// <returns>The list of profile file paths that were modified.</returns>
     public static IReadOnlyList<string> AddProfileEntries(
         IEnvShellProvider provider,
         string dotnetupPath,
-        bool dotnetupOnly = false,
+        bool includeDotnet = true,
+        bool includeDotnetup = true,
         string? dotnetInstallPath = null)
     {
         var profilePaths = provider.GetProfilePaths();
-        var entry = provider.GenerateProfileEntry(dotnetupPath, dotnetupOnly, dotnetInstallPath);
+        var entry = provider.GenerateProfileEntry(dotnetupPath, includeDotnet, includeDotnetup, dotnetInstallPath);
         var modifiedFiles = new List<string>();
 
         foreach (var profilePath in profilePaths)

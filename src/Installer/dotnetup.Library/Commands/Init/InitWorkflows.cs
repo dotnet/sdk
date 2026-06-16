@@ -77,9 +77,14 @@ internal class InitWorkflows
             : null;
 
         // User chooses how to access .NET
-        PathPreference? previousPreference = DotnetupConfig.ReadPathPreference();
+        DotnetupConfigData? previousConfig = DotnetupConfig.Read();
+        PathPreference? previousPreference = previousConfig?.Env;
         PathPreference pathPreference = GetInitPathPreference(command.Interactive, command.ShellProvider);
         string? manifestPath = effectiveRequests.Count > 0 ? effectiveRequests[0].Request.Options.ManifestPath : null;
+
+        // dotnetup-on-PATH is orthogonal to the dotnet-exposure mode and defaults to true; the
+        // init walkthrough does not prompt for it (see the env design doc).
+        const bool dotnetupOnPath = true;
 
         // Step 2: Prompt about admin installs before setting up the environment.
         List<MigrationWorkflow.MigrationSelection> toMigrate = PromptInstallsToMigrateIfDesired(
@@ -101,11 +106,13 @@ internal class InitWorkflows
         }
 
         // Save config and apply configuration(s).
-        SaveConfigAndDisplayResult(pathPreference, previousPreference);
+        SaveConfigAndDisplayResult(pathPreference, dotnetupOnPath, previousPreference);
 
         PathPreferenceApplier.Apply(
             pathPreference,
+            dotnetupOnPath,
             previousPreference,
+            previousConfig?.DotnetupOnPath,
             _dotnetEnvironment,
             installRoot.Path,
             command.ShellProvider);
@@ -511,11 +518,12 @@ internal class InitWorkflows
             resolved);
     }
 
-    private static void SaveConfigAndDisplayResult(PathPreference pathPreference, PathPreference? previousPreference)
+    private static void SaveConfigAndDisplayResult(PathPreference pathPreference, bool dotnetupOnPath, PathPreference? previousPreference)
     {
         var config = new DotnetupConfigData
         {
-            PathPreference = pathPreference,
+            Env = pathPreference,
+            DotnetupOnPath = dotnetupOnPath,
         };
 
         DotnetupConfig.Write(config);

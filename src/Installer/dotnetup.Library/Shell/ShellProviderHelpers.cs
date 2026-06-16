@@ -24,15 +24,28 @@ internal static class ShellProviderHelpers
     internal static string EscapePowerShellPath(string path)
         => path.Replace("'", "''", StringComparison.Ordinal);
 
-    internal static string GetCommandFlags(bool dotnetupOnly, string? dotnetInstallPath, Func<string, string> escapePath)
+    /// <summary>
+    /// Builds the explicit selection flags for an <c>env script</c> invocation baked into a
+    /// profile entry or activation command. Always emits <c>--dotnet</c> and/or <c>--dotnetup</c>
+    /// for the requested aspects so the generated call never relies on the command's
+    /// "no selection = both" default. Adds <c>--dotnet-install-path</c> only when dotnet is
+    /// included and the path is non-default.
+    /// </summary>
+    internal static string GetCommandFlags(bool includeDotnet, bool includeDotnetup, string? dotnetInstallPath, Func<string, string> escapePath)
     {
         List<string> flags = [];
 
-        if (dotnetupOnly)
+        if (includeDotnet)
         {
-            flags.Add("--dotnetup-only");
+            flags.Add("--dotnet");
         }
-        else if (dotnetInstallPath is { Length: > 0 } installPath &&
+
+        if (includeDotnetup)
+        {
+            flags.Add("--dotnetup");
+        }
+
+        if (includeDotnet && dotnetInstallPath is { Length: > 0 } installPath &&
             !DotnetupUtilities.PathsEqual(installPath, DotnetupPaths.DefaultDotnetInstallPath))
         {
             flags.Add($"--dotnet-install-path '{escapePath(installPath)}'");
@@ -85,13 +98,13 @@ internal static class ShellProviderHelpers
     private static string BuildPosixPrintEnvCommand(string dotnetupPath, string shellName, string flags)
     {
         var escapedPath = EscapePosixPath(dotnetupPath);
-        return AppendArguments($"'{escapedPath}' print-env-script --shell {shellName}", flags);
+        return AppendArguments($"'{escapedPath}' env script --shell {shellName}", flags);
     }
 
     private static string BuildPowerShellPrintEnvCommand(string dotnetupPath, string shellName, string flags)
     {
         var escapedPath = EscapePowerShellPath(dotnetupPath);
-        return AppendArguments($"& '{escapedPath}' print-env-script --shell {shellName}", flags);
+        return AppendArguments($"& '{escapedPath}' env script --shell {shellName}", flags);
     }
 
     private static string BuildPowerShellGuardedInvocationBlock(string command)

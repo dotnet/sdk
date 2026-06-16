@@ -16,6 +16,7 @@ internal static class EnvCommandParser
         Command command = new("env", "Manage the dotnetup environment configuration (PATH and DOTNET_ROOT wiring).");
 
         command.Subcommands.Add(EnvSetCommandParser.ConstructCommand());
+        command.Subcommands.Add(EnvClearCommandParser.ConstructCommand());
         command.Subcommands.Add(EnvShowCommandParser.ConstructCommand());
         command.Subcommands.Add(EnvScriptCommandParser.ConstructCommand(name: "script"));
 

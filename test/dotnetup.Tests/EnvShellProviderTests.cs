@@ -184,11 +184,11 @@ public class EnvShellProviderTests
         var profileEntry = provider.GenerateProfileEntry("/test/dotnetup");
         var activationCommand = provider.GenerateActivationCommand("/test/dotnetup");
 
-        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' print-env-script --shell pwsh | Out-String");
+        profileEntry.Should().Contain("$dotnetupScript = & '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup | Out-String");
         profileEntry.Should().Contain("if (-not [string]::IsNullOrWhiteSpace($dotnetupScript))");
         profileEntry.Should().Contain("Invoke-Expression $dotnetupScript");
 
-        activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' print-env-script --shell pwsh | Out-String)");
+        activationCommand.Should().Be("Invoke-Expression (& '/test/dotnetup' env script --shell pwsh --dotnet --dotnetup | Out-String)");
     }
 
     [Theory]

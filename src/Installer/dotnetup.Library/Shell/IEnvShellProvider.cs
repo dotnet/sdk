@@ -50,17 +50,21 @@ public interface IEnvShellProvider
     /// <summary>
     /// Generates the shell command block to append to a shell profile that will eval dotnetup's env script.
     /// <see cref="ShellProfileManager"/> adds the surrounding marker comments when it writes the block.
+    /// The generated block bakes explicit <c>--dotnet</c> / <c>--dotnetup</c> selection flags so it
+    /// never depends on the command's "no selection = both" default.
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
-    /// <param name="dotnetupOnly">When true, the profile entry only adds dotnetup to PATH (no DOTNET_ROOT or dotnet PATH).</param>
-    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>print-env-script</c>.</param>
-    string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null);
+    /// <param name="includeDotnet">When true, the script sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
+    /// <param name="includeDotnetup">When true, the script adds the dotnetup directory to PATH.</param>
+    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>env script</c>.</param>
+    string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null);
 
     /// <summary>
     /// Generates a command that the user can paste into the current terminal to activate .NET.
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
-    /// <param name="dotnetupOnly">When true, the command only adds dotnetup to PATH.</param>
-    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>print-env-script</c>.</param>
-    string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null);
+    /// <param name="includeDotnet">When true, the command sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
+    /// <param name="includeDotnetup">When true, the command adds the dotnetup directory to PATH.</param>
+    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>env script</c>.</param>
+    string GenerateActivationCommand(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null);
 }

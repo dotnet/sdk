@@ -11,6 +11,8 @@ internal class EnvScriptCommand : CommandBase
     private readonly IEnvShellProvider? _shellProvider;
     private readonly string? _dotnetInstallPath;
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
+    private readonly bool _dotnet;
+    private readonly bool _dotnetup;
     private readonly bool _dotnetupOnly;
 
     public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
@@ -18,6 +20,8 @@ internal class EnvScriptCommand : CommandBase
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _shellProvider = result.GetValue(EnvScriptCommandParser.ShellOption);
         _dotnetInstallPath = result.GetValue(EnvScriptCommandParser.DotnetInstallPathOption);
+        _dotnet = result.GetValue(EnvScriptCommandParser.DotnetOption);
+        _dotnetup = result.GetValue(EnvScriptCommandParser.DotnetupOption);
         _dotnetupOnly = result.GetValue(EnvScriptCommandParser.DotnetupOnlyOption);
     }
 
@@ -47,17 +51,49 @@ internal class EnvScriptCommand : CommandBase
                 $"Unsupported shell '{shellName}'.");
         }
 
+        var (includeDotnet, includeDotnetup) = ResolveSelection();
+
         // Determine the dotnet install path
         string installPath = _dotnetInstallPath ?? _dotnetEnvironment.GetDefaultDotnetInstallPath();
 
-        // Determine the dotnetup directory so it can be added to PATH
-        string dotnetupDir = ShellProviderHelpers.GetDotnetupDirectoryOrThrow();
+        // Determine the dotnetup directory so it can be added to PATH. Passing an empty
+        // string omits the dotnetup PATH entry from the generated script.
+        string dotnetupDir = includeDotnetup ? ShellProviderHelpers.GetDotnetupDirectoryOrThrow() : string.Empty;
 
         // Generate the shell script
-        bool includeDotnet = !_dotnetupOnly;
         string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet);
 
         WriteScriptToStandardOutput(script);
+    }
+
+    /// <summary>
+    /// Resolves which aspects the generated script should wire from the selection flags.
+    /// Semantics are a selection set: no selection flag means "both" (the convenient,
+    /// backwards-compatible default); passing any of <c>--dotnet</c>/<c>--dotnetup</c> emits
+    /// only the listed parts. <c>--dotnetup-only</c> is a hidden legacy alias for
+    /// <c>--dotnetup</c> and may not be combined with the newer flags.
+    /// </summary>
+    private (bool IncludeDotnet, bool IncludeDotnetup) ResolveSelection()
+    {
+        if (_dotnetupOnly)
+        {
+            if (_dotnet || _dotnetup)
+            {
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.Unknown,
+                    "--dotnetup-only cannot be combined with --dotnet or --dotnetup.");
+            }
+
+            return (IncludeDotnet: false, IncludeDotnetup: true);
+        }
+
+        // No selection flag → wire both (back-compat default).
+        if (!_dotnet && !_dotnetup)
+        {
+            return (IncludeDotnet: true, IncludeDotnetup: true);
+        }
+
+        return (IncludeDotnet: _dotnet, IncludeDotnetup: _dotnetup);
     }
 
     internal static void WriteScriptToStandardOutput(string script)

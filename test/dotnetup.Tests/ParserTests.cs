@@ -168,6 +168,49 @@ public class ParserTests
     }
 
     [Fact]
+    public void Parser_ShouldParseEnvScriptSelectionFlags()
+    {
+        string[][] variants =
+        [
+            ["env", "script", "--shell", "bash", "--dotnet"],
+            ["env", "script", "--shell", "bash", "--dotnetup"],
+            ["env", "script", "--shell", "bash", "--dotnet", "--dotnetup"],
+            ["env", "script", "--shell", "bash", "--dotnetup-only"],
+        ];
+
+        foreach (var args in variants)
+        {
+            Parser.Parse(args).Errors.Should().BeEmpty($"'{string.Join(' ', args)}' should parse");
+        }
+    }
+
+    [Fact]
+    public void Parser_ShouldParseEnvSetAndClearVariants()
+    {
+        string[][] variants =
+        [
+            ["env", "set", "shell", "--dotnetup-on-path", "off"],
+            ["env", "set", "--dotnetup-on-path", "on", "--shell", "bash"],
+            ["env", "clear", "--shell", "bash"],
+        ];
+
+        foreach (var args in variants)
+        {
+            Parser.Parse(args).Errors.Should().BeEmpty($"'{string.Join(' ', args)}' should parse");
+        }
+    }
+
+    [Fact]
+    public void Parser_EnvSet_RejectsInvalidDotnetupOnPathValue()
+    {
+        var args = new[] { "env", "set", "shell", "--dotnetup-on-path", "maybe" };
+
+        var parseResult = Parser.Parse(args);
+
+        parseResult.Errors.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public void Parser_ShouldStillParsePrintEnvScriptAlias()
     {
         // print-env-script remains as a hidden top-level alias for backwards compat.

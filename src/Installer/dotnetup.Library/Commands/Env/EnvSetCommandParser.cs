@@ -12,47 +12,78 @@ internal static class EnvSetCommandParser
         ? ["none", "shell", "all"]
         : ["none", "shell"];
 
-    public static readonly Argument<PathPreference> ModeArgument = CreateModeArgument();
+    public static readonly Argument<PathPreference?> ModeArgument = CreateModeArgument();
 
-    private static Argument<PathPreference> CreateModeArgument()
+    public static readonly Option<string?> DotnetupOnPathOption = CreateDotnetupOnPathOption();
+
+    private static Argument<PathPreference?> CreateModeArgument()
     {
-        var argument = new Argument<PathPreference>("mode")
+        var argument = new Argument<PathPreference?>("mode")
         {
             HelpName = "MODE",
-            Description = $"The env mode to apply: {string.Join(", ", s_supportedModes.Select(m => $"'{m}'"))}.",
-            Arity = ArgumentArity.ExactlyOne,
+            Description = $"The dotnet exposure mode: {string.Join(", ", s_supportedModes.Select(m => $"'{m}'"))}. Omit to re-apply the stored mode.",
+            Arity = ArgumentArity.ZeroOrOne,
             CustomParser = ParseMode,
         };
         argument.CompletionSources.Add(_ => s_supportedModes);
         return argument;
     }
 
-    private static PathPreference ParseMode(ArgumentResult result)
+    private static PathPreference? ParseMode(ArgumentResult result)
     {
-        var token = result.Tokens.Count > 0 ? result.Tokens[0].Value : string.Empty;
-        return token.ToLowerInvariant() switch
+        if (result.Tokens.Count == 0)
+        {
+            return null;
+        }
+
+        var token = result.Tokens[0].Value.ToLowerInvariant();
+        return token switch
         {
             "none" => PathPreference.None,
             "shell" => PathPreference.Shell,
-            // 'all' is Windows-only. On other platforms reject at parse time with a
-            // clearer error than the runtime throw inside EnvSetCommand (which is kept
-            // as defense-in-depth in case this parse check is ever bypassed).
             "all" when OperatingSystem.IsWindows() => PathPreference.All,
-            "all" => SetError(result, "'all' mode is only supported on Windows. Use 'shell' on this platform."),
-            _ => SetError(result, $"Unknown env mode '{token}'. Expected one of: {string.Join(", ", s_supportedModes)}."),
+            "all" => ModeError(result, "'all' mode is only supported on Windows. Use 'shell' on this platform."),
+            _ => ModeError(result, $"Unknown env mode '{token}'. Expected one of: {string.Join(", ", s_supportedModes)}."),
         };
     }
 
-    private static PathPreference SetError(ArgumentResult result, string message)
+    private static PathPreference? ModeError(ArgumentResult result, string message)
     {
         result.AddError(message);
-        return PathPreference.None;
+        return null;
     }
+
+    // A string option (rather than bool?) so System.CommandLine does not treat it as a
+    // value-optional boolean flag; we require an explicit 'on'/'off' token, parsed in the command.
+    private static Option<string?> CreateDotnetupOnPathOption()
+    {
+        var option = new Option<string?>("--dotnetup-on-path")
+        {
+            Description = "Whether the dotnetup directory is on PATH ('on' or 'off'). Omit to leave unchanged.",
+            HelpName = "on|off",
+            Arity = ArgumentArity.ExactlyOne,
+        };
+        option.AcceptOnlyFromAmong("on", "off");
+        return option;
+    }
+
+    /// <summary>
+    /// Parses the raw <c>--dotnetup-on-path</c> token into a tri-state: <c>null</c> when the
+    /// option was omitted (leave unchanged), otherwise the on/off boolean.
+    /// </summary>
+    public static bool? ParseDotnetupOnPath(string? raw) => raw?.ToLowerInvariant() switch
+    {
+        null => null,
+        "on" => true,
+        "off" => false,
+        _ => throw new ArgumentException($"Invalid value '{raw}' for --dotnetup-on-path. Expected 'on' or 'off'.", nameof(raw)),
+    };
 
     public static Command ConstructCommand()
     {
-        Command command = new("set", "Apply (or re-sync) the configured env mode.");
+        Command command = new("set", "Apply (or re-sync) the configured env settings.");
         command.Arguments.Add(ModeArgument);
+        command.Options.Add(DotnetupOnPathOption);
         command.Options.Add(CommonOptions.ShellOption);
         command.SetAction(parseResult => new EnvSetCommand(parseResult).Execute());
         return command;

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -11,11 +12,13 @@ using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Represents the user's path replacement preference chosen during the init flow.
+/// How dotnetup exposes the managed <c>dotnet</c> in the environment. This is the
+/// dotnet-exposure axis; whether <c>dotnetup</c> itself is on PATH is a separate,
+/// orthogonal setting (<see cref="DotnetupConfigData.DotnetupOnPath"/>).
 /// </summary>
 internal enum PathPreference
 {
-    /// <summary>No PATH wiring. User runs commands via <c>dotnetup dotnet</c>.</summary>
+    /// <summary>No dotnet PATH wiring. User runs commands via <c>dotnetup dotnet</c>.</summary>
     None = 1,
 
     /// <summary>Add dotnetup-managed dotnet to a shell profile file.</summary>
@@ -27,18 +30,29 @@ internal enum PathPreference
 
 /// <summary>
 /// Persisted user configuration for dotnetup, stored alongside the manifest.
-/// Records decisions made during the interactive init flow.
+/// Records decisions made during the interactive init flow and via <c>dotnetup env</c>.
 /// </summary>
 internal class DotnetupConfigData
 {
     public string SchemaVersion { get; set; } = "1";
-    public PathPreference PathPreference { get; set; } = PathPreference.All;
+
+    /// <summary>
+    /// How the managed dotnet is exposed. Serialized as <c>env</c>. Reads also accept the
+    /// legacy property name <c>pathPreference</c> (see <see cref="DotnetupConfig.Read"/>).
+    /// </summary>
+    [JsonPropertyName("env")]
+    [JsonConverter(typeof(PathPreferenceJsonConverter))]
+    public PathPreference Env { get; set; } = PathPreference.All;
+
+    /// <summary>
+    /// Whether the dotnetup directory is on PATH so <c>dotnetup</c> can be invoked. Orthogonal
+    /// to <see cref="Env"/>. Defaults to <c>true</c> (and when absent from an older config).
+    /// </summary>
+    public bool DotnetupOnPath { get; set; } = true;
 }
 
-[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    UseStringEnumConverter = true)]
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(DotnetupConfigData))]
-[JsonSerializable(typeof(PathPreference))]
 internal partial class DotnetupConfigJsonContext : JsonSerializerContext { }
 
 /// <summary>
@@ -49,6 +63,8 @@ internal static class DotnetupConfig
     /// <summary>
     /// Reads the config file if it exists, otherwise returns null.
     /// Uses GlobalJsonFileHelper for encoding-aware reading (handles BOM variants).
+    /// Tolerates the legacy config shape written by earlier internal builds: the
+    /// <c>pathPreference</c> property name (now <c>env</c>) and the legacy enum spellings.
     /// </summary>
     public static DotnetupConfigData? Read()
     {
@@ -60,8 +76,26 @@ internal static class DotnetupConfig
 
         try
         {
-            using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path);
-            return JsonSerializer.Deserialize(stream, DotnetupConfigJsonContext.Default.DotnetupConfigData);
+            string text;
+            using (var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path))
+            using (var streamReader = new StreamReader(stream))
+            {
+                text = streamReader.ReadToEnd();
+            }
+
+            JsonNode? root = JsonNode.Parse(text);
+            if (root is JsonObject obj)
+            {
+                // Legacy property-name shim: map "pathPreference" → "env" when the new name
+                // is absent. Prefer "env" if both are somehow present.
+                if (obj["env"] is null && obj["pathPreference"] is JsonNode legacy)
+                {
+                    obj["env"] = legacy.DeepClone();
+                    obj.Remove("pathPreference");
+                }
+            }
+
+            return root.Deserialize(DotnetupConfigJsonContext.Default.DotnetupConfigData);
         }
         catch (Exception ex)
         {
@@ -84,13 +118,13 @@ internal static class DotnetupConfig
     }
 
     /// <summary>
-    /// Returns the user's <see cref="PathPreference"/> from the config file if it exists,
-    /// otherwise returns <c>null</c>.
+    /// Returns the user's dotnet-exposure <see cref="PathPreference"/> from the config file if
+    /// it exists, otherwise returns <c>null</c>.
     /// </summary>
-    public static PathPreference? ReadPathPreference()
+    public static PathPreference? ReadEnvPreference()
     {
         var config = Read();
-        return config?.PathPreference;
+        return config?.Env;
     }
 
     /// <summary>

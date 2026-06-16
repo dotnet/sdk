@@ -35,30 +35,46 @@ internal sealed class TestShellProvider : IEnvShellProvider
 
     public IReadOnlyList<string> GetProfilePaths() => _profilePaths;
 
-    public string GenerateProfileEntry(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
+    public string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
     {
         if (ProfileEntryOverride is not null)
         {
             return ProfileEntryOverride;
         }
 
-        var flags = dotnetupOnly ? " --dotnetup-only" : "";
-        if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+        var flags = new List<string>();
+        if (includeDotnet)
         {
-            flags += $" --dotnet-install-path '{dotnetInstallPath}'";
+            flags.Add("--dotnet");
+        }
+        if (includeDotnetup)
+        {
+            flags.Add("--dotnetup");
+        }
+        if (includeDotnet && !string.IsNullOrEmpty(dotnetInstallPath))
+        {
+            flags.Add($"--dotnet-install-path '{dotnetInstallPath}'");
         }
 
-        return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
+        return $"eval \"$('{dotnetupPath}' env script --shell test {string.Join(" ", flags)})\"";
     }
 
-    public string GenerateActivationCommand(string dotnetupPath, bool dotnetupOnly = false, string? dotnetInstallPath = null)
+    public string GenerateActivationCommand(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
     {
-        var flags = dotnetupOnly ? " --dotnetup-only" : "";
-        if (!dotnetupOnly && !string.IsNullOrEmpty(dotnetInstallPath))
+        var flags = new List<string>();
+        if (includeDotnet)
         {
-            flags += $" --dotnet-install-path '{dotnetInstallPath}'";
+            flags.Add("--dotnet");
+        }
+        if (includeDotnetup)
+        {
+            flags.Add("--dotnetup");
+        }
+        if (includeDotnet && !string.IsNullOrEmpty(dotnetInstallPath))
+        {
+            flags.Add($"--dotnet-install-path '{dotnetInstallPath}'");
         }
 
-        return $"eval \"$('{dotnetupPath}' print-env-script --shell test{flags})\"";
+        return $"eval \"$('{dotnetupPath}' env script --shell test {string.Join(" ", flags)})\"";
     }
 }

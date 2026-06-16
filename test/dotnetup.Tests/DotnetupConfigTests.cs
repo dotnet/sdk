@@ -37,7 +37,7 @@ public class DotnetupConfigTests : IDisposable
     {
         var config = new DotnetupConfigData
         {
-            PathPreference = PathPreference.Shell,
+            Env = PathPreference.Shell,
         };
 
         DotnetupConfig.Write(config);
@@ -45,7 +45,7 @@ public class DotnetupConfigTests : IDisposable
 
         var loaded = DotnetupConfig.Read();
         loaded.Should().NotBeNull();
-        loaded!.PathPreference.Should().Be(PathPreference.Shell);
+        loaded!.Env.Should().Be(PathPreference.Shell);
         loaded.SchemaVersion.Should().Be("1");
     }
 
@@ -53,19 +53,19 @@ public class DotnetupConfigTests : IDisposable
     [InlineData(PathPreference.None)]
     [InlineData(PathPreference.Shell)]
     [InlineData(PathPreference.All)]
-    internal void ReadPathPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
+    internal void ReadEnvPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
     {
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = preference });
+        DotnetupConfig.Write(new DotnetupConfigData { Env = preference });
 
-        var result = DotnetupConfig.ReadPathPreference();
+        var result = DotnetupConfig.ReadEnvPreference();
 
         result.Should().Be(preference);
     }
 
     [Fact]
-    public void ReadPathPreference_ReturnsNull_WhenNoConfig()
+    public void ReadEnvPreference_ReturnsNull_WhenNoConfig()
     {
-        var result = DotnetupConfig.ReadPathPreference();
+        var result = DotnetupConfig.ReadEnvPreference();
 
         result.Should().BeNull();
     }
@@ -75,6 +75,40 @@ public class DotnetupConfigTests : IDisposable
     public void Read_ReturnsNull_WhenNoConfigFile()
     {
         DotnetupConfig.Read().Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("DotnetupDotnet", PathPreference.None)]
+    [InlineData("ShellProfile", PathPreference.Shell)]
+    [InlineData("FullPathReplacement", PathPreference.All)]
+    internal void Read_LegacyConfig_MapsPropertyNameAndEnumSpelling(string legacyEnumValue, PathPreference expected)
+    {
+        // Simulate a config written by an earlier internal build: the legacy "pathPreference"
+        // property name and the legacy enum spellings, and no "dotnetupOnPath" field.
+        var legacyJson = $$"""
+            {
+              "schemaVersion": "1",
+              "pathPreference": "{{legacyEnumValue}}"
+            }
+            """;
+        File.WriteAllText(DotnetupPaths.ConfigPath, legacyJson);
+
+        var config = DotnetupConfig.Read();
+
+        config.Should().NotBeNull();
+        config!.Env.Should().Be(expected);
+        // A missing dotnetupOnPath defaults to true.
+        config.DotnetupOnPath.Should().BeTrue();
+    }
+
+    [Fact]
+    public void WriteAndRead_RoundTripsDotnetupOnPath()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.None, DotnetupOnPath = false });
+
+        var loaded = DotnetupConfig.Read();
+
+        loaded!.DotnetupOnPath.Should().BeFalse();
     }
 
     [Fact]

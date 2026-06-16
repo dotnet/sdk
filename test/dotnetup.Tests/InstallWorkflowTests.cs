@@ -85,7 +85,7 @@ public class InstallWorkflowTests : IDisposable
     [Fact]
     public void ShouldRunFirstUseOnboarding_ReturnsFalse_WhenConfigAlreadyExists()
     {
-        DotnetupConfig.Write(new DotnetupConfigData { PathPreference = PathPreference.Shell });
+        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.Shell });
 
         InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: true, installPath: null)
             .Should().BeFalse();

@@ -16,10 +16,25 @@ internal static class EnvScriptCommandParser
         Arity = ArgumentArity.ZeroOrOne
     };
 
+    public static readonly Option<bool> DotnetOption = new("--dotnet")
+    {
+        Description = "Wire the managed dotnet into the environment (DOTNET_ROOT + dotnet on PATH).",
+    };
+
+    public static readonly Option<bool> DotnetupOption = new("--dotnetup")
+    {
+        Description = "Add the dotnetup directory to PATH.",
+    };
+
+    /// <summary>
+    /// Hidden legacy alias for <c>--dotnetup</c>, kept so managed profile blocks written by
+    /// older dotnetup versions (which call the hidden <c>print-env-script</c> command with
+    /// <c>--dotnetup-only</c>) keep working through the compatibility window.
+    /// </summary>
     public static readonly Option<bool> DotnetupOnlyOption = new("--dotnetup-only")
     {
         Description = "Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.",
-        Arity = ArgumentArity.ZeroOrOne
+        Hidden = true,
     };
 
     /// <summary>
@@ -38,6 +53,8 @@ internal static class EnvScriptCommandParser
 
         command.Options.Add(ShellOption);
         command.Options.Add(DotnetInstallPathOption);
+        command.Options.Add(DotnetOption);
+        command.Options.Add(DotnetupOption);
         command.Options.Add(DotnetupOnlyOption);
 
         command.SetAction(parseResult => new EnvScriptCommand(parseResult).Execute());
