@@ -1,4 +1,8 @@
+using System;
+
 var builder = WebApplication.CreateBuilder(args);
+
+Console.WriteLine($"ApiService working directory: '{Environment.CurrentDirectory}'");
 
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();
@@ -33,7 +37,7 @@ app.MapDefaultEndpoints();
 
 app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+internal record WeatherForecast(DateOnly Date, int TemperatureC, string Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }

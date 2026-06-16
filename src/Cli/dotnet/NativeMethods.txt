@@ -1,4 +1,6 @@
-﻿// Methods
+﻿// This file is used by Microsoft.Windows.CsWin32 to generate all the native structs and API calls.
+
+// Methods
 WinVerifyTrust
 CertFreeCertificateChain
 CertGetCertificateChain

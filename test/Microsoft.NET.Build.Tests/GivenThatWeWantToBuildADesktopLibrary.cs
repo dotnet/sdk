@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System.Security.Cryptography;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
 
@@ -105,10 +108,112 @@ public class NETFramework
 
         }
 
+        [Theory]
+        [InlineData("RazorSimpleMvc22", "netcoreapp2.2", "SimpleMvc22")]
+        [InlineData("DesktopReferencingNetStandardLibrary", "net46", "Library")]
+        public void PackageReferences_with_private_assets_do_not_appear_in_deps_file(string asset, string targetFramework, string exeName)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(asset)
+                .WithSource();
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(targetFramework).FullName, exeName + ".deps.json")))
+            {
+                var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
+                if (asset.Equals("DesktopReferencingNetStandardLibrary"))
+                {
+                    dependencyContext.CompileLibraries.Any(l => l.Name.Equals("Library")).Should().BeTrue();
+                    dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Library")).Should().BeTrue();
+                }
+                else
+                {
+                    dependencyContext.CompileLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeTrue();
+                    dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeFalse();
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PackageWithoutAssets_ShouldNotShowUpInDepsJson(bool trimLibrariesWithoutAssets)
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+            testProject.PackageReferences.Add(new TestPackageReference("Nerdbank.GitVersioning", "3.6.146"));
+
+            if (!trimLibrariesWithoutAssets)
+            {
+                testProject.AdditionalProperties["TrimDepsJsonLibrariesWithoutAssets"] = "False";
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, $"{testProject.Name}.deps.json")))
+            {
+                var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
+                if (trimLibrariesWithoutAssets)
+                {
+                    dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeFalse();
+                }
+                else
+                {
+                    dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeTrue();
+                }
+            }
+        }
+
+        [Fact]
+        public void XUnitCoreIsNotTrimmed()
+        {
+            //  Regression test for https://github.com/dotnet/sdk/issues/49248
+
+            var testProject = new TestProject();
+            testProject.PackageReferences.Add(new TestPackageReference("xunit.core", "2.9.3"));
+            testProject.PackageReferences.Add(new TestPackageReference("xunit.extensibility.core", "2.9.3"));
+            testProject.PackageReferences.Add(new TestPackageReference("xunit.extensibility.execution", "2.9.3"));
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, $"{testProject.Name}.deps.json")))
+            {
+                var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
+                dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("xunit.core")).Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public void ProjectNameCanMatchPackageReferenceName()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "Newtonsoft.Json",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.AdditionalProperties["PackageId"] = "Newtonsoft.Json*";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+        }
+
         [WindowsOnlyFact]
         public void It_can_reference_a_netstandard2_library_and_exchange_types()
         {
-
             var netStandardLibrary = new TestProject()
             {
                 Name = "NETStandardLibrary",

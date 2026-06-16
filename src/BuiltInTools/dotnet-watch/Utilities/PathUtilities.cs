@@ -6,9 +6,21 @@ namespace Microsoft.DotNet.Watch;
 internal static class PathUtilities
 {
     public static readonly IEqualityComparer<string> OSSpecificPathComparer = Path.DirectorySeparatorChar == '\\' ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+    public static readonly StringComparison OSSpecificPathComparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+    public static string EnsureTrailingSlash(string path)
+        => (path is [.., var last] && last != Path.DirectorySeparatorChar) ? path + Path.DirectorySeparatorChar : path;
+
+    public static string NormalizeDirectorySeparators(string path)
+        => path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 
     public static bool ContainsPath(IReadOnlySet<string> directories, string fullPath)
     {
+        if (directories.Count == 0)
+        {
+            return false;
+        }
+
         fullPath = Path.TrimEndingDirectorySeparator(fullPath);
 
         while (true)

@@ -330,11 +330,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
   </Target>
 
-  <PropertyGroup>
-    <MicrosoftNETCrossgenBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tasks\net7.0\Microsoft.NET.Sdk.Crossgen.dll</MicrosoftNETCrossgenBuildTasksAssembly>
-    <MicrosoftNETCrossgenBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tasks\net472\Microsoft.NET.Sdk.Crossgen.dll</MicrosoftNETCrossgenBuildTasksAssembly>
-  </PropertyGroup>
-
   <!--
     ============================================================
                                         CreateReadyToRunImages
@@ -426,7 +421,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                      IncludeSymbolsInSingleFile="$(IncludeSymbolsInSingleFile)"
                                      ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
                                      Crossgen2Composite="$(PublishReadyToRunComposite)"
-                                     PublishReadyToRunCompositeExclusions="@(PublishReadyToRunCompositeExclusions)">
+                                     PublishReadyToRunCompositeExclusions="@(PublishReadyToRunCompositeExclusions)"
+                                     PublishReadyToRunCompositeRoots="@(PublishReadyToRunCompositeRoots)">
 
       <Output TaskParameter="ReadyToRunCompileList" ItemName="_ReadyToRunCompileList" />
       <Output TaskParameter="ReadyToRunSymbolsCompileList" ItemName="_ReadyToRunSymbolsCompileList" />
@@ -435,6 +431,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="ReadyToRunAssembliesToReference" ItemName="_ReadyToRunAssembliesToReference" />
       <Output TaskParameter="ReadyToRunCompositeBuildReferences" ItemName="_ReadyToRunCompositeBuildReferences" />
       <Output TaskParameter="ReadyToRunCompositeBuildInput" ItemName="_ReadyToRunCompositeBuildInput" />
+      <Output TaskParameter="ReadyToRunCompositeUnrootedBuildInput" ItemName="_ReadyToRunCompositeUnrootedBuildInput" />
 
     </PrepareForReadyToRunCompilation>
   </Target>
@@ -477,7 +474,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                            CompilationEntry="@(_ReadyToRunCompileList)"
                            ContinueOnError="ErrorAndContinue"
                            ReadyToRunCompositeBuildReferences="@(_ReadyToRunCompositeBuildReferences)"
-                           ReadyToRunCompositeBuildInput="@(_ReadyToRunCompositeBuildInput)">
+                           ReadyToRunCompositeBuildInput="@(_ReadyToRunCompositeBuildInput)"
+                           ReadyToRunCompositeUnrootedBuildInput="@(_ReadyToRunCompositeUnrootedBuildInput)">
       <Output TaskParameter="ExitCode" PropertyName="_ReadyToRunCompilerExitCode" />
       <Output TaskParameter="WarningsDetected" PropertyName="_ReadyToRunWarningsDetected" />
     </RunReadyToRunCompiler>

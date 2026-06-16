@@ -19,7 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="Microsoft.NET.HostModel" />

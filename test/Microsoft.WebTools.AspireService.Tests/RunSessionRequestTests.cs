@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Watch.UnitTests;
+
 namespace Aspire.Tools.Service.UnitTests;
 
 public class RunSessionRequestTests
@@ -10,35 +12,45 @@ public class RunSessionRequestTests
     [Fact]
     public void RunSessionRequest_ToProjectLaunchRequest()
     {
-        var runSessionReq = new RunSessionRequest()
+        var request = new RunSessionRequest()
         {
-            Arguments = new string[] { "--someArg" },
-            Environment = new EnvVar[]
-             {
-                new EnvVar { Name = "var1", Value = "value1"},
-                new EnvVar { Name = "var2", Value = "value2"},
-             },
-            LaunchConfigurations = new LaunchConfiguration[]
-            {
-                new() {
+            Arguments = [ "--someArg" ],
+            Environment = 
+            [
+                new() { Name = "var1", Value = "value1"},
+                new() { Name = "var2", Value = "value2"},
+                new() { Name = "var3", Value = null},
+            ],
+            LaunchConfigurations =
+            [
+                new()
+                {
                     ProjectPath = @"c:\test\Projects\project1.csproj",
                     LaunchType = RunSessionRequest.ProjectLaunchConfigurationType,
                     LaunchMode= RunSessionRequest.DebugLaunchMode,
                     LaunchProfile = "specificProfileName",
                     DisableLaunchProfile = true
                 }
-            }
+            ]
         };
 
-        var projectReq = runSessionReq.ToProjectLaunchInformation();
+        var info = request.ToProjectLaunchInformation();
 
-        Assert.Equal(runSessionReq.Arguments[0], projectReq.Arguments.First());
-        Assert.Equal(runSessionReq.Environment.Length, projectReq.Environment.Count());
-        Assert.Equal(runSessionReq.Environment[0].Name, projectReq.Environment.First().Key);
-        Assert.Equal(runSessionReq.Environment[0].Value, projectReq.Environment.First().Value);
-        Assert.Equal(runSessionReq.LaunchConfigurations[0].ProjectPath, projectReq.ProjectPath);
-        Assert.True(projectReq.Debug);
-        Assert.Equal(runSessionReq.LaunchConfigurations[0].LaunchProfile, projectReq.LaunchProfile);
-        Assert.Equal(runSessionReq.LaunchConfigurations[0].DisableLaunchProfile, projectReq.DisableLaunchProfile);
+        AssertEx.SequenceEqual(
+        [
+            "--someArg"
+        ], info.Arguments);
+
+        AssertEx.SequenceEqual(
+        [
+            "var1='value1'",
+            "var2='value2'",
+            "var3=''"
+        ], info.Environment.Select(e => $"{e.Key}='{e.Value}'"));
+
+        Assert.Equal(@"c:\test\Projects\project1.csproj", info.ProjectPath);
+        Assert.True(info.Debug);
+        Assert.Equal("specificProfileName", info.LaunchProfile);
+        Assert.True(info.DisableLaunchProfile);
     }
 }
