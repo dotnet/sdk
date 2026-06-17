@@ -63,7 +63,7 @@ public class EnvCommandTests : IDisposable
     [Fact]
     public void EnvSet_DotnetupOnPathOff_PersistsAndRemoves()
     {
-        var parseResult = Parser.Parse(["env", "set", "none", "--dotnetup-on-path", "off"]);
+        var parseResult = Parser.Parse(["env", "set", "none", "--dotnetup-on-path", "false"]);
         parseResult.Errors.Should().BeEmpty();
 
         int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
@@ -78,10 +78,10 @@ public class EnvCommandTests : IDisposable
     [Fact]
     public void EnvSet_DotnetupOnPathOnly_LeavesStoredModeUnchanged()
     {
-        // Pre-existing config: shell mode, dotnetup on. Change only --dotnetup-on-path off.
+        // Pre-existing config: shell mode, dotnetup on. Change only --dotnetup-on-path false.
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
 
-        var parseResult = Parser.Parse(["env", "set", "--dotnetup-on-path", "off", "--shell", "bash"]);
+        var parseResult = Parser.Parse(["env", "set", "--dotnetup-on-path", "false", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
 
         int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();

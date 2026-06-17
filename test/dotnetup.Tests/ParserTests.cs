@@ -189,8 +189,8 @@ public class ParserTests
     {
         string[][] variants =
         [
-            ["env", "set", "shell", "--dotnetup-on-path", "off"],
-            ["env", "set", "--dotnetup-on-path", "on", "--shell", "bash"],
+            ["env", "set", "shell", "--dotnetup-on-path", "false"],
+            ["env", "set", "--dotnetup-on-path", "true", "--shell", "bash"],
             ["env", "clear", "--shell", "bash"],
         ];
 

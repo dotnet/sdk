@@ -102,9 +102,10 @@ internal static class EnvSettingsApplier
     {
         if (shellProvider is null)
         {
+            string supportedShells = string.Join("|", ShellDetection.s_supportedShells.Select(s => s.ArgumentName));
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
-                "Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell <bash|zsh|fish|pwsh> to specify it explicitly.");
+                $"Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell <{supportedShells}> to specify it explicitly.");
         }
     }
 }

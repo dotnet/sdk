@@ -54,29 +54,29 @@ internal static class EnvSetCommandParser
     }
 
     // A string option (rather than bool?) so System.CommandLine does not treat it as a
-    // value-optional boolean flag; we require an explicit 'on'/'off' token, parsed in the command.
+    // value-optional boolean flag; we require an explicit 'true'/'false' token, parsed in the command.
     private static Option<string?> CreateDotnetupOnPathOption()
     {
         var option = new Option<string?>("--dotnetup-on-path")
         {
-            Description = "Whether the dotnetup directory is on PATH ('on' or 'off'). Omit to leave unchanged.",
-            HelpName = "on|off",
+            Description = "Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.",
+            HelpName = "true|false",
             Arity = ArgumentArity.ExactlyOne,
         };
-        option.AcceptOnlyFromAmong("on", "off");
+        option.AcceptOnlyFromAmong("true", "false");
         return option;
     }
 
     /// <summary>
     /// Parses the raw <c>--dotnetup-on-path</c> token into a tri-state: <c>null</c> when the
-    /// option was omitted (leave unchanged), otherwise the on/off boolean.
+    /// option was omitted (leave unchanged), otherwise the true/false boolean.
     /// </summary>
     public static bool? ParseDotnetupOnPath(string? raw) => raw?.ToLowerInvariant() switch
     {
         null => null,
-        "on" => true,
-        "off" => false,
-        _ => throw new ArgumentException($"Invalid value '{raw}' for --dotnetup-on-path. Expected 'on' or 'off'.", nameof(raw)),
+        "true" => true,
+        "false" => false,
+        _ => throw new ArgumentException($"Invalid value '{raw}' for --dotnetup-on-path. Expected 'true' or 'false'.", nameof(raw)),
     };
 
     public static Command ConstructCommand()

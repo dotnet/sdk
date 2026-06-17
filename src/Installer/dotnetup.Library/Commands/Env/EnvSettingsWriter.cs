@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 /// Shared apply path for the <c>env set</c> and <c>env clear</c> commands: inspects the live
 /// environment, applies the target settings via <see cref="EnvSettingsApplier"/>, persists the
 /// new config, and prints a short summary. Keeping this in one place ensures <c>env clear</c> and
-/// <c>env set none --dotnetup-on-path off</c> behave identically.
+/// <c>env set none --dotnetup-on-path false</c> behave identically.
 /// </summary>
 internal static class EnvSettingsWriter
 {
@@ -42,7 +42,7 @@ internal static class EnvSettingsWriter
             DotnetupOnPath = targetDotnetupOnPath,
         });
 
-        Console.WriteLine($"dotnetup env: dotnet access '{targetEnv.ToString().ToLowerInvariant()}', dotnetup on PATH {(targetDotnetupOnPath ? "on" : "off")}.");
+        Console.WriteLine($"dotnetup env: dotnet access '{targetEnv.ToString().ToLowerInvariant()}', dotnetup on PATH {(targetDotnetupOnPath ? "true" : "false")}.");
         Console.WriteLine("NOTE: You may need to restart your terminal for the changes to take effect.");
     }
 }

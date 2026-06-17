@@ -298,10 +298,10 @@ config.
 
 ```
 dotnetup env set <none|shell|all>                     # set dotnet access, leave dotnetup-on-PATH as-is
-dotnetup env set --dotnetup-on-path <on|off>          # change only dotnetup-on-PATH
-dotnetup env set <mode> --dotnetup-on-path <on|off>   # set both at once
+dotnetup env set --dotnetup-on-path <true|false>      # change only dotnetup-on-PATH
+dotnetup env set <mode> --dotnetup-on-path <true|false> # set both at once
 dotnetup env set                                      # no args: re-apply stored config (fix drift)
-dotnetup env clear                                    # fully unwire: == env set none --dotnetup-on-path off
+dotnetup env clear                                    # fully unwire: == env set none --dotnetup-on-path false
 dotnetup env show                                     # report both axes + drift
 dotnetup env script                                   # unchanged
 ```
@@ -311,8 +311,8 @@ Examples:
 ```
 dotnetup env set shell                       # dotnet on shell PATH; dotnetup stays on PATH
 dotnetup env set none                        # stop exposing dotnet; keep `dotnetup` runnable
-dotnetup env set --dotnetup-on-path off      # remove dotnetup from PATH (the "unset", any mode)
-dotnetup env set none --dotnetup-on-path off # fully unwire everything
+dotnetup env set --dotnetup-on-path false    # remove dotnetup from PATH (the "unset", any mode)
+dotnetup env set none --dotnetup-on-path false # fully unwire everything
 dotnetup env clear                           # same as the line above; the "undo everything" verb
 ```
 
@@ -345,7 +345,7 @@ dotnetup environment:
 ```
 
 **Alternative UI considered:** two sibling verbs — `env set <none|shell|all>` for
-dotnet and `env dotnetup-path <on|off>` for dotnetup. Cleaner orthogonality, but two
+dotnet and `env dotnetup-path <true|false>` for dotnetup. Cleaner orthogonality, but two
 verbs to discover and a less-obvious bare re-sync. Current lean is the single-`set`
 form above.
 
@@ -404,7 +404,7 @@ dotnet env-var wiring lives).
 - `dotnetupOnPath` defaults to `true` with **no separate prompt** — you just ran
   `dotnetup`, so keeping it runnable is the obvious default and a prompt adds friction.
 - Post-init guidance mentions it (e.g. "`dotnetup` has been added to your PATH; change
-  this later with `dotnetup env set --dotnetup-on-path off`").
+  this later with `dotnetup env set --dotnetup-on-path false`").
 - Everything stays adjustable afterward via the commands above.
 
 ### Open questions
@@ -412,11 +412,11 @@ dotnet env-var wiring lives).
 1. **UI shape** *(resolved)*: a flag on `env set` (single-verb model), not a separate
    `env dotnetup-path` verb. dotnet access stays the positional; dotnetup-on-PATH is the
    `--dotnetup-on-path` option.
-2. **Option spelling** *(resolved)*: value form `--dotnetup-on-path <on|off>` (explicit,
+2. **Option spelling** *(resolved)*: value form `--dotnetup-on-path <true|false>` (explicit,
    script-friendly, and absent = leave unchanged), not a `--no-` flag pair. Accepted as
    the best option despite being slightly verbose — it's an uncommon operation, and the
    `dotnetup-` prefix usefully signals it's about dotnetup itself rather than dotnet.
-   (`--self-on-path <on|off>` was considered as a terser form; rejected for being more
+   (`--self-on-path <true|false>` was considered as a terser form; rejected for being more
    jargon-y.)
 3. **Config rename** *(resolved)*: rename `pathPreference` → `accessMode`, with the
    read-compatibility shim above to preserve internal users' configs. The legacy shim is
