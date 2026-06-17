@@ -16,9 +16,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 // process-CWD mutation this test performs.
 public class UpdatePackageStaticWebAssetsMultiThreadingTest
 {
-    // Verifies the post-migration MT-safety contract: StaticWebAsset.FromV1TaskItem(item, env)
-    // resolves relative ContentRoot against TaskEnvironment.ProjectDirectory, not the process
-    // CWD. The decoy-CWD setup proves the task no longer reads Environment.CurrentDirectory.
+    // Relative ContentRoot should resolve against TaskEnvironment.ProjectDirectory, not process CWD.
     [Fact]
     public void NormalizesContentRootRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
@@ -52,9 +50,6 @@ public class UpdatePackageStaticWebAssetsMultiThreadingTest
             {
                 [nameof(StaticWebAsset.SourceId)] = "SomeOtherPackage",
                 [nameof(StaticWebAsset.SourceType)] = StaticWebAsset.SourceTypes.Package,
-                // Relative ContentRoot. Once TaskEnvironment is threaded through
-                // StaticWebAsset.FromV1TaskItem, NormalizeContentRootPath(ContentRoot, env)
-                // absolutizes against TaskEnvironment.ProjectDirectory, not process CWD.
                 [nameof(StaticWebAsset.ContentRoot)] = "wwwroot",
                 [nameof(StaticWebAsset.BasePath)] = "_content/SomeOtherPackage",
                 [nameof(StaticWebAsset.RelativePath)] = "site.css",
@@ -82,9 +77,7 @@ public class UpdatePackageStaticWebAssetsMultiThreadingTest
             task.UpdatedAssets.Should().HaveCount(1);
             var actualContentRoot = task.UpdatedAssets[0].GetMetadata(nameof(StaticWebAsset.ContentRoot));
 
-            actualContentRoot.Should().StartWith(projectContentRoot,
-                "ContentRoot must be absolutized against TaskEnvironment.ProjectDirectory, not the process CWD. " +
-                $"Got '{actualContentRoot}', expected start '{projectContentRoot}', decoy was '{spawnContentRoot}'.");
+            actualContentRoot.Should().Be(projectContentRoot + Path.DirectorySeparatorChar);
         }
         finally
         {
