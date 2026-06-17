@@ -178,6 +178,13 @@ jobs:
     permissions:
       contents: read
     env:
+      # Clear sensitive tokens so analysis tooling cannot exfiltrate them
+      GITHUB_TOKEN: ""
+      GH_TOKEN: ""
+      ACTIONS_ID_TOKEN_REQUEST_URL: ""
+      ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
+      ACTIONS_RUNTIME_TOKEN: ""
+      # Workflow-specific env vars
       PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
       PR_HEAD_SHA: ${{ needs.authorize.outputs.head_sha }}
       BASE_BRANCH: ${{ needs.authorize.outputs.base_branch }}
