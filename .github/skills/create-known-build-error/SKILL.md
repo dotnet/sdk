@@ -42,7 +42,10 @@ Use the AzDO and Helix MCP tools to gather failure data:
 ### Build-level failures
 1. `hlx-azdo_timeline` with `filter: "failed"` → get failed stages/jobs/tasks and their log IDs
 2. For each failed task, use `hlx-azdo_search_log` with `pattern: "error"` to find error lines
-3. `hlx-azdo_build_analysis` → check if any known issues already match this build
+3. For **PR builds only**: `hlx-azdo_build_analysis` → check if any known issues already match
+   this build. **Do NOT use `hlx-azdo_build_analysis` for CI/rolling builds** — the Build
+   Analysis check only runs on PR validation builds, so CI builds will have no results and
+   the absence of a match does NOT mean the pattern is wrong.
 
 ### Test-level failures
 1. `hlx-azdo_test_runs` → list test runs for the build
@@ -50,16 +53,30 @@ Use the AzDO and Helix MCP tools to gather failure data:
 3. `hlx-azdo_helix_jobs` → get Helix job IDs for failed legs
 4. For interesting failures, use `hlx-helix_logs` to get console output
 
-Present a numbered list of distinct failures to the user and ask which one(s) they want to
-create known build errors for. Group related failures when possible.
+### Determining build type
+Use `hlx-azdo_build` to check the build's `sourceBranch`:
+- `refs/pull/...` → PR validation build (Build Analysis runs on these)
+- `refs/heads/main` or other branch → CI/rolling build (Build Analysis does NOT run)
+
+Present failures to the user using `ask_user` with a `choices` array. Do NOT include
+numbers in the choice text — the UI adds its own numbering. For example:
+```
+choices: [
+  "RunFileTests_BuildCommands.Pack (MSB4025: .csproj not found during pack)",
+  "FileWatcherTests.DeleteSubfolder (extra file watcher event on macOS)",
+  "All of the above"
+]
+```
 
 ## Step 2b: Check for existing known issues
 
 Before drafting a new pattern, check whether an existing Known Build Error already covers
 (or nearly covers) this failure.
 
-1. Use `hlx-azdo_build_analysis` on the build — it reports any existing known issue matches.
-   If the failure is already matched, tell the user and ask if they still want to proceed.
+1. **For PR builds only**: Use `hlx-azdo_build_analysis` on the build — it reports any existing
+   known issue matches. If the failure is already matched, tell the user and link the issue.
+   **Skip this for CI/rolling builds** — Build Analysis does not run on those, so the absence
+   of matches is expected and should not be treated as evidence that no known issue exists.
 
 2. Search the repo for open Known Build Error issues:
    ```
