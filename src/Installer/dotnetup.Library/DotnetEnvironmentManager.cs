@@ -324,6 +324,13 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     {
         ArgumentNullException.ThrowIfNull(dotnetRoot);
 
+        // dotnetRoot is only meaningful when wiring dotnet; require it in that case on both
+        // platforms so Windows and Unix validate identically.
+        if (includeDotnet)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(dotnetRoot);
+        }
+
         if (OperatingSystem.IsWindows())
         {
             ApplyTerminalProfileModificationsWindows(dotnetRoot, includeDotnet, includeDotnetup, shellProvider);
@@ -355,11 +362,6 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     {
         var dotnetupPath = ShellProviderHelpers.GetDotnetupExecutablePathOrThrow();
         shellProvider = ShellDetection.GetCurrentShellProviderOrThrow(shellProvider);
-
-        if (includeDotnet && string.IsNullOrEmpty(dotnetRoot))
-        {
-            throw new ArgumentNullException(nameof(dotnetRoot));
-        }
 
         string? profileDotnetRoot = includeDotnet ? GetProfileDotnetRootOrDefault(dotnetRoot) : null;
 
