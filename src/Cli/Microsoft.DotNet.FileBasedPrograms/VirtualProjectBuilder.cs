@@ -30,6 +30,8 @@ sealed class VirtualProjectBuilder
 
     internal const string FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective";
 
+    internal const string FromRefDirectiveMetadataName = "FileBasedProgramsFromRefDirective";
+
     /// <summary>
     /// Keeps a strong reference to the latest virtual <see cref="IProjectRootElement"/> created for each entry point in a <see cref="IProjectCollection"/>,
     /// preventing it from being garbage collected when MSBuild's <c>ProjectRootElementCache</c> demotes it to a weak reference.
@@ -916,7 +918,7 @@ sealed class VirtualProjectBuilder
                 {
                     var virtualProjectPath = GetVirtualProjectPath(refDirective.ResolvedPath);
                     writer.WriteLine($"""
-                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" />
+                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" {FromRefDirectiveMetadataName}="{EscapeValue(refDirective.ResolvedPath)}" />
                         """);
                 }
 
