@@ -432,24 +432,35 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [Fact]
-        public void MakeReferencedAssetOriginalItemSpecAbsolute_ResolvesAgainstProjectDirectory()
+        public void MakeReferencedAssetOriginalItemSpecAbsolute_ResolvesAgainstProjectDirectoryNotProcessCurrentDirectory()
         {
-            var projectDirectory = Path.Combine(Path.GetTempPath(), "ComputeReferenceSwaTests-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(projectDirectory);
+            var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ComputeReferenceStaticWebAssetItemsTest), Guid.NewGuid().ToString("N"));
+            var projectDir = Path.Combine(testRoot, "project");
+            var spawnDir = Path.Combine(testRoot, "decoy", "spawn");
+            Directory.CreateDirectory(projectDir);
+            Directory.CreateDirectory(spawnDir);
 
+            var relativeOriginalItemSpec = Path.Combine("wwwroot", "candidate.js");
+
+            var projectRootedOriginalItemSpec = Path.GetFullPath(Path.Combine(projectDir, relativeOriginalItemSpec));
+            var spawnRootedOriginalItemSpec = Path.GetFullPath(Path.Combine(spawnDir, relativeOriginalItemSpec));
+            projectRootedOriginalItemSpec.Should().NotBe(spawnRootedOriginalItemSpec,
+                "the test setup must place project and decoy in different parents so a relative path resolves differently against each");
+
+            var originalCurrentDirectory = Directory.GetCurrentDirectory();
             try
             {
+                Directory.SetCurrentDirectory(spawnDir);
+
                 var errorMessages = new List<string>();
                 var buildEngine = new Mock<IBuildEngine>();
                 buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                     .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-                var relativeOriginalItemSpec = Path.Combine("wwwroot", "candidate.js");
-
                 var task = new ComputeReferenceStaticWebAssetItems
                 {
                     BuildEngine = buildEngine.Object,
-                    TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDirectory),
+                    TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
                     Source = "MyPackage",
                     Assets = new[] { CreateCandidate(relativeOriginalItemSpec, "MyPackage", "Discovered", "candidate.js", "All", "All") },
                     Patterns = new ITaskItem[] { },
@@ -463,12 +474,17 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 result.Should().Be(true);
                 errorMessages.Should().BeEmpty();
                 task.StaticWebAssets.Should().HaveCount(1);
-                task.StaticWebAssets[0].GetMetadata("OriginalItemSpec")
-                    .Should().Be(Path.GetFullPath(Path.Combine(projectDirectory, relativeOriginalItemSpec)));
+
+                // OriginalItemSpec must resolve against TaskEnvironment.ProjectDirectory, not the process CWD (the decoy spawnDir).
+                task.StaticWebAssets[0].GetMetadata("OriginalItemSpec").Should().Be(projectRootedOriginalItemSpec);
             }
             finally
             {
-                Directory.Delete(projectDirectory, recursive: true);
+                Directory.SetCurrentDirectory(originalCurrentDirectory);
+                if (Directory.Exists(testRoot))
+                {
+                    Directory.Delete(testRoot, recursive: true);
+                }
             }
         }
 
