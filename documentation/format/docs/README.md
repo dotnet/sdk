@@ -102,7 +102,12 @@ dotnet format style ./format.sln --diagnostics IDE0005
 You can further narrow the list of files to be formatted by specifying a list of paths to include or exclude. When specifying folder paths the path must end with a directory separator. File globbing is supported.
 
 - `--include` - A list of relative file or folder paths to include in formatting.
+- `--files` - Alias for `--include`.
 - `--exclude` - A list of relative file or folder paths to exclude from formatting.
+
+The workspace is still loaded before the include and exclude filters are applied. When the workspace is a solution or project, dotnet-format uses MSBuild to load the workspace so analyzer and code-style fixes have the correct semantic information and metadata references. As a result, output such as `Formatted 0 of 321 files` can refer to the files discovered while loading the workspace, even when `--include` targets a smaller set of files.
+
+If you only need whitespace formatting for specific files, use `whitespace` with `--folder` so dotnet-format treats the path as a folder of code files instead of loading the nearest solution or project.
 
 *Example:*
 
@@ -112,6 +117,12 @@ The following command sets the repo folder as the workspace. It then includes th
 
 ```console
 dotnet format whitespace --folder --include ./src/ ./tests/ --exclude ./src/submodule-a/ --verify-no-changes
+```
+
+Format a single file for whitespace-only changes without loading a solution or project.
+
+```console
+dotnet format whitespace --folder --include ./src/ProjectFolder/Program.cs
 ```
 
 ### Logging and Reports
