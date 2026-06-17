@@ -25,4 +25,15 @@
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
+  <!-- MSTest.Sdk defaults. Applied to projects that opt in via <Project Sdk="MSTest.Sdk">,
+       which sets UsingMSTestSdk=true in its Sdk.props before this file is evaluated. -->
+  <PropertyGroup Condition="'$(UsingMSTestSdk)' == 'true'">
+    <!-- Run tests in parallel at the method level by default. MSTest.TestAdapter
+         emits the corresponding [assembly: Parallelize(Scope = MethodLevel)] attribute. -->
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
+
+    <!-- Promote info-severity MSTest analyzer rules to warnings and critical rules to errors. -->
+    <MSTestAnalysisMode>Recommended</MSTestAnalysisMode>
+  </PropertyGroup>
+
 </Project>
