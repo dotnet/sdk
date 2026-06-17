@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.CommandFactory;
 
 internal class CommandResolver
 {
-    public static CommandSpec TryResolveCommandSpec(
+    public static CommandSpec? TryResolveCommandSpec(
         string commandName,
         IEnumerable<string> args,
         NuGetFramework? framework = null,
@@ -29,7 +29,7 @@ internal class CommandResolver
             sdkRoot);
     }
 
-    public static CommandSpec TryResolveCommandSpec(
+    public static CommandSpec? TryResolveCommandSpec(
         ICommandResolverPolicy commandResolverPolicy,
         string commandName,
         IEnumerable<string> args,

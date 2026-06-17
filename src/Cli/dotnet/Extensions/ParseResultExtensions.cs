@@ -54,7 +54,7 @@ public static class ParseResultExtensions
             : null;
 
     // duplicated from VirtualProjectBuilder to temporarily avoid MSBuild dlls on AOT codepath
-    public static bool IsValidEntryPointPath(string entryPointFilePath)
+    private static bool IsValidEntryPointPath(string entryPointFilePath)
     {
         if (!File.Exists(entryPointFilePath))
         {
