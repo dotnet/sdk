@@ -32,7 +32,7 @@ The script validates that the pattern matches the error text using the same
 matching rules as the Build Analysis system:
   - ErrorMessage: case-insensitive substring match, per line
   - ErrorPattern: case-insensitive regex match, per line
-  - Multi-line: pass pipe-separated values with --multi flag
+  - Multi-line: pass JSON array syntax ["pat1","pat2"]
 EOF
 }
 
@@ -79,25 +79,43 @@ truncate_str() {
     local s="$1"
     local max_len="${2:-200}"
     if [[ ${#s} -le $max_len ]]; then
-        echo "$s"
+        printf '%s' "$s"
     else
-        echo "${s:0:$max_len}..."
+        printf '%s...' "${s:0:$max_len}"
     fi
 }
 
-# Parse array syntax: ["a","b"] -> separate elements, or single value
+# Parse array syntax: ["a","b"] -> one element per line, or single value
 parse_array_or_single() {
     local value="$1"
-    value=$(echo "$value" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    value="$(printf '%s' "$value" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
 
     if [[ "$value" == \[*\] ]]; then
-        # Strip brackets, split on comma, trim quotes
         local inner="${value:1:${#value}-2}"
-        echo "$inner" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/^"//;s/"$//;s/^'\''//;s/'\''$//'
+        printf '%s' "$inner" | tr ',' '\n' | sed "s/^[[:space:]]*//;s/[[:space:]]*$//;s/^\"//;s/\"$//;s/^'//;s/'$//"
     else
-        echo "$value"
+        printf '%s\n' "$value"
     fi
 }
+
+# Case-insensitive fixed-string match (one line).
+# Uses printf to avoid echo issues with lines starting with - or containing backslashes.
+line_contains() {
+    local line="$1"
+    local substring="$2"
+    printf '%s\n' "$line" | grep -qiF -- "$substring"
+}
+
+# Case-insensitive regex match (one line).
+line_matches_regex() {
+    local line="$1"
+    local pattern="$2"
+    printf '%s\n' "$line" | grep -qiE -- "$pattern"
+}
+
+# Read error text into array
+mapfile -t lines <<< "$error_text"
+line_count=${#lines[@]}
 
 # ErrorPattern takes priority (same as build-insights)
 if [[ -n "$error_pattern" ]]; then
@@ -111,24 +129,22 @@ if [[ -n "$error_pattern" ]]; then
     fi
 
     echo "Validating ErrorPattern ($mode_label)"
-    pattern_display=$(printf '/%s/ ' "${patterns[@]}")
-    echo "  Pattern(s): ${pattern_display% }"
+    for p in "${patterns[@]}"; do
+        printf '  Pattern: /%s/\n' "$p"
+    done
     echo "  Matching mode: Regex (case-insensitive)"
-
-    mapfile -t lines <<< "$error_text"
-    echo "  Error text: ${#lines[@]} lines"
+    echo "  Error text: ${line_count} lines"
     echo ""
 
-    # Validate regex compilation
+    # Validate regex compilation (grep exit code 2 = regex error)
     for i in "${!patterns[@]}"; do
-        if ! echo "" | grep -qiE "${patterns[$i]}" 2>/dev/null; then
-            # Try the pattern - if grep returns error (not just no match), it's invalid
-            echo "test" | grep -iE "${patterns[$i]}" > /dev/null 2>&1
-            grep_exit=$?
-            if [[ $grep_exit -eq 2 ]]; then
-                echo "X INVALID REGEX at pattern [$i]: ${patterns[$i]}"
-                exit 1
-            fi
+        set +e
+        printf 'test\n' | grep -iE -- "${patterns[$i]}" >/dev/null 2>&1
+        rc=$?
+        set -e
+        if [[ $rc -eq 2 ]]; then
+            printf 'X INVALID REGEX at pattern [%d]: %s\n' "$i" "${patterns[$i]}"
+            exit 1
         fi
     done
     echo "OK Regex compiles successfully"
@@ -136,30 +152,29 @@ if [[ -n "$error_pattern" ]]; then
 
     if [[ $pattern_count -eq 1 ]]; then
         match_count=0
-        matched_lines=""
+        first_matches=""
         for i in "${!lines[@]}"; do
             line_num=$((i + 1))
-            if echo "${lines[$i]}" | grep -qiE "${patterns[0]}"; then
+            if line_matches_regex "${lines[$i]}" "${patterns[0]}"; then
                 match_count=$((match_count + 1))
                 if [[ $match_count -le 5 ]]; then
-                    matched_lines="${matched_lines}  Line ${line_num}: $(truncate_str "${lines[$i]}")\n"
+                    first_matches="${first_matches}$(printf '  Line %d: %s\n' "$line_num" "$(truncate_str "${lines[$i]}")")"$'\n'
                 fi
             fi
         done
 
         if [[ $match_count -gt 0 ]]; then
-            echo "MATCH: Regex matched ${match_count} line(s)"
-            echo -e "$matched_lines"
+            printf 'MATCH: Regex matched %d line(s)\n' "$match_count"
+            printf '%s' "$first_matches"
             if [[ $match_count -gt 5 ]]; then
-                echo "  ... and $((match_count - 5)) more"
+                printf '  ... and %d more\n' "$((match_count - 5))"
             fi
 
-            total_lines=${#lines[@]}
-            if [[ $total_lines -gt 10 ]]; then
-                match_pct=$((match_count * 100 / total_lines))
+            if [[ $line_count -gt 10 ]]; then
+                match_pct=$((match_count * 100 / line_count))
                 if [[ $match_pct -gt 10 ]]; then
                     echo ""
-                    echo "WARNING: Pattern matched ${match_pct}% of all lines (${match_count}/${total_lines})"
+                    printf 'WARNING: Pattern matched %d%% of all lines (%d/%d)\n' "$match_pct" "$match_count" "$line_count"
                     echo "  This pattern may be too generic. Consider making it more specific."
                 fi
             fi
@@ -171,19 +186,18 @@ if [[ -n "$error_pattern" ]]; then
     else
         # Multi-line: patterns must appear in order (not necessarily consecutive)
         found=false
-        match_start=-1
         matched_indices=()
 
         for start in "${!lines[@]}"; do
-            if echo "${lines[$start]}" | grep -qiE "${patterns[0]}"; then
+            if line_matches_regex "${lines[$start]}" "${patterns[0]}"; then
                 all_match=true
                 indices=("$start")
                 search_from=$((start + 1))
 
                 for p in $(seq 1 $((pattern_count - 1))); do
                     p_found=false
-                    for line_idx in $(seq $search_from $((${#lines[@]} - 1))); do
-                        if echo "${lines[$line_idx]}" | grep -qiE "${patterns[$p]}"; then
+                    for line_idx in $(seq "$search_from" $((line_count - 1))); do
+                        if line_matches_regex "${lines[$line_idx]}" "${patterns[$p]}"; then
                             indices+=("$line_idx")
                             search_from=$((line_idx + 1))
                             p_found=true
@@ -205,25 +219,25 @@ if [[ -n "$error_pattern" ]]; then
         done
 
         if [[ "$found" == "true" ]]; then
-            echo "MATCH: All ${pattern_count} patterns matched in order"
+            printf 'MATCH: All %d patterns matched in order\n' "$pattern_count"
             for p in "${!patterns[@]}"; do
                 idx=${matched_indices[$p]}
-                echo "  Line $((idx + 1)): $(truncate_str "${lines[$idx]}")"
+                printf '  Line %d: %s\n' "$((idx + 1))" "$(truncate_str "${lines[$idx]}")"
             done
             exit 0
         else
-            echo "NO MATCH: Could not find all ${pattern_count} patterns in order"
+            printf 'NO MATCH: Could not find all %d patterns in order\n' "$pattern_count"
             for p in "${!patterns[@]}"; do
                 count=0
                 for line in "${lines[@]}"; do
-                    if echo "$line" | grep -qiE "${patterns[$p]}"; then
+                    if line_matches_regex "$line" "${patterns[$p]}"; then
                         count=$((count + 1))
                     fi
                 done
                 if [[ $count -gt 0 ]]; then
-                    echo "  Pattern [$p]: matched $count line(s)"
+                    printf '  Pattern [%d]: matched %d line(s)\n' "$p" "$count"
                 else
-                    echo "  Pattern [$p]: no matches"
+                    printf '  Pattern [%d]: no matches\n' "$p"
                 fi
             done
             exit 1
@@ -241,41 +255,38 @@ else
     fi
 
     echo "Validating ErrorMessage ($mode_label)"
-    msg_display=$(printf '"%s" ' "${messages[@]}")
-    echo "  Pattern(s): ${msg_display% }"
+    for m in "${messages[@]}"; do
+        printf '  Pattern: "%s"\n' "$m"
+    done
     echo "  Matching mode: String.Contains (case-insensitive)"
-
-    mapfile -t lines <<< "$error_text"
-    echo "  Error text: ${#lines[@]} lines"
+    echo "  Error text: ${line_count} lines"
     echo ""
 
     if [[ $msg_count -eq 1 ]]; then
-        # Case-insensitive substring search using grep -iF (fixed string)
         match_count=0
-        matched_lines=""
+        first_matches=""
         for i in "${!lines[@]}"; do
             line_num=$((i + 1))
-            if echo "${lines[$i]}" | grep -qiF "${messages[0]}"; then
+            if line_contains "${lines[$i]}" "${messages[0]}"; then
                 match_count=$((match_count + 1))
                 if [[ $match_count -le 5 ]]; then
-                    matched_lines="${matched_lines}  Line ${line_num}: $(truncate_str "${lines[$i]}")\n"
+                    first_matches="${first_matches}$(printf '  Line %d: %s\n' "$line_num" "$(truncate_str "${lines[$i]}")")"$'\n'
                 fi
             fi
         done
 
         if [[ $match_count -gt 0 ]]; then
-            echo "MATCH: Found ${match_count} matching line(s)"
-            echo -e "$matched_lines"
+            printf 'MATCH: Found %d matching line(s)\n' "$match_count"
+            printf '%s' "$first_matches"
             if [[ $match_count -gt 5 ]]; then
-                echo "  ... and $((match_count - 5)) more"
+                printf '  ... and %d more\n' "$((match_count - 5))"
             fi
 
-            total_lines=${#lines[@]}
-            if [[ $total_lines -gt 10 ]]; then
-                match_pct=$((match_count * 100 / total_lines))
+            if [[ $line_count -gt 10 ]]; then
+                match_pct=$((match_count * 100 / line_count))
                 if [[ $match_pct -gt 10 ]]; then
                     echo ""
-                    echo "WARNING: Pattern matched ${match_pct}% of all lines (${match_count}/${total_lines})"
+                    printf 'WARNING: Pattern matched %d%% of all lines (%d/%d)\n' "$match_pct" "$match_count" "$line_count"
                     echo "  This pattern may be too generic. Consider making it more specific."
                 fi
             fi
@@ -290,15 +301,15 @@ else
         matched_indices=()
 
         for start in "${!lines[@]}"; do
-            if echo "${lines[$start]}" | grep -qiF "${messages[0]}"; then
+            if line_contains "${lines[$start]}" "${messages[0]}"; then
                 all_match=true
                 indices=("$start")
                 search_from=$((start + 1))
 
                 for p in $(seq 1 $((msg_count - 1))); do
                     p_found=false
-                    for line_idx in $(seq $search_from $((${#lines[@]} - 1))); do
-                        if echo "${lines[$line_idx]}" | grep -qiF "${messages[$p]}"; then
+                    for line_idx in $(seq "$search_from" $((line_count - 1))); do
+                        if line_contains "${lines[$line_idx]}" "${messages[$p]}"; then
                             indices+=("$line_idx")
                             search_from=$((line_idx + 1))
                             p_found=true
@@ -320,25 +331,25 @@ else
         done
 
         if [[ "$found" == "true" ]]; then
-            echo "MATCH: All ${msg_count} patterns matched in order"
+            printf 'MATCH: All %d patterns matched in order\n' "$msg_count"
             for p in "${!messages[@]}"; do
                 idx=${matched_indices[$p]}
-                echo "  Line $((idx + 1)): $(truncate_str "${lines[$idx]}")"
+                printf '  Line %d: %s\n' "$((idx + 1))" "$(truncate_str "${lines[$idx]}")"
             done
             exit 0
         else
-            echo "NO MATCH: Could not find all ${msg_count} patterns in order"
+            printf 'NO MATCH: Could not find all %d patterns in order\n' "$msg_count"
             for p in "${!messages[@]}"; do
                 count=0
                 for line in "${lines[@]}"; do
-                    if echo "$line" | grep -qiF "${messages[$p]}"; then
+                    if line_contains "$line" "${messages[$p]}"; then
                         count=$((count + 1))
                     fi
                 done
                 if [[ $count -gt 0 ]]; then
-                    echo "  Pattern [$p]: matched $count line(s)"
+                    printf '  Pattern [%d]: matched %d line(s)\n' "$p" "$count"
                 else
-                    echo "  Pattern [$p]: no matches"
+                    printf '  Pattern [%d]: no matches\n' "$p"
                 fi
             done
             exit 1
