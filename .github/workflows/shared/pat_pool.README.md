@@ -51,11 +51,15 @@ The [`pat_pool.md`](./pat_pool.md) workflow import defines a custom job with a `
 ```yml
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Ensure this agentic jobs run from the isolated
+# `copilot-pat-pool` environment where the PAT pool is available.
 # When org-level billing is available, this will be removed.
 # See `shared/pat_pool.README.md` for more information.
 # ###############################################################
 imports:
   - shared/pat_pool.md
+
+environment: copilot-pat-pool
 
 engine:
   id: copilot
@@ -72,7 +76,7 @@ engine:
         needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
         needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
         needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
-        secrets.COPILOT_GITHUB_TOKEN)
+        'NO COPILOT PAT AVAILABLE')
       }}
 ```
 
@@ -101,7 +105,7 @@ The secrets passed via `with:` must match the secrets referenced in the consumin
 engine:
   id: copilot
   env:
-    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.MY_TEAM_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.MY_TEAM_PAT_1, ..., secrets.COPILOT_GITHUB_TOKEN) }}
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.MY_TEAM_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.MY_TEAM_PAT_1, ..., 'NO COPILOT PAT AVAILABLE') }}
 ```
 
 This approach aligns with GitHub's documented guidance for [passing secrets][passing-secrets] between workflows, where the `pat_pool` job returns a PAT number and the `case` statement acts as a secret store to look the PAT secret up based on the selected number.
