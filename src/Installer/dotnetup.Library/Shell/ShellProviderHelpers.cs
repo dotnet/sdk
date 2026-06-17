@@ -123,38 +123,46 @@ internal static class ShellProviderHelpers
 
     internal static string BuildPosixPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
     {
-        // Put the managed paths first so the shell resolves dotnet/dotnetup from the selected install immediately.
-        if (includeDotnet && !string.IsNullOrWhiteSpace(dotnetupDir))
+        // The two axes are independent: the dotnetup directory is added whenever it is supplied
+        // (regardless of includeDotnet), and the managed dotnet is added when includeDotnet is set.
+        // Managed paths go first so the shell resolves dotnet/dotnetup from the selected install.
+        var entries = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(dotnetupDir))
         {
-            return $"export PATH='{EscapePosixPath(dotnetupDir)}':'{escapedPath}':$PATH";
+            entries.Add($"'{EscapePosixPath(dotnetupDir)}'");
         }
 
         if (includeDotnet)
         {
-            return $"export PATH='{escapedPath}':$PATH";
+            entries.Add($"'{escapedPath}'");
         }
 
-        return string.IsNullOrWhiteSpace(dotnetupDir)
+        return entries.Count == 0
             ? string.Empty
-            : $"export PATH='{EscapePosixPath(dotnetupDir)}':$PATH";
+            : $"export PATH={string.Join(":", entries)}:$PATH";
     }
 
     internal static string BuildPowerShellPathExport(string escapedPath, string dotnetupDir, bool includeDotnet)
     {
-        // Put the managed paths first so the shell resolves dotnet/dotnetup from the selected install immediately.
-        if (includeDotnet && !string.IsNullOrWhiteSpace(dotnetupDir))
+        // The two axes are independent: the dotnetup directory is added whenever it is supplied
+        // (regardless of includeDotnet), and the managed dotnet is added when includeDotnet is set.
+        // Managed paths go first so the shell resolves dotnet/dotnetup from the selected install.
+        var entries = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(dotnetupDir))
         {
-            return $"$env:PATH = '{EscapePowerShellPath(dotnetupDir)}' + [IO.Path]::PathSeparator + '{escapedPath}' + [IO.Path]::PathSeparator + $env:PATH";
+            entries.Add($"'{EscapePowerShellPath(dotnetupDir)}'");
         }
 
         if (includeDotnet)
         {
-            return $"$env:PATH = '{escapedPath}' + [IO.Path]::PathSeparator + $env:PATH";
+            entries.Add($"'{escapedPath}'");
         }
 
-        return string.IsNullOrWhiteSpace(dotnetupDir)
+        return entries.Count == 0
             ? string.Empty
-            : $"$env:PATH = '{EscapePowerShellPath(dotnetupDir)}' + [IO.Path]::PathSeparator + $env:PATH";
+            : $"$env:PATH = {string.Join(" + [IO.Path]::PathSeparator + ", entries)} + [IO.Path]::PathSeparator + $env:PATH";
     }
 
     internal static string GetDotnetupExecutablePathOrThrow()
