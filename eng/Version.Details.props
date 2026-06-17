@@ -83,7 +83,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion>10.0.0-preview.7.25377.103</MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>10.4.0-preview.26310.101</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
     <MicrosoftNETSdkWindowsDesktopPackageVersion>10.0.8-servicing.26229.119</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftNETTestSdkPackageVersion>18.7.0-release-26310-101</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>18.7.0-release-26278-109</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>10.0.8</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>10.0.8-servicing.26229.119</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftSourceLinkAzureReposGitPackageVersion>10.0.400-alpha.26310.101</MicrosoftSourceLinkAzureReposGitPackageVersion>
@@ -100,8 +100,8 @@ This file should be imported by eng/Versions.props
     <MicrosoftTemplateEngineUtilsPackageVersion>10.0.400-preview.26310.101</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>10.0.400-preview.26310.101</MicrosoftTemplateSearchCommonPackageVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>10.0.400-preview.26310.101</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
-    <MicrosoftTestPlatformBuildPackageVersion>18.7.0-release-26310-101</MicrosoftTestPlatformBuildPackageVersion>
-    <MicrosoftTestPlatformCLIPackageVersion>18.7.0-release-26310-101</MicrosoftTestPlatformCLIPackageVersion>
+    <MicrosoftTestPlatformBuildPackageVersion>18.7.0-release-26278-109</MicrosoftTestPlatformBuildPackageVersion>
+    <MicrosoftTestPlatformCLIPackageVersion>18.7.0-release-26278-109</MicrosoftTestPlatformCLIPackageVersion>
     <MicrosoftWebXdtPackageVersion>3.2.8</MicrosoftWebXdtPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>10.0.8</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftWindowsDesktopAppInternalPackageVersion>10.0.8-servicing.26229.119</MicrosoftWindowsDesktopAppInternalPackageVersion>
