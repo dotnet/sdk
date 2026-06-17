@@ -349,7 +349,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [Fact]
-        public void ReturnsErrorwhenManifestPathIsEmpty()
+        public void ReturnsErrorWhenManifestPathIsEmpty()
         {
             var errorMessages = new List<string>();
             var buildEngine = new Mock<IBuildEngine>();
