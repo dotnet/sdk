@@ -129,14 +129,22 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
 3. **Change which `/daily/` build `/preview/` points at via an explicit process**
    Implement a `release` pipeline that lets an operator select a set of dotnetup release artifacts from a prior daily pipeline run.
 4. **The release pipeline:**
-   - Bumps the patch version by 1 off of the last tagged preview patch version using global `msbuild` parameters. Coordinate to push a PR via maestro or via actions that bumps the version in the real branch. Produce the preview versioned dotnetup `tag`.
-   - Pushes that tag onto the commit from the selected daily pipeline run.
-   - Sets `preview` version metadata property `PreReleaseVersionLabel` as a global property override using the same methodology as the .NET SDK.
-   - Runs tests on that branch.
-   - On pass: repins the `/preview/` `aka.ms` url (only if `test` run is not enabled), and creates the GitHub Release with change notes.
+  - Takes a previously produced daily build/artifact set and promotes it as-is. **No rebuild.**
+  - Does **not** inject version properties (`PreReleaseVersionLabel`, patch bump, etc.) at release time.
+  - Validates release preconditions before promotion:
+    - Selected artifact version is different from the version in the latest preview tag.
+    - Selected artifacts include matching checksum sidecars for all published installers.
+  - Executes using the trusted pipeline/workflow and script content from `release/dnup` only (no PR ref checkout for executable content).
+  - Creates/updates the preview tag on `release/dnup` that corresponds to the already-built artifact version.
+  - Repoints `/preview/` `aka.ms` links to that immutable version.
+  - Creates the GitHub Release notes for that version.
+
+5. **Version bumping is decoupled from release promotion.**
+  - Version increments are prepared ahead of time via bot-created PRs on `release/dnup` which must be merged manually.
+  - Promotion only picks and blesses a prebuilt version; it does not author a new version.
 
 **Recovery — if only a simple revert is needed:**
-1. Re-run the `release` pipeline against an existing tag and repoint the `/preview/` URL. Allow skipping tests if needed (break-glass.)
+1. Re-run the `release` pipeline against an existing tag and repoint the `/preview/` URL.
    Archival CI URLs exist per version and are confirmed live today, e.g.
    `https://ci.dot.net/public/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe` and its
    `.../public-checksums/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe.sha512` sidecar.
@@ -150,11 +158,39 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
 1. Check out the tagged commit.
 2. Create `release/dnup/<tag-version>/hotfix-x.y.z` off the tag.
 3. Open an internal PR with the fix into that branch and get approval.
-4. Run the release pipeline (which runs tests) and repoint the selector.
+4. Validate the fix through normal branch CI/PR checks, then run the release pipeline to repoint the selector.
 
 This phase allows a public preview. I view arcade rollout as valid around this time once we see stabilization of the public preview, but also potential arcade rollout with a fallback during `preview`.
 
 In this phase, before public preview we'd remove the fallback to the .NET Install Script, but keep the fallback on the `daily` dotnetup builds, and keep `release/dnup` using the `daily` dotnetup builds to build. (This prevents a broken `dotnetup` from preventing us from shipping a new `dotnetup`.)
+
+### Phase 1.1 — Concrete version-bump bot strategy (no new bot)
+
+Goal: always have a bot-created "next version bump" PR ready on `release/dnup`, and automatically create the next one when the previous bump PR merges.
+
+#### GitHub Actions PR loop (recommended)
+
+Use a repo workflow with `github-actions[bot]` as the actor (no new custom bot service):
+1. Trigger on merge of a PR labeled `dotnetup-version-bump` (or matching branch prefix).
+2. Run a small script that computes next preview version from the canonical version file and updates only those version fields.
+3. Open/update PR via standard PR action (single open PR invariant).
+4. Reapply label and assign owners.
+
+Guardrails:
+- If an open bump PR already exists, update it instead of creating a second one.
+- Require branch protection + required checks before merge.
+- Include idempotency checks so reruns do not create duplicate bumps.
+- Workflow execution must use the trusted workflow definition and scripts from `release/dnup` only. Do not execute workflow YAML, scripts, or other content from the PR branch/ref when performing bump automation, since PR-authored content could run malicious code.
+
+Why this is the best fit:
+- Directly models the required "always create next PR after merge" behavior.
+- No extra source channel, no synthetic dependency graph, no new bot host.
+- Uses existing GitHub native automation and can still coexist with Maestro for other flows.
+
+#### Proposed decision
+
+- Use **GitHub Actions** for the recurring version-bump PR loop.
+- Keep **Maestro/Darc** for build/channel/subscription flow where it already excels.
 
 ### Phase 2 — Stable on `builds.dotnet.microsoft.com` (tentative)
 
