@@ -45,7 +45,9 @@ public class EnvCommandTests : IDisposable
     [Fact]
     public void EnvSet_None_PersistsConfig()
     {
-        var parseResult = Parser.Parse(["env", "set", "none"]);
+        // Pass --shell so the dotnetup-only profile write (None still keeps dotnetup on PATH) does
+        // not depend on host shell auto-detection, which is unavailable on some CI agents.
+        var parseResult = Parser.Parse(["env", "set", "none", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
 
         int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
