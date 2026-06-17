@@ -353,7 +353,7 @@ internal sealed class TestApplication(
         }
     }
 
-    private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
+    internal static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
         if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? protocolVersions) ||
             string.IsNullOrWhiteSpace(protocolVersions))
