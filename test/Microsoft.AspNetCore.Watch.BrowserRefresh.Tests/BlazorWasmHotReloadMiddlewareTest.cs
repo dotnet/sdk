@@ -235,14 +235,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         private static void AssertUpdates(IReadOnlyList<BlazorWasmHotReloadMiddleware.Update> expected, IReadOnlyList<BlazorWasmHotReloadMiddleware.Update> actual)
         {
-            Assert.AreEqual(expected.Count, actual.Count);
+            Assert.HasCount(expected.Count, actual);
 
             for (var u = 0; u < expected.Count; u++)
             {
                 var expectedUpdate = expected[u];
                 var actualUpdate = actual[u];
                 Assert.AreEqual(expectedUpdate.Id, actualUpdate.Id);
-                Assert.AreEqual(expectedUpdate.Deltas.Length, expectedUpdate.Deltas.Length);
+                Assert.HasCount(expectedUpdate.Deltas.Length, actualUpdate.Deltas);
 
                 for (var i = 0; i < expectedUpdate.Deltas.Length; i++)
                 {
