@@ -33,7 +33,7 @@ jobs:
             name: $(DncEngInternalBuildPool)
             demands: ImageOverride -equals build.azurelinux.3.amd64
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: 'azurelinux.3.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-helix-amd64'
+          helixTargetQueue: 'azurelinux.3.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-helix-amd64'
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: AzureLinux.3.Amd64
         strategy:
