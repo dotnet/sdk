@@ -236,7 +236,7 @@ Use the `create_issue` tool with:
 
 **Labels:** `["Known Build Error"]`
 
-**Body:** Use this template:
+**Body:** Use this template (matching the format that Build Analysis expects):
 
 ````markdown
 ## Build Information
@@ -244,7 +244,14 @@ Build: <AzDO build URL>
 Build error leg or test failing: <leg name or test name>
 Pull request: <PR URL if applicable>
 
+<!-- Error message template -->
 ## Error Message
+
+**DO NOT USE JSON BELOW IF THIS IS A BUILD BREAK** otherwise build analysis will allow pull requests to merge that break the build worse. For a build break, do not use this issue form. Make a regular new issue.
+
+Fill the error message using [step by step known issues guidance](https://github.com/dotnet/arcade/blob/main/Documentation/Build%20Analysis/KnownIssueJsonStepByStep.md).
+
+<!-- Use ErrorMessage for String.Contains matches. Use ErrorPattern for regex matches (single line/no backtracking). Set BuildRetry to true to retry builds with this error. Set ExcludeConsoleLog to true to skip helix logs analysis. -->
 
 ```json
 {
@@ -254,13 +261,10 @@ Pull request: <PR URL if applicable>
   "ExcludeConsoleLog": <true|false>
 }
 ```
-
-## Validation Results
-- **Triggering build:** ✅ Pattern matched
-- **Specificity check:** <results from step 4b>
-- **Pattern type:** ErrorMessage / ErrorPattern
-- **Recommendation:** <any notes about the pattern>
 ````
+
+Do NOT include a "Validation Results" section — the Build Analysis infrastructure
+automatically validates the pattern and injects results into the issue.
 
 After filing, inform the user that Build Analysis will automatically scan builds from
 the last 24 hours and all future builds against this known issue.
