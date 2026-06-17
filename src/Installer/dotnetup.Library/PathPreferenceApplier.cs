@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// <summary>
 /// Applies the two orthogonal dotnetup environment settings — dotnet exposure
 /// (<see cref="PathPreference"/>) and whether dotnetup itself is on PATH — by writing and
-/// unwinding the shell-profile block, the Windows user-scope dotnet env vars, and the Windows
+/// removing the shell-profile block, the Windows user-scope dotnet env vars, and the Windows
 /// user-scope dotnetup PATH entry. See
 /// documentation/general/dotnetup/designs/dotnetup-env.md for the full composition model.
 ///
@@ -22,10 +22,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 ///     cmd.exe and GUI apps see it).</item>
 /// </list>
 ///
-/// Unwind decisions are driven by the <see cref="ObservedEnvironmentState"/> read from the live
+/// Removal decisions are driven by the <see cref="ObservedEnvironmentState"/> read from the live
 /// environment, not by the stored config. This lets the applier clean up wiring that is actually
 /// present even when the config never recorded it (or drifted), and avoids running the elevating
-/// env-var unwind when nothing is wired.
+/// env-var removal when nothing is wired.
 /// </summary>
 internal static class PathPreferenceApplier
 {
@@ -57,7 +57,7 @@ internal static class PathPreferenceApplier
 
         shellProvider ??= ShellDetection.GetCurrentShellProvider();
 
-        // 1. Unwind the Windows dotnet env-var wiring if it is present and we no longer want it.
+        // 1. Remove the Windows dotnet env-var wiring if it is present and we no longer want it.
         //    ApplyEnvironmentModifications(InstallType.System) is the inverse of
         //    ApplyEnvironmentModifications(InstallType.User): it removes the user dotnet from
         //    user PATH, restores the Program Files dotnet to system PATH, and unsets the

@@ -24,7 +24,7 @@ internal static class EnvSettingsWriter
 
         string dotnetRoot = environment.GetDefaultDotnetInstallPath();
 
-        // Unwind decisions come from the live environment, not the stored config, so drift is
+        // Removal decisions come from the live environment, not the stored config, so drift is
         // corrected on re-sync.
         ObservedEnvironmentState observed = inspector.Inspect(resolvedShellProvider);
 

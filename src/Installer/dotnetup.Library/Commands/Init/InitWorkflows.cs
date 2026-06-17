@@ -112,7 +112,7 @@ internal class InitWorkflows
     }
 
     /// <summary>
-    /// Applies the resolved env settings to the live environment. Unwind decisions come from the
+    /// Applies the resolved env settings to the live environment. Removal decisions come from the
     /// observed environment, not the stored config, so any drift is corrected.
     /// </summary>
     private void ApplyEnvironmentSettings(

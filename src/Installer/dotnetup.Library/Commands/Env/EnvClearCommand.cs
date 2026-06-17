@@ -7,7 +7,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 /// <summary>
-/// Fully unwires everything dotnetup wrote into the environment: equivalent to
+/// Fully removes everything dotnetup wrote into the environment: equivalent to
 /// <c>env set none --dotnetup-on-path off</c>. Removes the managed profile block and the
 /// dotnetup PATH entry, leaving no dotnet exposure and no dotnetup-on-PATH. The closest thing
 /// to an "env uninstall" since dotnetup has no uninstall command.

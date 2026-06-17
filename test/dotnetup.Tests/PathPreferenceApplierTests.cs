@@ -12,10 +12,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
 /// Unit tests for the two-axis composition in <see cref="PathPreferenceApplier"/> — dotnet
-/// exposure (<see cref="PathPreference"/>) × dotnetup-on-PATH — plus the reality-driven unwind
+/// exposure (<see cref="PathPreference"/>) × dotnetup-on-PATH — plus the reality-driven removal
 /// transitions and the platform / shell-provider edge cases.
 ///
-/// Unwind decisions are driven by an <see cref="ObservedEnvironmentState"/> the test supplies
+/// Removal decisions are driven by an <see cref="ObservedEnvironmentState"/> the test supplies
 /// directly, so the applier stays pure (no registry / real-environment reads here). Profile
 /// writes are asserted via the mock's counters (the mock records, it does not touch disk).
 /// Profile removals go through the real <see cref="ShellProfileManager.RemoveProfileEntries"/>
@@ -118,10 +118,10 @@ public class PathPreferenceApplierTests : IDisposable
         _env.LastIncludeDotnetupForTerminalProfileModifications.Should().BeTrue();
     }
 
-    // ── Unwind transitions (driven by observed reality) ──
+    // ── Removal transitions (driven by observed reality) ──
 
     [Fact]
-    public void All_To_Shell_UnwindsEnvVarsButKeepsProfile()
+    public void All_To_Shell_RemovesEnvVarsButKeepsProfile()
     {
         if (!OperatingSystem.IsWindows()) return;
 
@@ -130,13 +130,13 @@ public class PathPreferenceApplierTests : IDisposable
             Observed(dotnetEnvVarsPresent: true, dotnetEnvVarsComplete: true, profileBlockPresent: true),
             _env, DotnetRoot, _shellProvider);
 
-        _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(1);  // env-var unwind
+        _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(1);  // env-var removal
         _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(0);
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(1);    // profile still written
     }
 
     [Fact]
-    public void All_To_None_DotnetupOff_UnwindsEnvVarsAndRemovesProfile()
+    public void All_To_None_DotnetupOff_RemovesEnvVarsAndProfile()
     {
         if (!OperatingSystem.IsWindows()) return;
 
@@ -181,7 +181,7 @@ public class PathPreferenceApplierTests : IDisposable
         _env.LastIncludeDotnetupForTerminalProfileModifications.Should().BeTrue();
     }
 
-    // ── Drift correction: unwind what is actually observed, even when no prior config recorded it ──
+    // ── Drift correction: remove what is actually observed, even when no prior config recorded it ──
 
     [Fact]
     public void StrayProfileBlock_RemovedEvenWithoutPriorConfig()
@@ -211,11 +211,11 @@ public class PathPreferenceApplierTests : IDisposable
     }
 
     [Fact]
-    public void StrayDotnetEnvVars_UnwoundWhenTargetShell()
+    public void StrayDotnetEnvVars_RemovedWhenTargetShell()
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        // Reality has 'all'-mode env vars wired but the target is shell: unwind them, even though
+        // Reality has 'all'-mode env vars wired but the target is shell: remove them, even though
         // no prior 'all' config is supplied.
         PathPreferenceApplier.Apply(
             PathPreference.Shell, targetDotnetupOnPath: true,

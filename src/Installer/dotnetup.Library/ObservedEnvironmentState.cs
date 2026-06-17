@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// live machine state (shell profile, Windows user-scope env vars, user PATH) rather than from
 /// the stored config. This is the env-axis analog of <see cref="UserInstallRootChanges"/>:
 /// <see cref="EnvironmentStateInspector"/> produces it, <see cref="PathPreferenceApplier"/>
-/// consumes it to decide what to unwind, and <see cref="Commands.Env.EnvDriftAnalyzer"/> compares
+/// consumes it to decide what to remove, and <see cref="Commands.Env.EnvDriftAnalyzer"/> compares
 /// it against the configured settings to report drift.
 /// </summary>
 /// <param name="DotnetUserEnvVarsPresent">

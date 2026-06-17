@@ -61,7 +61,7 @@ public class EnvCommandTests : IDisposable
     }
 
     [Fact]
-    public void EnvSet_DotnetupOnPathOff_PersistsAndUnwires()
+    public void EnvSet_DotnetupOnPathOff_PersistsAndRemoves()
     {
         var parseResult = Parser.Parse(["env", "set", "none", "--dotnetup-on-path", "off"]);
         parseResult.Errors.Should().BeEmpty();
@@ -145,7 +145,7 @@ public class EnvCommandTests : IDisposable
     // ── EnvClearCommand ──
 
     [Fact]
-    public void EnvClear_UnwiresEverythingAndPersists()
+    public void EnvClear_RemovesEverythingAndPersists()
     {
         DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true });
 
