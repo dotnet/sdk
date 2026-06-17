@@ -314,6 +314,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var publishCommand = new PublishCommand(testAsset);
+            publishCommand.WithIsolatedNuGetCache(testAsset.TestRoot);
             var publishDir = publishCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid).FullName;
             var depsJsonPath = Path.Combine(publishDir, testProject.Name + ".deps.json");
 

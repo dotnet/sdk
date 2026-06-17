@@ -95,6 +95,16 @@ namespace Microsoft.NET.TestFramework.Commands
         public TestCommand WithCulture(string locale) => WithEnvironmentVariable(UILanguageOverride.DOTNET_CLI_UI_LANGUAGE, locale);
 
         /// <summary>
+        /// Configures the command to use an isolated NuGet packages cache under the
+        /// given directory. Prevents concurrent test restores from interfering with
+        /// NuGet's no-op detection via the shared global packages folder.
+        /// </summary>
+        public TestCommand WithIsolatedNuGetCache(string baseDirectory)
+        {
+            return WithEnvironmentVariable("NUGET_PACKAGES", Path.Combine(baseDirectory, ".nuget-packages"));
+        }
+
+        /// <summary>
         /// Configures the command to retry when the specified exit code is returned (only when executing via Execute()/Execute(params string[])).
         /// Useful for transient errors like file locks from background processes.
         /// </summary>

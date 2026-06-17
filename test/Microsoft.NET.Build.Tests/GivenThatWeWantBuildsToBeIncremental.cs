@@ -20,6 +20,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
+            buildCommand.WithIsolatedNuGetCache(testAsset.TestRoot);
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework).FullName;
             var runtimeConfigDevJsonPath = Path.Combine(outputDirectory, "HelloWorld.runtimeconfig.dev.json");
 
@@ -43,6 +44,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
+            buildCommand.WithIsolatedNuGetCache(testAsset.TestRoot);
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework).FullName;
             var baseIntermediateOutputDirectory = buildCommand.GetBaseIntermediateDirectory().FullName;
             var intermediateDirectory = buildCommand.GetIntermediateDirectory(targetFramework).FullName;
