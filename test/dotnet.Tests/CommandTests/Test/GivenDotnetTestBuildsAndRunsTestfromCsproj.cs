@@ -344,10 +344,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([verbosity, shouldShowPassedTests]);
 
-            // Call test
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
-                                        .WithWorkingDirectory(testProjectDirectory)
-                                        .Execute("-v", verbosity);
+            // Call test — suppress output for verbose cases to avoid bloating CI logs
+            // (the "diag" case alone produces ~95,000 lines of MSBuild output).
+            var command = new DotnetTestCommand(Log, disableNewOutput: true)
+                                        .WithWorkingDirectory(testProjectDirectory);
+            if (verbosity is "d" or "diag")
+            {
+                command.SuppressOutputOnFailure = true;
+            }
+            CommandResult result = command.Execute("-v", verbosity);
 
             // Verify
             if (!SdkTestContext.IsLocalized())

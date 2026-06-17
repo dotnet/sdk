@@ -27,6 +27,16 @@ namespace Microsoft.NET.TestFramework.Commands
         public bool VerboseOutput { get; set; }
 
         /// <summary>
+        /// When true, command output is written to a file on disk instead of the test log
+        /// when the command fails. The file is placed in the Helix upload directory (if
+        /// available) or a temp directory. Use this for tests that intentionally produce
+        /// very large output (e.g., diagnostic verbosity) to avoid bloating CI logs.
+        /// The output is still captured in <see cref="CommandResult.StdOut"/>/<see cref="CommandResult.StdErr"/>
+        /// for assertions.
+        /// </summary>
+        public bool SuppressOutputOnFailure { get; set; }
+
+        /// <summary>
         /// When true, the child process is launched in a new process group so that
         /// console signals (e.g. Ctrl+C) sent to it do not propagate to the test host.
         /// </summary>
@@ -219,18 +229,37 @@ namespace Microsoft.NET.TestFramework.Commands
             // buffering output a second time in memory.
             if (!verboseTestOutput && result.ExitCode != 0)
             {
-                if (!string.IsNullOrEmpty(result.StdOut))
+                if (SuppressOutputOnFailure)
                 {
-                    foreach (var line in result.StdOut.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
-                    {
-                        Log.WriteLine($"》{line}");
-                    }
+                    // Write output to a file instead of the test log to avoid bloating CI logs.
+                    var outputDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT")
+                        ?? Path.GetTempPath();
+                    var fileName = $"cmd-output-{Guid.NewGuid():N}.log";
+                    var outputPath = Path.Combine(outputDir, fileName);
+                    File.WriteAllText(outputPath,
+                        $"> {result.StartInfo.FileName} {result.StartInfo.Arguments}{Environment.NewLine}" +
+                        $"Exit code: {result.ExitCode}{Environment.NewLine}{Environment.NewLine}" +
+                        $"=== STDOUT ==={Environment.NewLine}{result.StdOut ?? ""}{Environment.NewLine}{Environment.NewLine}" +
+                        $"=== STDERR ==={Environment.NewLine}{result.StdErr ?? ""}");
+                    int stdOutLines = string.IsNullOrEmpty(result.StdOut) ? 0 : result.StdOut.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Length;
+                    int stdErrLines = string.IsNullOrEmpty(result.StdErr) ? 0 : result.StdErr.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Length;
+                    Log.WriteLine($"  ⚠️ Command failed — output ({stdOutLines} stdout + {stdErrLines} stderr lines) written to: {outputPath}");
                 }
-                if (!string.IsNullOrEmpty(result.StdErr))
+                else
                 {
-                    foreach (var line in result.StdErr.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+                    if (!string.IsNullOrEmpty(result.StdOut))
                     {
-                        Log.WriteLine($"❌{line}");
+                        foreach (var line in result.StdOut.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+                        {
+                            Log.WriteLine($"》{line}");
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(result.StdErr))
+                    {
+                        foreach (var line in result.StdErr.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+                        {
+                            Log.WriteLine($"❌{line}");
+                        }
                     }
                 }
             }
