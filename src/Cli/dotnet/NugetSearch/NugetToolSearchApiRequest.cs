@@ -111,44 +111,58 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
                     serviceIndexUrl, e.Message, "N/A"));
         }
 
-        if (!response.IsSuccessStatusCode)
+        using (response)
         {
-            if ((int)response.StatusCode >= 500 && (int)response.StatusCode < 600)
+            if (!response.IsSuccessStatusCode)
             {
+                if ((int)response.StatusCode >= 500 && (int)response.StatusCode < 600)
+                {
+                    throw new NugetSearchApiRequestException(
+                        string.Format(
+                            CliStrings.RetriableNugetSearchFailure,
+                            serviceIndexUrl, response.ReasonPhrase, response.StatusCode));
+                }
+
                 throw new NugetSearchApiRequestException(
                     string.Format(
-                        CliStrings.RetriableNugetSearchFailure,
+                        CliStrings.NonRetriableNugetSearchFailure,
                         serviceIndexUrl, response.ReasonPhrase, response.StatusCode));
             }
 
-            throw new NugetSearchApiRequestException(
-                string.Format(
-                    CliStrings.NonRetriableNugetSearchFailure,
-                    serviceIndexUrl, response.ReasonPhrase, response.StatusCode));
+            var indexJson = await response.Content.ReadAsStringAsync(cancellation.Token);
+
+            NugetServiceIndex index;
+            try
+            {
+                index = JsonSerializer.Deserialize(indexJson, NugetServiceIndexJsonSerializerContext.Default.NugetServiceIndex);
+            }
+            catch (JsonException e)
+            {
+                throw new NugetSearchApiRequestException(
+                    string.Format(
+                        CliStrings.NonRetriableNugetSearchFailure,
+                        serviceIndexUrl, e.Message, response.StatusCode));
+            }
+
+            var resource = index?.Resources?.FirstOrDefault(r => r.Type == searchQueryServiceType)
+                ?? throw new NugetSearchApiRequestException(
+                    string.Format(
+                        CliStrings.NonRetriableNugetSearchFailure,
+                        serviceIndexUrl, $"{searchQueryServiceType} not found in service index", response.StatusCode));
+
+            // The service index is server-supplied, so don't trust the URL to be well-formed.
+            try
+            {
+                return new Uri(resource.Id);
+            }
+            catch (Exception e) when (e is UriFormatException or ArgumentException)
+            {
+                throw new NugetSearchApiRequestException(
+                    string.Format(
+                        CliStrings.NonRetriableNugetSearchFailure,
+                        serviceIndexUrl, $"{searchQueryServiceType} returned a malformed URL: {e.Message}", response.StatusCode));
+            }
         }
-
-        var indexJson = await response.Content.ReadAsStringAsync(cancellation.Token);
-
-        NugetServiceIndex index;
-        try
-        {
-            index = JsonSerializer.Deserialize(indexJson, NugetServiceIndexJsonSerializerContext.Default.NugetServiceIndex);
-        }
-        catch (JsonException e)
-        {
-            throw new NugetSearchApiRequestException(
-                string.Format(
-                    CliStrings.NonRetriableNugetSearchFailure,
-                    serviceIndexUrl, e.Message, response.StatusCode));
-        }
-
-        var resource = index?.Resources?.FirstOrDefault(r => r.Type == searchQueryServiceType)
-            ?? throw new NugetSearchApiRequestException(
-                string.Format(
-                    CliStrings.NonRetriableNugetSearchFailure,
-                    serviceIndexUrl, $"{searchQueryServiceType} not found in service index", response.StatusCode));
-
-        return new Uri(resource.Id);
     }
 #else
     private static async Task<Uri> DomainAndPath()
