@@ -5,7 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsTestProject>true</IsTestProject>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
-    <UseMSTestSdk>true</UseMSTestSdk>
   </PropertyGroup>
 
   <ItemGroup>
