@@ -84,6 +84,50 @@ public class LaunchSettingsParserTests
     }
 
     [Fact]
+    public void CommentsAndTrailingCommas_Executable()
+    {
+        var parser = ExecutableLaunchProfileParser.Instance;
+
+        var result = parser.ParseProfile("path", "name", """
+            {
+                // line comment
+                "commandName": "Executable",
+                "executablePath": "executable", /* block comment */
+                "environmentVariables": {
+                    "VAR1": "VALUE1", // trailing comma below
+                },
+            }
+            """);
+
+        Assert.True(result.Successful);
+        var model = Assert.IsType<ExecutableLaunchProfile>(result.Profile);
+        Assert.Equal("executable", model.ExecutablePath);
+        Assert.Equal([("VAR1", "VALUE1")], model.EnvironmentVariables.Select(e => (e.Key, e.Value)));
+    }
+
+    [Fact]
+    public void CommentsAndTrailingCommas_Project()
+    {
+        var parser = ProjectLaunchProfileParser.Instance;
+
+        var result = parser.ParseProfile("path", "name", """
+            {
+                // line comment
+                "commandName": "Project",
+                "commandLineArgs": "arg1", /* block comment */
+                "environmentVariables": {
+                    "VAR1": "VALUE1", // trailing comma below
+                },
+            }
+            """);
+
+        Assert.True(result.Successful);
+        var model = Assert.IsType<ProjectLaunchProfile>(result.Profile);
+        Assert.Equal("arg1", model.CommandLineArgs);
+        Assert.Equal([("VAR1", "VALUE1")], model.EnvironmentVariables.Select(e => (e.Key, e.Value)));
+    }
+
+    [Fact]
     public void EnvironmentVariableExpansion_Executable()
     {
         var root = Path.GetTempPath();
