@@ -134,9 +134,8 @@ static unsafe partial class NativeEntryPoint
                 // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
                 // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
                 // project tools, and anything that does not resolve to the managed CLI.
-                else if (TryInvokeExternalCommand(parseResult, args, sdkDir, out exitCode, out success))
+                else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, out exitCode, out success))
                 {
-                    success = true;
                     return exitCode;
                 }
             }
