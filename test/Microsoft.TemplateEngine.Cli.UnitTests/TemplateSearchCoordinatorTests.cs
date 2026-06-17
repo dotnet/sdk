@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search foo");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -99,16 +99,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    TestContext.CancellationTokenSource.Token);
+                    TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.AreEqual(2, nugetSearchResults.SearchHits.Count);
+                Assert.HasCount(2, nugetSearchResults.SearchHits);
                 (ITemplatePackageInfo _, IReadOnlyList<ITemplateInfo> packOneMatchedTemplates) = nugetSearchResults.SearchHits.Single(pack => pack.PackageInfo.Name.Equals(s_packOneInfo.Name));
                 (ITemplatePackageInfo _, IReadOnlyList<ITemplateInfo> packTwoMatchedTemplates) = nugetSearchResults.SearchHits.Single(pack => pack.PackageInfo.Name.Equals(s_packTwoInfo.Name));
-                Assert.AreEqual(1, packOneMatchedTemplates.Count(t => string.Equals(t.Name, s_fooOneTemplate.Name)));
-                Assert.AreEqual(1, packTwoMatchedTemplates.Count(t => string.Equals(t.Name, s_fooTwoTemplate.Name)));
+                Assert.ContainsSingle(t => string.Equals(t.Name, s_fooOneTemplate.Name), packOneMatchedTemplates);
+                Assert.ContainsSingle(t => string.Equals(t.Name, s_fooTwoTemplate.Name), packTwoMatchedTemplates);
             }
         }
 
@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search foo --framework netcoreapp2.0");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -147,15 +147,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    TestContext.CancellationTokenSource.Token);
+                    TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
                 Assert.HasCount(1, nugetSearchResults.SearchHits);
 
                 (ITemplatePackageInfo _, IReadOnlyList<ITemplateInfo> packTwoMatchedTemplates) = nugetSearchResults.SearchHits.Single(pack => pack.PackageInfo.Name.Equals(s_packTwoInfo.Name));
-                Assert.AreEqual(1, packTwoMatchedTemplates.Count(t => string.Equals(t.Name, s_fooTwoTemplate.Name)));
+                Assert.ContainsSingle(t => string.Equals(t.Name, s_fooTwoTemplate.Name), packTwoMatchedTemplates);
             }
         }
 
@@ -182,7 +182,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search foo --tfm netcoreapp2.0");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -192,12 +192,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    TestContext.CancellationTokenSource.Token);
+                    TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.IsFalse(nugetSearchResults.SearchHits.Any());
+                Assert.IsEmpty(nugetSearchResults.SearchHits);
             }
         }
 
@@ -221,7 +221,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search bar --language F#");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -231,10 +231,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    TestContext.CancellationTokenSource.Token);
+                    TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
                 Assert.HasCount(1, nugetSearchResults.SearchHits);
                 Assert.HasCount(1, nugetSearchResults.SearchHits[0].MatchedTemplates);
@@ -265,7 +265,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --author {commandAuthor}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -275,12 +275,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    TestContext.CancellationTokenSource.Token);
+                    TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.AreEqual(matchCount, nugetSearchResults.SearchHits.Count);
+                Assert.HasCount(matchCount, nugetSearchResults.SearchHits);
             }
         }
 
@@ -307,7 +307,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --type {commandType}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -317,12 +317,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    TestContext.CancellationTokenSource.Token);
+                    TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.AreEqual(matchCount, nugetSearchResults.SearchHits.Count);
+                Assert.HasCount(matchCount, nugetSearchResults.SearchHits);
             }
         }
 
@@ -350,7 +350,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --package {commandPackage}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -360,15 +360,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    TestContext.CancellationTokenSource.Token);
+                    TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.AreEqual(packMatchCount, nugetSearchResults.SearchHits.Count);
+                Assert.HasCount(packMatchCount, nugetSearchResults.SearchHits);
                 if (packMatchCount != 0)
                 {
-                    Assert.AreEqual(templateMatchCount, nugetSearchResults.SearchHits.Single(res => res.PackageInfo.Name == s_packThreeInfo.Name).MatchedTemplates.Count);
+                    Assert.HasCount(templateMatchCount, nugetSearchResults.SearchHits.Single(res => res.PackageInfo.Name == s_packThreeInfo.Name).MatchedTemplates);
                 }
             }
         }
@@ -397,7 +397,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search {commandTemplate} --tag {commandTag}");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -407,12 +407,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    TestContext.CancellationTokenSource.Token);
+                    TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.AreEqual(packMatchCount, nugetSearchResults.SearchHits.Count);
+                Assert.HasCount(packMatchCount, nugetSearchResults.SearchHits);
                 if (packMatchCount != 0)
                 {
                     Assert.AreEqual(templateMatchCount, nugetSearchResults.SearchHits.Sum(res => res.MatchedTemplates.Count));
@@ -439,7 +439,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search bar --language VB");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -449,12 +449,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                     factory.GetPackFilter(args),
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                    TestContext.CancellationTokenSource.Token);
+                    TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.IsFalse(nugetSearchResults.SearchHits.Any());
+                Assert.IsEmpty(nugetSearchResults.SearchHits);
             }
         }
 
@@ -476,7 +476,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             ParseResult parseResult = myCommand.Parse($"new search --unknown");
             SearchCommandArgs args = new((SearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationTokenSource.Token);
+            IReadOnlyList<IManagedTemplatePackage> templatePackages = await templatePackageManager.GetManagedTemplatePackagesAsync(false, TestContext.CancellationToken);
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(engineEnvironmentSettings);
             CliSearchFiltersFactory factory = new(templatePackages);
 
@@ -484,12 +484,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             IReadOnlyList<SearchResult> searchResults = await searchCoordinator.SearchAsync(
                 factory.GetPackFilter(args),
                 CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
-                TestContext.CancellationTokenSource.Token);
+                TestContext.CancellationToken);
 
             Assert.HasCount(1, searchResults);
-            Assert.AreEqual(1, searchResults.Count(result => result.Provider.Factory.DisplayName == "NuGet.org"));
+            Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
             SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-            Assert.IsFalse(nugetSearchResults.SearchHits.Any());
+            Assert.IsEmpty(nugetSearchResults.SearchHits);
         }
 
         [TestMethod]

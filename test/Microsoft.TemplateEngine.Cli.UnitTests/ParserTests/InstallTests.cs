@@ -36,8 +36,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             ParseResult parseResult = myCommand.Parse($"new install");
 
-            Assert.IsTrue(parseResult.Errors.Any());
-            Assert.IsTrue(parseResult.Errors.Any(error => error.Message.Contains("Required argument") && error.Message.Contains("missing")));
+            Assert.IsNotEmpty(parseResult.Errors);
+            Assert.Contains(error => error.Message.Contains("Required argument") && error.Message.Contains("missing"), parseResult.Errors);
 
             Assert.Throws<ArgumentException>(() => new InstallCommandArgs((InstallCommand)parseResult.CommandResult.Command, parseResult));
         }
@@ -50,8 +50,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             ParseResult parseResult = myCommand.Parse($"new --install --interactive");
 
-            Assert.IsTrue(parseResult.Errors.Any());
-            Assert.IsTrue(parseResult.Errors.Any(error => error.Message.Contains("Required argument") && error.Message.Contains("missing")));
+            Assert.IsNotEmpty(parseResult.Errors);
+            Assert.Contains(error => error.Message.Contains("Required argument") && error.Message.Contains("missing"), parseResult.Errors);
 
             Assert.Throws<ArgumentException>(() => new InstallCommandArgs((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult));
         }
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
 
             Assert.IsNotNull(args.AdditionalSources);
-            Assert.AreEqual(2, args.AdditionalSources.Count);
+            Assert.HasCount(2, args.AdditionalSources);
             Assert.Contains("my-custom-source1", args.AdditionalSources);
             Assert.Contains("my-custom-source2", args.AdditionalSources);
             Assert.HasCount(1, args.TemplatePackages);
@@ -125,7 +125,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new install source1 source2");
             InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
 
-            Assert.AreEqual(2, args.TemplatePackages.Count);
+            Assert.HasCount(2, args.TemplatePackages);
             Assert.Contains("source1", args.TemplatePackages);
             Assert.Contains("source2", args.TemplatePackages);
         }
@@ -176,7 +176,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse(testCase);
             InstallCommandArgs args = new((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult);
 
-            Assert.AreEqual(2, args.TemplatePackages.Count);
+            Assert.HasCount(2, args.TemplatePackages);
             Assert.Contains("source1", args.TemplatePackages);
             Assert.Contains("source2", args.TemplatePackages);
         }
@@ -193,7 +193,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             InstallCommandArgs args = new((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult);
 
             Assert.IsNotNull(args.AdditionalSources);
-            Assert.AreEqual(2, args.AdditionalSources.Count);
+            Assert.HasCount(2, args.AdditionalSources);
             Assert.Contains("my-custom-source1", args.AdditionalSources);
             Assert.Contains("my-custom-source2", args.AdditionalSources);
             Assert.HasCount(1, args.TemplatePackages);
@@ -217,8 +217,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             string[] expectedInvalidTokenSets = expectedInvalidTokens.Split("|");
 
-            Assert.IsTrue(parseResult.Errors.Any());
-            Assert.AreEqual(expectedInvalidTokenSets.Length, parseResult.Errors.Count);
+            Assert.IsNotEmpty(parseResult.Errors);
+            Assert.HasCount(expectedInvalidTokenSets.Length, parseResult.Errors);
             foreach (string tokenSet in expectedInvalidTokenSets)
             {
                 Assert.IsTrue(errorMessages.Contains($"Unrecognized command or argument(s): {tokenSet}.") || errorMessages.Contains($"Unrecognized command or argument {tokenSet}."));

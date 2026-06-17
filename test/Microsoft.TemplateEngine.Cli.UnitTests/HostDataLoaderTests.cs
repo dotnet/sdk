@@ -53,10 +53,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.IsNotNull(data);
 
             Assert.IsFalse(data.IsHidden);
-            Assert.AreEqual(2, data.UsageExamples?.Count);
+            Assert.HasCount(2, data.UsageExamples);
             Assert.IsNotNull(data.UsageExamples);
             Assert.Contains("--framework netcoreapp3.1 --langVersion '9.0'", data.UsageExamples);
-            Assert.AreEqual(4, data.SymbolInfo?.Count);
+            Assert.HasCount(4, data.SymbolInfo);
             Assert.Contains("TargetFrameworkOverride", data.HiddenParameterNames);
             Assert.Contains("Framework", data.ParametersToAlwaysShow);
             Assert.IsTrue(data.LongNameOverrides.ContainsKey("skipRestore"));
@@ -86,10 +86,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.IsNotNull(data);
 
             Assert.IsFalse(data.IsHidden);
-            Assert.AreEqual(2, data.UsageExamples?.Count);
+            Assert.HasCount(2, data.UsageExamples);
             Assert.IsNotNull(data.UsageExamples);
             Assert.Contains("--framework netcoreapp3.1 --langVersion '9.0'", data.UsageExamples);
-            Assert.AreEqual(4, data.SymbolInfo?.Count);
+            Assert.HasCount(4, data.SymbolInfo);
             Assert.Contains("TargetFrameworkOverride", data.HiddenParameterNames);
             Assert.Contains("Framework", data.ParametersToAlwaysShow);
             Assert.IsTrue(data.LongNameOverrides.ContainsKey("skipRestore"));
@@ -164,7 +164,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var serialized = JsonSerializer.SerializeToNode(data)!.AsObject();
 
             Assert.IsNotNull(serialized);
-            Assert.AreEqual(3, serialized.Count);
+            Assert.HasCount(3, serialized);
 
             Assert.Contains("UsageExamples", serialized.Select(p => p.Key));
             Assert.Contains("SymbolInfo", serialized.Select(p => p.Key));
@@ -214,9 +214,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             var symbolInfoObj = serialized["SymbolInfo"]!.AsObject();
             Assert.IsNotNull(symbolInfoObj);
             //empty values should stay when deserializing symbol info
-            Assert.AreEqual(3, symbolInfoObj["param1"]!.AsObject().Count);
+            Assert.HasCount(3, symbolInfoObj["param1"]!.AsObject());
             Assert.AreEqual("", symbolInfoObj["param2"]!["longName"]!.GetValue<string>());
-            Assert.AreEqual(3, symbolInfoObj["param2"]!.AsObject().Count);
+            Assert.HasCount(3, symbolInfoObj["param2"]!.AsObject());
             Assert.HasCount(1, symbolInfoObj["param3"]!.AsObject());
 
             Assert.DoesNotContain("IsHidden", serialized.Select(p => p.Key));

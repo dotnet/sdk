@@ -50,21 +50,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($" new foo");
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
 
-            try
-            {
-                _ = new TemplateCommand(myCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
-            }
-            catch (InvalidTemplateParametersException e)
-            {
-                Assert.AreEqual(2, e.ParameterErrors.Count);
-                Assert.AreEqual(templateGroup.Templates.Single(), e.Template);
+            InvalidTemplateParametersException e = Assert.ThrowsExactly<InvalidTemplateParametersException>(
+                () => _ = new TemplateCommand(myCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single()));
 
-                return Verify(e.Message);
-            }
+            Assert.HasCount(2, e.ParameterErrors);
+            Assert.AreEqual(templateGroup.Templates.Single(), e.Template);
 
-            Assert.Fail("should not land here");
-            return Task.FromResult(1);
-
+            return Verify(e.Message);
         }
 
         [TestMethod]
@@ -77,7 +69,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.IsFalse((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationTokenSource.Token)).Any());
+            Assert.IsEmpty((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationToken)));
         }
 
         [TestMethod]
@@ -90,7 +82,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.IsTrue((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationTokenSource.Token)).Any());
+            Assert.IsNotEmpty((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationToken)));
         }
 
         [TestMethod]
@@ -102,7 +94,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.IsTrue((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationTokenSource.Token)).Any());
+            Assert.IsNotEmpty((await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, TestContext.CancellationToken)));
         }
 
     }

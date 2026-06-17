@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("-f", result["foo"].Aliases);
             Assert.Contains("--foo", result["bar"].Aliases);
             Assert.Contains("-fo", result["bar"].Aliases); // the short name is based on the long name override if it exists
-            Assert.IsFalse(result.Any(r => r.Value.Errors.Any()));
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
         [TestMethod]
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("-fo", result["foo"].Aliases);
             Assert.Contains("--bar", result["bar"].Aliases);
             Assert.Contains("-f", result["bar"].Aliases);
-            Assert.IsFalse(result.Any(r => r.Value.Errors.Any()));
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
         [TestMethod]
@@ -98,7 +98,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("-f", result["foo"].Aliases);
             Assert.Contains("--bar", result["bar"].Aliases);
             Assert.HasCount(1, result["bar"].Aliases);
-            Assert.IsFalse(result.Any(r => r.Value.Errors.Any()));
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
         [TestMethod]
@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             };
 
             var result = AliasAssignmentCoordinator.AssignAliasesForParameter(paramList, InitiallyTakenAliases).ToDictionary(r => r.Parameter.Name, r => r);
-            Assert.IsFalse(result["foo:bar"].Aliases.Any());
+            Assert.IsEmpty(result["foo:bar"].Aliases);
             Assert.HasCount(1, result["foo:bar"].Errors);
             Assert.Contains("Parameter name 'foo:bar' contains colon, which is forbidden.", result["foo:bar"].Errors);
         }
@@ -130,7 +130,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("-f", result["bar"].Aliases);
             Assert.Contains("--f", result["f"].Aliases);
             Assert.Contains("-p:f", result["f"].Aliases);
-            Assert.IsFalse(result.Any(r => r.Value.Errors.Any()));
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
         [TestMethod]
@@ -242,7 +242,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Contains("--no-tools", result["NoTools"].Aliases);
             Assert.HasCount(1, result["skipRestore"].Aliases);
             Assert.Contains("--no-restore", result["skipRestore"].Aliases);
-            Assert.IsFalse(result.Any(r => r.Value.Errors.Any()));
+            Assert.DoesNotContain(r => r.Value.Errors.Any(), result);
         }
 
         [TestMethod]
@@ -307,7 +307,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 Assert.Contains(expectedResult.Key, templateOptions.Keys);
                 var templateOption = templateOptions[expectedResult.Key];
                 Assert.IsNotNull(templateOption);
-                Assert.IsTrue(templateOption.Aliases.Count > 0);
+                Assert.IsNotEmpty(templateOption.Aliases);
                 var longAlias = templateOption.Aliases.ElementAt(0);
                 var shortAlias = templateOption.Aliases.Count > 1 ? templateOption.Aliases.ElementAt(1) : null;
                 var isHidden = templateOption.Option.Hidden;

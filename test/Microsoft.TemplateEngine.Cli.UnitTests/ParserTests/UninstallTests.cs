@@ -22,8 +22,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new {commandName}");
             UninstallCommandArgs args = new((BaseUninstallCommand)parseResult.CommandResult.Command, parseResult);
 
-            Assert.IsFalse(parseResult.Errors.Any());
-            Assert.IsFalse(args.TemplatePackages.Any());
+            Assert.IsEmpty(parseResult.Errors);
+            Assert.IsEmpty(args.TemplatePackages);
         }
 
         [TestMethod]
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse($"new {commandName} source");
             UninstallCommandArgs args = new((BaseUninstallCommand)parseResult.CommandResult.Command, parseResult);
 
-            Assert.IsFalse(parseResult.Errors.Any());
+            Assert.IsEmpty(parseResult.Errors);
             Assert.HasCount(1, args.TemplatePackages);
             Assert.Contains("source", args.TemplatePackages);
         }
@@ -55,8 +55,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ParseResult parseResult = myCommand.Parse(command);
             UninstallCommandArgs args = new((BaseUninstallCommand)parseResult.CommandResult.Command, parseResult);
 
-            Assert.IsFalse(parseResult.Errors.Any());
-            Assert.AreEqual(2, args.TemplatePackages.Count);
+            Assert.IsEmpty(parseResult.Errors);
+            Assert.HasCount(2, args.TemplatePackages);
             Assert.Contains("source1", args.TemplatePackages);
             Assert.Contains("source2", args.TemplatePackages);
         }
@@ -78,8 +78,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             string[] expectedInvalidTokenSets = expectedInvalidTokens.Split("|");
 
-            Assert.IsTrue(parseResult.Errors.Any());
-            Assert.AreEqual(expectedInvalidTokenSets.Length, parseResult.Errors.Count);
+            Assert.IsNotEmpty(parseResult.Errors);
+            Assert.HasCount(expectedInvalidTokenSets.Length, parseResult.Errors);
             foreach (string tokenSet in expectedInvalidTokenSets)
             {
                 Assert.IsTrue(errorMessages.Contains($"Unrecognized command or argument(s): {tokenSet}.") || errorMessages.Contains($"Unrecognized command or argument {tokenSet}."));

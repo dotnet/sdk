@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateResolutionTests
                 });
 
             var parameters = TemplateResolutionResult.GetAllMatchedParametersList(new[] { templateMatchInfo });
-            Assert.AreEqual(3, parameters.Count);
+            Assert.HasCount(3, parameters);
             Assert.AreEqual("paramValue", parameters["--param"]);
             Assert.AreEqual("paramValue2", parameters["--param2"]);
             Assert.AreEqual("paramValue3", parameters["--param3"]);

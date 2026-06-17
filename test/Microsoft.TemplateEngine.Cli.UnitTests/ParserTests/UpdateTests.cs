@@ -37,8 +37,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             ParseResult parseResult = myCommand.Parse($"new {commandName} source");
 
-            Assert.IsTrue(parseResult.Errors.Any());
-            Assert.IsTrue(parseResult.Errors.Any(error => error.Message.Contains("Unrecognized command or argument 'source'")));
+            Assert.IsNotEmpty(parseResult.Errors);
+            Assert.Contains(error => error.Message.Contains("Unrecognized command or argument 'source'"), parseResult.Errors);
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             UpdateCommandArgs args = new(parseResult);
 
             Assert.IsNotNull(args.AdditionalSources);
-            Assert.AreEqual(2, args.AdditionalSources.Count);
+            Assert.HasCount(2, args.AdditionalSources);
             Assert.Contains("my-custom-source1", args.AdditionalSources);
             Assert.Contains("my-custom-source2", args.AdditionalSources);
         }
@@ -153,7 +153,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             UpdateCommandArgs args = new(parseResult);
 
             Assert.IsNotNull(args.AdditionalSources);
-            Assert.AreEqual(2, args.AdditionalSources.Count);
+            Assert.HasCount(2, args.AdditionalSources);
             Assert.Contains("my-custom-source1", args.AdditionalSources);
             Assert.Contains("my-custom-source2", args.AdditionalSources);
         }
@@ -176,8 +176,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             string[] expectedInvalidTokenSets = expectedInvalidTokens.Split("|");
 
-            Assert.IsTrue(parseResult.Errors.Any());
-            Assert.AreEqual(expectedInvalidTokenSets.Length, parseResult.Errors.Count);
+            Assert.IsNotEmpty(parseResult.Errors);
+            Assert.HasCount(expectedInvalidTokenSets.Length, parseResult.Errors);
             foreach (string tokenSet in expectedInvalidTokenSets)
             {
                 Assert.IsTrue(errorMessages.Contains($"Unrecognized command or argument(s): {tokenSet}.") || errorMessages.Contains($"Unrecognized command or argument {tokenSet}."));

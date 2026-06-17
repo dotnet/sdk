@@ -91,7 +91,7 @@ Installed package has the following vulnerabilities:
                 A.Fake<TemplatePackageManager>(),
                 A.Fake<IEngineEnvironmentSettings>(),
                 A.Fake<TemplateConstraintManager>(),
-                TestContext.CancellationTokenSource.Token);
+                TestContext.CancellationToken);
 
             var reportedOutput = fakeOutputReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             reportedOutput.Should().NotBeEmpty();
@@ -137,7 +137,7 @@ Installed package has the following vulnerabilities:
                 A.Fake<TemplatePackageManager>(),
                 A.Fake<IEngineEnvironmentSettings>(),
                 A.Fake<TemplateConstraintManager>(),
-                TestContext.CancellationTokenSource.Token);
+                TestContext.CancellationToken);
 
             var reportedErrors = fakeErrorReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             fakeOutputReporter.ReportedStrings.ToString().Should().BeNullOrEmpty();
@@ -180,7 +180,7 @@ Installed package has the following vulnerabilities:
                 A.Fake<TemplatePackageManager>(),
                 A.Fake<IEngineEnvironmentSettings>(),
                 A.Fake<TemplateConstraintManager>(),
-                TestContext.CancellationTokenSource.Token);
+                TestContext.CancellationToken);
 
             var reportedErrors = fakeErrorReporter.ReportedStrings.ToString().UnixifyLineBreaks().Trim();
             fakeOutputReporter.ReportedStrings.ToString().Should().BeNullOrEmpty();
