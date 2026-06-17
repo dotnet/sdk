@@ -31,8 +31,8 @@ internal class EnvShowCommand : CommandBase
         }
 
         Console.WriteLine("dotnetup environment:");
-        Console.WriteLine($"  dotnet access    {config.AccessMode.ToString().ToLowerInvariant()}");
-        Console.WriteLine($"  dotnetup on PATH   {(config.DotnetupOnPath ? "true" : "false")}");
+        Console.WriteLine($"  {"dotnet access",-18}{config.AccessMode.ToString().ToLowerInvariant()}");
+        Console.WriteLine($"  {"dotnetup on PATH",-18}{(config.DotnetupOnPath ? "true" : "false")}");
 
         IEnvShellProvider? shellProvider = _shellProvider ?? ShellDetection.GetCurrentShellProvider();
         ObservedEnvironmentState observed = _inspector.Inspect(shellProvider);
@@ -41,7 +41,28 @@ internal class EnvShowCommand : CommandBase
         if (drift.Count == 0)
         {
             Console.WriteLine();
-            Console.WriteLine("In sync.");
+            EnvTerminalState terminalState = EnvActivationStatus.EvaluateCurrentProcess(config, _dotnetEnvironment);
+            if (terminalState.IsActive)
+            {
+                Console.WriteLine("In sync.");
+                return;
+            }
+
+            Console.WriteLine("In sync, but not yet active in this terminal.");
+            string? activationCommand = terminalState.NeedsRemovals
+                ? null
+                : EnvActivationCommandBuilder.TryBuild(shellProvider, config.AccessMode, config.DotnetupOnPath);
+
+            if (activationCommand is not null)
+            {
+                Console.WriteLine("To apply it to this terminal now, run:");
+                Console.WriteLine($"  {activationCommand}");
+                Console.WriteLine("Or open a new terminal.");
+            }
+            else
+            {
+                Console.WriteLine("Open a new terminal to pick up the change.");
+            }
             return;
         }
 

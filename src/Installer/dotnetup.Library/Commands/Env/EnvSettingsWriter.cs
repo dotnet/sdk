@@ -36,13 +36,48 @@ internal static class EnvSettingsWriter
             dotnetRoot,
             resolvedShellProvider);
 
-        DotnetupConfig.Write(new DotnetupConfigData
+        DotnetupConfigData newConfig = new()
         {
             AccessMode = targetEnv,
             DotnetupOnPath = targetDotnetupOnPath,
-        });
+        };
+        DotnetupConfig.Write(newConfig);
 
-        Console.WriteLine($"dotnetup env: dotnet access '{targetEnv.ToString().ToLowerInvariant()}', dotnetup on PATH {(targetDotnetupOnPath ? "true" : "false")}.");
-        Console.WriteLine("NOTE: You may need to restart your terminal for the changes to take effect.");
+        Console.WriteLine(DescribeOutcome(targetEnv, targetDotnetupOnPath));
+
+        EnvTerminalState terminalState = EnvActivationStatus.EvaluateCurrentProcess(newConfig, environment);
+        if (!terminalState.IsActive)
+        {
+            // `eval`-ing the script won't remove existing paths, so don't suggest it in that case
+            string? activationCommand = terminalState.NeedsRemovals
+                ? null
+                : EnvActivationCommandBuilder.TryBuild(resolvedShellProvider, targetEnv, targetDotnetupOnPath);
+
+            if (activationCommand is not null)
+            {
+                Console.WriteLine("To apply the change to this terminal now, run:");
+                Console.WriteLine($"  {activationCommand}");
+                Console.WriteLine("Or open a new terminal.");
+            }
+            else
+            {
+                Console.WriteLine("Open a new terminal for the change to take effect.");
+            }
+        }
     }
+
+    /// <summary>
+    /// Describes the resulting environment in outcome terms (what's on PATH) rather than the
+    /// internal setting names, composed from both axes. <c>all</c> shares <c>shell</c>'s wording —
+    /// from the terminal's perspective the available commands are the same; the difference is only
+    /// that <c>all</c> also reaches cmd / GUI apps, which is not worth a distinct line here.
+    /// </summary>
+    private static string DescribeOutcome(DotnetAccessMode accessMode, bool dotnetupOnPath) =>
+        (accessMode, dotnetupOnPath) switch
+        {
+            (DotnetAccessMode.None, true) => "dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet <command>'.",
+            (DotnetAccessMode.None, false) => "Neither dotnet nor dotnetup is on your PATH.",
+            (_, true) => "dotnet and dotnetup are on your PATH.",
+            (_, false) => "dotnet is on your PATH. dotnetup is not.",
+        };
 }
