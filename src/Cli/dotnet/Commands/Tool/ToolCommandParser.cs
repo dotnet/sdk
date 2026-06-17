@@ -21,13 +21,12 @@ internal static class ToolCommandParser
     public static void ConfigureCommand(ToolCommandDefinition command)
     {
 #if CLI_AOT
-        // bare `dotnet tool` needs the full help output, which falls back to the managed CLI.
-        command.SetAction((Func<ParseResult, int>)(_ => throw new CommandNotAvailableInAotException()));
-
-        // Only the local `list`/`uninstall`, `run`, and `search` paths run in AOT. The
-        // `--global`/`--tool-path` variants and `install`/`update`/`restore`/`execute` depend on
-        // NuGet package install/restore infrastructure that isn't AOT-ready, so they throw
-        // CommandNotAvailableInAotException; NativeEntryPoint catches it and hosts the managed CLI.
+        // ConfigureAotActions already set every `tool` subcommand (and the bare `tool` command) to
+        // throw CommandNotAvailableInAotException by default, so we only override the paths that run
+        // in AOT. Only the local `list`/`uninstall`, `run`, and `search` paths are AOT-capable; the
+        // `--global`/`--tool-path` variants and `install`/`update`/`restore`/`execute` keep the
+        // default fallback because they depend on NuGet package install/restore infrastructure that
+        // isn't AOT-ready. NativeEntryPoint catches the exception and hosts the managed CLI.
         command.ListCommand.SetAction(parseResult =>
             command.ListCommand.LocationOptions.IsGlobalOrToolPath(parseResult)
                 ? throw new CommandNotAvailableInAotException()
@@ -38,11 +37,6 @@ internal static class ToolCommandParser
                 : new ToolUninstallLocalCommand(parseResult).Execute());
         command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
         command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
-
-        command.InstallCommand.SetAction((Func<ParseResult, int>)(_ => throw new CommandNotAvailableInAotException()));
-        command.UpdateCommand.SetAction((Func<ParseResult, int>)(_ => throw new CommandNotAvailableInAotException()));
-        command.RestoreCommand.SetAction((Func<ParseResult, int>)(_ => throw new CommandNotAvailableInAotException()));
-        command.ExecuteCommand.SetAction((Func<ParseResult, int>)(_ => throw new CommandNotAvailableInAotException()));
 #else
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
         command.InstallCommand.SetAction(parseResult => new ToolInstallCommand(parseResult).Execute());
