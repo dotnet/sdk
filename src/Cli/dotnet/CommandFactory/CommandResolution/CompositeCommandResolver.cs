@@ -42,8 +42,6 @@ public class CompositeCommandResolver : ICommandResolver
             if (commandSpec != null)
             {
                 resolverActivity?.AddTag("lookup.command", commandSpec.Path);
-                resolverActivity?.AddTag("lookup.env", commandSpec.EnvironmentVariables);
-                resolverActivity?.AddTag("lookup.args", commandSpec.Args);
                 resolverActivity?.AddTag("lookup.status", "found");
                 TelemetryEventEntry.TrackEvent(CommandResolveEvent, new Dictionary<string, string>()
                 {
