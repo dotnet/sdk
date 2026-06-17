@@ -12,7 +12,7 @@
 #
 # Prerequisites:
 # - The PR pipeline must publish _AotSizeAnalysis artifacts (dotnet-aot.mstat, dotnet-aot.scan.dgml)
-# - The sizoscope-cli dotnet tool must be available on nuget.org
+# - The sizoscope-cli dotnet tool must be available on the feeds configured by the nuget.config in this repo
 #
 name: NativeAOT Size Analysis
 
