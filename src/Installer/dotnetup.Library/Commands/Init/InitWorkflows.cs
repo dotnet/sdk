@@ -77,8 +77,7 @@ internal class InitWorkflows
             : null;
 
         // User chooses how to access .NET
-        DotnetupConfigData? previousConfig = DotnetupConfig.Read();
-        PathPreference? previousPreference = previousConfig?.Env;
+        PathPreference? previousPreference = DotnetupConfig.Read()?.Env;
         PathPreference pathPreference = GetInitPathPreference(command.Interactive, command.ShellProvider);
         string? manifestPath = effectiveRequests.Count > 0 ? effectiveRequests[0].Request.Options.ManifestPath : null;
 
@@ -107,17 +106,31 @@ internal class InitWorkflows
 
         // Save config and apply configuration(s).
         SaveConfigAndDisplayResult(pathPreference, dotnetupOnPath, previousPreference);
+        ApplyEnvironmentSettings(pathPreference, dotnetupOnPath, installRoot.Path, command.ShellProvider);
+
+        return effectiveRequests;
+    }
+
+    /// <summary>
+    /// Applies the resolved env settings to the live environment. Unwind decisions come from the
+    /// observed environment, not the stored config, so any drift is corrected.
+    /// </summary>
+    private void ApplyEnvironmentSettings(
+        PathPreference pathPreference,
+        bool dotnetupOnPath,
+        string dotnetRoot,
+        IEnvShellProvider? shellProvider)
+    {
+        ObservedEnvironmentState observed = new EnvironmentStateInspector(_dotnetEnvironment)
+            .Inspect(shellProvider ?? ShellDetection.GetCurrentShellProvider());
 
         PathPreferenceApplier.Apply(
             pathPreference,
             dotnetupOnPath,
-            previousPreference,
-            previousConfig?.DotnetupOnPath,
+            observed,
             _dotnetEnvironment,
-            installRoot.Path,
-            command.ShellProvider);
-
-        return effectiveRequests;
+            dotnetRoot,
+            shellProvider);
     }
 
     private List<ResolvedInstallRequest> ResolveWalkthroughRequests(

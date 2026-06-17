@@ -11,11 +11,13 @@ internal class EnvSetCommand : CommandBase
     private readonly PathPreference? _modeArg;
     private readonly bool? _dotnetupOnPathArg;
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
+    private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
-    public EnvSetCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
+    public EnvSetCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
+        _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
         _modeArg = result.GetValue(EnvSetCommandParser.ModeArgument);
         _dotnetupOnPathArg = EnvSetCommandParser.ParseDotnetupOnPath(result.GetValue(EnvSetCommandParser.DotnetupOnPathOption));
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
@@ -55,6 +57,6 @@ internal class EnvSetCommand : CommandBase
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.
         bool targetDotnetupOnPath = _dotnetupOnPathArg ?? previous?.DotnetupOnPath ?? true;
 
-        EnvSettingsWriter.ApplyAndPersist(targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider);
+        EnvSettingsWriter.ApplyAndPersist(targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector);
     }
 }

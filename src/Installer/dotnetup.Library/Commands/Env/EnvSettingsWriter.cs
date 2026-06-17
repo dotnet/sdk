@@ -6,10 +6,10 @@ using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 /// <summary>
-/// Shared logic for the <c>env set</c> and <c>env clear</c> commands: resolves the target
-/// settings against the stored config, applies them via <see cref="PathPreferenceApplier"/>,
-/// persists the new config, and prints a short summary. Keeping this in one place ensures
-/// <c>env clear</c> and <c>env set none --dotnetup-on-path off</c> behave identically.
+/// Shared apply path for the <c>env set</c> and <c>env clear</c> commands: inspects the live
+/// environment, applies the target settings via <see cref="PathPreferenceApplier"/>, persists the
+/// new config, and prints a short summary. Keeping this in one place ensures <c>env clear</c> and
+/// <c>env set none --dotnetup-on-path off</c> behave identically.
 /// </summary>
 internal static class EnvSettingsWriter
 {
@@ -17,20 +17,24 @@ internal static class EnvSettingsWriter
         PathPreference targetEnv,
         bool targetDotnetupOnPath,
         IDotnetEnvironmentManager environment,
-        IEnvShellProvider? shellProvider)
+        IEnvShellProvider? shellProvider,
+        IEnvironmentStateInspector inspector)
     {
-        DotnetupConfigData? previous = DotnetupConfig.Read();
+        IEnvShellProvider? resolvedShellProvider = shellProvider ?? ShellDetection.GetCurrentShellProvider();
 
         string dotnetRoot = environment.GetDefaultDotnetInstallPath();
+
+        // Unwind decisions come from the live environment, not the stored config, so drift is
+        // corrected on re-sync.
+        ObservedEnvironmentState observed = inspector.Inspect(resolvedShellProvider);
 
         PathPreferenceApplier.Apply(
             targetEnv,
             targetDotnetupOnPath,
-            previous?.Env,
-            previous?.DotnetupOnPath,
+            observed,
             environment,
             dotnetRoot,
-            shellProvider);
+            resolvedShellProvider);
 
         DotnetupConfig.Write(new DotnetupConfigData
         {

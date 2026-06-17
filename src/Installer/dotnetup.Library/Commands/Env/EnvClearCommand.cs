@@ -15,11 +15,13 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 internal class EnvClearCommand : CommandBase
 {
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
+    private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
-    public EnvClearCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
+    public EnvClearCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
+        _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
 
@@ -31,6 +33,7 @@ internal class EnvClearCommand : CommandBase
             PathPreference.None,
             targetDotnetupOnPath: false,
             _dotnetEnvironment,
-            _shellProvider);
+            _shellProvider,
+            _inspector);
     }
 }

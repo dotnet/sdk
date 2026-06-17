@@ -22,21 +22,23 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 ///     cmd.exe and GUI apps see it).</item>
 /// </list>
 ///
-/// The previous settings (when supplied) let the applier unwind anything the prior state set up
-/// that the new state no longer needs.
+/// Unwind decisions are driven by the <see cref="ObservedEnvironmentState"/> read from the live
+/// environment, not by the stored config. This lets the applier clean up wiring that is actually
+/// present even when the config never recorded it (or drifted), and avoids running the elevating
+/// env-var unwind when nothing is wired.
 /// </summary>
 internal static class PathPreferenceApplier
 {
     public static void Apply(
         PathPreference targetEnv,
         bool targetDotnetupOnPath,
-        PathPreference? previousEnv,
-        bool? previousDotnetupOnPath,
+        ObservedEnvironmentState observed,
         IDotnetEnvironmentManager environment,
         string dotnetRoot,
         IEnvShellProvider? shellProvider = null)
     {
         ArgumentNullException.ThrowIfNull(environment);
+        ArgumentNullException.ThrowIfNull(observed);
         ArgumentException.ThrowIfNullOrEmpty(dotnetRoot);
 
         if (targetEnv == PathPreference.All && !OperatingSystem.IsWindows())
@@ -46,7 +48,6 @@ internal static class PathPreferenceApplier
         }
 
         // Windows user-scope dotnet env vars (PATH + DOTNET_ROOT) are wired only by All mode.
-        bool prevWroteDotnetEnvVars = previousEnv == PathPreference.All;
         bool nowWritesDotnetEnvVars = targetEnv == PathPreference.All;
 
         // The managed profile block wires dotnet for Shell/All, and dotnetup when dotnetupOnPath.
@@ -54,19 +55,14 @@ internal static class PathPreferenceApplier
         bool nowProfileDotnetup = targetDotnetupOnPath;
         bool nowHasProfileBlock = nowProfileDotnet || nowProfileDotnetup;
 
-        bool prevProfileDotnet = previousEnv is PathPreference.Shell or PathPreference.All;
-        // A null previousDotnetupOnPath means "no prior config"; treat as not-yet-written.
-        bool prevProfileDotnetup = previousDotnetupOnPath == true;
-        bool prevHadProfileBlock = prevProfileDotnet || prevProfileDotnetup;
-
         shellProvider ??= ShellDetection.GetCurrentShellProvider();
 
-        // 1. Unwind the Windows dotnet env-var wiring if we no longer want it.
+        // 1. Unwind the Windows dotnet env-var wiring if it is present and we no longer want it.
         //    ApplyEnvironmentModifications(InstallType.System) is the inverse of
         //    ApplyEnvironmentModifications(InstallType.User): it removes the user dotnet from
         //    user PATH, restores the Program Files dotnet to system PATH, and unsets the
         //    user-scope DOTNET_ROOT.
-        if (prevWroteDotnetEnvVars && !nowWritesDotnetEnvVars)
+        if (observed.DotnetUserEnvVarsPresent && !nowWritesDotnetEnvVars)
         {
             environment.ApplyEnvironmentModifications(InstallType.System);
         }
@@ -80,7 +76,7 @@ internal static class PathPreferenceApplier
         // 3. Windows user-scope dotnetup PATH entry (idempotent add/remove; no-op off Windows).
         environment.ApplyDotnetupOnUserPath(targetDotnetupOnPath);
 
-        // 4. Profile block: write it when something needs wiring, remove it otherwise.
+        // 4. Profile block: write it when something needs wiring, remove an observed block otherwise.
         if (nowHasProfileBlock)
         {
             RequireShellProvider(shellProvider);
@@ -90,7 +86,7 @@ internal static class PathPreferenceApplier
                 includeDotnetup: nowProfileDotnetup,
                 shellProvider: shellProvider);
         }
-        else if (prevHadProfileBlock)
+        else if (observed.ProfileBlockPresent == true)
         {
             RequireShellProvider(shellProvider);
             ShellProfileManager.RemoveProfileEntries(shellProvider!);

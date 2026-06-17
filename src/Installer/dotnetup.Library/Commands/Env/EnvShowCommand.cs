@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
@@ -10,11 +9,13 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 internal class EnvShowCommand : CommandBase
 {
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
+    private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
-    public EnvShowCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result)
+    public EnvShowCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
+        _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
 
@@ -33,7 +34,10 @@ internal class EnvShowCommand : CommandBase
         Console.WriteLine($"  dotnet exposure    {config.Env.ToString().ToLowerInvariant()}");
         Console.WriteLine($"  dotnetup on PATH   {(config.DotnetupOnPath ? "yes" : "no")}");
 
-        var drift = DetectDrift(config);
+        IEnvShellProvider? shellProvider = _shellProvider ?? ShellDetection.GetCurrentShellProvider();
+        ObservedEnvironmentState observed = _inspector.Inspect(shellProvider);
+        var drift = EnvDriftAnalyzer.Compare(config, observed);
+
         if (drift.Count == 0)
         {
             Console.WriteLine();
@@ -49,74 +53,5 @@ internal class EnvShowCommand : CommandBase
         }
         Console.WriteLine();
         Console.WriteLine("Run 'dotnetup env set' to re-sync.");
-    }
-
-    private List<string> DetectDrift(DotnetupConfigData config)
-    {
-        var drift = new List<string>();
-        var shellProvider = _shellProvider ?? ShellDetection.GetCurrentShellProvider();
-
-        bool expectsProfileDotnet = config.Env is PathPreference.Shell or PathPreference.All;
-        bool expectsProfileBlock = expectsProfileDotnet || config.DotnetupOnPath;
-        bool expectsDotnetEnvVars = config.Env == PathPreference.All;
-
-        // Profile-block presence check (best-effort; we only assert presence/absence, not contents).
-        if (shellProvider is not null)
-        {
-            var profilePaths = shellProvider.GetProfilePaths();
-            var profilesWithEntries = ShellProfileManager.GetProfilePathsWithEntries(shellProvider);
-
-            if (expectsProfileBlock && profilesWithEntries.Count == 0 && profilePaths.Count > 0)
-            {
-                drift.Add("Shell profile is missing the dotnetup managed block.");
-            }
-            else if (!expectsProfileBlock && profilesWithEntries.Count > 0)
-            {
-                drift.Add("Shell profile contains a dotnetup managed block but neither dotnet exposure nor dotnetup-on-PATH is configured.");
-            }
-        }
-
-        if (OperatingSystem.IsWindows())
-        {
-            var installRootManager = new InstallRootManager(_dotnetEnvironment);
-            if (expectsDotnetEnvVars)
-            {
-                var changes = installRootManager.GetUserInstallRootChanges();
-                if (changes.NeedsChange())
-                {
-                    drift.Add("Windows user PATH / DOTNET_ROOT / system PATH do not match 'all' mode expectations.");
-                }
-            }
-            else
-            {
-                var adminChanges = installRootManager.GetAdminInstallRootChanges();
-                if (adminChanges.NeedsChange())
-                {
-                    drift.Add($"Windows user PATH / DOTNET_ROOT still has 'all'-mode wiring (expected dotnet exposure: '{config.Env.ToString().ToLowerInvariant()}').");
-                }
-            }
-
-            // The user-scope PATH is authoritative for dotnetup-on-PATH on Windows (the profile
-            // block copy is just a convenience).
-            bool dotnetupOnUserPath = UserPathContainsDotnetupDir();
-            if (config.DotnetupOnPath && !dotnetupOnUserPath)
-            {
-                drift.Add("dotnetup is configured to be on PATH but is missing from the user PATH.");
-            }
-            else if (!config.DotnetupOnPath && dotnetupOnUserPath)
-            {
-                drift.Add("dotnetup is on the user PATH but is configured to be off.");
-            }
-        }
-
-        return drift;
-    }
-
-    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
-    private static bool UserPathContainsDotnetupDir()
-    {
-        string dotnetupDir = ShellProviderHelpers.GetDotnetupDirectoryOrThrow();
-        return WindowsPathHelper.SplitPath(WindowsPathHelper.ReadUserPath(expand: true))
-            .Any(entry => DotnetupUtilities.PathsEqual(entry, dotnetupDir));
     }
 }

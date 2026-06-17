@@ -20,6 +20,7 @@ public class EnvCommandTests : IDisposable
 {
     private readonly string _tempDir;
     private readonly MockDotnetInstallManager _env;
+    private readonly FakeEnvironmentStateInspector _inspector = new();
 
     public EnvCommandTests()
     {
@@ -47,7 +48,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set", "none"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -65,7 +66,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set", "none", "--dotnetup-on-path", "off"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -83,7 +84,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set", "--dotnetup-on-path", "off", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -117,7 +118,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set", "all"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -134,7 +135,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         // Nothing to apply → DotnetInstallException → exit code 1.
         exitCode.Should().Be(1);
@@ -151,7 +152,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "clear", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvClearCommand(parseResult, _env).Execute();
+        int exitCode = new EnvClearCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -168,7 +169,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "show"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvShowCommand(parseResult, _env).Execute();
+        int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
     }
@@ -179,7 +180,7 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.None, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
-        int exitCode = new EnvShowCommand(parseResult, _env).Execute();
+        int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
     }
@@ -190,7 +191,7 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
-        int exitCode = new EnvShowCommand(parseResult, _env).Execute();
+        int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
     }
