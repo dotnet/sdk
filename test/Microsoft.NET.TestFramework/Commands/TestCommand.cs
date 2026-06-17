@@ -10,6 +10,7 @@ namespace Microsoft.NET.TestFramework.Commands
     public abstract class TestCommand
     {
         private readonly Dictionary<string, string> _environment = [];
+        private readonly HashSet<int> _retryOnExitCodes = [];
         private bool _doNotEscapeArguments;
         public ITestOutputHelper Log { get; }
         public string? WorkingDirectory { get; set; }
@@ -85,6 +86,16 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public TestCommand WithCulture(string locale) => WithEnvironmentVariable(UILanguageOverride.DOTNET_CLI_UI_LANGUAGE, locale);
 
+        /// <summary>
+        /// Configures the command to retry when the specified exit code is returned (only when executing via Execute()/Execute(params string[])).
+        /// Useful for transient errors like file locks from background processes.
+        /// </summary>
+        public TestCommand WithRetryOnExitCode(int exitCode)
+        {
+            _retryOnExitCodes.Add(exitCode);
+            return this;
+        }
+
         public TestCommand WithTraceOutput()
         {
             WithEnvironmentVariable("DOTNET_CLI_VSTEST_TRACE", "1");
@@ -135,18 +146,23 @@ namespace Microsoft.NET.TestFramework.Commands
             IEnumerable<string> enumerableArgs = args;
             return ExecuteWithRetry(
                     action: () => Execute(enumerableArgs),
-                    shouldStopRetry: SuccessOrNotTransientRestoreError,
+                    shouldStopRetry: ShouldStopRetry,
                     maxRetryCount: 3,
                     timer: () => Timer(Intervals),
-                    taskDescription: "Run command while retry transient restore error")
+                    taskDescription: "Run command while retrying transient errors")
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        private static bool SuccessOrNotTransientRestoreError(CommandResult result)
+        private bool ShouldStopRetry(CommandResult result)
         {
             if (result.ExitCode == 0)
             {
                 return true;
+            }
+
+            if (_retryOnExitCodes.Contains(result.ExitCode))
+            {
+                return false;
             }
 
             return !NuGetTransientErrorDetector.IsTransientError(result.StdOut);
@@ -191,10 +207,24 @@ namespace Microsoft.NET.TestFramework.Commands
 
             if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
             {
-                var binlogFiles = Directory.GetFiles(spec.WorkingDirectory ?? Environment.CurrentDirectory, "*.binlog");
+                var workingDir = spec.WorkingDirectory ?? Environment.CurrentDirectory;
+                var binlogFiles = Directory.GetFiles(workingDir, "*.binlog");
+                // Multiple tests in the same Helix work item often produce binlogs with the same
+                // relative filename (e.g. "msbuild0.binlog"). Prefix with the last two segments of
+                // the working directory (typically "<TestInstance>---<GUID>-<ProjectDir>") so each
+                // upload is uniquely identifiable.
+                var parts = workingDir
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    .Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
+                var prefix = parts.Length >= 2
+                    ? $"{parts[parts.Length - 2]}-{parts[parts.Length - 1]}"
+                    : (parts.Length == 1 ? parts[0] : string.Empty);
                 foreach (string binlogFile in binlogFiles)
                 {
-                    File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
+                    var destName = string.IsNullOrEmpty(prefix)
+                        ? Path.GetFileName(binlogFile)
+                        : $"{prefix}-{Path.GetFileName(binlogFile)}";
+                    File.Copy(binlogFile, Path.Combine(uploadRoot, destName), true);
                 }
             }
 

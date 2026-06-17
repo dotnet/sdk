@@ -197,7 +197,7 @@ public class SourceFileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBa
 
         File.WriteAllText(oldFilePath, source);
 
-        App.Start(testAsset, [], "AppWithDeps");
+        App.Start(testAsset, [], "AppWithDeps", testFlags: TestFlags.ReadKeyFromStdin);
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
@@ -213,6 +213,12 @@ public class SourceFileUpdateTests(ITestOutputHelper logger) : DotNetWatchTestBa
         }
 
         Log($"Renamed '{oldFilePath}' to '{newFilePath}'.");
+
+        // Roslyn may classify the delete+add as a rude edit (ENC0033) depending on file-watcher
+        // event timing, in which case dotnet-watch shows an interactive restart prompt. Send 'a'
+        // to always restart so the test makes progress regardless of how Roslyn classifies the
+        // change. See https://github.com/dotnet/sdk/pull/54292 discussion.
+        App.SendKey('a');
 
         await App.AssertOutputLineStartsWith("> Renamed.cs");
     }

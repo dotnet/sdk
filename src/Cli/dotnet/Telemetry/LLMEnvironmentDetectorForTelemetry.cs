@@ -15,10 +15,10 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         new EnvironmentDetectionRuleWithResult<string>("cursor", new AnyPresentEnvironmentRule("CURSOR_EDITOR", "CURSOR_AI")),
         // Gemini
         new EnvironmentDetectionRuleWithResult<string>("gemini", new BooleanEnvironmentRule("GEMINI_CLI")),
-        // GitHub Copilot (legacy gh extension: GITHUB_COPILOT_CLI_MODE=true; new Copilot CLI: GH_COPILOT_WORKING_DIRECTORY or COPILOT_CLI is set)
+        // GitHub Copilot (legacy gh extension: GITHUB_COPILOT_CLI_MODE=true; new Copilot CLI: GH_COPILOT_WORKING_DIRECTORY, COPILOT_CLI, or COPILOT_AGENT is set)
         new EnvironmentDetectionRuleWithResult<string>("copilot", new AnyMatchEnvironmentRule(
             new BooleanEnvironmentRule("GITHUB_COPILOT_CLI_MODE"),
-            new AnyPresentEnvironmentRule("GH_COPILOT_WORKING_DIRECTORY", "COPILOT_CLI"))),
+            new AnyPresentEnvironmentRule("GH_COPILOT_WORKING_DIRECTORY", "COPILOT_CLI", "COPILOT_AGENT"))),
         // Codex CLI
         new EnvironmentDetectionRuleWithResult<string>("codex", new AnyPresentEnvironmentRule("CODEX_CLI", "CODEX_SANDBOX")),
         // Aider

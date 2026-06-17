@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net9.0;$(CurrentTargetFramework)</TargetFrameworks>
+    <!-- Disable default items to avoid glob expansion failures on macOS with long paths.
+         See https://github.com/dotnet/msbuild/issues/12546 -->
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
+  </ItemGroup>
+
+  <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+    <!-- If SingleDevice property is set, return only one device -->
+    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' == 'true'">
+      <Devices Include="single-device" Description="Single Device" Type="Emulator" Status="Online" />
+    </ItemGroup>
+    <!-- Otherwise return multiple devices based on target framework -->
+    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' != 'net9.0'">
+      <Devices Include="test-device-1" Description="Test Device 1" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
+      <Devices Include="test-device-2" Description="Test Device 2" Type="Device" Status="Online" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' == 'net9.0'">
+      <Devices Include="test-device-downlevel-1" Description="Test Device Downlevel 1" Type="Emulator" Status="Online" />
+      <Devices Include="test-device-downlevel-2" Description="Test Device Downlevel 2" Type="Simulator" Status="Booted" />
+    </ItemGroup>
+  </Target>
+
+</Project>

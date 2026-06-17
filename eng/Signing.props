@@ -94,7 +94,8 @@
     <FileSignInfo Include="SimpleInfoName.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Verify.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Verify.DiffPlex.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="Verify.Xunitv3.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Verify.XunitV3.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>
 
   <ItemGroup>

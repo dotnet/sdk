@@ -1,0 +1,88 @@
+name: Add Servicing-consider Label to PRs
+
+on:
+  # zizmor: ignore[dangerous-triggers] -- no PR code is checked out; only adds a label via API
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+    branches:
+      - 'release/[0-9]*'
+      # ignore 10.0.4xx until we release it
+      - '!release/10.0.4xx'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  add-servicing-label:
+    runs-on: ubuntu-latest
+    # Only run in the dotnet/sdk repository
+    if: github.repository == 'dotnet/sdk'
+
+    steps:
+      - name: Add Servicing-consider label if needed
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const prNumber = pr.number;
+
+            // Skip if the PR already has the Servicing-consider or Servicing-approved label
+            const labels = pr.labels.map(l => l.name);
+            if (labels.includes('Servicing-consider') || labels.includes('Servicing-approved')) {
+              console.log('PR already has a servicing label, skipping.');
+              return;
+            }
+
+            // Skip codeflow PRs: inter-branch merge flow and darc subscription PRs.
+            // Only skip known codeflow bot accounts; other bots (e.g. Dependabot) should
+            // still receive the label. Backport PRs carry the 'backport' label and are
+            // also exempt from this skip.
+            const author = pr.user.login;
+            const codeflowBots = ['dotnet-maestro[bot]', 'github-actions[bot]', 'dotnet-maestro'];
+            const isBackport = labels.includes('backport');
+            if (codeflowBots.includes(author) && !isBackport) {
+              console.log(`Skipping codeflow PR authored by bot: ${author}`);
+              return;
+            }
+
+            // Skip branding and internal-to-public flow PRs from vseanreesermsft
+            if (author === 'vseanreesermsft') {
+              console.log(`Skipping branding/internal-to-public PR authored by: ${author}`);
+              return;
+            }
+
+            // Fetch all changed files in the PR (paginated to handle large PRs)
+            let files = [];
+            let page = 1;
+            while (true) {
+              const { data: pageFiles } = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100,
+                page: page
+              });
+              files = files.concat(pageFiles);
+              if (pageFiles.length < 100) break;
+              page++;
+            }
+
+            // Skip test-only PRs: all changed files are under test/ directories
+            const isTestOnly = files.length > 0 && files.every(file =>
+              file.filename.startsWith('test/')
+            );
+
+            if (isTestOnly) {
+              console.log('PR only contains test changes, skipping.');
+              return;
+            }
+
+            // Add the Servicing-consider label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['Servicing-consider']
+            });
+            console.log(`Added Servicing-consider label to PR #${prNumber}.`);

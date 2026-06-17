@@ -34,6 +34,26 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_CLI_TELEMETRY_LOG_PATH = nameof(DOTNET_CLI_TELEMETRY_LOG_PATH);
     public static readonly string DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT = nameof(DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
     public static readonly string DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER = nameof(DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER);
+    // Standard OpenTelemetry OTLP exporter environment variables. Presence of any of these
+    // signals that the user has configured the OTLP exporter and intends to enable it.
+    // See https://opentelemetry.io/docs/specs/otel/protocol/exporter/ for the full spec.
+    public static readonly string[] OtlpExporterEnvVars =
+    [
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_PROTOCOL",
+        "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL",
+        "OTEL_EXPORTER_OTLP_METRICS_PROTOCOL",
+        "OTEL_EXPORTER_OTLP_HEADERS",
+        "OTEL_EXPORTER_OTLP_TRACES_HEADERS",
+        "OTEL_EXPORTER_OTLP_METRICS_HEADERS",
+        "OTEL_EXPORTER_OTLP_TIMEOUT",
+        "OTEL_EXPORTER_OTLP_TRACES_TIMEOUT",
+        "OTEL_EXPORTER_OTLP_METRICS_TIMEOUT",
+    ];
+    // top-level enable/disable flag for the Otel SDK entirely.
+    public static readonly string OTEL_SDK_DISABLED = "OTEL_SDK_DISABLED";
     public static readonly string SDK_VULNERABILITY_CHECK_DISABLE = "DOTNET_SDK_VULNERABILITY_CHECK_DISABLE";
     public static readonly string SDK_VULNERABILITY_CHECK_INTERVAL_HOURS = "DOTNET_SDK_VULNERABILITY_CHECK_INTERVAL_HOURS";
 

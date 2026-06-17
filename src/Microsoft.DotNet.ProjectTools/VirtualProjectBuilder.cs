@@ -18,6 +18,10 @@ namespace Microsoft.DotNet.ProjectTools;
 
 public sealed class VirtualProjectBuilder
 {
+    internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
+
+    internal const string FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective";
+
     private readonly IEnumerable<(string name, string value)> _defaultProperties;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
@@ -124,7 +128,7 @@ public sealed class VirtualProjectBuilder
         var sourceFile = SourceFile.Load(sourceFilePath);
         var directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, reportAllErrors: false, ErrorReporters.IgnoringReporter);
 
-        // Return the first value. Duplicate directives are not supported.
+        // Return the first value. Conflicting duplicate directives are not supported.
         return directives.OfType<CSharpDirective.Property>()
             .FirstOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.OrdinalIgnoreCase))?.Value;
     }
@@ -320,23 +324,41 @@ public sealed class VirtualProjectBuilder
 
         do
         {
+            var directivesForEvaluation = DeduplicateSdkDirectives(directives);
+
             // Create a project with properties from #:property directives so they can be expanded inside EvaluateDirectives.
             (project, projectRootElement) = CreateProjectInstanceNoEvaluation(
                 projectCollection,
-                [.. evaluatedDirectiveBuilder, .. directives],
+                [.. evaluatedDirectiveBuilder, .. directivesForEvaluation],
                 addGlobalProperties);
 
             // Evaluate directives, e.g., determine item types for #:include/#:exclude from their file extension.
-            var fileEvaluatedDirectives = EvaluateDirectives(project, directives, reportError);
+            var fileEvaluatedDirectives = EvaluateDirectives(project, directivesForEvaluation, reportError);
 
-            // Detect duplicate directives across all files on evaluated directives.
+            // Detect duplicate directives across all files on evaluated directives. EvaluateDirectives only expands
+            // #:project, #:ref, #:include, and #:exclude; #:property and #:package values are still unevaluated here.
+            var deduplicatedFileEvaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>(fileEvaluatedDirectives.Length);
             foreach (var directive in fileEvaluatedDirectives)
             {
+                if (directive is CSharpDirective.Sdk)
+                {
+                    deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
+                    continue;
+                }
+
                 if (directive is CSharpDirective.Named named)
                 {
-                    deduplicator.CheckDirective(named, reportError);
+                    deduplicator.CheckDirective(named, reportError, out bool shouldKeep);
+                    if (!shouldKeep)
+                    {
+                        continue;
+                    }
                 }
+
+                deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
             }
+
+            fileEvaluatedDirectives = deduplicatedFileEvaluatedDirectiveBuilder.DrainToImmutable();
 
             evaluatedDirectiveBuilder.AddRange(fileEvaluatedDirectives);
 
@@ -384,6 +406,36 @@ public sealed class VirtualProjectBuilder
             }
 
             return false;
+        }
+
+        // #:sdk directives become Sdk.props/Sdk.targets imports when creating the temporary project used for
+        // directive evaluation, so identical duplicates must be removed before that project is created.
+        ImmutableArray<CSharpDirective> DeduplicateSdkDirectives(ImmutableArray<CSharpDirective> directives)
+        {
+            if (!directives.Any(static directive => directive is CSharpDirective.Sdk))
+            {
+                return directives;
+            }
+
+            var builder = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
+            var changed = false;
+
+            foreach (var directive in directives)
+            {
+                if (directive is CSharpDirective.Sdk sdk)
+                {
+                    deduplicator.CheckDirective(sdk, reportError, out bool shouldKeep);
+                    if (!shouldKeep)
+                    {
+                        changed = true;
+                        continue;
+                    }
+                }
+
+                builder.Add(directive);
+            }
+
+            return changed ? builder.DrainToImmutable() : directives;
         }
 
         (ProjectInstance, ProjectRootElement) CreateProjectInstanceNoEvaluation(
@@ -479,7 +531,8 @@ public sealed class VirtualProjectBuilder
         string? entryPointFilePath = null,
         string? artifactsPath = null,
         bool includeRuntimeConfigInformation = true,
-        string? userSecretsId = null)
+        string? userSecretsId = null,
+        ImmutableArray<ExplicitProjectItem> explicitProjectItems = default)
     {
         Debug.Assert(userSecretsId == null || !isVirtualProject);
 
@@ -490,7 +543,7 @@ public sealed class VirtualProjectBuilder
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
         var refDirectives = directives.OfType<CSharpDirective.Ref>();
-        var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>();
+        var includeOrExcludeDirectives = directives.OfType<CSharpDirective.IncludeOrExclude>().ToArray();
 
         const string defaultSdkName = "Microsoft.NET.Sdk";
         string firstSdkName;
@@ -673,10 +726,10 @@ public sealed class VirtualProjectBuilder
         if (!isVirtualProject)
         {
             // In the real project, files are included by the conversion copying them to the output directory,
-            // hence we don't need to transfer the #:include/#:exclude directives over.
-            processedDirectives += includeOrExcludeDirectives.Count();
+            // hence we don't need to transfer the #:include/#:exclude directives over by default.
+            processedDirectives += includeOrExcludeDirectives.Length;
         }
-        else if (includeOrExcludeDirectives.Any())
+        else if (includeOrExcludeDirectives.Length > 0)
         {
             writer.WriteLine("""
                   <ItemGroup>
@@ -696,8 +749,36 @@ public sealed class VirtualProjectBuilder
                     continue;
                 }
 
+                if (includeOrExclude.Kind == CSharpDirective.IncludeOrExcludeKind.Include)
+                {
+                    writer.WriteLine($"""
+                        <{itemType} Include="{EscapeValue(includeOrExclude.Name)}" {FromIncludeDirectiveMetadataName}="true" />
+                    """);
+                }
+                else
+                {
+                    writer.WriteLine($"""
+                        <{itemType} Remove="{EscapeValue(includeOrExclude.Name)}" />
+                    """);
+                }
+            }
+
+            writer.WriteLine("""
+                  </ItemGroup>
+
+                """);
+        }
+
+        if (!explicitProjectItems.IsDefaultOrEmpty)
+        {
+            writer.WriteLine("""
+                  <ItemGroup>
+                """);
+
+            foreach (var (itemType, include) in explicitProjectItems)
+            {
                 writer.WriteLine($"""
-                        <{itemType} {includeOrExclude.KindToMSBuildString()}="{EscapeValue(includeOrExclude.Name)}" />
+                        <{itemType} Include="{EscapeValue(include)}" />
                     """);
             }
 

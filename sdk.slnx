@@ -355,6 +355,7 @@
     <Project Path="test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj" />
     <Project Path="test/dotnet-watch-test-browser/dotnet-watch-test-browser.csproj" />
     <Project Path="test/dotnet-watch.Tests/dotnet-watch.Tests.csproj" />
+    <Project Path="test/dotnet-aot.Tests/dotnet-aot.Tests.csproj" />
     <Project Path="test/dotnet.Tests/dotnet.Tests.csproj" />
     <Project Path="test/EndToEnd.Tests/EndToEnd.Tests.csproj" />
     <Project Path="test/HelixTasks/HelixTasks.csproj" />
@@ -385,6 +386,7 @@
     <Project Path="test/Microsoft.NET.Sdk.Web.Tests/Microsoft.NET.Sdk.Web.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.WorkloadManifestReader.Tests/Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj" />
     <Project Path="test/Microsoft.NET.TestFramework/Microsoft.NET.TestFramework.csproj" />
+    <Project Path="test/Microsoft.NET.TestFramework.MSTest/Microsoft.NET.TestFramework.MSTest.csproj" />
     <Project Path="test/Microsoft.NET.ToolPack.Tests/Microsoft.NET.ToolPack.Tests.csproj" />
     <Project Path="test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj" />
     <Project Path="test/TemplateEngine/Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests/Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests.csproj" />

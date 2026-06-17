@@ -42,8 +42,7 @@ public class PackageTests
             "Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "Nuget.Packaging",
             "Valleysoft.DockerCredsProvider",
-            "Microsoft.Extensions.Logging",
-            "Microsoft.Extensions.Logging.Abstractions"
+            "Microsoft.Extensions.Logging"
         };
         IReadOnlyList<string> knownProjectReferences = new List<string>()
         {
