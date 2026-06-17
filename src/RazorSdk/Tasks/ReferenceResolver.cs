@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
-using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
@@ -16,25 +15,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         private readonly HashSet<string> _mvcAssemblies;
         private readonly IReadOnlyList<AssemblyItem> _assemblyItems;
         private readonly Dictionary<AssemblyItem, Classification> _classifications;
-        private readonly TaskEnvironment _taskEnvironment = TaskEnvironment.Fallback;
 
-        public ReferenceResolver(
-          IReadOnlyList<string> targetAssemblies,
-          IReadOnlyList<AssemblyItem> assemblyItems)
-          : this(targetAssemblies, assemblyItems, null)
+        public ReferenceResolver(IReadOnlyList<string> targetAssemblies, IReadOnlyList<AssemblyItem> assemblyItems)
         {
-        }
-
-        public ReferenceResolver(
-            IReadOnlyList<string> targetAssemblies,
-            IReadOnlyList<AssemblyItem> assemblyItems,
-            TaskEnvironment? taskEnvironment)
-        {
-            if (taskEnvironment != null)
-            {
-                _taskEnvironment = taskEnvironment;
-            }
-
             _mvcAssemblies = new HashSet<string>(targetAssemblies, StringComparer.Ordinal);
             _assemblyItems = assemblyItems;
             _classifications = new Dictionary<AssemblyItem, Classification>();
@@ -120,14 +103,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             try
             {
-                var absoluteFilePath = !String.IsNullOrEmpty(file) ? _taskEnvironment.GetAbsolutePath(file) : file;
-
-                if (!File.Exists(absoluteFilePath))
+                if (!File.Exists(file))
                 {
                     throw new ReferenceAssemblyNotFoundException(file);
                 }
 
-                using var peReader = new PEReader(File.OpenRead(absoluteFilePath));
+                using var peReader = new PEReader(File.OpenRead(file));
                 if (!peReader.HasMetadata)
                 {
                     return Array.Empty<AssemblyItem>(); // not a managed assembly

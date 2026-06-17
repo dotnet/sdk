@@ -42,13 +42,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 {
                     AssemblyName = assemblyName,
                     IsFrameworkReference = item.GetMetadata("IsFrameworkReference") == "true",
-                    Path = item.ItemSpec,
+                    Path = string.IsNullOrEmpty(item.ItemSpec)
+                        ? item.ItemSpec
+                        : TaskEnvironment.GetAbsolutePath(item.ItemSpec).Value,
                 });
             }
 
             var targetAssemblyNames = TargetAssemblyNames.Select(s => s.ItemSpec).ToList();
 
-            var provider = new ReferenceResolver((IReadOnlyList<string>)targetAssemblyNames, referenceItems, TaskEnvironment);
+            var provider = new ReferenceResolver((IReadOnlyList<string>)targetAssemblyNames, referenceItems);
             try
             {
                 var assemblyNames = provider.ResolveAssemblies();
