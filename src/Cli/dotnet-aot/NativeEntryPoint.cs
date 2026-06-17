@@ -134,7 +134,7 @@ static unsafe partial class NativeEntryPoint
                 // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
                 // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
                 // project tools, and anything that does not resolve to the managed CLI.
-                else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, out exitCode, out success))
+                else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, out exitCode, out success))
                 {
                     return exitCode;
                 }
@@ -186,7 +186,7 @@ static unsafe partial class NativeEntryPoint
     ///  file-based apps (<c>dotnet app.cs</c>), legacy project tools, commands that do not resolve in
     ///  AOT, or any resolution error.
     /// </summary>
-    private static bool TryInvokeExternalCommand(ParseResult parseResult, string[] args, string sdkDir, out int exitCode, out bool success)
+    private static bool TryInvokeExternalCommand(ParseResult parseResult, string[] args, string sdkDir, Activity? mainActivity, out int exitCode, out bool success)
     {
         exitCode = 1;
         success = false;
@@ -198,7 +198,8 @@ static unsafe partial class NativeEntryPoint
             return false;
         }
 
-        string commandName = "dotnet-" + parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
+        string? subCommandToken = parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
+        string commandName = "dotnet-" + subCommandToken;
         CommandSpec? commandSpec;
         using (var lookupActivity = Activities.Source.StartActivity("lookup-external-command"))
         {
@@ -229,6 +230,17 @@ static unsafe partial class NativeEntryPoint
         if (commandSpec is null)
         {
             return false;
+        }
+
+        // The parser only matched the top-level `dotnet` command, so the root span was named just
+        // "dotnet". Now that we have committed to resolving and invoking this external command in the
+        // AOT bubble, name the root span after the full command (e.g. "dotnet dev-certs") to match the
+        // managed fallback path, which derives the same name from the first argument.
+        string externalDisplayName = "dotnet " + subCommandToken;
+        if (mainActivity is not null)
+        {
+            mainActivity.DisplayName = externalDisplayName;
+            mainActivity.SetTag("command.name", externalDisplayName);
         }
 
         using (var invoke = Activities.Source.StartActivity("execute-extensible-command"))
