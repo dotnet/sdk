@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using System.Xml;
 
 namespace Microsoft.DotNet.FileBasedPrograms;
@@ -27,11 +28,13 @@ public sealed class BuildHost : IBuildHost
 
 public static class BuildHostExtensions
 {
+    private static readonly ConditionalWeakTable<Microsoft.Build.Evaluation.ProjectCollection, IProjectCollection> s_projectCollections = new();
+
     extension(Microsoft.Build.Evaluation.ProjectCollection projectCollection)
     {
         public IProjectCollection Wrap()
         {
-            return new ProjectCollection(projectCollection);
+            return s_projectCollections.GetValue(projectCollection, static inner => new ProjectCollection(inner));
         }
     }
 
