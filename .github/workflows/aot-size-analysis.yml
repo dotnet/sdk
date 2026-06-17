@@ -193,11 +193,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Find the PR build by commit SHA
+          # Find the PR build by its merge branch (server-side filter)
           PR_BUILD_ID=$(az pipelines runs list \
             --pipeline-ids "$AZDO_PIPELINE_ID" \
+            --branch "refs/pull/${PR_NUMBER}/merge" \
             --status completed --result succeeded \
-            --top 20 --query "[?sourceVersion=='${PR_HEAD_SHA}'] | [0].id" -o tsv)
+            --top 1 --query "[0].id" -o tsv)
 
           if [ -z "$PR_BUILD_ID" ]; then
             echo "::warning::No completed build found for PR commit ${PR_HEAD_SHA}. Ensure the AzDO pipeline has finished."
