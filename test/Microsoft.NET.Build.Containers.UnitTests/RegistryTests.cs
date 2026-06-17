@@ -35,11 +35,11 @@ public class RegistryTests : IDisposable
     [DataRow("us-south1-docker.pkg.dev", true)]
     [DataRow("us.gcr.io", false)]
     [TestMethod]
-    public void CheckIfGoogleArtifactRegistry(string registryName, bool isECR)
+    public void CheckIfGoogleArtifactRegistry(string registryName, bool expectedIsGoogleArtifactRegistry)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfGoogleArtifactRegistry));
         Registry registry = new(registryName, logger, RegistryMode.Push);
-        Assert.AreEqual(isECR, registry.IsGoogleArtifactRegistry);
+        Assert.AreEqual(expectedIsGoogleArtifactRegistry, registry.IsGoogleArtifactRegistry);
     }
 
     [TestMethod]
