@@ -41,10 +41,10 @@ public class CompositeCommandResolver : ICommandResolver
 
             if (commandSpec != null)
             {
-                resolverActivity?.SetStatus(System.Diagnostics.ActivityStatusCode.Ok);
                 resolverActivity?.AddTag("lookup.command", commandSpec.Path);
                 resolverActivity?.AddTag("lookup.env", commandSpec.EnvironmentVariables);
                 resolverActivity?.AddTag("lookup.args", commandSpec.Args);
+                resolverActivity?.AddTag("lookup.status", "found");
                 TelemetryEventEntry.TrackEvent(CommandResolveEvent, new Dictionary<string, string>()
                 {
                     { "commandName", commandResolverArguments is null ? string.Empty : Sha256Hasher.HashWithNormalizedCasing(commandResolverArguments.CommandName) },
@@ -55,7 +55,7 @@ public class CompositeCommandResolver : ICommandResolver
             }
             else
             {
-                resolverActivity?.SetStatus(System.Diagnostics.ActivityStatusCode.Error);
+                resolverActivity?.AddTag("lookup.status", "notfound");
             }
         }
 
