@@ -50,9 +50,6 @@ public class ZshEnvShellProvider : IEnvShellProvider
         return ShellProviderHelpers.BuildPosixProfileEntry(dotnetupPath, "zsh", flags);
     }
 
-    public string GenerateActivationCommand(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
-    {
-        var flags = ShellProviderHelpers.GetCommandFlags(includeDotnet, includeDotnetup, dotnetInstallPath, ShellProviderHelpers.EscapePosixPath);
-        return ShellProviderHelpers.BuildPosixActivationCommand(dotnetupPath, "zsh", flags);
-    }
+    public string GenerateActivationCommand(string dotnetupPath)
+        => ShellProviderHelpers.BuildPosixActivationCommand(dotnetupPath);
 }

@@ -59,22 +59,6 @@ internal sealed class TestShellProvider : IEnvShellProvider
         return $"eval \"$('{dotnetupPath}' env script --shell test {string.Join(" ", flags)})\"";
     }
 
-    public string GenerateActivationCommand(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
-    {
-        var flags = new List<string>();
-        if (includeDotnet)
-        {
-            flags.Add("--dotnet");
-        }
-        if (includeDotnetup)
-        {
-            flags.Add("--dotnetup");
-        }
-        if (includeDotnet && !string.IsNullOrEmpty(dotnetInstallPath))
-        {
-            flags.Add($"--dotnet-install-path '{dotnetInstallPath}'");
-        }
-
-        return $"eval \"$('{dotnetupPath}' env script --shell test {string.Join(" ", flags)})\"";
-    }
+    public string GenerateActivationCommand(string dotnetupPath)
+        => $"eval \"$('{dotnetupPath}' env script)\"";
 }

@@ -46,7 +46,7 @@ internal static class EnvScriptCommandParser
     /// </summary>
     public static Command ConstructCommand(string name, bool hidden = false)
     {
-        Command command = new(name, "Generates a shell script that configures the environment for .NET")
+        Command command = new(name, "Generates a shell script that configures the environment for .NET. With no selection flags it follows your configured env settings; pass --dotnet and/or --dotnetup to emit only those parts.")
         {
             Hidden = hidden,
         };

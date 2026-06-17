@@ -51,49 +51,19 @@ internal class EnvScriptCommand : CommandBase
                 $"Unsupported shell '{shellName}'.");
         }
 
-        var (includeDotnet, includeDotnetup) = ResolveSelection();
+        EnvScriptSelection selection = EnvScriptSelectionResolver.Resolve(_dotnet, _dotnetup, _dotnetupOnly, DotnetupConfig.Read());
 
         // Determine the dotnet install path
         string installPath = _dotnetInstallPath ?? _dotnetEnvironment.GetDefaultDotnetInstallPath();
 
         // Determine the dotnetup directory so it can be added to PATH. Passing an empty
         // string omits the dotnetup PATH entry from the generated script.
-        string dotnetupDir = includeDotnetup ? ShellProviderHelpers.GetDotnetupDirectoryOrThrow() : string.Empty;
+        string dotnetupDir = selection.IncludeDotnetup ? ShellProviderHelpers.GetDotnetupDirectoryOrThrow() : string.Empty;
 
         // Generate the shell script
-        string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, includeDotnet);
+        string script = _shellProvider.GenerateEnvScript(installPath, dotnetupDir, selection.IncludeDotnet);
 
         WriteScriptToStandardOutput(script);
-    }
-
-    /// <summary>
-    /// Resolves which aspects the generated script should wire from the selection flags.
-    /// Semantics are a selection set: no selection flag means "both" (the convenient,
-    /// backwards-compatible default); passing any of <c>--dotnet</c>/<c>--dotnetup</c> emits
-    /// only the listed parts. <c>--dotnetup-only</c> is a hidden legacy alias for
-    /// <c>--dotnetup</c> and may not be combined with the newer flags.
-    /// </summary>
-    private (bool IncludeDotnet, bool IncludeDotnetup) ResolveSelection()
-    {
-        if (_dotnetupOnly)
-        {
-            if (_dotnet || _dotnetup)
-            {
-                throw new DotnetInstallException(
-                    DotnetInstallErrorCode.Unknown,
-                    "--dotnetup-only cannot be combined with --dotnet or --dotnetup.");
-            }
-
-            return (IncludeDotnet: false, IncludeDotnetup: true);
-        }
-
-        // No selection flag → wire both (back-compat default).
-        if (!_dotnet && !_dotnetup)
-        {
-            return (IncludeDotnet: true, IncludeDotnetup: true);
-        }
-
-        return (IncludeDotnet: _dotnet, IncludeDotnetup: _dotnetup);
     }
 
     internal static void WriteScriptToStandardOutput(string script)

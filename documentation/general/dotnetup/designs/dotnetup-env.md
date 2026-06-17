@@ -357,18 +357,19 @@ and `--dotnet-install-path | -d <path>` (which install to wire) — and gains tw
 
 | Invocation | Generated script wires |
 | --- | --- |
-| `env script` (no selection) | both dotnet + dotnetup (default; matches today, back-compat) |
+| `env script` (no selection) | follows the stored config (`accessMode` → dotnet, `dotnetupOnPath` → dotnetup); both when no config exists yet |
 | `env script --dotnet --dotnetup` | both (explicit — what the applier bakes into profiles) |
 | `env script --dotnetup` | dotnetup only |
 | `env script --dotnet` | dotnet only |
 | `env script --dotnetup-only` | dotnetup only (hidden legacy alias for `--dotnetup`) |
 
-Semantics are a **selection set**: with no selection flag the script wires both (the
-convenient, backwards-compatible default a human gets from typing `env script`); passing
-any of `--dotnet` / `--dotnetup` emits **only** the listed parts. Help text states this
-explicitly so `--dotnet` isn't misread as additive: *"By default the script wires both
-dotnet and dotnetup. Pass `--dotnet` and/or `--dotnetup` to emit only the parts you
-list."*
+Semantics are a **selection set**: passing any of `--dotnet` / `--dotnetup` emits **only** the
+listed parts. With no selection flag the script follows the stored config, so a human typing
+`eval "$(dotnetup env script)"` activates their configured setup; when no config exists yet it
+falls back to wiring both (the back-compat behavior the legacy `print-env-script` profile blocks
+rely on). Help text states this explicitly so `--dotnet` isn't misread as additive: *"By default
+the script follows your configured env settings. Pass `--dotnet` and/or `--dotnetup` to emit only
+the parts you list."*
 
 - **Profiles are always explicit.** The applier bakes `--dotnet --dotnetup`,
   `--dotnetup`, or `--dotnet` (never relying on the default), so a persisted block is
@@ -426,9 +427,9 @@ dotnet env-var wiring lives).
    **not** touching the init walkthrough UI in this PR; a dedicated prompt can be added
    later (likely will be), but it's out of scope here.
 5. **`env script` flag surface** *(resolved — see [`env script` flag surface](#env-script-flag-surface))*:
-   two selection flags `--dotnet` / `--dotnetup`; no selection = both (back-compat
-   default); profiles bake explicit flags; `--dotnetup-only` retained as a hidden legacy
-   alias for `--dotnetup` during the `print-env-script` compat window.
+   two selection flags `--dotnet` / `--dotnetup`; no selection follows the stored config
+   (falling back to both when no config exists); profiles bake explicit flags; `--dotnetup-only`
+   retained as a hidden legacy alias for `--dotnetup` during the `print-env-script` compat window.
 
 ## Command shape: alternatives considered
 

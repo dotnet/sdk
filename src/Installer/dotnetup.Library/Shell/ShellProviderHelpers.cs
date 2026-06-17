@@ -27,8 +27,8 @@ internal static class ShellProviderHelpers
     /// <summary>
     /// Builds the explicit selection flags for an <c>env script</c> invocation baked into a
     /// profile entry or activation command. Always emits <c>--dotnet</c> and/or <c>--dotnetup</c>
-    /// for the requested aspects so the generated call never relies on the command's
-    /// "no selection = both" default. Adds <c>--dotnet-install-path</c> only when dotnet is
+    /// for the requested aspects so the generated call never relies on the command's no-flag
+    /// default. Adds <c>--dotnet-install-path</c> only when dotnet is
     /// included and the path is non-default.
     /// </summary>
     internal static string GetCommandFlags(bool includeDotnet, bool includeDotnetup, string? dotnetInstallPath, Func<string, string> escapePath)
@@ -57,10 +57,10 @@ internal static class ShellProviderHelpers
     internal static string AppendArguments(string command, string flags)
         => string.IsNullOrEmpty(flags) ? command : $"{command} {flags}";
 
-    internal static string BuildPosixActivationCommand(string dotnetupPath, string shellName, string flags)
+    internal static string BuildPosixActivationCommand(string dotnetupPath)
     {
-        var command = BuildPosixPrintEnvCommand(dotnetupPath, shellName, flags);
-        return $"eval \"$({command})\"";
+        var escapedPath = EscapePosixPath(dotnetupPath);
+        return $"eval \"$('{escapedPath}' env script)\"";
     }
 
     internal static string BuildPosixProfileEntry(string dotnetupPath, string shellName, string flags)
@@ -75,10 +75,10 @@ internal static class ShellProviderHelpers
             """;
     }
 
-    internal static string BuildPowerShellActivationCommand(string dotnetupPath, string shellName, string flags)
+    internal static string BuildPowerShellActivationCommand(string dotnetupPath)
     {
-        var command = BuildPowerShellPrintEnvCommand(dotnetupPath, shellName, flags);
-        return $"Invoke-Expression ({command} | Out-String)";
+        var escapedPath = EscapePowerShellPath(dotnetupPath);
+        return $"Invoke-Expression (& '{escapedPath}' env script | Out-String)";
     }
 
     internal static string BuildPowerShellProfileEntry(string dotnetupPath, string shellName, string flags)

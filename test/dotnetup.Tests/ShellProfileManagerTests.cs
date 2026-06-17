@@ -478,25 +478,13 @@ public class ShellProfileManagerTests : IDisposable
     }
 
     [Fact]
-    public void BashProvider_GenerateActivationCommand_WithCustomInstallPath_IncludesFlag()
-    {
-        var provider = new BashEnvShellProvider();
-        var command = provider.GenerateActivationCommand(FakeDotnetupPath, dotnetInstallPath: FakeDotnetInstallPath);
-
-        command.Should().Contain($"--dotnet-install-path '{FakeDotnetInstallPath}'");
-        command.Should().NotContain("--dotnetup-only");
-    }
-
-    [Fact]
     public void BashProvider_DefaultInstallPath_KeepsCommandSimple()
     {
         var provider = new BashEnvShellProvider();
         var entry = provider.GenerateProfileEntry(FakeDotnetupPath, dotnetInstallPath: DotnetupPaths.DefaultDotnetInstallPath);
-        var command = provider.GenerateActivationCommand(FakeDotnetupPath, dotnetInstallPath: DotnetupPaths.DefaultDotnetInstallPath);
 
         entry.Should().NotContain("--dotnet-install-path");
-        command.Should().NotContain("--dotnet-install-path");
-        command.Should().NotContain("--dotnetup-only");
+        entry.Should().NotContain("--dotnetup-only");
     }
 
     [Fact]
@@ -534,7 +522,7 @@ public class ShellProfileManagerTests : IDisposable
         var command = provider.GenerateActivationCommand(FakeDotnetupPath);
 
         command.Should().Contain("eval");
-        command.Should().Contain("--shell bash");
+        command.Should().NotContain("--shell");
         command.Should().NotContain(ShellProfileManager.BeginMarkerComment);
         command.Should().NotContain(ShellProfileManager.EndMarkerComment);
     }
@@ -546,7 +534,7 @@ public class ShellProfileManagerTests : IDisposable
         var command = provider.GenerateActivationCommand(FakeDotnetupPath);
 
         command.Should().Contain("eval");
-        command.Should().Contain("--shell zsh");
+        command.Should().NotContain("--shell");
     }
 
     [Fact]
@@ -556,7 +544,7 @@ public class ShellProfileManagerTests : IDisposable
         var command = provider.GenerateActivationCommand(FakeDotnetupPath);
 
         command.Should().Contain("Invoke-Expression");
-        command.Should().Contain("--shell pwsh");
+        command.Should().NotContain("--shell");
     }
 
     [Fact]

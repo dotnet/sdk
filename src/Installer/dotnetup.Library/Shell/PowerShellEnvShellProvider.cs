@@ -110,9 +110,6 @@ public class PowerShellEnvShellProvider : IEnvShellProvider
         return ShellProviderHelpers.BuildPowerShellProfileEntry(dotnetupPath, "pwsh", flags);
     }
 
-    public string GenerateActivationCommand(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null)
-    {
-        var flags = ShellProviderHelpers.GetCommandFlags(includeDotnet, includeDotnetup, dotnetInstallPath, ShellProviderHelpers.EscapePowerShellPath);
-        return ShellProviderHelpers.BuildPowerShellActivationCommand(dotnetupPath, "pwsh", flags);
-    }
+    public string GenerateActivationCommand(string dotnetupPath)
+        => ShellProviderHelpers.BuildPowerShellActivationCommand(dotnetupPath);
 }

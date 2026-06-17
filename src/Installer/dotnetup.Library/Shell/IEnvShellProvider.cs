@@ -51,7 +51,7 @@ public interface IEnvShellProvider
     /// Generates the shell command block to append to a shell profile that will eval dotnetup's env script.
     /// <see cref="ShellProfileManager"/> adds the surrounding marker comments when it writes the block.
     /// The generated block bakes explicit <c>--dotnet</c> / <c>--dotnetup</c> selection flags so it
-    /// never depends on the command's "no selection = both" default.
+    /// never depends on the command's no-flag default.
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
     /// <param name="includeDotnet">When true, the script sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
@@ -60,11 +60,11 @@ public interface IEnvShellProvider
     string GenerateProfileEntry(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null);
 
     /// <summary>
-    /// Generates a command that the user can paste into the current terminal to activate .NET.
+    /// Generates a command the user can paste into the current terminal to activate their configured
+    /// env settings. The emitted <c>env script</c> call carries no flags at all: it follows the stored
+    /// config and auto-detects the shell at run time (the same detection that would otherwise supply
+    /// the value), so nothing needs to be baked in.
     /// </summary>
     /// <param name="dotnetupPath">The full path to the dotnetup binary</param>
-    /// <param name="includeDotnet">When true, the command sets DOTNET_ROOT and adds the managed dotnet to PATH.</param>
-    /// <param name="includeDotnetup">When true, the command adds the dotnetup directory to PATH.</param>
-    /// <param name="dotnetInstallPath">An optional .NET install path to pass through to <c>env script</c>.</param>
-    string GenerateActivationCommand(string dotnetupPath, bool includeDotnet = true, bool includeDotnetup = true, string? dotnetInstallPath = null);
+    string GenerateActivationCommand(string dotnetupPath);
 }
