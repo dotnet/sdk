@@ -32,19 +32,19 @@ internal class InitWorkflows
     }
 
     /// <summary>
-    /// Returns true when the given <see cref="PathPreference"/> implies we should
+    /// Returns true when the given <see cref="DotnetAccessMode"/> implies we should
     /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
     /// </summary>
-    public static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
-        preference is PathPreference.All;
+    public static bool ShouldReplaceSystemConfiguration(DotnetAccessMode preference) =>
+        preference is DotnetAccessMode.All;
 
     /// <summary>
     /// Returns true when the user chose a mode that shadows the system PATH and should therefore
     /// be offered migration of existing system-level .NET installs into dotnetup-managed installs.
     /// </summary>
-    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference)
+    public static bool ShouldPromptToConvertSystemInstalls(DotnetAccessMode preference)
     {
-        return preference != PathPreference.None;
+        return preference != DotnetAccessMode.None;
     }
 
     // ── Init Flow Orchestrators ──
@@ -77,18 +77,18 @@ internal class InitWorkflows
             : null;
 
         // User chooses how to access .NET
-        PathPreference? previousPreference = DotnetupConfig.Read()?.Env;
-        PathPreference pathPreference = GetInitPathPreference(command.Interactive, command.ShellProvider);
+        DotnetAccessMode? previousAccessMode = DotnetupConfig.Read()?.AccessMode;
+        DotnetAccessMode accessMode = GetInitDotnetAccessMode(command.Interactive, command.ShellProvider);
         string? manifestPath = effectiveRequests.Count > 0 ? effectiveRequests[0].Request.Options.ManifestPath : null;
 
-        // dotnetup-on-PATH is orthogonal to the dotnet-exposure mode and defaults to true; the
+        // dotnetup-on-PATH is orthogonal to the dotnet-access mode and defaults to true; the
         // init walkthrough does not prompt for it (see the env design doc).
         const bool dotnetupOnPath = true;
 
         // Step 2: Prompt about admin installs before setting up the environment.
         List<MigrationWorkflow.MigrationSelection> toMigrate = PromptInstallsToMigrateIfDesired(
             _dotnetEnvironment,
-            pathPreference,
+            accessMode,
             installRoot,
             manifestPath,
             effectiveRequests,
@@ -105,8 +105,8 @@ internal class InitWorkflows
         }
 
         // Save config and apply configuration(s).
-        SaveConfigAndDisplayResult(pathPreference, dotnetupOnPath, previousPreference);
-        ApplyEnvironmentSettings(pathPreference, dotnetupOnPath, installRoot.Path, command.ShellProvider);
+        SaveConfigAndDisplayResult(accessMode, dotnetupOnPath, previousAccessMode);
+        ApplyEnvironmentSettings(accessMode, dotnetupOnPath, installRoot.Path, command.ShellProvider);
 
         return effectiveRequests;
     }
@@ -116,7 +116,7 @@ internal class InitWorkflows
     /// observed environment, not the stored config, so any drift is corrected.
     /// </summary>
     private void ApplyEnvironmentSettings(
-        PathPreference pathPreference,
+        DotnetAccessMode accessMode,
         bool dotnetupOnPath,
         string dotnetRoot,
         IEnvShellProvider? shellProvider)
@@ -124,8 +124,8 @@ internal class InitWorkflows
         ObservedEnvironmentState observed = new EnvironmentStateInspector(_dotnetEnvironment)
             .Inspect(shellProvider ?? ShellDetection.GetCurrentShellProvider());
 
-        PathPreferenceApplier.Apply(
-            pathPreference,
+        EnvSettingsApplier.Apply(
+            accessMode,
             dotnetupOnPath,
             observed,
             _dotnetEnvironment,
@@ -204,31 +204,31 @@ internal class InitWorkflows
         InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, noProgress, command);
     }
 
-    private static PathPreference GetInitPathPreference(bool interactive, IEnvShellProvider? shellProvider = null)
+    private static DotnetAccessMode GetInitDotnetAccessMode(bool interactive, IEnvShellProvider? shellProvider = null)
     {
         if (!interactive)
         {
             if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
             {
-                return PathPreference.None;
+                return DotnetAccessMode.None;
             }
 
-            return PathPreference.Shell;
+            return DotnetAccessMode.Shell;
         }
 
         if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
                 $"[{DotnetupTheme.Current.Warning}]Warning:[/] Shell '{ShellDetection.GetCurrentShellDisplayName().EscapeMarkup()}' is not supported for automatic environment configuration. dotnetup will continue without changing your shell profile unless you specify one with --shell."));
-            return PathPreference.None;
+            return DotnetAccessMode.None;
         }
 
-        return ValidatePathPreference(PromptPathPreference());
+        return ValidateDotnetAccessMode(PromptDotnetAccessMode());
     }
 
-    private static PathPreference ValidatePathPreference(PathPreference preference)
+    private static DotnetAccessMode ValidateDotnetAccessMode(DotnetAccessMode preference)
     {
-        if (preference == PathPreference.All && !OperatingSystem.IsWindows())
+        if (preference == DotnetAccessMode.All && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
@@ -298,7 +298,7 @@ internal class InitWorkflows
     /// Prompts the user to choose how they want to access the dotnetup-managed dotnet
     /// using an interactive selector that shows all options with descriptions and tooltips.
     /// </summary>
-    internal static PathPreference PromptPathPreference()
+    internal static DotnetAccessMode PromptDotnetAccessMode()
     {
         bool isWindows = OperatingSystem.IsWindows();
 
@@ -313,22 +313,22 @@ internal class InitWorkflows
 
         var options = new List<SelectableOption>
         {
-            new("i", Strings.PathPreferenceNone, Strings.PathDescriptionNone, isolationTooltip),
-            new("t", Strings.PathPreferenceShell, isWindows ? Strings.PathDescriptionShell : Strings.PathDescriptionShellBase, terminalTooltip),
+            new("i", Strings.AccessModeNone, Strings.PathDescriptionNone, isolationTooltip),
+            new("t", Strings.AccessModeShell, isWindows ? Strings.PathDescriptionShell : Strings.PathDescriptionShellBase, terminalTooltip),
         };
 
         if (isWindows)
         {
-            options.Add(new("r", Strings.PathPreferenceAll, Strings.PathDescriptionAll, Strings.PathTooltipAll));
+            options.Add(new("r", Strings.AccessModeAll, Strings.PathDescriptionAll, Strings.PathTooltipAll));
         }
 
         int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex: 1);
 
         return selected switch
         {
-            0 => PathPreference.None,
-            1 => PathPreference.Shell,
-            _ => PathPreference.All,
+            0 => DotnetAccessMode.None,
+            1 => DotnetAccessMode.Shell,
+            _ => DotnetAccessMode.All,
         };
     }
 
@@ -339,13 +339,13 @@ internal class InitWorkflows
     /// <returns>A list of deduplicated channel selections to migrate, or an empty list if the user declines or no candidates remain.</returns>
     internal static List<MigrationWorkflow.MigrationSelection> PromptInstallsToMigrateIfDesired(
         IDotnetEnvironmentManager dotnetEnvironment,
-        PathPreference pathPreference,
+        DotnetAccessMode accessMode,
         DotnetInstallRoot installRoot,
         string? manifestPath = null,
         IReadOnlyCollection<ResolvedInstallRequest>? existingRequests = null,
         bool interactive = true)
     {
-        if (!ShouldPromptToConvertSystemInstalls(pathPreference))
+        if (!ShouldPromptToConvertSystemInstalls(accessMode))
         {
             return [];
         }
@@ -531,20 +531,20 @@ internal class InitWorkflows
             resolved);
     }
 
-    private static void SaveConfigAndDisplayResult(PathPreference pathPreference, bool dotnetupOnPath, PathPreference? previousPreference)
+    private static void SaveConfigAndDisplayResult(DotnetAccessMode accessMode, bool dotnetupOnPath, DotnetAccessMode? previousAccessMode)
     {
         var config = new DotnetupConfigData
         {
-            Env = pathPreference,
+            AccessMode = accessMode,
             DotnetupOnPath = dotnetupOnPath,
         };
 
         DotnetupConfig.Write(config);
 
         // Only show guidance when the preference actually changed (or first-time setup).
-        if (previousPreference != pathPreference)
+        if (previousAccessMode != accessMode)
         {
-            DisplayPathGuidance(pathPreference);
+            DisplayPathGuidance(accessMode);
         }
 
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Setup complete!"));
@@ -553,13 +553,13 @@ internal class InitWorkflows
     /// <summary>
     /// Shows guidance based on the chosen path preference.
     /// </summary>
-    private static void DisplayPathGuidance(PathPreference preference)
+    private static void DisplayPathGuidance(DotnetAccessMode preference)
     {
         string? guidance = preference switch
         {
-            PathPreference.None => Strings.PathGuidanceNone,
-            PathPreference.Shell => Strings.PathGuidanceShell,
-            PathPreference.All => Strings.PathGuidanceAll,
+            DotnetAccessMode.None => Strings.PathGuidanceNone,
+            DotnetAccessMode.Shell => Strings.PathGuidanceShell,
+            DotnetAccessMode.All => Strings.PathGuidanceAll,
             _ => null,
         };
 

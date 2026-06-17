@@ -38,13 +38,13 @@ public class InitWorkflowTests : IDisposable
     [Fact]
     public void ShouldReplaceSystemConfiguration_ReturnsFalse_ForNone()
     {
-        InitWorkflows.ShouldReplaceSystemConfiguration(PathPreference.None)
+        InitWorkflows.ShouldReplaceSystemConfiguration(DotnetAccessMode.None)
             .Should().BeFalse();
     }
 
     [Theory]
-    [InlineData(PathPreference.All)]
-    internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(PathPreference preference)
+    [InlineData(DotnetAccessMode.All)]
+    internal void ShouldReplaceSystemConfiguration_ReturnsTrue_ForPathReplacingModes(DotnetAccessMode preference)
     {
         InitWorkflows.ShouldReplaceSystemConfiguration(preference)
             .Should().BeTrue();
@@ -53,14 +53,14 @@ public class InitWorkflowTests : IDisposable
     [Fact]
     public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_ForNone()
     {
-        InitWorkflows.ShouldPromptToConvertSystemInstalls(PathPreference.None)
+        InitWorkflows.ShouldPromptToConvertSystemInstalls(DotnetAccessMode.None)
             .Should().BeFalse();
     }
 
     [Theory]
-    [InlineData(PathPreference.Shell)]
-    [InlineData(PathPreference.All)]
-    internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(PathPreference preference)
+    [InlineData(DotnetAccessMode.Shell)]
+    [InlineData(DotnetAccessMode.All)]
+    internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(DotnetAccessMode preference)
     {
         InitWorkflows.ShouldPromptToConvertSystemInstalls(preference)
             .Should().BeTrue();
@@ -81,7 +81,7 @@ public class InitWorkflowTests : IDisposable
             ]);
 
         var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock, PathPreference.None, installRoot);
+            mock, DotnetAccessMode.None, installRoot);
 
         result.Should().BeEmpty();
         // GetExistingSystemInstalls should not be called when ShouldPromptToConvertSystemInstalls is false
@@ -99,7 +99,7 @@ public class InitWorkflowTests : IDisposable
 
         string manifestPath = Path.Combine(_tempDir, "manifest.json");
         var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock, PathPreference.Shell, installRoot, manifestPath);
+            mock, DotnetAccessMode.Shell, installRoot, manifestPath);
 
         result.Should().BeEmpty();
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
@@ -119,7 +119,7 @@ public class InitWorkflowTests : IDisposable
 
         var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
             mock,
-            PathPreference.Shell,
+            DotnetAccessMode.Shell,
             installRoot,
             interactive: false);
 

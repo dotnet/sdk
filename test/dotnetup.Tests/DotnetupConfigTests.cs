@@ -37,7 +37,7 @@ public class DotnetupConfigTests : IDisposable
     {
         var config = new DotnetupConfigData
         {
-            Env = PathPreference.Shell,
+            AccessMode = DotnetAccessMode.Shell,
         };
 
         DotnetupConfig.Write(config);
@@ -45,27 +45,27 @@ public class DotnetupConfigTests : IDisposable
 
         var loaded = DotnetupConfig.Read();
         loaded.Should().NotBeNull();
-        loaded!.Env.Should().Be(PathPreference.Shell);
+        loaded!.AccessMode.Should().Be(DotnetAccessMode.Shell);
         loaded.SchemaVersion.Should().Be("1");
     }
 
     [Theory]
-    [InlineData(PathPreference.None)]
-    [InlineData(PathPreference.Shell)]
-    [InlineData(PathPreference.All)]
-    internal void ReadEnvPreference_ReturnsStoredPreference_WhenConfigExists(PathPreference preference)
+    [InlineData(DotnetAccessMode.None)]
+    [InlineData(DotnetAccessMode.Shell)]
+    [InlineData(DotnetAccessMode.All)]
+    internal void ReadAccessMode_ReturnsStoredPreference_WhenConfigExists(DotnetAccessMode preference)
     {
-        DotnetupConfig.Write(new DotnetupConfigData { Env = preference });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = preference });
 
-        var result = DotnetupConfig.ReadEnvPreference();
+        var result = DotnetupConfig.ReadAccessMode();
 
         result.Should().Be(preference);
     }
 
     [Fact]
-    public void ReadEnvPreference_ReturnsNull_WhenNoConfig()
+    public void ReadAccessMode_ReturnsNull_WhenNoConfig()
     {
-        var result = DotnetupConfig.ReadEnvPreference();
+        var result = DotnetupConfig.ReadAccessMode();
 
         result.Should().BeNull();
     }
@@ -78,10 +78,10 @@ public class DotnetupConfigTests : IDisposable
     }
 
     [Theory]
-    [InlineData("DotnetupDotnet", PathPreference.None)]
-    [InlineData("ShellProfile", PathPreference.Shell)]
-    [InlineData("FullPathReplacement", PathPreference.All)]
-    internal void Read_LegacyConfig_MapsPropertyNameAndEnumSpelling(string legacyEnumValue, PathPreference expected)
+    [InlineData("DotnetupDotnet", DotnetAccessMode.None)]
+    [InlineData("ShellProfile", DotnetAccessMode.Shell)]
+    [InlineData("FullPathReplacement", DotnetAccessMode.All)]
+    internal void Read_LegacyConfig_MapsPropertyNameAndEnumSpelling(string legacyEnumValue, DotnetAccessMode expected)
     {
         // Simulate a config written by an earlier internal build: the legacy "pathPreference"
         // property name and the legacy enum spellings, and no "dotnetupOnPath" field.
@@ -96,7 +96,7 @@ public class DotnetupConfigTests : IDisposable
         var config = DotnetupConfig.Read();
 
         config.Should().NotBeNull();
-        config!.Env.Should().Be(expected);
+        config!.AccessMode.Should().Be(expected);
         // A missing dotnetupOnPath defaults to true.
         config.DotnetupOnPath.Should().BeTrue();
     }
@@ -104,7 +104,7 @@ public class DotnetupConfigTests : IDisposable
     [Fact]
     public void WriteAndRead_RoundTripsDotnetupOnPath()
     {
-        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.None, DotnetupOnPath = false });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false });
 
         var loaded = DotnetupConfig.Read();
 

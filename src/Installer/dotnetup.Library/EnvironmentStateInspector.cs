@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// <summary>
 /// Inspects the live environment and reports what dotnetup has actually wired as an
 /// <see cref="ObservedEnvironmentState"/>. This is the single place that reads machine reality for
-/// the env-axis model, so both <see cref="PathPreferenceApplier"/> (for reality-based removal)
+/// the env-axis model, so both <see cref="EnvSettingsApplier"/> (for reality-based removal)
 /// and <see cref="Commands.Env.EnvShowCommand"/> (for drift reporting) make decisions from the
 /// same observation instead of trusting the stored config. Mirrors the inspect-then-act split of
 /// <see cref="InstallRootManager"/>.

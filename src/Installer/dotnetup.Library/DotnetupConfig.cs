@@ -13,10 +13,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
 /// How dotnetup exposes the managed <c>dotnet</c> in the environment. This is the
-/// dotnet-exposure axis; whether <c>dotnetup</c> itself is on PATH is a separate,
+/// dotnet-access axis; whether <c>dotnetup</c> itself is on PATH is a separate,
 /// orthogonal setting (<see cref="DotnetupConfigData.DotnetupOnPath"/>).
 /// </summary>
-internal enum PathPreference
+internal enum DotnetAccessMode
 {
     /// <summary>No dotnet PATH wiring. User runs commands via <c>dotnetup dotnet</c>.</summary>
     None = 1,
@@ -37,16 +37,16 @@ internal class DotnetupConfigData
     public string SchemaVersion { get; set; } = "1";
 
     /// <summary>
-    /// How the managed dotnet is exposed. Serialized as <c>env</c>. Reads also accept the
+    /// How the managed dotnet is exposed. Serialized as <c>accessMode</c>. Reads also accept the
     /// legacy property name <c>pathPreference</c> (see <see cref="DotnetupConfig.Read"/>).
     /// </summary>
-    [JsonPropertyName("env")]
-    [JsonConverter(typeof(PathPreferenceJsonConverter))]
-    public PathPreference Env { get; set; } = PathPreference.All;
+    [JsonPropertyName("accessMode")]
+    [JsonConverter(typeof(DotnetAccessModeJsonConverter))]
+    public DotnetAccessMode AccessMode { get; set; } = DotnetAccessMode.All;
 
     /// <summary>
     /// Whether the dotnetup directory is on PATH so <c>dotnetup</c> can be invoked. Orthogonal
-    /// to <see cref="Env"/>. Defaults to <c>true</c> (and when absent from an older config).
+    /// to <see cref="AccessMode"/>. Defaults to <c>true</c> (and when absent from an older config).
     /// </summary>
     public bool DotnetupOnPath { get; set; } = true;
 }
@@ -64,7 +64,7 @@ internal static class DotnetupConfig
     /// Reads the config file if it exists, otherwise returns null.
     /// Uses GlobalJsonFileHelper for encoding-aware reading (handles BOM variants).
     /// Tolerates the legacy config shape written by earlier internal builds: the
-    /// <c>pathPreference</c> property name (now <c>env</c>) and the legacy enum spellings.
+    /// <c>pathPreference</c> property name (now <c>accessMode</c>) and the legacy enum spellings.
     /// </summary>
     public static DotnetupConfigData? Read()
     {
@@ -86,11 +86,11 @@ internal static class DotnetupConfig
             JsonNode? root = JsonNode.Parse(text);
             if (root is JsonObject obj)
             {
-                // Legacy property-name shim: map "pathPreference" → "env" when the new name
-                // is absent. Prefer "env" if both are somehow present.
-                if (obj["env"] is null && obj["pathPreference"] is JsonNode legacy)
+                // Legacy property-name shim: map "pathPreference" → "accessMode" when the new
+                // name is absent. Prefer "accessMode" if both are somehow present.
+                if (obj["accessMode"] is null && obj["pathPreference"] is JsonNode legacy)
                 {
-                    obj["env"] = legacy.DeepClone();
+                    obj["accessMode"] = legacy.DeepClone();
                     obj.Remove("pathPreference");
                 }
             }
@@ -118,13 +118,13 @@ internal static class DotnetupConfig
     }
 
     /// <summary>
-    /// Returns the user's dotnet-exposure <see cref="PathPreference"/> from the config file if
+    /// Returns the user's dotnet-access <see cref="DotnetAccessMode"/> from the config file if
     /// it exists, otherwise returns <c>null</c>.
     /// </summary>
-    public static PathPreference? ReadEnvPreference()
+    public static DotnetAccessMode? ReadAccessMode()
     {
         var config = Read();
-        return config?.Env;
+        return config?.AccessMode;
     }
 
     /// <summary>

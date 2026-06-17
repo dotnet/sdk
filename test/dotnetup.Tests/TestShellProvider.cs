@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
 /// Test-only <see cref="IEnvShellProvider"/> backed by a real on-disk profile path.
-/// Used by tests that need to exercise ShellProfileManager / PathPreferenceApplier
+/// Used by tests that need to exercise ShellProfileManager / EnvSettingsApplier
 /// against a controllable profile file rather than the user's real shell config.
 /// </summary>
 internal sealed class TestShellProvider : IEnvShellProvider

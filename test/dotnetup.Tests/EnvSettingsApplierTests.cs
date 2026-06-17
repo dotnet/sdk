@@ -11,8 +11,8 @@ using Xunit;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
-/// Unit tests for the two-axis composition in <see cref="PathPreferenceApplier"/> — dotnet
-/// exposure (<see cref="PathPreference"/>) × dotnetup-on-PATH — plus the reality-driven removal
+/// Unit tests for the two-axis composition in <see cref="EnvSettingsApplier"/> — dotnet
+/// access (<see cref="DotnetAccessMode"/>) × dotnetup-on-PATH — plus the reality-driven removal
 /// transitions and the platform / shell-provider edge cases.
 ///
 /// Removal decisions are driven by an <see cref="ObservedEnvironmentState"/> the test supplies
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// system. The Windows user-PATH dotnetup entry is asserted via the mock's
 /// <see cref="MockDotnetInstallManager.LastDotnetupOnUserPathEnabled"/>.
 /// </summary>
-public class PathPreferenceApplierTests : IDisposable
+public class EnvSettingsApplierTests : IDisposable
 {
     private const string DotnetRoot = "/fake/dotnet";
 
@@ -31,7 +31,7 @@ public class PathPreferenceApplierTests : IDisposable
     private readonly MockDotnetInstallManager _env;
     private readonly TestShellProvider _shellProvider;
 
-    public PathPreferenceApplierTests()
+    public EnvSettingsApplierTests()
     {
         _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-applier-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDir);
@@ -56,7 +56,7 @@ public class PathPreferenceApplierTests : IDisposable
     [Fact]
     public void AlwaysAppliesDotnetupOnUserPath_WithTargetValue()
     {
-        PathPreferenceApplier.Apply(PathPreference.None, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+        EnvSettingsApplier.Apply(DotnetAccessMode.None, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
         _env.ApplyDotnetupOnUserPathCallCount.Should().Be(1);
         _env.LastDotnetupOnUserPathEnabled.Should().BeTrue();
     }
@@ -65,7 +65,7 @@ public class PathPreferenceApplierTests : IDisposable
     public void None_DotnetupOff_NoProfile_NoEnvVars()
     {
         // First-time config (nothing observed as wired): no env vars, no profile block.
-        PathPreferenceApplier.Apply(PathPreference.None, targetDotnetupOnPath: false, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+        EnvSettingsApplier.Apply(DotnetAccessMode.None, targetDotnetupOnPath: false, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
@@ -75,7 +75,7 @@ public class PathPreferenceApplierTests : IDisposable
     [Fact]
     public void None_DotnetupOn_WritesDotnetupOnlyProfile()
     {
-        PathPreferenceApplier.Apply(PathPreference.None, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+        EnvSettingsApplier.Apply(DotnetAccessMode.None, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(1);
         _env.LastIncludeDotnetForTerminalProfileModifications.Should().BeFalse();
@@ -86,7 +86,7 @@ public class PathPreferenceApplierTests : IDisposable
     [Fact]
     public void Shell_DotnetupOn_WritesBothInProfile_NoEnvVars()
     {
-        PathPreferenceApplier.Apply(PathPreference.Shell, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+        EnvSettingsApplier.Apply(DotnetAccessMode.Shell, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(1);
         _env.LastIncludeDotnetForTerminalProfileModifications.Should().BeTrue();
@@ -97,7 +97,7 @@ public class PathPreferenceApplierTests : IDisposable
     [Fact]
     public void Shell_DotnetupOff_WritesDotnetOnlyProfile()
     {
-        PathPreferenceApplier.Apply(PathPreference.Shell, targetDotnetupOnPath: false, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+        EnvSettingsApplier.Apply(DotnetAccessMode.Shell, targetDotnetupOnPath: false, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(1);
         _env.LastIncludeDotnetForTerminalProfileModifications.Should().BeTrue();
@@ -109,7 +109,7 @@ public class PathPreferenceApplierTests : IDisposable
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        PathPreferenceApplier.Apply(PathPreference.All, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+        EnvSettingsApplier.Apply(DotnetAccessMode.All, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(1);
         _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(0);
@@ -125,8 +125,8 @@ public class PathPreferenceApplierTests : IDisposable
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        PathPreferenceApplier.Apply(
-            PathPreference.Shell, targetDotnetupOnPath: true,
+        EnvSettingsApplier.Apply(
+            DotnetAccessMode.Shell, targetDotnetupOnPath: true,
             Observed(dotnetEnvVarsPresent: true, dotnetEnvVarsComplete: true, profileBlockPresent: true),
             _env, DotnetRoot, _shellProvider);
 
@@ -142,8 +142,8 @@ public class PathPreferenceApplierTests : IDisposable
 
         WriteManagedBlockToProfile();
 
-        PathPreferenceApplier.Apply(
-            PathPreference.None, targetDotnetupOnPath: false,
+        EnvSettingsApplier.Apply(
+            DotnetAccessMode.None, targetDotnetupOnPath: false,
             Observed(dotnetEnvVarsPresent: true, dotnetEnvVarsComplete: true, profileBlockPresent: true),
             _env, DotnetRoot, _shellProvider);
 
@@ -157,8 +157,8 @@ public class PathPreferenceApplierTests : IDisposable
     {
         WriteManagedBlockToProfile();
 
-        PathPreferenceApplier.Apply(
-            PathPreference.None, targetDotnetupOnPath: false,
+        EnvSettingsApplier.Apply(
+            DotnetAccessMode.None, targetDotnetupOnPath: false,
             Observed(profileBlockPresent: true),
             _env, DotnetRoot, _shellProvider);
 
@@ -169,10 +169,10 @@ public class PathPreferenceApplierTests : IDisposable
     [Fact]
     public void Shell_DotnetupOn_To_None_DotnetupOn_RewritesProfileAsDotnetupOnly()
     {
-        // Turning off dotnet exposure but keeping dotnetup-on-PATH should rewrite (not remove)
+        // Turning off dotnet access but keeping dotnetup-on-PATH should rewrite (not remove)
         // the block as dotnetup-only.
-        PathPreferenceApplier.Apply(
-            PathPreference.None, targetDotnetupOnPath: true,
+        EnvSettingsApplier.Apply(
+            DotnetAccessMode.None, targetDotnetupOnPath: true,
             Observed(profileBlockPresent: true),
             _env, DotnetRoot, _shellProvider);
 
@@ -190,8 +190,8 @@ public class PathPreferenceApplierTests : IDisposable
         // present. Targeting none + dotnetup-off must still remove it.
         WriteManagedBlockToProfile();
 
-        PathPreferenceApplier.Apply(
-            PathPreference.None, targetDotnetupOnPath: false,
+        EnvSettingsApplier.Apply(
+            DotnetAccessMode.None, targetDotnetupOnPath: false,
             Observed(profileBlockPresent: true),
             _env, DotnetRoot, _shellProvider);
 
@@ -202,8 +202,8 @@ public class PathPreferenceApplierTests : IDisposable
     public void ObservedNoProfileBlock_NothingRemoved()
     {
         // Nothing observed and nothing targeted: the removal branch must not run.
-        PathPreferenceApplier.Apply(
-            PathPreference.None, targetDotnetupOnPath: false,
+        EnvSettingsApplier.Apply(
+            DotnetAccessMode.None, targetDotnetupOnPath: false,
             Observed(profileBlockPresent: false),
             _env, DotnetRoot, _shellProvider);
 
@@ -217,8 +217,8 @@ public class PathPreferenceApplierTests : IDisposable
 
         // Reality has 'all'-mode env vars wired but the target is shell: remove them, even though
         // no prior 'all' config is supplied.
-        PathPreferenceApplier.Apply(
-            PathPreference.Shell, targetDotnetupOnPath: true,
+        EnvSettingsApplier.Apply(
+            DotnetAccessMode.Shell, targetDotnetupOnPath: true,
             Observed(dotnetEnvVarsPresent: true),
             _env, DotnetRoot, _shellProvider);
 
@@ -232,8 +232,8 @@ public class PathPreferenceApplierTests : IDisposable
     {
         if (OperatingSystem.IsWindows()) return;
 
-        Action act = () => PathPreferenceApplier.Apply(
-            PathPreference.All, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
+        Action act = () => EnvSettingsApplier.Apply(
+            DotnetAccessMode.All, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, _shellProvider);
 
         act.Should().Throw<PlatformNotSupportedException>();
     }
@@ -253,8 +253,8 @@ public class PathPreferenceApplierTests : IDisposable
         {
             Environment.SetEnvironmentVariable("SHELL", null);
 
-            Action act = () => PathPreferenceApplier.Apply(
-                PathPreference.Shell, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, shellProvider: null);
+            Action act = () => EnvSettingsApplier.Apply(
+                DotnetAccessMode.Shell, targetDotnetupOnPath: true, ObservedEnvironmentState.Empty, _env, DotnetRoot, shellProvider: null);
 
             act.Should().Throw<DotnetInstallException>()
                 .Which.Message.Should().Contain("--shell");
@@ -268,21 +268,21 @@ public class PathPreferenceApplierTests : IDisposable
     [Fact]
     public void ArgumentNullException_When_EnvironmentIsNull()
     {
-        Action act = () => PathPreferenceApplier.Apply(PathPreference.None, false, ObservedEnvironmentState.Empty, environment: null!, DotnetRoot, _shellProvider);
+        Action act = () => EnvSettingsApplier.Apply(DotnetAccessMode.None, false, ObservedEnvironmentState.Empty, environment: null!, DotnetRoot, _shellProvider);
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void ArgumentNullException_When_ObservedIsNull()
     {
-        Action act = () => PathPreferenceApplier.Apply(PathPreference.None, false, observed: null!, _env, DotnetRoot, _shellProvider);
+        Action act = () => EnvSettingsApplier.Apply(DotnetAccessMode.None, false, observed: null!, _env, DotnetRoot, _shellProvider);
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void ArgumentException_When_DotnetRootIsEmpty()
     {
-        Action act = () => PathPreferenceApplier.Apply(PathPreference.None, false, ObservedEnvironmentState.Empty, _env, dotnetRoot: "", _shellProvider);
+        Action act = () => EnvSettingsApplier.Apply(DotnetAccessMode.None, false, ObservedEnvironmentState.Empty, _env, dotnetRoot: "", _shellProvider);
         act.Should().Throw<ArgumentException>();
     }
 

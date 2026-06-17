@@ -6,8 +6,8 @@ using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Applies the two orthogonal dotnetup environment settings — dotnet exposure
-/// (<see cref="PathPreference"/>) and whether dotnetup itself is on PATH — by writing and
+/// Applies the two orthogonal dotnetup environment settings — dotnet access
+/// (<see cref="DotnetAccessMode"/>) and whether dotnetup itself is on PATH — by writing and
 /// removing the shell-profile block, the Windows user-scope dotnet env vars, and the Windows
 /// user-scope dotnetup PATH entry. See
 /// documentation/general/dotnetup/designs/dotnetup-env.md for the full composition model.
@@ -27,10 +27,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// present even when the config never recorded it (or drifted), and avoids running the elevating
 /// env-var removal when nothing is wired.
 /// </summary>
-internal static class PathPreferenceApplier
+internal static class EnvSettingsApplier
 {
     public static void Apply(
-        PathPreference targetEnv,
+        DotnetAccessMode targetEnv,
         bool targetDotnetupOnPath,
         ObservedEnvironmentState observed,
         IDotnetEnvironmentManager environment,
@@ -41,17 +41,17 @@ internal static class PathPreferenceApplier
         ArgumentNullException.ThrowIfNull(observed);
         ArgumentException.ThrowIfNullOrEmpty(dotnetRoot);
 
-        if (targetEnv == PathPreference.All && !OperatingSystem.IsWindows())
+        if (targetEnv == DotnetAccessMode.All && !OperatingSystem.IsWindows())
         {
             throw new PlatformNotSupportedException(
-                $"{nameof(PathPreference)}.{nameof(PathPreference.All)} is only supported on Windows.");
+                $"{nameof(DotnetAccessMode)}.{nameof(DotnetAccessMode.All)} is only supported on Windows.");
         }
 
         // Windows user-scope dotnet env vars (PATH + DOTNET_ROOT) are wired only by All mode.
-        bool nowWritesDotnetEnvVars = targetEnv == PathPreference.All;
+        bool nowWritesDotnetEnvVars = targetEnv == DotnetAccessMode.All;
 
         // The managed profile block wires dotnet for Shell/All, and dotnetup when dotnetupOnPath.
-        bool nowProfileDotnet = targetEnv is PathPreference.Shell or PathPreference.All;
+        bool nowProfileDotnet = targetEnv is DotnetAccessMode.Shell or DotnetAccessMode.All;
         bool nowProfileDotnetup = targetDotnetupOnPath;
         bool nowHasProfileBlock = nowProfileDotnet || nowProfileDotnetup;
 

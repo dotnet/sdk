@@ -26,7 +26,7 @@ public class EnvDriftAnalyzerTests
     [Fact]
     public void ProfileExpectedButMissing_ReportsMissingBlock()
     {
-        var config = new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
         var observed = Observed(profileBlockPresent: false, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
@@ -37,7 +37,7 @@ public class EnvDriftAnalyzerTests
     [Fact]
     public void ProfileNotExpectedButPresent_ReportsStrayBlock()
     {
-        var config = new DotnetupConfigData { Env = PathPreference.None, DotnetupOnPath = false };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false };
         var observed = Observed(profileBlockPresent: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
@@ -48,7 +48,7 @@ public class EnvDriftAnalyzerTests
     [Fact]
     public void ProfileStateUnknown_NoProfileDrift()
     {
-        var config = new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
         var observed = Observed(profileBlockPresent: null, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
@@ -61,7 +61,7 @@ public class EnvDriftAnalyzerTests
     {
         // Shell + dotnetup-on, profile present, dotnetup on the user PATH (Windows). Non-Windows
         // ignores the user-PATH axis, so this is in sync on both.
-        var config = new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
         var observed = Observed(profileBlockPresent: true, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
@@ -74,7 +74,7 @@ public class EnvDriftAnalyzerTests
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        var config = new DotnetupConfigData { Env = PathPreference.All, DotnetupOnPath = true };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.All, DotnetupOnPath = true };
         var observed = Observed(dotnetEnvVarsComplete: false, profileBlockPresent: true, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
@@ -87,7 +87,7 @@ public class EnvDriftAnalyzerTests
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        var config = new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true };
         var observed = Observed(dotnetEnvVarsPresent: true, profileBlockPresent: true, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
@@ -100,7 +100,7 @@ public class EnvDriftAnalyzerTests
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        var config = new DotnetupConfigData { Env = PathPreference.None, DotnetupOnPath = true };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = true };
         var observed = Observed(profileBlockPresent: true, dotnetupOnUserPath: false);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);
@@ -113,7 +113,7 @@ public class EnvDriftAnalyzerTests
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        var config = new DotnetupConfigData { Env = PathPreference.None, DotnetupOnPath = false };
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false };
         var observed = Observed(profileBlockPresent: false, dotnetupOnUserPath: true);
 
         var drift = EnvDriftAnalyzer.Compare(config, observed);

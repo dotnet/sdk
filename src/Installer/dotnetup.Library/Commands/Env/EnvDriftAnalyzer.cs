@@ -20,9 +20,9 @@ internal static class EnvDriftAnalyzer
 
         var drift = new List<string>();
 
-        bool expectsProfileDotnet = config.Env is PathPreference.Shell or PathPreference.All;
+        bool expectsProfileDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.All;
         bool expectsProfileBlock = expectsProfileDotnet || config.DotnetupOnPath;
-        bool expectsDotnetEnvVars = config.Env == PathPreference.All;
+        bool expectsDotnetEnvVars = config.AccessMode == DotnetAccessMode.All;
 
         // Profile-block presence: only assert when the profile state is known.
         if (observed.ProfileBlockPresent is bool profileBlockPresent)
@@ -33,7 +33,7 @@ internal static class EnvDriftAnalyzer
             }
             else if (!expectsProfileBlock && profileBlockPresent)
             {
-                drift.Add("Shell profile contains a dotnetup managed block but neither dotnet exposure nor dotnetup-on-PATH is configured.");
+                drift.Add("Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.");
             }
         }
 
@@ -47,8 +47,8 @@ internal static class EnvDriftAnalyzer
             {
                 drift.Add(string.Format(
                     CultureInfo.InvariantCulture,
-                    "Windows user PATH / DOTNET_ROOT still has 'all'-mode wiring (expected dotnet exposure: '{0}').",
-                    config.Env.ToString().ToLowerInvariant()));
+                    "Windows user PATH / DOTNET_ROOT still has 'all'-mode wiring (expected dotnet access: '{0}').",
+                    config.AccessMode.ToString().ToLowerInvariant()));
             }
 
             // The user-scope PATH is authoritative for dotnetup-on-PATH on Windows (the profile

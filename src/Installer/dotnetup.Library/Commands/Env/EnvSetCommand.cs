@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 internal class EnvSetCommand : CommandBase
 {
-    private readonly PathPreference? _modeArg;
+    private readonly DotnetAccessMode? _modeArg;
     private readonly bool? _dotnetupOnPathArg;
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly IEnvironmentStateInspector _inspector;
@@ -29,14 +29,14 @@ internal class EnvSetCommand : CommandBase
     {
         DotnetupConfigData? previous = DotnetupConfig.Read();
 
-        // Resolve the dotnet-exposure mode: explicit argument wins, otherwise re-apply the
+        // Resolve the dotnet-access mode: explicit argument wins, otherwise re-apply the
         // stored mode. With neither, there is nothing to apply.
-        PathPreference targetEnv;
-        if (_modeArg is PathPreference mode)
+        DotnetAccessMode targetEnv;
+        if (_modeArg is DotnetAccessMode mode)
         {
             targetEnv = mode;
         }
-        else if (previous?.Env is PathPreference storedEnv)
+        else if (previous?.AccessMode is DotnetAccessMode storedEnv)
         {
             targetEnv = storedEnv;
         }
@@ -47,7 +47,7 @@ internal class EnvSetCommand : CommandBase
                 "No env mode specified and none is stored. Specify a mode: none, shell, or all.");
         }
 
-        if (targetEnv == PathPreference.All && !OperatingSystem.IsWindows())
+        if (targetEnv == DotnetAccessMode.All && !OperatingSystem.IsWindows())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,

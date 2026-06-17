@@ -7,14 +7,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 /// <summary>
 /// Shared apply path for the <c>env set</c> and <c>env clear</c> commands: inspects the live
-/// environment, applies the target settings via <see cref="PathPreferenceApplier"/>, persists the
+/// environment, applies the target settings via <see cref="EnvSettingsApplier"/>, persists the
 /// new config, and prints a short summary. Keeping this in one place ensures <c>env clear</c> and
 /// <c>env set none --dotnetup-on-path off</c> behave identically.
 /// </summary>
 internal static class EnvSettingsWriter
 {
     public static void ApplyAndPersist(
-        PathPreference targetEnv,
+        DotnetAccessMode targetEnv,
         bool targetDotnetupOnPath,
         IDotnetEnvironmentManager environment,
         IEnvShellProvider? shellProvider,
@@ -28,7 +28,7 @@ internal static class EnvSettingsWriter
         // corrected on re-sync.
         ObservedEnvironmentState observed = inspector.Inspect(resolvedShellProvider);
 
-        PathPreferenceApplier.Apply(
+        EnvSettingsApplier.Apply(
             targetEnv,
             targetDotnetupOnPath,
             observed,
@@ -38,11 +38,11 @@ internal static class EnvSettingsWriter
 
         DotnetupConfig.Write(new DotnetupConfigData
         {
-            Env = targetEnv,
+            AccessMode = targetEnv,
             DotnetupOnPath = targetDotnetupOnPath,
         });
 
-        Console.WriteLine($"dotnetup env: dotnet exposure '{targetEnv.ToString().ToLowerInvariant()}', dotnetup on PATH {(targetDotnetupOnPath ? "on" : "off")}.");
+        Console.WriteLine($"dotnetup env: dotnet access '{targetEnv.ToString().ToLowerInvariant()}', dotnetup on PATH {(targetDotnetupOnPath ? "on" : "off")}.");
         Console.WriteLine("NOTE: You may need to restart your terminal for the changes to take effect.");
     }
 }

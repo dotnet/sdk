@@ -177,13 +177,13 @@
   <data name="InitCommandDescription" xml:space="preserve">
     <value>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</value>
   </data>
-  <data name="PathPreferenceNone" xml:space="preserve">
+  <data name="AccessModeNone" xml:space="preserve">
     <value>Isolation Mode</value>
   </data>
-  <data name="PathPreferenceShell" xml:space="preserve">
+  <data name="AccessModeShell" xml:space="preserve">
     <value>Terminal Mode (Suggested)</value>
   </data>
-  <data name="PathPreferenceAll" xml:space="preserve">
+  <data name="AccessModeAll" xml:space="preserve">
     <value>Replacement Mode</value>
   </data>
   <data name="PathGuidanceNone" xml:space="preserve">

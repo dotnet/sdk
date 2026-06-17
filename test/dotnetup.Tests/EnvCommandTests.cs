@@ -52,7 +52,7 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
-        config!.Env.Should().Be(PathPreference.None);
+        config!.AccessMode.Should().Be(DotnetAccessMode.None);
         // dotnetup-on-PATH defaults to on when not specified and not previously stored.
         config.DotnetupOnPath.Should().BeTrue();
         // None + dotnetup-on-PATH still wires the dotnetup PATH entry (idempotent) but no dotnet env vars.
@@ -70,7 +70,7 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
-        config!.Env.Should().Be(PathPreference.None);
+        config!.AccessMode.Should().Be(DotnetAccessMode.None);
         config.DotnetupOnPath.Should().BeFalse();
         _env.LastDotnetupOnUserPathEnabled.Should().BeFalse();
     }
@@ -79,7 +79,7 @@ public class EnvCommandTests : IDisposable
     public void EnvSet_DotnetupOnPathOnly_LeavesStoredModeUnchanged()
     {
         // Pre-existing config: shell mode, dotnetup on. Change only --dotnetup-on-path off.
-        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "set", "--dotnetup-on-path", "off", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
@@ -88,7 +88,7 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
-        config!.Env.Should().Be(PathPreference.Shell);   // mode preserved (re-sync)
+        config!.AccessMode.Should().Be(DotnetAccessMode.Shell);   // mode preserved (re-sync)
         config.DotnetupOnPath.Should().BeFalse();          // only this changed
     }
 
@@ -122,7 +122,7 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
-        config!.Env.Should().Be(PathPreference.All);
+        config!.AccessMode.Should().Be(DotnetAccessMode.All);
         config.DotnetupOnPath.Should().BeTrue();
         _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(1);
         _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(0);
@@ -147,7 +147,7 @@ public class EnvCommandTests : IDisposable
     [Fact]
     public void EnvClear_RemovesEverythingAndPersists()
     {
-        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "clear", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
@@ -156,7 +156,7 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
-        config!.Env.Should().Be(PathPreference.None);
+        config!.AccessMode.Should().Be(DotnetAccessMode.None);
         config.DotnetupOnPath.Should().BeFalse();
         _env.LastDotnetupOnUserPathEnabled.Should().BeFalse();
     }
@@ -177,7 +177,7 @@ public class EnvCommandTests : IDisposable
     [Fact]
     public void EnvShow_ConfiguredNone_ExitCodeZero()
     {
-        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.None, DotnetupOnPath = true });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
         int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
@@ -188,7 +188,7 @@ public class EnvCommandTests : IDisposable
     [Fact]
     public void EnvShow_ConfiguredShell_ExitCodeZero()
     {
-        DotnetupConfig.Write(new DotnetupConfigData { Env = PathPreference.Shell, DotnetupOnPath = true });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
         int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();

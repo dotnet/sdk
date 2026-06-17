@@ -12,16 +12,16 @@ internal static class EnvSetCommandParser
         ? ["none", "shell", "all"]
         : ["none", "shell"];
 
-    public static readonly Argument<PathPreference?> ModeArgument = CreateModeArgument();
+    public static readonly Argument<DotnetAccessMode?> ModeArgument = CreateModeArgument();
 
     public static readonly Option<string?> DotnetupOnPathOption = CreateDotnetupOnPathOption();
 
-    private static Argument<PathPreference?> CreateModeArgument()
+    private static Argument<DotnetAccessMode?> CreateModeArgument()
     {
-        var argument = new Argument<PathPreference?>("mode")
+        var argument = new Argument<DotnetAccessMode?>("mode")
         {
             HelpName = "MODE",
-            Description = $"The dotnet exposure mode: {string.Join(", ", s_supportedModes.Select(m => $"'{m}'"))}. Omit to re-apply the stored mode.",
+            Description = $"The dotnet access mode: {string.Join(", ", s_supportedModes.Select(m => $"'{m}'"))}. Omit to re-apply the stored mode.",
             Arity = ArgumentArity.ZeroOrOne,
             CustomParser = ParseMode,
         };
@@ -29,7 +29,7 @@ internal static class EnvSetCommandParser
         return argument;
     }
 
-    private static PathPreference? ParseMode(ArgumentResult result)
+    private static DotnetAccessMode? ParseMode(ArgumentResult result)
     {
         if (result.Tokens.Count == 0)
         {
@@ -39,15 +39,15 @@ internal static class EnvSetCommandParser
         var token = result.Tokens[0].Value.ToLowerInvariant();
         return token switch
         {
-            "none" => PathPreference.None,
-            "shell" => PathPreference.Shell,
-            "all" when OperatingSystem.IsWindows() => PathPreference.All,
+            "none" => DotnetAccessMode.None,
+            "shell" => DotnetAccessMode.Shell,
+            "all" when OperatingSystem.IsWindows() => DotnetAccessMode.All,
             "all" => ModeError(result, "'all' mode is only supported on Windows. Use 'shell' on this platform."),
             _ => ModeError(result, $"Unknown env mode '{token}'. Expected one of: {string.Join(", ", s_supportedModes)}."),
         };
     }
 
-    private static PathPreference? ModeError(ArgumentResult result, string message)
+    private static DotnetAccessMode? ModeError(ArgumentResult result, string message)
     {
         result.AddError(message);
         return null;

@@ -7,40 +7,40 @@ using System.Text.Json.Serialization;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Serializes <see cref="PathPreference"/> as the lowercase names <c>none</c> / <c>shell</c> /
+/// Serializes <see cref="DotnetAccessMode"/> as the lowercase names <c>none</c> / <c>shell</c> /
 /// <c>all</c>, and on read also accepts the legacy enum spellings that shipped in internal
 /// builds (<c>DotnetupDotnet</c> / <c>ShellProfile</c> / <c>FullPathReplacement</c>) and the
 /// numeric form. This is the read-compatibility shim that lets configs written by earlier
 /// internal builds keep their chosen mode after the rename; see the design doc
 /// (documentation/general/dotnetup/designs/dotnetup-env.md, "Config schema").
 /// </summary>
-internal sealed class PathPreferenceJsonConverter : JsonConverter<PathPreference>
+internal sealed class DotnetAccessModeJsonConverter : JsonConverter<DotnetAccessMode>
 {
-    public override PathPreference Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override DotnetAccessMode Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out int numeric))
         {
-            return (PathPreference)numeric;
+            return (DotnetAccessMode)numeric;
         }
 
         string? value = reader.GetString();
         return value?.ToLowerInvariant() switch
         {
-            "none" or "dotnetupdotnet" => PathPreference.None,
-            "shell" or "shellprofile" => PathPreference.Shell,
-            "all" or "fullpathreplacement" => PathPreference.All,
-            _ => throw new JsonException($"Unknown {nameof(PathPreference)} value '{value}'."),
+            "none" or "dotnetupdotnet" => DotnetAccessMode.None,
+            "shell" or "shellprofile" => DotnetAccessMode.Shell,
+            "all" or "fullpathreplacement" => DotnetAccessMode.All,
+            _ => throw new JsonException($"Unknown {nameof(DotnetAccessMode)} value '{value}'."),
         };
     }
 
-    public override void Write(Utf8JsonWriter writer, PathPreference value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, DotnetAccessMode value, JsonSerializerOptions options)
     {
         writer.WriteStringValue(value switch
         {
-            PathPreference.None => "none",
-            PathPreference.Shell => "shell",
-            PathPreference.All => "all",
-            _ => throw new JsonException($"Unknown {nameof(PathPreference)} value '{value}'."),
+            DotnetAccessMode.None => "none",
+            DotnetAccessMode.Shell => "shell",
+            DotnetAccessMode.All => "all",
+            _ => throw new JsonException($"Unknown {nameof(DotnetAccessMode)} value '{value}'."),
         });
     }
 }

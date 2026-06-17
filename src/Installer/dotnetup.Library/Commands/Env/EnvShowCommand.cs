@@ -31,7 +31,7 @@ internal class EnvShowCommand : CommandBase
         }
 
         Console.WriteLine("dotnetup environment:");
-        Console.WriteLine($"  dotnet exposure    {config.Env.ToString().ToLowerInvariant()}");
+        Console.WriteLine($"  dotnet access    {config.AccessMode.ToString().ToLowerInvariant()}");
         Console.WriteLine($"  dotnetup on PATH   {(config.DotnetupOnPath ? "yes" : "no")}");
 
         IEnvShellProvider? shellProvider = _shellProvider ?? ShellDetection.GetCurrentShellProvider();

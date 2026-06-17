@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 /// <summary>
 /// Fully removes everything dotnetup wrote into the environment: equivalent to
 /// <c>env set none --dotnetup-on-path off</c>. Removes the managed profile block and the
-/// dotnetup PATH entry, leaving no dotnet exposure and no dotnetup-on-PATH. The closest thing
+/// dotnetup PATH entry, leaving no dotnet access and no dotnetup-on-PATH. The closest thing
 /// to an "env uninstall" since dotnetup has no uninstall command.
 /// </summary>
 internal class EnvClearCommand : CommandBase
@@ -30,7 +30,7 @@ internal class EnvClearCommand : CommandBase
     protected override void ExecuteCore()
     {
         EnvSettingsWriter.ApplyAndPersist(
-            PathPreference.None,
+            DotnetAccessMode.None,
             targetDotnetupOnPath: false,
             _dotnetEnvironment,
             _shellProvider,
