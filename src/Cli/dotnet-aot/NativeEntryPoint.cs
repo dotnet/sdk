@@ -67,10 +67,19 @@ static unsafe partial class NativeEntryPoint
             if (mainActivity is not null)
             {
                 mainActivity.SetStartTime(Process.GetCurrentProcess().StartTime.ToUniversalTime());
+                mainActivity.AddTag("process.pid", Process.GetCurrentProcess().Id);
+                mainActivity.AddTag("process.executable.name", "dotnet");
                 mainActivity.AddTag("cli.runtime", "aot");
                 using var telemetryActivity = Activities.Source.StartActivity("telemetry-setup");
                 telemetryActivity?.SetStartTime(preTelemetry);
                 telemetryActivity?.SetEndTime(postTelemetry);
+            }
+
+            // Capture global.json state for telemetry (mirrors managed Program.cs)
+            if (TelemetryClient?.Enabled ?? false)
+            {
+                var globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
+                mainActivity?.AddTag("dotnet.globalJson", globalJsonState);
             }
         }
         catch (Exception ex)
