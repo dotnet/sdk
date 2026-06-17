@@ -53,6 +53,42 @@ Use the AzDO and Helix MCP tools to gather failure data:
 Present a numbered list of distinct failures to the user and ask which one(s) they want to
 create known build errors for. Group related failures when possible.
 
+## Step 2b: Check for existing known issues
+
+Before drafting a new pattern, check whether an existing Known Build Error already covers
+(or nearly covers) this failure.
+
+1. Use `hlx-azdo_build_analysis` on the build — it reports any existing known issue matches.
+   If the failure is already matched, tell the user and ask if they still want to proceed.
+
+2. Search the repo for open Known Build Error issues:
+   ```
+   gh issue list --repo <owner>/<repo> --label "Known Build Error" --state open --limit 50
+   ```
+
+3. For each existing known issue, read its body to extract the ErrorMessage/ErrorPattern JSON.
+   Compare it against the selected failure's error text:
+   - **Exact match**: The failure is already covered. Tell the user and link the issue.
+   - **Similar but not matching**: The existing issue targets a related error. Suggest to the
+     user:
+     - "Issue #NNN has a similar pattern: `<pattern>`. Should we update that issue's pattern
+       to also cover this failure (e.g. by generalizing it with a regex)? Or create a
+       separate known issue?"
+   - **No match**: Proceed to create a new issue.
+
+4. Also check the infrastructure known issues in `dotnet/dnceng`:
+   ```
+   gh issue list --repo dotnet/dnceng --label "Known Build Error" --state open --limit 50
+   ```
+
+When comparing patterns for similarity, look for:
+- Same test name but different error messages
+- Same error class but different parameters (e.g., different analyzer names)
+- Overlapping substrings in the error text
+
+If an existing issue is found that could be broadened, help the user draft an updated
+pattern and offer to edit the existing issue instead of creating a new one.
+
 ## Step 3: Construct the error pattern
 
 Read the references file `references/pattern-quality.md` for detailed guidance on
@@ -112,18 +148,24 @@ This is the critical differentiation of this skill. **Always validate before fil
 
 ### 4a. Positive validation — does it match the triggering failure?
 
-Run the `scripts/Validate-KnownIssuePattern.ps1` script to test the pattern against
-the actual error text from the build:
+Run the validation script to test the pattern against the actual error text from the build.
+Choose the appropriate script for the platform:
 
+**PowerShell (Windows):**
 ```powershell
 & .github/skills/create-known-build-error/scripts/Validate-KnownIssuePattern.ps1 `
   -ErrorText "<the actual error text from the build>" `
   -ErrorMessage "<the proposed ErrorMessage>"
-# or
-& .github/skills/create-known-build-error/scripts/Validate-KnownIssuePattern.ps1 `
-  -ErrorText "<the actual error text from the build>" `
-  -ErrorPattern "<the proposed ErrorPattern>"
 ```
+
+**Bash (Linux/macOS):**
+```bash
+.github/skills/create-known-build-error/scripts/Validate-KnownIssuePattern.sh \
+  --error-text "<the actual error text from the build>" \
+  --error-message "<the proposed ErrorMessage>"
+```
+
+For regex patterns, use `-ErrorPattern` / `--error-pattern` instead.
 
 If the script is not available or impractical, do the matching manually:
 - For `ErrorMessage`: check that each line of the actual error contains the corresponding
