@@ -12,7 +12,7 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
 
 **Must have**
 - Allow others to download prior releases, even when unsupported (the intent is to let customers roll back without our intervention). Prior versions are downloadable today as immutable per-version `ci.dot.net` URLs; the underlying `dotnetbuilds` blob retention window has no formal retention policy for these artifacts, however.
-- Easy rollback or re-release when something goes wrong.
+- Fast (within 15 minutes of detection) rollback or re-release when something goes wrong.
 - Develop features without risk of them reaching a stable release.
 - Preview consumption / telemetry on a dev branch to confirm stability before promoting to stable.
 - Only support 'latest' preview to reduce maintenance burden and move fast.
@@ -23,6 +23,7 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
 - Automated changelog notes.
 - Only maintain one branch at a time.
 - Minimal manual maintenance effort burdens to release.
+- Clear UX with `dotnetup --version` (existing today) that helps report and track issues tied to a specific version
 
 **Not necessary**
 - Truly supporting multiple dotnetup versions simultaneously.
@@ -33,6 +34,7 @@ The problem: every daily change reaches every CI consumer, so we cannot let an S
 **Additional must have**
 - CDN routing for high-scale / geolocation downloads (`builds.dotnet.microsoft.com`).
   (`ci.dot.net` likely cannot serve a large public download swath.)
+- Vendor testing plan to release a stable release.
 
 **Additional nice to have**
 - `dotnetup` inclusion in a `json` manifest (likely required for automatic updates).
