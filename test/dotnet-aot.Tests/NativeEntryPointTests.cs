@@ -414,7 +414,7 @@ public class NativeEntryPointTests
                 hostfxrPath: "",
                 args: ["--version"]);
 
-            var mainActivity = collectedActivities.FirstOrDefault(a => a.OperationName == "native-entrypoint");
+            var mainActivity = collectedActivities.FirstOrDefault(a => a.OperationName == "main");
             Assert.NotNull(mainActivity);
             Assert.Equal(0, mainActivity.GetTagItem("process.exit.code"));
             Assert.Equal(ActivityStatusCode.Ok, mainActivity.Status);
