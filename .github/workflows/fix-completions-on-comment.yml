@@ -417,7 +417,7 @@ jobs:
             echo "No snapshot files were present in the artifact." >&2
             exit 1
           fi
-          git add -- "${staged_files[@]}"
+          git -c core.hooksPath=/dev/null -c core.attributesFile=/dev/null add -- "${staged_files[@]}"
 
       - name: Prepare commit message
         id: commit-message
