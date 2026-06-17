@@ -19,6 +19,7 @@ pr:
     - src
     - template_feed
     - test
+    - .config
     - '*.yml'
     - '*.props'
     - '*.targets'
@@ -44,6 +45,9 @@ stages:
 - stage: build
   displayName: Build
   jobs:
+  ############### HELIX JOB MONITOR ###############
+  - template: /eng/common/core-templates/job/helix-job-monitor.yml
+
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
     parameters:
@@ -79,6 +83,7 @@ stages:
           vmImage: macOS-latest
           os: macOS
         helixTargetQueue: osx.15.amd64.open
+        timeoutInMinutes: 90
         macOSJobParameterSets:
         - categoryName: TestBuild
           runtimeIdentifier: osx-x64

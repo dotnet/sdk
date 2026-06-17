@@ -233,6 +233,31 @@ public class ReadPackageAssetsManifestTest : IDisposable
     }
 
     [Fact]
+    public void GroupedFrameworkAsset_HasAssetGroupsClearedAfterMaterialization()
+    {
+        // A framework asset that belongs to a group (e.g. blazor.webassembly.js in the
+        // BlazorWebAssembly group) passes group filtering when the group is declared, but
+        // must have its AssetGroups cleared once it is materialized as a current-project
+        // asset. Otherwise downstream endpoint generation treats it as a still-grouped
+        // asset, skips it, and the fingerprinted asset 404s at runtime.
+        var packageRoot = SetupPackageRoot("Microsoft.AspNetCore.Components.WebAssembly",
+            CreateManifestAsset("staticwebassets/_framework/blazor.webassembly.js", "_framework/blazor.webassembly.js", "/", "BlazorWebAssembly=enabled", "Framework"));
+
+        var manifestItem = CreateManifestItem(packageRoot, "Microsoft.AspNetCore.Components.WebAssembly");
+
+        var task = CreateReadManifestTask(
+            new[] { manifestItem },
+            new[] { CreateGroup("BlazorWebAssembly", "enabled", "Microsoft.AspNetCore.Components.WebAssembly") });
+        task.Execute().Should().BeTrue();
+
+        task.Assets.Should().HaveCount(1);
+
+        var emitted = task.Assets[0];
+        emitted.GetMetadata("SourceType").Should().Be("Discovered");
+        emitted.GetMetadata("AssetGroups").Should().BeEmpty("materialized framework assets must not retain group membership or endpoint generation will skip them");
+    }
+
+    [Fact]
     public void InvalidManifestVersion_LogsError()
     {
         var packageDir = Path.Combine(_tempDir, "packages", "BadLib");

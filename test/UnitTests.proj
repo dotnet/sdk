@@ -11,7 +11,7 @@
     <!-- Helix SDK specifies the default run name to be: $(TestRunNamePrefix)$(_CurrentTargetQueue)$(TestRunNameSuffix) -->
     <TestRunNamePrefix Condition="'$(AGENT_JOBNAME)' != ''">$(AGENT_JOBNAME) run on </TestRunNamePrefix>
     <TestRunNameSuffix Condition="'$(SYSTEM_JOBATTEMPT)' != ''"> (attempt $(SYSTEM_JOBATTEMPT))</TestRunNameSuffix>
-    <XUnitWorkItemTimeout>02:00:00</XUnitWorkItemTimeout>
+    <XUnitWorkItemTimeout>01:00:00</XUnitWorkItemTimeout>
   </PropertyGroup>
 
   <ItemGroup>
