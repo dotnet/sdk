@@ -83,6 +83,7 @@ stages:
           vmImage: macOS-latest
           os: macOS
         helixTargetQueue: osx.15.amd64.open
+        timeoutInMinutes: 90
         macOSJobParameterSets:
         - categoryName: TestBuild
           runtimeIdentifier: osx-x64
