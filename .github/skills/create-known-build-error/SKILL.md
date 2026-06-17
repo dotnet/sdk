@@ -286,6 +286,24 @@ automatically validates the pattern and injects results into the issue.
 After filing, inform the user that Build Analysis will automatically scan builds from
 the last 24 hours and all future builds against this known issue.
 
+## Step 7: Prompt to continue with remaining failures
+
+After successfully filing an issue, check if there are other unaddressed failures from
+the same build. If so, prompt the user:
+
+```
+choices: [
+  "Yes, let me pick another failure from this build",
+  "No, I'm done"
+]
+```
+
+If the user wants to continue, loop back to the failure selection step (Step 2) — reuse
+the already-fetched failure data rather than re-querying the build. Remove the failure
+that was just addressed from the list and present the remaining ones.
+
+Continue this loop until the user says they're done or all failures have been addressed.
+
 ## Important notes
 
 - **Do NOT use this for actual build breaks.** If the failure is caused by the PR's own
