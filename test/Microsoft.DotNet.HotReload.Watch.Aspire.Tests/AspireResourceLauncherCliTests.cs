@@ -63,7 +63,7 @@ public class AspireResourceLauncherCliTests
     {
         var args = new[] { "resource", "--server", "pipe1", "--entrypoint", "proj", "-e", "KEY1=val1", "-e", "KEY2=val2" };
         var launcher = Assert.IsExactInstanceOfType<AspireResourceLauncher>(AspireLauncher.TryCreate(args));
-        Assert.AreEqual(2, launcher.EnvironmentVariables.Count);
+        Assert.HasCount(2, launcher.EnvironmentVariables);
         Assert.AreEqual("val1", launcher.EnvironmentVariables["KEY1"]);
         Assert.AreEqual("val2", launcher.EnvironmentVariables["KEY2"]);
     }
@@ -170,7 +170,7 @@ public class AspireResourceLauncherCliTests
         Assert.IsTrue(launcher.LaunchProfileName.HasValue);
         Assert.AreEqual("Dev", launcher.LaunchProfileName.Value);
         Assert.AreSequenceEqual(["arg1", "arg2"], launcher.ApplicationArguments);
-        Assert.AreEqual(2, launcher.EnvironmentVariables.Count);
+        Assert.HasCount(2, launcher.EnvironmentVariables);
         Assert.AreEqual("V1", launcher.EnvironmentVariables["K1"]);
         Assert.AreEqual("V2", launcher.EnvironmentVariables["K2"]);
     }
