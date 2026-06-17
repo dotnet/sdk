@@ -61,13 +61,14 @@ static unsafe partial class NativeEntryPoint
             // the TelemetryClient property so AOT command actions (e.g. --cli-schema) can reuse it.
             TelemetryClient = new Telemetry.TelemetryClient(sessionId: null);
             DateTime postTelemetry = DateTime.UtcNow;
-            mainActivity = Activities.Source.StartActivity("native-entrypoint", Telemetry.TelemetryClient.ActivityKind, Telemetry.TelemetryClient.ParentActivityContext);
+            mainActivity = Activities.Source.StartActivity("main", Telemetry.TelemetryClient.ActivityKind, Telemetry.TelemetryClient.ParentActivityContext);
 
             // Backdate the activity start to process start time for accurate timing.
             if (mainActivity is not null)
             {
                 mainActivity.SetStartTime(Process.GetCurrentProcess().StartTime.ToUniversalTime());
-                using var telemetryActivity = Activities.Source.StartActivity("aot-telemetry-setup");
+                mainActivity.AddTag("cli.runtime", "aot");
+                using var telemetryActivity = Activities.Source.StartActivity("telemetry-setup");
                 telemetryActivity?.SetStartTime(preTelemetry);
                 telemetryActivity?.SetEndTime(postTelemetry);
             }
@@ -92,7 +93,7 @@ static unsafe partial class NativeEntryPoint
             if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
             {
                 ParseResult? parseResult = null;
-                using (var parse = Activities.Source.StartActivity("aot-parsing"))
+                using (var parse = Activities.Source.StartActivity("parse"))
                 {
                     parseResult = Parser.Parse(args);
                     mainActivity?.SetDisplayName(parseResult);
@@ -100,7 +101,7 @@ static unsafe partial class NativeEntryPoint
 
                 if (parseResult.CanBeInvoked())
                 {
-                    using var invoke = Activities.Source.StartActivity("aot-invocation");
+                    using var invoke = Activities.Source.StartActivity("invocation");
                     try
                     {
                         exitCode = Parser.Invoke(parseResult);
@@ -131,7 +132,16 @@ static unsafe partial class NativeEntryPoint
                 }
             }
 
-            // Fall back to the fully managed dotnet CLI by hosting .NET
+            // Fall back to the fully managed dotnet CLI by hosting .NET.
+            // Set a best-effort display name from args when we have not done a full parse
+            // (i.e. DOTNET_CLI_ENABLEAOT was not set or the command fell through without calling SetDisplayName).
+            if (mainActivity is not null && mainActivity.DisplayName == "main")
+            {
+                var fallbackName = args.Length > 0 ? $"dotnet {args[0]}" : "dotnet";
+                mainActivity.DisplayName = fallbackName;
+                mainActivity.SetTag("command.name", fallbackName);
+            }
+
             string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
             string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
 
@@ -213,7 +223,7 @@ static unsafe partial class NativeEntryPoint
             return false;
         }
 
-        using (var invoke = Activities.Source.StartActivity("aot-execute-external-command"))
+        using (var invoke = Activities.Source.StartActivity("execute-extensible-command"))
         {
             try
             {
