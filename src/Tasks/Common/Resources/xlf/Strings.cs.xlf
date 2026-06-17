@@ -1178,7 +1178,7 @@ Pokud chcete nainstalovat tyto úlohy, spusťte následující příkaz: dotnet 
         <note>{StrBegins="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="MonoRuntimeNotSupportedForPlatform">
-        <source>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime (by removing the `UseMonoRuntime` property, or setting it to `false`) or target .NET 10.0.</source>
+        <source>NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</source>
         <target state="new">NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</target>
         <note>{StrBegins="NETSDK1242: "}</note>
       </trans-unit>
