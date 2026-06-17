@@ -15,7 +15,7 @@ parameters:
   testRunnerAdditionalArguments: ''
   enableSbom: true
   populateInternalRuntimeVariables: false
-  timeoutInMinutes: 50
+  timeoutInMinutes: 60
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
