@@ -282,7 +282,6 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #endregion
 
-<<<<<<< HEAD
     #region SelectRuntimeIdentifierSpecificItems
 
     [Fact]
@@ -366,8 +365,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #endregion
 
-=======
->>>>>>> origin/release/dnup
+
     #region ResolveOverlappingItemGroupConflicts
 
     [Fact]

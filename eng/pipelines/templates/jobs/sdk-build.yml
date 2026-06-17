@@ -228,8 +228,6 @@ jobs:
       continueOnError: true
       condition: always()
 
-<<<<<<< HEAD
-=======
     # Publish the leg's Shipping packages as a <JobName>_Assets pipeline artifact, but only when
     # there's something to publish. A scoped build (e.g. the dotnetup build, which builds only
     # dotnetup via /p:Projects) produces no Shipping packages, and 1ES.PublishPipelineArtifact
@@ -252,16 +250,10 @@ jobs:
           fi
         displayName: 🟣 Check for built assets
         condition: not(canceled())
-
->>>>>>> origin/release/dnup
     - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
       displayName: 🟣 Publish Built Assets
       inputs:
         targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
         artifactName: $(System.PhaseName)_Assets
       continueOnError: true
-<<<<<<< HEAD
-      condition: not(canceled())
-=======
       condition: and(not(canceled()), eq(variables['HasBuiltAssets'], 'true'))
->>>>>>> origin/release/dnup
