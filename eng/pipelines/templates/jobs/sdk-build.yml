@@ -23,6 +23,9 @@ parameters:
   targetArchitecture: x64
   publishArgument: ''
   signArgument: ''
+  # MSBuild /p:Projects argument used to scope the build to specific projects (e.g. a .slnf).
+  # Defaults to empty, which builds the repo's default solution.
+  projectsArgument: ''
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -94,6 +97,7 @@ jobs:
           -configuration $(buildConfiguration)
           ${{ parameters.publishArgument }}
           ${{ parameters.signArgument }}
+          ${{ parameters.projectsArgument }}
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
@@ -117,6 +121,7 @@ jobs:
           -configuration $(buildConfiguration) \
           ${{ parameters.publishArgument }} \
           ${{ parameters.signArgument }} \
+          ${{ parameters.projectsArgument }} \
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
           /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
@@ -223,10 +228,40 @@ jobs:
       continueOnError: true
       condition: always()
 
+<<<<<<< HEAD
+=======
+    # Publish the leg's Shipping packages as a <JobName>_Assets pipeline artifact, but only when
+    # there's something to publish. A scoped build (e.g. the dotnetup build, which builds only
+    # dotnetup via /p:Projects) produces no Shipping packages, and 1ES.PublishPipelineArtifact
+    # fails hard on a missing targetPath (it doesn't honor continueOnError there), so guard the
+    # step on the directory actually containing files.
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: |
+          $dir = "$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
+          $hasAssets = (Test-Path $dir) -and ((Get-ChildItem -Path $dir -File -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count -gt 0)
+          Write-Host "##vso[task.setvariable variable=HasBuiltAssets]$($hasAssets.ToString().ToLowerInvariant())"
+        displayName: 🟣 Check for built assets
+        condition: not(canceled())
+    - ${{ else }}:
+      - bash: |
+          dir="$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
+          if [ -d "$dir" ] && [ -n "$(find "$dir" -type f -print -quit)" ]; then
+            echo "##vso[task.setvariable variable=HasBuiltAssets]true"
+          else
+            echo "##vso[task.setvariable variable=HasBuiltAssets]false"
+          fi
+        displayName: 🟣 Check for built assets
+        condition: not(canceled())
+
+>>>>>>> origin/release/dnup
     - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
       displayName: 🟣 Publish Built Assets
       inputs:
         targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
         artifactName: $(System.PhaseName)_Assets
       continueOnError: true
+<<<<<<< HEAD
       condition: not(canceled())
+=======
+      condition: and(not(canceled()), eq(variables['HasBuiltAssets'], 'true'))
+>>>>>>> origin/release/dnup

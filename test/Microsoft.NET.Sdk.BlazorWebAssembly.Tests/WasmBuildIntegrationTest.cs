@@ -45,6 +45,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var buildOutputDirectory = build.GetOutputDirectory(DefaultTfm).ToString();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
+<<<<<<< HEAD
+=======
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
+>>>>>>> origin/release/dnup
             // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm-minimal.wasm")).Should().NotExist();
@@ -73,6 +77,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
+<<<<<<< HEAD
+=======
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
+>>>>>>> origin/release/dnup
             // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().NotExist();
@@ -116,6 +124,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
+<<<<<<< HEAD
+=======
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
+>>>>>>> origin/release/dnup
             // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().NotExist();
@@ -145,6 +157,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm, "Release").ToString();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
+<<<<<<< HEAD
+=======
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
+>>>>>>> origin/release/dnup
             // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().NotExist();
