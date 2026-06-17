@@ -256,14 +256,30 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     // Note: --logger "console;verbosity=detailed" and --blame-hang* have no direct MTP
                     // equivalent in the MSTest.Sdk default extension set; the Helix work-item timeout
                     // (XUnitWorkItemTimeout / HELIX_WORK_ITEM_TIMEOUT) still terminates runaway runs.
+                    // Carry over the same execution-directory / MSBuild SDK resolver environment
+                    // variables that the 'dotnet test' path sets via '-e'. They are required for
+                    // macOS workitem-directory execution (DOTNET_SDK_TEST_EXECUTION_DIRECTORY) and
+                    // Windows MSBuild resolver behavior (DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER).
+                    // MTP runs the host directly (no 'dotnet test -e'), so they have to be supplied
+                    // as shell environment-variable prefixes, honoring ExcludeAdditionalParameters.
+                    bool excludeAdditionalParameters = ExcludeAdditionalParameters.Equals("true");
                     string envPrefix;
                     if (IsPosixShell)
                     {
                         envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} ";
+                        if (!excludeAdditionalParameters)
+                        {
+                            envPrefix += "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory ";
+                        }
                     }
                     else
                     {
                         envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& ";
+                        if (!excludeAdditionalParameters)
+                        {
+                            envPrefix += "set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ";
+                            envPrefix += "set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ";
+                        }
                     }
 
                     string diagArg = IsPosixShell
