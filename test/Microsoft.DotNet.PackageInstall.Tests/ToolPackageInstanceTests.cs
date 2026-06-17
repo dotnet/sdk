@@ -15,8 +15,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new PackageId("dotnet-inspect"),
                 NuGetVersion.Parse("1.2.3"));
 
-            message.Should().Contain("dotnet-inspect");
-            message.Should().Contain("1.2.3");
+            message.Should().Contain("dotnet-inspect@1.2.3");
         }
     }
 }
