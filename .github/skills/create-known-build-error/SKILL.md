@@ -207,10 +207,18 @@ For test failures, check the test's recent history:
 Ask the user about these flags with guidance:
 
 **BuildRetry:**
-- Recommend `true` for: network timeouts, NuGet restore failures, agent connectivity
-  issues, Helix machine provisioning errors
-- Recommend `false` for: test assertion failures, build compilation errors, anything
-  that suggests a real code problem
+- Recommend `true` for: any **intermittent/flaky** failure that is likely to pass on retry.
+  Common categories include:
+  - Network timeouts, NuGet restore failures, agent connectivity issues
+  - Helix machine provisioning errors
+  - Intermittent test failures from concurrency/race conditions (e.g. port conflicts,
+    file locking, timing-sensitive assertions, parallel test interference)
+  - Resource exhaustion that clears on retry (disk space, memory pressure)
+- Recommend `false` for: **deterministic** failures — build compilation errors, consistent
+  test assertion failures, anything that indicates a real code problem that won't resolve
+  by retrying
+- When in doubt, ask the user: "Does this failure happen intermittently, or does it
+  reproduce consistently?" If intermittent, BuildRetry is appropriate.
 
 **ExcludeConsoleLog:**
 - Recommend `true` when: the error pattern is generic enough to match noise in verbose
