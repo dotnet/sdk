@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,13 +7,12 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAComServerLibrary : SdkTest
     {
-        public GivenThatWeWantToBuildAComServerLibrary(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_copies_the_comhost_to_the_output_directory()
         {
             var testAsset = TestAssetsManager
@@ -43,7 +42,8 @@ namespace Microsoft.NET.Build.Tests
                 .Should().Be("LatestMinor");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_generates_a_regfree_com_manifest_when_requested()
         {
             var testAsset = TestAssetsManager
@@ -74,9 +74,9 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Theory]
-        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64")]
-        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86")]
+        [TestMethod]
+        [DataRow($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64")]
+        [DataRow($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86")]
         public void It_embeds_the_clsidmap_in_the_comhost_when_rid_specified(string rid)
         {
             var testAsset = TestAssetsManager
@@ -106,7 +106,8 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_warns_on_self_contained_build()
         {
             var testAsset = TestAssetsManager
@@ -128,7 +129,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1128: ");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
         public void It_fails_to_find_comhost_for_platforms_without_comhost()
         {
             var testAsset = TestAssetsManager
@@ -149,7 +151,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1091: ");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_embeds_single_typelib_with_default_id()
         {
             var testAsset = TestAssetsManager
@@ -164,7 +167,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_fails_when_multiple_typelibs_without_ids_specified()
         {
             var testAsset = TestAssetsManager
@@ -185,7 +189,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1171: ");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_fails_when_multiple_typelibs_with_same_ids_specified()
         {
             var testAsset = TestAssetsManager
@@ -206,11 +211,12 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1169: ");
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("non-integer-id")]
-        [InlineData(ushort.MaxValue + 1)]
-        [InlineData(0)]
-        [InlineData(3.14)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow("non-integer-id")]
+        [DataRow(ushort.MaxValue + 1)]
+        [DataRow(0)]
+        [DataRow(3.14)]
         public void It_fails_when_typelib_with_invalid_id_specified(object id)
         {
             var testAsset = TestAssetsManager
@@ -230,7 +236,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1170: ");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_embeds_multiple_typelibs_with_distinct_ids()
         {
             var testAsset = TestAssetsManager
@@ -249,7 +256,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_fails_when_typelib_does_not_exist()
         {
             var testAsset = TestAssetsManager
@@ -266,7 +274,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1172: ");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_fails_when_typelib_is_invalid()
         {
             var testAsset = TestAssetsManager
@@ -283,7 +292,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1173: ");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_copies_nuget_package_dependencies()
         {
             var testAsset = TestAssetsManager

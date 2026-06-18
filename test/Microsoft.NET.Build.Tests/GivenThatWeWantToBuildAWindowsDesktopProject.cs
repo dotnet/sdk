@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,14 +7,14 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAWindowsDesktopProject : SdkTest
     {
-        public GivenThatWeWantToBuildAWindowsDesktopProject(ITestOutputHelper log) : base(log)
-        { }
 
-        [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0")]
-        [InlineData("UseWindowsForms")]
-        [InlineData("UseWPF")]
+        [TestMethod]
+        [WindowsOnlyRequiresMSBuildVersion("16.7.0")]
+        [DataRow("UseWindowsForms")]
+        [DataRow("UseWPF")]
         public void It_errors_when_missing_windows_target_platform(string propertyName)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -37,9 +37,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1136");
         }
 
-        [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0")]
-        [InlineData("UseWindowsForms")]
-        [InlineData("UseWPF")]
+        [TestMethod]
+        [WindowsOnlyRequiresMSBuildVersion("16.7.0")]
+        [DataRow("UseWindowsForms")]
+        [DataRow("UseWPF")]
         public void It_errors_when_missing_transitive_windows_target_platform(string propertyName)
         {
             TestProject testProjectA = new()
@@ -74,7 +75,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1136");
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [WindowsOnlyRequiresMSBuildVersion("16.8.0")]
         public void It_warns_when_specifying_windows_desktop_sdk()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
@@ -95,7 +97,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1137");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_does_not_warn_when_multitargeting()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework};net472;netcoreapp3.1";
@@ -117,7 +120,8 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveStdOutContaining("NETSDK1137");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_imports_when_targeting_dotnet_3()
         {
             var targetFramework = "netcoreapp3.1";
@@ -142,7 +146,8 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "true" });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/29968")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/29968")]
         public void It_builds_successfully_when_targeting_net_framework()
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
@@ -170,7 +175,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_fails_if_windows_target_platform_version_is_invalid()
         {
             var testProject = new TestProject()
@@ -188,9 +194,10 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1140");
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_succeeds_if_windows_target_platform_version_does_not_have_trailing_zeros(bool setInTargetframework)
         {
             if (!setInTargetframework)
@@ -227,7 +234,7 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "10.0.18362.0" });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_if_target_platform_identifier_and_version_are_invalid()
         {
             var testProject = new TestProject()
@@ -247,7 +254,8 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveStdOutContaining("NETSDK1140");
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [WindowsOnlyRequiresMSBuildVersion("17.0.0.32901")]
         public void UseWPFCanBeSetInDirectoryBuildTargets()
         {
             var testDir = TestAssetsManager.CreateTestDirectory();
@@ -287,7 +295,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void TargetPlatformVersionCanBeSetInDirectoryBuildTargets()
         {
             var testProject = new TestProject()
@@ -319,7 +328,8 @@ namespace Microsoft.NET.Build.Tests
             GetPropertyValue(testAsset, "TargetPlatformMoniker").Should().Be($"Windows,Version={targetPlatformVersion}");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void SupportedOSPlatformVersionCanBeSetInDirectoryBuildTargets()
         {
             var testProject = new TestProject()
@@ -352,11 +362,12 @@ namespace Microsoft.NET.Build.Tests
             GetPropertyValue(testAsset, "TargetPlatformMoniker").Should().Be("Windows,Version=10.0.19041.0");
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", true)]
-        [InlineData("netcoreapp3.1", false)]
-        [InlineData("net472", false)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", true)]
+        [DataRow("netcoreapp3.1", false)]
+        [DataRow("net472", false)]
         public void WindowsWorkloadIsInstalledForNet5AndUp(string targetFramework, bool supportsWindowsTargetPlatformIdentifier)
         {
             var testProject = new TestProject()
@@ -384,16 +395,17 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyTheory]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         //  Basic Windows TargetFramework
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", false, null, "10.0.19041.*")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", false, null, "10.0.19041.*")]
         //  Basic UseWindowsSdkPreview usage
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.99999.0", true, null, "10.0.99999-preview")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.99999.0", true, null, "10.0.99999-preview")]
         //  Basic WindowsSdkPackageVersion usage
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", null, "10.0.99999-abc", "10.0.99999-abc")]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", null, "10.0.99999.0", "10.0.99999.0")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", null, "10.0.99999-abc", "10.0.99999-abc")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", null, "10.0.99999.0", "10.0.99999.0")]
         //  WindowsSdkPackageVersion should supercede UseWindowsSDKPreview property
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", true, "10.0.99999-abc", "10.0.99999-abc")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", true, "10.0.99999-abc", "10.0.99999-abc")]
         public void ItUsesCorrectWindowsSdkPackVersion(string targetFramework, bool? useWindowsSDKPreview, string windowsSdkPackageVersion, string expectedWindowsSdkPackageVersion)
         {
             var testProject = new TestProject()
@@ -423,10 +435,11 @@ namespace Microsoft.NET.Build.Tests
             referencedWindowsSdkVersion.Should().Be(expectedWindowsSdkPackageVersion);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("net5.0-windows10.0.22000.0", "10.0.22000.25")]
-        [InlineData("net6.0-windows10.0.22000.0", "10.0.22000.26")]
-        [InlineData("net6.0-windows10.0.19041.0", "10.0.19041.25")]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow("net5.0-windows10.0.22000.0", "10.0.22000.25")]
+        [DataRow("net6.0-windows10.0.22000.0", "10.0.22000.26")]
+        [DataRow("net6.0-windows10.0.19041.0", "10.0.19041.25")]
         public void ItUsesTheHighestMatchingWindowsSdkPackageVersion(string targetFramework, string expectedWindowsSdkPackageVersion)
         {
             var testProject = new TestProject()
@@ -456,7 +469,8 @@ namespace Microsoft.NET.Build.Tests
         }
 
         // We used to emit NETSDK1219 while UWP support on .NET 9 was not GA yet, make sure it's gone now
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItDoesNotWarnAnymoreWhenBuildingAProjectWithUseUwpProperty()
         {
             TestProject testProject = new()
@@ -478,7 +492,8 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveStdOutContaining("NETSDK1219");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItWarnsWhenBuildingAProjectTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -500,7 +515,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1229");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItImplicitlyDefinesCSWINRT3_0WhenBuildingAProjectTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -528,7 +544,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItDoesNotImplicitlyDefineCSWINRT3_0WhenBuildingAProjectNotTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -554,7 +571,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItNormalizesWindowsSDKImplicitDefinesWhenBuildingAProjectTargetingCsWinRT3_0()
         {
             TestProject testProject = new()
@@ -585,7 +603,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItHasExpectedWindowsSDKImplicitDefinesWhenBuildingAProjectTargetingCsWinRT2_0()
         {
             TestProject testProject = new()
@@ -611,7 +630,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItErrorsWhenTargetingBelowNet6WithUseUwpProperty()
         {
             TestProject testProject = new()
@@ -633,7 +653,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1220");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItErrorsWhenTransitivelyReferencingWindowsUIXamlReferencesWithoutUseUwpProperty()
         {
             TestProject testProjectA = new()
@@ -663,7 +684,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1218");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItFailsToBuildWhenReferencingWindowsUIXamlTypesWithoutUseUwpProperty()
         {
             TestProject testProject = new()
@@ -697,7 +719,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("CS0234");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItBuildsWhenReferencingWindowsUIXamlTypesWithUseUwpProperty()
         {
             TestProject testProject = new()
@@ -731,7 +754,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItHandlesProfilesWithSelfContained()
         {
             TestProject testProject = new()
@@ -758,7 +782,8 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.GetOutputDirectory().Should().HaveFile("PresentationFramework.dll");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void ItCanMultiTargetCSWinRT2And3()
         {
             TestProject testProject = new()
@@ -777,9 +802,10 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("57", "10.0.19041.57")]
-        [InlineData("50", "10.0.19041.55")]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow("57", "10.0.19041.57")]
+        [DataRow("50", "10.0.19041.55")]
         public void MinimumWindowsSdkPackagRevisionCanBeSet(string minimumRevision, string expectedPackageVersion)
         {
             var testProject = new TestProject()
@@ -813,7 +839,8 @@ namespace Microsoft.NET.Build.Tests
             referencedWindowsSdkVersion.Should().Be(expectedPackageVersion);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void WindowsSdkPackageVersionAndMinimumRevisionCannotBothBeSpecified()
         {
             var testProject = new TestProject()

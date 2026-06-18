@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -11,21 +11,15 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToGenerateADepsFileForATool : SdkTest
     {
-        public GivenThatWeWantToGenerateADepsFileForATool(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [PlatformSpecific(skipPlatforms: TestPlatforms.OSX, skipReason: "https://github.com/dotnet/sdk/issues/49665")]
         public void It_creates_a_deps_file_for_the_tool_and_the_tool_runs()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                //  https://github.com/dotnet/sdk/issues/49665
-                return;
-            }
-
             TestProject toolProject = new()
             {
                 Name = "TestTool",
@@ -42,15 +36,11 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("Hello World!");
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [PlatformSpecific(skipPlatforms: TestPlatforms.OSX, skipReason: "https://github.com/dotnet/sdk/issues/49665")]
         public void It_handles_conflicts_when_creating_a_tool_deps_file()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                //  https://github.com/dotnet/sdk/issues/49665
-                return;
-            }
-
             TestProject toolProject = new()
             {
                 Name = "DependencyContextTool",

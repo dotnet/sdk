@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,13 +9,12 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildADesktopLibrary : SdkTest
     {
-        public GivenThatWeWantToBuildADesktopLibrary(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_gets_implicit_designtime_facades_when_package_reference_uses_system_runtime()
         {
             // The repro here is very sensitive to the target framework and packages used. This specific case
@@ -46,7 +45,8 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_can_use_HttpClient_and_exchange_the_type_with_a_NETStandard_library()
         {
             var netStandardLibrary = new TestProject()
@@ -108,9 +108,9 @@ public class NETFramework
 
         }
 
-        [Theory]
-        [InlineData("RazorSimpleMvc22", "netcoreapp2.2", "SimpleMvc22")]
-        [InlineData("DesktopReferencingNetStandardLibrary", "net46", "Library")]
+        [TestMethod]
+        [DataRow("RazorSimpleMvc22", "netcoreapp2.2", "SimpleMvc22")]
+        [DataRow("DesktopReferencingNetStandardLibrary", "net46", "Library")]
         public void PackageReferences_with_private_assets_do_not_appear_in_deps_file(string asset, string targetFramework, string exeName)
         {
             var testAsset = TestAssetsManager
@@ -136,9 +136,9 @@ public class NETFramework
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void PackageWithoutAssets_ShouldNotShowUpInDepsJson(bool trimLibrariesWithoutAssets)
         {
             var testProject = new TestProject()
@@ -171,7 +171,7 @@ public class NETFramework
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void XUnitCoreIsNotTrimmed()
         {
             //  Regression test for https://github.com/dotnet/sdk/issues/49248
@@ -193,7 +193,7 @@ public class NETFramework
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectNameCanMatchPackageReferenceName()
         {
             var testProject = new TestProject()
@@ -211,7 +211,8 @@ public class NETFramework
             buildCommand.Execute().Should().Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_can_reference_a_netstandard2_library_and_exchange_types()
         {
             var netStandardLibrary = new TestProject()
@@ -255,7 +256,8 @@ public class NETFramework
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_can_use_ValueTuple_and_exchange_the_type_with_a_NETStandard_library()
         {
             var referenceAssemblies = ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(TargetDotNetFrameworkVersion.Version47);
@@ -311,7 +313,8 @@ public class NETFramework
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_can_preserve_compilation_context_and_reference_netstandard_library()
         {
             var testAsset = TestAssetsManager
@@ -330,7 +333,8 @@ public class NETFramework
             }
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_resolves_assembly_conflicts_with_a_NETFramework_library()
         {
             TestProject project = new()
@@ -379,9 +383,10 @@ public static class {project.Name}
                 .NotHaveStdOutContaining("MSB3243");
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void It_uses_hintpath_when_replacing_simple_name_references(bool useFacades)
         {
             TestProject project = new()
@@ -459,7 +464,7 @@ public static class {project.Name}
                 .Should().Be(correctHttpReference);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_tolerates_newline_in_hint_path()
         {
             string hintPath = BuildReferencedBuildAndReturnOutputDllPath();
@@ -512,7 +517,8 @@ public static class {project.Name}
         }
 
         //  Regression test for https://github.com/dotnet/sdk/issues/1730
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void A_target_can_depend_on_RunResolvePublishAssemblies()
         {
             TestProject testProject = new()

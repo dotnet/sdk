@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,17 +7,15 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class DesignTimeBuildTests : SdkTest
     {
-        public DesignTimeBuildTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("TestLibrary", null)]
-        [InlineData("TestApp", null)]
-        [InlineData("TestApp", "netcoreapp2.1")]
-        [InlineData("TestApp", ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("TestLibrary", null)]
+        [DataRow("TestApp", null)]
+        [DataRow("TestApp", "netcoreapp2.1")]
+        [DataRow("TestApp", ToolsetInfo.CurrentTargetFramework)]
         public void The_design_time_build_succeeds_before_nuget_restore(string relativeProjectPath, string targetFramework)
         {
             var args = GetDesignTimeMSBuildArgs();
@@ -52,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
             result.Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void DesignTimeBuildSucceedsAfterTargetFrameworkIsChanged()
         {
             TestDesignTimeBuildAfterChange(project =>
@@ -64,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void DesignTimeBuildSucceedsAfterRuntimeIdentifierIsChanged()
         {
             TestDesignTimeBuildAfterChange(project =>
@@ -78,7 +76,8 @@ namespace Microsoft.NET.Build.Tests
         //  Regression test for https://github.com/dotnet/sdk/issues/13513
         //  https://github.com/dotnet/sdk/issues/49665
         //   error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DesignTimeBuildSucceedsWhenTargetingNetCore21WithRuntimeIdentifier()
         {
             var testProject = new TestProject()
@@ -97,11 +96,11 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
-        [InlineData("netcoreapp3.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows")]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
+        [TestMethod]
+        [DataRow("netcoreapp3.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
         public void DesignTimePackageDependenciesAreResolved(string targetFramework)
         {
             var testProject = new TestProject()
@@ -131,11 +130,11 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo($"Newtonsoft.Json/{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}", "Humanizer/2.8.26");
         }
 
-        [Theory]
-        [InlineData("netcoreapp3.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows")]
-        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
+        [TestMethod]
+        [DataRow("netcoreapp3.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows")]
+        [DataRow($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
         public void PackageErrorsAreSet(string targetFramework)
         {
             var designTimeArgs = GetDesignTimeMSBuildArgs();

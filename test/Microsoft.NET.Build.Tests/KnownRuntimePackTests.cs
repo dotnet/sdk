@@ -1,19 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class KnownRuntimePackTests : SdkTest
     {
-        public KnownRuntimePackTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void BuildSucceedsWithRuntimePackWithDifferentLabel()
         {
             var testProject = new TestProject()
@@ -37,7 +36,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void DuplicateRuntimePackCausesFailure()
         {
             var testProject = new TestProject()
@@ -66,7 +65,8 @@ namespace Microsoft.NET.Build.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RuntimePackWithLabelIsSelected()
         {
             var testProject = new TestProject()
@@ -104,7 +104,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void AspNetRuntimePackIsNotRestoredForAndroid()
         {
             var testProject = new TestProject()

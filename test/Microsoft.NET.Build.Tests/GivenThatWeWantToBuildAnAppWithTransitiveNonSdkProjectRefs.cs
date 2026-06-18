@@ -7,13 +7,12 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAnAppWithTransitiveNonSdkProjectRefs : SdkTest
     {
-        public GivenThatWeWantToBuildAnAppWithTransitiveNonSdkProjectRefs(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_builds_the_project_successfully()
         {
             // NOTE the projects created by CreateTestProject:
@@ -25,9 +24,10 @@ namespace Microsoft.NET.Build.Tests
             VerifyAppBuilds(testAsset, string.Empty);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("")]
-        [InlineData("TestApp.")]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow("")]
+        [DataRow("TestApp.")]
         public void It_builds_deps_correctly_when_projects_do_not_get_restored(string prefix)
         {
             // NOTE the projects created by CreateTestProject:

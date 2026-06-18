@@ -9,15 +9,14 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenWeWantToRequireWindowsForDesktopApps : SdkTest
     {
-        public GivenWeWantToRequireWindowsForDesktopApps(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [WindowsOnlyTheory]
-        [InlineData("UseWPF")]
-        [InlineData("UseWindowsForms")]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow("UseWPF")]
+        [DataRow("UseWindowsForms")]
         public void It_builds_on_windows_with_the_windows_desktop_sdk(string uiFrameworkProperty)
         {
             const string ProjectName = "WindowsDesktopSdkTest";
@@ -32,9 +31,10 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
-        [InlineData("UseWPF")]
-        [InlineData("UseWindowsForms")]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        [DataRow("UseWPF")]
+        [DataRow("UseWindowsForms")]
         public void It_errors_on_nonwindows_with_the_windows_desktop_sdk(string uiFrameworkProperty)
         {
             const string ProjectName = "WindowsDesktopSdkErrorTest";
@@ -51,10 +51,11 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.WindowsDesktopFrameworkRequiresWindows);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("Microsoft.WindowsDesktop.App")]
-        [InlineData("Microsoft.WindowsDesktop.App.WindowsForms")]
-        [InlineData("Microsoft.WindowsDesktop.App.WPF")]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
+        [DataRow("Microsoft.WindowsDesktop.App")]
+        [DataRow("Microsoft.WindowsDesktop.App.WindowsForms")]
+        [DataRow("Microsoft.WindowsDesktop.App.WPF")]
         public void It_builds_on_windows_with_a_framework_reference(string desktopFramework)
         {
             const string ProjectName = "WindowsDesktopReferenceTest";
@@ -69,10 +70,11 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
-        [InlineData("Microsoft.WindowsDesktop.App")]
-        [InlineData("Microsoft.WindowsDesktop.App.WindowsForms")]
-        [InlineData("Microsoft.WindowsDesktop.App.WPF")]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        [DataRow("Microsoft.WindowsDesktop.App")]
+        [DataRow("Microsoft.WindowsDesktop.App.WindowsForms")]
+        [DataRow("Microsoft.WindowsDesktop.App.WPF")]
         public void It_errors_on_nonwindows_with_a_framework_reference(string desktopFramework)
         {
             const string ProjectName = "WindowsDesktopReferenceErrorTest";
@@ -89,7 +91,8 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.WindowsDesktopFrameworkRequiresWindows);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
         public void AppTargetingWindows10CanBuildOnNonWindows()
         {
             var testProject = new TestProject()
@@ -107,7 +110,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
         public void AppTargetingWindows10WillProduceWindowsGUISubsystemExe()
         {
             // check subsystem is successfully set as WindowsGUISubsystem
@@ -142,7 +146,8 @@ namespace Microsoft.NET.Build.Tests
             subsystem.Should().Be(WindowsGUISubsystem);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
         public void WindowsFormsAppCanBuildOnNonWindows()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("WindowsFormsTestApp")
@@ -155,7 +160,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [WindowsOnlyRequiresMSBuildVersion("16.8.0")]
         public void It_builds_on_windows_with_the_windows_desktop_sdk_5_0_with_ProjectSdk_set()
         {
             const string ProjectName = "WindowsDesktopSdkTest_50";
@@ -183,7 +189,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [WindowsOnlyRequiresMSBuildVersion("16.8.0")]
         public void It_builds_on_windows_with_the_windows_desktop_sdk_5_0_without_ProjectSdk_set()
         {
             const string ProjectName = "WindowsDesktopSdkTest_without_ProjectSdk_set";
@@ -211,7 +218,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [WindowsOnlyRequiresMSBuildVersion("16.8.0")]
         public void When_TargetPlatformVersion_is_set_higher_than_10_It_can_reference_cswinrt_api()
         {
             const string ProjectName = "WindowsDesktopSdkTest_without_ProjectSdk_set";
@@ -325,7 +333,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [WindowsOnlyRequiresMSBuildVersion("16.8.0")]
         public void Given_duplicated_ResolvedFileToPublish_It_Can_Publish()
         {
             const string ProjectName = "WindowsDesktopSdkTest_without_ProjectSdk_set";

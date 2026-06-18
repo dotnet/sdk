@@ -3,13 +3,12 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAppsWithFrameworkRefs : SdkTest
     {
-        public GivenThatWeWantToBuildAppsWithFrameworkRefs(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_builds_the_projects_successfully()
         {
             var testAsset = TestAssetsManager
@@ -18,7 +17,8 @@ namespace Microsoft.NET.Build.Tests
             VerifyProjectsBuild(testAsset);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void It_builds_with_disable_implicit_frameworkRefs()
         {
             var testAsset = TestAssetsManager
@@ -64,7 +64,8 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().HaveFiles(expectedFiles);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void The_clean_target_removes_all_files_from_the_output_folder()
         {
             var testAsset = TestAssetsManager
