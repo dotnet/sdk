@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Extensions;
@@ -49,7 +50,6 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.Api;
 using Microsoft.DotNet.Cli.Commands.Sdk;
-using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.Store;
 using Microsoft.DotNet.Cli.Commands.Workload;
 #endif
@@ -201,6 +201,11 @@ public static class Parser
         // fallback defaults above. SolutionCommandParser is AOT-aware: it keeps real implementations
         // for `sln list`/`migrate`/`remove` and falls back for `sln` and `sln add`.
         SolutionCommandParser.ConfigureCommand(rootCommand.SolutionCommand);
+
+        // ToolCommandParser is AOT-aware: it keeps real implementations for the local `tool list`/
+        // `tool uninstall`, `tool run`, and `tool search`, and falls back to the managed CLI for the
+        // global/tool-path variants and for install/update/restore/execute.
+        ToolCommandParser.ConfigureCommand(rootCommand.ToolCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);
