@@ -1,37 +1,35 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
 {
+    [TestClass]
     public class ValidateTemplatesTests : TestBase
     {
-        private readonly ITestOutputHelper _log;
+        public TestContext TestContext { get; set; } = null!;
 
-        public ValidateTemplatesTests(ITestOutputHelper log)
-        {
-            _log = log;
-        }
+        private ILogger Log => new TestContextLogger(TestContext);
 
-        [Fact]
+        [TestMethod]
         public void CanRunValidateTask_OnError()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/InvalidTemplatePackage_MissingName", tmpDir, true);
             SetupNuGetConfigForPackagesLocation(tmpDir);
 
-            new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
+            new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
                 .Execute()
                 .Should()
                 .Pass();
 
-            new DotnetCommand(_log, "build")
+            new DotnetCommand(Log, "build")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
                 .Execute()
@@ -41,21 +39,21 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
                 .And.HaveStdOutContaining("Template configuration error MV003: Missing 'shortName'.");
         }
 
-        [Fact]
+        [TestMethod]
         public void CanRunValidateTask_OnInfo()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/InvalidTemplatePackage_MissingOptionalData", tmpDir, true);
             SetupNuGetConfigForPackagesLocation(tmpDir);
 
-            new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
+            new DotnetCommand(Log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
                 .Execute()
                 .Should()
                 .Pass();
 
-            new DotnetCommand(_log, "build")
+            new DotnetCommand(Log, "build")
                 .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
                 .Execute()

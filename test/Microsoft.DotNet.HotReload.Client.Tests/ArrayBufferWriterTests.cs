@@ -44,8 +44,8 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
 
         {
             var output = new ArrayBufferWriter<T>(200);
-            Assert.IsTrue(output.FreeCapacity >= 200);
-            Assert.IsTrue(output.Capacity >= 200);
+            Assert.IsGreaterThanOrEqualTo(200, output.FreeCapacity);
+            Assert.IsGreaterThanOrEqualTo(200, output.Capacity);
             Assert.AreEqual(0, output.WrittenCount);
             Assert.IsTrue(ReadOnlySpan<T>.Empty.SequenceEqual(output.WrittenSpan));
             Assert.IsTrue(ReadOnlyMemory<T>.Empty.Span.SequenceEqual(output.WrittenMemory.Span));
@@ -76,8 +76,8 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
         var output = new ArrayBufferWriter<T>(256);
         int previousAvailable = output.FreeCapacity;
         WriteData(output, 2);
-        Assert.IsTrue(output.FreeCapacity < previousAvailable);
-        Assert.IsTrue(output.WrittenCount > 0);
+        Assert.IsLessThan(previousAvailable, output.FreeCapacity);
+        Assert.IsGreaterThan(0, output.WrittenCount);
         Assert.IsFalse(ReadOnlySpan<T>.Empty.SequenceEqual(output.WrittenSpan));
         Assert.IsFalse(ReadOnlyMemory<T>.Empty.Span.SequenceEqual(output.WrittenMemory.Span));
         Assert.IsTrue(output.WrittenSpan.SequenceEqual(output.WrittenMemory.Span));
@@ -104,8 +104,8 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
         var output = new ArrayBufferWriter<T>(256);
         int previousAvailable = output.FreeCapacity;
         WriteData(output, 2);
-        Assert.IsTrue(output.FreeCapacity < previousAvailable);
-        Assert.IsTrue(output.WrittenCount > 0);
+        Assert.IsLessThan(previousAvailable, output.FreeCapacity);
+        Assert.IsGreaterThan(0, output.WrittenCount);
         Assert.IsFalse(ReadOnlySpan<T>.Empty.SequenceEqual(output.WrittenSpan));
         Assert.IsFalse(ReadOnlyMemory<T>.Empty.Span.SequenceEqual(output.WrittenMemory.Span));
         Assert.IsTrue(output.WrittenSpan.SequenceEqual(output.WrittenMemory.Span));
@@ -145,7 +145,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             Assert.AreEqual(0, output.FreeCapacity);
             int previousCapacity = output.Capacity;
             Span<T> _ = output.GetSpan();
-            Assert.IsTrue(output.Capacity > previousCapacity);
+            Assert.IsGreaterThan(previousCapacity, output.Capacity);
         }
 
         {
@@ -257,7 +257,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
         Assert.AreEqual(256, memory.Length);
 
         var segment = output.GetArraySegment();
-        Assert.AreEqual(memory.Length, segment.Count);
+        Assert.HasCount(memory.Length, segment);
     }
 
     [TestMethod]
@@ -269,7 +269,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
         Assert.AreEqual(sizeHint <= 256 ? 256 : sizeHint, memory.Length);
 
         var segment = output.GetArraySegment(sizeHint);
-        Assert.AreEqual(memory.Length, segment.Count);
+        Assert.HasCount(memory.Length, segment);
     }
 
     [TestMethod]
@@ -288,7 +288,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
         Assert.AreEqual(100, memory.Length);
 
         var segment = output.GetArraySegment();
-        Assert.AreEqual(memory.Length, segment.Count);
+        Assert.HasCount(memory.Length, segment);
     }
 
     [TestMethod]
@@ -301,7 +301,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             Assert.AreEqual(sizeHint <= 256 ? 256 : sizeHint + 256, memory.Length);
 
             var segment = output.GetArraySegment();
-            Assert.AreEqual(memory.Length, segment.Count);
+            Assert.HasCount(memory.Length, segment);
         }
 
         {
@@ -310,7 +310,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             Assert.AreEqual(sizeHint <= 1000 ? 1000 : sizeHint + 1000, memory.Length);
 
             var segment = output.GetArraySegment();
-            Assert.AreEqual(memory.Length, segment.Count);
+            Assert.HasCount(memory.Length, segment);
         }
     }
 
@@ -346,9 +346,9 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             var memory = output.GetMemory();
             var segment = output.GetArraySegment();
             Span<T> memorySpan = memory.Span;
-            Assert.IsTrue(span.Length > 0);
+            Assert.IsGreaterThan(0, span.Length);
             Assert.AreEqual(span.Length, memorySpan.Length);
-            Assert.AreEqual(span.Length, segment.Count);
+            Assert.HasCount(span.Length, segment);
 
             for (int i = 0; i < span.Length; i++)
             {
@@ -366,9 +366,9 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             Assert.IsTrue(writtenSoFarMemory.Span.SequenceEqual(writtenSoFar));
             int previousAvailable = output.FreeCapacity;
             var span = output.GetSpan(500);
-            Assert.IsTrue(span.Length >= 500);
-            Assert.IsTrue(output.FreeCapacity >= 500);
-            Assert.IsTrue(output.FreeCapacity > previousAvailable);
+            Assert.IsGreaterThanOrEqualTo(500, span.Length);
+            Assert.IsGreaterThanOrEqualTo(500, output.FreeCapacity);
+            Assert.IsGreaterThan(previousAvailable, output.FreeCapacity);
 
             Assert.AreEqual(writtenSoFar.Length, output.WrittenCount);
             Assert.IsFalse(writtenSoFar.SequenceEqual(span.Slice(0, output.WrittenCount)));
@@ -376,10 +376,10 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             var memory = output.GetMemory();
             var segment = output.GetArraySegment();
             Span<T> memorySpan = memory.Span;
-            Assert.IsTrue(span.Length >= 500);
-            Assert.IsTrue(memorySpan.Length >= 500);
+            Assert.IsGreaterThanOrEqualTo(500, span.Length);
+            Assert.IsGreaterThanOrEqualTo(500, memorySpan.Length);
             Assert.AreEqual(span.Length, memorySpan.Length);
-            Assert.AreEqual(span.Length, segment.Count);
+            Assert.HasCount(span.Length, segment);
             for (int i = 0; i < span.Length; i++)
             {
                 Assert.AreEqual(default, span[i]);
@@ -390,7 +390,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
             memory = output.GetMemory(500);
             segment = output.GetArraySegment(500);
             memorySpan = memory.Span;
-            Assert.IsTrue(memorySpan.Length >= 500);
+            Assert.IsGreaterThanOrEqualTo(500, memorySpan.Length);
             Assert.AreEqual(span.Length, memorySpan.Length);
             for (int i = 0; i < memorySpan.Length; i++)
             {
@@ -411,7 +411,7 @@ public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
         Assert.AreEqual(previousAvailable, output.FreeCapacity);
 
         _ = output.GetSpan(previousAvailable + 1);
-        Assert.IsTrue(output.FreeCapacity >= previousAvailable * 2);
+        Assert.IsGreaterThanOrEqualTo(previousAvailable * 2, output.FreeCapacity);
     }
 
     [TestMethod]
@@ -485,7 +485,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
     protected override void WriteData(IBufferWriter<byte> bufferWriter, int numBytes)
     {
         Span<byte> outputSpan = bufferWriter.GetSpan(numBytes);
-        Assert.IsTrue(outputSpan.Length >= numBytes);
+        Assert.IsGreaterThanOrEqualTo(numBytes, outputSpan.Length);
         var random = new Random(42);
 
         var data = new byte[numBytes];
@@ -514,7 +514,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
 
         Assert.IsTrue(transientSpan.SequenceEqual(transientMemory.Span));
 
-        Assert.IsTrue(transientSpan[0] != 0);
+        Assert.AreNotEqual((byte)0, transientSpan[0]);
         byte expectedFirstByte = transientSpan[0];
 
         memStream.Write(transientSpan.ToArray(), 0, transientSpan.Length);
@@ -539,7 +539,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
         Assert.IsTrue(ReadOnlySpan<byte>.Empty.SequenceEqual(output.WrittenMemory.Span));
         Assert.IsTrue(output.WrittenSpan.SequenceEqual(output.WrittenMemory.Span));
 
-        Assert.AreEqual(outputSpan.Length, streamOutput.Length);
+        Assert.HasCount(outputSpan.Length, streamOutput);
         Assert.IsTrue(outputSpan.SequenceEqual(streamOutput));
     }
 
@@ -559,7 +559,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
 
         ReadOnlyMemory<byte> transient = output.WrittenMemory;
 
-        Assert.IsTrue(transient.Span[0] != 0);
+        Assert.AreNotEqual((byte)0, transient.Span[0]);
         byte expectedFirstByte = transient.Span[0];
 
         await memStream.WriteAsync(transient.ToArray(), 0, transient.Length, TestContext.CancellationToken);
@@ -574,7 +574,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
             output.ResetWrittenCount();
         }
 
-        Assert.IsTrue(transient.Span[0] == expectedFirstByte);
+        Assert.AreEqual(expectedFirstByte, transient.Span[0]);
 
         Assert.AreEqual(0, output.WrittenCount);
         byte[] streamOutput = memStream.ToArray();
@@ -582,7 +582,7 @@ public class ArrayBufferWriterTests_Byte : ArrayBufferWriterTests<byte>
         Assert.IsTrue(ReadOnlyMemory<byte>.Empty.Span.SequenceEqual(output.WrittenMemory.Span));
         Assert.IsTrue(ReadOnlySpan<byte>.Empty.SequenceEqual(output.WrittenMemory.Span));
 
-        Assert.AreEqual(outputMemory.Length, streamOutput.Length);
+        Assert.HasCount(outputMemory.Length, streamOutput);
         Assert.IsTrue(outputMemory.Span.SequenceEqual(streamOutput));
     }
 }
