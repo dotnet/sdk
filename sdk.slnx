@@ -367,6 +367,7 @@
     <Project Path="test/Microsoft.DotNet.MSBuildSdkResolver.Tests/Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.PackageInstall.Tests/Microsoft.DotNet.PackageInstall.Tests.csproj" />
     <Project Path="test/Microsoft.DotNet.TemplateLocator.Tests/Microsoft.DotNet.TemplateLocator.Tests.csproj" />
+    <Project Path="test/Microsoft.DotNet.Test.MSTest.Utilities/Microsoft.DotNet.Test.MSTest.Utilities.csproj" />
     <Project Path="test/Microsoft.DotNet.Tools.Tests.ComponentMocks/Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
     <Project Path="test/Microsoft.Extensions.DotNetDeltaApplier.Tests/Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Build.Containers.IntegrationTests/Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
