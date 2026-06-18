@@ -44,7 +44,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       (especially with .NET Aspire). Developers who want smaller binaries can opt out by setting
       BlazorWasmDiagnosticsEnabled to 'false' or by setting the individual properties explicitly.
     -->
-    <BlazorWasmDiagnosticsEnabled Condition="'$(BlazorWasmDiagnosticsEnabled)' == ''">true</BlazorWasmDiagnosticsEnabled>
+    <BlazorWebAssemblyDiagnosticsEnabled Condition="'$(BlazorWebAssemblyDiagnosticsEnabled)' == ''">true</BlazorWebAssemblyDiagnosticsEnabled>
     <MetricsSupport Condition="'$(MetricsSupport)' == '' and '$(BlazorWasmDiagnosticsEnabled)' == 'true'">true</MetricsSupport>
     <EventSourceSupport Condition="'$(EventSourceSupport)' == '' and '$(BlazorWasmDiagnosticsEnabled)' == 'true'">true</EventSourceSupport>
     <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == '' and '$(BlazorWasmDiagnosticsEnabled)' == 'true'">true</HttpActivityPropagationSupport>
