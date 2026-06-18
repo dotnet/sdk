@@ -85,7 +85,7 @@
        In AzDO pipelines, the project URI and access token are auto-derived from
        built-in variables. Set AzdoDefinitionId to the pipeline definition ID. -->
   <PropertyGroup>
-    <UseTimeBasedScheduling Condition="'$(UseTimeBasedScheduling)' == ''">false</UseTimeBasedScheduling>
+    <UseTimeBasedScheduling Condition="'$(UseTimeBasedScheduling)' == ''">true</UseTimeBasedScheduling>
     <!-- Derive AzDO project URI from pipeline variables: $(System.CollectionUri)$(System.TeamProject) -->
     <AzdoProjectUri Condition="'$(AzdoProjectUri)' == '' and '$(SYSTEM_COLLECTIONURI)' != ''">$(SYSTEM_COLLECTIONURI)$(SYSTEM_TEAMPROJECT)</AzdoProjectUri>
     <!-- Use the pipeline access token for AzDO REST API calls -->
