@@ -114,7 +114,14 @@
         TargetRid="$(TargetRid)"
         BaseMethodLimit="$(BaseMethodLimit)"
         XUnitArguments="$(SDKCustomXUnitArgument)"
-        XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)">
+        XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)"
+        UseTimeBasedScheduling="$(UseTimeBasedScheduling)"
+        AzdoProjectUri="$(AzdoProjectUri)"
+        AzdoAccessToken="$(AzdoAccessToken)"
+        AzdoDefinitionId="$(AzdoDefinitionId)"
+        AzdoTargetBranch="$(AzdoTargetBranch)"
+        AzdoPhaseName="$(AzdoPhaseName)"
+        TargetMinutesPerWorkItem="$(TargetMinutesPerWorkItem)">
       <Output TaskParameter="XUnitWorkItems" ItemName="HelixWorkItem"/>
     </SDKCustomCreateXUnitWorkItemsWithTestExclusion>
   </Target>
