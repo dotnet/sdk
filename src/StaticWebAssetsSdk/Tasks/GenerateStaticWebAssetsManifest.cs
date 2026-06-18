@@ -129,19 +129,19 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
     private void PersistManifest(StaticWebAssetsManifest manifest)
     {
         // Absolutize once; preserve original paths for log messages.
-        AbsolutePath manifestPath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : default;
-        bool hasCacheFile = !string.IsNullOrEmpty(ManifestCacheFilePath);
-        AbsolutePath manifestCachePath = hasCacheFile ? TaskEnvironment.GetAbsolutePath(ManifestCacheFilePath) : default;
-        var cacheFileExists = hasCacheFile && File.Exists(manifestCachePath);
-        var fileExists = File.Exists(manifestPath);
+        AbsolutePath absolutizedManifestPath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : default;
+        bool isManifestCacheFileConfigured = !string.IsNullOrEmpty(ManifestCacheFilePath);
+        AbsolutePath absolutizedManifestCacheFilePath = isManifestCacheFileConfigured ? TaskEnvironment.GetAbsolutePath(ManifestCacheFilePath) : default;
+        var cacheFileExists = isManifestCacheFileConfigured && File.Exists(absolutizedManifestCacheFilePath);
+        var manifestFileExists = File.Exists(absolutizedManifestPath);
         var existingManifestHash = cacheFileExists ?
-            File.ReadAllText(manifestCachePath) :
-            fileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath)).Hash : "";
+            File.ReadAllText(absolutizedManifestCacheFilePath) :
+            manifestFileExists ? StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(absolutizedManifestPath)).Hash : "";
 
-        if (!fileExists || !string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
+        if (!manifestFileExists || !string.Equals(manifest.Hash, existingManifestHash, StringComparison.Ordinal))
         {
             var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsManifest);
-            if (!fileExists)
+            if (!manifestFileExists)
             {
                 Log.LogMessage(MessageImportance.Low, $"Creating manifest because manifest file '{ManifestPath}' does not exist.");
             }
@@ -149,10 +149,10 @@ public class GenerateStaticWebAssetsManifest : Task, IMultiThreadableTask
             {
                 Log.LogMessage(MessageImportance.Low, $"Updating manifest because manifest version '{manifest.Hash}' is different from existing manifest hash '{existingManifestHash}'.");
             }
-            File.WriteAllBytes(manifestPath, data);
-            if (hasCacheFile)
+            File.WriteAllBytes(absolutizedManifestPath, data);
+            if (isManifestCacheFileConfigured)
             {
-                File.WriteAllText(manifestCachePath, manifest.Hash);
+                File.WriteAllText(absolutizedManifestCacheFilePath, manifest.Hash);
             }
         }
         else
