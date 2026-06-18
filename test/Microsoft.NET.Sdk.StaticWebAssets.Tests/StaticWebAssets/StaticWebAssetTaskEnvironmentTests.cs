@@ -6,7 +6,6 @@
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
@@ -221,38 +220,36 @@ public class StaticWebAssetTaskEnvironmentTests
         });
     }
 
-    [Fact]
-    public void NormalizeContentRootPath_WithWhitespacePath_PreservesLegacyBehavior_DoesNotResolveAgainstProjectDirectory()
+    [WindowsOnlyFact]
+    public void NormalizeContentRootPath_WithWhitespacePath_ThrowsOnWindows()
     {
+        // Pre-migration the raw path went straight into Path.GetFullPath, which trims trailing
+        // whitespace to an empty path and throws. Guarding on IsNullOrWhiteSpace preserves that
+        // instead of silently resolving the invalid path to the project directory.
+        WithDecoyCwdAndProjectDirectory((projectDir, _) =>
+        {
+            var env = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir);
+
+            Action act = () => StaticWebAsset.NormalizeContentRootPath("   ", env);
+
+            act.Should().Throw<ArgumentException>();
+        });
+    }
+
+    [LinuxOnlyFact]
+    public void NormalizeContentRootPath_WithWhitespacePath_ResolvesAgainstCurrentDirectory_NotProjectDirectory()
+    {
+        // On Unix whitespace is a legal path segment, so it must keep resolving against the legacy
+        // base (the process CWD) like the parameterless overload, not be re-rooted to the project dir.
         WithDecoyCwdAndProjectDirectory((projectDir, spawnDir) =>
         {
             var env = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir);
-            const string whitespace = "   ";
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Before the multithreading migration the raw whitespace path flowed straight into
-                // Path.GetFullPath, which on Windows trims the trailing whitespace to an empty path
-                // and throws. Routing it through env.GetAbsolutePath first would instead silently
-                // resolve it to the project directory, masking the invalid input. Guarding on
-                // IsNullOrWhiteSpace preserves the original throw.
-                Action act = () => StaticWebAsset.NormalizeContentRootPath(whitespace, env);
+            var result = StaticWebAsset.NormalizeContentRootPath("   ", env);
 
-                act.Should().Throw<ArgumentException>(
-                    "a whitespace-only path is invalid on Windows and must keep throwing as it did before the migration");
-            }
-            else
-            {
-                // On Unix whitespace is a legal path segment, so Path.GetFullPath does not throw.
-                // It must still resolve against the legacy base (the process CWD) exactly like the
-                // parameterless overload, rather than being silently re-rooted to the project directory.
-                var result = StaticWebAsset.NormalizeContentRootPath(whitespace, env);
-
-                result.Should().Be(StaticWebAsset.NormalizeContentRootPath(whitespace),
-                    "whitespace paths must keep their pre-migration resolution and not be re-rooted to the project directory");
-                result.Should().StartWith(spawnDir);
-                result.Should().NotStartWith(projectDir);
-            }
+            result.Should().Be(StaticWebAsset.NormalizeContentRootPath("   "));
+            result.Should().StartWith(spawnDir);
+            result.Should().NotStartWith(projectDir);
         });
     }
 
