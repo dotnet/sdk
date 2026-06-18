@@ -10,20 +10,32 @@ using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.Common.Providers;
-using Xunit;
 
 namespace Microsoft.TemplateSearch.Common.UnitTests
 {
-    public class TemplateSearchCacheReaderTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class TemplateSearchCacheReaderTests
     {
+        private static readonly Lazy<EnvironmentSettingsHelper> s_environmentSettingsHelper =
+            new(() => new EnvironmentSettingsHelper(NullMessageSink.Instance));
+
         private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
-        public TemplateSearchCacheReaderTests(EnvironmentSettingsHelper helper)
+        public TemplateSearchCacheReaderTests()
         {
-            _environmentSettingsHelper = helper;
+            _environmentSettingsHelper = s_environmentSettingsHelper.Value;
         }
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            if (s_environmentSettingsHelper.IsValueCreated)
+            {
+                s_environmentSettingsHelper.Value.Dispose();
+            }
+        }
+
+        [TestMethod]
         public void CanReadSearchMetadata()
         {
             var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -32,19 +44,19 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
 
-            Assert.Single(parsedCache.TemplatePackages);
-            Assert.Equal(2, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
+            Assert.ContainsSingle(parsedCache.TemplatePackages);
+            Assert.AreEqual(2, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
 
-            Assert.IsAssignableFrom<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
+            Assert.IsInstanceOfType<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
 
             //can read tags
-            Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection.Count);
+            Assert.HasCount(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection);
 
             //can read parameters
-            Assert.Equal(5, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions.Count);
+            Assert.HasCount(5, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadSearchMetadata_V2()
         {
             var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -53,23 +65,23 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
 
-            Assert.Single(parsedCache.TemplatePackages);
-            Assert.Equal(3, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
+            Assert.ContainsSingle(parsedCache.TemplatePackages);
+            Assert.AreEqual(3, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
 
-            Assert.IsAssignableFrom<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
+            Assert.IsInstanceOfType<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
 
             //can read tags
-            Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection.Count);
+            Assert.HasCount(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection);
 
             //can read parameters: 2 tags + 3 cache parameters
-            Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions.Count);
+            Assert.HasCount(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions);
 
-            Assert.Equal(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Count);
-            Assert.Equal(1, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Count(p => p.DataType == "choice"));
-            Assert.Equal(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
+            Assert.HasCount(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions);
+            Assert.ContainsSingle(((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Where(p => p.DataType == "choice"));
+            Assert.AreEqual(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanSkipInvalidEntriesSearchMetadata()
         {
             var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -78,14 +90,14 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
 
-            Assert.Single(parsedCache.TemplatePackages);
-            Assert.Equal(1, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
+            Assert.ContainsSingle(parsedCache.TemplatePackages);
+            Assert.AreEqual(1, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
 
-            Assert.IsAssignableFrom<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
-            Assert.Equal("Microsoft.AzureFunctions.ProjectTemplate.CSharp.3.x", ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).Identity);
+            Assert.IsInstanceOfType<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
+            Assert.AreEqual("Microsoft.AzureFunctions.ProjectTemplate.CSharp.3.x", ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).Identity);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanReadSearchMetadata_FromBlob()
         {
             var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -97,10 +109,10 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             await TestUtils.AttemptSearch<string, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
             string content = environmentSettings.Host.FileSystem.ReadAllText(Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json"));
             var jObj = JExtensions.ParseJsonObject(content);
-            Assert.NotNull(TemplateSearchCache.FromJObject(jObj, environmentSettings.Host.Logger, null));
+            Assert.IsNotNull(TemplateSearchCache.FromJObject(jObj, environmentSettings.Host.Logger, null));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanReadLegacySearchMetadata_FromBlob()
         {
             var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -114,11 +126,11 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             string content = environmentSettings.Host.FileSystem.ReadAllText(Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json"));
             var jObj = JExtensions.ParseJsonObject(content);
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.True(LegacySearchCacheReader.TryReadDiscoveryMetadata(jObj, environmentSettings.Host.Logger, null, out _));
+            Assert.IsTrue(LegacySearchCacheReader.TryReadDiscoveryMetadata(jObj, environmentSettings.Host.Logger, null, out _));
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        [Fact]
+        [TestMethod]
         public void CanReadSearchMetadata_V2_E2E()
         {
             Guid postAction1 = Guid.NewGuid();
@@ -147,36 +159,36 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             TemplateSearchCache deserializedCache = TemplateSearchCache.FromJObject(jobj, NullLogger.Instance);
 
-            Assert.Equal("2.0", deserializedCache.Version);
-            Assert.Single(deserializedCache.TemplatePackages);
-            Assert.Single(deserializedCache.TemplatePackages[0].Templates);
+            Assert.AreEqual("2.0", deserializedCache.Version);
+            Assert.ContainsSingle(deserializedCache.TemplatePackages);
+            Assert.ContainsSingle(deserializedCache.TemplatePackages[0].Templates);
 
-            Assert.Equal("pack", deserializedCache.TemplatePackages[0].Name);
-            Assert.Equal("packVer", deserializedCache.TemplatePackages[0].Version);
-            Assert.Equal("description", deserializedCache.TemplatePackages[0].Description);
-            Assert.Equal("https://icon", deserializedCache.TemplatePackages[0].IconUrl);
+            Assert.AreEqual("pack", deserializedCache.TemplatePackages[0].Name);
+            Assert.AreEqual("packVer", deserializedCache.TemplatePackages[0].Version);
+            Assert.AreEqual("description", deserializedCache.TemplatePackages[0].Description);
+            Assert.AreEqual("https://icon", deserializedCache.TemplatePackages[0].IconUrl);
 
             var templateToTest = deserializedCache.TemplatePackages[0].Templates[0];
 
-            Assert.Equal("shortName", templateToTest.ShortNameList[0]);
-            Assert.Equal("Full Name", templateToTest.Name);
-            Assert.Equal("test.identity", templateToTest.Identity);
-            Assert.Equal("test.group.identity", templateToTest.GroupIdentity);
-            Assert.Equal(100, templateToTest.Precedence);
-            Assert.Equal("test author", templateToTest.Author);
-            Assert.Equal(2, templateToTest.Classifications.Count);
+            Assert.AreEqual("shortName", templateToTest.ShortNameList[0]);
+            Assert.AreEqual("Full Name", templateToTest.Name);
+            Assert.AreEqual("test.identity", templateToTest.Identity);
+            Assert.AreEqual("test.group.identity", templateToTest.GroupIdentity);
+            Assert.AreEqual(100, templateToTest.Precedence);
+            Assert.AreEqual("test author", templateToTest.Author);
+            Assert.HasCount(2, templateToTest.Classifications);
 
-            Assert.Equal("my test description", templateToTest.Description);
-            Assert.Equal("CSharp", templateToTest.TagsCollection["language"]);
+            Assert.AreEqual("my test description", templateToTest.Description);
+            Assert.AreEqual("CSharp", templateToTest.TagsCollection["language"]);
 
-            Assert.Equal(3, templateToTest.ParameterDefinitions.Count);
+            Assert.HasCount(3, templateToTest.ParameterDefinitions);
 
-            Assert.Single(templateToTest.ParameterDefinitions, p => p.DataType == "choice");
-            Assert.Equal(3, templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
-            Assert.True(templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.ContainsKey("var1"));
+            Assert.ContainsSingle(p => p.DataType == "choice", templateToTest.ParameterDefinitions);
+            Assert.AreEqual(3, templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
+            Assert.IsTrue(templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.ContainsKey("var1"));
 
-            Assert.Equal(2, ((ITemplateInfo)templateToTest).PostActions.Count);
-            Assert.Equal(new[] { postAction1, postAction2 }, ((ITemplateInfo)templateToTest).PostActions);
+            Assert.HasCount(2, ((ITemplateInfo)templateToTest).PostActions);
+            Assert.AreSequenceEqual(new[] { postAction1, postAction2 }, ((ITemplateInfo)templateToTest).PostActions);
         }
     }
 }
