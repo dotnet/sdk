@@ -212,7 +212,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
         if (!File.Exists(exclusionCacheAbsolutePath) ||
             !string.Equals(existingPatternString, patternString, StringComparison.Ordinal))
         {
-            var directoryName = Path.GetDirectoryName((string)exclusionCacheAbsolutePath);
+            var directoryName = Path.GetDirectoryName(exclusionCacheAbsolutePath);
             if (directoryName != null)
             {
                 Directory.CreateDirectory(directoryName);
