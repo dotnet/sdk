@@ -259,11 +259,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     string envPrefix;
                     if (IsPosixShell)
                     {
-                        envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} ";
+                        string testExecutionDirectoryEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory ";
+                        envPrefix = $"HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectoryEnv}";
                     }
                     else
                     {
-                        envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& ";
+                        string testExecutionDirectoryEnv = string.IsNullOrEmpty(testExecutionDirectory) ? "" : "set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%&& ";
+                        string msbuildAdditionalSdkResolverFolderEnv = string.IsNullOrEmpty(msbuildAdditionalSdkResolverFolder) ? "" : "set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r&& ";
+                        envPrefix = $"set HELIX_WORK_ITEM_TIMEOUT={timeout}&& {testExecutionDirectoryEnv}{msbuildAdditionalSdkResolverFolderEnv}";
                     }
 
                     string diagArg = IsPosixShell
@@ -277,8 +280,11 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 }
                 else
                 {
+                    // blame-hang-timeout is set to a % of the Helix work item timeout so that blame can
+                    // collect hang dumps and write the TRX file before Helix hard-kills the process.
+                    var blameHangTimeout = TimeSpan.FromMilliseconds(timeout.TotalMilliseconds * 0.8);
                     command = $"{additionalPayloadPreCommand}{chmodPrefix}{codesignPrefix}{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 60m {testFilter} {enableDiagLogging} {arguments}";
+                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout {blameHangTimeout.TotalMinutes:0}m {testFilter} {enableDiagLogging} {arguments}";
                 }
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");

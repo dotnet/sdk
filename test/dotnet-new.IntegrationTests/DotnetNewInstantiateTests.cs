@@ -110,6 +110,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Utils.CommandResult forceCommandResult = new DotnetNewCommand(_log, "console", "--no-restore", "--force")
                 .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDirectory)
+                .WithRetryOnExitCode(100)
                 .Execute();
 
             forceCommandResult.Should()
