@@ -29,16 +29,7 @@ public class ReadStaticWebAssetsManifestFile : Task, IMultiThreadableTask
 
     public override bool Execute()
     {
-        AbsolutePath manifestPath;
-        try
-        {
-            manifestPath = TaskEnvironment.GetAbsolutePath(ManifestPath);
-        }
-        catch (ArgumentException)
-        {
-            Log.LogError($"Manifest file at '{ManifestPath}' not found.");
-            return false;
-        }
+        string manifestPath = string.IsNullOrEmpty(ManifestPath) ? ManifestPath : TaskEnvironment.GetAbsolutePath(ManifestPath);
 
         if (!File.Exists(manifestPath))
         {
