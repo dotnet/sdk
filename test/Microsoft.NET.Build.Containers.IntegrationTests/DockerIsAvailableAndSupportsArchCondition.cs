@@ -6,13 +6,13 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 /// <summary>
 /// MSTest condition attribute that ignores a test when Docker is unavailable on the host, when the
 /// requested <paramref name="arch"/> is not supported by the daemon, or (optionally) when the
-/// containerd image store is not enabled. This is the MSTest counterpart of the xUnit
-/// <c>DockerIsAvailableAndSupportsArchTheoryAttribute</c>; apply it alongside <c>[TestMethod]</c>.
+/// containerd image store is not enabled. Apply it alongside <c>[TestMethod]</c> (this is the
+/// MSTest counterpart of the xUnit Docker/arch-gated <c>[Fact]</c>/<c>[Theory]</c> attributes).
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
-public sealed class DockerIsAvailableAndSupportsArchTheoryAttribute : ConditionBaseAttribute
+public sealed class DockerIsAvailableAndSupportsArchConditionAttribute : ConditionBaseAttribute
 {
-    public DockerIsAvailableAndSupportsArchTheoryAttribute(string arch, bool checkContainerdStoreAvailability = false)
+    public DockerIsAvailableAndSupportsArchConditionAttribute(string arch, bool checkContainerdStoreAvailability = false)
         : base(ConditionMode.Include)
     {
         if (!DockerSupportsArchHelper.DaemonIsAvailable)
@@ -31,5 +31,5 @@ public sealed class DockerIsAvailableAndSupportsArchTheoryAttribute : ConditionB
 
     public override bool IsConditionMet => IgnoreMessage is null;
 
-    public override string GroupName => nameof(DockerIsAvailableAndSupportsArchTheoryAttribute);
+    public override string GroupName => nameof(DockerIsAvailableAndSupportsArchConditionAttribute);
 }

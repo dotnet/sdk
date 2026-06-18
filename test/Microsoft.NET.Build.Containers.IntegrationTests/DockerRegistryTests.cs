@@ -18,7 +18,7 @@ public class DockerRegistryTests : SdkTest
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public async Task GetFromRegistry()
     {
@@ -40,7 +40,7 @@ public class DockerRegistryTests : SdkTest
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/42820")]
     public async Task WriteToPrivateBasicRegistry()
     {

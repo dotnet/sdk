@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 public class CreateNewImageTests : SdkTest
 {
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public void CreateNewImage_Baseline()
     {
@@ -48,7 +48,7 @@ public class CreateNewImageTests : SdkTest
         task.BaseImageTag = "7.0";
 
         task.OutputRegistry = "localhost:5010";
-        task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
+        task.LocalRegistry = DockerAvailableConditionAttribute.LocalRegistry;
         task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
         task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
@@ -67,7 +67,7 @@ public class CreateNewImageTests : SdkTest
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public void ParseContainerProperties_EndToEnd()
     {
@@ -133,7 +133,7 @@ public class CreateNewImageTests : SdkTest
     /// </summary>
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
@@ -201,7 +201,7 @@ public class CreateNewImageTests : SdkTest
         cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
         cni.ContainerRuntimeIdentifier = "linux-x64";
         cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
-        cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
+        cni.LocalRegistry = DockerAvailableConditionAttribute.LocalRegistry;
 
         Assert.IsTrue(cni.Execute(), FormatBuildMessages(errors));
 
@@ -220,7 +220,7 @@ public class CreateNewImageTests : SdkTest
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
     {
@@ -303,7 +303,7 @@ public class CreateNewImageTests : SdkTest
 
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void CanOverrideContainerImageFormat()
     {

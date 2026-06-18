@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 public class CreateImageIndexTests : SdkTest
 {
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task CreateImageIndex_Baseline()
     {
@@ -103,7 +103,7 @@ public class CreateImageIndexTests : SdkTest
         cni.BaseImageTag = "7.0";
 
         cni.OutputRegistry = outputRegistry;
-        cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
+        cni.LocalRegistry = DockerAvailableConditionAttribute.LocalRegistry;
         cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, rid, "publish");
         cni.Repository = repository;
         cni.ImageTags = tags.Select(t => $"{t}-{rid}").ToArray();

@@ -56,7 +56,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
@@ -105,7 +105,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithLocalLoad()
     {
@@ -148,7 +148,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithArchiveWritingAndLoad()
     {
@@ -200,7 +200,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task TarballsHaveCorrectStructure()
     {
@@ -376,7 +376,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task EndToEnd_MultiProjectSolution()
     {
@@ -464,7 +464,7 @@ public class EndToEndTests : SdkTest, IDisposable
     /// enabled by default, so the target will be skipped.
     /// </summary>
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task EndToEnd_MultiProjectSolution_with_multitargeted_library()
     {
@@ -534,7 +534,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableTheory]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     [DataRow("webapi", false)]
     [DataRow("webapi", true)]
@@ -710,7 +710,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableTheory]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     [DataRow(DockerRegistryManager.FullyQualifiedBaseImageAspNet)]
     [DataRow(DockerRegistryManager.FullyQualifiedBaseImageAspNetDigest)]
@@ -795,7 +795,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void EndToEnd_SingleArch_NoRid()
     {
@@ -832,7 +832,7 @@ public class EndToEndTests : SdkTest, IDisposable
     [DataRow("endtoendmultiarch-localregisty")]
     [DataRow("myteam/endtoendmultiarch-localregisty")]
     [TestMethod]
-    [DockerIsAvailableAndSupportsArchTheory("linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchCondition("linux/arm64", checkContainerdStoreAvailability: true)]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void EndToEndMultiArch_LocalRegistry(string imageName)
     {
@@ -891,7 +891,7 @@ public class EndToEndTests : SdkTest, IDisposable
     */
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void MultiArchStillAllowsSingleRID()
     {
@@ -944,7 +944,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void MultiArchStillAllowsSingleRIDUsingJustRIDProperties()
     {
@@ -1021,7 +1021,7 @@ public class EndToEndTests : SdkTest, IDisposable
     [DataRow("endtoendmultiarch-archivepublishing")]
     [DataRow("myteam/endtoendmultiarch-archivepublishing")]
     [TestMethod]
-    [DockerIsAvailableAndSupportsArchTheory("linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchCondition("linux/arm64", checkContainerdStoreAvailability: true)]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public void EndToEndMultiArch_ArchivePublishing(string imageName)
     {
@@ -1091,7 +1091,7 @@ public class EndToEndTests : SdkTest, IDisposable
     */
 
     [TestMethod]
-    [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchCondition("linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_RemoteRegistry()
     {
         string imageName = NewImageName();
@@ -1170,7 +1170,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/45181")]
     public void EndToEndMultiArch_ContainerRuntimeIdentifiersOverridesRuntimeIdentifiers()
     {
@@ -1206,7 +1206,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchCondition("linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_EnvVariables()
     {
         string imageName = NewImageName();
@@ -1276,7 +1276,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchCondition("linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_Ports()
     {
         string imageName = NewImageName();
@@ -1374,7 +1374,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact(checkContainerdStoreAvailability: true)]
+    [DockerAvailableCondition(checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_Labels()
     {
         string imageName = NewImageName();
@@ -1418,7 +1418,7 @@ public class EndToEndTests : SdkTest, IDisposable
     [DataRow("windows/amd64", "win-x64", "C:\\app")]
     [DataRow("linux/amd64", "linux-x64", "/app")]
     [TestMethod]
-    [DockerAvailableTheory]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49300")]
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
@@ -1471,7 +1471,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task CheckDownloadErrorMessageWhenSourceRepositoryThrows()
     {
@@ -1538,7 +1538,7 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact(checkContainerdStoreAvailability: true)]
+    [DockerAvailableCondition(checkContainerdStoreAvailability: true)]
     public void EnforcesOciSchemaForMultiRIDTarballOutput()
     {
         string imageName = NewImageName();

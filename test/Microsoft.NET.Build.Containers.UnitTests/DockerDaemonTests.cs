@@ -23,7 +23,7 @@ public class DockerDaemonTests : IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact(skipPodman: true)] // podman is a local cli not meant for connecting to remote Docker daemons.
+    [DockerAvailableCondition(skipPodman: true)] // podman is a local cli not meant for connecting to remote Docker daemons.
     public async Task Can_detect_when_no_daemon_is_running()
     {
         // mimic no daemon running by setting the DOCKER_HOST to a nonexistent socket
@@ -40,7 +40,7 @@ public class DockerDaemonTests : IDisposable
     }
 
     [TestMethod]
-    [DockerAvailableFact]
+    [DockerAvailableCondition]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
     public async Task Can_detect_when_daemon_is_running()
     {

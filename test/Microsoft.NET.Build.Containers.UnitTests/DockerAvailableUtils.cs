@@ -5,37 +5,16 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 
 /// <summary>
 /// MSTest condition attribute that ignores a test when Docker (or Podman) is unavailable on the
-/// host (optionally also when running under Podman). This is the MSTest counterpart of the xUnit
-/// <c>DockerAvailableTheoryAttribute</c>; apply it alongside <c>[TestMethod]</c>.
+/// host, optionally also when running under Podman or without the containerd image store. Apply it
+/// alongside <c>[TestMethod]</c> (this is the MSTest counterpart of the xUnit Docker-gated
+/// <c>[Fact]</c>/<c>[Theory]</c> attributes).
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
-public sealed class DockerAvailableTheoryAttribute : ConditionBaseAttribute
+public sealed class DockerAvailableConditionAttribute : ConditionBaseAttribute
 {
     public static string LocalRegistry => DockerCliStatus.LocalRegistry;
 
-    public DockerAvailableTheoryAttribute(bool skipPodman = false)
-        : base(ConditionMode.Include)
-    {
-        IgnoreMessage = DockerCliStatus.GetSkipReason(skipPodman, checkContainerdStoreAvailability: false);
-    }
-
-    public override bool IsConditionMet => IgnoreMessage is null;
-
-    public override string GroupName => nameof(DockerAvailableTheoryAttribute);
-}
-
-/// <summary>
-/// MSTest condition attribute that ignores a test when Docker (or Podman) is unavailable on the
-/// host (optionally also when running under Podman or without the containerd image store). This is
-/// the MSTest counterpart of the xUnit <c>DockerAvailableFactAttribute</c>; apply it alongside
-/// <c>[TestMethod]</c>.
-/// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
-public sealed class DockerAvailableFactAttribute : ConditionBaseAttribute
-{
-    public static string LocalRegistry => DockerCliStatus.LocalRegistry;
-
-    public DockerAvailableFactAttribute(bool skipPodman = false, bool checkContainerdStoreAvailability = false)
+    public DockerAvailableConditionAttribute(bool skipPodman = false, bool checkContainerdStoreAvailability = false)
         : base(ConditionMode.Include)
     {
         IgnoreMessage = DockerCliStatus.GetSkipReason(skipPodman, checkContainerdStoreAvailability);
@@ -43,7 +22,7 @@ public sealed class DockerAvailableFactAttribute : ConditionBaseAttribute
 
     public override bool IsConditionMet => IgnoreMessage is null;
 
-    public override string GroupName => nameof(DockerAvailableFactAttribute);
+    public override string GroupName => nameof(DockerAvailableConditionAttribute);
 }
 
 // tiny optimization - since there are many instances of this attribute we should only get
