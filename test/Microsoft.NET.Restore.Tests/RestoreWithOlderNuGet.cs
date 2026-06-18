@@ -7,7 +7,7 @@ namespace Microsoft.NET.Restore.Tests
     public class RestoreWithOlderNuGet : SdkTest
     {
         [TestMethod]
-        [PlatformSpecific(TestPlatforms.Windows)]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItCanBuildProjectRestoredWithNuGet5_7()
         {
             var testProject = new TestProject()
