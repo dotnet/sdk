@@ -37,17 +37,15 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
     public override bool Execute()
     {
         AbsolutePath manifestAbsolutePath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : default;
-        bool hasCacheFile = !string.IsNullOrEmpty(CacheFilePath);
-        AbsolutePath cacheAbsolutePath = hasCacheFile ? TaskEnvironment.GetAbsolutePath(CacheFilePath) : default;
-        bool hasExclusionCache = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath);
-        AbsolutePath exclusionCacheAbsolutePath = hasExclusionCache ? TaskEnvironment.GetAbsolutePath(ExclusionPatternsCacheFilePath) : default;
+        AbsolutePath cacheAbsolutePath = !string.IsNullOrEmpty(CacheFilePath) ? TaskEnvironment.GetAbsolutePath(CacheFilePath) : default;
+        AbsolutePath exclusionCacheAbsolutePath = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) ? TaskEnvironment.GetAbsolutePath(ExclusionPatternsCacheFilePath) : default;
 
         var (patternString, parsedPatterns) = ParseAndSortPatterns(ExclusionPatterns);
-        var existingPatternString = hasExclusionCache && File.Exists(exclusionCacheAbsolutePath)
+        var existingPatternString = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) && File.Exists(exclusionCacheAbsolutePath)
             ? File.ReadAllText(exclusionCacheAbsolutePath)
             : null;
         existingPatternString = string.IsNullOrEmpty(existingPatternString) ? null : existingPatternString;
-        if (hasCacheFile && File.Exists(manifestAbsolutePath) && File.GetLastWriteTimeUtc(manifestAbsolutePath) > File.GetLastWriteTimeUtc(cacheAbsolutePath))
+        if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(manifestAbsolutePath) && File.GetLastWriteTimeUtc(manifestAbsolutePath) > File.GetLastWriteTimeUtc(cacheAbsolutePath))
         {
             // Check if exclusion patterns cache is also up to date
             if (string.Equals(patternString, existingPatternString, StringComparison.Ordinal))
@@ -70,7 +68,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
         try
         {
             // Update exclusion patterns cache if needed
-            UpdateExclusionPatternsCache(existingPatternString, patternString, manifestAbsolutePath, exclusionCacheAbsolutePath, hasExclusionCache);
+            UpdateExclusionPatternsCache(existingPatternString, patternString, manifestAbsolutePath, exclusionCacheAbsolutePath);
 
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
             var assets = StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment);
@@ -204,9 +202,9 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
         return (string.Join(Environment.NewLine, parsed), parsed);
     }
 
-    private static void UpdateExclusionPatternsCache(string existingPatternString, string patternString, AbsolutePath manifestAbsolutePath, AbsolutePath exclusionCacheAbsolutePath, bool hasExclusionCache)
+    private void UpdateExclusionPatternsCache(string existingPatternString, string patternString, AbsolutePath manifestAbsolutePath, AbsolutePath exclusionCacheAbsolutePath)
     {
-        if (!hasExclusionCache)
+        if (string.IsNullOrEmpty(ExclusionPatternsCacheFilePath))
         {
             return;
         }
