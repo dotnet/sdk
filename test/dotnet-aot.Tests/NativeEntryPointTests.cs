@@ -43,6 +43,36 @@ public class NativeEntryPointTests
         }
     }
 
+    /// <summary>
+    /// Captures the "classic" <see cref="TelemetryEventEntry"/> events raised while <paramref name="action"/>
+    /// runs. <see cref="TelemetryEventEntry"/> exposes no unsubscribe, so a single persistent handler routes
+    /// event names into a swappable sink that is only populated for the duration of the capture.
+    /// </summary>
+    private static List<string>? s_telemetrySink;
+    private static bool s_telemetryCaptureHooked;
+
+    private static List<string> CaptureClassicTelemetry(Action action)
+    {
+        if (!s_telemetryCaptureHooked)
+        {
+            s_telemetryCaptureHooked = true;
+            TelemetryEventEntry.Subscribe((eventName, _) => s_telemetrySink?.Add(eventName));
+        }
+
+        var sink = new List<string>();
+        s_telemetrySink = sink;
+        try
+        {
+            action();
+        }
+        finally
+        {
+            s_telemetrySink = null;
+        }
+
+        return sink;
+    }
+
     [Fact]
     public void ExecuteCore_AotEnabled_VersionCommand_ReturnsZero()
     {
@@ -350,6 +380,83 @@ public class NativeEntryPointTests
             }
         });
     }
+
+    [Fact]
+    public void ExecuteCore_AotEnabled_ResolvableExternalCommand_EmitsParserAndResolutionTelemetry()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+
+            // When the AOT bridge resolves and invokes an external command in-process (no managed
+            // fallback), it must emit the same "classic" telemetry the managed CLI would: the
+            // top-level parser event, plus the command-resolution event raised during resolution.
+            string toolDir = Path.Combine(Path.GetTempPath(), $"aot-teltool-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(toolDir);
+            string originalPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+
+            try
+            {
+                string toolPath;
+                if (OperatingSystem.IsWindows())
+                {
+                    toolPath = Path.Combine(toolDir, "dotnet-aotteltool.cmd");
+                    File.WriteAllText(toolPath, $"@echo off{Environment.NewLine}exit /b 0{Environment.NewLine}");
+                }
+                else
+                {
+                    toolPath = Path.Combine(toolDir, "dotnet-aotteltool");
+                    File.WriteAllText(toolPath, $"#!/bin/sh{Environment.NewLine}exit 0{Environment.NewLine}");
+                    File.SetUnixFileMode(toolPath,
+                        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                        UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                        UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+                }
+
+                Environment.SetEnvironmentVariable("PATH", toolDir + Path.PathSeparator + originalPath);
+
+                List<string> events = CaptureClassicTelemetry(() =>
+                    NativeEntryPoint.ExecuteCore(
+                        hostPath: "test-host",
+                        dotnetRoot: "test-root",
+                        sdkDir: "nonexistent-sdk-dir",
+                        hostfxrPath: "",
+                        args: ["aotteltool"]));
+
+                Assert.Contains("toplevelparser/command", events);
+                Assert.Contains("commandresolution/commandresolved", events);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("PATH", originalPath);
+                try { Directory.Delete(toolDir, recursive: true); } catch { }
+            }
+        });
+    }
+
+    [Fact]
+    public void ExecuteCore_AotDisabled_DefersToManagedHost_DoesNotEmitParserTelemetry()
+    {
+        WithEnvRestore(() =>
+        {
+            // With AOT disabled the bridge defers straight to the managed host, which is the process
+            // that owns the "classic" parser/resolution telemetry. The bridge must NOT emit those
+            // events itself, otherwise they would be double-counted once the managed CLI runs.
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "false");
+
+            List<string> events = CaptureClassicTelemetry(() =>
+                NativeEntryPoint.ExecuteCore(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: "nonexistent-sdk-dir",
+                    hostfxrPath: "",
+                    args: ["aotteltool"]));
+
+            Assert.DoesNotContain("toplevelparser/command", events);
+            Assert.DoesNotContain("commandresolution/commandresolved", events);
+        });
+    }
+
 
     [Fact]
     public void ExecuteCore_SetsHostfxrPathInAppContext()

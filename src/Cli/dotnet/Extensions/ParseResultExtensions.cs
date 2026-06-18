@@ -138,6 +138,10 @@ public static class ParseResultExtensions
         || parseResult.Tokens.Any(token => token.Type == TokenType.Directive)
         || (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.RootCommand.DotnetSubCommand)));
 
+    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
+        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
+        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
+
 #if !CLI_AOT
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
@@ -187,10 +191,6 @@ public static class ParseResultExtensions
             return true;
         }
     }
-
-    public static bool IsDotnetBuiltInCommand(this ParseResult parseResult) =>
-        string.IsNullOrEmpty(parseResult.RootSubCommandResult())
-        || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
 
     public static int HandleMissingCommand(this ParseResult parseResult)
     {

@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.NativeWrapper;
+using Microsoft.DotNet.Utilities;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli;
@@ -42,6 +43,11 @@ static unsafe partial class NativeEntryPoint
 
     public static ITelemetryClient? TelemetryClient { get; private set; }
 
+    // Guards one-time subscription of the "classic" TelemetryEventEntry pub/sub to the AOT
+    // telemetry client. ExecuteCore runs once per process in production; the guard keeps repeated
+    // in-process invocations (e.g. unit tests) from attaching duplicate handlers.
+    private static bool s_telemetryEventsSubscribed;
+
     /// <summary>
     ///  Core execution logic, separated from native marshalling for testability.
     /// </summary>
@@ -54,12 +60,27 @@ static unsafe partial class NativeEntryPoint
         // native library used to hash telemetry properties on macOS - see dotnet/sdk#54544),
         // so swallow any failure here and continue to the actual command.
         Activity? mainActivity = null;
+        string? globalJsonState = null;
         try
         {
             DateTime preTelemetry = DateTime.UtcNow;
             // Initialize OTel telemetry (mirrors managed Program.cs setup). The client is stored in
             // the TelemetryClient property so AOT command actions (e.g. --cli-schema) can reuse it.
             TelemetryClient = new Telemetry.TelemetryClient(sessionId: null);
+
+            // Route the "classic" hashed telemetry events (toplevelparser/command,
+            // commandresolution/commandresolved, ...) into the AOT telemetry client, mirroring the
+            // managed Program.cs setup. Without a subscriber these events - including the one
+            // CompositeCommandResolver already raises during external command resolution - are
+            // silently dropped on the AOT path. Subscribe at most once per process; the handler
+            // routes to whichever TelemetryClient is current.
+            if (!s_telemetryEventsSubscribed)
+            {
+                s_telemetryEventsSubscribed = true;
+                TelemetryEventEntry.Subscribe((eventName, properties) => TelemetryClient?.TrackEvent(eventName, properties));
+                TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+            }
+
             DateTime postTelemetry = DateTime.UtcNow;
             mainActivity = Activities.Source.StartActivity("main", Telemetry.TelemetryClient.ActivityKind, Telemetry.TelemetryClient.ParentActivityContext);
 
@@ -78,7 +99,7 @@ static unsafe partial class NativeEntryPoint
             // Capture global.json state for telemetry (mirrors managed Program.cs)
             if (TelemetryClient?.Enabled ?? false)
             {
-                var globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
+                globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
                 mainActivity?.AddTag("dotnet.globalJson", globalJsonState);
             }
         }
@@ -115,6 +136,9 @@ static unsafe partial class NativeEntryPoint
                     {
                         exitCode = Parser.Invoke(parseResult);
                         success = true;
+                        // The built-in command ran in-process (no managed fallback), so emit the same
+                        // top-level parser telemetry the managed CLI sends from Program.ProcessArgsAndExecute.
+                        SendAotParserTelemetry(parseResult, globalJsonState);
                         return exitCode;
                     }
                     catch (CommandNotAvailableInAotException)
@@ -127,6 +151,9 @@ static unsafe partial class NativeEntryPoint
                         invoke?.AddException(ex);
                         exitCode = Parser.ExceptionHandler(ex, parseResult);
                         success = false;
+                        // The command was handled in-process (terminal error, not a managed fallback),
+                        // so still emit the top-level parser telemetry, as the managed CLI does.
+                        SendAotParserTelemetry(parseResult, globalJsonState);
                         return exitCode;
                     }
                 }
@@ -136,6 +163,10 @@ static unsafe partial class NativeEntryPoint
                 // project tools, and anything that does not resolve to the managed CLI.
                 else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, out exitCode, out success))
                 {
+                    // The external command was resolved and invoked in-process (no managed fallback).
+                    // Emit the top-level parser telemetry to match the managed CLI; the
+                    // commandresolution/commandresolved event was already raised during resolution.
+                    SendAotParserTelemetry(parseResult, globalJsonState);
                     return exitCode;
                 }
             }
@@ -262,6 +293,26 @@ static unsafe partial class NativeEntryPoint
                 success = false;
                 return true;
             }
+        }
+    }
+
+    /// <summary>
+    ///  Emits the "classic" filtered parser telemetry (e.g. <c>toplevelparser/command</c>) for a command
+    ///  the AOT bridge handled in-process, mirroring the managed CLI's
+    ///  <c>TelemetryEventEntry.SendFiltered(...)</c> call in <c>Program.ProcessArgsAndExecute</c>. Only call
+    ///  this once the AOT path has committed to running the command itself: when the bridge instead falls
+    ///  back to the managed CLI, that process emits these events, so emitting them here would double-count.
+    /// </summary>
+    private static void SendAotParserTelemetry(ParseResult parseResult, string? globalJsonState)
+    {
+        try
+        {
+            TelemetryEventEntry.SendFiltered(new ParseResultWithGlobalJsonState(parseResult, globalJsonState));
+        }
+        catch (Exception ex)
+        {
+            // Telemetry is best-effort and must never affect command execution or the exit code.
+            Debug.WriteLine($"Failed to emit AOT parser telemetry: {ex}");
         }
     }
 }

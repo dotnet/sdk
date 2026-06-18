@@ -46,6 +46,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\MacAddressGetter.cs" Link="Telemetry\MacAddressGetter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\DevDeviceIDGetter.cs" Link="Telemetry\DevDeviceIDGetter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ExternalTelemetryProperties.cs" Link="Telemetry\ExternalTelemetryProperties.cs" />
+    <!-- Telemetry filter + parse-result log rules so the AOT bridge can emit the same "classic"
+         toplevelparser/command + sublevelparser/command events the managed CLI does, for commands
+         it handles in-process. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryFilter.cs" Link="Telemetry\TelemetryFilter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\IParseResultLogRule.cs" Link="Telemetry\IParseResultLogRule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\AllowListToSendFirstArgument.cs" Link="Telemetry\AllowListToSendFirstArgument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\AllowListToSendFirstAppliedOptions.cs" Link="Telemetry\AllowListToSendFirstAppliedOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\AllowListToSendVerbSecondVerbFirstArgument.cs" Link="Telemetry\AllowListToSendVerbSecondVerbFirstArgument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TopLevelCommandNameAndOptionToLog.cs" Link="Telemetry\TopLevelCommandNameAndOptionToLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ActivityExtensions.cs" Link="ActivityExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ParseResultExtensions.cs" Link="ParseResultExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.TemplateEngine.Cli\SymbolExtensions.cs" Link="SymbolExtensions.cs" />
