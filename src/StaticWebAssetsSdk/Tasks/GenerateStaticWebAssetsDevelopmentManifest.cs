@@ -13,9 +13,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // The manifest needs to always be case sensitive, since we don't know what the final runtime environment
 // will be. The runtime is responsible for merging the tree nodes in the manifest when the underlying OS
 // is case insensitive.
-public class GenerateStaticWebAssetsDevelopmentManifest : Task
+[MSBuildMultiThreadableTask]
+public class GenerateStaticWebAssetsDevelopmentManifest : Task, IMultiThreadableTask
 {
     private static readonly char[] _separator = ['/'];
+
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
     [Required]
     public string Source { get; set; }
@@ -34,10 +38,14 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
 
     public override bool Execute()
     {
-        if (File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
+        if (!string.IsNullOrEmpty(ManifestPath))
         {
-            Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
-            return true;
+            AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(ManifestPath);
+            if (File.Exists(manifestPath) && File.GetLastWriteTimeUtc(manifestPath) > File.GetLastWriteTimeUtc(TaskEnvironment.GetAbsolutePath(CacheFilePath)))
+            {
+                Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
+                return true;
+            }
         }
 
         try
@@ -49,10 +57,10 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
             }
 
             var manifest = ComputeDevelopmentManifest(
-                StaticWebAsset.FromTaskItemGroup(Assets),
+                StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment),
                 DiscoveryPatterns.Select(StaticWebAssetsDiscoveryPattern.FromTaskItem));
 
-            PersistManifest(manifest);
+            PersistManifest(manifest, TaskEnvironment.GetAbsolutePath(ManifestPath));
         }
         catch (Exception ex)
         {
@@ -93,7 +101,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
             return 0;
         });
 
-        var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
+        var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath, TaskEnvironment);
         return manifest;
     }
 
@@ -125,7 +133,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
         }
     }
 
-    private void PersistManifest(StaticWebAssetsDevelopmentManifest manifest)
+    private void PersistManifest(StaticWebAssetsDevelopmentManifest manifest, AbsolutePath manifestPath)
     {
         var data = JsonSerializer.SerializeToUtf8Bytes(manifest, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetsDevelopmentManifest);
 #if !NET9_0_OR_GREATER
@@ -134,19 +142,19 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
 #else
         var currentHash = SHA256.HashData(data);
 #endif
-        var fileExists = File.Exists(ManifestPath);
+        var fileExists = File.Exists(manifestPath);
         var existingManifestHash = fileExists ?
 #if !NET9_0_OR_GREATER
-            sha256.ComputeHash(File.ReadAllBytes(ManifestPath)) :
+            sha256.ComputeHash(File.ReadAllBytes(manifestPath)) :
 #else
-            SHA256.HashData(File.ReadAllBytes(ManifestPath)) :
+            SHA256.HashData(File.ReadAllBytes(manifestPath)) :
 #endif
             [];
 
         if (!fileExists)
         {
             Log.LogMessage(MessageImportance.Low, "Creating manifest because manifest file '{0}' does not exist.", ManifestPath);
-            File.WriteAllBytes(ManifestPath, data);
+            File.WriteAllBytes(manifestPath, data);
         }
         else if (!currentHash.SequenceEqual(existingManifestHash))
         {
@@ -155,7 +163,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
                 "Updating manifest because manifest version '{0}' is different from existing manifest hash '{1}'.",
                 Convert.ToBase64String(currentHash),
                 Convert.ToBase64String(existingManifestHash));
-            File.WriteAllBytes(ManifestPath, data);
+            File.WriteAllBytes(manifestPath, data);
         }
         else
         {
@@ -168,7 +176,8 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
 
     private static StaticWebAssetsDevelopmentManifest CreateManifest(
         SegmentsAssetPair[] assetsWithPathSegments,
-        (string[], StaticWebAssetsDiscoveryPattern[] values)[] discoveryPatternsByBasePath)
+        (string[], StaticWebAssetsDiscoveryPattern[] values)[] discoveryPatternsByBasePath,
+        TaskEnvironment env)
     {
         var contentRootIndex = new Dictionary<string, int>();
         var root = new StaticWebAssetNode() { };
@@ -187,7 +196,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
                     }
                     var matchingAsset = new StaticWebAssetMatch
                     {
-                        SubPath = ResolveSubPath(asset),
+                        SubPath = ResolveSubPath(asset, env),
                         ContentRootIndex = index
                     };
                     currentNode.Children ??= new Dictionary<string, StaticWebAssetNode>(StringComparer.Ordinal);
@@ -306,9 +315,9 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
             Root = root
         };
 
-        static string ResolveSubPath(StaticWebAsset asset)
+        static string ResolveSubPath(StaticWebAsset asset, TaskEnvironment env)
         {
-            if (File.Exists(asset.Identity))
+            if (!string.IsNullOrEmpty(asset.Identity) && File.Exists(env.GetAbsolutePath(asset.Identity)))
             {
                 if (asset.Identity.StartsWith(asset.ContentRoot, OSPath.PathComparison))
                 {
