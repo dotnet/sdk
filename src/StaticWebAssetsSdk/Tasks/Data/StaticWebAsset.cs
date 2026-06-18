@@ -1098,7 +1098,12 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     public static string NormalizeContentRootPath(string path) => NormalizeContentRootPath(path, TaskEnvironment.Fallback);
 
     public static string NormalizeContentRootPath(string path, TaskEnvironment env)
-        => Path.GetFullPath(string.IsNullOrEmpty(path) ? path : env.GetAbsolutePath(path)) +
+        // For null/empty/whitespace paths we deliberately call Path.GetFullPath on the raw value
+        // rather than routing it through env.GetAbsolutePath. This preserves the pre-multithreading
+        // behavior: such inputs resolve against the legacy base (and on Windows whitespace-only paths
+        // still throw, since Path.GetFullPath trims trailing whitespace to an empty path) instead of
+        // being silently resolved into the project directory.
+        => Path.GetFullPath(string.IsNullOrWhiteSpace(path) ? path : env.GetAbsolutePath(path)) +
         // We need to do .ToString because there is no EndsWith overload for chars in .NET Framework
         (path.EndsWith(Path.DirectorySeparatorChar.ToString()), path.EndsWith(Path.AltDirectorySeparatorChar.ToString())) switch
         {

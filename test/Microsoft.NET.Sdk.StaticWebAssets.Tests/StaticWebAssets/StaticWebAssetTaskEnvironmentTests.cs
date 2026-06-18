@@ -6,6 +6,7 @@
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
@@ -217,6 +218,41 @@ public class StaticWebAssetTaskEnvironmentTests
 
             asset.ContentRoot.Should().Be(absoluteContentRoot + Path.DirectorySeparatorChar);
             asset.RelatedAsset.Should().Be(absoluteRelatedAsset);
+        });
+    }
+
+    [Fact]
+    public void NormalizeContentRootPath_WithWhitespacePath_PreservesLegacyBehavior_DoesNotResolveAgainstProjectDirectory()
+    {
+        WithDecoyCwdAndProjectDirectory((projectDir, spawnDir) =>
+        {
+            var env = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir);
+            const string whitespace = "   ";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Before the multithreading migration the raw whitespace path flowed straight into
+                // Path.GetFullPath, which on Windows trims the trailing whitespace to an empty path
+                // and throws. Routing it through env.GetAbsolutePath first would instead silently
+                // resolve it to the project directory, masking the invalid input. Guarding on
+                // IsNullOrWhiteSpace preserves the original throw.
+                Action act = () => StaticWebAsset.NormalizeContentRootPath(whitespace, env);
+
+                act.Should().Throw<ArgumentException>(
+                    "a whitespace-only path is invalid on Windows and must keep throwing as it did before the migration");
+            }
+            else
+            {
+                // On Unix whitespace is a legal path segment, so Path.GetFullPath does not throw.
+                // It must still resolve against the legacy base (the process CWD) exactly like the
+                // parameterless overload, rather than being silently re-rooted to the project directory.
+                var result = StaticWebAsset.NormalizeContentRootPath(whitespace, env);
+
+                result.Should().Be(StaticWebAsset.NormalizeContentRootPath(whitespace),
+                    "whitespace paths must keep their pre-migration resolution and not be re-rooted to the project directory");
+                result.Should().StartWith(spawnDir);
+                result.Should().NotStartWith(projectDir);
+            }
         });
     }
 
