@@ -953,12 +953,23 @@ public class RunCommand
             out List<string> nonLoggerArgs)
         {
             var applicationArgumentsAfterDoubleDash = GetApplicationArgumentsAfterDoubleDash(parseResult);
-            var countBeforeDoubleDash = applicationArgumentsAfterDoubleDash is null
-                ? applicationArguments.Count
-                : CountApplicationArgumentsBeforeDoubleDash(applicationArguments, applicationArgumentsAfterDoubleDash);
+            if (applicationArgumentsAfterDoubleDash is null)
+            {
+                LoggerUtility.SeparateLoggerArguments(applicationArguments, out loggerArgs, out nonLoggerArgs);
+                return;
+            }
+
+            if (!TryCountApplicationArgumentsBeforeDoubleDash(applicationArguments, applicationArgumentsAfterDoubleDash, out var countBeforeDoubleDash))
+            {
+                // This hopefully should not happen, but if it does, we don't want to break users.
+                Reporter.Error.WriteLine("Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.".Yellow());
+                loggerArgs = [];
+                nonLoggerArgs = [.. applicationArguments];
+                return;
+            }
 
             LoggerUtility.SeparateLoggerArguments(applicationArguments.Take(countBeforeDoubleDash), out loggerArgs, out var nonLoggerArgsBeforeDoubleDash);
-            nonLoggerArgs = [.. nonLoggerArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash ?? applicationArguments.Skip(countBeforeDoubleDash)];
+            nonLoggerArgs = [.. nonLoggerArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash];
         }
 
         static List<string>? GetApplicationArgumentsAfterDoubleDash(ParseResult parseResult)
@@ -974,21 +985,20 @@ public class RunCommand
             return null;
         }
 
-        static int CountApplicationArgumentsBeforeDoubleDash(
+        static bool TryCountApplicationArgumentsBeforeDoubleDash(
             IReadOnlyList<string> applicationArguments,
-            IReadOnlyList<string> applicationArgumentsAfterDoubleDash)
+            IReadOnlyList<string> applicationArgumentsAfterDoubleDash,
+            out int countBeforeDoubleDash)
         {
-            var count = applicationArguments.Count;
+            countBeforeDoubleDash = applicationArguments.Count - applicationArgumentsAfterDoubleDash.Count;
 
-            for (var i = applicationArgumentsAfterDoubleDash.Count - 1; i >= 0 && count > 0; i--)
+            if (countBeforeDoubleDash < 0)
             {
-                if (string.Equals(applicationArguments[count - 1], applicationArgumentsAfterDoubleDash[i], StringComparison.Ordinal))
-                {
-                    count--;
-                }
+                countBeforeDoubleDash = 0;
+                return false;
             }
 
-            return count;
+            return applicationArguments.Skip(countBeforeDoubleDash).SequenceEqual(applicationArgumentsAfterDoubleDash, StringComparer.Ordinal);
         }
 
         bool UsingRunCommandShorthandProjectOption(ParseResult parseResult)
